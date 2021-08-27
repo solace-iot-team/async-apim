@@ -1,8 +1,8 @@
-# Async API Management
+# Solace Async API Management
 
 > :warning: UNDER CONSTRUCTION
 
-Async API Management.
+Solace Async API Management.
 
 
 ---
