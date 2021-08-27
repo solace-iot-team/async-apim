@@ -1,0 +1,49 @@
+{
+  "name": "@solace-iot-team/apim-server-openapi-browser",
+  "version": "0.0.2",
+  "description": "Async API Management Server - OpenAPI Client for Browser (Typescript)",
+  "homepage": "https://github.com/solace-iot-team/apim-portal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solace-iot-team/apim-portal"
+  },
+  "bugs": {
+    "url": "https://github.com/solace-iot-team/apim-portal/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "checkVersion": "ts-node checkVersion.ts",
+    "updateVersion": "ts-node updateVersion.ts",
+    "build": "ts-node build.ts && tsc"
+  },
+  "author": "Solace Corporation",
+  "contributors": [
+    {
+      "name": "Ricardo Gomez-Ulmke",
+      "email": "ricardo.gomez-ulmke@solace.com"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "solace",
+    "asyncapi",
+    "api management"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "cache": ".cache/.npm",
+    "registry": "https://registry.npmjs.org",
+    "tag": "latest"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.0",
+    "@types/shelljs": "^0.8.8",
+    "js-yaml": "^4.0.0",
+    "openapi-typescript-codegen": "^0.9.3",
+    "shelljs": "^0.8.4",
+    "typescript": "^4.2.3",
+    "ts-node": "^9.1.1"
+  },
+  "dependencies": {}
+}
