@@ -1,0 +1,19 @@
+version: "3.7"
+services:
+  mongodb:
+    container_name: apim-server-mongodb
+    image : mongo:latest
+    volumes:
+      - mongodbdata:/data/db
+    ports:
+      - ${APIM_SERVER_MONGO_PORT}:27017
+    restart: unless-stopped
+    # use for starting with auth and init
+    # environment:
+    #   MONGO_INITDB_DATABASE: "${APIM_INTEGRATION_TEST_MONGO_DATABASE}"
+    #   MONGO_INITDB_ROOT_USERNAME: "${APIM_INTEGRATION_TEST_MONGO_ROOT_USERNAME}"
+    #   MONGO_INITDB_ROOT_PASSWORD: "${APIM_INTEGRATION_TEST_MONGO_ROOT_PASSWORD}"
+    # volumes:
+    #   - ${initMongoFile}:/docker-entrypoint-initdb.d/init-mongo.js:ro
+volumes:
+  mongodbdata:

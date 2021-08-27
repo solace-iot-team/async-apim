@@ -1,0 +1,31 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target":"es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "declaration": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": false,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strictPropertyInitialization":false,
+    "resolveJsonModule": true,
+    "outDir": "dist",
+    "typeRoots": [
+      "./node_modules/@types", 
+      "./server/@types"
+    ]
+  },
+  "include": ["server/**/*.ts"],
+  "exclude": ["node_modules"]
+}
