@@ -1,6 +1,8 @@
 import React from 'react';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
+
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { Loading } from '../../components/Loading/Loading';
 import { 
@@ -63,14 +65,29 @@ const managedObjectList: TManagedObjectList = [
   }
 ] 
 
-
-
 export const BootstrapConnectorsPage: React.FC = () => {
   const componentName = 'BootstrapConnectorsPage';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isReplaceManagedObjectInProgress, setIsReplaceManagedObjectInProgress] = React.useState<boolean>(false);
   const [showLoading, setShowLoading] = React.useState<boolean>(false);
+  const toast = React.useRef<any>(null);
+  const toastLifeSuccess: number = 3000;
+  const toastLifeError: number = 10000;
+
+  const onSuccess = (apiCallStatus: TApiCallState) => {
+    if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
+  }
+
+  const onError = (apiCallStatus: TApiCallState) => {
+    toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
+  }
+
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(apiCallStatus.success) onSuccess(apiCallStatus);
+      else onError(apiCallStatus);
+    }
+  }, [apiCallStatus]);
 
   const transformManagedObjectToApiObject = (managedObject: TManagedObject): TApiObject => {
     return managedObject;
@@ -99,12 +116,10 @@ export const BootstrapConnectorsPage: React.FC = () => {
     const funcName = 'apiCreateOrReplaceManagedObject';
     const logName = `${componentName}.${funcName}()`;
     setApiCallStatus(null);
-    setIsReplaceManagedObjectInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `create/replace connector: ${managedObject.connectorId}`);
     // console.log(`${logName}: upserting ${JSON.stringify(managedObject, null, 2)}`);
     let isCreate: boolean = false;
     const apiObject: APSConnector = transformManagedObjectToApiObject(managedObject);
-    let newApiObject: APSConnector;
     try {
       try {
         await ApsConfigService.getApsConnector(apiObject.connectorId);
@@ -117,16 +132,15 @@ export const BootstrapConnectorsPage: React.FC = () => {
         }
       }
       if ( isCreate ) {
-        newApiObject = await ApsConfigService.createApsConnector(apiObject);
+        await ApsConfigService.createApsConnector(apiObject);
       } else {
-        newApiObject = await ApsConfigService.replaceApsConnector(apiObject.connectorId, apiObject);
+        await ApsConfigService.replaceApsConnector(apiObject.connectorId, apiObject);
       }
     } catch(e) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsReplaceManagedObjectInProgress(false);
     return callState;
   }
 
@@ -169,6 +183,8 @@ export const BootstrapConnectorsPage: React.FC = () => {
 
   return (
     <React.Fragment>
+        <Toast ref={toast} />
+        <Loading show={showLoading} />
         <h1>Bootstrap Connectors</h1>
         <hr />
         <Toolbar className="p-mb-4" left={leftToolbarTemplate} />
@@ -176,9 +192,8 @@ export const BootstrapConnectorsPage: React.FC = () => {
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(managedObjectList, null, 2)}
         </pre>
-        <Loading show={showLoading} />
     </React.Fragment>
-);
+  );
 
 }
 

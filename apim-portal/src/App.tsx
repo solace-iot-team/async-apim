@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom';
 
 import { Route, Switch } from 'react-router-dom';
 import { Config } from "./Config";
-import { EUIResourcePaths, EUIEmbeddableResourcePaths } from './utils/Globals';
+import { EUIResourcePaths, EUIEmbeddableResourcePaths, EUIDeveloperToolsResourcePaths } from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { ProtectedRouteWithRbacAndOrgAccess } from "./auth/ProtectedRouteWithRbacAndOrgAccess";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
@@ -29,11 +29,11 @@ import { DeveloperPortalHomePage } from "./developer-portal/pages/DeveloperPorta
 import { DeveloperPortalManageApplicationsPage } from "./developer-portal/pages/DeveloperPortalManageApplicationsPage";
 import { DeveloperPortalViewProductCatalogPage } from "./developer-portal/pages/DeveloperPortalViewProductCatalogPage";
 // * Developer Tools *
-import { BootstrapUsersPage } from "./pages/test/BootstrapUsersPage";
-import { BootstrapConnectorsPage } from "./pages/test/BootstrapConnectorsPage";
-import { BootstrapOrganizationsPage } from "./pages/test/BootstrapOrganizations";
-import { RolesTestPage } from "./pages/test/RolesTestPage";
-import { ContextsTestPage } from "./pages/test/ContextsTestPage";
+import { BootstrapUsersPage } from "./pages/devel/BootstrapUsersPage";
+import { BootstrapConnectorsPage } from "./pages/devel/BootstrapConnectorsPage";
+import { BootstrapOrganizationsPage } from "./pages/devel/BootstrapOrganizationsPage";
+import { RolesTestPage } from "./pages/devel/RolesTestPage";
+import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
 // * Embedded Components *
 import { EmbeddableDeveloperConfigureAppPortalPage } from "./embeddable/portal-pages/EmbeddableDeveloperConfigureAppPortalPage";
 
@@ -119,6 +119,8 @@ const App: React.FC = () => {
   }
 
   const renderAdminPortal = () => {
+    // const funcName = 'renderAdminPortal';
+    // const logName = `${componentName}.${funcName}()`;
     return (
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
@@ -148,21 +150,21 @@ const App: React.FC = () => {
               <ProtectedRouteWithRbacAndOrgAccess path={EUIResourcePaths.ManageOrganizationEnvironments} component={ManageEnvironmentsPage} exact />
 
               {/* Embedded Components */}
-              { showEmbeddablePages &&
-                <React.Fragment>
-                  <Route path={EUIEmbeddableResourcePaths.DeveloperAppConfigure} exact component={EmbeddableDeveloperConfigureAppPortalPage} />
-                </React.Fragment>
+              { showEmbeddablePages && 
+                [
+                  <Route path={EUIEmbeddableResourcePaths.DeveloperAppConfigure} key={EUIEmbeddableResourcePaths.DeveloperAppConfigure} component={EmbeddableDeveloperConfigureAppPortalPage} exact/>
+                ]
               }
 
               {/* Developer Tools */}
-              { showDeveloperTools &&
-                <React.Fragment>
-                  <ProtectedRouteWithRbac path="/test/roles" exact component={RolesTestPage} />
-                  <Route path="/test/bootstrap/organizations" exact component={BootstrapOrganizationsPage} />
-                  <Route path="/test/bootstrap/users" exact component={BootstrapUsersPage} />
-                  <Route path="/test/bootstrap/connectors" exact component={BootstrapConnectorsPage} />
-                  <Route path="/test/contexts" exact component={ContextsTestPage} />
-                </React.Fragment>
+              { showDeveloperTools && 
+                [
+                  <ProtectedRouteWithRbac path={EUIDeveloperToolsResourcePaths.TestRoles} key={EUIDeveloperToolsResourcePaths.TestRoles} component={RolesTestPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} key={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} component={BootstrapOrganizationsPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.BootstrapUsers} key={EUIDeveloperToolsResourcePaths.BootstrapUsers} component={BootstrapUsersPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.BootstrapConnectors} key={EUIDeveloperToolsResourcePaths.BootstrapConnectors} component={BootstrapConnectorsPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
+                ]
               }
 
               {/* Catch all */}

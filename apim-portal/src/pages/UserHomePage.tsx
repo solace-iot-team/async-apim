@@ -3,6 +3,7 @@ import { UserContext } from '../components/UserContextProvider/UserContextProvid
 
 export const UserHomePage: React.FC = () => {
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   return (

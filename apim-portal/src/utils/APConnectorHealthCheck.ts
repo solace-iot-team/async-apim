@@ -27,11 +27,11 @@ export class APConnectorHealthCheck {
   private static healthCheckResult: THealthCheckResult;
 
   private static checkUrlAccess = async(): Promise<boolean> => {
-    const funcName = 'checkUrlAccess';
-    const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
+    // const funcName = 'checkUrlAccess';
+    // const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
     let success: boolean = true;
     try {
-      const response: any = await APClientConnectorRaw.getBasePath();
+      await APClientConnectorRaw.getBasePath();
     } catch(e) {
       success = false;
     } finally {
@@ -43,7 +43,7 @@ export class APConnectorHealthCheck {
   private static checkAbout = async(): Promise<boolean> => {
     let success: boolean = true;
     try {
-      const response: any = await APClientConnectorRaw.getAbout();
+      await APClientConnectorRaw.getAbout();
     } catch(e) {
       success = false;
     } finally {
@@ -75,7 +75,7 @@ export class APConnectorHealthCheck {
     try {
       let doCreateOrg: boolean = false;
       try {
-        const testOrgResponse: Organization = await AdministrationService.getOrganization(testOrg.name);
+        await AdministrationService.getOrganization(testOrg.name);
       } catch (e) {
         doCreateOrg = true;
       } 

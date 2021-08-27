@@ -3,8 +3,8 @@
 export class APConnectorFormValidationRules {
   
   public static APName_ValidationRules = (): any => {
-    const funcName = 'APName_ValidationRules';
-    const logName = `${APConnectorFormValidationRules.name}.${funcName}()`;
+    // const funcName = 'APName_ValidationRules';
+    // const logName = `${APConnectorFormValidationRules.name}.${funcName}()`;
     const minLength: number  = 4;
     const maxLength: number = 256;
     const pattern: string = '^[A-Za-z0-9_-]*$';

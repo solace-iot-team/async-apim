@@ -1,5 +1,5 @@
 import React from 'react';
-import { ContextsTestPage } from './test/ContextsTestPage';
+import { ContextsTestPage } from './devel/ContextsTestPage';
 
 export const NoOrganizationPage: React.FC = () => {
 

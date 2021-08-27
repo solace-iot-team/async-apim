@@ -1,6 +1,8 @@
 import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
+
 import { Dialog } from 'primereact/dialog';
+
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
 import { TApiCallState } from "../utils/ApiCallState";
@@ -19,8 +21,10 @@ export const UserLoginPage: React.FC = () => {
   const [isLoginSuccess, setIsLoginSuccess] = React.useState<boolean | null>(null);
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-eanble @typescript-eslint/no-unused-vars */
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
@@ -30,14 +34,14 @@ export const UserLoginPage: React.FC = () => {
       setUserLoginCredentials(location.state);
     }
     setShowUserLogin(true);
-  }, []);
+  }, [location.state]);
 
   React.useEffect(() => {
     if(isFinished) {
       dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
       history.push({ pathname: EUIResourcePaths.UserHome });
     }
-  }, [isFinished]);
+  }, [isFinished]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLoginSuccess = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(true);

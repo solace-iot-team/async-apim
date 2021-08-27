@@ -24,7 +24,16 @@ export enum EUIResourcePaths {
 }
 
 export enum EUIEmbeddableResourcePaths {
-  DeveloperAppConfigure = '/embedabble/developer/app/configure'
+  DeveloperAppConfigure = '/embedabble/developer/app/configure',
+  AdminEnvironments = '/embedabble/admin/environments'
+}
+
+export enum EUIDeveloperToolsResourcePaths {
+  TestRoles = '/devel/roles',
+  BootstrapOrganizations = '/devel/bootstrap/organizations',
+  BootstrapUsers = '/devel/bootstrap/users',
+  BootstrapConnectors = '/devel/bootstrap/connectors',
+  ViewContexts = '/devel/view/contexts'
 }
 
 export class Globals {
@@ -47,14 +56,14 @@ export class Globals {
   }
 
   public static encodeRFC5987ValueChars = (str: string): string => {
-    return encodeURIComponent(str).
+    return encodeURIComponent(str)
     // Note that although RFC3986 reserves "!", RFC5987 does not,
     // so we do not need to escape it
-    replace(/['()]/g, escape). // i.e., %27 %28 %29
-    replace(/\*/g, '%2A').
+    .replace(/['()]/g, escape) // i.e., %27 %28 %29
+    .replace(/\*/g, '%2A')
         // The following are not required for percent-encoding per RFC5987,
         // so we can allow for a little better readability over the wire: |`^
-        replace(/%(?:7C|60|5E)/g, unescape);
+        .replace(/%(?:7C|60|5E)/g, unescape);
   }
 }
 

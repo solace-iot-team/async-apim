@@ -36,8 +36,8 @@ export class ApiCallState {
   }
 
   public static getUserErrorMessageFromApiCallState = (apiCallStatus: TApiCallState): string => {
-    const funcName = 'getUserErrorMessageFromApiCallState';
-    const logName = `${ApiCallState.name}.${funcName}()`;
+    // const funcName = 'getUserErrorMessageFromApiCallState';
+    // const logName = `${ApiCallState.name}.${funcName}()`;
     // console.log(`${logName}: apiCallStatus=${JSON.stringify(apiCallStatus, null, 2)}`);
     if(apiCallStatus.success) return '';
     if(apiCallStatus.isAPSApiError && apiCallStatus.error) {
@@ -46,7 +46,7 @@ export class ApiCallState {
       // body may not be a json but could be text
       if('body' in apsApiError) {
         try {
-          const bodyJsonStr = JSON.stringify(apsApiError.body);
+          JSON.stringify(apsApiError.body);
           const apsError: APSError = apsApiError.body;
           let userMessage: string;
           if(apiCallStatus.context.userDetail) {
@@ -88,8 +88,8 @@ export class ApiCallState {
   }  
 
   private static getUserErrorMessageDescriptionByErrorId = (apsError: APSError): string | undefined => {
-    const funcName = 'getUserErrorMessageDescriptionByErrorId';
-    const logName = `${ApiCallState.name}.${funcName}()`;
+    // const funcName = 'getUserErrorMessageDescriptionByErrorId';
+    // const logName = `${ApiCallState.name}.${funcName}()`;
     // console.log(`${logName}: apsError=${JSON.stringify(apsError, null, 2)}`);
     switch(apsError.errorId) {
       case APSErrorIds.OPEN_API_REQUEST_VALIDATION:

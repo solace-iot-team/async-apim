@@ -1,10 +1,9 @@
 import React from 'react';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
-// import { TUser } from '../../components/Components.types';
-// import { APSUser, delete_EAPSAuthRole } from '../../utils/APSClient.types';
+import { Toast } from 'primereact/toast';
+
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
-// import { APSClient, APSClientUsers } from '../../utils/APSClient';
 import { Loading } from '../../components/Loading/Loading';
 import { 
   ApsUsersService,
@@ -15,7 +14,6 @@ import {
   ListApsUsersResponse,
 } from '@solace-iot-team/apim-server-openapi-browser';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-
 
 type TApiObject = APSUser;
 type TManagedObject = APSUser;
@@ -123,8 +121,25 @@ export const BootstrapUsersPage: React.FC = () => {
   const componentName = 'BootstrapUsersPage';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isReplaceManagedObjectInProgress, setIsReplaceManagedObjectInProgress] = React.useState<boolean>(false);
   const [showLoading, setShowLoading] = React.useState<boolean>(false);
+  const toast = React.useRef<any>(null);
+  const toastLifeSuccess: number = 3000;
+  const toastLifeError: number = 10000;
+
+  const onSuccess = (apiCallStatus: TApiCallState) => {
+    if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
+  }
+
+  const onError = (apiCallStatus: TApiCallState) => {
+    toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
+  }
+
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(apiCallStatus.success) onSuccess(apiCallStatus);
+      else onError(apiCallStatus);
+    }
+  }, [apiCallStatus]);
 
   const transformManagedObjectToApiObject = (managedObject: TManagedObject): TApiObject => {
     return managedObject;
@@ -136,7 +151,6 @@ export const BootstrapUsersPage: React.FC = () => {
     setApiCallStatus(null);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `delete all users`);
     try {
-      let apsUserList: APSUserList = [];
       let hasUsers = true;
       while (hasUsers) {
         const response: ListApsUsersResponse = await ApsUsersService.listApsUsers();
@@ -157,12 +171,10 @@ export const BootstrapUsersPage: React.FC = () => {
     const funcName = 'apiCreateOrReplaceManagedObject';
     const logName = `${componentName}.${funcName}()`;
     setApiCallStatus(null);
-    setIsReplaceManagedObjectInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `create/replace user: ${managedObject.userId}`);
     // console.log(`${logName}: upserting ${JSON.stringify(managedObject, null, 2)}`);
     let isCreate: boolean = false;
     const apiObject: APSUser = transformManagedObjectToApiObject(managedObject);
-    let newApiObject: APSUser;
     try {
       try {
         await ApsUsersService.getApsUser(apiObject.userId);
@@ -175,16 +187,15 @@ export const BootstrapUsersPage: React.FC = () => {
         }
       }
       if ( isCreate ) {
-        newApiObject = await ApsUsersService.createApsUser(apiObject);
+        await ApsUsersService.createApsUser(apiObject);
       } else {
-        newApiObject = await ApsUsersService.replaceApsUser(apiObject.userId, apiObject);
+        await ApsUsersService.replaceApsUser(apiObject.userId, apiObject);
       }
     } catch(e) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsReplaceManagedObjectInProgress(false);
     return callState;
   }
 
@@ -257,6 +268,8 @@ export const BootstrapUsersPage: React.FC = () => {
 
   return (
     <React.Fragment>
+        <Toast ref={toast} />
+        <Loading show={showLoading} />
         <h1>Bootstrap Users</h1>
         <hr />
         <Toolbar className="p-mb-4" left={leftToolbarTemplate} />
@@ -270,7 +283,6 @@ export const BootstrapUsersPage: React.FC = () => {
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(managedObjectList, null, 2)}
         </pre>
-        <Loading show={showLoading} />
     </React.Fragment>
 );
 

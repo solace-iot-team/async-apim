@@ -12,7 +12,7 @@ import { TApiCallState } from "../utils/ApiCallState";
 import "./Pages.css";
 
 export const ManageUserAccountPage: React.FC = (props: any) => {
-  const componentName = 'ManageUserAccountPage';
+  // const componentName = 'ManageUserAccountPage';
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;

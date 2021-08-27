@@ -8,7 +8,7 @@ import { Config } from '../../Config';
 import { AuthContext } from '../AuthContextProvider/AuthContextProvider';
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { AuthHelper } from "../../auth//AuthHelper";
-import { EUIEmbeddableResourcePaths, EUIResourcePaths } from "../../utils/Globals";
+import { EUIDeveloperToolsResourcePaths, EUIEmbeddableResourcePaths, EUIResourcePaths } from "../../utils/Globals";
 
 import '../APComponents.css';
 import './SideBar.css';
@@ -56,6 +56,7 @@ export const SideBar: React.FC<ISideBarProps> = (props: ISideBarProps) => {
           items: [
             {
               label: 'Environment',
+              command: () => { navigateTo(EUIEmbeddableResourcePaths.AdminEnvironments); }
             }
           ]
         },
@@ -70,27 +71,27 @@ export const SideBar: React.FC<ISideBarProps> = (props: ISideBarProps) => {
         {
           label: 'Boostrap Organizations',
           disabled: false,
-          command: () => { navigateTo('/test/bootstrap/organizations'); }
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapOrganizations); }
         },
         {
           label: 'Boostrap Users',
           disabled: false,
-          command: () => { navigateTo('/test/bootstrap/users'); }
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapUsers); }
         },
         {
           label: 'Boostrap Connectors',
           disabled: false,
-          command: () => { navigateTo('/test/bootstrap/connectors'); }
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapConnectors); }
         },
         {
-          label: 'Roles',
+          label: 'Test Roles',
           disabled: false,
-          command: () => { navigateTo('/test/roles'); }
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestRoles); }
         },
         {
-          label: 'Contexts',
+          label: 'View Contexts',
           disabled: false,
-          command: () => { navigateTo('/test/contexts'); }
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.ViewContexts); }
         }
       ]
     };

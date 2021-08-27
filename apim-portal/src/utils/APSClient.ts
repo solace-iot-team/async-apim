@@ -131,8 +131,8 @@ export class APSLogin {
   private static className = 'APSLogin';
   private static path = 'login';
   public static doLogin = async (loginData: delete_APSLoginData): Promise<delete_APSLoginReturn> => {
-    const funcName: string = 'doLogin()';
-    const logName: string = `${APSLogin.className}.${funcName}`;
+    // const funcName: string = 'doLogin()';
+    // const logName: string = `${APSLogin.className}.${funcName}`;
     let response, responseJson;
     let apiResponse: delete_APSLoginReturn;
     try {
@@ -146,7 +146,7 @@ export class APSLogin {
           statusText: response.statusText,
           body: responseJson
         }
-        throw new APSApiError(apiResult, funcName);
+        throw new APSApiError(apiResult, 'login');
       }
       apiResponse = responseJson;
       return apiResponse;

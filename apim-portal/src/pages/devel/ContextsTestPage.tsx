@@ -5,9 +5,11 @@ import { UserContext } from '../../components/UserContextProvider/UserContextPro
 
 export const ContextsTestPage: React.FC = () => {
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-eanble @typescript-eslint/no-unused-vars */
 
   return (
     <React.Fragment>

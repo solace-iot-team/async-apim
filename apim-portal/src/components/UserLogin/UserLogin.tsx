@@ -69,11 +69,11 @@ const develTestLoginData2: APSUserLoginCredentials = {
   userPwd: 'org-0.org-4@aps.com'
 }
 
-// initialLoginData = develRootLoginData;
+initialLoginData = develRootLoginData;
 // initialLoginData = develCluserAdminLoginData;
 // initialLoginData = develOrganizationAdminLoginData;
 // initialLoginData = develNoOrgLoginData;
-initialLoginData = develMasterUserLoginData;
+// initialLoginData = develMasterUserLoginData;
 // initialLoginData = develTestLoginData2;
 // TODO: for testing only
 // ********************************************************************

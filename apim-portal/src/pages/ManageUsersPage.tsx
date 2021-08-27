@@ -12,7 +12,7 @@ import { EUIResourcePaths, GlobalElementStyles } from '../utils/Globals';
 import "./Pages.css";
 
 export const ManageUsersPage: React.FC = () => {
-  const componentName = 'ManageUsersPage';
+  // const componentName = 'ManageUsersPage';
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;

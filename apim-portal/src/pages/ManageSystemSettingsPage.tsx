@@ -8,7 +8,7 @@ import { EUIResourcePaths, GlobalElementStyles } from '../utils/Globals';
 import "./Pages.css";
 
 export const ManageSystemSettingsPage = () => { 
-  const componentName = "ManageSystemSettingsPage";
+  // const componentName = "ManageSystemSettingsPage";
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
@@ -17,6 +17,7 @@ export const ManageSystemSettingsPage = () => {
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
   }
@@ -27,6 +28,7 @@ export const ManageSystemSettingsPage = () => {
   const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
     setBreadCrumbLabelList(newBreadCrumbLableList);
   }
+  /* eslint-eanble @typescript-eslint/no-unused-vars */
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [

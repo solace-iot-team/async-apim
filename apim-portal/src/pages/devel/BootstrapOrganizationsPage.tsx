@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
 
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { Loading } from '../../components/Loading/Loading';
@@ -22,8 +23,25 @@ export const BootstrapOrganizationsPage: React.FC = () => {
   const componentName = 'BootstrapOrganizationsPage';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isReplaceManagedObjectInProgress, setIsReplaceManagedObjectInProgress] = React.useState<boolean>(false);
   const [showLoading, setShowLoading] = React.useState<boolean>(false);
+  const toast = React.useRef<any>(null);
+  const toastLifeSuccess: number = 3000;
+  const toastLifeError: number = 10000;
+
+  const onSuccess = (apiCallStatus: TApiCallState) => {
+    if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
+  }
+
+  const onError = (apiCallStatus: TApiCallState) => {
+    toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
+  }
+
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(apiCallStatus.success) onSuccess(apiCallStatus);
+      else onError(apiCallStatus);
+    }
+  }, [apiCallStatus]);
 
   const transformManagedObjectToApiObject = (managedObject: TManagedObject): TApiObject => {
     return managedObject;
@@ -51,7 +69,6 @@ export const BootstrapOrganizationsPage: React.FC = () => {
     const funcName = 'createOrReplaceManagedObject';
     const logName = `${componentName}.${funcName}()`;
     setApiCallStatus(null);
-    setIsReplaceManagedObjectInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `create/replace organization: ${managedObject.name}`);
     console.log(`${logName}: upserting ${JSON.stringify(managedObject, null, 2)}`);
     try { 
@@ -65,7 +82,6 @@ export const BootstrapOrganizationsPage: React.FC = () => {
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsReplaceManagedObjectInProgress(false);
     return callState;
   }
 
@@ -115,6 +131,8 @@ export const BootstrapOrganizationsPage: React.FC = () => {
 
   return (
     <React.Fragment>
+        <Toast ref={toast} />
+        <Loading show={showLoading} />
         <h1>Bootstrap Organizations Page</h1>
         <hr />
         <Toolbar className="p-mb-4" left={leftToolbarTemplate} />
@@ -124,7 +142,6 @@ export const BootstrapOrganizationsPage: React.FC = () => {
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(managedObjectTemplate, null, 2)}
         </pre>
-        <Loading show={showLoading} />
     </React.Fragment>
 );
 

@@ -9,8 +9,8 @@ import {
 export class APSOpenApiFormValidationRules {
   
   public static APSId_ValidationRules = (): any => {
-    const funcName = 'APSId_ValidationRules';
-    const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
+    // const funcName = 'APSId_ValidationRules';
+    // const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
     // console.log(`${logName}: $APSId = ${JSON.stringify($APSId, null, 2)}`);
     return {
       required: "Enter unique Id.",
@@ -30,8 +30,8 @@ export class APSOpenApiFormValidationRules {
   }
   
   public static APSHost_ValidationRules = (): any => {
-    const funcName = 'APSHost_ValidationRules';
-    const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
+    // const funcName = 'APSHost_ValidationRules';
+    // const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
     // console.log(`${logName}: $APSHost = ${JSON.stringify($APSHost, null, 2)}`);
     return {
       required: "Enter hostname or IP address.",
@@ -47,8 +47,8 @@ export class APSOpenApiFormValidationRules {
   }
 
   public static APSPort_ValidationRules = (): any => {
-    const funcName = 'APSPort_ValidationRules';
-    const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
+    // const funcName = 'APSPort_ValidationRules';
+    // const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
     // console.log(`${logName}: $APSPort = ${JSON.stringify($APSPort, null, 2)}`);
     return {
       required: "Enter Port Number.",
@@ -64,8 +64,8 @@ export class APSOpenApiFormValidationRules {
   }
   
   public static APSEmail_ValidationRules = (): any => {
-    const funcName = 'APSEmail_ValidationRules';
-    const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
+    // const funcName = 'APSEmail_ValidationRules';
+    // const logName = `${APSOpenApiFormValidationRules.name}.${funcName}()`;
     // console.log(`${logName}: $APSEmail = ${JSON.stringify($APSEmail, null, 2)}`);
     return {
       required: "Enter E-Mail.",
