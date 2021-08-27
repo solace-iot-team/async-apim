@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server-openapi-browser",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Async API Management Server - OpenAPI Client for Browser (Typescript)",
   "homepage": "https://github.com/solace-iot-team/apim-portal",
   "repository": {
