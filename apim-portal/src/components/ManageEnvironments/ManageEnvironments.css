@@ -1,0 +1,51 @@
+.ap-environments .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ap-environments .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.ap-environments .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.ap-environments .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ap-environments .ap-api-error {
+  border-color: #df2121;
+}
+.ap-environments .has-badge {
+  background-color: transparent;
+}
+
+.ap-environments .card form {
+  margin-top: 2rem;
+}
+.ap-environments .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .ap-environments .card {
+    width: 80%;
+  }
+}
+/* @media screen and (max-width: 640px) {
+  .ap-environments .card {
+    width: 100%;
+    min-width: 0;
+  }
+} */
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}

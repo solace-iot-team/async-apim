@@ -1,0 +1,61 @@
+version: "3.7"
+services:
+  mongodb:
+    container_name: admin-portal-apim-connector-mongodb
+    image : mongo:latest
+    volumes:
+      - ${ADMIN_PORTAL_APIM_CONNECTOR_MONGODB_DATA_MOUNT_PATH}:/data/db
+    restart: unless-stopped
+  apim-connector:
+    container_name: admin-portal-apim-connector
+    links:
+      - mongodb
+    image: "solaceiotteam/apim-connector-server:latest"
+    ports:
+      - 9090:3000
+    volumes:
+      - ${ADMIN_PORTAL_APIM_CONNECTOR_DATA_MOUNT_PATH}:/data
+    restart: unless-stopped
+    environment:
+      - DB_URL="mongodb://mongodb:27017/platform?retryWrites=true&w=majority"
+      - LOG_LEVEL=trace
+      - APP_ID="apim-connector"
+      - FILE_USER_REGISTRY=/data/organization_users.json
+      - PLATFORM_PORT=3000
+      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.preferred_username"
+      - AUTH_EXTRACTION_ORGS="$$.organization"
+      - AUTH_EXTRACTION_ROLES="$$.groups"
+      - AUTH_VERIFICATION_KEY=/data/dummy.pem
+      - AUTH_VERIFICATION_ISSUER="https://dev-1.okta.com/oauth2/default"
+      - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
+      - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
+      # - APIS_PROXY_MODE=false
+  demo-portal-server:
+    container_name: admin-portal-demo-portal
+    links:
+      - apim-connector
+    image: "solaceiotteam/apim-demo-portal:latest"
+    ports:
+      - 9091:8090
+    volumes:
+      - ${ADMIN_PORTAL_DEMO_PORTAL_DATA_MOUNT_PATH}:/data/apim-portal
+    restart: unless-stopped
+    environment:
+      #sammode=dev disables login screen
+      - sammode=prod
+      #url of apim-connector
+      - solace_spa_url=http://apim-connector:3000/v1
+      #user-name of platform api (as defined in organization_users.json)
+      - solace_spa_user=apim-portal-service-admin
+      #user-password of platform api (as defined in organization_users.json)
+      - solace_spa_password=Solace123!
+      #admin-name of platform api
+      - solace_spa_adminuser=apim-portal-service-admin
+      #admin-password of platform api
+      - solace_spa_adminpassword=Solace123!
+      #login name of portal
+      - solace_portal_login_user=portal_user
+      #password of portal
+      - solace_portal_login_password=portal_user_123!
+volumes:
+  portaldata:

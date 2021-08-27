@@ -1,0 +1,51 @@
+import { DataTableSortOrderType } from 'primereact/datatable';
+import { EAPSSortDirection } from '@solace-iot-team/apim-server-openapi-browser';
+
+export type TAPApiCallState = {
+  success: boolean;
+  isApiError?: boolean;
+  error?: any;
+  context: {
+    action: string;
+    userDetail: string;
+  }  
+}
+export type TAPUserMessage = {
+  success: boolean,
+  context: {
+    internalAction: string,
+    userAction: string,
+    userMessage: string
+  }
+}
+export type TAPOrganization = {
+  displayName: string,
+  name: TAPOrganizationId,
+  type: string,
+  solaceCloudToken?: string,
+  hasEnvironments: boolean,
+  hasApis: boolean,
+  hasApiProducts: boolean,
+  hasDevelopers: boolean,
+  hasApps: boolean
+}
+export type TAPOrganizationList = Array<TAPOrganization>;
+export type TAPOrganizationId = string;
+export type TAPOrganizationIdList = Array<TAPOrganizationId>;
+export type TAPEnvironmentName = string;
+
+export type TAPLazyLoadingTableParameters = {
+  first: number, // index of the first row to be displayed
+  rows: number, // number of rows to display per page
+  page: number,
+  sortField: string,
+  sortOrder: DataTableSortOrderType
+}
+
+export class APComponentsCommon {
+
+  public static transformTableSortDirectionToApiSortDirection = (tableSortDirection: DataTableSortOrderType): EAPSSortDirection => {
+    return tableSortDirection === 1 ? EAPSSortDirection.ASC : EAPSSortDirection.DESC;
+  }
+  
+}

@@ -1,0 +1,22 @@
+/* .user-account .p-button {
+  margin-right: 0.5rem;
+}
+
+.user-account .p-button-text {
+  font-weight: bold;
+} */
+
+.manage-user-account .card {
+  min-width: 450px;
+}
+.manage-user-account .card form {
+  margin-top: 2rem;
+}
+.manage-user-account .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .manage-user-account .card {
+    width: 80%;
+  }
+}

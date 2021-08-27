@@ -1,0 +1,55 @@
+.manage-connectors .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.manage-connectors .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.manage-connectors .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.manage-connectors .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manage-connectors .ap-api-error {
+  border-color: #df2121;
+}
+.manage-connectors .badge-active {
+  background-color: transparent;
+}
+.manage-connectors .card form {
+  margin-top: 2rem;
+}
+.manage-connectors .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .manage-connectors .card {
+    width: 80%;
+  }
+}
+/* @media screen and (max-width: 640px) {
+  .ap-environments .card {
+    width: 100%;
+    min-width: 0;
+  }
+} */
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}
+.manage-connectors .test-log {
+  display: flex;
+  align-items: left;
+  justify-content: left;
+}

@@ -1,0 +1,44 @@
+.manage-organizations .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.manage-organizations .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.manage-organizations .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.manage-organizations .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manage-organizations .ap-api-error {
+  border-color: #df2121;
+}
+.manage-organizations .has-badge {
+  background-color: transparent;
+}
+.manage-organizations .card form {
+  margin-top: 2rem;
+}
+.manage-organizations .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .manage-organizations .card {
+    width: 80%;
+  }
+}
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}
