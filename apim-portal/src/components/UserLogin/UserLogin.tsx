@@ -152,8 +152,6 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }, [loginFormData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[isLoginSuccessful]';
-    // const logName = `${componentName}.${funcName}()`;
     if(isLoginSuccessful === undefined) return;
     if(apiCallStatus === null) throw new Error('apiCallStatus must not be null');
     if(isLoginSuccessful) {

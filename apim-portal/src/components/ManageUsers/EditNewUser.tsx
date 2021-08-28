@@ -184,11 +184,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   const apiGetAvailableOrganizations = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetAvailableOrganizations';
     const logName = `${componentName}.${funcName}()`;
-    setApiCallStatus(null);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_AVAILABE_ORGANIZATIONS, 'retrieve list of organizations');
     try { 
-      const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations();
-      setAvailableOrganizationList(apiOrganizationList);
+      if(!configContext.connector) {
+        setAvailableOrganizationList([]);  
+        // TODO: create user message or warning to pop up and render in page
+        throw new Error('cannot get list of organizations (no active connector config)');
+      } else {
+        const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations();
+        setAvailableOrganizationList(apiOrganizationList);
+      }
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -266,8 +271,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    // const funcName = 'onSubmitManagedObjectForm';
-    // const logName = `${componentName}.${funcName}()`;
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -459,18 +462,30 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                       // console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
                       // console.log(`${logName}: availableOrganizationList=${JSON.stringify(availableOrganizationList)}`);
                       // console.log(`${logName}: selectItems = ${JSON.stringify(createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList))}`);
-                      return(
-                        <MultiSelect
-                          display="chip"
-                          value={field.value ? field.value : []} 
-                          options={createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList)} 
-                          onChange={(e) => field.onChange(e.value)}
-                          optionLabel="label"
-                          optionValue="value"
-                          // style={{width: '500px'}} 
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
+                      if(availableOrganizationList && availableOrganizationList.length > 0) {
+                        return(
+                          <MultiSelect
+                            display="chip"
+                            value={field.value ? field.value : []} 
+                            options={createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList)} 
+                            onChange={(e) => field.onChange(e.value)}
+                            optionLabel="label"
+                            optionValue="value"
+                            // style={{width: '500px'}} 
+                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                          />
+                        );
+                      } else {
+                        return(
+                          <InputText
+                            id={field.name}
+                            {...field}
+                            value='no organizations configured'
+                            disabled={true}
+                          />
+                        );
+                      }
+                    }}
                 />
                 <label htmlFor="memberOfOrganizations" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.memberOfOrganizations })}>Member of Organizations</label>
               </span>

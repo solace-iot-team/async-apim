@@ -17,8 +17,7 @@ services:
       - ./docker-volumes/apim-connector:/data
     restart: unless-stopped
     environment:
-      - DB_URL="mongodb://mongodb:27017/platform?retryWrites=true&w=majority"
-      # - DB_URL="mongodb://apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
+      - DB_URL="mongodb://apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
       - LOG_LEVEL=trace
       - APP_ID="apim-connector"
       - FILE_USER_REGISTRY=/data/organization_users.json
