@@ -17,7 +17,7 @@ export interface IUserContextProviderProps {
   children: any
 }
 
-const componentName: string = "UserContextProvider";
+// const componentName: string = "UserContextProvider";
 
 type UserContextAction = 
   | { type: 'SET_USER', user: APSUser }
@@ -29,8 +29,8 @@ type UserContextAction =
   | { type: 'default'};
 
 const UserContextReducer = (state: TUserContext, action: UserContextAction): TUserContext => {
-  const funcName: string = "UserContextReducer";
-  const logName: string = `${componentName}.${funcName}()`;
+  // const funcName: string = "UserContextReducer";
+  // const logName: string = `${componentName}.${funcName}()`;
   switch (action.type) {
     case 'CLEAR_USER_CONTEXT': 
       return initialUserContext;

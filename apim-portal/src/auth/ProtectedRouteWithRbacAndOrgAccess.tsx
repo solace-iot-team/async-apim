@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Redirect, RouteProps } from "react-router-dom";
+
 import { UserContext } from "../components/UserContextProvider/UserContextProvider";
 import { ProtectedRouteWithRbac } from "./ProtectedRouteWithRbac";
 import { EUIResourcePaths } from "../utils/Globals";
@@ -9,6 +10,7 @@ export interface IProtectedRouteWithRbacAndOrgAccessProps {}
 
 export const ProtectedRouteWithRbacAndOrgAccess: React.FC<IProtectedRouteWithRbacAndOrgAccessProps & RouteProps> = (props: IProtectedRouteWithRbacAndOrgAccessProps & RouteProps) => {
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   return (

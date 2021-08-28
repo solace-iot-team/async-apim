@@ -20,7 +20,9 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIResourcePaths.AdminPortal,
       EUIResourcePaths.ManageSystemUsers, 
-      EUIResourcePaths.LoginAs
+      EUIResourcePaths.LoginAs,
+      EUIResourcePaths.ManageSystemConfigConnectors,
+      EUIResourcePaths.ManageSystemConfigSettings,
     ]
   },
   {

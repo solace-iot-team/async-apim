@@ -67,16 +67,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
-  const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
+  // const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
   
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
-  }, [componentState]);
+  }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(!managedObjectId) return;
@@ -84,7 +84,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
       ) props.onBreadCrumbLabelList([managedObjectId]);
     else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectId]);
+  }, [componentState, managedObjectId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -99,7 +99,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         }
       } else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
   const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
@@ -273,7 +273,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         <ViewOrganization
           organizationId={managedObjectId}
           organizationDisplayName={managedObjectDisplayName}
-          reInitializeTrigger={reInitializeTrigger}
+          // reInitializeTrigger={reInitializeTrigger}
+          reInitializeTrigger={0}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

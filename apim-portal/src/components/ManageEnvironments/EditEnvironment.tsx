@@ -161,13 +161,13 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObject();
+    await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject) {
@@ -176,18 +176,18 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
       setSelectedExposedServiceEndpointList(managedObjectTableDataRow.exposedServiceEndpointList);  
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
     }
-  }, [managedObject])
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData])
+  }, [managedObjectFormData]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT) props.onSuccess(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
@@ -251,7 +251,7 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiUpdateManagedObject(managedObject);
+    await apiUpdateManagedObject(managedObject);
     props.onLoadingChange(false);
   }
 
@@ -259,8 +259,8 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
     return (selectedExposedServiceEndpointList.length > 0);
   }
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'onSubmitManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: submitting managedObjectFormData=${JSON.stringify(managedObjectFormData)}`);
     // console.log(`${logName}: submitting selectedExposedServiceEndpointList=${JSON.stringify(selectedExposedServiceEndpointList)}`);
     if(!isCustomValid()) return false;

@@ -12,7 +12,7 @@ import { AuthContext } from '../components/AuthContextProvider/AuthContextProvid
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 
 export const UserLoginPage: React.FC = () => {
-  const componentName = 'UserLoginPage';
+  // const componentName = 'UserLoginPage';
 
   const [userLoginCredentials, setUserLoginCredentials] = React.useState<TUserLoginCredentials>();
   const location = useLocation<TUserLoginCredentials>();
@@ -24,11 +24,11 @@ export const UserLoginPage: React.FC = () => {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-eanble @typescript-eslint/no-unused-vars */
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: location.state=${JSON.stringify(location.state)}`);
     if(location.state) {
       setUserLoginCredentials(location.state);
@@ -57,8 +57,8 @@ export const UserLoginPage: React.FC = () => {
   }
 
   const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
-    const funcName = 'onSelectOrganizationError';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'onSelectOrganizationError';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: apiCallStatus = ${JSON.stringify(apiCallStatus, null, 2)}`);
     let userMessage: string;
     if(apiCallStatus.context.action === SelectOrganizationCallStateActions.NO_CONNECTOR_CONFIG) userMessage = 'cannot select organization (no connector configured)';

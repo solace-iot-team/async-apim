@@ -62,8 +62,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
-      const funcName = '_transformManagedObjectToTableDataRow';
-      const logName = `${componentName}.${funcName}()`;
+      // const funcName = '_transformManagedObjectToTableDataRow';
+      // const logName = `${componentName}.${funcName}()`;
       return {
         ...managedObject,
         roleDisplayNameListAsString: ManageUsersCommon.getRoleDisplayNameListAsString(configContext, managedObject.apiObject.roles),
@@ -75,6 +75,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     });
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const loginAsHistory = useHistory<TUserLoginCredentials>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
@@ -129,37 +130,33 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const doLoadPage = async () => {
-    const funcName = 'doLoadPage';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: lazyLoadingTableParams = ${JSON.stringify(lazyLoadingTableParams, null, 2)}`);
-    // props.onLoadingChange(true);
+    // const funcName = 'doLoadPage';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: lazyLoadingTableParams = ${JSON.stringify(lazyLoadingTableParams, null, 2)}`);
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
     const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
     const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
     const searchWordList: string | undefined = globalFilter;
-
-    const apiCallState: TApiCallState = await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
-
+    await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
     setLazyLoadingTableIsLoading(false);
-    // props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doLoadPage();
-  }, [lazyLoadingTableParams]);
+  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     doLoadPage();
-  }, [globalFilter]);
+  }, [globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) props.onSuccess(apiCallStatus);
       else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
@@ -201,8 +198,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const actionBodyTemplate = (managedObject: TManagedObject) => {
-    const funcName = 'actionBodyTemplate';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'actionBodyTemplate';
+    // const logName = `${componentName}.${funcName}()`;
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
@@ -238,8 +235,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const renderManagedObjectDataTable = () => {
-    const funcName = 'renderManagedObjectDataTable';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderManagedObjectDataTable';
+    // const logName = `${componentName}.${funcName}()`;
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
       <div className="card">

@@ -44,7 +44,7 @@ import 'primeflex/primeflex.css';
 import './App.css';
 
 const App: React.FC = () => {
-  const componentName = 'App';
+  // const componentName = 'App';
   
   enum E_APP_STATE {
     ADMIN_PORTAL = "ADMIN_PORTAL",
@@ -54,7 +54,9 @@ const App: React.FC = () => {
   const [appState, setAppState] = React.useState<E_APP_STATE>(E_APP_STATE.ADMIN_PORTAL);
   const [showDeveloperPortal, setShowDeveloperPortal] = React.useState<boolean>(false);
   const [showAdminPortal, setShowAdminPortal] = React.useState<boolean>(false);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [showDeveloperTools, setShowDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [showEmbeddablePages, setShowEmbeddablePages] = React.useState<boolean>(Config.getUseEmbeddablePages());
   const history = useHistory();
 
@@ -62,7 +64,7 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     calculateShowStates(appState);
-  }, [appState]);
+  }, [appState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSwitchToDeveloperPortal = () => {
     setAppState(E_APP_STATE.DEVELOPER_PORTAL);

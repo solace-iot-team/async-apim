@@ -52,13 +52,13 @@ export const DeleteConnector: React.FC<IDeleteConnectorProps> = (props: IDeleteC
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSuccess(apiCallStatus);
-    }
-  }, [apiCallStatus]);
+    } 
+  }, [apiCallStatus]);  /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
   const doDeleteManagedObject = async () => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiDeleteManagedObject();
+    await apiDeleteManagedObject();
     props.onLoadingChange(false);
   }
 
@@ -72,8 +72,6 @@ export const DeleteConnector: React.FC<IDeleteConnectorProps> = (props: IDeleteC
   }
 
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
-    const funcName = 'renderDeleteManagedObjectDialogContent';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <p>Are you sure you want to delele connector</p>

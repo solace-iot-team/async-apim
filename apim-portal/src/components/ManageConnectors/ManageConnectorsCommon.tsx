@@ -43,8 +43,6 @@ export class ManageConnectorsCommon {
   }
 
   public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, healthCheckResult: THealthCheckResult): TViewManagedObject => {
-    const funcName = 'transformViewApiObjectToViewManagedObject';
-    const logName = `${ManageConnectorsCommon.name}.${funcName}()`;
     return {
       id: viewApiObject.connectorId,
       displayName: viewApiObject.displayName,

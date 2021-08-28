@@ -1,10 +1,13 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
+
 import { TApiCallState } from "../utils/ApiCallState";
 import { EUIResourcePaths, GlobalElementStyles } from '../utils/Globals';
+
 import "./Pages.css";
 
 export const ManageSystemSettingsPage = () => { 
@@ -28,7 +31,7 @@ export const ManageSystemSettingsPage = () => {
   const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
     setBreadCrumbLabelList(newBreadCrumbLableList);
   }
-  /* eslint-eanble @typescript-eslint/no-unused-vars */
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [

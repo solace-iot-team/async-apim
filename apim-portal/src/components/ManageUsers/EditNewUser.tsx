@@ -79,6 +79,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
 
@@ -203,7 +204,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     props.onLoadingChange(true);
     if(props.action === EAction.EDIT) {
       if(!props.userId) throw new Error(`${logName}: props.userId is undefined`);
-      let apiCallState: TApiCallState = await apiGetManagedObject(props.userId);
+      await apiGetManagedObject(props.userId);
     } else {
       setManagedObject(emptyManagedObject);
     }
@@ -213,17 +214,17 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject) {
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
     }
-  }, [managedObject])
+  }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData])
+  }, [managedObjectFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
@@ -239,7 +240,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         props.onEditSuccess(apiCallStatus);
       }
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('userId', managedObjectFormData.userId);
@@ -265,8 +266,8 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'onSubmitManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 

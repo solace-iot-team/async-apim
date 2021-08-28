@@ -26,7 +26,7 @@ export const ShowUserMessage: React.FC<IShowUserMessageProps> = (props: IShowUse
   React.useEffect(() => {
     if(userContext.userMessage) doShowUserMessage();
     dispatchUserContextAction({ type: 'CLEAR_USER_MESSAGE' });
-    }, [userContext.userMessage]);
+    }, [userContext.userMessage]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <React.Fragment>

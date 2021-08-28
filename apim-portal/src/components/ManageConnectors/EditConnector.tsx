@@ -93,7 +93,7 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_CONNECTOR, `update connector: ${props.connectorDisplayName}`);
     try { 
-      const apsConnector: APSConnector = await ApsConfigService.replaceApsConnector(props.connectorId, managedObject);
+      await ApsConfigService.replaceApsConnector(props.connectorId, transformManagedObjectToReplaceApiObject(managedObject));
     } catch(e) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -105,30 +105,30 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObject();
+    await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject) {
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
     }
-  }, [managedObject])
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData])
+  }, [managedObjectFormData]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_REPLACE_CONNECTOR) props.onSuccess(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('displayName', managedObjectFormData.displayName);
@@ -143,13 +143,11 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiReplaceManagedObject(managedObject);
+    await apiReplaceManagedObject(managedObject);
     props.onLoadingChange(false);
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 

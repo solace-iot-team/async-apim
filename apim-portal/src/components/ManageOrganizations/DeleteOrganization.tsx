@@ -53,12 +53,12 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSuccess(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
   const doDeleteManagedObject = async () => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiDeleteManagedObject();
+    await apiDeleteManagedObject();
     props.onLoadingChange(false);
   }
 
@@ -72,8 +72,6 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   }
 
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
-    const funcName = 'renderDeleteManagedObjectDialogContent';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <p>Deleting organization <b>{props.organizationDisplayName}</b> will also delete all it's content!</p>

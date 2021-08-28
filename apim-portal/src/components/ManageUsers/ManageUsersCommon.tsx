@@ -51,8 +51,8 @@ export class ManageUsersCommon {
   }
 
   public static transformViewApiObjectToViewManagedObject = (configContext: TAPConfigContext, viewApiObject: TViewApiObject): TViewManagedObject => {
-    const funcName = 'transformViewApiObjectToViewManagedObject';
-    const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    // const funcName = 'transformViewApiObjectToViewManagedObject';
+    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
     return {
       id: viewApiObject.userId,
       displayName: `${viewApiObject.profile.first} ${viewApiObject.profile.last}`,

@@ -12,17 +12,7 @@ export interface IApiCallStatusErrorProps {
 }
 
 export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IApiCallStatusErrorProps) => {
-  const componentName = 'ApiCallStatusError';
-
-  const doInitialize = () => {
-    const funcName = 'doInitialize';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: apiCallStatus=${JSON.stringify(props.apiCallStatus, null, 2)}`);
-  }
-
-  React.useEffect(() => {
-    doInitialize();
-  }, []);
+  // const componentName = 'ApiCallStatusError';
 
   return (
     <React.Fragment>

@@ -31,7 +31,8 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
 
   type TManagedObject = TViewManagedObject;
 
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const dt = React.useRef<any>(null);
@@ -55,23 +56,23 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObject();
+    await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     doInitialize();
-  }, [props.reInitializeTrigger]);
+  }, [props.reInitializeTrigger]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';

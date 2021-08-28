@@ -14,6 +14,7 @@ export const withAuthAndRbac = <P extends object>(
   options: WithAuthRbacOptions
 ): React.FC<P> => (props: P): JSX.Element => {
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
 
   const isAuthorized: boolean = AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, options.resourcePath);

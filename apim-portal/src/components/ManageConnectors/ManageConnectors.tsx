@@ -1,14 +1,16 @@
 
 import React from "react";
 import { useHistory } from 'react-router-dom';
+
+import { Button } from 'primereact/button';
+import { Toolbar } from 'primereact/toolbar';
+
+import { Loading } from "../Loading/Loading";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
 import { TApiCallState } from "../../utils/ApiCallState";
-import { Button } from 'primereact/button';
-import { Toolbar } from 'primereact/toolbar';
-import { Loading } from "../Loading/Loading";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
 import { EUIResourcePaths } from "../../utils/Globals";
 import { ListConnectors } from "./ListConnectors";
@@ -81,14 +83,19 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showSetConnectorActive, setShowSetConnectorActive] = React.useState<boolean>(false);
   const [showTestConnector, setShowTestConnector] = React.useState<boolean>(false);
-  const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
+  // const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
   
   // * Logout *
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const history = useHistory();
+
   const navigateTo = (path: string): void => { history.push(path); }
+  
   const doLogout = () => {
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
@@ -101,11 +108,11 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
-  }, [componentState]);
+  }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(!managedObjectDisplayName) return;
@@ -113,7 +120,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
         componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
       ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
     else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectDisplayName]);
+  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -128,7 +135,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
         }
       } else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
   const onViewManagedObject = (id: TManagedObjectId, displayName: string, isActive: boolean): void => {
@@ -250,13 +257,6 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const onSetConnectorActiveSuccess = (apiCallState: TApiCallState) => {
     doLogout();
     setConfigContextActiveConnector();
-    // setApiCallStatus(apiCallState);
-    // setReInitializeTrigger(reInitializeTrigger+1);
-    // setConnectorIsActive(true);
-    // if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-    //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    // }
-    // else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -402,7 +402,8 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
         <ViewConnector
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
-          reInitializeTrigger={reInitializeTrigger}
+          // reInitializeTrigger={reInitializeTrigger}
+          reInitializeTrigger={0}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

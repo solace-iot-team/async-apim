@@ -1,5 +1,3 @@
-// import { TAuthRoleList } from '../components/Components.types'
-// import { delete_EAPSAuthRole } from '../utils/APSClient.types';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { TAPAuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 import { CAPSAuthRoleNone, TAPRbacRole } from '../utils/APRbac';
@@ -36,8 +34,8 @@ export class AuthHelper {
   }
 
   public static isAuthorizedToAccessResource = (authorizedResourcePathListString: string, resourcePath: string): boolean => {
-    const funcName = 'isAuthorizedToAccessResource';
-    const logName = `${AuthHelper.name}.${funcName}()`;
+    // const funcName = 'isAuthorizedToAccessResource';
+    // const logName = `${AuthHelper.name}.${funcName}()`;
     // console.log(`${logName}: authorizedResourcePathListString=${authorizedResourcePathListString}, resourcePath=${resourcePath}`);
     return (authorizedResourcePathListString.match(resourcePath) !== null);
   }

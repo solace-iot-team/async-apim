@@ -88,7 +88,7 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
   // * useEffect Hooks *
   const doInitialize = async () => {
     setIsLoading(true);
-    let apiCallState: TApiCallState = await apiGetOrganizationServiceList();
+    await apiGetOrganizationServiceList();
     setIsLoading(false);
   }
 
@@ -96,16 +96,16 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
     const funcName = 'useEffect';
     const logName = `${componentName}.${funcName}()`;
     if(props.organizationName === '') throw new Error(`${logName}: props.organizationName is empty`);
-    doInitialize();
-  }, []);
+    doInitialize(); 
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     props.onLoadingChange(isLoading);
-  }, [isLoading]);
+  }, [isLoading]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(selectedOrganizationServiceTableDataRow) props.onSelectOrganizationService(transformTableDataRowToOrganizationService(selectedOrganizationServiceTableDataRow));
-  }, [selectedOrganizationServiceTableDataRow]);
+  }, [selectedOrganizationServiceTableDataRow]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -118,7 +118,7 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
         }
       } else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
     setOrganizationServiceListDataTableGlobalFilter(event.currentTarget.value);

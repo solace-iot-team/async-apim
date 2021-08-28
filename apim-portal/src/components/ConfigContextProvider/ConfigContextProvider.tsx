@@ -4,7 +4,7 @@ import { APSConnector } from "@solace-iot-team/apim-server-openapi-browser";
 import { TAPRbacRoleList, APRbac } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
 
-const componentName: string = "ConfigContextProvider";
+// const componentName: string = "ConfigContextProvider";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
@@ -22,8 +22,8 @@ type ConfigContextAction =
   | { type: 'default'};
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
-  const funcName: string = `configContextReducer`;
-  const logName: string = `${componentName}.${funcName}()`
+  // const funcName: string = `configContextReducer`;
+  // const logName: string = `${componentName}.${funcName}()`
   switch (action.type) {
     case 'SET_CONFIG_RBAC_ROLE_LIST':
       return {
@@ -57,8 +57,6 @@ export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (pro
   const [state, dispatch] = React.useReducer(configContextReducer, initialConfigContext);
 
   const getConfigRbacRoleList = async() => {
-    const funcName: string = `getConfigRbacRoleList`;
-    const logName: string = `${componentName}.${funcName}()`
     const configRbacRoleList: TAPRbacRoleList = APRbac.getAPRbacRoleList();
     dispatch( { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: configRbacRoleList });
   }
@@ -75,7 +73,7 @@ export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (pro
 
   React.useEffect(() => {
     doInitialize()
-  }, []);  
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <ConfigContext.Provider value={[state, dispatch]}>

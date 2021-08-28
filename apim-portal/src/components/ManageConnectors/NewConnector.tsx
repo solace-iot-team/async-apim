@@ -72,9 +72,7 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
-
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
-  // const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
   // * Api Calls *
   const apiCreateManagedObject = async(managedObject: TManagedObject): Promise<TApiCallState> => {
@@ -95,10 +93,8 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    const funcName = 'useEffect[]';
-    const logName = `${componentName}.${funcName}()`;
     doPopulateManagedObjectFormDataValues(emptyManagedObjectFormData);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
@@ -111,7 +107,7 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
       }
       else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
@@ -128,7 +124,7 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiCreateManagedObject(managedObject);
+    await apiCreateManagedObject(managedObject);
     props.onLoadingChange(false);
   }
 
@@ -137,9 +133,6 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
-    // setIsFormSubmitted(true);
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -167,8 +160,6 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
   }
 
   const renderManagedObjectCreateForm = () => {
-    const funcName = 'renderManagedObjectCreateForm';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <div className="card">
         <div className="p-fluid">

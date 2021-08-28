@@ -77,8 +77,8 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   }
 
   const onTestConnector = () => {
-    const funcName = 'onTestConnector';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'onTestConnector';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: apsConnector = ${JSON.stringify(apsConnector, null, 2)}`);
     setHealthCheckResult(undefined);
     setShowTestDialog(true);
@@ -89,26 +89,25 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
 
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObject();
+    await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
  
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(apsConnector) {
       onTestConnector();
     }
-  }, [apsConnector]);
-
+  }, [apsConnector]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
   const onTestDialogClose = () => {
@@ -120,8 +119,6 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   }
 
   const renderTestDialogContent = (): JSX.Element => {
-    const funcName = 'renderTestDialogContent';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <h3>{apsConnector?.displayName}:</h3>

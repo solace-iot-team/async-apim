@@ -25,7 +25,7 @@ export interface IEditUserProfileProps {
 }
 
 export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUserProfileProps) => {
-  const componentName = 'EditUserProfile';
+  // const componentName = 'EditUserProfile';
 
   type TManagedObjectFormData = TManagedObject;
 
@@ -58,8 +58,6 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
 
   // * useEffect Hooks *
   const doInitialize = async () => {
-    const funcName = 'doInitialize';
-    const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.user.userId);
     setApiCallStatus(apiCallResult.apiCallState);
@@ -69,34 +67,32 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if(managedObject) {
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
     }
-  }, [managedObject])
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(updatedManagedObject) {
       dispatchUserContextAction( { type: 'SET_USER', user: updatedManagedObject });
     }
-  }, [updatedManagedObject])
+  }, [updatedManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData])
+  }, [managedObjectFormData]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${componentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER) {
         props.onSuccess(apiCallStatus);
       }
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('userId', managedObjectFormData.userId);
@@ -106,8 +102,6 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
   }
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiUpdateManagedObject(managedObject.userId, transformManagedObjectToUpdateApiObject(managedObject));
     setApiCallStatus(apiCallResult.apiCallState);
@@ -116,8 +110,6 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -152,8 +144,6 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <div className="card">
         <div className="p-fluid">

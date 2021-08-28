@@ -19,8 +19,10 @@ export interface IDeveloperPortalSideBarProps {
 export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (props: IDeveloperPortalSideBarProps) => {
 
   const history = useHistory();
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const navigateTo = (path: string): void => { history.push(path); }
 

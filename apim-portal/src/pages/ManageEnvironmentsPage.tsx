@@ -16,6 +16,7 @@ import "./Pages.css";
 export const ManageEnvironmentsPage = () => {
   const componentName="ManageEnvironmentsPage";
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
   
   const toast = React.useRef<any>(null);
@@ -63,7 +64,7 @@ export const ManageEnvironmentsPage = () => {
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
     setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
-  }, []);
+  }, [userContext]);
 
   return (
     <div className="ap-pages">

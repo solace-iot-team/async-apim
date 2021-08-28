@@ -39,6 +39,7 @@ const emptyLoginData: APSUserLoginCredentials = {
 var initialLoginData: APSUserLoginCredentials = emptyLoginData;
 // ********************************************************************
 // TODO: for testing only
+/* eslint-disable @typescript-eslint/no-unused-vars */
 const develRootLoginData: APSUserLoginCredentials = {
   userId: 'root.admin@aps.com',
   userPwd: 'admin123!'
@@ -69,12 +70,14 @@ const develTestLoginData2: APSUserLoginCredentials = {
   userPwd: 'org-0.org-4@aps.com'
 }
 
-initialLoginData = develRootLoginData;
+// initialLoginData = develRootLoginData;
 // initialLoginData = develCluserAdminLoginData;
 // initialLoginData = develOrganizationAdminLoginData;
 // initialLoginData = develNoOrgLoginData;
-// initialLoginData = develMasterUserLoginData;
+initialLoginData = develMasterUserLoginData;
 // initialLoginData = develTestLoginData2;
+
+/* eslint-enable @typescript-eslint/no-unused-vars */
 // TODO: for testing only
 // ********************************************************************
 
@@ -87,9 +90,11 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [loggedInUser, setLoggedInUser] = React.useState<APSUser>();
   const [showLoginForm, setShowLoginForm] = React.useState<boolean>(false);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const loginUseForm = useForm<APSUserLoginCredentials>();
 
@@ -134,7 +139,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     if(props.userCredentials) doAutoLogin(props.userCredentials);
     else setShowLoginForm(true);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     if(loginFormData) {
@@ -144,11 +149,11 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
       loginUseForm.setValue('userId', '');
       loginUseForm.setValue('userPwd', '');
     }
-  }, [loginFormData]);
+  }, [loginFormData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    const funcName = 'useEffect[isLoginSuccessful]';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'useEffect[isLoginSuccessful]';
+    // const logName = `${componentName}.${funcName}()`;
     if(isLoginSuccessful === undefined) return;
     if(apiCallStatus === null) throw new Error('apiCallStatus must not be null');
     if(isLoginSuccessful) {
@@ -166,7 +171,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
       dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: AuthHelper.getEmptyAuthContext() });
       props.onError(apiCallStatus);
     }
-  }, [isLoginSuccessful]);
+  }, [isLoginSuccessful]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = (apsUserLoginCredentials: APSUserLoginCredentials) => {
     setLoginFormData(apsUserLoginCredentials);

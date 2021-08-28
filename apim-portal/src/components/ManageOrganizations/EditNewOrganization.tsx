@@ -14,7 +14,6 @@ import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageOrganizationsCommon, TManagedObjectId } from "./ManageOrganizationsCommon";
 import { APConnectorFormValidationRules } from '../../utils/APConnectorOpenApiFormValidationRules';
 import { 
-  OpenAPI as ConnectorOpenAPI, 
   AdministrationService, 
   Organization
 } from '@solace-iot-team/platform-api-openapi-client-fe';
@@ -159,7 +158,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     if(props.action === EAction.EDIT) {
       if(!props.organizationId) throw new Error(`${logName}: action=EDIT, props.organizationId is undefined`);
       if(!props.organizationDisplayName) throw new Error(`${logName}: action=EDIT, props.organizationDisplayName is undefined`);
-      let apiCallState: TApiCallState = await apiGetManagedObject(props.organizationId, props.organizationDisplayName);
+      await apiGetManagedObject(props.organizationId, props.organizationDisplayName);
     } else {
       setManagedObject(emptyManagedObject);
     }
@@ -168,17 +167,17 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject) {
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
     }
-  }, [managedObject])
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData])
+  }, [managedObjectFormData]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
@@ -194,7 +193,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
         props.onEditSuccess(apiCallStatus);
       }
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('apiObject.name', managedObjectFormData.apiObject.name);
@@ -216,8 +215,6 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -233,10 +230,10 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     return fieldError && <small className="p-error">{fieldError.message}</small>    
   }
 
-  const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
-    let _fieldError: any = fieldErrorList;
-    return _fieldError && <small className="p-error">{_fieldError.message}</small>;
-  }
+  // const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
+  //   let _fieldError: any = fieldErrorList;
+  //   return _fieldError && <small className="p-error">{_fieldError.message}</small>;
+  // }
 
   const managedObjectFormFooterRightToolbarTemplate = () => {
     const getSubmitButtonLabel = (): string => {
@@ -258,8 +255,6 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card">

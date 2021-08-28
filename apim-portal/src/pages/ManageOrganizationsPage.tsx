@@ -12,7 +12,7 @@ import { EUIResourcePaths } from '../utils/Globals';
 import "./Pages.css";
 
 export const ManageOrganizationsPage = () => {
-  const componentName = 'ManageOrganizationsPage';
+  // const componentName = 'ManageOrganizationsPage';
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 1000;

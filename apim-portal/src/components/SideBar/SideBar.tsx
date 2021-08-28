@@ -20,7 +20,9 @@ export interface ISideBarProps {
 export const SideBar: React.FC<ISideBarProps> = (props: ISideBarProps) => {
 
   const history = useHistory();
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   const navigateTo = (path: string): void => { history.push(path); }

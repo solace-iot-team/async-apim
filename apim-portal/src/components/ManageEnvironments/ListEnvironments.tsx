@@ -78,20 +78,20 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObjectList();
+    await apiGetManagedObjectList();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) props.onSuccess(apiCallStatus);
       else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
@@ -134,8 +134,6 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
     );
   }
   const actionBodyTemplate = (managedObject: TManagedObject) => {
-    const funcName = 'actionBodyTemplate';
-    const logName = `${componentName}.${funcName}()`;
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
@@ -146,11 +144,8 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   }
 
   const renderManagedObjectDataTable = () => {
-    const funcName = 'renderManagedObjectDataTable';
-    const logName = `${componentName}.${funcName}()`;
-    
-    const rowExpansionTemplatePubSubService = (managedObject: TManagedObject) => {
 
+    const rowExpansionTemplatePubSubService = (managedObject: TManagedObject) => {
       const dataTableList = [managedObject];
       let exposedServiceEndpointsExpandedRows: any = {};
       exposedServiceEndpointsExpandedRows[`${dataTableList[0].id}`] = true;

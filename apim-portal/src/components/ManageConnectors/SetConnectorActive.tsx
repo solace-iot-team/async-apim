@@ -51,12 +51,12 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSuccess(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
   const doSetConnectorActive = async () => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiSetConnectorActive();
+    await apiSetConnectorActive();
     props.onLoadingChange(false);
   }
 
@@ -70,8 +70,6 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
   }
 
   const renderManagedObjectDialogContent = (): JSX.Element => {
-    const funcName = 'renderManagedObjectDialogContent';
-    const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <p>Are you sure you want to set connector to active?</p>

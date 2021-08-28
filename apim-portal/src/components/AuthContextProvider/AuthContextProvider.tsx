@@ -1,8 +1,8 @@
 import React from "react";
-import { AuthHelper } from "../../auth/AuthHelper";
-import { TAPRbacRoleList } from "../../utils/APRbac";
 
-const componentName: string = "AuthContextProvider";
+import { AuthHelper } from "../../auth/AuthHelper";
+
+// const componentName: string = "AuthContextProvider";
 
 export interface IAuthContextProviderProps {
   children: any
@@ -21,8 +21,8 @@ type AuthContextAction =
   | { type: 'default'};
 
 const authContextReducer = (state: TAPAuthContext, action: AuthContextAction): TAPAuthContext => {
-  const funcName: string = `authContextReducer`;
-  const logName: string = `${componentName}.${funcName}()`
+  // const funcName: string = `authContextReducer`;
+  // const logName: string = `${componentName}.${funcName}()`
   switch (action.type) {
     case 'SET_AUTH_CONTEXT':
       // console.log(`${logName}: SET_AUTH_CONTEXT with ${JSON.stringify(action.authContext)}`);

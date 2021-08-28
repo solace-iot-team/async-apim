@@ -44,8 +44,6 @@ export class ManageOrganizationsCommon {
   }
 
   public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, hasInfo?: TViewManagedObjectHasInfo): TViewManagedObject => {
-    const funcName = 'transformViewApiObjectToViewManagedObject';
-    const logName = `${ManageOrganizationsCommon.name}.${funcName}()`;
     return {
       type: 'solace-cloud',
       id: viewApiObject.name,
@@ -91,6 +89,7 @@ export class ManageOrganizationsCommon {
   }
 
   public static viewManagedObjectHasContent = (viewManagedObject: TViewManagedObject) => {
+    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
     const { hasInfo, ...rest } = viewManagedObject;
     if( hasInfo ) {
       return (hasInfo.hasEnvironments || hasInfo.hasApis || hasInfo.hasApiProducts || hasInfo.hasDevelopers || hasInfo.hasApps)

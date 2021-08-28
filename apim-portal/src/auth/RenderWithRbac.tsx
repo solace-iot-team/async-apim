@@ -8,10 +8,11 @@ export interface IRenderWithRbacProps {
   children: any;
 }
 
-const componentName: string = "RenderWithRbac";
+// const componentName: string = "RenderWithRbac";
 
 export const RenderWithRbac: React.FC<IRenderWithRbacProps> = (props: IRenderWithRbacProps) => {
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
 
   const isAuthorized: boolean = AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, props.resourcePath);

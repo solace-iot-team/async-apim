@@ -10,7 +10,7 @@ import { EUIResourcePaths, GlobalElementStyles } from '../utils/Globals';
 import "./Pages.css";
 
 export const ManageConnectorsPage = () => { 
-  const componentName = "ManageConnectorsPage";
+  // const componentName = "ManageConnectorsPage";
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;

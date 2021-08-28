@@ -53,23 +53,23 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    let apiCallState: TApiCallState = await apiGetManagedObject();
+    await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     doInitialize();
-  }, [props.reInitializeTrigger]);
+  }, [props.reInitializeTrigger]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';

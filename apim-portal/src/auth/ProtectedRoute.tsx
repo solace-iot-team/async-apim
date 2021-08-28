@@ -8,7 +8,7 @@ export interface IProtectedRouteProps {}
 
 export const ProtectedRoute: React.FC<IProtectedRouteProps & RouteProps> = (props: IProtectedRouteProps & RouteProps) => {
 
-  const _rp: string = props.path as string;
+  // const _rp: string = props.path as string;
 
   return (
     <Route

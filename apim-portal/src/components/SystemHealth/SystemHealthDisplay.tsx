@@ -20,7 +20,7 @@ export interface ISystemHealthProps {
 }
 
 export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystemHealthProps) => {
-  const componentName = 'SystemHealthDisplay';
+  // const componentName = 'SystemHealthDisplay';
 
   const connectorHealthCheckResultNotPerformed: THealthCheckResult = {
     healthCheckLog: [{action: 'check connector', success: false}],
@@ -30,10 +30,12 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     performed: false, success: false
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const history = useHistory();
   const op = React.useRef<any>(null);
-  const [delay, setDelay] = React.useState<number>(30000);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [delay, setDelay] = React.useState<number>(30000); 
   const [count, setCount] = React.useState<number>(0);
   const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<THealthCheckResult>(connectorHealthCheckResultNotPerformed);
   const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<THealthCheckSummary>(systemHealthCheckSummaryNotPerformed);
@@ -41,7 +43,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   React.useEffect(() => {
     setCount(count + 1);
     doSystemHealthCheck();
-  }, [configContext]);
+  }, [configContext]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   useInterval( () => 
     {
@@ -52,8 +54,8 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   );
 
   const doSystemHealthCheck = async () => {  
-    const funcName = 'doSystemHealthCheck';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doSystemHealthCheck';
+    // const logName = `${componentName}.${funcName}()`;
     let _connectorHealthCheckResult: THealthCheckResult = connectorHealthCheckResultNotPerformed;
     if(configContext.connector) {
       try {
@@ -71,8 +73,8 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   }
 
   const renderConnectorHealthInfo = () => {
-    const funcName = 'renderConnectorHealthInfo';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderConnectorHealthInfo';
+    // const logName = `${componentName}.${funcName}()`;
 
     let connectorName: string = 'unknown';
     let success: boolean | undefined = undefined;

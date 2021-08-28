@@ -75,13 +75,14 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     return selectObjectList; 
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   // const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>([]);
   const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>();
   const [selectObjectForSelectList, setSelectObjectForSelectList] = React.useState<TSelectObjectForSelectList>([]);
-  const [showLoading, setShowLoading] = React.useState<boolean>(false);
+  // const [showLoading, setShowLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetSelectObjectListInProgress, setIsGetSelectObjectListInProgress] = React.useState<boolean>(false);
   const [selectedObject, setSelectedObject] = React.useState<TSelectObject>();
@@ -109,8 +110,8 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
 
   // * Custom Logic *
   const doInitialize = async () => {
-    const funcName = 'doInitialize';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doInitialize';
+    // const logName = `${componentName}.${funcName}()`;
     if(!configContext.connector) {
       const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.NO_CONNECTOR_CONFIG, 'no connector config found');
       props.onError(callState);
@@ -120,15 +121,15 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       props.onSuccess();
       return;
     }
-    setShowLoading(true);
+    // setShowLoading(true);
     const apiCallState: TApiCallState = await apiGetSelectObjectList();
-    setShowLoading(false);
+    // setShowLoading(false);
     setApiCallStatus(apiCallState);
   }
 
   const doProcessSelectedObject = (selectedObject: TSelectObject) => {
-    const funcName = 'doProcessSelectedObject';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doProcessSelectedObject';
+    // const logName = `${componentName}.${funcName}()`;
     if(selectObjectList) dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: transformSelectObjectListToUserContextAvailableOrganizationNameList(selectObjectList)})
     dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_NAME', currentOrganizationName: selectedObject.name });
     props.onSuccess();
@@ -138,17 +139,17 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
 
   React.useEffect(() => {
     doInitialize();
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'useEffect';
+    // const logName = `${componentName}.${funcName}()`;
     if(!selectObjectList) return;
     if(selectObjectList.length === 0) {
       dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: transformSelectObjectListToUserContextAvailableOrganizationNameList(selectObjectList)})
@@ -160,12 +161,12 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       return;
     }
     if(selectObjectList.length > 1) setSelectObjectForSelectList(transformSelectObjectListToSelectObjectForSelectList(selectObjectList));
-  }, [selectObjectList])
+  }, [selectObjectList]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(selectedObject) doProcessSelectedObject(selectedObject);
-  }, [selectedObject])
-
+  }, [selectedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
+ 
 
   // * Select UI *
   const dt = React.useRef<any>(null);
@@ -175,8 +176,8 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }  
 
   const renderSelectObjectList = () => {
-    const funcName = 'renderSelectObjectList';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderSelectObjectList';
+    // const logName = `${componentName}.${funcName}()`;
     return (
       <div className="card">
         <DataTable

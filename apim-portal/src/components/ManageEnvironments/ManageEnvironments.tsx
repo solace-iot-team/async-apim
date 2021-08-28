@@ -74,11 +74,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  }, []);
-
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+ 
   React.useEffect(() => {
     calculateShowStates(componentState);
-  }, [componentState]);
+  }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(!managedObjectDisplayName) return;
@@ -86,7 +86,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
         componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
       ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
     else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectDisplayName]);
+  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -101,7 +101,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
         }
       } else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
   const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {

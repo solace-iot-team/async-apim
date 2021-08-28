@@ -108,7 +108,7 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
     const logName = `${componentName}.${funcName}()`;
     if(props.organizationName === '') throw new Error(`${logName}: props.organizationName is empty`);
     doPopulateManagedObjectFormDataValues(emptyManagedObjectFormData);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
@@ -121,7 +121,7 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
       }
       else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onListOrganizationServicesSuccess = (apiCallState: TApiCallState) => {
     // do nothing
@@ -135,8 +135,6 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
   }
 
   const renderEndpointSelectionTable = () => {
-    const funcName = 'renderEndpointSelectionTable';
-    const logName = `${componentName}.${funcName}()`;
     if(!selectedOrganizationService) return;
     const _availableServiceEndpointList: TServiceEndpointList = transformOrganizationServiceToEndpointList(selectedOrganizationService);
     return (  
@@ -163,7 +161,7 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     props.onLoadingChange(true);
-    const apiCallState: TApiCallState = await apiCreateManagedObject(managedObject);
+    await apiCreateManagedObject(managedObject);
     props.onLoadingChange(false);
   }
 

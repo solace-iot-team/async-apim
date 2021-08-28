@@ -44,13 +44,12 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
       currentState: newState
     });
   }
-  const setPreviousComponentState = () => {
-    setComponentState({
-      previousState: componentState.currentState,
-      currentState: componentState.previousState
-    });
-  }
-
+  // const setPreviousComponentState = () => {
+  //   setComponentState({
+  //     previousState: componentState.currentState,
+  //     currentState: componentState.previousState
+  //   });
+  // }
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -62,11 +61,11 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_PROFILE);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    calculateShowStates(componentState);
-  }, [componentState]);
+    calculateShowStates(componentState); 
+  }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -79,7 +78,7 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
         }
       } else props.onError(apiCallStatus);
     }
-  }, [apiCallStatus]);
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
 
   const onManageUserProfile = (): void => {
