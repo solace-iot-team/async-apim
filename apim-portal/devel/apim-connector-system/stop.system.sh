@@ -5,8 +5,10 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 ############################################################################################################################
 # Settings
 
-  apimConnectorSystemProjectName="admin-portal-connector-system"
+  apimConnectorSystemProjectName="apim-portal-connector-system"
   dockerComposeFile="$scriptDir/docker.compose.yml"
+
+  export APIM_PORTAL_CONNECTOR_CONTAINER_NAME="apim-portal-connector"
 
 ############################################################################################################################
 # Run

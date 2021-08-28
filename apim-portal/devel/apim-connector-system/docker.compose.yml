@@ -1,23 +1,24 @@
 version: "3.7"
 services:
-  mongodb:
-    container_name: admin-portal-apim-connector-mongodb
+  apim-connector-mongodb:
+    container_name: apim-portal-connector-mongodb
     image : mongo:latest
     volumes:
-      - ${ADMIN_PORTAL_APIM_CONNECTOR_MONGODB_DATA_MOUNT_PATH}:/data/db
+      - mongodbdata:/data/db
     restart: unless-stopped
   apim-connector:
-    container_name: admin-portal-apim-connector
+    container_name: ${APIM_PORTAL_CONNECTOR_CONTAINER_NAME}
     links:
-      - mongodb
+      - apim-connector-mongodb
     image: "solaceiotteam/apim-connector-server:latest"
     ports:
       - 9090:3000
     volumes:
-      - ${ADMIN_PORTAL_APIM_CONNECTOR_DATA_MOUNT_PATH}:/data
+      - ./docker-volumes/apim-connector:/data
     restart: unless-stopped
     environment:
       - DB_URL="mongodb://mongodb:27017/platform?retryWrites=true&w=majority"
+      # - DB_URL="mongodb://apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
       - LOG_LEVEL=trace
       - APP_ID="apim-connector"
       - FILE_USER_REGISTRY=/data/organization_users.json
@@ -30,15 +31,15 @@ services:
       - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
-  demo-portal-server:
-    container_name: admin-portal-demo-portal
+  apim-demo-portal:
+    container_name: apim-portal-demo-portal
     links:
       - apim-connector
     image: "solaceiotteam/apim-demo-portal:latest"
     ports:
       - 9091:8090
     volumes:
-      - ${ADMIN_PORTAL_DEMO_PORTAL_DATA_MOUNT_PATH}:/data/apim-portal
+      - ./docker-volumes/demo-portal:/data/apim-demo-portal
     restart: unless-stopped
     environment:
       #sammode=dev disables login screen
@@ -58,4 +59,4 @@ services:
       #password of portal
       - solace_portal_login_password=portal_user_123!
 volumes:
-  portaldata:
+  mongodbdata:
