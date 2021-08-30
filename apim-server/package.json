@@ -2,9 +2,8 @@
   "name": "@solace-iot-team/apim-server",
   "version": "0.0.1",
   "description": "Async API Management Server",
-  "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/server/index.js | pino-pretty",
     "build": "ts-node dev-build.ts && ts-node build.ts",
     "dev:build": "ts-node dev-build.ts",
     "dev": "nodemon server/index.ts | pino-pretty",

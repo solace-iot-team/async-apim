@@ -27,11 +27,16 @@ const corsOptions: cors.CorsOptions = {
 
 export class ExpressServer {
   private config: TExpressServerConfig;
+  private root: string;
   private routes: (app: Application, apiBase: string) => void;
 
   constructor(config: TExpressServerConfig) {
+    const funcName = 'constructor';
+    const logName = `${ExpressServer.name}.${funcName}()`;
+
     this.config = config;
-    const root = path.normalize(__dirname + '/../..');
+    this.root = path.normalize(__dirname + '/../..');
+
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
     app.use(cors(corsOptions));
@@ -42,11 +47,15 @@ export class ExpressServer {
       })
     );
     app.use(cookieParser(this.config.serverSecret));
-    app.use(express.static(`${root}/public`));
-
+    // serve the portal/index.html
+    // goes to next one if it doesn't exist
+    app.use(express.static(`${this.root}/portal`));
+    // serve public/index.html
+    app.use(express.static(`${this.root}/public`));
+    // serve server open api spec file
     const apiSpecFile = path.join(__dirname, 'api.yml');
     app.use(this.config.openApiSpecPath, express.static(apiSpecFile));
-
+    // validate responses 
     const validateResponseOpts: ValidateResponseOpts = {      
       onError: ( (err, body, req) => {
         const logName = `${ExpressServer.name}.OpenApiValidator.validateResponse.onError()`;
@@ -71,11 +80,42 @@ export class ExpressServer {
   router(routes: (app: Application, apiBase: string) => void): ExpressServer {
     
     routes(app, this.config.apiBase);
+
+    // // send portal
+    // app.use('/', (req, res, _next) => {
+
+    //   const funcName = 'sendPortal';
+    //   const logName = `${ExpressServer.name}.${funcName}()`;
+    //   const requestInfo = ServerLogger.getRequestInfo(req);
+    //   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal', details: requestInfo }));
+
+
+    //   // throws error if not found
+    //   // "ENOENT: no such file or directory, stat '/Users/rjgu/Dropbox/Solace-Contents/Solace-IoT-Team/apim-dev/async-apim/apim-server/portal/index.html'"
+
+    //   // better user error: no portal installed
+
+    //   res.sendFile(`${this.root}/portal/index.html`);
+
+    //   // throw a nice error here
+
+    //   // res.sendFile(fileName, options, function (err) {
+    //   //   if (err) {
+    //   //     next(err)
+    //   //   } else {
+    //   //     console.log('Sent:', fileName)
+    //   //   }
+    //   // })
+
+
+    // });
     // catch all:
     app.use('*', ApsCatchAllController.all);
     app.use(errorHandler);
     // app.use('/auth', OIDCDIscoveryRouter);
     // app.options('*', cors(corsOptions));
+
+
     return this;
   }
 

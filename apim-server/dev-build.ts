@@ -7,6 +7,7 @@ import path from 'path';
 // import OpenAPI from 'openapi-typescript-codegen';
 const OpenAPI = require('openapi-typescript-codegen');
 const scriptName: string = path.basename(__filename);
+const scriptDir: string = path.dirname(__filename);
 // files & dirs
 const inputApiSpecFile = './server/common/api.yml';
 const outputTypesDir = './server/@types';
@@ -38,14 +39,18 @@ const loadYamlFileAsJson = (apiSpecPath: string): any => {
     return yaml.load(b.toString());
 }
 const prepare = () => {
-    if(s.rm('-rf', outputTypesDir).code !== 0) process.exit(1);
-    if(s.rm('-rf', outputOpenApiNodeClientDir).code !== 0) process.exit(1);
-    if(s.rm('-rf', outputOpenApiBrowserClientDir).code !== 0) process.exit(1);
-    if(s.rm('-f', outputAboutFile).code !== 0) process.exit(1);
+  const funcName = 'prepare';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
+  if(s.rm('-rf', outputTypesDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', outputOpenApiNodeClientDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', outputOpenApiBrowserClientDir).code !== 0) process.exit(1);
+  if(s.rm('-f', outputAboutFile).code !== 0) process.exit(1);
+  console.log(`${logName}: success.`);
 }
 const buildAbout = (): TAbout => {
   const funcName = 'buildAbout';
-  const logName = `${scriptName}.${funcName}()`;
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: generating about.json ...`);
   let apiSpec = loadYamlFileAsJson(inputApiSpecFile);
   let sha1 = s.exec('git rev-parse HEAD').stdout.slice(0, -1);
@@ -73,7 +78,7 @@ const buildAbout = (): TAbout => {
 }
 const generateOpenApiTypes = () => {
   const funcName = 'generateOpenApiTypes';
-  const logName = `${scriptName}.${funcName}()`;
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: generating OpenAPI types for server ...`);
   if(s.exec(`npx dtsgen --out ${outputApiTypesFile} ${inputApiSpecFile}`).code !== 0) process.exit(1);
   console.log(`${logName}: file:${outputApiTypesFile}`);
@@ -81,7 +86,7 @@ const generateOpenApiTypes = () => {
 }
 const generateOpenApiNodeClient = () => {
   const funcName = 'generateOpenApiNodeClient';
-  const logName = `${scriptName}.${funcName}()`;
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: generating Node OpenAPI Client ...`);
 
   OpenAPI.generate({
@@ -101,7 +106,7 @@ const generateOpenApiNodeClient = () => {
 }
 const generateOpenApiBrowserClient = () => {
   const funcName = 'generateOpenApiBrowserClient';
-  const logName = `${scriptName}.${funcName}()`;
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: generating Browser OpenAPI Client ...`);
   OpenAPI.generate({
       input: inputApiSpecFile,
@@ -120,7 +125,7 @@ const generateOpenApiBrowserClient = () => {
 }
 const copyAssets = (about: TAbout) => {
   const funcName = 'copyAssets';
-  const logName = `${scriptName}.${funcName}()`;
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
   try {
       fs.writeFileSync(outputAboutFile, JSON.stringify(about, null, 2));
@@ -130,15 +135,18 @@ const copyAssets = (about: TAbout) => {
   }
   console.log(`${logName}: success.`);
 }
+
 const main = () => {
-  console.log(`${scriptName}: starting ...`);
+  const funcName = 'main';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
   prepare();
   const about: TAbout = buildAbout();
   generateOpenApiTypes();
   generateOpenApiNodeClient();
   generateOpenApiBrowserClient();
   copyAssets(about);
-  console.log(`${scriptName}: success.`);
+  console.log(`${logName}: success.`);
 }
 
 main();
