@@ -1,7 +1,6 @@
 import React from "react";
-import { useHistory } from 'react-router-dom';
+import { useHistory, Route, Switch } from 'react-router-dom';
 
-import { Route, Switch } from 'react-router-dom';
 import { Config } from "./Config";
 import { EUIResourcePaths, EUIEmbeddableResourcePaths, EUIDeveloperToolsResourcePaths } from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
@@ -98,7 +97,7 @@ const App: React.FC = () => {
           <div id="page-body">
             <Switch>
               {/* Misc Public */}
-              <Route path={EUIResourcePaths.DeveloperPortalHome} component={DeveloperPortalHomePage} exact />
+              <Route  path={EUIResourcePaths.DeveloperPortalHome} component={DeveloperPortalHomePage} exact />
               <Route path={EUIResourcePaths.Unauthorized} component={UnauthorizedPage} exact />
               <Route path={EUIResourcePaths.NoOrganization} component={NoOrganizationPage} exact />
 

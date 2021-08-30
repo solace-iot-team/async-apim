@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "ts-node build.ts && tsc",
+    "build": "ts-node dev-build.ts && ts-node build.ts",
     "dev:build": "ts-node dev-build.ts",
     "dev": "nodemon server/index.ts | pino-pretty",
     "dev:nopretty": "nodemon server/index.ts",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/solace-iot-team/apim-portal.git"
+    "url": "https://github.com/solace-iot-team/async-apim.git"
   },
   "keywords": [
     "api management",
@@ -33,9 +33,8 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/solace-iot-team/apim-portal/issues"
+    "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
-  "homepage": "https://github.com/solace-iot-team/apim-portal/apim-server",
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",

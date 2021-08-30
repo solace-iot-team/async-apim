@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { ConfigContextProvider } from './components/ConfigContextProvider/ConfigContextProvider';
 import { AuthContextProvider } from './components/AuthContextProvider/AuthContextProvider';
 import { UserContextProvider } from './components/UserContextProvider/UserContextProvider';
@@ -16,7 +16,7 @@ APSClient.initialize(Config.getAPSClientOpenApiConfig());
 APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 
 ReactDOM.render(
-  <Router>
+  <BrowserRouter>
     <ConfigContextProvider>
       <AuthContextProvider>
         <UserContextProvider>
@@ -24,7 +24,7 @@ ReactDOM.render(
         </UserContextProvider>
       </AuthContextProvider>      
     </ConfigContextProvider>
-  </Router>,
+  </BrowserRouter>,
   document.getElementById('root')
 );
 

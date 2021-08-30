@@ -18,7 +18,6 @@ const outputOpenApiBrowserClientDir = 'src/@solace-iot-team/apim-server-openapi-
 type TAbout = {
     name: string,
     description: string,
-    homepage: string,
     repository: {
         type: string,
         url: string,
@@ -26,6 +25,7 @@ type TAbout = {
             sha1: string
         }
     },
+    issues_url: string,
     author: string,
     license: string,
     version: {
@@ -52,7 +52,6 @@ const buildAbout = (): TAbout => {
   const about: TAbout = {
       name: packageJson.name,
       description: packageJson.description,
-      homepage: packageJson.homepage,
       author: packageJson.author,
       license: packageJson.license,
       version: {
@@ -65,7 +64,8 @@ const buildAbout = (): TAbout => {
           revision: {
               sha1: sha1
           }
-      }
+      },
+      issues_url: packageJson.bugs.url
   }
   console.log(`${logName}: about = \n${JSON.stringify(about, null, 2)}`);
   console.log(`${logName}: success.`);

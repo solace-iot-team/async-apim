@@ -5,7 +5,7 @@ import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
-import { EAPSAuthRole } from '../../../src/@solace-iot-team/apim-server-openapi-node';
+import EAPSAuthRole = Components.Schemas.EAPSAuthRole;
 import { MongoPersistenceService, TCreateSearchContentCallback, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../common/MongoPersistenceService';
 import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../utils/ApiQueryHelper';
 import { TRootUserConfig } from '../../common/ServerConfig';
@@ -39,7 +39,7 @@ export class APSUsersService {
         last: 'admin',
         email: rootUserConfig.userId
       },
-      roles: [ EAPSAuthRole.ROOT ]
+      roles: [ 'root' ]
     }
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }

@@ -1,4 +1,14 @@
 
+// TODO: work this out
+export enum EPortalDomainUIPaths {
+  AdminPortal = '/admin-portal',
+  DeveloperPortal = '/developer-portal'
+}
+
+export enum EAdminPortalUIResourcePaths {
+  domain
+}
+
 export enum EUIResourcePaths {
   AdminPortal = '/admin-portal',
   Home = '/',

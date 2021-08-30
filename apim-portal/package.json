@@ -1,6 +1,26 @@
 {
-  "name": "apim-admin-portal",
+  "name": "apim-portal",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solace-iot-team/async-apim.git"
+  },
+  "keywords": [
+    "api management",
+    "solace",
+    "asyncapi"
+  ],
+  "author": "Solace Corporation",
+  "contributors": [
+    {
+      "name": "Ricardo Gomez-Ulmke",
+      "email": "ricardo.gomez-ulmke@solace.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/solace-iot-team/async-apim/issues"
+  },
   "dependencies": {
     "@solace-iot-team/apim-server-openapi-browser": "^0.0.4",
     "@solace-iot-team/platform-api-openapi-client-fe": "^0.2.6",
