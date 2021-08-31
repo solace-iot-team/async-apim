@@ -1,6 +1,7 @@
 {
   "name": "apim-portal",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "description": "Async API Management Portal",
   "repository": {
     "type": "git",
     "url": "https://github.com/solace-iot-team/async-apim.git"
@@ -67,6 +68,8 @@
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
     "@types/react-router-dom": "^5.1.7",
+    "@types/shelljs": "^0.8.9",
+    "shelljs": "^0.8.4",
     "typescript": "^4.3.2"
   }
 }

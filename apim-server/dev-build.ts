@@ -12,7 +12,7 @@ const scriptDir: string = path.dirname(__filename);
 const inputApiSpecFile = './server/common/api.yml';
 const outputTypesDir = './server/@types';
 const outputApiTypesFile = `${outputTypesDir}/api/index.d.ts`;
-const outputAboutFile = './public/about.json';
+const outputAboutFile = './public/apim-server-about.json';
 const outputOpenApiNodeClientDir = 'src/@solace-iot-team/apim-server-openapi-node';
 const outputOpenApiBrowserClientDir = 'src/@solace-iot-team/apim-server-openapi-browser';
 

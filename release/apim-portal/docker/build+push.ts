@@ -6,6 +6,7 @@ const scriptDir: string = path.dirname(__filename);
 const workingDir = `${scriptDir}/tmp`;
 const workingApimServerDir = `${workingDir}/apim-server`;
 const workingApimServerDistDir = `${workingApimServerDir}/dist`;
+const workingApimPortalDir = `${workingDir}/apim-portal`;
 const apimServerDir = `${scriptDir}/../../../apim-server`;
 const apimServerDistDir = `${apimServerDir}/dist`;
 const apimPortalDir = `${scriptDir}/../../../apim-portal`;
@@ -21,6 +22,10 @@ let dockerImageName: string;
 let dockerImageTag: string;
 let dockerImageTagLatest: string;
 
+// TODO:
+// copy apim-server & apim-portal dirs to workingDir first, then do everything on working dir
+
+
 const dockerContextAssetsInclude = [
   'start.sh'
 ]
@@ -31,7 +36,25 @@ const prepare = () => {
   console.log(`${logName}: starting ...`);
   if(s.rm('-rf', workingDir).code !== 0) process.exit(1);
   if(s.mkdir('-p', workingDir).code !== 0) process.exit(1);
-  if(s.mkdir('-p', workingApimServerDistDir).code !== 0) process.exit(1);
+  console.log(`${logName}: success.`);
+}
+
+const copySourcesToWorkingDir = () => {
+  const funcName = 'copySourcesToWorkingDir';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
+
+  console.log(`${logName}: copying apim-server sources to working dir ...`);
+  if(s.cp('-rf', apimServerDir, workingDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${workingApimServerDir}/dist`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${workingApimServerDir}/node_modules`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${workingApimServerDir}/src/*`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${workingApimServerDir}/server/@types`).code !== 0) process.exit(1);
+
+  console.log(`${logName}: copying apim-portal sources to working dir ...`);
+  if(s.cp('-rf', apimPortalDir, workingDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${workingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
+
   console.log(`${logName}: success.`);
 }
 
@@ -39,21 +62,11 @@ const buildApimServer = () => {
   const funcName = 'buildApimServer';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  s.cd(`${apimServerDir}`);
+  s.cd(`${workingApimServerDir}`);
   console.log(`${logName}: directory = ${s.exec(`pwd`)}`);
   s.exec('npm install');
   s.exec('npm run build');
   s.cd(`${scriptDir}`);
-  console.log(`${logName}: success.`);
-}
-
-const copyApimServerToWorkingDir = () => {
-  const funcName = 'copyApimServerToWorkingDir';
-  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-  console.log(`${logName}: starting ...`);
-
-  if(s.cp('-rf', apimServerDistDir, workingApimServerDir).code !== 0) process.exit(1);
-
   console.log(`${logName}: success.`);
 }
 
@@ -152,8 +165,8 @@ const main = () => {
   setPackageVars();
   checkVersion();
   prepare();
+  copySourcesToWorkingDir();
   buildApimServer();
-  copyApimServerToWorkingDir();
   buildDockerContext();
   removeDockerContainersByImageName();
   buildDockerImage();

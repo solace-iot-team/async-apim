@@ -2,5 +2,5 @@ dist
 node_modules
 server/@types
 .devel-stash
-public/about.json
+public/*about.json
 portal
