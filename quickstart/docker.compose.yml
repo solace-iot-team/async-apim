@@ -1,0 +1,84 @@
+version: "3.7"
+services:
+  # apim connector
+  qs-async-apim-connector-mongodb:
+    container_name: qs-async-apim-connector-mongodb
+    image : mongo:latest
+    volumes:
+      - mongodbdataconnector:/data/db
+    restart: unless-stopped
+  qs-async-apim-connector:
+    container_name: ${QS_ASYNC_APIM_CONNECTOR_CONTAINER_NAME}
+    links:
+      - qs-async-apim-connector-mongodb
+    image: "solaceiotteam/apim-connector-server:latest"
+    ports:
+      - 5001:3000
+    volumes:
+      - ./docker-volumes/apim-connector:/data
+    restart: unless-stopped
+    environment:
+      - DB_URL="mongodb://qs-async-apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
+      - LOG_LEVEL=trace
+      - APP_ID=${QS_ASYNC_APIM_CONNECTOR_CONTAINER_NAME}
+      - FILE_USER_REGISTRY=/data/organization_users.json
+      - PLATFORM_PORT=3000
+      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.preferred_username"
+      - AUTH_EXTRACTION_ORGS="$$.organization"
+      - AUTH_EXTRACTION_ROLES="$$.groups"
+      - AUTH_VERIFICATION_KEY=/data/dummy.pem
+      - AUTH_VERIFICATION_ISSUER="https://dev-1.okta.com/oauth2/default"
+      - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
+      - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
+      # - APIS_PROXY_MODE=false
+  # apim portal & server
+  qs-async-apim-server-mongodb:
+    container_name: qs-async-apim-server-mongodb
+    image : mongo:latest
+    volumes:
+      - mongodbdataapimserver:/data/db
+    # ports:
+    #   - ${APIM_SERVER_MONGO_PORT}:27017
+    restart: unless-stopped
+  qs-async-apim-server:
+    container_name: qs-async-apim-server
+    links:
+      - qs-async-apim-connector
+      - qs-async-apim-server-mongodb
+    image: "solaceiotteam/apim-portal:latest"
+    ports:
+      - 5000:3000
+    volumes:
+      - ./docker-volumes/demo-portal:/data/apim-demo-portal
+    restart: unless-stopped
+    environment:
+      # apim server
+      - APIM_SERVER_PORT=3000
+      - APIM_SERVER_API_BASE=/apim-server/v1
+      - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-server-mongodb:27017/?retryWrites=true&w=majority
+      - APIM_SERVER_MONGO_DB=solace-apim-server
+      - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
+      - APIM_SERVER_LOGGER_APP_ID=apim-server
+      - APIM_SERVER_LOGGER_LOG_LEVEL=trace
+      - APIM_SERVER_REQUEST_SIZE_LIMIT=100kb
+      - APIM_SERVER_SECRET=mySecret
+      - APIM_SERVER_OPENAPI_SPEC_PATH=/apim-server/v1/spec
+      - APIM_SERVER_ROOT_USER=root.admin@aps.com
+      - APIM_SERVER_ROOT_USER_PWD=admin123!
+
+  # www-apim-connector:
+  #   container_name: www-apim-connector
+  #   image: ${NGINX_DOCKER_IMAGE}
+  #   restart: unless-stopped
+  #   ports:
+  #     - ${EXTERNAL_PORT}:80
+  #   links:
+  #     - apim-connector
+  #     - demo-portal-server
+  #   volumes:
+  #     - ${NGINX_CONF_LOCATION}:/etc/nginx/nginx.conf
+  #     - www-logs:/etc/nginx/logs
+volumes:
+  mongodbdataconnector:
+  mongodbdataapimserver:
+  # www-logs:

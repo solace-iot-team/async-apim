@@ -8,7 +8,6 @@ const workingApimServerDir = `${workingDir}/apim-server`;
 const workingApimServerDistDir = `${workingApimServerDir}/dist`;
 const workingApimPortalDir = `${workingDir}/apim-portal`;
 const apimServerDir = `${scriptDir}/../../../apim-server`;
-const apimServerDistDir = `${apimServerDir}/dist`;
 const apimPortalDir = `${scriptDir}/../../../apim-portal`;
 
 const dockerAssetDir = `${scriptDir}/assets`;
@@ -21,10 +20,6 @@ let apimPortalPackageJson;
 let dockerImageName: string;
 let dockerImageTag: string;
 let dockerImageTagLatest: string;
-
-// TODO:
-// copy apim-server & apim-portal dirs to workingDir first, then do everything on working dir
-
 
 const dockerContextAssetsInclude = [
   'start.sh'
@@ -54,6 +49,10 @@ const copySourcesToWorkingDir = () => {
   console.log(`${logName}: copying apim-portal sources to working dir ...`);
   if(s.cp('-rf', apimPortalDir, workingDir).code !== 0) process.exit(1);
   if(s.rm('-rf', `${workingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
+  // remove .env . it is compiled into the build  
+  if(s.rm('-rf', `${workingApimPortalDir}/.env`).code !== 0) process.exit(1);
+  // replace it with the one working with the quickstart docker compose
+  if(s.cp('-rf', `${dockerAssetDir}/.env.apim-portal`, `${workingApimPortalDir}/.env`).code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
@@ -66,6 +65,7 @@ const buildApimServer = () => {
   console.log(`${logName}: directory = ${s.exec(`pwd`)}`);
   s.exec('npm install');
   s.exec('npm run build');
+  if(s.exec('npm prune --production --json').code !== 0) process.exit(1);
   s.cd(`${scriptDir}`);
   console.log(`${logName}: success.`);
 }
@@ -77,6 +77,7 @@ const buildDockerContext = () => {
 
   if(s.mkdir('-p', dockerContextDistDir).code !== 0) process.exit(1);
   if(s.cp('-rf', `${workingApimServerDistDir}`, dockerContextDir).code !== 0) process.exit(1);
+  if(s.cp('-rf', `${workingApimServerDir}/node_modules`, dockerContextDir).code !== 0) process.exit(1);
 
   for(const include of dockerContextAssetsInclude) {
     const includeFile = `${dockerAssetDir}/${include}`;

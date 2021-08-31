@@ -3,11 +3,14 @@ scriptDir=$(cd $(dirname "$0") && pwd);
 scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
 echo " >>> Docker Container: Starting server ..."
-  cd $scriptDir
-  runScript="node dist/server/index.js"
+cd $scriptDir
+runScript="node dist/server/index.js"
+while true; do
   $runScript
-  if [[ $? != 0 ]]; then echo " >>> ERROR: Docker Container starting server"; exit 1; fi
-echo " >>> Docker Container: Success."
+  code=$?
+  echo "ERROR: script exited with code=$code. trying again after 5 seconds"
+  sleep 5;
+done
 
 ###
 # The End.
