@@ -40,43 +40,6 @@ export enum EUIDeveloperPortalResourcePaths {
   ManageTeamApplications = '/developer-portal/manage/team/applications'
 }
 
-
-// TODO: work this out
-// export enum EPortalDomainUIPaths {
-//   AdminPortal = '/admin-portal',
-//   DeveloperPortal = '/developer-portal'
-// }
-
-// export enum EAdminPortalUIResourcePaths {
-//   domain
-// }
-
-// export enum EUIResourcePaths {
-//   Unauthorized = '/unauthorized',
-//   NoOrganization = '/noorganization',
-//   Login = '/login',
-
-//   AdminPortal = '/admin-portal',
-//   Home = '/',
-//   LoginAs = '/loginas',
-//   UserHome = '/user/home',
-//   ManageUserAccount = '/manage/user/account',
-//   ManageOrganizationUsers = '/manage/organization/users',
-//   ManageOrganizationEnvironments = '/manage/organization/environments',
-//   ManageSystemUsers = '/manage/system/users',
-//   ManageSystemTeams = '/manage/system/teams',
-//   ManageSystemOrganizations = '/manage/system/organizations',
-//   ManageSystemConfigConnectors = '/manage/system/config/connectors',
-//   ManageSystemConfigSettings = '/manage/system/config/settings',
-//   MonitorSystemHealth = '/monitor/system/health',
-//   DeveloperPortal = '/developer-portal',
-//   DeveloperPortalHome = '/developer-portal',
-//   DeveloperPortalUserHome = '/developer-portal/user/home', 
-//   DeveloperPortalViewProductCatalog = '/developer-portal/view/product-catalog',
-//   DeveloperPortalManageUserApplications = '/developer-portal/manage/user/applications',
-//   DeveloperPortalManageTeamApplications = '/developer-portal/manage/team/applications'
-// }
-
 export enum EUIEmbeddableResourcePaths {
   DeveloperAppConfigure = '/embedabble/developer/app/configure',
   AdminEnvironments = '/embedabble/admin/environments'

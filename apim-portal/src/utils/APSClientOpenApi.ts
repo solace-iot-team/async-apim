@@ -2,14 +2,24 @@
 import { OpenAPI as APSOpenAPI, ApiError as APSApiError, EAPSClientProtocol } from '@solace-iot-team/apim-server-openapi-browser';
 
 export type TAPSClientOpenApiConfig = {
-  protocol: EAPSClientProtocol,
-  host: string,
-  port: number,
-  baseUrl: string,
-  apiVersion: string,
-  user: string,
-  pwd: string
+  apsServerUrl?: URL,
+  // protocol?: EAPSClientProtocol,
+  // host?: string,
+  // port?: number,
+  // user: string,
+  // pwd: string
 }
+
+// exports.OpenAPI = {
+//   BASE: '/apim-server/v1',
+//   VERSION: '0.0.4',
+//   WITH_CREDENTIALS: false,
+//   TOKEN: undefined,
+//   USERNAME: undefined,
+//   PASSWORD: undefined,
+//   HEADERS: undefined,
+// };
+
 
 export class APSClientOpenApi {
   private static isInitialized: boolean = false;
@@ -27,7 +37,12 @@ export class APSClientOpenApi {
     const funcName = 'set';
     const logName = `${APSClientOpenApi.name}.${funcName}()`;
     if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
-    APSOpenAPI.BASE = `${APSClientOpenApi.config.protocol}://${APSClientOpenApi.config.host}:${APSClientOpenApi.config.port}/${APSClientOpenApi.config.baseUrl}/${APSClientOpenApi.config.apiVersion}`;;
+
+    if(APSClientOpenApi.config.apsServerUrl) {
+      const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
+      APSOpenAPI.BASE = base.toString();
+    }
+    
     // APSOpenAPI.USERNAME = APSClientOpenApi.config.user;
     // APSOpenAPI.PASSWORD = APSClientOpenApi.config.pwd;
     // VERSION: string;

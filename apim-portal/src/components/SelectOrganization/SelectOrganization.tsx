@@ -4,10 +4,9 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 
-import type { TAPOrganizationIdList } from "../APComponentsCommon";
+import type { TAPOrganizationId, TAPOrganizationIdList } from "../APComponentsCommon";
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { ApiCallState } from '../../utils/ApiCallState'
-import { APSOrganizationNameList, APSOrganizationName } from "../../utils/APSClient.types";
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
 import { Organization, AdministrationService } from '@solace-iot-team/platform-api-openapi-client-fe';
@@ -61,10 +60,10 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     const funcName = 'transformApiObjectListToSelectObjectList';
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.user.memberOfOrganizations) throw new Error(`${logName}: user is not a member of any organization`);
-    const userMemberOfOrganizationNameList: APSOrganizationNameList = userContext.user.memberOfOrganizations;
+    const userMemberOfOrganizationNameList: TAPOrganizationIdList = userContext.user.memberOfOrganizations;
     let selectObjectList: TSelectObjectList = [];
     apiObjectList.forEach((apiObject: TApiObject) => {
-      const organizationName: APSOrganizationName | undefined = userMemberOfOrganizationNameList.find((userMemberOfOrganizationName: APSOrganizationName) => {
+      const organizationName: TAPOrganizationId | undefined = userMemberOfOrganizationNameList.find((userMemberOfOrganizationName: TAPOrganizationId) => {
         return (userMemberOfOrganizationName === apiObject.name)  
       });
       if(organizationName) selectObjectList.push({

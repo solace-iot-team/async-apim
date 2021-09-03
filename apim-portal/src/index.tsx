@@ -7,12 +7,12 @@ import { UserContextProvider } from './components/UserContextProvider/UserContex
 import App from './App';
 // import reportWebVitals from './reportWebVitals';
 import { Config } from './Config';
-import { APSClient } from './utils/APSClient';
+// import { APSClient } from './utils/APSClient';
 import { APSClientOpenApi } from './utils/APSClientOpenApi';
 import './index.css';
 
 Config.initialize();
-APSClient.initialize(Config.getAPSClientOpenApiConfig());
+// APSClient.initialize(Config.getAPSClientOpenApiConfig());
 APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 
 ReactDOM.render(

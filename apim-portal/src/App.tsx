@@ -108,98 +108,6 @@ const App: React.FC = () => {
     );
   }
 
-  // const renderDeveloperPortal = () => {
-
-  //   return (
-  //     <div className="ap-app-grid">
-  //       <div className="ap-app-grid-left">
-  //         <DeveloperPortalSideBar onSwitchToAdminPortal={onSwitchToAdminPortal}/>
-  //       </div>
-  //       <div className="ap-app-grid-right">
-  //         <div id="page-body">
-  //           <Switch>
-  //             {/* Misc Public */}
-  //             <Route  path={EUIResourcePaths.DeveloperPortalHome} component={DeveloperPortalHomePage} exact />
-  //             <Route path={EUIResourcePaths.Unauthorized} component={UnauthorizedPage} exact />
-  //             <Route path={EUIResourcePaths.NoOrganization} component={NoOrganizationPage} exact />
-
-  //             {/* User */}
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
-              
-  //             {/* Organization/DeveloperPortal */}
-  //             <Route path={EUIResourcePaths.DeveloperPortalHome} component={DeveloperPortalHomePage} exact />
-  //             {/* <ProtectedRouteWithRbac path={EUIResourcePaths.DeveloperPortalUserHome} component={DeveloperPortalUserHomePage} exact /> */}
-  //             <ProtectedRouteWithRbacAndOrgAccess path={EUIResourcePaths.DeveloperPortalViewProductCatalog} component={DeveloperPortalViewProductCatalogPage} exact />
-  //             <ProtectedRouteWithRbacAndOrgAccess path={EUIResourcePaths.DeveloperPortalManageUserApplications} component={DeveloperPortalManageUserApplicationsPage} exact />
-  //             <ProtectedRouteWithRbacAndOrgAccess path={EUIResourcePaths.DeveloperPortalManageTeamApplications} component={DeveloperPortalManageTeamApplicationsPage} exact />
-
-  //             {/* Catch all */}
-  //             <Route component={NotFoundPage} />
-  //           </Switch>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // const renderAdminPortal = () => {
-  //   // const funcName = 'renderAdminPortal';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   return (
-  //     <div className="ap-app-grid">
-  //       <div className="ap-app-grid-left">
-  //         <SideBar onSwitchToDeveloperPortal={onSwitchToDeveloperPortal} />
-  //       </div>
-  //       <div className="ap-app-grid-right">
-  //         <div id="page-body">
-  //           <Switch>
-  //             {/* Misc Public */}
-  //             <Route path={EUICommonResourcePaths.Home} component={HomePage} exact />
-  //             <Route path={EUICommonResourcePaths.Unauthorized} component={UnauthorizedPage} exact />
-  //             <Route path={EUICommonResourcePaths.NoOrganization} component={NoOrganizationPage} exact />
-
-  //             {/* User */}
-  //             <Route path={EUIResourcePaths.Login} component={UserLoginPage} exact />
-  //             <ProtectedRoute path={EUIResourcePaths.UserHome} component={UserHomePage} exact />
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
-
-  //             {/* System */}
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageSystemUsers} component={ManageUsersPage} exact />
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageSystemOrganizations} exact component={ManageOrganizationsPage} />
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageSystemConfigConnectors} exact component={ManageConnectorsPage} />
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.ManageSystemConfigSettings} exact component={ManageSystemSettingsPage} />
-  //             <ProtectedRouteWithRbac path={EUIResourcePaths.MonitorSystemHealth} exact component={ViewSystemHealthPage} />
-              
-  //             {/* Organization */}
-  //             <ProtectedRouteWithRbacAndOrgAccess path={EUIResourcePaths.ManageOrganizationEnvironments} component={ManageEnvironmentsPage} exact />
-
-  //             {/* Embedded Components */}
-  //             { showEmbeddablePages && 
-  //               [
-  //                 <Route path={EUIEmbeddableResourcePaths.DeveloperAppConfigure} key={EUIEmbeddableResourcePaths.DeveloperAppConfigure} component={EmbeddableDeveloperConfigureAppPortalPage} exact/>
-  //               ]
-  //             }
-
-  //             {/* Developer Tools */}
-  //             { showDeveloperTools && 
-  //               [
-  //                 <ProtectedRouteWithRbac path={EUIDeveloperToolsResourcePaths.TestRoles} key={EUIDeveloperToolsResourcePaths.TestRoles} component={RolesTestPage} exact />,
-  //                 <Route path={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} key={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} component={BootstrapOrganizationsPage} exact />,
-  //                 <Route path={EUIDeveloperToolsResourcePaths.BootstrapUsers} key={EUIDeveloperToolsResourcePaths.BootstrapUsers} component={BootstrapUsersPage} exact />,
-  //                 <Route path={EUIDeveloperToolsResourcePaths.BootstrapConnectors} key={EUIDeveloperToolsResourcePaths.BootstrapConnectors} component={BootstrapConnectorsPage} exact />,
-  //                 <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
-  //               ]
-  //             }
-
-  //             {/* Catch all */}
-  //             <Route component={NotFoundPage} />
-  //           </Switch>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <React.Fragment>
       <ShowUserMessage />
@@ -261,19 +169,6 @@ const App: React.FC = () => {
       </div>
     </React.Fragment>
   );
-
-  // return (
-  //   <React.Fragment>
-  //     <ShowUserMessage />
-  //     <NavBar />
-  //     {showDeveloperPortal && 
-  //       renderDeveloperPortal()
-  //     }
-  //     {showAdminPortal && 
-  //       renderAdminPortal()
-  //     }
-  //   </React.Fragment>
-  // );
 }
 
 export default App;
