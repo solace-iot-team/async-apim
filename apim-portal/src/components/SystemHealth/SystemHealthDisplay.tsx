@@ -10,8 +10,8 @@ import { Divider } from "primereact/divider";
 
 import { APConnectorHealthCheck, THealthCheckResult, THealthCheckSummary } from "../../utils/APConnectorHealthCheck";
 import { APClientConnectorRaw } from "../../utils/APClientConnectorRaw";
+import { EUIAdminPortalResourcePaths } from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { EUIResourcePaths } from "../../utils/Globals";
 
 import "../APComponents.css";
 import "./SystemHealth.css";
@@ -136,9 +136,9 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
         onClick={(e) => op.current.toggle(e) } />
       <OverlayPanel className="ap-navbar system-health-overlay-panel" ref={op} id="system_health_overlay_panel" style={{width: '450px'}} >
         {renderSystemHealthInfo()}
-        <RenderWithRbac resourcePath={EUIResourcePaths.MonitorSystemHealth} >
+        <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.MonitorSystemHealth} >
           <Divider />
-          <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-heart" label="System Health Details" onClick={() => { navigateTo(EUIResourcePaths.MonitorSystemHealth); op.current.hide(); }} />
+          <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-heart" label="System Health Details" onClick={() => { navigateTo(EUIAdminPortalResourcePaths.MonitorSystemHealth); op.current.hide(); }} />
         </RenderWithRbac>
       </OverlayPanel>
     </React.Fragment>

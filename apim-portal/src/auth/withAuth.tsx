@@ -2,9 +2,8 @@
 import React from "react";
 import { Redirect } from 'react-router-dom';
 
+import { EUICommonResourcePaths } from "../utils/Globals";
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
-import { EUIResourcePaths } from "../utils/Globals";
-
 
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>
@@ -15,7 +14,7 @@ export const withAuth = <P extends object>(
 
   return (
     <React.Fragment>
-      { !authContext.isLoggedIn && <Redirect to={EUIResourcePaths.Login} /> }
+      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.Login} /> }
       { authContext.isLoggedIn && <Component {...props} /> }
     </React.Fragment>
   );

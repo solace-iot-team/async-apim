@@ -4,13 +4,12 @@ import { useHistory } from 'react-router-dom';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
+import { AuthHelper } from "../../../auth//AuthHelper";
+import { EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 import { AuthContext } from '../../../components/AuthContextProvider/AuthContextProvider';
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
-import { AuthHelper } from "../../../auth//AuthHelper";
-import { EUIResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
-import './DeveloperPortalSideBar.css';
 
 export interface IDeveloperPortalSideBarProps {
   onSwitchToAdminPortal: () => void;
@@ -26,35 +25,44 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const navigateTo = (path: string): void => { history.push(path); }
 
-  const isDisabled = (resourcePath: EUIResourcePaths): boolean => {
+  const isDisabled = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
       !userContext.runtimeSettings.currentOrganizationName
     );
   }
-  
-  const items: Array<MenuItem>= [
-    { 
-      label: 'Switch to Admin Portal',
-      disabled: isDisabled(EUIResourcePaths.AdminPortal),
-      command: () => { props.onSwitchToAdminPortal(); }
-    },
-    {
-      label: 'Product Catalog',
-      disabled: isDisabled(EUIResourcePaths.DeveloperPortalViewProductCatalog),
-      command: () => { navigateTo(EUIResourcePaths.DeveloperPortalViewProductCatalog); }
-    },
-    {
-      label: 'Applications',
-      disabled: isDisabled(EUIResourcePaths.DeveloperPortalManageApplications),
-      command: () => { navigateTo(EUIResourcePaths.DeveloperPortalManageApplications); }
-    },
-  ];
+   
+  const getMenuItems = (): Array<MenuItem> => {
+    if(!authContext.isLoggedIn) return [];
+    let items: Array<MenuItem>= [
+      { 
+        label: 'Switch to Admin Portal',
+        disabled: isDisabled(EUIAdminPortalResourcePaths.Home),
+        command: () => { props.onSwitchToAdminPortal(); }
+      },
+      {
+        label: 'Product Catalog',
+        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
+      },
+      {
+        label: 'My Applications',
+        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
+      },
+      {
+        label: 'Team Applications',
+        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
+      },
+    ];
+    return items;
+  }
 
   return (
     <div className="ap-side-bar">
       <div className="card">
-        <PanelMenu model={items} style={{ width: '10rem' }}/>
+        <PanelMenu model={getMenuItems()} style={{ width: '10rem' }}/>
       </div>
     </div>
   );

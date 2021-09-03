@@ -1,5 +1,5 @@
 import { EAPSAuthRole } from '@solace-iot-team/apim-server-openapi-browser';
-import { EUIResourcePaths } from "./Globals"
+import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
 export const CAPSAuthRoleNone = '';
 
@@ -7,7 +7,7 @@ export type TAPRbacRole = {
   role: EAPSAuthRole,
   displayName: string,
   description: string,
-  uiResourcePaths: Array<EUIResourcePaths>
+  uiResourcePaths: Array<EUICommonResourcePaths | EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths>
 }
 
 export type TAPRbacRoleList = Array<TAPRbacRole>;
@@ -18,11 +18,11 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'Root',
     description: 'Root priviliges.',
     uiResourcePaths: [
-      EUIResourcePaths.AdminPortal,
-      EUIResourcePaths.ManageSystemUsers, 
-      EUIResourcePaths.LoginAs,
-      EUIResourcePaths.ManageSystemConfigConnectors,
-      EUIResourcePaths.ManageSystemConfigSettings,
+      EUIAdminPortalResourcePaths.Home,
+      EUIAdminPortalResourcePaths.ManageSystemUsers, 
+      EUIAdminPortalResourcePaths.LoginAs,
+      EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
+      EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
     ]
   },
   {
@@ -30,7 +30,7 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'Login As',
     description: 'Login as any User.',
     uiResourcePaths: [
-      EUIResourcePaths.LoginAs
+      EUIAdminPortalResourcePaths.LoginAs
     ]
   },
   {
@@ -38,14 +38,15 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'System Admin',
     description: 'Administrate the System.',
     uiResourcePaths: [
-      EUIResourcePaths.AdminPortal,
-      EUIResourcePaths.ManageUserAccount,
-      EUIResourcePaths.ManageSystemUsers,
-      EUIResourcePaths.ManageSystemTeams,
-      EUIResourcePaths.ManageSystemOrganizations,
-      EUIResourcePaths.ManageSystemConfigConnectors,
-      EUIResourcePaths.ManageSystemConfigSettings,
-      EUIResourcePaths.MonitorSystemHealth,
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIAdminPortalResourcePaths.Home,
+      EUIAdminPortalResourcePaths.UserHome,
+      EUIAdminPortalResourcePaths.ManageSystemUsers,
+      EUIAdminPortalResourcePaths.ManageSystemTeams,
+      EUIAdminPortalResourcePaths.ManageSystemOrganizations,
+      EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
+      EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
+      EUIAdminPortalResourcePaths.MonitorSystemHealth,
     ]
   },
   {
@@ -53,10 +54,11 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
     uiResourcePaths: [
-      EUIResourcePaths.AdminPortal,
-      EUIResourcePaths.ManageUserAccount,
-      EUIResourcePaths.ManageOrganizationUsers,
-      EUIResourcePaths.ManageOrganizationEnvironments,
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIAdminPortalResourcePaths.Home,
+      EUIAdminPortalResourcePaths.UserHome,
+      EUIAdminPortalResourcePaths.ManageOrganizationUsers,
+      EUIAdminPortalResourcePaths.ManageOrganizationEnvironments,
     ]
   },
   {
@@ -64,8 +66,9 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
-      EUIResourcePaths.AdminPortal,
-      EUIResourcePaths.ManageUserAccount,
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIAdminPortalResourcePaths.Home,
+      EUIAdminPortalResourcePaths.UserHome,
     ]
   },
   {
@@ -73,11 +76,12 @@ const rbacRoleList: TAPRbacRoleList = [
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
     uiResourcePaths: [
-      EUIResourcePaths.DeveloperPortal,
-      EUIResourcePaths.ManageUserAccount,
-      EUIResourcePaths.DeveloperPortalHome,
-      EUIResourcePaths.DeveloperPortalViewProductCatalog,
-      EUIResourcePaths.DeveloperPortalManageApplications
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIDeveloperPortalResourcePaths.Home,
+      EUIDeveloperPortalResourcePaths.UserHome,
+      EUIDeveloperPortalResourcePaths.ViewProductCatalog,
+      EUIDeveloperPortalResourcePaths.ManageUserApplications,
+      EUIDeveloperPortalResourcePaths.ManageTeamApplications,
     ]
   }
 ];

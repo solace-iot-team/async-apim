@@ -5,34 +5,21 @@ import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
-import { GlobalElementStyles, Globals } from '../utils/Globals';
-import { TApiCallState } from "../utils/ApiCallState";
-import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
-import { UserContext } from '../components/UserContextProvider/UserContextProvider';
-import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { ManageUsers } from '../components/ManageUsers/ManageUsers';
+import type { TApiCallState } from '../../utils/ApiCallState';
+import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 
+import "../../pages/Pages.css";
 
-import "./Pages.css";
-
-export const ManageUserAccountPage: React.FC = (props: any) => {
-  // const componentName = 'ManageUserAccountPage';
+export const ManageUsersPage: React.FC = () => {
+  // const componentName = 'ManageUsersPage';
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
   const history = useHistory();
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
-  
-
   const navigateTo = (path: string): void => { history.push(path); }
-
-  const navigateToCurrentHome = (): void => {
-    navigateTo(Globals.getCurrentHomePath(authContext.isLoggedIn, userContext.currentAppState));
-  }
+  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -42,23 +29,19 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const onCancel = () => {
-    navigateToCurrentHome();
-  }
-
   const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
     setBreadCrumbLabelList(newBreadCrumbLableList);
   }
-  
+
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'Home',
-        style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateToCurrentHome(); }
+        label: 'System'
       },
       { 
-        label: 'Account'
+        label: 'Users',
+        style: GlobalElementStyles.breadcrumbLink(),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers) }
       }
     ];
     breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
@@ -75,14 +58,13 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
     <React.Fragment>
       <Toast ref={toast} />
       {renderBreadcrumbs()}
-      <ManageUserAccount 
+      <ManageUsers 
         onSuccess={onSuccess} 
         onError={onError} 
-        onCancel={onCancel}
         onBreadCrumbLabelList={onBreadcrumbLabelList}
       />
     </React.Fragment>
-  );
+);
+
 }
 
- 

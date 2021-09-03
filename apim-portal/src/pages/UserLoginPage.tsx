@@ -3,16 +3,17 @@ import { useLocation, useHistory } from 'react-router-dom';
 
 import { Dialog } from 'primereact/dialog';
 
-import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
-import { UserLogin } from '../components/UserLogin/UserLogin';
+import { AuthHelper } from '../auth/AuthHelper';
 import { TApiCallState } from "../utils/ApiCallState";
-import { EUIResourcePaths } from '../utils/Globals';
+import { EAppState, Globals } from '../utils/Globals';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
+import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
+import { UserLogin } from '../components/UserLogin/UserLogin';
 
 export const UserLoginPage: React.FC = () => {
-  // const componentName = 'UserLoginPage';
+  const componentName = 'UserLoginPage';
 
   const [userLoginCredentials, setUserLoginCredentials] = React.useState<TUserLoginCredentials>();
   const location = useLocation<TUserLoginCredentials>();
@@ -26,6 +27,37 @@ export const UserLoginPage: React.FC = () => {
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
+  const navigateTo = (path: string): void => { history.push(path); }
+
+  const successfulLoginSetup = (): void => {
+    const funcName = 'successfulLoginSetup';
+    const logName = `${componentName}.${funcName}()`;
+    let originAppState: EAppState = userContext.originAppState;
+    let newCurrentAppState: EAppState = userContext.currentAppState;
+
+    if(userContext.currentAppState !== EAppState.UNDEFINED) {
+      newCurrentAppState = userContext.currentAppState;
+      // catch state management errors
+      if(originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: orginAppState is undefined, currentAppState=${newCurrentAppState}`);
+    } else {
+      // came directly to /login url
+      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> Error
+      if(AuthHelper.isAuthorizedToAccessAdminPortal(authContext.authorizedResourcePathsAsString)) {
+        originAppState = EAppState.ADMIN_PORTAL; 
+        newCurrentAppState = EAppState.ADMIN_PORTAL;
+      } else if(AuthHelper.isAuthorizedToAccessDeveloperPortal(authContext.authorizedResourcePathsAsString)) {
+        originAppState = EAppState.DEVELOPER_PORTAL; 
+        newCurrentAppState = EAppState.DEVELOPER_PORTAL;
+      } else {
+        throw new Error(`${logName}: user not authorized to access developer portal nor admin portal. userContext=${JSON.stringify(userContext, null, 2)}`);
+      }
+    }
+    dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
+    dispatchUserContextAction({ type: 'SET_ORIGIN_APP_STATE', appState: originAppState});
+    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: newCurrentAppState});
+    navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
+  }
+
   React.useEffect(() => {
     // const funcName = 'useEffect([])';
     // const logName = `${componentName}.${funcName}()`;
@@ -38,8 +70,7 @@ export const UserLoginPage: React.FC = () => {
 
   React.useEffect(() => {
     if(isFinished) {
-      dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
-      history.push({ pathname: EUIResourcePaths.UserHome });
+      successfulLoginSetup();
     }
   }, [isFinished]); // eslint-disable-line react-hooks/exhaustive-deps
 

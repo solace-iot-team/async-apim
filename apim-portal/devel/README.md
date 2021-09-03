@@ -22,7 +22,7 @@ npm link
 
 ### Link APIM Server OpenAPI from Global
 ````bash
-cd async-apim/admin-portal
+cd async-apim/apim-portal
 npm link @solace-iot-team/apim-server-openapi-browser
 ````
 
@@ -50,12 +50,12 @@ npm link # creates link in global node_modules
 
 ### Link Connector OpenAPI from Global
 ````bash
-# NOTE: in admin-portal
+# NOTE: in apim-portal
 npm link @solace-iot-team/platform-api-openapi-client-fe
 ````
 ### UnLink Connector OpenAPI from Global
 ````bash
-# NOTE: in admin-portal
+# NOTE: in apim-portal
 npm unlink --no-save @solace-iot-team/platform-api-openapi-client-fe
 # NOTE: now install the released package
 npm install

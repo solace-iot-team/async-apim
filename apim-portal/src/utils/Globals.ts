@@ -1,37 +1,81 @@
-
-// TODO: work this out
-export enum EPortalDomainUIPaths {
-  AdminPortal = '/admin-portal',
-  DeveloperPortal = '/developer-portal'
+export enum EAppState {
+  ADMIN_PORTAL = 'ADMIN_PORTAL',
+  DEVELOPER_PORTAL = 'DEVELOPER_PORTAL',
+  UNDEFINED = 'UNDEFINED'
 }
 
-export enum EAdminPortalUIResourcePaths {
-  domain
+export type TLocationStateAppState = {
+  setAppState: boolean
 }
 
-export enum EUIResourcePaths {
-  AdminPortal = '/admin-portal',
+export type EUICombinedResourcePaths = EUICommonResourcePaths | EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths;
+
+export enum EUICommonResourcePaths {
   Home = '/',
   Unauthorized = '/unauthorized',
   NoOrganization = '/noorganization',
   Login = '/login',
-  LoginAs = '/loginas',
-  UserHome = '/user/home',
   ManageUserAccount = '/manage/user/account',
-  ManageOrganizationUsers = '/manage/organization/users',
-  ManageOrganizationEnvironments = '/manage/organization/environments',
-  ManageSystemUsers = '/manage/system/users',
-  ManageSystemTeams = '/manage/system/teams',
-  ManageSystemOrganizations = '/manage/system/organizations',
-  ManageSystemConfigConnectors = '/manage/system/config/connectors',
-  ManageSystemConfigSettings = '/manage/system/config/settings',
-  MonitorSystemHealth = '/monitor/system/health',
-  DeveloperPortal = '/developer-portal',
-  DeveloperPortalHome = '/developer-portal',
-  DeveloperPortalUserHome = '/developer-portal/user/home', 
-  DeveloperPortalViewProductCatalog = '/developer-portal/view/product-catalog',
-  DeveloperPortalManageApplications = '/developer-portal/manage/applications'
 }
+
+export enum EUIAdminPortalResourcePaths {
+  Home = '/admin-portal',
+  UserHome = '/admin-portal/user/home',
+  LoginAs = '/admin-portal/loginas',
+  ManageOrganizationUsers = '/admin-portal/manage/organization/users',
+  ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
+  ManageSystemUsers = '/admin-portal/manage/system/users',
+  ManageSystemTeams = '/admin-portal/manage/system/teams',
+  ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
+  ManageSystemConfigConnectors = '/admin-portal/manage/system/config/connectors',
+  ManageSystemConfigSettings = '/admin-portal/manage/system/config/settings',
+  MonitorSystemHealth = '/admin-portal/monitor/system/health',
+}
+
+export enum EUIDeveloperPortalResourcePaths {
+  Home = '/developer-portal',
+  UserHome = '/developer-portal/user/home',
+  ViewProductCatalog = '/developer-portal/view/product-catalog',
+  ManageUserApplications = '/developer-portal/manage/user/applications',
+  ManageTeamApplications = '/developer-portal/manage/team/applications'
+}
+
+
+// TODO: work this out
+// export enum EPortalDomainUIPaths {
+//   AdminPortal = '/admin-portal',
+//   DeveloperPortal = '/developer-portal'
+// }
+
+// export enum EAdminPortalUIResourcePaths {
+//   domain
+// }
+
+// export enum EUIResourcePaths {
+//   Unauthorized = '/unauthorized',
+//   NoOrganization = '/noorganization',
+//   Login = '/login',
+
+//   AdminPortal = '/admin-portal',
+//   Home = '/',
+//   LoginAs = '/loginas',
+//   UserHome = '/user/home',
+//   ManageUserAccount = '/manage/user/account',
+//   ManageOrganizationUsers = '/manage/organization/users',
+//   ManageOrganizationEnvironments = '/manage/organization/environments',
+//   ManageSystemUsers = '/manage/system/users',
+//   ManageSystemTeams = '/manage/system/teams',
+//   ManageSystemOrganizations = '/manage/system/organizations',
+//   ManageSystemConfigConnectors = '/manage/system/config/connectors',
+//   ManageSystemConfigSettings = '/manage/system/config/settings',
+//   MonitorSystemHealth = '/monitor/system/health',
+//   DeveloperPortal = '/developer-portal',
+//   DeveloperPortalHome = '/developer-portal',
+//   DeveloperPortalUserHome = '/developer-portal/user/home', 
+//   DeveloperPortalViewProductCatalog = '/developer-portal/view/product-catalog',
+//   DeveloperPortalManageUserApplications = '/developer-portal/manage/user/applications',
+//   DeveloperPortalManageTeamApplications = '/developer-portal/manage/team/applications'
+// }
 
 export enum EUIEmbeddableResourcePaths {
   DeveloperAppConfigure = '/embedabble/developer/app/configure',
@@ -47,6 +91,28 @@ export enum EUIDeveloperToolsResourcePaths {
 }
 
 export class Globals {
+
+  public static getCurrentHomePath = (isUserLoggedIn: boolean, currentAppState: EAppState): string => {
+    const funcName = 'getCurrentHomePath';
+    const logName = `${Globals.name}.${funcName}()`;
+    if(currentAppState === EAppState.ADMIN_PORTAL) {
+      if(isUserLoggedIn) return EUIAdminPortalResourcePaths.UserHome;
+      else return EUIAdminPortalResourcePaths.Home;
+    }
+    else if(currentAppState === EAppState.DEVELOPER_PORTAL) {
+      if(isUserLoggedIn) return EUIDeveloperPortalResourcePaths.UserHome;
+      else return EUIDeveloperPortalResourcePaths.Home;
+    }
+    else throw new Error(`${logName}: unknown currentAppState=${currentAppState}`);
+  }
+
+  public static getOriginHomePath = (originAppState: EAppState): string => {
+    const funcName = 'getOriginHomePath';
+    const logName = `${Globals.name}.${funcName}()`;
+    if(originAppState === EAppState.ADMIN_PORTAL) return EUIAdminPortalResourcePaths.Home;
+    else if(originAppState === EAppState.DEVELOPER_PORTAL) return EUIDeveloperPortalResourcePaths.Home;
+    else throw new Error(`${logName}: unknown originAppState=${originAppState}`);
+  }
 
   public static sleep = async(millis = 500) => {
     if(millis > 0) await new Promise(resolve => setTimeout(resolve, millis));

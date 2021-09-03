@@ -2,9 +2,9 @@
 import React from "react";
 import { Redirect, RouteProps } from "react-router-dom";
 
+import { EUICommonResourcePaths } from "../utils/Globals";
 import { UserContext } from "../components/UserContextProvider/UserContextProvider";
 import { ProtectedRouteWithRbac } from "./ProtectedRouteWithRbac";
-import { EUIResourcePaths } from "../utils/Globals";
 
 export interface IProtectedRouteWithRbacAndOrgAccessProps {}
 
@@ -19,7 +19,7 @@ export const ProtectedRouteWithRbacAndOrgAccess: React.FC<IProtectedRouteWithRba
         <ProtectedRouteWithRbac {...props} />
       }
       { !userContext.runtimeSettings.currentOrganizationName && 
-        <Redirect to={EUIResourcePaths.NoOrganization} />
+        <Redirect to={EUICommonResourcePaths.NoOrganization} />
       }
     </React.Fragment>
   );

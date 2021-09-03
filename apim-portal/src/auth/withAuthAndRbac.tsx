@@ -1,9 +1,10 @@
 
 import React from "react";
+import { Redirect } from 'react-router-dom';
+
+import { EUICommonResourcePaths } from "../utils/Globals";
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 import { AuthHelper } from "./AuthHelper";
-import { Redirect } from 'react-router-dom';
-import { EUIResourcePaths } from "../utils/Globals";
 
 export interface WithAuthRbacOptions {
   resourcePath: string;
@@ -21,8 +22,8 @@ export const withAuthAndRbac = <P extends object>(
 
   return (
     <React.Fragment>
-      { !authContext.isLoggedIn && <Redirect to={EUIResourcePaths.Login} /> }
-      { authContext.isLoggedIn && !isAuthorized && <Redirect to={EUIResourcePaths.Unauthorized} /> }
+      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.Login} /> }
+      { authContext.isLoggedIn && !isAuthorized && <Redirect to={EUICommonResourcePaths.Unauthorized} /> }
       { authContext.isLoggedIn && isAuthorized && <Component {...props} /> }
     </React.Fragment>
   );

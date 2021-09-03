@@ -10,11 +10,12 @@ import { Divider } from 'primereact/divider';
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { EUIResourcePaths } from "../../utils/Globals";
 import { SystemHealthDisplay } from "../SystemHealth/SystemHealthDisplay";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
+import { EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, EUIEmbeddableResourcePaths, Globals } from "../../utils/Globals";
+import { Config } from '../../Config';
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -22,7 +23,7 @@ import './NavBar.css';
 export interface INavBarProps {}
 
 export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
-  
+  // const componentName = 'NavBar';
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const history = useHistory();
@@ -31,10 +32,18 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
   const navigateTo = (path: string): void => { history.push(path); }
 
+  const navigateToCurrentHome = (): void => {
+    navigateTo(Globals.getCurrentHomePath(authContext.isLoggedIn, userContext.currentAppState));
+  }
+
+  const navigateToOriginHome = (): void => {
+    navigateTo(Globals.getOriginHomePath(userContext.originAppState));
+  }
+
   const onLogout = () => {
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
-    navigateTo(EUIResourcePaths.Home);
+    navigateToOriginHome();
   }
 
   const onHideUserOverlayPanel = () => {
@@ -44,7 +53,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const onSelectOrganizationSuccess = () => {
     organizationOverlayPanel.current.hide();
     userOverlayPanel.current.hide();
-    navigateTo(EUIResourcePaths.UserHome);
+    navigateToCurrentHome();
   }
 
   const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
@@ -58,30 +67,95 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     }})
   }
 
-  const items: Array<MenuItem> = [
-    {
-      label: 'Home',
-      icon: 'pi pi-fw pi-home',
-      command: () => { navigateTo(EUIResourcePaths.Home); }
-    },
-    {
-      label: 'Resources',
-      icon: 'pi pi-fw pi-file',
+  const getEmbeddableMenuItem = (): MenuItem => {
+    return {
+      label: 'EMBEDDABLE',
       items: [
         {
-          label: 'Reference Designs',
-          icon: 'pi pi-fw pi-github',
-          url: 'https://github.com/solace-iot-team/solace-apim-reference-designs',
-          target: '_blank'
+          label: 'Developer',
+          items: [
+            {
+              label: 'Configure App',
+              command: () => { navigateTo(EUIEmbeddableResourcePaths.DeveloperAppConfigure); }
+            }
+          ]
+        },
+        {
+          label: 'Admin',
+          items: [
+            {
+              label: 'Environment',
+              command: () => { navigateTo(EUIEmbeddableResourcePaths.AdminEnvironments); }
+            }
+          ]
+        },
+      ]
+    };
+  }
+
+  const getDevelMenuItem = (): MenuItem => {
+    return {
+      label: 'DEVEL',
+      items: [
+        {
+          label: 'Boostrap Organizations',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapOrganizations); }
+        },
+        {
+          label: 'Boostrap Users',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapUsers); }
+        },
+        {
+          label: 'Boostrap Connectors',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapConnectors); }
+        },
+        {
+          label: 'Test Roles',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestRoles); }
+        },
+        {
+          label: 'View Contexts',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.ViewContexts); }
         }
       ]
-    },
-    { 
-      label: 'Notifications',
-      icon: 'pi pi-fw pi-bell',
-      command: () => { navigateTo('/notifications'); }
-    }
-  ]
+    };
+  }
+
+  const getMenuItems = (): Array<MenuItem> => {
+    let items: Array<MenuItem> = [
+      {
+        label: 'Home',
+        icon: 'pi pi-fw pi-home',
+        command: () => { navigateToCurrentHome(); }
+      },
+      {
+        label: 'Resources',
+        icon: 'pi pi-fw pi-file',
+        items: [
+          {
+            label: 'Reference Designs',
+            icon: 'pi pi-fw pi-github',
+            url: 'https://github.com/solace-iot-team/solace-apim-reference-designs',
+            target: '_blank'
+          }
+        ]
+      },
+      { 
+        label: 'Notifications',
+        icon: 'pi pi-fw pi-bell',
+        command: () => { navigateTo('/notifications'); }
+      }
+    ];
+
+    if(Config.getUseEmbeddablePages()) items.push(getEmbeddableMenuItem());
+    if(Config.getUseDevelTools()) items.push(getDevelMenuItem());
+    return items;
+  }
 
   const menubarStartTemplate = () => {
     return (
@@ -142,9 +216,9 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
               >
               {renderUserOpInfo()}
               {renderOpOrganization()}
-              <RenderWithRbac resourcePath={EUIResourcePaths.ManageUserAccount} >
+              <RenderWithRbac resourcePath={EUICommonResourcePaths.ManageUserAccount} >
                 <Divider />
-                <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUIResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
+                <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUICommonResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
               </RenderWithRbac>
               <Divider />
               <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
@@ -171,7 +245,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   return (
     <React.Fragment>
       <div className="card" >
-        <Menubar model={items} start={menubarStartTemplate} end={menubarEndTemplate} />
+        <Menubar model={getMenuItems()} start={menubarStartTemplate} end={menubarEndTemplate} />
       </div>
     </React.Fragment>
   );

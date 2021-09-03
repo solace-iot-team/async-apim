@@ -41,7 +41,13 @@ const managedObjectList: TManagedObjectList = [
       last: "User",
       email: "master.user@aps.com"
     },
-    roles: [ EAPSAuthRole.SYSTEM_ADMIN, EAPSAuthRole.LOGIN_AS, EAPSAuthRole.ORGANIZATION_ADMIN ]    
+    roles: [ 
+      EAPSAuthRole.SYSTEM_ADMIN, 
+      EAPSAuthRole.LOGIN_AS, 
+      EAPSAuthRole.ORGANIZATION_ADMIN, 
+      EAPSAuthRole.API_TEAM,
+      EAPSAuthRole.API_CONSUMER
+     ]    
   },
   {
     userId: "cluster.admin@aps.com",
