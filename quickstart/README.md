@@ -17,8 +17,8 @@
 - example for localhost: [http://localhost:5000](http://localhost:5000)
 - login with root user:
   - [See docker.compose.yml](./docker.compose.yml):
-    - APIM_SERVER_ROOT_USER=root.admin@aps.com
-    - APIM_SERVER_ROOT_USER_PWD=admin12
+    - APIM_SERVER_ROOT_USER=`root.admin@aps.com`
+    - APIM_SERVER_ROOT_USER_PWD=`admin123!`
 
 ### Configure Connector
 - contains a sample bootstrap connector config with `localhost`

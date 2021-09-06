@@ -20,7 +20,7 @@
     "sourceMap": true,
     "strictPropertyInitialization":false,
     "resolveJsonModule": true,
-    "outDir": "./dist/server",
+    "outDir": "./dist",
     "typeRoots": [
       "./node_modules/@types", 
       "./server/@types"

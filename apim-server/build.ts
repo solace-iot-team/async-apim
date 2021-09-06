@@ -36,7 +36,7 @@ const copyServerAssets = () => {
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: copying server assets ...`);
   // open api spec
-  if(s.cp(`${apiSpecFile}`, `${outDir}/common/api.yml`).code !== 0) process.exit(1);
+  if(s.cp(`${apiSpecFile}`, `${outDir}/server/common/api.yml`).code !== 0) process.exit(1);
   // public
   if(s.cp('-rf', 'public', `${outRoot}`).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
@@ -46,10 +46,10 @@ const buildPortal = () => {
   const funcName = 'buildPortal';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  s.cd(portalDir);
-  s.exec('npm install');
-  s.exec('npm run build');
-  s.cd(scriptDir);
+  if(s.cd(portalDir).code !== 0) process.exit(1);
+  if(s.exec('npm install').code !== 0) process.exit(1);
+  if(s.exec('npm run build').code !== 0) process.exit(1);
+  if(s.cd(scriptDir).code !== 0) process.exit(1) ;
   console.log(`${logName}: success.`);
 }
 
@@ -72,12 +72,14 @@ const copyPortalAssets = () => {
 // }
 
 const main = () => {
-    prepare();
-    compileServer();
-    copyServerAssets();
-    buildPortal();
-    copyPortalAssets();
-    // cleanup();
+  const funcName = 'main';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  prepare();
+  compileServer();
+  copyServerAssets();
+  buildPortal();
+  copyPortalAssets();
+  // cleanup();
 }
 
 main();

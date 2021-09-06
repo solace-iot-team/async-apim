@@ -45,7 +45,7 @@ const copySourcesToWorkingDir = () => {
   if(s.rm('-rf', `${workingApimServerDir}/node_modules`).code !== 0) process.exit(1);
   if(s.rm('-rf', `${workingApimServerDir}/src/*`).code !== 0) process.exit(1);
   if(s.rm('-rf', `${workingApimServerDir}/server/@types`).code !== 0) process.exit(1);
-
+  
   console.log(`${logName}: copying apim-portal sources to working dir ...`);
   if(s.cp('-rf', apimPortalDir, workingDir).code !== 0) process.exit(1);
   if(s.rm('-rf', `${workingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
@@ -53,7 +53,6 @@ const copySourcesToWorkingDir = () => {
   if(s.rm('-rf', `${workingApimPortalDir}/.env`).code !== 0) process.exit(1);
   // replace it with the one working with the quickstart docker compose
   if(s.cp('-rf', `${dockerAssetDir}/.env.apim-portal`, `${workingApimPortalDir}/.env`).code !== 0) process.exit(1);
-
   console.log(`${logName}: success.`);
 }
 
@@ -63,10 +62,10 @@ const buildApimServer = () => {
   console.log(`${logName}: starting ...`);
   s.cd(`${workingApimServerDir}`);
   console.log(`${logName}: directory = ${s.exec(`pwd`)}`);
-  s.exec('npm install');
-  s.exec('npm run build');
+  if(s.exec('npm install').code !== 0) process.exit(1);
+  if(s.exec('npm run build').code !== 0) process.exit(1);
   if(s.exec('npm prune --production --json').code !== 0) process.exit(1);
-  s.cd(`${scriptDir}`);
+  if(s.cd(`${scriptDir}`).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }
 

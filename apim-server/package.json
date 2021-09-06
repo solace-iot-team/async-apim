@@ -37,7 +37,6 @@
     "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
   "dependencies": {
-    "ajv": "^8.6.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -46,10 +45,12 @@
     "express-openapi-validator": "^4.12.11",
     "form-data": "^4.0.0",
     "mongodb": "^4.1.0",
+    "node-fetch": "^2.6.1",
     "pino": "^6.11.3",
     "print-env": "^0.1.2"
   },
   "devDependencies": {
+    "@types/node-fetch": "^2.5.8",
     "@types/chai": "^4.2.18",
     "@types/cookie-parser": "^1.4.2",
     "@types/cors": "^2.8.12",
@@ -57,9 +58,7 @@
     "@types/js-yaml": "^4.0.2",
     "@types/lodash": "^4.14.172",
     "@types/mocha": "^8.2.2",
-    "@types/mongodb": "^4.0.7",
     "@types/node": "^15.6.1",
-    "@types/node-fetch": "^2.5.12",
     "@types/pino": "^6.3.8",
     "@types/shelljs": "^0.8.8",
     "@types/sinon": "^10.0.2",
@@ -74,7 +73,6 @@
     "js-yaml": "^3.14.1",
     "lodash": "^4.17.21",
     "mocha": "^8.4.0",
-    "node-fetch": "^2.6.1",
     "nodemon": "^2.0.7",
     "openapi-typescript-codegen": "^0.9.3",
     "pino-pretty": "^5.0.1",
