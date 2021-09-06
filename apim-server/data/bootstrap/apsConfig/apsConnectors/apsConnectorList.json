@@ -7,7 +7,7 @@
     "connectorClientConfig": {
       "protocol": "http",
       "host": "localhost",
-      "port": 9090,
+      "port": 9095,
       "apiVersion": "v1",
       "serviceUser": "apim-portal-service-admin",
       "serviceUserPwd": "Solace123!"

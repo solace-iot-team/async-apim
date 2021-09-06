@@ -101,4 +101,15 @@ npx mocha --config test/.mocharc.yml test/apsUsers.inline.spec.ts | npx pino-pre
 unset_source_env
 ````
 
+# Build Production Dist w/ Portal
+- builds server & portal
+
+````bash
+npm run build
+npm start
+````
+- portal: `http://localhost:3003`
+- portal OpenAPI Explorer: `http://localhost:3003/api-explorer`
+
+
 ---

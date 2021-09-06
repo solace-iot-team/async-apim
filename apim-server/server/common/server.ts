@@ -10,12 +10,13 @@ import { EServerStatusCodes, ServerLogger } from './ServerLogger';
 import errorHandler from '../api/middlewares/error.handler';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { TExpressServerConfig } from './ServerConfig';
-import { ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
+import { ApiPathNotFoundServerError, ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
 
 
 // import { Request, Response, NextFunction } from 'express';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
+import { nextTick } from 'process';
 
 const app = express();
 
@@ -80,41 +81,30 @@ export class ExpressServer {
   router(routes: (app: Application, apiBase: string) => void): ExpressServer {
     
     routes(app, this.config.apiBase);
-
-    // // send portal
-    // app.use('/', (req, res, _next) => {
-
-    //   const funcName = 'sendPortal';
-    //   const logName = `${ExpressServer.name}.${funcName}()`;
-    //   const requestInfo = ServerLogger.getRequestInfo(req);
-    //   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal', details: requestInfo }));
-
-
-    //   // throws error if not found
-    //   // "ENOENT: no such file or directory, stat '/Users/rjgu/Dropbox/Solace-Contents/Solace-IoT-Team/apim-dev/async-apim/apim-server/portal/index.html'"
-
-    //   // better user error: no portal installed
-
-    //   res.sendFile(`${this.root}/portal/index.html`);
-
-    //   // throw a nice error here
-
-    //   // res.sendFile(fileName, options, function (err) {
-    //   //   if (err) {
-    //   //     next(err)
-    //   //   } else {
-    //   //     console.log('Sent:', fileName)
-    //   //   }
-    //   // })
-
-
-    // });
-    // catch all:
-    app.use('*', ApsCatchAllController.all);
-    app.use(errorHandler);
     // app.use('/auth', OIDCDIscoveryRouter);
     // app.options('*', cors(corsOptions));
 
+    // send portal if installed
+    app.use('/', (req, res, next) => {
+      const funcName = 'sendPortal';
+      const logName = `${ExpressServer.name}.${funcName}()`;
+      const requestInfo = ServerLogger.getRequestInfo(req);
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal', details: requestInfo }));
+      const portalIndexFile = `${this.root}/portal/index.html`;
+      res.sendFile(portalIndexFile, {}, (err) => {
+        if(err) {
+          ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal error, no portal found', details: { 
+            error: err,
+            sendFile: portalIndexFile
+          } }));
+          const apiError =  new ApiPathNotFoundServerError(logName, undefined, { path: req.originalUrl });
+          next(apiError);
+        }
+      });
+    });
+    // catch all:
+    app.use('*', ApsCatchAllController.all);
+    app.use(errorHandler);
 
     return this;
   }

@@ -1,23 +1,23 @@
 version: "3.7"
 services:
-  apim-connector-mongodb:
-    container_name: apim-portal-connector-mongodb
+  apim-devel-connector-mongodb:
+    container_name: apim-devel-connector-mongodb
     image : mongo:latest
     volumes:
       - mongodbdata:/data/db
     restart: unless-stopped
-  apim-connector:
+  apim-devel-connector:
     container_name: ${APIM_PORTAL_CONNECTOR_CONTAINER_NAME}
     links:
-      - apim-connector-mongodb
+      - apim-devel-connector-mongodb
     image: "solaceiotteam/apim-connector-server:latest"
     ports:
-      - 9090:3000
+      - 9095:3000
     volumes:
       - ./docker-volumes/apim-connector:/data
     restart: unless-stopped
     environment:
-      - DB_URL="mongodb://apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
+      - DB_URL="mongodb://apim-devel-connector-mongodb:27017/platform?retryWrites=true&w=majority"
       - LOG_LEVEL=trace
       - APP_ID="apim-connector"
       - FILE_USER_REGISTRY=/data/organization_users.json
@@ -30,13 +30,13 @@ services:
       - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
-  apim-demo-portal:
-    container_name: apim-portal-demo-portal
+  apim-devel-demo-portal:
+    container_name: apim-devel-demo-portal
     links:
-      - apim-connector
+      - apim-devel-connector
     image: "solaceiotteam/apim-demo-portal:latest"
     ports:
-      - 9091:8090
+      - 9096:8090
     volumes:
       - ./docker-volumes/demo-portal:/data/apim-demo-portal
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
       #sammode=dev disables login screen
       - sammode=prod
       #url of apim-connector
-      - solace_spa_url=http://apim-connector:3000/v1
+      - solace_spa_url=http://apim-devel-connector:3000/v1
       #user-name of platform api (as defined in organization_users.json)
       - solace_spa_user=apim-portal-service-admin
       #user-password of platform api (as defined in organization_users.json)
