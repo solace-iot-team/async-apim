@@ -1,7 +1,5 @@
 
 import { TAPSClientOpenApiConfig } from './utils/APSClientOpenApi';
-import { EAPSClientProtocol } from '@solace-iot-team/apim-server-openapi-browser';
-
 
 type TConfig = {
   useDevelTools: boolean,

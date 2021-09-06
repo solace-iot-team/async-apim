@@ -1,9 +1,9 @@
-import pino from 'pino';
-import printEnv from 'print-env';
+import fs from 'fs';
 import { ConfigEnvVarNotANumberServerError, ConfigMissingEnvVarServerError } from './ServerError';
 // import { L } from './ServerLogger';
 
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
+import { ServerUtils } from './ServerUtils';
 
 export type TExpressServerConfig = {
   port: number;
@@ -26,6 +26,7 @@ export type TRootUserConfig = {
   password: string
 }
 export type TServerConfig = {
+  dataPath?: string,
   expressServer: TExpressServerConfig,
   mongoDB: TMongoDBConfig,
   serverLogger: TServerLoggerConfig,
@@ -44,7 +45,8 @@ enum EEnvVars {
   APIM_SERVER_SECRET = 'APIM_SERVER_SECRET',
   APIM_SERVER_OPENAPI_SPEC_PATH = 'APIM_SERVER_OPENAPI_SPEC_PATH',
   APIM_SERVER_ROOT_USER = 'APIM_SERVER_ROOT_USER',
-  APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD'
+  APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD',
+  APIM_SERVER_DATA_PATH = 'APIM_SERVER_DATA_PATH'
 }
 
 export class ServerConfig {
@@ -57,6 +59,10 @@ export class ServerConfig {
     if (!value) throw new ConfigMissingEnvVarServerError(logName, 'mandatory env var missing', envVarName);    
     return value;
   };
+
+  private getOptionalEnvVarValueAsString = (envVarName: string): string | undefined => {
+    return process.env[envVarName];
+  }
 
   private getOptionalEnvVarValueAsBoolean = (envVarName: string, defaultValue: boolean): boolean => {
     const value: string | undefined = process.env[envVarName];
@@ -73,15 +79,22 @@ export class ServerConfig {
     return valueAsNumber;
   };
 
+  private getOptionalEnvVarValueAsPathWithReadPermissions = (envVarName: string): string | undefined => {
+    const funcName = 'getOptionalEnvVarValueAsPathWithReadPermissions';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+    const value = this.getOptionalEnvVarValueAsString(envVarName);
+    if(!value) return undefined;
+    return ServerUtils.validateFilePathWithReadPermission(value);
+  }
+
   constructor() { }
 
   public initialize = (): void => {
-
-// TODO: get the apiBase from the spec
-
+    // TODO: get the apiBase from the spec
     const funcName = 'initialize';
     const logName = `${ServerConfig.name}.${funcName}()`;
     this.config = {
+      dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
       expressServer: {
         port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
         apiBase: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_API_BASE),

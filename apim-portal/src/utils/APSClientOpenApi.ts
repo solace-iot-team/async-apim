@@ -1,5 +1,5 @@
 
-import { OpenAPI as APSOpenAPI, ApiError as APSApiError, EAPSClientProtocol } from '@solace-iot-team/apim-server-openapi-browser';
+import { OpenAPI as APSOpenAPI, ApiError as APSApiError } from '@solace-iot-team/apim-server-openapi-browser';
 
 export type TAPSClientOpenApiConfig = {
   apsServerUrl?: URL,

@@ -1,6 +1,6 @@
 {
   "name": "apim-portal",
-  "version": "0.0.6",
+  "version": "0.0.9",
   "description": "Async API Management Portal",
   "repository": {
     "type": "git",

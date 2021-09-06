@@ -3,6 +3,7 @@ import { HttpError as OpenApiValidatorHttpError } from 'express-openapi-validato
 import APSErrorIds = Components.Schemas.APSErrorIds;
 import APSError = Components.Schemas.APSError;
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
+import { ApiError } from "../../src/@solace-iot-team/apim-server-openapi-node";
 
 export class ServerError extends Error {
   private internalStack: Array<string>;
@@ -142,6 +143,25 @@ export class ApiInternalServerErrorFromError extends ApiInternalServerError {
       errors: originalError.errors || [{ message: originalError.message }],
       status: originalError.status
     }
+  }
+}
+
+export class BootstrapErrorFromError extends ServerErrorFromError {
+  protected static apiDefaultDescription: string = 'Bootstrap Server Error';
+  private error: Error;
+  constructor(error: Error, internalLogName: string, internalMessage: string) {
+    super(error, internalLogName);
+    this.error = error;
+    this.message = internalMessage;
+  }
+}
+
+export class BootstrapErrorFromApiError extends ApiInternalServerError {
+  protected static apiDefaultDescription: string = 'Bootstrap Api Server Error';
+  private apiError: ApiError;
+  constructor(apiError: ApiError, internalLogName: string, internalMessage: string) {
+    super(internalLogName, internalMessage, apiError.message);
+    this.apiError = apiError;
   }
 }
 

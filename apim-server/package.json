@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js | pino-pretty",
@@ -37,12 +37,14 @@
     "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
   "dependencies": {
+    "ajv": "^8.6.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-openapi-validator": "^4.12.11",
+    "form-data": "^4.0.0",
     "mongodb": "^4.1.0",
     "pino": "^6.11.3",
     "print-env": "^0.1.2"

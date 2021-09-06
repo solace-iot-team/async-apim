@@ -1,0 +1,16 @@
+[
+  {
+    "connectorId": "LocalQuickstartApimConnector",
+    "displayName": "Quickstart Connector",
+    "description": "Standard quickstart connector with localhost",
+    "isActive": true,
+    "connectorClientConfig": {
+      "protocol": "http",
+      "host": "localhost",
+      "port": 5001,
+      "apiVersion": "v1",
+      "serviceUser": "apim-portal-service-admin",
+      "serviceUserPwd": "Solace123!"
+    }
+  }
+]

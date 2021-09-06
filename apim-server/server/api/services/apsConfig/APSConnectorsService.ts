@@ -1,16 +1,26 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
+import ServerConfig from '../../../common/ServerConfig';
+import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
+import { ApiInternalServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, ApiObjectNotFoundServerError, ApiServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
+import { ServerUtils } from '../../../common/ServerUtils';
 import APSConnector = Components.Schemas.APSConnector;
 import APSConnectorCreateRequest = Components.Schemas.APSConnectorCreate;
 import APSConnectorReplaceRequest = Components.Schemas.APSConnectorReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
-import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
 import APSConnectorId = Components.Schemas.APSId;
-import { ApiInternalServerError, ApiObjectNotFoundServerError } from '../../../common/ServerError';
+import APSConnectorList = Components.Schemas.APSConnectorList; 
+import { 
+  APSConnectorCreate, 
+  ApsConfigService, 
+  EAPSClientProtocol, 
+  ApiError
+} from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
-export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: Array<APSConnector> };
+export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
 
 export class APSConnectorsService {
   private static collectionName = "apsConnectors";
+  private static boostrapApsConnectorListPath = 'bootstrap/apsConfig/apsConnectors/apsConnectorList.json';
   private persistenceService: MongoPersistenceService;
   
   constructor() {
@@ -25,6 +35,99 @@ export class APSConnectorsService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
     // await this.persistenceService.dropCollection();
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  }
+
+  public bootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSConnectorsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+
+    if(ServerConfig.getConfig().dataPath) {
+      const bootstrapApsConnectorListFileName: string = `${ServerConfig.getConfig().dataPath}/${APSConnectorsService.boostrapApsConnectorListPath}`;
+      const bootstrapApsConnectorListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsConnectorListFileName);
+      if(bootstrapApsConnectorListFile) {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
+
+        // read file
+        const bootstrapApsConnectorListData = ServerUtils.readFileContentsAsJson(bootstrapApsConnectorListFile);
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list', details: { bootstrapConnectorList: bootstrapApsConnectorListData } }));  
+
+        // bootstrap via OpenAPI as root user ==> same validation rules ...
+        // at server start: 
+        // if connector id exists: do nothing
+        // else: create
+        const bootstrapApsConnectorList: APSConnectorList = bootstrapApsConnectorListData;
+        for(const bootstrapApsConnector of bootstrapApsConnectorList) {
+          let found = false;
+          try {
+            await this.byId(bootstrapApsConnector.connectorId);
+            found = true;
+          } catch(e) {
+            if(e instanceof ApiKeyNotFoundServerError) {
+              found = false;
+            } else {
+              throw new ApiInternalServerErrorFromError(e, logName);
+            }
+          }
+          if(!found) {
+            const create: APSConnectorCreate = 
+            { 
+              ...bootstrapApsConnector,
+              connectorClientConfig: {
+                ...bootstrapApsConnector.connectorClientConfig,
+                protocol: bootstrapApsConnector.connectorClientConfig.protocol === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP: EAPSClientProtocol.HTTPS
+              }
+            };
+            try {
+              await ApsConfigService.createApsConnector(create);
+            } catch (e: any) {
+              ServerLogger.debug(ServerLogger.createLogEntry(logName, 
+                { 
+                  code: EServerStatusCodes.BOOTSTRAP_ERROR, 
+                  message: 'creating connector', 
+                  details: { 
+                    bootstrapConnector: bootstrapApsConnector,
+                    error: e
+                   } 
+                }));  
+              if(e instanceof ApiError) {
+                throw new BootstrapErrorFromApiError(e, logName, 'creating connector');
+              } else {
+                throw new BootstrapErrorFromError(e, logName, 'creating connector');
+              }
+            }
+            // set to active if so
+            if(bootstrapApsConnector.isActive) {
+              try {
+                await ApsConfigService.setApsConnectorActive(bootstrapApsConnector.connectorId);
+              } catch(e: any) {
+                ServerLogger.debug(ServerLogger.createLogEntry(logName, 
+                  { 
+                    code: EServerStatusCodes.BOOTSTRAP_ERROR, 
+                    message: 'set connector to active', 
+                    details: { 
+                      connectorId: bootstrapApsConnector.connectorId,
+                      error: e
+                     } 
+                  }));  
+                if(e instanceof ApiError) {
+                  throw new BootstrapErrorFromApiError(e, logName, 'creating connector');
+                } else {
+                  throw new BootstrapErrorFromError(e, logName, 'creating connector');
+                }
+              }
+            }
+          } else {
+            ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector already exists', details: { bootstrapApsConnector: bootstrapApsConnector } }));  
+          }
+        }
+      } else {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list file not found, skipping', details: { file: bootstrapApsConnectorListFileName } }));  
+      }
+    } else {
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping connector list bootstrap, no data path' }));  
+    }
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
   public all = async(): Promise<TAPSListAPSConnectorResponse> => {

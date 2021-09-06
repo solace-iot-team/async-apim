@@ -93,6 +93,7 @@ const generateOpenApiNodeClient = () => {
       input: inputApiSpecFile,
       output: outputOpenApiNodeClientDir,
       httpClient: HttpClient.NODE,
+      exportSchemas: true
   })
   .then(() => {
     return;
