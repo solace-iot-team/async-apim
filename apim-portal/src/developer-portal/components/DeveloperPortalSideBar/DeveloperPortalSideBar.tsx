@@ -27,6 +27,12 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const isDisabled = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
+      !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath)
+    );
+  }
+
+  const isDisabledWithOrg = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
+    return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
       !userContext.runtimeSettings.currentOrganizationName
     );
@@ -42,17 +48,17 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
       },
       {
         label: 'Product Catalog',
-        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
       },
       {
         label: 'My Applications',
-        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications),
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageUserApplications),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
       },
       {
         label: 'Team Applications',
-        disabled: isDisabled(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
       },
     ];

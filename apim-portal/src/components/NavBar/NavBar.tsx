@@ -14,7 +14,7 @@ import { SystemHealthDisplay } from "../SystemHealth/SystemHealthDisplay";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
-import { EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, EUIEmbeddableResourcePaths, Globals } from "../../utils/Globals";
+import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, EUIEmbeddableResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 
 import '../APComponents.css';
@@ -33,11 +33,13 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const navigateTo = (path: string): void => { history.push(path); }
 
   const navigateToCurrentHome = (): void => {
-    navigateTo(Globals.getCurrentHomePath(authContext.isLoggedIn, userContext.currentAppState));
+    if(userContext.currentAppState !== EAppState.UNDEFINED) navigateTo(Globals.getCurrentHomePath(authContext.isLoggedIn, userContext.currentAppState));
+    else navigateToOriginHome();
   }
 
   const navigateToOriginHome = (): void => {
-    navigateTo(Globals.getOriginHomePath(userContext.originAppState));
+    if(userContext.originAppState !== EAppState.UNDEFINED) navigateTo(Globals.getOriginHomePath(userContext.originAppState));
+    else navigateTo(EUICommonResourcePaths.Home);
   }
 
   const onLogout = () => {

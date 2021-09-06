@@ -31,7 +31,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     );
   } 
 
-  const isDisabledWithOrg = (resourcePath: EUIAdminPortalResourcePaths): boolean => {
+  const isDisabledWithOrg = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
       !userContext.runtimeSettings.currentOrganizationName
@@ -43,7 +43,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     let items: Array<MenuItem>= [
       { 
         label: 'Switch to Developer Portal',
-        disabled: isDisabled(EUIDeveloperPortalResourcePaths.Home),
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.Home),
         command: () => { props.onSwitchToDeveloperPortal(); }
       },
       {
