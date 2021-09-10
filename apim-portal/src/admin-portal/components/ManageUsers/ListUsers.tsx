@@ -54,7 +54,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
     const funcName = 'transformTableSortFieldNameToApiSortFieldName';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
+    // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
     if(tableSortFieldName.startsWith('apiObject.')) {
       return tableSortFieldName.replace('apiObject.', '');
     }
@@ -225,7 +225,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const onSort = (event: any) => {
     const funcName = 'onSort';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
+    // console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
     const _lazyParams = { ...lazyLoadingTableParams, ...event };
     setLazyLoadingTableParams(_lazyParams);
   }
