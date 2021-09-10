@@ -2,7 +2,7 @@ version: "3.7"
 services:
   apim-devel-connector-mongodb:
     container_name: apim-devel-connector-mongodb
-    image : mongo:latest
+    image : mongo:5.0.2
     volumes:
       - mongodbdata:/data/db
     restart: unless-stopped

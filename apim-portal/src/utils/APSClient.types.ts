@@ -59,7 +59,7 @@ export type dummy = boolean;
 // export type delete_APSConnectorClientConfig = {
 //   protocol: delete_EAPSConnectorClientProtocol,
 //   host: string,
-//   port: number,
+//   port: number, 
 //   // baseUrl: string,
 //   apiVersion: string,
 //   adminUser: string,

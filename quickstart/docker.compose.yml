@@ -3,7 +3,7 @@ services:
   # apim connector
   qs-async-apim-connector-mongodb:
     container_name: qs-async-apim-connector-mongodb
-    image : mongo:latest
+    image : mongo:5.0.2
     volumes:
       - mongodbdataconnector:/data/db
     restart: unless-stopped

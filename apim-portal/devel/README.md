@@ -13,7 +13,12 @@ Stop:
 apim-connector-system/stop.system.sh
 ````
 
-## APIM Server OpenAPI from Local Release
+## Start Devel Portal
+````bash
+npm start
+````
+
+## Using APIM Server OpenAPI from Local Release
 ````bash
 cd async-apim/release/apim-server-openapi-browser
 # create link in global node_modules
@@ -42,7 +47,7 @@ npm unlink --no-save @solace-iot-team/apim-server-openapi-browser
 npm install
 ````
 
-## Connector OpenAPI from Local Release
+## Using Connector OpenAPI from Local Release
 ````bash
 # NOTE: in platform-api/release/platform-api-openapi-client-fe
 npm link # creates link in global node_modules

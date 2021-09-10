@@ -58,7 +58,7 @@ export type deleteMe = boolean;
 //       return apiObject;
 //     } catch (e) {
 //       throw e;
-//     }
+//     } 
 //   }
 //   public static getActive = async (): Promise<delete_APSConnectorInstance> => {
 //     const funcName = 'getActive';

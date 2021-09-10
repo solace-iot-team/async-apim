@@ -98,6 +98,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     let callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.API_GET_SELECT_OBJECT_LIST, 'retrieve list of organizations');
     try { 
       const apiSelectObjectList: TApiObjectList = await AdministrationService.listOrganizations();
+      // console.log(`${logName}: apiSelectObjectList=${JSON.stringify(apiSelectObjectList, null, 2)} `);
       setSelectObjectList(transformApiObjectListToSelectObjectList(apiSelectObjectList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
