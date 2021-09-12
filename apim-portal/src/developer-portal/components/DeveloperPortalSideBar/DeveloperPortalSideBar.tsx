@@ -47,12 +47,12 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         command: () => { props.onSwitchToAdminPortal(); }
       },
       {
-        label: 'Product Catalog',
+        label: 'Catalog',
         disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
       },
       {
-        label: 'My Applications',
+        label: 'My Apps',
         disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageUserApplications),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
       },

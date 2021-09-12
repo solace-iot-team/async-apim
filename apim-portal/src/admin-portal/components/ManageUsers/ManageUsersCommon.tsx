@@ -42,7 +42,7 @@ export class ManageUsersCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: EAPSAuthRoleList, ): string => {
+  public static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: EAPSAuthRoleList): string => {
     return ConfigHelper.getAuthorizedRolesDisplayNameList(roles ? roles : [], configContext).join(', ');
   }
 

@@ -26,7 +26,7 @@ export interface IListEnvironmentsProps {
   onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
   onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
 }
-
+ 
 export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListEnvironmentsProps) => {
   const componentName = 'ListEnvironments';
 

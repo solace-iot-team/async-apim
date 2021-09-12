@@ -1,0 +1,114 @@
+.adp-productcatalog .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.adp-productcatalog .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.adp-productcatalog .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.adp-productcatalog .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.adp-productcatalog .ap-api-error {
+  border-color: #df2121;
+}
+.adp-productcatalog .has-badge {
+  background-color: transparent;
+}
+
+.adp-productcatalog .card form {
+  margin-top: 2rem;
+}
+.adp-productcatalog .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .adp-productcatalog .card {
+    width: 80%;
+  }
+}
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}
+
+.adp-productcatalog .api-product-view {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+}
+.adp-productcatalog .api-product-view .api-product-view-detail {
+  flex: 1 1 0;
+}
+.adp-productcatalog .api-product-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.adp-productcatalog .api-product-description {
+  margin: 0 0 1rem 0;
+}
+.adp-productcatalog .api-product-view .api-product-action {
+  display: flex;
+  flex-direction: column;
+}
+
+.adp-productcatalog .api-product-view .api-product-apis {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  /* align-self: flex-end; */
+}
+.adp-productcatalog
+  .api-product-view
+  .api-product-view-detail
+  .product-api-toolbar {
+  background: none;
+  border: none;
+}
+
+@media screen and (max-width: 576px) {
+  .adp-productcatalog .api-product-view {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .adp-productcatalog .api-product-view img {
+    width: 75%;
+    margin: 2rem 0;
+  }
+
+  .adp-productcatalog .api-product-view .api-product-view-detail {
+    text-align: center;
+  }
+
+  .adp-productcatalog .api-product-view .api-product-apis {
+    align-self: center;
+  }
+
+  .adp-productcatalog .api-product-view .api-product-action {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .adp-productcatalog .api-product-view .api-product-action {
+    margin-top: 2rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+}
