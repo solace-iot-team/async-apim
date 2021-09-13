@@ -1,33 +1,18 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-import { ApiProductsService, APIProduct } from '@solace-iot-team/platform-api-openapi-client-fe';
-
-// import { 
-//   ApsUsersService, 
-//   APSUserList, 
-//   ListApsUsersResponse,
-//   EAPSSortDirection,
-// } from "@solace-iot-team/apim-server-openapi-browser";
-
+import { ApiProductsService, APIProduct, EnvironmentsService, EnvironmentResponse } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-
-import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { ConfigContext } from '../../../components/ConfigContextProvider/ConfigContextProvider';
-import { APComponentsCommon, TAPLazyLoadingTableParameters } from "../../../components/APComponentsCommon";
+import { TAPLazyLoadingTableParameters } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
-import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { 
   DeveloperPortalCatgalogCommon, 
   E_CALL_STATE_ACTIONS, 
@@ -60,7 +45,9 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   type TManagedObjectTableDataRow = TManagedObject & {
     apiDisplayNameListAsString: string,
     protocolListAsString: string,
-    attributeListAsString: string
+    attributeListAsString: string,
+    environmentListAsString: string,
+    environmentListAsStringList: Array<string>
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
@@ -76,13 +63,13 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
-      // const funcName = '_transformManagedObjectToTableDataRow';
-      // const logName = `${componentName}.${funcName}()`;
       return {
         ...managedObject,
         apiDisplayNameListAsString: DeveloperPortalCatgalogCommon.getApiDisplayNameListAsString(managedObject.apiObject.apis),
         protocolListAsString: DeveloperPortalCatgalogCommon.getProtocolListAsString(managedObject.apiObject.protocols),
-        attributeListAsString: DeveloperPortalCatgalogCommon.getAttributeListAsString(managedObject.apiObject.attributes),
+        attributeListAsString: DeveloperPortalCatgalogCommon.getAttributeNamesAsString(managedObject.apiObject.attributes),
+        environmentListAsString: DeveloperPortalCatgalogCommon.getEnvironmentsAsString(managedObject.apiObject, managedObject.apiEnvironmentList),
+        environmentListAsStringList: DeveloperPortalCatgalogCommon.getEnvironmentsAsDisplayList(managedObject.apiObject, managedObject.apiEnvironmentList)
       }
     }
     return managedObjectList.map( (managedObject: TManagedObject) => {
@@ -90,8 +77,6 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
     });
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  // const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -102,8 +87,7 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
     first: 0, // index of the first row to be displayed
     rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
     page: 0,
-    // sortField: 'apiObject.isActivated',
-    sortField: 'apiObject.profile.email',
+    sortField: 'apiObject.name',
     sortOrder: 1
   });
   const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
@@ -114,18 +98,31 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
-  const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObjectListPage';
+  const apiGetManagedObjectList = async(pageSize: number, pageNumber: number): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
     try { 
+      // retrieve Api Products
       const apiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts(props.organizationId, pageSize, pageNumber);
       const totalCount: number = 1000; // should be returned by previous call
       let _managedObjectList: TManagedObjectList = [];
+      let _apiEnvironmentList: Array<EnvironmentResponse> = [];
       for(const apiProduct of apiProductList) {
-        _managedObjectList.push(DeveloperPortalCatgalogCommon.transformViewApiObjectToViewManagedObject(apiProduct));
-      }
+        if(apiProduct.environments) {
+          for(const apiEnvironmentName of apiProduct.environments) {
+            const found = _apiEnvironmentList.find( (environment: EnvironmentResponse) => {
+              return environment.name === apiEnvironmentName;
+            });
+            if(!found) {
+              const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(props.organizationId, apiEnvironmentName);
+              _apiEnvironmentList.push(resp);
+            }
+          }
+        }
+        _managedObjectList.push(DeveloperPortalCatgalogCommon.transformViewApiObjectToViewManagedObject(apiProduct, _apiEnvironmentList));
+      }  
       setManagedObjectList(_managedObjectList);
       setLazyLoadingTableTotalRecords(totalCount);
     } catch(e: any) {
@@ -144,11 +141,12 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
+    // Activate when connector can do search + sort
     // const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
     // const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
     // const searchWordList: string | undefined = globalFilter;
     // await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
-    await apiGetManagedObjectListPage(pageSize, pageNumber);
+    await apiGetManagedObjectList(pageSize, pageNumber);
     setLazyLoadingTableIsLoading(false);
   }
 
@@ -196,11 +194,29 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   }
 
   const actionBodyTemplate = (managedObject: TManagedObject) => {
-    // const funcName = 'actionBodyTemplate';
-    // const logName = `${componentName}.${funcName}()`;
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
+        </React.Fragment>
+    );
+  }
+
+  const apiGatewaysBodyTemplate = (row: TManagedObjectTableDataRow): JSX.Element => {
+    let jsxElementList: Array<JSX.Element> = [];
+    
+    const addJSXElement = (str: string) => {
+      const jsxElem: JSX.Element = (
+        <div>{str}</div>
+      );
+      jsxElementList.push(jsxElem);
+    }
+
+    row.environmentListAsStringList.forEach( (str: string) => {
+      addJSXElement(str);
+    });  
+    return (
+        <React.Fragment>
+          {jsxElementList}
         </React.Fragment>
     );
   }
@@ -211,9 +227,6 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   }
 
   const onSort = (event: any) => {
-    const funcName = 'onSort';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
     const _lazyParams = { ...lazyLoadingTableParams, ...event };
     setLazyLoadingTableParams(_lazyParams);
   }
@@ -224,14 +237,15 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   }
 
   const renderManagedObjectDataTable = () => {
-    // const funcName = 'renderManagedObjectDataTable';
-    // const logName = `${componentName}.${funcName}()`;
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
       <div className="card">
           <DataTable
             ref={dt}
             autoLayout={true}
+            resizableColumns 
+            columnResizeMode="expand"
+            showGridlines
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
@@ -265,9 +279,9 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
             <Column field="apiObject.description" header="Description" />
             <Column field="apiDisplayNameListAsString" header="API(s)" />
             <Column field="apiObject.approvalType" header="Approval" sortable/>
-            <Column field="protocolListAsString" header="Protocols" />
-            <Column field="attributeListAsString" header="Attributes" />
-            <Column field="apiObject.environments" header="API Gateways" />
+            <Column field="protocolListAsString" header="Exposed Protocols" />
+            <Column field="attributeListAsString" header="Controlled Attributes" />
+            <Column body={apiGatewaysBodyTemplate} header="API Gateway(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>
@@ -294,7 +308,7 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   return (
     <div className="adp-productcatalog">
 
-      {DeveloperPortalCatgalogCommon.renderSubComponentHeader('API Products:')}
+      <APComponentHeader header='API Products:' />  
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
@@ -307,11 +321,11 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
       }
       
       {/* DEBUG selected managedObject */}
-      {managedObjectList.length > 0 && selectedManagedObject && 
+      {/* {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      }
+      } */}
 
     </div>
   );

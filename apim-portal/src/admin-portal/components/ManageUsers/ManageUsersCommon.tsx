@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { 
   APSOrganizationIdList,
   APSUser, 
@@ -62,15 +60,6 @@ export class ManageUsersCommon {
       roleDisplayNameListAsString: ManageUsersCommon.getRoleDisplayNameListAsString(configContext, viewApiObject.roles),
       memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(viewApiObject.memberOfOrganizations)
     }
-  }
-
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
   }
 
   public static isActiveBodyTemplate = (managedObject: TViewManagedObject) => {

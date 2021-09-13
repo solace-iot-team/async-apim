@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { 
   APSUser,
   APSUserId, 
@@ -25,15 +23,6 @@ export enum E_CALL_STATE_ACTIONS {
 
 export class ManageUserAccountCommon {
 
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
-  }
-
   private static transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
     return getApiObject;
   }
@@ -46,7 +35,7 @@ export class ManageUserAccountCommon {
     try { 
       const apsUser: APSUser = await ApsUsersService.getApsUser(managedObjectId);
       resultManagedObject = ManageUserAccountCommon.transformGetApiObjectToManagedObject(apsUser);
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -64,7 +53,7 @@ export class ManageUserAccountCommon {
     try { 
       const apsUser: APSUser = await ApsUsersService.updateApsUser(managedObjectId, updateApiObject);
       resultManagedObject = apsUser;
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }

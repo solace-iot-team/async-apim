@@ -20,6 +20,7 @@ import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewMa
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 
 export interface IListConnectorsProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -65,7 +66,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, healthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -203,7 +204,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   return (
     <div className="manage-connectors">
 
-      {ManageConnectorsCommon.renderSubComponentHeader('Connectors:')}
+      <APComponentHeader header='Connectors:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

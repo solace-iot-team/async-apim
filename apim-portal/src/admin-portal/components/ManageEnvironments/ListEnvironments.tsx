@@ -6,8 +6,12 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-import { EnvironmentsService, EnvironmentListItem } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { 
+  EnvironmentsService, 
+  EnvironmentListItem 
+} from '@solace-iot-team/platform-api-openapi-client-fe';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -227,7 +231,7 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   return (
     <div className="ap-environments">
 
-      {ManageEnvironmentsCommon.renderSubComponentHeader('Environments:')}
+      <APComponentHeader header='Environments:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

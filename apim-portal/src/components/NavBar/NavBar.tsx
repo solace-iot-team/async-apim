@@ -161,7 +161,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
   const menubarStartTemplate = () => {
     return (
-      <img alt="logo" src="/images/logo.png" height="40" className="p-mr-2"></img>
+      <img alt="logo" src="/images/logo.png" className="p-menubar-logo p-mr-2"></img>
     )
   }
   const renderUserOpInfo = () => {

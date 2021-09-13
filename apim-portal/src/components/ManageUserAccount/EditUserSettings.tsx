@@ -9,6 +9,7 @@ import { Toolbar } from "primereact/toolbar";
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 
+import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageUserAccountCommon, TApiCallResult, TManagedObject, TUpdateApiObject } from "./ManageUserAccountCommon";
@@ -228,7 +229,7 @@ export const EditUserSettings: React.FC<IEditUserSettingsProps> = (props: IEditU
   return (
     <div className="manage-user-account">
 
-      { ManageUserAccountCommon.renderSubComponentHeader(`Edit Settings:`) }
+      <APComponentHeader header='Edit Settings:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

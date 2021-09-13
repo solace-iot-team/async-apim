@@ -19,3 +19,12 @@
   border-width: 0px 0px 0px 0px;
   border-color: transparent;
 }
+
+.ap-component-header {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.ap-display-asyncapispec {
+  max-width: 1200px;
+}

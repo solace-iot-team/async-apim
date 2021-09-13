@@ -19,11 +19,12 @@ import {
   EAPSClientProtocol
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -82,7 +83,7 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
     try { 
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
       setManagedObject(transformGetApiObjectToManagedObject(apsConnector));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -95,7 +96,7 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_CONNECTOR, `update connector: ${props.connectorDisplayName}`);
     try { 
       await ApsConfigService.replaceApsConnector(props.connectorId, transformManagedObjectToReplaceApiObject(managedObject));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -362,7 +363,7 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
   return (
     <div className="ap-environments">
 
-      {ManageConnectorsCommon.renderSubComponentHeader(`Edit Connector: ${props.connectorDisplayName} (${props.connectorId})`)}
+      <APComponentHeader header={`Edit Connector: ${props.connectorDisplayName} (${props.connectorId})`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

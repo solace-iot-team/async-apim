@@ -19,11 +19,12 @@ import {
   EAPSClientProtocol
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -83,7 +84,7 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
       const createdApiObject: APSConnector = await ApsConfigService.createApsConnector(transformManagedObjectToCreateApiObject(managedObject));
       setCreatedManagedObjectId(createdApiObject.connectorId);
       setCreatedManagedObjectDisplayName(createdApiObject.displayName);      
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -365,7 +366,7 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
   return (
     <div className="ap-environments">
 
-      {ManageConnectorsCommon.renderSubComponentHeader('Create Connector')}
+      <APComponentHeader header='Create Connector' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { 
   Organization, 
 } from '@solace-iot-team/platform-api-openapi-client-fe';
@@ -54,15 +52,6 @@ export class ManageOrganizationsCommon {
       apiObject: viewApiObject,
       hasInfo: hasInfo
     }
-  }
-
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
   }
 
   private static hasBodyTemplate = (has: boolean) => {

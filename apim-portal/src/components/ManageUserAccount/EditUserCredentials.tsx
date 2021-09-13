@@ -9,6 +9,7 @@ import { Toolbar } from "primereact/toolbar";
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 
+import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageUserAccountCommon, TApiCallResult, TManagedObject, TUpdateApiObject } from "./ManageUserAccountCommon";
@@ -206,7 +207,7 @@ export const EditUserCredentials: React.FC<IEditUserCredentialsProps> = (props: 
   return (
     <div className="manage-user-account">
 
-      { ManageUserAccountCommon.renderSubComponentHeader(`Edit Credentials:`) }
+      <APComponentHeader header='Edit Credentials:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

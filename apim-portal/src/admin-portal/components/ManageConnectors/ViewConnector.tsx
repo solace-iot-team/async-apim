@@ -9,6 +9,7 @@ import {
   APSConnector
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APConnectorHealthCheck, THealthCheckResult } from "../../../utils/APConnectorHealthCheck";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -45,7 +46,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
       const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
       setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, healthCheckResult));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -130,7 +131,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
   return (
     <div className="manage-connectors">
 
-      {ManageConnectorsCommon.renderSubComponentHeader(`Connector: ${props.connectorDisplayName} (${props.connectorId})`)}
+      <APComponentHeader header={`Connector: ${props.connectorDisplayName} (${props.connectorId})`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

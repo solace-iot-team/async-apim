@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { 
   APSConnector, 
   APSId 
@@ -53,15 +51,6 @@ export class ManageConnectorsCommon {
       healthCheckResult: healthCheckResult,
       healthCheckPassed: healthCheckResult.summary.success ? 'passed' : 'failed'
     }
-  }
-
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
   }
 
   public static isActiveBodyTemplate = (managedObject: TViewManagedObject) => {

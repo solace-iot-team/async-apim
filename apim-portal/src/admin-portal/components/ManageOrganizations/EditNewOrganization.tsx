@@ -13,11 +13,13 @@ import {
   AdministrationService, 
   Organization
 } from '@solace-iot-team/platform-api-openapi-client-fe';
+
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APConnectorFormValidationRules } from '../../../utils/APConnectorOpenApiFormValidationRules';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageOrganizationsCommon, TManagedObjectId } from "./ManageOrganizationsCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageOrganizationsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -319,10 +321,12 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     <div className="manage-organizations">
 
       {props.action === EAction.NEW && 
-        ManageOrganizationsCommon.renderSubComponentHeader(`Create Organization`)}
+        <APComponentHeader header='Create Organization' />
+      }
 
       {props.action === EAction.EDIT && 
-        ManageOrganizationsCommon.renderSubComponentHeader(`Edit Organization: ${props.organizationDisplayName}`)}
+        <APComponentHeader header={`Edit Organization: ${props.organizationDisplayName}`} />
+      }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

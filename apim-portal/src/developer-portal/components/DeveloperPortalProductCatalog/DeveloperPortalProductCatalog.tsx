@@ -8,16 +8,11 @@ import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListApiProducts } from "./DeveloperPortalListApiProducts";
-// import { ListEnvironments } from "./ListEnvironments";
-// import { ViewEnvironment } from "./ViewEnvironment";
-// import { EditEnvironment } from "./EditEnvironment";
-// import { DeleteEnvironment } from "./DeleteEnvironment";
-// import { NewEnvironment } from "./NewEnvironment";
 import { E_COMPONENT_STATE, TManagedObjectId } from "./DeveloperPortalProductCatalogCommon";
+import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
-import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
 
 export interface IDeveloperPortalProductCatalogProps {
   organizationName: TAPOrganizationId;
@@ -27,7 +22,7 @@ export interface IDeveloperPortalProductCatalogProps {
 }
 
 export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCatalogProps> = (props: IDeveloperPortalProductCatalogProps) => {
-  const componentName = 'DeveloperPortalProductCatalog';
+  // const componentName = 'DeveloperPortalProductCatalog';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -49,10 +44,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       currentState: componentState.previousState
     });
   }
-  
-  // const ToolbarNewManagedObjectButtonLabel = 'New';
-  // const ToolbarEditManagedObjectButtonLabel = 'Edit';
-  // const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -61,9 +52,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  // const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
-  // const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
-  // const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
 
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -108,16 +96,10 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
-        {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/> */}
-        {/* <Button label='any action?' icon="pi pi-question" className="p-button-text p-button-plain p-button-outlined"/>         */}
       </React.Fragment>
     );
     if(showViewComponent) return (
       <React.Fragment>
-        <Button label='any action?' icon="pi pi-question" className="p-button-text p-button-plain p-button-outlined"/>        
-        {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/> */}
-        {/* <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
-        {/* <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
       </React.Fragment>
     );
     return undefined;
@@ -128,8 +110,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       <React.Fragment>
         <Button icon="pi pi-list" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsList}/>        
         <Button icon="pi pi-th-large" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsGrid}/>        
-        {/* <Button tooltip='show as list' icon="pi pi-list" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsList}/>         */}
-        {/* <Button tooltip='show as grid' icon="pi pi-th-large" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsGrid}/>         */}
       </React.Fragment>
     );
   }
@@ -154,9 +134,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-  }
-  const onSubComponentCancel = () => {
-    setPreviousComponentState();
   }
   
   const calculateShowStates = (componentState: TComponentState) => {

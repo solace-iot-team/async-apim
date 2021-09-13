@@ -14,6 +14,8 @@ import {
   DevelopersService, 
   AppsService 
 } from '@solace-iot-team/platform-api-openapi-client-fe';
+
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -213,7 +215,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
   return (
     <div className="manage-organizations">
 
-      {ManageOrganizationsCommon.renderSubComponentHeader('Organizations:')}
+      <APComponentHeader header='Organizations:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

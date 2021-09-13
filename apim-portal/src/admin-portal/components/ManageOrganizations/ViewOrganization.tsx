@@ -12,6 +12,8 @@ import {
   DevelopersService, 
   AppsService 
 } from '@solace-iot-team/platform-api-openapi-client-fe';
+
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -137,7 +139,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   return (
     <div className="manage-users">
 
-      {ManageOrganizationsCommon.renderSubComponentHeader(`Organization: ${props.organizationDisplayName}`)}
+      <APComponentHeader header={`Organization: ${props.organizationDisplayName}`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

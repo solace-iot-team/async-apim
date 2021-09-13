@@ -1,29 +1,28 @@
 
 import React from "react";
 
-import AsyncApiComponent, { ConfigInterface } from "@asyncapi/react-component";
-import "@asyncapi/react-component/styles/default.css";
-// or minified version
-// import "@asyncapi/react-component/styles/default.min.css";
-
-
 import { Rating } from 'primereact/rating';
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { 
   ApiProductsService, 
   APIProduct, 
-  ApisService
+  ApisService,
+  EnvironmentResponse,
+  EnvironmentsService
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 
+import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
   DeveloperPortalCatgalogCommon, 
   E_CALL_STATE_ACTIONS, 
+  TApiAttribute, 
   TManagedObjectId, 
   TViewManagedObject
 } from "././DeveloperPortalProductCatalogCommon";
@@ -46,24 +45,23 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
   type TManagedObject = TViewManagedObject;
   type TManagedObjectDisplay = TManagedObject & {
     protocolListAsString: string,
-    attributeListAsString: string
+    attributeInfoAsString: string,
+    environmentListAsString: string
   }
 
   const transformManagedObjectToDisplay = (managedObject: TManagedObject): TManagedObjectDisplay => {
     return {
       ...managedObject,
       protocolListAsString: DeveloperPortalCatgalogCommon.getProtocolListAsString(managedObject.apiObject.protocols),
-      attributeListAsString: DeveloperPortalCatgalogCommon.getAttributeListAsString(managedObject.apiObject.attributes),
+      attributeInfoAsString: DeveloperPortalCatgalogCommon.getAttributeInfoAsString(managedObject.apiObject.attributes),
+      environmentListAsString: DeveloperPortalCatgalogCommon.getEnvironmentsAsString(managedObject.apiObject, managedObject.apiEnvironmentList),
     }
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  // const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<any>();
-  // const dt = React.useRef<any>(null);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -72,7 +70,14 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for product: ${props.apiProductDisplayName}`);
     try { 
       const apiProduct: APIProduct = await ApiProductsService.getApiProduct(props.organizationId, props.apiProductId);
-      setManagedObject(DeveloperPortalCatgalogCommon.transformViewApiObjectToViewManagedObject(apiProduct));
+      let apiEnvironmentList: Array<EnvironmentResponse> = [];
+      if(apiProduct.environments) {
+        for(const apiEnvironmentName of apiProduct.environments) {
+          const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(props.organizationId, apiEnvironmentName);
+          apiEnvironmentList.push(resp);
+        }
+      }
+      setManagedObject(DeveloperPortalCatgalogCommon.transformViewApiObjectToViewManagedObject(apiProduct, apiEnvironmentList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -122,51 +127,13 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
 
   React.useEffect(() => {
     if(showApiId) doFetchApi(showApiId);
-  }, [showApiId]);
-  // const onManagedObjectOpen = (event: any): void => {
-  //   const managedObject: TManagedObject = event.data as TManagedObject;
-  //   props.onManagedObjectView(managedObject.id, managedObject.displayName);
-  // }
-
-  // const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
-  //   const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
-  //   setGlobalFilter(_globalFilter);
-  // }
+  }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onShowApi = (event: any): void => {
     const funcName = 'onShowApi';
     const logName = `${componentName}.${funcName}()`;
     console.log(`${logName}: event.currentTarget.dataset.id=${JSON.stringify(event.currentTarget.dataset.id, null, 2)}`);
     setShowApiId(event.currentTarget.dataset.id);
-  }
-
-  const renderApiSpec = () => {
-    const funcName = 'renderApiSpec';
-    const logName = `${componentName}.${funcName}()`;
-    if(!apiSpec) throw new Error(`${logName}: apiSpec is undefined`);
-    const config: ConfigInterface = {
-      schemaID: showApiId,
-      show: {
-        sidebar: false,
-        info: true,
-        servers: true,
-        operations: true,
-        messages: false,
-        schemas: true,
-        errors: false,
-      },
-      sidebar: {
-        showOperations: 'byOperationsTags'
-      }
-    };
-    return (
-      <div>
-        <AsyncApiComponent schema={apiSpec} config={config} />
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(apiSpec, null, 2)}
-        </pre>
-      </div>
-    );
   }
 
   const renderManagedObject = () => {
@@ -188,6 +155,38 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
       );
     }
 
+    const renderAttributesInfo = (attributeList?: Array<TApiAttribute>): JSX.Element => {
+      let attributesJSXElementList: Array<JSX.Element> = [];
+      
+      const addAttributeJSXElement = (attribute: TApiAttribute) => {
+        const jsxElem: JSX.Element = (
+          <li>
+            {attribute.name}: [{attribute.value}]
+          </li>
+        );
+        attributesJSXElementList.push(jsxElem);
+      }
+
+      if(attributeList) {
+        attributeList.forEach( (attribute: TApiAttribute) => {
+          addAttributeJSXElement(attribute);  
+        });
+        return (
+          <div>
+            Controlled Attributes: 
+            <ul style={{ "listStyle": "disc", "padding": "0px 0px 0px 30px" }}>
+              {attributesJSXElementList}
+            </ul>
+          </div>
+        );
+      }
+      else return (
+        <div>
+          Controlled Attributes: none.
+        </div>
+      );
+    }
+  
     return (
       <React.Fragment>
         <div className="p-col-12">
@@ -197,8 +196,9 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
               {/* <div className="api-product-name">{props.apiProductDisplayName}</div> */}
               <div className="api-product-description">{managedObjectDisplay.apiObject.description}</div>
               <div>Approval: {managedObjectDisplay.apiObject.approvalType}</div>
+              <div>Gateways: {managedObjectDisplay.environmentListAsString}</div>
               <div>Protocols: {managedObjectDisplay.protocolListAsString}</div>
-              <div>Attributes: {managedObjectDisplay.attributeListAsString}</div>
+              {renderAttributesInfo(managedObject.apiObject.attributes)}
               {/* <i className="pi pi-tag product-category-icon"></i><span className="product-category">{data.category}</span> */}
               <div className="api-product-apis">Async API Spec(s):</div>
               {renderShowApiButtons()}
@@ -207,8 +207,6 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
               <Rating value={4} readOnly cancel={false}></Rating>
                 {/* <span className="api-product-apis">Async API Spec(s)</span> */}
                 {/* <span>{JSON.stringify(managedObjectDisplay.apiObject.apis)}</span> */}
-                {/* {renderShowApiButtons()} */}
-                {/* <Button label="api 1" data-id="data-id" data-displayName="data-displayName" icon="pi pi-folder-open" className="p-button-text p-button-plain p-button-outlined" onClick={onShowApi}/>         */}
 
                 {/* <Button icon="pi pi-shopping-cart" label="Add to Cart" disabled={data.inventoryStatus === 'OUTOFSTOCK'}></Button>
                 <span className={`product-badge status-${data.inventoryStatus.toLowerCase()}`}>{data.inventoryStatus}</span> */}
@@ -216,11 +214,9 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
           </div>
         </div>  
         <hr/>        
-        {apiSpec && renderApiSpec()}
-        <hr/>        
-        <pre>
-          {JSON.stringify({ ...managedObjectDisplay, globalSearch: undefined }, null, 2)}
-        </pre>        
+        {apiSpec && showApiId &&
+          <APDisplayAsyncApiSpec schema={apiSpec} schemaId={showApiId} />
+        }
       </React.Fragment>
     ); 
   }
@@ -228,7 +224,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
   return (
     <div className="adp-productcatalog">
 
-      {DeveloperPortalCatgalogCommon.renderSubComponentHeader(`API Product: ${props.apiProductDisplayName}`)}
+      <APComponentHeader header={`API Product: ${props.apiProductDisplayName}`} />  
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

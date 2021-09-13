@@ -18,11 +18,12 @@ import {
   EnvironmentPatch 
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEnvironmentName, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { ManageEnvironmentsCommon, E_CALL_STATE_ACTIONS } from "./ManageEnvironmentsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
@@ -381,7 +382,7 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   return (
     <div className="ap-environments">
 
-      {ManageEnvironmentsCommon.renderSubComponentHeader(`Edit Environment: ${props.environmentDisplayName} (${props.environmentName})`)}
+      <APComponentHeader header={`Edit Environment: ${props.environmentDisplayName} (${props.environmentName})`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

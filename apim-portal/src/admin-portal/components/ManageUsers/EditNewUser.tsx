@@ -17,6 +17,8 @@ import {
   APSUserReplace,
   EAPSAuthRole
 } from '@solace-iot-team/apim-server-openapi-browser';
+
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Organization, AdministrationService } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -27,7 +29,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
-import { E_CALL_STATE_ACTIONS, ManageUsersCommon, TManagedObjectId } from "./ManageUsersCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
@@ -143,7 +145,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     try { 
       const apsUser: APSUser = await ApsUsersService.getApsUser(managedObjectId);
       setManagedObject(transformGetApiObjectToManagedObject(apsUser));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -157,7 +159,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${managedObjectId}`);
     try { 
       await ApsUsersService.replaceApsUser(managedObjectId, transformManagedObjectToReplaceApiObject(managedObject));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -173,7 +175,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       const createdApiObject: APSUser = await ApsUsersService.createApsUser(transformManagedObjectToCreateApiObject(managedObject));
       setCreatedManagedObjectId(createdApiObject.userId);
       setCreatedManagedObjectDisplayName(createdApiObject.userId);      
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -194,7 +196,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations();
         setAvailableOrganizationList(apiOrganizationList);
       }
-    } catch(e) {
+    } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -524,10 +526,12 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     <div className="manage-users">
 
       {props.action === EAction.NEW && 
-        ManageUsersCommon.renderSubComponentHeader(`Create User`)}
+        <APComponentHeader header='Create User' />
+      }
 
       {props.action === EAction.EDIT && 
-        ManageUsersCommon.renderSubComponentHeader(`Edit User: ${props.userId}`)}
+        <APComponentHeader header={`Edit User: ${props.userId}`} />
+      }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

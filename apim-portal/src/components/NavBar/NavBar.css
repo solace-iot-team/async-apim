@@ -38,3 +38,7 @@
 .ap-navbar .organization-overlay-panel {
   min-width: 25rem;
 }
+
+.p-menubar-logo {
+  height: 40px !important;
+}

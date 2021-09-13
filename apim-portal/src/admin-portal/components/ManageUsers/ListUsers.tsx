@@ -14,6 +14,7 @@ import {
   EAPSSortDirection,
 } from "@solace-iot-team/apim-server-openapi-browser";
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -52,8 +53,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
-    const funcName = 'transformTableSortFieldNameToApiSortFieldName';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
     if(tableSortFieldName.startsWith('apiObject.')) {
       return tableSortFieldName.replace('apiObject.', '');
@@ -223,8 +224,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const onSort = (event: any) => {
-    const funcName = 'onSort';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'onSort';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
     const _lazyParams = { ...lazyLoadingTableParams, ...event };
     setLazyLoadingTableParams(_lazyParams);
@@ -286,7 +287,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   return (
     <div className="manage-users">
 
-      {ManageUsersCommon.renderSubComponentHeader('Users:')}
+      <APComponentHeader header='Users:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

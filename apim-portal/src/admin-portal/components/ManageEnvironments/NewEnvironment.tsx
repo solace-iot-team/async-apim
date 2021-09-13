@@ -11,14 +11,20 @@ import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 
-import { EnvironmentsService, Protocol, Endpoint, Environment } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { 
+  EnvironmentsService, 
+  Protocol, 
+  Endpoint, 
+  Environment 
+} from '@solace-iot-team/platform-api-openapi-client-fe';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { ListOrganizationServices } from "./ListOrganizationServices";
-import { ManageEnvironmentsCommon, E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
@@ -334,7 +340,7 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
   return (
     <div className="ap-environments">
 
-      {ManageEnvironmentsCommon.renderSubComponentHeader('Create Environment')}
+      <APComponentHeader header='Create Environment' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

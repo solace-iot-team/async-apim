@@ -1,7 +1,10 @@
 
-import React from 'react';
-
-import { Protocol, Endpoint, Service, EnvironmentResponse  } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { 
+  Protocol, 
+  Endpoint, 
+  Service, 
+  EnvironmentResponse  
+} from '@solace-iot-team/platform-api-openapi-client-fe';
 
 import { Globals } from '../../../utils/Globals';
 import { TAPEnvironmentName } from "../../../components/APComponentsCommon";
@@ -86,15 +89,6 @@ export class ManageEnvironmentsCommon {
     }
     viewManagedObject.globalSearch = ManageEnvironmentsCommon.generateGlobalSearchContent(viewManagedObject);
     return viewManagedObject;
-  }
-
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
   }
 
 }

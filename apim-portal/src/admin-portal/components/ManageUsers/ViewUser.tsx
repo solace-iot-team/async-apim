@@ -8,6 +8,8 @@ import {
   ApsUsersService, 
   APSUser
 } from '@solace-iot-team/apim-server-openapi-browser';
+
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ConfigContext } from '../../../components/ConfigContextProvider/ConfigContextProvider';
@@ -45,7 +47,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     try { 
       const apsUser: APSUser = await ApsUsersService.getApsUser(props.userId);
       setManagedObject(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser));
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -103,7 +105,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   return (
     <div className="manage-users">
 
-      {ManageUsersCommon.renderSubComponentHeader(`UserId: ${props.userId}`)}
+      <APComponentHeader header={`UserId: ${props.userId}`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

@@ -6,6 +6,7 @@ import { Column } from "primereact/column";
 
 import { EnvironmentsService } from '@solace-iot-team/platform-api-openapi-client-fe';
 
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -123,7 +124,7 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
   return (
     <div className="ap-environments">
 
-      {ManageEnvironmentsCommon.renderSubComponentHeader(`Environment: ${props.environmentDisplayName} (${props.environmentName})`)}
+      <APComponentHeader header={`Environment: ${props.environmentDisplayName} (${props.environmentName})`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

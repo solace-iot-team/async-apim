@@ -1,6 +1,9 @@
-import React from 'react';
+import { 
+  APIProduct, 
+  EnvironmentResponse, 
+  Protocol 
+} from '@solace-iot-team/platform-api-openapi-client-fe';
 
-import { APIProduct, Protocol } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { Globals } from '../../../utils/Globals';
 
 export enum E_COMPONENT_STATE {
@@ -18,10 +21,11 @@ export type TViewManagedObject = {
   id: TManagedObjectId,
   displayName: string,
   globalSearch: string,
-  apiObject: TViewApiObject
+  apiObject: TViewApiObject,
+  apiEnvironmentList: Array<EnvironmentResponse> 
 }
 
-type TAttribute = {
+export type TApiAttribute = {
   name: string,
   value: string
 }
@@ -57,10 +61,22 @@ export class DeveloperPortalCatgalogCommon {
     else return '';
   }
 
-  public static getAttributeListAsString = (attributeList?: Array<TAttribute>): string => {
+  public static getAttributeInfoAsString = (attributeList?: Array<TApiAttribute>): string => {
     if(attributeList) {
       let _attributeList: Array<string> = [];
-      attributeList.forEach( (attribute: TAttribute) => {
+      attributeList.forEach( (attribute: TApiAttribute) => {
+        const attributeStr: string = `${attribute.name}: ${attribute.value}`;
+        _attributeList.push(attributeStr);
+      });
+      return _attributeList.join(' | ');
+    }
+    else return '';
+  }
+
+  public static getAttributeNamesAsString = (attributeList?: Array<TApiAttribute>): string => {
+    if(attributeList) {
+      let _attributeList: Array<string> = [];
+      attributeList.forEach( (attribute: TApiAttribute) => {
         _attributeList.push(`${attribute.name}`);
       });
       return _attributeList.join(', ');
@@ -68,30 +84,46 @@ export class DeveloperPortalCatgalogCommon {
     else return '';
   }
 
-  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject): TViewManagedObject => {
-    // const funcName = 'transformViewApiObjectToViewManagedObject';
-    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
+  public static getEnvironmentsAsString = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): string => {
+    const funcName = 'getEnvironmentsAsString';
+    const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
+    let _environmentStrList: Array<string> = [];
+    viewApiObject.environments?.forEach( (environmentName: string) => {
+      const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
+        return environment.name === environmentName;
+      });
+      if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
+      _environmentStrList.push(
+        `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
+      );
+    });
+    return _environmentStrList.join(', ');
+  }
+
+  public static getEnvironmentsAsDisplayList = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
+    const funcName = 'getEnvironmentsAsDisplayList';
+    const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
+    let _environmentStrList: Array<string> = [];
+    viewApiObject.environments?.forEach( (environmentName: string) => {
+      const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
+        return environment.name === environmentName;
+      });
+      if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
+      _environmentStrList.push(
+        `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
+      );
+    });
+    return _environmentStrList;
+  }
+
+  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): TViewManagedObject => {
     return {
       id: viewApiObject.name,
       displayName: viewApiObject.name,
       globalSearch: DeveloperPortalCatgalogCommon.generateGlobalSearchContent(viewApiObject),
-      apiObject: viewApiObject
+      apiObject: viewApiObject,
+      apiEnvironmentList: apiEnvironmentList
     }
   }
-
-  public static renderSubComponentHeader = (header: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <h3>{header}</h3>
-        {/* <Divider/> */}
-      </React.Fragment>
-    )
-  }
-
-  // public static isActiveBodyTemplate = (managedObject: TViewManagedObject) => {
-  //   if (managedObject.apiObject.isActivated) return (<span className="pi pi-check badge-active" />)
-  //   else return (<span className="pi pi-times badge-active" />)
-  // }
-
 
 }
