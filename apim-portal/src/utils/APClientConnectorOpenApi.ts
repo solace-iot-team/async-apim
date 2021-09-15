@@ -11,12 +11,15 @@ export class APClientConnectorOpenApi {
   private static isInitialized: boolean = false;
 
   public static initialize = (config: APSConnectorClientConfig) => {
+    // const funcName: string = `initialize`;
+    // const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
     APClientConnectorOpenApi.config = (JSON.parse(JSON.stringify(config)));
     OpenAPI.BASE = `${APClientConnectorOpenApi.config.protocol}://${APClientConnectorOpenApi.config.host}:${APClientConnectorOpenApi.config.port}/${APClientConnectorOpenApi.config.apiVersion}`;
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
     OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
     APClientConnectorOpenApi.isInitialized = true;
-  }
+    // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
+  } 
 
   public static uninitialize = () => {
     APClientConnectorOpenApi.isInitialized = false;
@@ -74,4 +77,17 @@ export class APClientConnectorOpenApi {
   }
 }
 
+export enum EConnectorWebhookAuthenticationMethod {
+  BASIC = 'Basic',
+  HEADER = 'Header'
+}
 
+export type TConnectorWebhookBasicAuthentication = {
+  username: string,
+  password: string
+}
+
+export type TConnectorWebhookHeaderAuthentication = {
+  headerName: string,
+  headerValue: string
+}

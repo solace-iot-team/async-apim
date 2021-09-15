@@ -15,7 +15,10 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
 echo " >>> Docker-compose down for project: $apimConnectorSystemProjectName ..."
 
-  docker-compose -p $apimConnectorSystemProjectName -f "$dockerComposeFile" down --volumes --rmi all
+  # remove volumes as well
+  # docker-compose -p $apimConnectorSystemProjectName -f "$dockerComposeFile" down --volumes --rmi all
+  # leave volumes
+  docker-compose -p $apimConnectorSystemProjectName -f "$dockerComposeFile" down --rmi all
   if [[ $? != 0 ]]; then echo " >>> ERROR: docker compose down for '$apimConnectorSystemProjectName'"; exit 1; fi
   docker ps -a
 

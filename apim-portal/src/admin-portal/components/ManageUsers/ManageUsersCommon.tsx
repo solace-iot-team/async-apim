@@ -54,7 +54,7 @@ export class ManageUsersCommon {
     // const logName = `${ManageUsersCommon.name}.${funcName}()`;
     return {
       id: viewApiObject.userId,
-      displayName: `${viewApiObject.profile.first} ${viewApiObject.profile.last}`,
+      displayName: viewApiObject.userId,
       globalSearch: ManageUsersCommon.generateGlobalSearchContent(viewApiObject),
       apiObject: viewApiObject,
       roleDisplayNameListAsString: ManageUsersCommon.getRoleDisplayNameListAsString(configContext, viewApiObject.roles),

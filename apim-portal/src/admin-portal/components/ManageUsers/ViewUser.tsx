@@ -22,7 +22,6 @@ import "./ManageUsers.css";
 export interface IViewUserProps {
   userId: TManagedObjectId;
   userDisplayName: string;
-  reInitializeTrigger: number,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -65,10 +64,6 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    doInitialize();
-  }, [props.reInitializeTrigger]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

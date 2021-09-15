@@ -4,36 +4,55 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { 
+  ApiError,
+  Developer, 
+  DevelopersService 
+} from "@solace-iot-team/platform-api-openapi-client-fe";
+import { 
+  APSUser, 
+  APSUserId 
+} from "@solace-iot-team/apim-server-openapi-browser";
+
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
+import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { ListEnvironments } from "./ListEnvironments";
-import { ViewEnvironment } from "./ViewEnvironment";
-import { EditEnvironment } from "./EditEnvironment";
-import { DeleteEnvironment } from "./DeleteEnvironment";
-import { NewEnvironment } from "./NewEnvironment";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageEnvironmentsCommon";
+import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./DeveloperPortalManageUserAppsCommon";
+// import { ListUsers } from "./ListUsers";
+// import { ViewUser } from "./ViewUser";
+// import { DeleteUser } from "./DeleteUser";
+// import { EAction, EditNewUser } from "./EditNewUser";
 
 import '../../../components/APComponents.css';
-import "./ManageEnvironments.css";
+import "./DeveloperPortalManageUserApps.css";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { Globals } from "../../../utils/Globals";
+import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
+import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEditUserApp";
+import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 
-export interface IManageEnvironmentsProps {
+export interface IDeveloperPortalManageUserAppsProps {
   organizationName: TAPOrganizationId;
+  userId: APSUserId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
 }
 
-export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IManageEnvironmentsProps) => {
-  const componentName = 'ManageEnvironments';
+export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserAppsProps> = (props: IDeveloperPortalManageUserAppsProps) => {
+  const componentName = 'DeveloperPortalManageUserApps';
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
+    CREATE_API_DEVELOPER = "CREATE_API_DEVELOPER",
+    INTERNAL_ERROR = "INTERNAL_ERROR",
     MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
     MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
     MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
     MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW"
+    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -56,10 +75,21 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
     });
   }
   
+  const transformAPSUserToApiDeveloper = (apsUser: APSUser): Developer => {
+    return {
+      email: apsUser.profile.email,
+      firstName: apsUser.profile.first,
+      lastName: apsUser.profile.last,
+      userName: apsUser.userId
+    }
+  }
+
   const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -71,11 +101,50 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
 
+  // * Api Calls *  
+  const apiCreateDeveloper = async(): Promise<TApiCallState> => {
+    const funcName = 'apiCreateDeveloper';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_DEVELOPER, `create developer: ${props.userId}`);
+    let existApiDeveloper: boolean = true;
+    let anyError: any = undefined;
+    try {
+      const apiDeveloper: Developer = await DevelopersService.getDeveloper(props.organizationName, props.userId);
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) existApiDeveloper = false;
+        else anyError = e;
+      } else anyError = e;
+    }
+    if(!anyError && !existApiDeveloper) {
+      try { 
+        const apiDeveloper: Developer = await DevelopersService.createDeveloper(props.organizationName, transformAPSUserToApiDeveloper(userContext.user));
+      } catch(e: any) {
+        anyError = e;
+      }  
+    }
+    if(anyError) {
+      APClientConnectorOpenApi.logError(logName, anyError);
+      callState = ApiCallState.addErrorToApiCallState(anyError, callState);
+    }    
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const initialize = async() => {
+    setIsLoading(true);
+    setNewComponentState(E_COMPONENT_STATE.CREATE_API_DEVELOPER);
+    const apiCallState: TApiCallState = await apiCreateDeveloper();
+    if(!apiCallState.success) setNewComponentState(E_COMPONENT_STATE.INTERNAL_ERROR);
+    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setIsLoading(false);
+  }
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    initialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
- 
+
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -92,9 +161,9 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_DELETE_ENVIRONMENT:
-          case E_CALL_STATE_ACTIONS.API_CREATE_ENIRONMENT:
-          case E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT:
+          case E_CALL_STATE_ACTIONS.API_DELETE_USER_APP:
+          case E_CALL_STATE_ACTIONS.API_CREATE_USER_APP:
+          case E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP:
               props.onSuccess(apiCallStatus);
             break;
           default:
@@ -116,7 +185,6 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
-
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
@@ -171,24 +239,24 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   }
   
   // * prop callbacks *
-  const onListEnvironmentsSuccess = (apiCallState: TApiCallState) => {
+  const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onDeleteEnvironmentSuccess = (apiCallState: TApiCallState) => {
+  const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onNewEnvironmentSuccess = (apiCallState: TApiCallState, newEnvironmentName: TManagedObjectId, newEnvironmentDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectId(newEnvironmentName);
-      setManagedObjectDisplayName(newEnvironmentDisplayName);
+      setManagedObjectId(newId);
+      setManagedObjectDisplayName(newDisplayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onEditEnvironmentSuccess = (apiCallState: TApiCallState, updatedDisplayName?: string) => {
+  const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName?: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
@@ -206,9 +274,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const onSubComponentCancel = () => {
     setPreviousComponentState();
   }
-  
+
   const calculateShowStates = (componentState: TComponentState) => {
-    if(!componentState.currentState) {
+    if(!componentState.currentState || 
+        componentState.currentState === E_COMPONENT_STATE.INTERNAL_ERROR ||
+        componentState.currentState === E_COMPONENT_STATE.CREATE_API_DEVELOPER ) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -227,7 +297,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
-      setShowDeleteComponent(true)
+      setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
@@ -238,31 +308,31 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       setShowNewComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
-              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+      componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
-      setShowDeleteComponent(true)
+      setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
-      setShowDeleteComponent(false)
+      setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
-      setShowDeleteComponent(false)
+      setShowDeleteComponent(false);
       setShowNewComponent(true);
     }
   }
 
   return (
-    <div className="ap-environments">
+    <div className="manage-users">
 
       <Loading show={isLoading} />      
       
@@ -270,10 +340,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
         renderToolbar()
       }
       {showListComponent && 
-        <ListEnvironments
+        <DeveloperPortalListUserApps
           key={componentState.previousState}
-          organizationName={props.organizationName}
-          onSuccess={onListEnvironmentsSuccess} 
+          organizationId={props.organizationName}
+          userId={props.userId}
+          onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
           onManagedObjectEdit={onEditManagedObject}
@@ -282,41 +353,49 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
         />
       }
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
-        <ViewEnvironment 
-          organizationName={props.organizationName}
-          environmentName={managedObjectId}
-          environmentDisplayName={managedObjectDisplayName}
+        <DeveloperPortalViewUserApp
+          organizationId={props.organizationName}
+          userId={props.userId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
         />      
       }
-      {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <EditEnvironment
-          organizationName={props.organizationName}
-          environmentName={managedObjectId}
-          environmentDisplayName={managedObjectDisplayName}
-          onSuccess={onEditEnvironmentSuccess} 
-          onError={onSubComponentError}
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
-        />
-      }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
-        <DeleteEnvironment
-          organizationName={props.organizationName}
-          environmentName={managedObjectId}
-          environmentDisplayName={managedObjectDisplayName}
-          onSuccess={onDeleteEnvironmentSuccess} 
+        <DeveloperPortalDeleteUserApp
+          organizationId={props.organizationName}
+          userId={props.userId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          onSuccess={onDeleteManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
         />
       }
-      {showNewComponent && 
-        <NewEnvironment
-          organizationName={props.organizationName}
-          onSuccess={onNewEnvironmentSuccess} 
+      { showNewComponent &&
+        <DeveloperPortalNewEditUserApp
+          action={EAction.NEW}
+          organizationId={props.organizationName}
+          userId={props.userId}
+          onNewSuccess={onNewManagedObjectSuccess} 
+          onEditSuccess={onEditManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+        />
+      }
+      {showEditComponent && managedObjectId && managedObjectDisplayName &&
+        <DeveloperPortalNewEditUserApp
+          action={EAction.EDIT}
+          organizationId={props.organizationName}
+          userId={props.userId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          onNewSuccess={onNewManagedObjectSuccess} 
+          onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}

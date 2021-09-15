@@ -33,7 +33,7 @@ export interface IEditEnvironmentProps {
   environmentName: TAPEnvironmentName;
   environmentDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
-  onSuccess: (apiCallState: TApiCallState) => void;
+  onSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -122,6 +122,7 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
   const [managedObjectTableDataRow, setManagedObjectTableDataRow] = React.useState<TManagedObjectTableDataRow>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [selectedExposedServiceEndpointList, setSelectedExposedServiceEndpointList] = React.useState<TServiceEndpointList>([]);
@@ -152,6 +153,7 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
     try { 
       const apiObject: TUpdateApiObject = transformManagedObjectToUpdateApiObject(managedObject);
       await EnvironmentsService.updateEnvironment(props.organizationName, props.environmentName, apiObject);
+      setUpdatedManagedObjectDisplayName(apiObject.displayName);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -187,7 +189,7 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT) props.onSuccess(apiCallStatus);
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT) props.onSuccess(apiCallStatus, updatedManagedObjectDisplayName);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

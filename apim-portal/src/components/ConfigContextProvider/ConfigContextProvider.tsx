@@ -31,6 +31,7 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
         rbacRoleList: action.rbacRoleList
       }
       case 'SET_CONFIG_CONNECTOR':
+        // console.log(`${logName}: SET_CONFIG_CONNECTOR: action.connector=${JSON.stringify(action.connector, null, 2)}`);
         if(action.connector) {
           APClientConnectorOpenApi.initialize(action.connector.connectorClientConfig);
         } else {

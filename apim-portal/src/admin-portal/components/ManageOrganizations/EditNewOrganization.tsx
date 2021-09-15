@@ -269,7 +269,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 <Controller
                   name="apiObject.name"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.APName_ValidationRules()}
+                  rules={APConnectorFormValidationRules.Name()}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

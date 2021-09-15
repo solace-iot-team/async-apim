@@ -67,7 +67,6 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
-  // const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -79,12 +78,12 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(!managedObjectId) return;
+    if(!managedObjectDisplayName) return;
     if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
         componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-      ) props.onBreadCrumbLabelList([managedObjectId]);
+      ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
     else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -185,6 +184,14 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
+  const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: string | undefined) => {
+    setApiCallStatus(apiCallState);
+    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+      if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    }
+    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+  }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
@@ -273,8 +280,6 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
         <ViewUser
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
-          // reInitializeTrigger={reInitializeTrigger}
-          reInitializeTrigger={0}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
@@ -294,7 +299,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
         <EditNewUser
           action={EAction.NEW}
           onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onSubComponentSuccess} 
+          onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
@@ -306,7 +311,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
           onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onSubComponentSuccess} 
+          onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}

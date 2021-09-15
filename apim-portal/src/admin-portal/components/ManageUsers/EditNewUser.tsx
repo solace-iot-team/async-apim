@@ -44,7 +44,7 @@ export interface IEditNewUserProps {
   userDisplayName?: string;
   onError: (apiCallState: TApiCallState) => void;
   onNewSuccess: (apiCallState: TApiCallState, newUserId: TManagedObjectId, newDisplayName: string) => void;
-  onEditSuccess: (apiCallState: TApiCallState) => void;
+  onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -77,6 +77,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
+  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
@@ -159,6 +160,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${managedObjectId}`);
     try { 
       await ApsUsersService.replaceApsUser(managedObjectId, transformManagedObjectToReplaceApiObject(managedObject));
+      setUpdatedManagedObjectDisplayName(managedObject.userId);      
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -244,7 +246,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         props.onNewSuccess(apiCallStatus, createdManagedObjectId, createdManagedObjectDisplayName);
       }  
       else if(props.action === EAction.EDIT && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_REPLACE_USER) {
-        props.onEditSuccess(apiCallStatus);
+        props.onEditSuccess(apiCallStatus, updatedManagedObjectDisplayName);
       }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
