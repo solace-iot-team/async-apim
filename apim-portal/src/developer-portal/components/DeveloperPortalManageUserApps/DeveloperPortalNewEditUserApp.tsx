@@ -17,14 +17,15 @@ import {
   AppPatch,
   App
 } from '@solace-iot-team/platform-api-openapi-client-fe';
+
 import { 
   APSUserId
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { 
