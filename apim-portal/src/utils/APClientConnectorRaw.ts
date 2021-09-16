@@ -19,7 +19,7 @@ class APClientConnectorRawError extends Error {
 export class APClientConnectorRaw {
   private static connectorClientConfig: APSConnectorClientConfig;
   private static baseUrl: string;
-  private static basePath: string = '';
+  private static basePath: string | undefined = undefined;
   private static aboutPath: string = 'about.json';
 
   private static getUrl = (path: string): string => {
@@ -70,7 +70,8 @@ export class APClientConnectorRaw {
     // console.log(`${logName}: APClientConnectorRaw.getUrl(APClientConnectorRaw.basePath) = ${APClientConnectorRaw.getUrl(APClientConnectorRaw.basePath)}`);
     let response, responseBody: any;
     try {
-      response = await window.fetch(APClientConnectorRaw.getUrl(APClientConnectorRaw.basePath));
+      const path: string = APClientConnectorRaw.basePath ? APClientConnectorRaw.basePath : '';
+      response = await window.fetch(APClientConnectorRaw.getUrl(path));
       responseBody = await APClientConnectorRaw.getResponseJson(response);
       if(!response.ok) APClientConnectorRaw.handleError(logName, response, responseBody);
       return responseBody;
@@ -84,7 +85,8 @@ export class APClientConnectorRaw {
     const logName= `${APClientConnectorRaw.name}.${funcName}()`;
     let response, responseBody: any;
     try {
-      response = await window.fetch(APClientConnectorRaw.getUrl(APClientConnectorRaw.basePath + '/' + APClientConnectorRaw.aboutPath));
+      const path: string = APClientConnectorRaw.basePath ? (APClientConnectorRaw.basePath + '/' + APClientConnectorRaw.aboutPath) : APClientConnectorRaw.aboutPath;
+      response = await window.fetch(APClientConnectorRaw.getUrl(path));
       responseBody = await APClientConnectorRaw.getResponseJson(response);
       if(!response.ok) APClientConnectorRaw.handleError(logName, response, responseBody);
       return responseBody;

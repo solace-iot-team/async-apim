@@ -57,7 +57,7 @@ export class APConnectorHealthCheck {
     try {
       await AdministrationService.listOrganizations();
       return true;
-    } catch(e) {
+    } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       const apiError: APConnectorApiError = e;
       if(apiError.status === 401) return false;
@@ -86,7 +86,7 @@ export class APConnectorHealthCheck {
     }  
     try {
       await EnvironmentsService.listEnvironments(testOrg.name);  
-    } catch(e) {
+    } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       apiError = e;
     }

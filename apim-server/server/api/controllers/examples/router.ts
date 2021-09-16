@@ -1,7 +1,9 @@
 import express from 'express';
-import controller from './controller';
+import { ExamplesController } from './controller';
 export default express
   .Router()
-  .post('/', controller.create)
-  .get('/', controller.all)
-  .get('/:id', controller.byId);
+  // .post('/', controller.create)
+  .get('/', ExamplesController.all)
+  .get('/totalCount', ExamplesController.totalCount)
+  // .get('/:id', controller.byId);
+ 

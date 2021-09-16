@@ -61,7 +61,7 @@ export class ExpressServer {
       onError: ( (err, body, req) => {
         const logName = `${ExpressServer.name}.OpenApiValidator.validateResponse.onError()`;
         throw new ApiServerErrorFromOpenApiResponseValidatorError(logName, err, body, ServerLogger.getRequestInfo(req));
-      })      
+      })
     }
     let validateResponseValue: ValidateResponseOpts | boolean; 
     if (this.config.enableOpenApiResponseValidation) {

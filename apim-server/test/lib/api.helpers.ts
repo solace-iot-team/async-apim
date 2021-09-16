@@ -10,8 +10,19 @@ import { OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
 //     return true;
 // }
 
+// import type { ApiRequestOptions } from './ApiRequestOptions';
+
+// type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
+// type Headers = Record<string, string>;
+
 export class ApimServerAPIClient {    
     private static base: string;
+
+  //   public static getHeaders = async(options: ApiRequestOptions): Promise<Headers> => {
+  //     return {
+  //       'x-hello'
+  //     };
+  // }  
 
     public static initialize = (base: string) => {
       ApimServerAPIClient.base = base;

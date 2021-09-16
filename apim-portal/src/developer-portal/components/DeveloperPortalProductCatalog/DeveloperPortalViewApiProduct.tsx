@@ -91,7 +91,6 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      // const api: any = await ApisService.getApi(props.organizationId, apiId, "application/x-yaml");
       const api: any = await ApisService.getApi(props.organizationId, apiId, "application/json");
       setApiSpec(api);
     } catch(e) {

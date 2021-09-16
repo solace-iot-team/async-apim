@@ -279,7 +279,7 @@ export class TestContext {
         url: response.req.url,
         statusText: '?',
         body: body
-      }
+      };
       if (isBodyJSON && typeof body === 'object' && 'errorId' in body) {
         TestContext.apiError = {
           name: body.errorId,

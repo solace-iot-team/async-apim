@@ -1,23 +1,66 @@
+import { Request, Response, NextFunction } from 'express';
+import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import ExamplesService from '../../services/examples.service';
-import { Request, Response } from 'express';
+import { TAPSExampleListResponse } from '../../services/examples.service';
 
-export class Controller {
-  all(_: Request, res: Response): void {
-    ExamplesService.all().then((r) => res.json(r));
-  }
+import ListExamplesResponses = Paths.ListExamples.Responses;
 
-  byId(req: Request, res: Response): void {
-    const id = Number.parseInt(req.params['id']);
-    ExamplesService.byId(id).then((r) => {
-      if (r) res.json(r);
-      else res.status(404).end();
+export class ExamplesController {
+
+  public static all = (req: Request, res: Response, next: NextFunction): void => {
+    const funcName = 'all';
+    const logName = `${ExamplesController.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
+
+    ExamplesService.all()
+    .then( (r: TAPSExampleListResponse) => {
+      res.set({
+        'X-Total-Count': 3
+        // 'X-Total-Count': "3fff"
+      });
+      // res.set('Access-Control-Expose-Headers', ['x-hello', 'X-Total-Count']);
+
+      const listExamples200: ListExamplesResponses.$200 = r.list;
+      res.status(200).json(listExamples200);
+    })
+    .catch( (e) => {
+      next(e);
     });
   }
 
-  create(req: Request, res: Response): void {
-    ExamplesService.create(req.body.name).then((r) =>
-      res.status(201).location(`/api/v1/examples/${r.id}`).json(r)
-    );
+  public static totalCount = (req: Request, res: Response, next: NextFunction): void => {
+    const funcName = 'totalCount';
+    const logName = `${ExamplesController.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
+
+    ExamplesService.all()
+    .then( (_r: TAPSExampleListResponse) => {
+      res.set({
+        'X-Total-Count': 3
+      });
+      // res.set('Access-Control-Expose-Headers', ['x-hello', 'X-Total-Count']);
+      res.status(200).send();
+    })
+    .catch( (e) => {
+      next(e);
+    });
   }
+
+  
+  // byId(req: Request, res: Response): void {
+  //   const id = Number.parseInt(req.params['id']);
+  //   ExamplesService.byId(id).then((r) => {
+  //     if (r) res.json(r);
+  //     else res.status(404).end();
+  //   });
+  // }
+
+  // create(req: Request, res: Response): void {
+  //   ExamplesService.create(req.body.name).then((r) =>
+  //     res.status(201).location(`/api/v1/examples/${r.id}`).json(r)
+  //   );
+  // }
 }
-export default new Controller();
+ 

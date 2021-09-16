@@ -82,7 +82,7 @@ const generateOpenApiTypes = () => {
   console.log(`${logName}: generating OpenAPI types for server ...`);
   if(s.exec(`npx dtsgen --out ${outputApiTypesFile} ${inputApiSpecFile}`).code !== 0) process.exit(1);
   console.log(`${logName}: file:${outputApiTypesFile}`);
-  console.log(`${logName}: success.`);
+  console.log(`${logName}: success.`); 
 }
 const generateOpenApiNodeClient = () => {
   const funcName = 'generateOpenApiNodeClient';
@@ -93,7 +93,8 @@ const generateOpenApiNodeClient = () => {
       input: inputApiSpecFile,
       output: outputOpenApiNodeClientDir,
       httpClient: HttpClient.NODE,
-      exportSchemas: true
+      exportSchemas: true,
+      // request: './custom/request.ts'      
   })
   .then(() => {
     return;

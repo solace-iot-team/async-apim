@@ -683,13 +683,23 @@ paths:
                 $ref: "#/components/schemas/APSError"
   /examples:
     get:
+      operationId: listExamples
       tags:
       - Examples
       description: Fetch all examples
       responses:
         200:
           description: Returns all examples
-          content: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExampleList'
+          headers:
+            X-Total-Count:
+              description: total count of examples
+              required: true
+              schema:
+                $ref: '#/components/schemas/ExampleListTotalCount'
     post:
       tags:
       - Examples
@@ -705,6 +715,21 @@ paths:
         200:
           description: Returns all examples
           content: {}
+  /examples/totalCount:
+    get:
+      operationId: listExamplesTotalCount
+      tags:
+      - Examples
+      description: Fetch all examples total count header.
+      responses:
+        200:
+          description: Returns header only
+          headers:
+            X-Total-Count:
+              description: total count of examples
+              required: true
+              schema:
+                $ref: '#/components/schemas/ExampleListTotalCount'
   /examples/{id}:
     get:
       tags:
@@ -1097,6 +1122,14 @@ components:
         - password
         - profile
         - roles
+    ExampleListTotalCount:
+      description: Example list total count.
+      type: integer
+    ExampleList:
+      description: Example list.
+      type: array
+      items:
+        type: string
     ExampleBody:
       title: example
       required:

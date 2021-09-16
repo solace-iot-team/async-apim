@@ -10,7 +10,7 @@ export type TViewApiObject = Organization;
 
 export type TViewManagedObjectHasInfo = {
   hasEnvironments: boolean,
-  hasApis: boolean,
+  hasApis?: boolean,
   hasApiProducts: boolean,
   hasDevelopers: boolean,
   hasApps: boolean
@@ -54,8 +54,9 @@ export class ManageOrganizationsCommon {
     }
   }
 
-  private static hasBodyTemplate = (has: boolean) => {
-    if (has) return (<span className={`pi pi-check manage-organizations has-badge`} />)
+  private static hasBodyTemplate = (has: boolean | undefined) => {
+    if (has === undefined) return (<span>?</span>)
+    else if (has === true) return (<span className={`pi pi-check manage-organizations has-badge`} />)
     else return (<span className={`pi pi-minus manage-organizations has-badge`} />)
   }
 
@@ -64,7 +65,7 @@ export class ManageOrganizationsCommon {
   } 
 
   public static hasApisBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-    return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasApis ? true : false);
+    return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasApis);
   } 
 
   public static hasApiProductsBodyTemplate = (viewManagedObject: TViewManagedObject) => {

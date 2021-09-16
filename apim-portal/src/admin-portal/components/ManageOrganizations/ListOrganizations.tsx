@@ -62,7 +62,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
       const apiOrganizationList = await AdministrationService.listOrganizations();
       for(const apiOrganization of apiOrganizationList) {
         const envResponse = await EnvironmentsService.listEnvironments(apiOrganization.name, 1);        
-        const apiResponse = await ApisService.listApis(apiOrganization.name, 1);
+        // const apiResponse = await ApisService.listApis(apiOrganization.name, 1);
         const apiProductResponse = await ApiProductsService.listApiProducts(apiOrganization.name, 1);
         const developerResponse = await DevelopersService.listDevelopers(apiOrganization.name, 1);
         const appResponse = await AppsService.listApps(apiOrganization.name, undefined, 1);
@@ -70,7 +70,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
           ...ManageOrganizationsCommon.transformViewApiObjectToViewManagedObject(apiOrganization),
           hasInfo: {
             hasEnvironments: envResponse.length > 0,
-            hasApis: apiResponse.length > 0,
+            // hasApis: apiResponse.length > 0,
             hasApiProducts: apiProductResponse.length > 0,
             hasApps: appResponse.length > 0,
             hasDevelopers: developerResponse.length > 0
@@ -173,7 +173,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
             dataKey="id"
           >
             <Column field="hasInfo.hasEnvironments" header="Environments" body={ManageOrganizationsCommon.hasEnvironmentsBodyTemplate} />
-            <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} />
+            {/* <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} /> */}
             <Column field="hasInfo.hasApiProducts" header="API Products" body={ManageOrganizationsCommon.hasApiProductsBodyTemplate}/>
             <Column field="hasInfo.hasDevelopers" header="Developers" body={ManageOrganizationsCommon.hasDevelopersBodyTemplate} />
             <Column field="hasInfo.hasApps" header="Apps" body={ManageOrganizationsCommon.hasAppsBodyTemplate}/>
