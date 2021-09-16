@@ -76,21 +76,19 @@ describe(`${scriptName}`, () => {
         throw new Error(`${scriptName}: unexpected object: ${JSON.stringify(x)}`);
       }
 
-      const switchAuth = (webhookAuth: ExampleWebHookAuth): boolean => {
+      const switchAuth = (webhookAuth: ExampleWebHookAuth): string => {
         switch(webhookAuth.authMethod) {
           case ExampleWebHookBasicAuth.authMethod.BASIC:
-            TestLogger.logMessageWithId(`Basic auth = ${JSON.stringify(webhookAuth)}`);
-            return true;
+            return `${ExampleWebHookBasicAuth.authMethod.BASIC}: username=${webhookAuth.username}, password=${webhookAuth.password}`;
           case ExampleWebHookHeaderAuth.authMethod.HEADER:
-            TestLogger.logMessageWithId(`Header auth = ${JSON.stringify(webhookAuth)}`);
-            return true;
+            return `${ExampleWebHookHeaderAuth.authMethod.HEADER}: headerName=${webhookAuth.headerName}, headerValue=${webhookAuth.headerValue}`;
           default:
             return assertNever(webhookAuth);
         }
       }
 
-      switchAuth(webhook1.authentication);
-      switchAuth(webhook2.authentication);
+      TestLogger.logMessageWithId(`auth = ${switchAuth(webhook1.authentication)}`);
+      TestLogger.logMessageWithId(`auth = ${switchAuth(webhook2.authentication)}`);
 
     });
 
