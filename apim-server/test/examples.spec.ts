@@ -7,7 +7,11 @@ import { TestContext, TestLogger } from './lib/test.helpers';
 import { 
   ExamplesService,
   ExampleList,
-  ApiError
+  ApiError,
+  ExampleWebHook,
+  ExampleWebHookAuth,
+  ExampleWebHookBasicAuth,
+  ExampleWebHookHeaderAuth
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 
 const scriptName: string = path.basename(__filename);
@@ -50,6 +54,44 @@ describe(`${scriptName}`, () => {
         expect(false, `${TestLogger.createTestFailMessage('log:')}`).to.be.true;
       }
       expect(totalCount, `${TestLogger.createTestFailMessage('3')}`).to.equal(3);
+    });
+
+    it(`${scriptName}: should get examples webhook basic auth`, async () => {
+      let exampleWebhookList1: Array<ExampleWebHook>;
+      let exampleWebhookList2: Array<ExampleWebHook>;
+      try {
+        exampleWebhookList1 = await ExamplesService.listExamplesWebhooks();
+        exampleWebhookList2 = await ExamplesService.listExamplesWebhooks();
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('log:')}`).to.be.true;
+      }
+      expect(exampleWebhookList1, `${TestLogger.createTestFailMessage('array of length 1')}`).to.be.an.an('array').of.length(1);
+      expect(exampleWebhookList2, `${TestLogger.createTestFailMessage('array of length 1')}`).to.be.an.an('array').of.length(1);
+
+      const webhook1: ExampleWebHook = exampleWebhookList1[0];
+      const webhook2: ExampleWebHook = exampleWebhookList2[0];
+
+      const assertNever = (x: never): never => {
+        throw new Error(`${scriptName}: unexpected object: ${JSON.stringify(x)}`);
+      }
+
+      const switchAuth = (webhookAuth: ExampleWebHookAuth): boolean => {
+        switch(webhookAuth.authMethod) {
+          case ExampleWebHookBasicAuth.authMethod.BASIC:
+            TestLogger.logMessageWithId(`Basic auth = ${JSON.stringify(webhookAuth)}`);
+            return true;
+          case ExampleWebHookHeaderAuth.authMethod.HEADER:
+            TestLogger.logMessageWithId(`Header auth = ${JSON.stringify(webhookAuth)}`);
+            return true;
+          default:
+            return assertNever(webhookAuth);
+        }
+      }
+
+      switchAuth(webhook1.authentication);
+      switchAuth(webhook2.authentication);
+
     });
 
   });

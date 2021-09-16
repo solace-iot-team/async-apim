@@ -5,5 +5,6 @@ export default express
   // .post('/', controller.create)
   .get('/', ExamplesController.all)
   .get('/totalCount', ExamplesController.totalCount)
+  .get('/webhooks', ExamplesController.getWebhooks)
   // .get('/:id', controller.byId);
- 
+  

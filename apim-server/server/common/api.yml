@@ -730,6 +730,21 @@ paths:
               required: true
               schema:
                 $ref: '#/components/schemas/ExampleListTotalCount'
+  /examples/webhooks:
+    get:
+      operationId: listExamplesWebhooks
+      tags:
+      - Examples
+      description: Fetch all example webhooks
+      responses:
+        200:
+          description: Returns webhooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  $ref: '#/components/schemas/ExampleWebHook'
   /examples/{id}:
     get:
       tags:
@@ -1139,3 +1154,70 @@ components:
         name:
           type: string
           example: no_stress
+    ExampleWebHookBasicAuth:
+      type: object
+      properties:
+        authMethod:
+          type: string
+          enum:
+          - Basic
+        username:
+          type: string
+        password:
+          type: string
+      required:
+      - authMethod
+      - username
+      - password
+    ExampleWebHookHeaderAuth:
+      type: object
+      description: A HTTP header used for authentication
+      properties:
+        authMethod:
+          type: string
+          enum:
+          - Header
+        headerName:
+          type: string
+        headerValue:
+          type: string
+      required:
+      - authMethod
+      - headerName
+      - headerValue     
+    ExampleWebHookAuth:
+      anyOf:
+        - $ref: '#/components/schemas/ExampleWebHookBasicAuth'
+        - $ref: '#/components/schemas/ExampleWebHookHeaderAuth'
+    ExampleWebHook:
+      type: object
+      required:
+      - uri
+      - method
+      properties:
+        uri:
+          type: string
+          pattern: "https?:\\/\\/[A-Za-z\\.:0-9\\-]*.{0,200}$"
+        environments:
+          type: array
+          description: environments that this webhook serves, if absent webhook will be used for all environments
+          items:
+            type: string
+        method:
+          type: string
+          enum:
+          - POST
+          - PUT
+          default:
+            POST
+        mode:
+          type:
+            string
+          enum:
+          - parallel
+          - serial
+          default: parallel
+        authentication:
+          $ref: '#/components/schemas/ExampleWebHookAuth'
+###
+# The End.

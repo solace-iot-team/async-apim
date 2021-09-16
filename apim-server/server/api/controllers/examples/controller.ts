@@ -4,6 +4,7 @@ import ExamplesService from '../../services/examples.service';
 import { TAPSExampleListResponse } from '../../services/examples.service';
 
 import ListExamplesResponses = Paths.ListExamples.Responses;
+import ListExamplesWebhooksResponses = Paths.ListExamplesWebhooks.Responses;
 
 export class ExamplesController {
 
@@ -49,6 +50,23 @@ export class ExamplesController {
   }
 
   
+  public static getWebhooks = (req: Request, res: Response, next: NextFunction): void => {
+    const funcName = 'getWebhooks';
+    const logName = `${ExamplesController.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
+
+    ExamplesService.getWebhooks()
+    .then( (r: Array<Components.Schemas.ExampleWebHook> ) => {
+      const listExamples200: ListExamplesWebhooksResponses.$200 = r;
+      res.status(200).json(listExamples200);
+    })
+    .catch( (e: any) => {
+      next(e);
+    });
+  }
+
+  
   // byId(req: Request, res: Response): void {
   //   const id = Number.parseInt(req.params['id']);
   //   ExamplesService.byId(id).then((r) => {
@@ -63,4 +81,4 @@ export class ExamplesController {
   //   );
   // }
 }
- 
+  
