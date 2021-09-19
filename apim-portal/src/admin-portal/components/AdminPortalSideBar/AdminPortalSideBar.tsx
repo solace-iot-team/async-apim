@@ -47,6 +47,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         command: () => { props.onSwitchToDeveloperPortal(); }
       },
       {
+        label: 'APIs',
+        disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationApis),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+      },
+      {
         label: 'Environments',
         disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }

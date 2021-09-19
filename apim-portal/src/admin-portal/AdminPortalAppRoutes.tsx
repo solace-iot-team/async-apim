@@ -11,6 +11,7 @@ import { ManageConnectorsPage } from "./pages/ManageConnectorsPage";
 import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
 import { ViewSystemHealthPage } from "./pages/ViewSystemHealthPage";
 import { ManageEnvironmentsPage } from "./pages/ManageEnvironmentsPage";
+import { ManageApisPage } from "./pages/ManageApisPage";
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
@@ -25,6 +26,7 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.MonitorSystemHealth} component={ViewSystemHealthPage} exact key={EUIAdminPortalResourcePaths.MonitorSystemHealth} />,
         /* Organization */
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
     ]
   );
 }

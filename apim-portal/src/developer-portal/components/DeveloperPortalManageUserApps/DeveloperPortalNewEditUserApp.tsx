@@ -125,7 +125,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       expiresIn: managedObject.apiObject.expiresIn,
       apiProducts: managedObject.apiObject.apiProducts,
       attributes: managedObject.apiObject.attributes,
-      clientOptions: managedObject.apiObject.clientOptions,
       callbackUrl: managedObject.apiObject.callbackUrl,
       webHooks: managedObject.apiObject.webHooks,
       credentials: managedObject.apiObject.credentials

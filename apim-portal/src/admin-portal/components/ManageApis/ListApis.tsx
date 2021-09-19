@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
@@ -7,36 +8,24 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
 import { 
-  App,
-  AppsService,
-  WebHook
+  ApisService,
 } from '@solace-iot-team/platform-api-openapi-client-fe';
-import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 
-import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { 
-  APClientConnectorOpenApi, 
-  TConnectorWebhookBasicAuthentication, 
-  TConnectorWebhookHeaderAuthentication, 
-  EConnectorWebhookAuthenticationMethod 
-} from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
+import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
+import { APComponentsCommon, TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { 
-  E_CALL_STATE_ACTIONS, 
-  DeveloperPortalManageUserAppsCommon, 
-  TManagedObjectId, 
-  TViewManagedObject 
-} from "./DeveloperPortalManageUserAppsCommon";
+import { RenderWithRbac } from "../../../auth/RenderWithRbac";
+import { E_CALL_STATE_ACTIONS, ManageApisCommon, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./ManageApis.css";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
-export interface IDeveloperPortalListUserAppsProps {
+export interface IListApisProps {
   organizationId: TAPOrganizationId,
-  userId: APSUserId,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -45,29 +34,37 @@ export interface IDeveloperPortalListUserAppsProps {
   onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
 }
 
-export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsProps> = (props: IDeveloperPortalListUserAppsProps) => {
-  const componentName = 'DeveloperPortalListUserApps';
+export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
+  const componentName = 'ListApis';
 
-  const MessageNoManagedObjectsFoundCreateNew = 'No Apps found - create a new app.';
-  const MessageNoManagedObjectsFoundWithFilter = 'No Apps found for filter';
+  const MessageNoManagedObjectsFoundCreateNew = 'No APIs found - create a new API.';
+  const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
   type TManagedObject = TViewManagedObject;
   type TManagedObjectList = Array<TManagedObject>;
-  type TManagedObjectTableDataRow = TManagedObject & {
-    // attributeListAsDisplayString: string
-  };
+  type TManagedObjectTableDataRow = TManagedObject;
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  // const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
-  //   // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
-  //   if(tableSortFieldName.startsWith('apiObject.')) {
-  //     return tableSortFieldName.replace('apiObject.', '');
-  //   }
-  //   return tableSortFieldName;
-  // }
+  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject): TViewManagedObject => {
+    // const funcName = 'transformViewApiObjectToViewManagedObject';
+    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    return {
+      id: viewApiObject,
+      displayName: viewApiObject,
+      apiObject: viewApiObject,
+    }
+  }
+
+  const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
+    // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
+    if(tableSortFieldName.startsWith('apiObject.')) {
+      return tableSortFieldName.replace('apiObject.', '');
+    }
+    return tableSortFieldName;
+  }
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
@@ -75,7 +72,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
       // const logName = `${componentName}.${funcName}()`;
       return {
         ...managedObject,
-        // attributeListAsDisplayString: "attributeListAsDisplayString",
       }
     }
     return managedObjectList.map( (managedObject: TManagedObject) => {
@@ -90,12 +86,11 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
-    isInitialSetting: false,
+    isInitialSetting: true,
     first: 0, // index of the first row to be displayed
     rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
     page: 0,
-    // sortField: 'apiObject.isActivated',
-    sortField: 'apiObject.name',
+    sortField: 'apiObject',
     sortOrder: 1
   });
   const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
@@ -106,25 +101,23 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
-  // do this one when paging w/ query/sort supported
   // const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number, sortFieldName: string, sortDirection: EAPSSortDirection, searchWordList?: string): Promise<TApiCallState> => {
-
   const apiGetManagedObjectList = async(pageSize: number, pageNumber: number): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP_LIST, `retrieve list of apps for ${props.userId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiAppList: Array<App> = await AppsService.listDeveloperApps(props.organizationId, props.userId, undefined, pageSize, pageNumber);
+      const apiNameList: Array<TViewApiObject> = await ApisService.listApis(props.organizationId, pageSize, pageNumber);
       const totalCount: number = 1000; // should be returned by previous call
       let _managedObjectList: TManagedObjectList = [];
-      for(const apiApp of apiAppList) {
-        _managedObjectList.push(DeveloperPortalManageUserAppsCommon.transformViewApiObjectToViewManagedObject(apiApp));
+      for(const apiName of apiNameList) {
+        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiName));
       }
       setManagedObjectList(_managedObjectList);
       setLazyLoadingTableTotalRecords(totalCount);
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -139,7 +132,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
-        
     // TODO: Activate when connector can do search + sort
     // const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
     // const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
@@ -182,19 +174,20 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
-        <div className="table-header-container">
-          <Button icon="pi pi-plus" label="Expand All" onClick={onExpandAll} className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" />
-          <Button icon="pi pi-minus" label="Collapse All" onClick={onCollapseAll} className="p-button-rounded p-button-outlined p-button-secondary" />
-        </div>        
+        <div className="table-header-container" />
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
-          <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}} disabled />
+          <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
+          {/* <InputText type="search" placeholder={GlobalSearchPlaceholder} onKeyUp={onKeyupGlobalFilter} onInput={onInputGlobalFilter} style={{width: '500px'}}/> */}
+          {/* <Button tooltip="go search" icon="pi pi-search" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onGlobalSearch} /> */}
         </span>
       </div>
     );
   }
 
   const actionBodyTemplate = (managedObject: TManagedObject) => {
+    // const funcName = 'actionBodyTemplate';
+    // const logName = `${componentName}.${funcName}()`;
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
@@ -202,42 +195,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
         </React.Fragment>
     );
-  }
-
-  const apiProductsBodyTemplate = (managedObject: TManagedObject) => {
-    return APRenderUtils.renderStringListAsDivList(managedObject.apiObject.apiProducts);
-  }
-
-  const webhookAuthenticationBodyTemplate = (webhook: WebHook) => {
-    const funcName = 'webhookAuthenticationBodyTemplate';
-    const logName = `${componentName}.${funcName}()`;
-    if(!webhook.authentication) return (
-      <div>no authentication</div>          
-    );
-    let basicAuthentication: TConnectorWebhookBasicAuthentication | undefined = undefined;
-    let headerAuthentication:TConnectorWebhookHeaderAuthentication | undefined = undefined;
-    let authenticationMethod: EConnectorWebhookAuthenticationMethod | undefined = undefined;
-    const anyAuthentication: any = webhook.authentication;
-    if(anyAuthentication['username'] && anyAuthentication['password']) {
-      basicAuthentication = anyAuthentication;
-      authenticationMethod = EConnectorWebhookAuthenticationMethod.BASIC;
-    } else if(anyAuthentication['headerName'] && anyAuthentication['headerValue']) {
-      headerAuthentication = anyAuthentication;
-      authenticationMethod = EConnectorWebhookAuthenticationMethod.HEADER;
-    } else {
-      throw new Error(`${logName}: cannot infer authetication method from data = ${JSON.stringify(anyAuthentication)}`);
-    }
-    return (
-      <React.Fragment>
-        <div>method: {authenticationMethod}</div>
-        { basicAuthentication && 
-          <div>user: {basicAuthentication.username}, pwd: {basicAuthentication.password}</div>
-        }
-        { headerAuthentication && 
-          <div>header: {headerAuthentication.headerName}, value: {headerAuthentication.headerValue}</div>
-        }
-      </React.Fragment>
-    )
   }
 
   const onPageSelect = (event: any) => {
@@ -258,56 +215,15 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     else return MessageNoManagedObjectsFoundCreateNew;
   }
 
-  const onExpandAll = () => {
-    let _expandedRows: any = {};
-    managedObjectList.forEach( (mangedObject: TManagedObject) => {
-      _expandedRows[`${mangedObject.id}`] = true;
-    });
-    setExpandedWebhookRows(_expandedRows);
-  }
-
-  const onCollapseAll = () => {
-    setExpandedWebhookRows(null);
-  }
-
-  const [expandedWebhookRows, setExpandedWebhookRows] = React.useState<any>(null);
-
   const renderManagedObjectDataTable = () => {
     // const funcName = 'renderManagedObjectDataTable';
     // const logName = `${componentName}.${funcName}()`;
-    const rowExpansionTemplateWebhooks = (managedObjectTableDataRow: TManagedObjectTableDataRow): JSX.Element => {
-      const webhookList = managedObjectTableDataRow.apiObject.webHooks;
-      if(!webhookList || webhookList.length === 0) return (
-        <React.Fragment><div>No Webhooks configured.</div></React.Fragment>
-      );
-
-      return (
-        <div className="sub-table">
-          <DataTable 
-            className="p-datatable-sm"
-            header='Webhooks:'
-            value={webhookList}
-            autoLayout={false}
-            dataKey="id"  
-          >
-            <Column field="method" header="Method" />
-            <Column field="uri" header="Uri" />
-            <Column body={webhookAuthenticationBodyTemplate} header="Auth" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
-            <Column field="mode" header="Mode" />
-            <Column field="environments" header="API Gateway(s)" />
-          </DataTable>
-        </div>
-      );
-    }
-
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
       <div className="card">
           <DataTable
             ref={dt}
             autoLayout={true}
-            resizableColumns 
-            columnResizeMode="expand"
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             selectionMode="single"
@@ -334,15 +250,9 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
             onSort={onSort} 
             sortField={lazyLoadingTableParams.sortField} 
             sortOrder={lazyLoadingTableParams.sortOrder}
-            // expandable rows
-            expandedRows={expandedWebhookRows}
-            onRowToggle={(e) => setExpandedWebhookRows(e.data)}
-            rowExpansionTemplate={rowExpansionTemplateWebhooks}
           >
-            <Column expander style={{ width: '3em' }} />  
-            <Column field="displayName" header="Name" sortable />
-            <Column field="apiObject.status" header="Status" sortable />
-            <Column body={apiProductsBodyTemplate} header="API Product(s)" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
+            <Column field="id" header="Id" sortable />
+            {/* <Column field="id" header="Id" sortable /> */}
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>
@@ -350,9 +260,9 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   }
 
   return (
-    <div className="apd-manageuserapps">
+    <div className="manage-apis">
 
-      <APComponentHeader header='My Apps:' />
+      <APComponentHeader header='APIs:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

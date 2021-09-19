@@ -41,13 +41,23 @@ npm run build
 
 ### UnLink APIM Server OpenAPI from Global
 ````bash
-cd apim-portal/admin-portal
+cd async-apim/apim-portal
 npm unlink --no-save @solace-iot-team/apim-server-openapi-browser
 # NOTE: now install the released package
 npm install
 ````
 
 ## Using Connector OpenAPI from Local Release
+
+### Build Connector OpenAPI for Browser
+````bash
+# NOTE: in platform-api/release/platform-api-openapi-client-fe
+npm install
+npm run updateVersion
+npm run prepublishOnly
+````
+
+### Link Connector OpenAPI to Global
 ````bash
 # NOTE: in platform-api/release/platform-api-openapi-client-fe
 npm link # creates link in global node_modules
