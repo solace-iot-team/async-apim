@@ -437,7 +437,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                     required: "Choose at least 1 role."
                   }}
                   render={( { field, fieldState }) => {
-                      console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                      // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                       return(
                         <MultiSelect
                           display="chip"

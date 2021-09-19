@@ -169,7 +169,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
           onSuccess={onListViewSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
-          onManagedObjectView={onViewManagedObject}
+          onManagedProductView={onViewManagedObject}
         />
       }
       {showViewComponent && managedObjectId && managedObjectDisplayName &&

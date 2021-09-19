@@ -35,12 +35,20 @@ export type TAPOrganizationIdList = Array<TAPOrganizationId>;
 export type TAPEnvironmentName = string;
 
 export type TAPLazyLoadingTableParameters = {
+  isInitialSetting: boolean, // differentiate between first time and subsequent times
   first: number, // index of the first row to be displayed
   rows: number, // number of rows to display per page
   page: number,
   sortField: string,
   sortOrder: DataTableSortOrderType
 }
+
+export type TApiEntitySelectItem = {
+  id: string,
+  displayName: string
+}
+export type TApiEntitySelectItemList = Array<TApiEntitySelectItem>;
+export type TApiEntitySelectItemIdList = Array<string>;
 
 export class APComponentsCommon {
 

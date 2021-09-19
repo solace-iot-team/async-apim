@@ -22,10 +22,14 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { 
   DeveloperPortalCatgalogCommon, 
   E_CALL_STATE_ACTIONS, 
-  TApiAttribute, 
   TManagedObjectId, 
   TViewManagedObject
-} from "././DeveloperPortalProductCatalogCommon";
+} from "./DeveloperPortalProductCatalogCommon";
+
+import { 
+  DeveloperPortalCommon,
+  TApiAttribute, 
+} from "../DeveloperPortalCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -52,9 +56,9 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
   const transformManagedObjectToDisplay = (managedObject: TManagedObject): TManagedObjectDisplay => {
     return {
       ...managedObject,
-      protocolListAsString: DeveloperPortalCatgalogCommon.getProtocolListAsString(managedObject.apiObject.protocols),
-      attributeInfoAsString: DeveloperPortalCatgalogCommon.getAttributeInfoAsString(managedObject.apiObject.attributes),
-      environmentListAsString: DeveloperPortalCatgalogCommon.getEnvironmentsAsString(managedObject.apiObject, managedObject.apiEnvironmentList),
+      protocolListAsString: DeveloperPortalCommon.getProtocolListAsString(managedObject.apiObject.protocols),
+      attributeInfoAsString: DeveloperPortalCommon.getAttributeInfoAsString(managedObject.apiObject.attributes),
+      environmentListAsString: DeveloperPortalCommon.getEnvironmentsAsString(managedObject.apiEnvironmentList, managedObject.apiObject.environments)
     }
   }
 

@@ -75,6 +75,10 @@
   margin-bottom: 0.5rem;
 } */
 
+.apd-select-products-dialog-content {
+  background-color: transparent;
+}
+
 .apd-manageuserapps
   .api-userapp-view
   .api-userapp-view-detail

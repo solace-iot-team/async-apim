@@ -5,6 +5,7 @@ import {
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 
 import { Globals } from '../../../utils/Globals';
+import { TApiAttribute } from '../DeveloperPortalCommon';
 
 export enum E_COMPONENT_STATE {
   UNDEFINED = "UNDEFINED",
@@ -25,10 +26,10 @@ export type TViewManagedObject = {
   apiEnvironmentList: Array<EnvironmentResponse> 
 }
 
-export type TApiAttribute = {
-  name: string,
-  value: string
-}
+// export type TApiAttribute = {
+//   name: string,
+//   value: string
+// }
 
 export enum E_CALL_STATE_ACTIONS {
   API_GET_PRODUCT_LIST = 'API_GET_PRODUCT_LIST',
@@ -45,21 +46,21 @@ export class DeveloperPortalCatgalogCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static getApiDisplayNameListAsString = (apiDisplayNameList: string[] ): string => {
-    if(apiDisplayNameList) return apiDisplayNameList.join(', ');
-    else return '';
-  }
+  // public static getApiDisplayNameListAsString = (apiDisplayNameList: string[] ): string => {
+  //   if(apiDisplayNameList) return apiDisplayNameList.join(', ');
+  //   else return '';
+  // }
 
-  public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
-    if(protocolList) {
-      let _protocolList: Array<string> = [];
-      protocolList.forEach( (protocol: Protocol) => {
-        _protocolList.push(`${protocol.name}(${protocol.version})`);
-      });
-      return _protocolList.join(', ');
-    }
-    else return '';
-  }
+  // public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
+  //   if(protocolList) {
+  //     let _protocolList: Array<string> = [];
+  //     protocolList.forEach( (protocol: Protocol) => {
+  //       _protocolList.push(`${protocol.name}(${protocol.version})`);
+  //     });
+  //     return _protocolList.join(', ');
+  //   }
+  //   else return '';
+  // }
 
   public static getAttributeInfoAsString = (attributeList?: Array<TApiAttribute>): string => {
     if(attributeList) {
@@ -73,53 +74,53 @@ export class DeveloperPortalCatgalogCommon {
     else return '';
   }
 
-  public static getAttributeNamesAsString = (attributeList?: Array<TApiAttribute>): string => {
-    if(attributeList) {
-      let _attributeList: Array<string> = [];
-      attributeList.forEach( (attribute: TApiAttribute) => {
-        _attributeList.push(`${attribute.name}`);
-      });
-      return _attributeList.join(', ');
-    }
-    else return '';
-  }
+  // public static getAttributeNamesAsString = (attributeList?: Array<TApiAttribute>): string => {
+  //   if(attributeList) {
+  //     let _attributeList: Array<string> = [];
+  //     attributeList.forEach( (attribute: TApiAttribute) => {
+  //       _attributeList.push(`${attribute.name}`);
+  //     });
+  //     return _attributeList.join(', ');
+  //   }
+  //   else return '';
+  // }
 
-  public static getEnvironmentsAsString = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): string => {
-    const funcName = 'getEnvironmentsAsString';
-    const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
-    let _environmentStrList: Array<string> = [];
-    viewApiObject.environments?.forEach( (environmentName: string) => {
-      const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
-        return environment.name === environmentName;
-      });
-      if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
-      _environmentStrList.push(
-        `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
-      );
-    });
-    return _environmentStrList.join(', ');
-  }
+  // public static getEnvironmentsAsString = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): string => {
+  //   const funcName = 'getEnvironmentsAsString';
+  //   const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
+  //   let _environmentStrList: Array<string> = [];
+  //   viewApiObject.environments?.forEach( (environmentName: string) => {
+  //     const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
+  //       return environment.name === environmentName;
+  //     });
+  //     if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
+  //     _environmentStrList.push(
+  //       `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
+  //     );
+  //   });
+  //   return _environmentStrList.join(', ');
+  // }
 
-  public static getEnvironmentsAsDisplayList = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
-    const funcName = 'getEnvironmentsAsDisplayList';
-    const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
-    let _environmentStrList: Array<string> = [];
-    viewApiObject.environments?.forEach( (environmentName: string) => {
-      const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
-        return environment.name === environmentName;
-      });
-      if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
-      _environmentStrList.push(
-        `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
-      );
-    });
-    return _environmentStrList;
-  }
+  // public static getEnvironmentsAsDisplayList = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
+  //   const funcName = 'getEnvironmentsAsDisplayList';
+  //   const logName = `${DeveloperPortalCatgalogCommon.name}.${funcName}()`;
+  //   let _environmentStrList: Array<string> = [];
+  //   viewApiObject.environments?.forEach( (environmentName: string) => {
+  //     const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
+  //       return environment.name === environmentName;
+  //     });
+  //     if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
+  //     _environmentStrList.push(
+  //       `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
+  //     );
+  //   });
+  //   return _environmentStrList;
+  // }
 
   public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiEnvironmentList: Array<EnvironmentResponse>): TViewManagedObject => {
     return {
       id: viewApiObject.name,
-      displayName: viewApiObject.name,
+      displayName: viewApiObject.displayName ? viewApiObject.displayName : viewApiObject.name,
       globalSearch: DeveloperPortalCatgalogCommon.generateGlobalSearchContent(viewApiObject),
       apiObject: viewApiObject,
       apiEnvironmentList: apiEnvironmentList

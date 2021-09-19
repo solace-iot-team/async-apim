@@ -87,6 +87,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
+    isInitialSetting: true,
     first: 0, // index of the first row to be displayed
     rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
     page: 0,
@@ -219,7 +220,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const onPageSelect = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, ...event };
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
     setLazyLoadingTableParams(_lazyParams);
   }
 
@@ -227,7 +228,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     // const funcName = 'onSort';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
-    const _lazyParams = { ...lazyLoadingTableParams, ...event };
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
     setLazyLoadingTableParams(_lazyParams);
   }
 
