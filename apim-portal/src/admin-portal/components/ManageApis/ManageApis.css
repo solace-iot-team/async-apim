@@ -60,3 +60,6 @@
 .button-set-footer .p-button-label {
   display: flex;
 }
+.manage-apis .upload-from-file-dialog-content {
+  background-color: transparent;
+}

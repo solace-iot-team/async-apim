@@ -21,6 +21,7 @@ import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { UploadApiSpecFromFile } from "./UploadApiSpecFromFile";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -67,8 +68,9 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  // const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+
+  const [showUploadSpecFromFile, setShowUploadSpecFromFile] = React.useState<boolean>(false);
+
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
 
   const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, apiInfo: APIInfo, asyncApiSpec: TAPAsyncApiSpec): TManagedObject => {
@@ -105,15 +107,16 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     const logName = `${componentName}.${funcName}()`;
     if(!formData.asyncApiSpec) throw new Error(`${logName}: formData.asyncApiSpec is undefined`);
 
-    alert(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
+    // alert(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
 
     const res = APConnectorApiHelper.getAsyncApiSpecAsJson(formData.asyncApiSpec);
 
-    alert(`${logName}: res = ${JSON.stringify(res, null, 2)}`);
+    // alert(`${logName}: res = ${JSON.stringify(res, null, 2)}`);
 
     if(typeof(res) === 'string') throw new Error(`${logName}: ${res}`);
     return {
       ...formData,
+      displayName: formData.id,
       asyncApiSpec: res
     }
   }
@@ -214,6 +217,36 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     managedObjectUseForm.setValue('asyncApiSpec', managedObjectFormData.asyncApiSpec);
   }
 
+  // * Upload / Import *
+  const onUploadSpecFromFile = () => {
+    setShowUploadSpecFromFile(true);
+  }
+
+  const onUploadSpecFromFileSuccess = (apiCallState: TApiCallState, apiSpec: TAPAsyncApiSpec) => {
+    const funcName = 'onUploadSpecSuccess';
+    const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: modifiedSelectedApiProductList=${JSON.stringify(modifiedSelectedApiProductList, null, 2)}`);
+    if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
+
+    alert(`${logName}: apiSpec=${JSON.stringify(apiSpec)}`);
+
+    // setInFormCurrentMultiSelectOptionApiProductSelectItemList(modifiedSelectedApiProductList);
+    // const modifiedMultiSelectValueApiProductSelectItemIdList: TApiEntitySelectItemIdList = transformManagedObjectApiProductSelectItemListToSelectItemIdList(modifiedSelectedApiProductList);
+    // // setInFormCurrentMultiSelectValueApiProductSelectItemIdList(modifiedMultiSelectValueApiProductSelectItemIdList);
+    // managedObjectUseForm.setValue('apiProductSelectItemIdList', modifiedMultiSelectValueApiProductSelectItemIdList);
+    setShowUploadSpecFromFile(false);
+  }
+
+  const onUploadSpecFromFileCancel = () => {
+    setShowUploadSpecFromFile(false);
+  }
+
+  const onSearchImportFromEventPortal = () => {
+    alert('implement me');
+  }
+
+
+  // * Form *
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     const funcName = 'doSubmitManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -263,6 +296,16 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     )
   }
 
+  const renderApisToolbar = () => {
+    let jsxButtonList: Array<JSX.Element> = [
+      <Button style={ { width: '20rem' } } type="button" label="Upload from File" className="p-button-text p-button-plain p-button-outlined" onClick={() => onUploadSpecFromFile()} />,
+      <Button style={ { width: '20rem' } } type="button" label="Search & Import from Event Portal" className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchImportFromEventPortal()} />,
+    ];
+    return (
+      <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
+    );
+  }
+
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
@@ -291,12 +334,12 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
                         />
                   )}}
                 />
-                <label htmlFor="id" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.id })}>Id*</label>
+                <label htmlFor="id" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.id })}>Name/Id*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.id)}
             </div>
             {/* Display Name */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="displayName"
@@ -316,7 +359,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
                 <label htmlFor="displayName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.displayName })}>Display Name*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.displayName)}
-            </div>
+            </div> */}
             {/* Async API Spec string */}
             <div className="p-field">
               <span className="p-float-label">
@@ -336,6 +379,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
                 <label htmlFor="asyncApiSpec.spec" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.asyncApiSpec?.spec })}>Async API Spec*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.asyncApiSpec?.spec)}
+              { renderApisToolbar() }
             </div>
             <Divider />
             {renderManagedObjectFormFooter()}
@@ -361,6 +405,15 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
       {managedObject && 
         renderManagedObjectForm()
       }
+
+      {showUploadSpecFromFile &&
+        <UploadApiSpecFromFile 
+          onSave={onUploadSpecFromFileSuccess}
+          onError={props.onError}          
+          onCancel={onUploadSpecFromFileCancel}
+        />
+      } 
+
     </div>
   );
 }

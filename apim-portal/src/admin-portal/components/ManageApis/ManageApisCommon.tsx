@@ -16,6 +16,7 @@ export enum E_CALL_STATE_ACTIONS {
   API_CREATE_API = "API_CREATE_API",
   API_GET_API = "API_GET_API",
   API_UPDATE_API = "API_UPDATE_API",
+  FILE_UPLOAD_API = "FILE_UPLOAD_API"
 }
 
 // export class ManageApisCommon {
