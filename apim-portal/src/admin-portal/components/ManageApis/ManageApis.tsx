@@ -9,9 +9,12 @@ import { Loading } from "../../../components/Loading/Loading";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListApis } from "./ListApis";
+import { EAction, EditNewApi } from "./EditNewApi";
+import { DeleteApi } from "./DeleteApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { ViewApi } from "./ViewApi";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;
@@ -90,7 +93,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         switch (apiCallStatus.context.action) {
           case E_CALL_STATE_ACTIONS.API_DELETE_API:
           case E_CALL_STATE_ACTIONS.API_CREATE_API:
-          case E_CALL_STATE_ACTIONS.API_REPLACE_API:
+          case E_CALL_STATE_ACTIONS.API_UPDATE_API:
               props.onSuccess(apiCallStatus);
             break;
           default:
@@ -275,19 +278,21 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onManagedObjectView={onViewManagedObject}
         />
       }
-      {/* {showViewComponent && managedObjectId && managedObjectDisplayName &&
-        <ViewUser
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
+      {showViewComponent && managedObjectId && managedObjectDisplayName &&
+        <ViewApi
+          organizationId={props.organizationId}
+          apiId={managedObjectId}
+          apiDisplayName={managedObjectDisplayName}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
         />      
       }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
-        <DeleteUser
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
+        <DeleteApi
+          organizationId={props.organizationId}
+          apiId={managedObjectId}
+          apiDisplayName={managedObjectDisplayName}
           onSuccess={onDeleteManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
@@ -295,8 +300,22 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         />
       }
       { showNewComponent &&
-        <EditNewUser
+        <EditNewApi
           action={EAction.NEW}
+          organizationId={props.organizationId}
+          onNewSuccess={onNewManagedObjectSuccess}
+          onEditSuccess={onEditManagedObjectSuccess}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading} 
+        />
+      }
+      {showEditComponent && managedObjectId && managedObjectDisplayName &&
+        <EditNewApi
+          action={EAction.EDIT}
+          organizationId={props.organizationId}
+          apiId={managedObjectId}
+          apiDisplayName={managedObjectDisplayName}
           onNewSuccess={onNewManagedObjectSuccess} 
           onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
@@ -304,18 +323,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onLoadingChange={setIsLoading}
         />
       }
-      {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <EditNewUser
-          action={EAction.EDIT}
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
-          onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
-          onError={onSubComponentError}
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
-        />
-      } */}
     </div>
   );
 }

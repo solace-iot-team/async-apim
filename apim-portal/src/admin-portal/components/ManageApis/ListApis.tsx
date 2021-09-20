@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
@@ -8,21 +7,19 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
 import { 
+  APIInfo,
   ApisService,
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APComponentsCommon, TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { RenderWithRbac } from "../../../auth/RenderWithRbac";
-import { E_CALL_STATE_ACTIONS, ManageApisCommon, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IListApisProps {
   organizationId: TAPOrganizationId,
@@ -46,25 +43,26 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   type TManagedObjectTableDataRow = TManagedObject;
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject): TViewManagedObject => {
+  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo): TViewManagedObject => {
     // const funcName = 'transformViewApiObjectToViewManagedObject';
     // const logName = `${ManageUsersCommon.name}.${funcName}()`;
     return {
       id: viewApiObject,
       displayName: viewApiObject,
       apiObject: viewApiObject,
+      apiInfo: apiInfo
     }
   }
 
-  const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
-    // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
-    if(tableSortFieldName.startsWith('apiObject.')) {
-      return tableSortFieldName.replace('apiObject.', '');
-    }
-    return tableSortFieldName;
-  }
+  // const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
+  //   // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
+  //   // const logName = `${componentName}.${funcName}()`;
+  //   // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
+  //   if(tableSortFieldName.startsWith('apiObject.')) {
+  //     return tableSortFieldName.replace('apiObject.', '');
+  //   }
+  //   return tableSortFieldName;
+  // }
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
@@ -108,11 +106,12 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiNameList: Array<TViewApiObject> = await ApisService.listApis(props.organizationId, pageSize, pageNumber);
+      const apiNameList: Array<string> = await ApisService.listApis(props.organizationId, pageSize, pageNumber);
       const totalCount: number = 1000; // should be returned by previous call
       let _managedObjectList: TManagedObjectList = [];
       for(const apiName of apiNameList) {
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiName));
+        const apiInfo: APIInfo = await ApisService.getApiInfo(props.organizationId, apiName);
+        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiName, apiInfo));
       }
       setManagedObjectList(_managedObjectList);
       setLazyLoadingTableTotalRecords(totalCount);
@@ -251,8 +250,9 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             sortField={lazyLoadingTableParams.sortField} 
             sortOrder={lazyLoadingTableParams.sortOrder}
           >
-            <Column field="id" header="Id" sortable />
             {/* <Column field="id" header="Id" sortable /> */}
+            <Column field="displayName" header="Name" sortable />
+            <Column field="apiInfo.source" header="Source" sortable />
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>

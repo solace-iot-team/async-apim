@@ -78,7 +78,7 @@ export const ManageApisPage: React.FC = () => {
         />
       }
     </React.Fragment>
-);
+  );
 
 }
 

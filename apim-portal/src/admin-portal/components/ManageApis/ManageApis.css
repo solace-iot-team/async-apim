@@ -35,6 +35,24 @@
     width: 80%;
   }
 }
+.manage-apis .api-view {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-apis .api-view .api-view-detail-left {
+  flex: 1 1 0;
+}
+.manage-apis .api-view .api-view-detail-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-apis .api-description {
+  margin: 0 0 1rem 0;
+}
+
 .button-set-footer {
   display: flex;
   flex-wrap: nowrap;

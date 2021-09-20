@@ -33,6 +33,15 @@ export type TAPOrganizationList = Array<TAPOrganization>;
 export type TAPOrganizationId = string;
 export type TAPOrganizationIdList = Array<TAPOrganizationId>;
 export type TAPEnvironmentName = string;
+export enum EAPAsyncApiSpecFormat {
+  JSON = 'application/json',
+  YAML = 'application/x-yaml',
+  UNKNOWN = 'application/x-unknown'
+}
+export type TAPAsyncApiSpec = {
+  format: EAPAsyncApiSpecFormat,
+  spec: any
+}
 
 export type TAPLazyLoadingTableParameters = {
   isInitialSetting: boolean, // differentiate between first time and subsequent times

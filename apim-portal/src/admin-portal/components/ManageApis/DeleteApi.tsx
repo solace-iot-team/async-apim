@@ -4,30 +4,30 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { 
-  ApsUsersService, 
-} from '@solace-iot-team/apim-server-openapi-browser';
+import { ApisService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 
 import '../../../components/APComponents.css';
-import "./ManageUsers.css";
+import "./ManageApis.css";
 
-export interface IDeleteUserProps {
-  userId: TManagedObjectId;
-  userDisplayName: string;
+export interface IDeleteApiProps {
+  organizationId: TAPOrganizationId,
+  apiId: TManagedObjectId;
+  apiDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) => {
-  const componentName = 'DeleteUser';
+export const DeleteApi: React.FC<IDeleteApiProps> = (props: IDeleteApiProps) => {
+  const componentName = 'DeleteApi';
 
-  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting User";
+  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting API";
 
   const [showManagedObjectDeleteDialog, setShowManagedObjectDeleteDialog] = React.useState<boolean>(true);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -36,11 +36,11 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_USER, `delete user: ${props.userId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_API, `delete API: ${props.apiDisplayName}`);
     try { 
-      await ApsUsersService.deleteApsUser(props.userId);
+      await ApisService.deleteApi(props.organizationId, props.apiId);
     } catch(e) {
-      APSClientOpenApi.logError(logName, e);
+      APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -76,8 +76,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
     // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
-        <p>Deleting user <b>{props.userId}</b>.</p>
-        <p>Alternatively you could de-activate the user.</p>
+        <p>Deleting API <b>{props.apiDisplayName}</b>.</p>
         <p>Are you sure you want to delete it?</p>
       </React.Fragment>  
     );
@@ -114,7 +113,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
   } 
   
   return (
-    <div className="manage-users">
+    <div className="manage-apis">
       {renderManagedObjectDeleteDialog()}
     </div>
   );

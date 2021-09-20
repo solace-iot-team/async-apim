@@ -56,6 +56,13 @@ export enum EUIDeveloperToolsResourcePaths {
 
 export class Globals {
 
+
+  public static assertNever = (extLogName: string, x: never): never => {
+    const funcName = 'assertNever';
+    const logName = `${Globals.name}.${funcName}()`;
+    throw new Error(`${logName}:${extLogName}: unexpected object: ${JSON.stringify(x)}`);
+  }
+
   public static getCurrentHomePath = (isUserLoggedIn: boolean, currentAppState: EAppState): string => {
     const funcName = 'getCurrentHomePath';
     const logName = `${Globals.name}.${funcName}()`;
