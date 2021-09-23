@@ -48,7 +48,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     try { 
       const apiOrganization = await AdministrationService.getOrganization(props.organizationId);
       const envResponse = await EnvironmentsService.listEnvironments(apiOrganization.name, 1);        
-      const apiResponse = await ApisService.listApis(apiOrganization.name, 1);
+      const apiResponse = await ApisService.listApis(apiOrganization.name);
       const apiProductResponse = await ApiProductsService.listApiProducts(apiOrganization.name, 1);
       const developerResponse = await DevelopersService.listDevelopers(apiOrganization.name, 1);
       const appResponse = await AppsService.listApps(apiOrganization.name, undefined, 1);

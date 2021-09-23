@@ -23,12 +23,35 @@ export class APConnectorApiHelper {
     const funcName = 'getAsyncApiSpecJsonAsString';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
     if(asyncApiSpec.format !== EAPAsyncApiSpecFormat.JSON) throw new Error(`${logName}: cannot handle asyncApiSpec.format other than JSON. format=${asyncApiSpec.format}`);
+    // console.log(`${logName}: asyncApiSpec.spec=${JSON.stringify(asyncApiSpec.spec, null, 2)}`);
     return JSON.stringify(asyncApiSpec.spec);
+  }
+
+  public static getAsyncApiSpecJsonAsDisplayString = (asyncApiSpec: TAPAsyncApiSpec): string => {
+    const funcName = 'getAsyncApiSpecJsonAsDisplayString';
+    const logName = `${APConnectorApiHelper.name}.${funcName}()`;
+    if(asyncApiSpec.format !== EAPAsyncApiSpecFormat.JSON) throw new Error(`${logName}: cannot handle asyncApiSpec.format other than JSON. format=${asyncApiSpec.format}`);
+    return JSON.stringify(asyncApiSpec.spec, null, 2);
+  }
+
+  public static getAsyncApiSpecJsonFromString = (asyncApiSpecJsonString: string): TAPAsyncApiSpec => {
+    const funcName = 'getAsyncApiSpecJsonFromString';
+    const logName = `${APConnectorApiHelper.name}.${funcName}()`;
+    try {
+      const specObject: any = JSON.parse(asyncApiSpecJsonString);
+      return {
+        format: EAPAsyncApiSpecFormat.JSON,
+        spec: specObject
+      }
+    } catch(e:any) {
+      throw new Error(`${logName}: cannot parse string as JSON, error=${e}`);
+    }
   }
 
   public static getAsyncApiSpecAsJson = (asyncApiSpec: TAPAsyncApiSpec): TAPAsyncApiSpec | string => {
     const funcName = 'getAsyncApiSpecAsJson';
-    const logName = `${APConnectorApiHelper.name}.${funcName}()`;
+    const logName = `${APConnectorApiHelper.name}.${funcName}(${asyncApiSpec.format})`;
+    // console.log(`${logName}: starting ...`);
     switch (asyncApiSpec.format) {
       case EAPAsyncApiSpecFormat.JSON:
         return asyncApiSpec;
@@ -37,8 +60,8 @@ export class APConnectorApiHelper {
         try {
           const doc: any = yaml.load(asyncApiSpec.spec);
           try {
-            JSON.parse(JSON.stringify(doc));
-            return { format: EAPAsyncApiSpecFormat.JSON, spec: doc };
+            const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
+            return { format: EAPAsyncApiSpecFormat.JSON, spec: jsonParsedDoc };
           } catch (e) {
             return `unable to convert YAML to JSON, e=${e}`;
           }
@@ -50,18 +73,24 @@ export class APConnectorApiHelper {
         try {
           JSON.parse(asyncApiSpec.spec);
           return { format: EAPAsyncApiSpecFormat.JSON, spec: asyncApiSpec.spec };
-        } catch(e) {
+        } catch(jsonError: any) {
+          console.error(`${logName}: jsonError=${jsonError}`);
           try {
             const doc: any = yaml.load(asyncApiSpec.spec);
-            // console.log(`${logName}: doc = ${JSON.stringify(doc, null, 2)}`);
             try {
-              JSON.parse(JSON.stringify(doc));
-            } catch (e) {
-              return `unable to parse as JSON or YAML, e=${e}`;
+              const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
+              if(typeof(jsonParsedDoc) !== 'object') return `unable to parse as JSON or YAML, type:${typeof(jsonParsedDoc)}`;
+              // console.log(`${logName}: typeof(jsonParseddoc)=${typeof(jsonParsedDoc)} , jsonParseddoc = ${JSON.stringify(doc, null, 2)}`);
+              return APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec });
+              // return { format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec };
+            } catch (yamlError) {
+              console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
+              return `unable to parse as JSON or YAML, jsonError=${JSON.stringify(jsonError)}, error=${JSON.stringify(yamlError)}`;
             }
-            return { format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec };
-          } catch(e) {
-            return `unable to parse as JSON or YAML, e=${e}`;
+            // return { format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec };
+          } catch(yamlError: any) {
+            console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
+            return `unable to parse as JSON or YAML, error=${yamlError.reason}`;
           }  
         }
       }

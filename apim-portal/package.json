@@ -26,7 +26,6 @@
     "@asyncapi/react-component": "^1.0.0-next.18",
     "@solace-iot-team/apim-server-openapi-browser": "^0.0.4",
     "@solace-iot-team/platform-api-openapi-client-fe": "^0.2.9",
-    "@types/js-yaml": "^4.0.3",
     "js-yaml": "^4.1.0",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",
@@ -72,6 +71,7 @@
     "@types/react-dom": "^17.0.3",
     "@types/react-router-dom": "^5.1.7",
     "@types/shelljs": "^0.8.9",
+    "@types/js-yaml": "^4.0.3",
     "shelljs": "^0.8.4",
     "typescript": "^4.3.2"
   }

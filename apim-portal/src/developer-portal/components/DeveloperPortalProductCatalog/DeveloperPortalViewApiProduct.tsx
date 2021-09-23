@@ -218,7 +218,12 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
         </div>  
         <hr/>        
         {apiSpec && showApiId &&
-          <APDisplayAsyncApiSpec schema={apiSpec} schemaId={showApiId} />
+          <APDisplayAsyncApiSpec 
+            schema={apiSpec} 
+            schemaId={showApiId} 
+            onDownloadSuccess={props.onSuccess}
+            onDownloadError={props.onError}
+          />
         }
       </React.Fragment>
     ); 

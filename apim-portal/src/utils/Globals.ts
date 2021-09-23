@@ -1,3 +1,6 @@
+import yaml from "js-yaml";
+
+
 export enum EAppState {
   ADMIN_PORTAL = 'ADMIN_PORTAL',
   DEVELOPER_PORTAL = 'DEVELOPER_PORTAL',
@@ -56,6 +59,10 @@ export enum EUIDeveloperToolsResourcePaths {
 
 export class Globals {
 
+  public static openUrlInNewTab = (url: string) => {
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    if(newWindow) newWindow.opener = null;
+  }
 
   public static assertNever = (extLogName: string, x: never): never => {
     const funcName = 'assertNever';
@@ -112,6 +119,15 @@ export class Globals {
         // so we can allow for a little better readability over the wire: |`^
         .replace(/%(?:7C|60|5E)/g, unescape);
   }
+
+  public static getObjectAsDisplayYamlString = (jsonObject: any): string => {
+    return yaml.dump(jsonObject);
+  }
+
+  public static logError = (logName: string, e: any): void => {
+    console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
+  }
+
 }
 
 export class GlobalElementStyles {

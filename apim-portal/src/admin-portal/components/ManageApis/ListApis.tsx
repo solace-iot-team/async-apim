@@ -10,11 +10,11 @@ import {
   APIInfo,
   ApisService,
 } from '@solace-iot-team/platform-api-openapi-client-fe';
-
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APComponentsCommon, TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
+import { Globals } from "../../../utils/Globals";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
 
@@ -46,11 +46,16 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo): TViewManagedObject => {
     // const funcName = 'transformViewApiObjectToViewManagedObject';
     // const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    const globalSearch = {
+      apiObject: viewApiObject,
+      apiInfo: apiInfo
+    }
     return {
       id: viewApiObject,
       displayName: viewApiObject,
       apiObject: viewApiObject,
-      apiInfo: apiInfo
+      apiInfo: apiInfo,
+      globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
     }
   }
 
@@ -81,42 +86,25 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
-  // * Lazy Loading * 
-  const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
-  const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
-    isInitialSetting: true,
-    first: 0, // index of the first row to be displayed
-    rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
-    page: 0,
-    sortField: 'apiObject',
-    sortOrder: 1
-  });
-  const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
-  const [lazyLoadingTableIsLoading, setLazyLoadingTableIsLoading] = React.useState<boolean>(false);
-  // * Global Filter *
   const [globalFilter, setGlobalFilter] = React.useState<string>();
-  // * Data Table *
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
-  // const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number, sortFieldName: string, sortDirection: EAPSSortDirection, searchWordList?: string): Promise<TApiCallState> => {
-  const apiGetManagedObjectList = async(pageSize: number, pageNumber: number): Promise<TApiCallState> => {
+  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiNameList: Array<string> = await ApisService.listApis(props.organizationId, pageSize, pageNumber);
-      const totalCount: number = 1000; // should be returned by previous call
+      const apiNameList: Array<string> = await ApisService.listApis(props.organizationId);
       let _managedObjectList: TManagedObjectList = [];
       for(const apiName of apiNameList) {
         const apiInfo: APIInfo = await ApisService.getApiInfo(props.organizationId, apiName);
         _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiName, apiInfo));
       }
       setManagedObjectList(_managedObjectList);
-      setLazyLoadingTableTotalRecords(totalCount);
     } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
+      APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -124,29 +112,15 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     return callState;
   }
 
-  const doLoadPage = async () => {
-    // const funcName = 'doLoadPage';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: lazyLoadingTableParams = ${JSON.stringify(lazyLoadingTableParams, null, 2)}`);
-    setLazyLoadingTableIsLoading(true);
-    const pageNumber: number = lazyLoadingTableParams.page + 1;
-    const pageSize: number = lazyLoadingTableParams.rows;
-    // TODO: Activate when connector can do search + sort
-    // const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
-    // const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
-    // const searchWordList: string | undefined = globalFilter;
-    // await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
-    await apiGetManagedObjectList(pageSize, pageNumber);
-    setLazyLoadingTableIsLoading(false);
+  const doInitialize = async () => {
+    props.onLoadingChange(true);
+    await apiGetManagedObjectList();
+    props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
-    doLoadPage();
-  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    doLoadPage();
-  }, [globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    doInitialize();
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -166,8 +140,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
-    const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
-    setGlobalFilter(_globalFilter);
+    setGlobalFilter(event.currentTarget.value);
   }
  
   const renderDataTableHeader = (): JSX.Element => {
@@ -196,23 +169,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     );
   }
 
-  const onPageSelect = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
-  }
-
-  const onSort = (event: any) => {
-    // const funcName = 'onSort';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: event = ${JSON.stringify(event, null, 2)}`);
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
-  }
-
-  const renderManagedObjectTableEmptyMessage = () => {
-    if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundWithFilter}: ${globalFilter}.`;
-    else return MessageNoManagedObjectsFoundCreateNew;
-  }
+  // const renderManagedObjectTableEmptyMessage = () => {
+  //   if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundWithFilter}: ${globalFilter}.`;
+  //   else return MessageNoManagedObjectsFoundCreateNew;
+  // }
 
   const renderManagedObjectDataTable = () => {
     // const funcName = 'renderManagedObjectDataTable';
@@ -225,6 +185,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             autoLayout={true}
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
+            globalFilter={globalFilter}
             selectionMode="single"
             selection={selectedManagedObject}
             onRowClick={onManagedObjectSelect}
@@ -232,31 +193,43 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             scrollable 
             scrollHeight="800px" 
             dataKey="id"  
-            emptyMessage={renderManagedObjectTableEmptyMessage()}
-            // lazyLoading & pagination
-            lazy={true}
-            paginator={true}
-            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-            rowsPerPageOptions={lazyLoadingTableRowsPerPageOptions}
-            first={lazyLoadingTableParams.first}
-            rows={lazyLoadingTableParams.rows}
-            totalRecords={lazyLoadingTableTotalRecords}
-            onPage={onPageSelect}
-            loading={lazyLoadingTableIsLoading}
+            // emptyMessage={renderManagedObjectTableEmptyMessage()}
             // sorting
             sortMode='single'
-            onSort={onSort} 
-            sortField={lazyLoadingTableParams.sortField} 
-            sortOrder={lazyLoadingTableParams.sortOrder}
+            sortField="globalSearch"
+            sortOrder={1}
           >
             {/* <Column field="id" header="Id" sortable /> */}
-            <Column field="displayName" header="Name" sortable />
+            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
             <Column field="apiInfo.source" header="Source" sortable />
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>
     );
+  }
+
+  const renderContent = () => {
+
+    if(managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
+      return (<h3>{MessageNoManagedObjectsFoundCreateNew}</h3>);
+    }
+    if(managedObjectList.length > 0 && !isGetManagedObjectListInProgress) {
+      return renderManagedObjectDataTable();
+    } 
+  }
+
+  const renderDebugSelectedManagedObject = () => {
+    if(managedObjectList.length > 0 && selectedManagedObject) {
+      const _d = {
+        ...selectedManagedObject,
+        globalSearch: 'not shown...'
+      }
+      return (
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(_d, null, 2)}
+        </pre>
+      );
+    }
   }
 
   return (
@@ -266,20 +239,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
-      }
-
-      {(managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== '')) && 
-        renderManagedObjectDataTable()
-      }
+      {renderContent()}
       
-      {/* DEBUG selected managedObject */}
-      {managedObjectList.length > 0 && selectedManagedObject && 
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedObject, null, 2)}
-        </pre>
-      }
+      {/* DEBUG OUTPUT         */}
+      {renderDebugSelectedManagedObject()}
 
     </div>
   );

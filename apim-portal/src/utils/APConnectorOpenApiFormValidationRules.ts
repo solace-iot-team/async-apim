@@ -45,8 +45,12 @@ export class APConnectorFormValidationRules {
 // example: https://www.carlrippon.com/custom-validation-rules-in-react-hook-form/
 // https://react-hook-form.com/api/useform/register
 // could be async ==> call a server api to validate spec properly
-    const validate = (spec: string) => {
-      const result: TAPAsyncApiSpec | string =  APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: spec });
+    const validate = (specStr: string): string | boolean => {
+      // alert(`spec=\n${specStr}`);
+      const result: TAPAsyncApiSpec | string =  APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: specStr });
+      // if(typeof(result) === 'string') alert(`result is string = ${result}`);
+      // else alert(`result is not string = ${JSON.stringify(result, null, 2)}`);
+      // return 'never validates until problem fixed';
       if(typeof(result) === 'string') return result;
       return true;
     }

@@ -59,6 +59,14 @@ export type TApiEntitySelectItem = {
 export type TApiEntitySelectItemList = Array<TApiEntitySelectItem>;
 export type TApiEntitySelectItemIdList = Array<string>;
 
+export enum EFileDownloadType {
+  JSON='application/json',
+  YAML='application/x-yaml'
+}
+export enum EFileExtension {
+  JSON='json',
+  YAML='yaml'
+}
 export class APComponentsCommon {
 
   public static transformTableSortDirectionToApiSortDirection = (tableSortDirection: DataTableSortOrderType): EAPSSortDirection => {

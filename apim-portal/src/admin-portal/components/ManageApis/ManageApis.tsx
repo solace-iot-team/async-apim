@@ -11,10 +11,11 @@ import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListApis } from "./ListApis";
 import { EAction, EditNewApi } from "./EditNewApi";
 import { DeleteApi } from "./DeleteApi";
+import { ViewApi } from "./ViewApi";
+import { EventPortalImportApi } from "./EventPortalImportApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { ViewApi } from "./ViewApi";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;
@@ -33,6 +34,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
     MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
     MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
+    MANAGED_OBJECT_IMPORT_EVENT_PORTAL= "MANAGED_OBJECT_IMPORT_EVENT_PORTAL"
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -58,6 +60,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
+  const ToolbarButtonLabelImportEventPortal = 'Import from Event Portal';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -69,6 +72,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [showImportEventPortalComponent, setShowImportEventPortalComponent] = React.useState<boolean>(false);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -91,13 +95,12 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_DELETE_API:
-          case E_CALL_STATE_ACTIONS.API_CREATE_API:
-          case E_CALL_STATE_ACTIONS.API_UPDATE_API:
-              props.onSuccess(apiCallStatus);
+          case E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST:
+          case E_CALL_STATE_ACTIONS.API_GET_API:
             break;
           default:
-        }
+            props.onSuccess(apiCallStatus);
+          }
       } else props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -114,6 +117,11 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onNewManagedObject = () => {
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+  }
+  // * Import from Event Portal *
+  const onImportManagedObjectEventPortal = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EVENT_PORTAL);
   }
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
@@ -149,6 +157,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        <Button label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
       </React.Fragment>
     );
     if(showViewComponent) return (
@@ -194,6 +203,13 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
+  const onEventPortalImportEventApiProductSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    setPreviousComponentState();
+  }
+  const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+  }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
@@ -206,12 +222,15 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
 
   const calculateShowStates = (componentState: TComponentState) => {
-    if(!componentState.currentState) {
+    const funcName = 'calculateShowStates';
+    const logName = `${componentName}.${funcName}()`;
+    if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -219,6 +238,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -227,6 +247,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -234,6 +255,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -242,6 +264,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -249,6 +272,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowImportEventPortalComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -256,6 +280,18 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+      setShowImportEventPortalComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EVENT_PORTAL) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowImportEventPortalComponent(true);
+    } 
+    else {
+      throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
     }
   }
 
@@ -283,7 +319,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           organizationId={props.organizationId}
           apiId={managedObjectId}
           apiDisplayName={managedObjectDisplayName}
-          onSuccess={onSubComponentSuccess} 
+          onSuccess={onSubComponentSuccessNoChange} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
         />      
@@ -321,6 +357,16 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
+        />
+      }
+      { showImportEventPortalComponent &&      
+        <EventPortalImportApi
+          organizationId={props.organizationId}
+          onBreadCrumbLabelList={props.onBreadCrumbLabelList}
+          onSuccess={onEventPortalImportEventApiProductSuccess}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading} 
         />
       }
     </div>

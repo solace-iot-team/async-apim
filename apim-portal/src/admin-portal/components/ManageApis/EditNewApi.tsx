@@ -51,7 +51,9 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     asyncApiSpec?: TAPAsyncApiSpec;
     apiInfo?: APIInfo
   }
-  type TManagedObjectFormData = TManagedObject;
+  type TManagedObjectFormData = TManagedObject & {
+    formAsyncApiSpecString: string | undefined
+  }
   
   const emptyManagedObject: TManagedObject = {
     id: '',
@@ -61,6 +63,8 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
       spec: ''
     }
   }
+
+  const ToolbarFormFieldAsyncApiUploadFromFileButtonLabel = 'Upload from File';
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -92,32 +96,39 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
     const funcName = 'transformManagedObjectToCreateApiObject';
     const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: starting ...`);
     if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
+    // console.log(`${logName}: managedObject=${JSON.stringify(managedObject, null, 2)}`);
     const res = APConnectorApiHelper.getAsyncApiSpecAsJson(managedObject.asyncApiSpec);
+    // console.log(`${logName}: res=${JSON.stringify(res, null, 2)}`);
     if(typeof(res) === 'string') throw new Error(`${logName}: ${res}`);
     return APConnectorApiHelper.getAsyncApiSpecJsonAsString(res);
   }
 
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
-    return managedObject;
+    let specStr: string | undefined = undefined;
+    if(managedObject.asyncApiSpec && managedObject.asyncApiSpec.format === EAPAsyncApiSpecFormat.JSON) {
+      specStr = APConnectorApiHelper.getAsyncApiSpecJsonAsDisplayString(managedObject.asyncApiSpec);
+    } 
+    return {
+      ...managedObject,
+      formAsyncApiSpecString: specStr
+    }
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
     const funcName = 'transformFormDataToManagedObject';
     const logName = `${componentName}.${funcName}()`;
     if(!formData.asyncApiSpec) throw new Error(`${logName}: formData.asyncApiSpec is undefined`);
-
-    // alert(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
-
-    const res = APConnectorApiHelper.getAsyncApiSpecAsJson(formData.asyncApiSpec);
-
-    // alert(`${logName}: res = ${JSON.stringify(res, null, 2)}`);
-
-    if(typeof(res) === 'string') throw new Error(`${logName}: ${res}`);
+    let asyncApiSpec: TAPAsyncApiSpec | undefined = undefined;
+    if(formData.formAsyncApiSpecString) {
+      asyncApiSpec = APConnectorApiHelper.getAsyncApiSpecJsonFromString(formData.formAsyncApiSpecString);
+      // console.log(`${logName}: aysncApiSpec=\n${JSON.stringify(asyncApiSpec, null, 2)}`);
+    }
     return {
       ...formData,
       displayName: formData.id,
-      asyncApiSpec: res
+      asyncApiSpec: asyncApiSpec
     }
   }
 
@@ -139,7 +150,9 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${managedObject.displayName}`);
     try { 
-      await ApisService.updateApi(props.organizationId, managedObject.id, transformManagedObjectToUpdateApiObject(managedObject));
+      const specStr: string = transformManagedObjectToUpdateApiObject(managedObject);
+      // console.log(`${logName}: specStr=${specStr}`);
+      await ApisService.updateApi(props.organizationId, managedObject.id, specStr);
       setUpdatedManagedObjectDisplayName(managedObject.displayName);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -152,10 +165,13 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const apiCreateManagedObject = async(managedObject: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: starting ...`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API, `create api: ${managedObject.displayName}`);
     try { 
       if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
-      await ApisService.createApi(props.organizationId, managedObject.id, transformManagedObjectToCreateApiObject(managedObject));
+      const specStr: string = transformManagedObjectToCreateApiObject(managedObject);
+      // console.log(`${logName}: specStr=${specStr}`);
+      await ApisService.createApi(props.organizationId, managedObject.id, specStr);
       setCreatedManagedObjectId(managedObject.id);
       setCreatedManagedObjectDisplayName(managedObject.displayName);      
     } catch(e: any) {
@@ -212,9 +228,15 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
+    // const funcName = 'doPopulateManagedObjectFormDataValues';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
     managedObjectUseForm.setValue('id', managedObjectFormData.id);
     managedObjectUseForm.setValue('displayName', managedObjectFormData.displayName);
-    managedObjectUseForm.setValue('asyncApiSpec', managedObjectFormData.asyncApiSpec);
+    if(managedObjectFormData.asyncApiSpec) {
+      managedObjectUseForm.setValue('asyncApiSpec', managedObjectFormData.asyncApiSpec);
+      managedObjectUseForm.setValue('formAsyncApiSpecString', managedObjectFormData.formAsyncApiSpecString);
+    }
   }
 
   // * Upload / Import *
@@ -240,11 +262,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const onUploadSpecFromFileCancel = () => {
     setShowUploadSpecFromFile(false);
   }
-
-  const onSearchImportFromEventPortal = () => {
-    alert('implement me');
-  }
-
 
   // * Form *
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
@@ -298,8 +315,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
 
   const renderApisToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [
-      <Button style={ { width: '20rem' } } type="button" label="Upload from File" className="p-button-text p-button-plain p-button-outlined" onClick={() => onUploadSpecFromFile()} />,
-      <Button style={ { width: '20rem' } } type="button" label="Search & Import from Event Portal" className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchImportFromEventPortal()} />,
+      <Button style={ { width: '20rem' } } type="button" label={ToolbarFormFieldAsyncApiUploadFromFileButtonLabel} className="p-button-text p-button-plain p-button-outlined" onClick={() => onUploadSpecFromFile()} />,
     ];
     return (
       <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
@@ -364,7 +380,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="asyncApiSpec.spec"
+                  name="formAsyncApiSpecString"
                   control={managedObjectUseForm.control}
                   rules={APConnectorFormValidationRules.AsyncApiSpec()}
                   render={( { field, fieldState }) => {
@@ -376,9 +392,9 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
                         />
                       )}}
                 />
-                <label htmlFor="asyncApiSpec.spec" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.asyncApiSpec?.spec })}>Async API Spec*</label>
+                <label htmlFor="formAsyncApiSpecString" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formAsyncApiSpecString })}>Async API Spec*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.asyncApiSpec?.spec)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formAsyncApiSpecString)}
               { renderApisToolbar() }
             </div>
             <Divider />
@@ -414,6 +430,27 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
         />
       } 
 
+      {/* DEBUG */}
+      {/* {managedObject && 
+        <React.Fragment>
+          <p>managedObject:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObject.asyncApiSpec, null, 2)}
+          </pre>
+        </React.Fragment>
+      } */}
+      {/* {managedObjectFormData && 
+        <React.Fragment>
+          <p>managedObjectUseForm:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectUseForm.getValues(), null, 2)}
+          </pre>
+          <p>managedObjectFormData:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData, null, 2)}
+          </pre>
+        </React.Fragment>
+      } */}
     </div>
   );
 }

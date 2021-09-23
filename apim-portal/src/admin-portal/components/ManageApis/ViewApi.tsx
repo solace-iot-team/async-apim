@@ -97,10 +97,11 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
           <div className="api-view">
             {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
             <div className="api-view-detail-left">
-              <div>Source: {managedObjectDisplay.apiInfo?.source}</div>
+              {/* <div>Source: {managedObjectDisplay.apiInfo?.source}</div> */}
             </div>
             <div className="api-view-detail-right">
               <div>Id: {managedObjectDisplay.id}</div>
+              <div>Source: {managedObjectDisplay.apiInfo?.source}</div>
               {/* <div>
                 <div>Info:</div>
                 <pre style={ { fontSize: '10px' }} >
@@ -111,7 +112,12 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
           </div>
         </div>  
         <hr/>        
-        <APDisplayAsyncApiSpec schema={managedObjectDisplay.asyncApiSpec.spec} schemaId={managedObjectDisplay.id} />
+        <APDisplayAsyncApiSpec 
+          schema={managedObjectDisplay.asyncApiSpec.spec} 
+          schemaId={managedObjectDisplay.id}
+          onDownloadError={props.onError}
+          onDownloadSuccess={props.onSuccess}
+        />
         {/* DEBUG */}
         {/* <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(managedObjectDisplay.asyncApiSpec, null, 2)}

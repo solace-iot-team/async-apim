@@ -2,6 +2,7 @@ import React from "react";
 
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { FileUpload, FileUploadBeforeUploadParams, FileUploadErrorParams, FileUploadHandlerParam } from 'primereact/fileupload';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -21,6 +22,7 @@ export const UploadApiSpecFromFile: React.FC<IUploadApiSpecFromFileProps> = (pro
   const componentName = 'UploadApiSpecFromFile';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const fileUploadRef = React.useRef(null);
   // const [showSelectDialog, setShowSelectDialog] = React.useState<boolean>(true);
   // const [selectedApiProductItemList, setSelectedApiProductItemList] = React.useState<TApiProductSelectItemList>([]);
 
@@ -41,12 +43,41 @@ export const UploadApiSpecFromFile: React.FC<IUploadApiSpecFromFileProps> = (pro
     props.onSave(callState, spec);
   }
 
+
+  
+  const handleFileUpload = (event: FileUploadHandlerParam) => {
+    const funcName = 'handleFileUpload';
+    const logName = `${componentName}.${funcName}()`;
+    alert(`${logName}: event.files=${JSON.stringify(event.files, null, 2)}`);
+  }
+
+  const onBeforeFileUpload = (event: FileUploadBeforeUploadParams) => {
+    const funcName = 'onBeforeFileUpload';
+    const logName = `${componentName}.${funcName}()`;
+    alert(`${logName}: event.formData=${JSON.stringify(event.formData, null, 2)}`);
+  }
+
+  const onFileUploadError = (event: FileUploadErrorParams) => {
+    alert(`error: ${JSON.stringify(event.files)}`)
+  }
   const renderSelectDialogContent = (): JSX.Element => {
     // const funcName = 'renderDeleteManagedObjectDialogContent';
     // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
-        <p>Upload file component here</p>
+        {/* https://www.pluralsight.com/guides/uploading-files-with-reactjs */}
+        <p>implement me...</p>
+        {/* <FileUpload
+          ref={fileUploadRef}
+          name={componentName}
+          mode='basic'
+          url={`./${componentName}`}
+          accept='.yaml,.yml,.json'
+          customUpload={false}
+          uploadHandler={handleFileUpload}
+          onBeforeUpload={onBeforeFileUpload}
+          onError={onFileUploadError}
+        /> */}
         {/* DEBUG  */}
         {/* <pre style={ { fontSize: '10px' }} >props: {JSON.stringify(props)}</pre> */}
         {/* <DeveloperPortalUserAppSearchSelectApiProducts 

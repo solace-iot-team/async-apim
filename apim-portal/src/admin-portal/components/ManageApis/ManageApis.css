@@ -47,6 +47,7 @@
 .manage-apis .api-view .api-view-detail-right {
   display: flex;
   flex-direction: column;
+  font-style: italic;
 }
 
 .manage-apis .api-description {
