@@ -8,7 +8,10 @@ import { Button } from 'primereact/button';
 
 import { 
   APIInfo,
+  APIInfoList,
+  APIList,
   ApisService,
+  APISummaryList,
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -28,14 +31,13 @@ export interface IListApisProps {
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
   onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
+  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string, viewManagedObject: TViewManagedObject) => void;
 }
 
 export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const componentName = 'ListApis';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No APIs found - create a new API.';
-  const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
   type TManagedObject = TViewManagedObject;
@@ -58,16 +60,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
       globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
     }
   }
-
-  // const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
-  //   // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
-  //   if(tableSortFieldName.startsWith('apiObject.')) {
-  //     return tableSortFieldName.replace('apiObject.', '');
-  //   }
-  //   return tableSortFieldName;
-  // }
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
@@ -96,11 +88,12 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiNameList: Array<string> = await ApisService.listApis(props.organizationId);
+      const apiResult = await ApisService.listApis(props.organizationId, undefined, undefined, "extended");
+      const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;
       let _managedObjectList: TManagedObjectList = [];
-      for(const apiName of apiNameList) {
-        const apiInfo: APIInfo = await ApisService.getApiInfo(props.organizationId, apiName);
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiName, apiInfo));
+      for(const apiInfo of apiAPIInfoList) {
+        if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
+        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e: any) {
@@ -136,7 +129,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
 
   const onManagedObjectOpen = (event: any): void => {
     const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName);
+    props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -150,8 +143,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
-          {/* <InputText type="search" placeholder={GlobalSearchPlaceholder} onKeyUp={onKeyupGlobalFilter} onInput={onInputGlobalFilter} style={{width: '500px'}}/> */}
-          {/* <Button tooltip="go search" icon="pi pi-search" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onGlobalSearch} /> */}
         </span>
       </div>
     );
@@ -160,19 +151,19 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const actionBodyTemplate = (managedObject: TManagedObject) => {
     // const funcName = 'actionBodyTemplate';
     // const logName = `${componentName}.${funcName}()`;
+    const showButtonsEditDelete: boolean = (managedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
+          { showButtonsEditDelete &&
+            <>
+              <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
+              <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+            </>
+          }
         </React.Fragment>
     );
   }
-
-  // const renderManagedObjectTableEmptyMessage = () => {
-  //   if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundWithFilter}: ${globalFilter}.`;
-  //   else return MessageNoManagedObjectsFoundCreateNew;
-  // }
 
   const renderManagedObjectDataTable = () => {
     // const funcName = 'renderManagedObjectDataTable';
@@ -182,6 +173,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
       <div className="card">
           <DataTable
             ref={dt}
+            className="p-datatable-sm"
             autoLayout={true}
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
@@ -193,7 +185,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             scrollable 
             scrollHeight="800px" 
             dataKey="id"  
-            // emptyMessage={renderManagedObjectTableEmptyMessage()}
             // sorting
             sortMode='single'
             sortField="globalSearch"

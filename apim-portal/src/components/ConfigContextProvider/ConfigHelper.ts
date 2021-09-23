@@ -39,15 +39,15 @@ export class ConfigHelper {
     return authorizedRolesDisplayNameList;
   }
 
-  public static getActiveConnectorInstance = async(): Promise<APSConnector | undefined> => {
-    const funcName: string = `getActiveConnectorInstance`;
+  public static apiGetActiveConnectorInstance = async(): Promise<APSConnector | undefined> => {
+    const funcName: string = `apiGetActiveConnectorInstance`;
     const logName: string = `${ConfigHelper.name}.${funcName}()`
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `get active connector config`);
     try {
       try {
         const activeConnector: APSConnector = await ApsConfigService.getActiveApsConnector();
         return activeConnector;
-      } catch (e) {
+      } catch (e: any) {
         if(APSClientOpenApi.isInstanceOfApiError(e)) {
           const apiError: APSApiError = e;
           APSClientOpenApi.logError(logName, e);
@@ -56,7 +56,7 @@ export class ConfigHelper {
           } else throw e;
         } else throw e;
       }
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState.success = false;
       callState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(e);

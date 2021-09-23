@@ -3,13 +3,15 @@ import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APSConnector } from "@solace-iot-team/apim-server-openapi-browser";
 import { TAPRbacRoleList, APRbac } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
+import { APConnectorApiCalls, APConnectorInfo } from "../../utils/APConnectorApiCalls";
 
 // const componentName: string = "ConfigContextProvider";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   rbacRoleList: TAPRbacRoleList,
-  connector?: APSConnector
+  connector?: APSConnector,
+  connectorInfo?: APConnectorInfo
 }
 
 export interface IConfigContextProviderProps {
@@ -19,6 +21,7 @@ export interface IConfigContextProviderProps {
 type ConfigContextAction = 
   | { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: TAPRbacRoleList }
   | { type: 'SET_CONFIG_CONNECTOR', connector: APSConnector | undefined }
+  | { type: 'SET_CONNECTOR_INFO', connectorInfo: APConnectorInfo | undefined }
   | { type: 'default'};
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
@@ -41,8 +44,13 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
           ...state,
           connector: action.connector
         }
+      case 'SET_CONNECTOR_INFO':
+        return { 
+          ...state,
+          connectorInfo: action.connectorInfo
+        }
       default: 
-      return state;  
+        return state;  
   }
 }
 const initialConfigContext: TAPConfigContext = {
@@ -54,6 +62,7 @@ const initialAction: React.Dispatch<ConfigContextAction> = (value: ConfigContext
 export const ConfigContext = React.createContext<[TAPConfigContext, React.Dispatch<ConfigContextAction>]>([initialConfigContext, initialAction]);
 
 export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (props: IConfigContextProviderProps) => {
+  const componentName='ConfigContextProvider';
 
   const [state, dispatch] = React.useReducer(configContextReducer, initialConfigContext);
 
@@ -62,14 +71,24 @@ export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (pro
     dispatch( { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: configRbacRoleList });
   }
 
-  const getActiveConnectorInstance = async() => {
-    const activeApsConnector: APSConnector | undefined = await ConfigHelper.getActiveConnectorInstance();
+  const getActiveConnectorInstance = async(): Promise<APSConnector | undefined> => {
+    const activeApsConnector: APSConnector | undefined = await ConfigHelper.apiGetActiveConnectorInstance();
     dispatch( { type: 'SET_CONFIG_CONNECTOR', connector: activeApsConnector });
+    return activeApsConnector;
+  }
+
+  const getActiveConnectorInfo = async(apsConnector: APSConnector | undefined) => {
+    const funcName = 'getActiveConnectorInfo';
+    const logName= `${componentName}.${funcName}()`;
+    if(!apsConnector) throw new Error(`${logName}: apsConnector is undefined`);
+    const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+    dispatch( { type: 'SET_CONNECTOR_INFO', connectorInfo: apConnectorInfo });
   }
 
   const doInitialize = async () => {
     await getConfigRbacRoleList();
-    await getActiveConnectorInstance();
+    const apsConnector: APSConnector | undefined = await getActiveConnectorInstance();
+    await getActiveConnectorInfo(apsConnector);
   }
 
   React.useEffect(() => {

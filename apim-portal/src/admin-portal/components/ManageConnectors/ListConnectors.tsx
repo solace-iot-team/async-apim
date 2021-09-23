@@ -15,12 +15,13 @@ import {
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APConnectorHealthCheck, THealthCheckResult } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorApiCalls, APConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewManagedObject } from "./ManageConnectorsCommon";
+import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 
 export interface IListConnectorsProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -62,8 +63,10 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
+        const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+        // console.log(`${logName}: apConnectorInfo = ${JSON.stringify(apConnectorInfo, null, 2)}`);
         const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
-        _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, healthCheckResult));
+        _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e: any) {
@@ -147,6 +150,16 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     );
   }
 
+  const aboutBodyTemplate = (managedObject: TManagedObject) => {
+    return (
+      <div>
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(managedObject.apConnectorInfo?.connectorAbout, null, 2)}
+        </pre>
+      </div>
+    )
+  }
+
   const renderManagedObjectDataTable = () => {
     
     const rowExpansionTemplate = (managedObject: TManagedObject) => {
@@ -194,7 +207,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             <Column field="healthCheckPassed" header="Health Check" sortable />
             <Column field="id" header="Id" />
             <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="description" header="Description" />
+            <Column header="Info" body={aboutBodyTemplate}/>
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>
@@ -216,11 +229,11 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         renderManagedObjectDataTable()
       }
       
-      {/* {managedObjectList.length > 0 && selectedManagedObject && 
-        <pre style={ { fontSize: '12px' }} >
+      {managedObjectList.length > 0 && selectedManagedObject && 
+        <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      } */}
+      }
 
     </div>
   );

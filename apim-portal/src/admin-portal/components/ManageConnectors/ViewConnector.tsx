@@ -18,6 +18,7 @@ import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewMa
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
+import { APConnectorApiCalls, APConnectorInfo } from "../../../utils/APConnectorApiCalls";
 
 export interface IViewConnectorProps {
   connectorId: TManagedObjectId;
@@ -44,8 +45,9 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR, `retrieve details for connector: ${props.connectorDisplayName}`);
     try { 
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
+      const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
       const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
-      setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, healthCheckResult));
+      setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

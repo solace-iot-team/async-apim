@@ -1,7 +1,13 @@
 import { 
   APIInfo,
   ApisService, 
+  About,
+  AdministrationService,
+  APISummaryList,
+  APIList,
+  APIInfoList
 } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { TAPOrganizationId } from '../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';
@@ -10,6 +16,9 @@ import { Globals } from './Globals';
 
 import yaml from "js-yaml";
 
+export type APConnectorInfo = {
+  connectorAbout: About
+}
 
 export type TGetAsyncApiSpecResult = {
   apiCallState: TApiCallState,
@@ -19,6 +28,9 @@ export type TGetAsyncApiSpecResult = {
 
 export class APConnectorApiHelper {
 
+  // public static isAPIInfoList = (result: APIList | APISummaryList | APIInfoList): result is APIInfoList => {
+  //   return (<APIInfoList>result)[0].version != undefined;
+  // }    
   public static getAsyncApiSpecJsonAsString = (asyncApiSpec: TAPAsyncApiSpec): string => {
     const funcName = 'getAsyncApiSpecJsonAsString';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
@@ -102,6 +114,25 @@ export class APConnectorApiHelper {
 
 export class APConnectorApiCalls {
   
+  public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<APConnectorInfo | undefined> => {
+    const funcName = 'getConnectorInfo';
+    const logName= `${APConnectorApiCalls.name}.${funcName}()`;
+    APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
+    let result: APConnectorInfo | undefined;
+    try {
+      const connectorAbout: About = await AdministrationService.about();
+      result = {
+        connectorAbout: connectorAbout
+      }
+    } catch (e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      result = undefined;
+    } finally {
+      APClientConnectorOpenApi.tmpUninitialize();
+      return result;
+    }
+  }
+
   public static getAsyncApiSpec = async(orgId: TAPOrganizationId, apiId: string, apiSpecFormat: EAPAsyncApiSpecFormat, initialApiCallState: TApiCallState): Promise<TGetAsyncApiSpecResult> => {
     const funcName = 'getAsyncApiSpec';
     const logName = `${APConnectorApiCalls.name}.${funcName}()`;

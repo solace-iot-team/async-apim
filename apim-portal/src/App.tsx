@@ -112,7 +112,7 @@ const App: React.FC = () => {
     <React.Fragment>
       <ShowUserMessage />
       <NavBar />
-      { isDebug && userContext && displayStateInfo() }
+      {/* { isDebug && userContext && displayStateInfo() } */}
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
           {showDeveloperPortal &&

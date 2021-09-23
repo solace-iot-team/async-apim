@@ -103,7 +103,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   }
   // * Config Context *
   const setConfigContextActiveConnector = async() => {
-    dispatchConfigContextAction({ type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.getActiveConnectorInstance()});
+    dispatchConfigContextAction({ type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.apiGetActiveConnectorInstance()});
   }
   // * useEffect Hooks *
   React.useEffect(() => {

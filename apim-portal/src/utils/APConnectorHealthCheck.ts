@@ -3,7 +3,8 @@ import {
   AdministrationService, 
   EnvironmentsService, 
   ApiError as APConnectorApiError, 
-  Organization 
+  Organization,
+  About
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { APClientConnectorRaw } from './APClientConnectorRaw';
@@ -36,6 +37,21 @@ export class APConnectorHealthCheck {
       success = false;
     } finally {
       // console.log(`${logName}: success=${success}`);
+      return success;
+    }
+  }
+
+  private static apiGetAbout = async(): Promise<boolean> => {
+    const funcName = 'apiGetAbout';
+    const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
+    let success: boolean = true;
+    try {
+      const connectorAbout: About = await AdministrationService.about();
+      // console.log(`${logName}: connectorAbout=${JSON.stringify(connectorAbout, null, 2)}`);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      success = false;
+    } finally {
       return success;
     }
   }
@@ -119,15 +135,25 @@ export class APConnectorHealthCheck {
         APConnectorHealthCheck.healthCheckResult.summary.success = false;
         throw new Error('access url check failed');
       }
+
+      // call URL: GET /about 
       success = await APConnectorHealthCheck.checkAbout();
       APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check connector about', success: success });
       if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+
+      // call api: GET /about
+      success = await APConnectorHealthCheck.apiGetAbout();
+      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'get connector api: /about', success: success });
+      if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+
       success = await APConnectorHealthCheck.checkPlatformAdminCredentials();
       APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=platform-admin', success: success });
       if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+
       success = await APConnectorHealthCheck.checkOrgAdminCredentials();
       APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=org-admin', success: success });
       if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;  
+
     } catch (e) {
       APClientConnectorOpenApi.logError(logName, e);
       throw e;

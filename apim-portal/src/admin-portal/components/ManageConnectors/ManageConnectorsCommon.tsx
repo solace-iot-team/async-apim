@@ -5,6 +5,7 @@ import {
 
 import { Globals } from '../../../utils/Globals';
 import { THealthCheckResult } from '../../../utils/APConnectorHealthCheck';
+import { APConnectorInfo } from '../../../utils/APConnectorApiCalls';
 
 export type TManagedObjectId = APSId;
 
@@ -15,6 +16,7 @@ export type TViewManagedObject = {
   displayName: string,
   globalSearch: string,
   apiObject: TViewApiObject,
+  apConnectorInfo: APConnectorInfo | undefined,
   healthCheckResult: THealthCheckResult
   healthCheckPassed: string
 }
@@ -42,12 +44,13 @@ export class ManageConnectorsCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, healthCheckResult: THealthCheckResult): TViewManagedObject => {
+  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apConnectorInfo: APConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
     return {
       id: viewApiObject.connectorId,
       displayName: viewApiObject.displayName,
       globalSearch: ManageConnectorsCommon.generateGlobalSearchContent(viewApiObject),
       apiObject: viewApiObject,
+      apConnectorInfo: apConnectorInfo,
       healthCheckResult: healthCheckResult,
       healthCheckPassed: healthCheckResult.summary.success ? 'passed' : 'failed'
     }

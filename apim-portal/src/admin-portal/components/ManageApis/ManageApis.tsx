@@ -6,16 +6,18 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewManagedObject } from "./ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListApis } from "./ListApis";
 import { EAction, EditNewApi } from "./EditNewApi";
 import { DeleteApi } from "./DeleteApi";
 import { ViewApi } from "./ViewApi";
 import { EventPortalImportApi } from "./EventPortalImportApi";
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APIInfo } from "@solace-iot-team/platform-api-openapi-client-fe";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;
@@ -62,11 +64,14 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
   const ToolbarButtonLabelImportEventPortal = 'Import from Event Portal';
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
+  const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -106,10 +111,11 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onViewManagedObject = (id: TManagedObjectId, displayName: string, viewManagedObject: TViewManagedObject): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
+    setViewManagedObject(viewManagedObject);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -153,20 +159,33 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
+    const funcName = 'renderLeftToolbarContent';
+    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
+    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.APIS_PROXY_MODE);
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        <Button label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
+        {showImportEventPortalButton && 
+          <Button label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
+        }
       </React.Fragment>
     );
-    if(showViewComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-      </React.Fragment>
-    );
+    if(showViewComponent) {          
+      if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
+      const showButtonsEditDelete: boolean = (viewManagedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+      return (
+        <React.Fragment>
+          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+          { showButtonsEditDelete &&
+          <>
+            <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+          </>
+          }
+        </React.Fragment>
+      );
+      }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
