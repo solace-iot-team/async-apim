@@ -1,4 +1,5 @@
 import React from 'react';
+import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
@@ -9,6 +10,7 @@ export const ContextsTestPage: React.FC = () => {
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   /* eslint-eanble @typescript-eslint/no-unused-vars */
 
   return (
@@ -26,6 +28,10 @@ export const ContextsTestPage: React.FC = () => {
       <h5>configContext:</h5>
       <pre style={ { fontSize: '12px' }} >
         {JSON.stringify(configContext, null, 2)}
+      </pre>
+      <h5>healthCheckContext:</h5>
+      <pre style={ { fontSize: '12px' }} >
+        {JSON.stringify(healthCheckContext, null, 2)}
       </pre>
     </React.Fragment>
 );

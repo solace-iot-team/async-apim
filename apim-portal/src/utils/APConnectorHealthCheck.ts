@@ -9,23 +9,22 @@ import {
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { APClientConnectorRaw } from './APClientConnectorRaw';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
+import { Globals, TAPConfigIssueList, THealthCheckResult } from './Globals';
+import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
+import { APConnectorApiHelper, TAPConnectorAbout, TTransformApiAboutToAPConnectorAboutResult } from './APConnectorApiCalls';
+import { APLogger } from './APLogger';
 
-export type THealthCheckLogEntry = {
-  action: string,
-  success: boolean
+type TApiGetAboutResult = {
+  success: boolean,
+  connectorAbout?: TAPConnectorAbout
 }
-export type THealthCheckLog = Array<THealthCheckLogEntry>;
-export type THealthCheckSummary = {
-  performed: boolean,
-  success: boolean
-}
-export type THealthCheckResult = {
-  healthCheckLog: THealthCheckLog,
-  summary: THealthCheckSummary
+type TApiGetHealthCheckResult = {
+  success: boolean,
+  connectorStatus?: string
 }
 
 export class APConnectorHealthCheck {
-  private static healthCheckResult: THealthCheckResult;
+  // private static healthCheckResult: THealthCheckResult;
 
   private static checkUrlAccess = async(): Promise<boolean> => {
     // const funcName = 'checkUrlAccess';
@@ -41,30 +40,70 @@ export class APConnectorHealthCheck {
     }
   }
 
-  private static apiGetAbout = async(): Promise<boolean> => {
+  private static apiGetAbout = async(): Promise<TApiGetAboutResult> => {
     const funcName = 'apiGetAbout';
     const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
     let success: boolean = true;
+    let connectorAbout: TAPConnectorAbout | undefined = undefined;
     try {
-      const connectorAbout: About = await AdministrationService.about();
-      // console.log(`${logName}: connectorAbout=${JSON.stringify(connectorAbout, null, 2)}`);
+      const apiAbout: About = await AdministrationService.about();
+      const transformResult: TTransformApiAboutToAPConnectorAboutResult = APConnectorApiHelper.transformApiAboutToAPConnectorAbout(apiAbout);      
+      if(transformResult.apError) {
+        APLogger.error(APLogger.createLogEntry(logName, transformResult.apError));
+        success = false;
+      }
+      connectorAbout = transformResult.apConnectorAbout;
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       success = false;
-    } finally {
-      return success;
     }
+    const apiGetAboutResult: TApiGetAboutResult = {
+      success: success,
+      connectorAbout: connectorAbout
+    }
+    // console.log(`${logName}: apiGetAboutResult=${JSON.stringify(apiGetAboutResult, null, 2)}`);
+    return apiGetAboutResult;
   }
 
-  private static checkAbout = async(): Promise<boolean> => {
+  private static apiGetHealthCheck = async(): Promise<TApiGetHealthCheckResult> => {
+    const funcName = 'apiGetHealthCheck';
+    const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
     let success: boolean = true;
+    let connectorStatus: string | undefined = undefined;
     try {
-      await APClientConnectorRaw.getAbout();
-    } catch(e) {
+      const apiHealthCheckStatus: { status: string } = await AdministrationService.healthcheck();
+      connectorStatus = apiHealthCheckStatus.status;
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
       success = false;
-    } finally {
-      return success;
     }
+    return {
+      success: success,
+      connectorStatus: connectorStatus
+    };
+  }
+
+  // private static checkAbout = async(): Promise<boolean> => {
+  //   let success: boolean = true;
+  //   try {
+  //     await APClientConnectorRaw.getAbout();
+  //   } catch(e) {
+  //     success = false;
+  //   } finally {
+  //     return success;
+  //   }
+  // }
+
+  private static checkConfiguration = (configContext: TAPConfigContext, connectorAbout: TAPConnectorAbout | undefined): boolean => {
+    if(!connectorAbout) return false;
+    const tmpConfigContext: TAPConfigContext = {
+      ...configContext,
+      connectorInfo: {
+        connectorAbout: connectorAbout
+      }
+    }
+    const issueList: TAPConfigIssueList = Globals.crossCheckConfiguration(tmpConfigContext);
+    return (issueList.length === 0);
   }
 
   private static checkPlatformAdminCredentials = async(): Promise<boolean> => {
@@ -118,48 +157,63 @@ export class APConnectorHealthCheck {
     } else return true;
   } 
 
-  public static doHealthCheck = async (connectorClientConfig: APSConnectorClientConfig): Promise<THealthCheckResult> => {
+  public static doHealthCheck = async (configContext: TAPConfigContext, connectorClientConfig: APSConnectorClientConfig): Promise<THealthCheckResult> => {
     const funcName = 'doHealthCheck';
     const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
-    APConnectorHealthCheck.healthCheckResult = {
+    let healthCheckResult: THealthCheckResult = {
       healthCheckLog: [],
-      summary: { performed: true, success: true }
+      summary: { 
+        performed: true, 
+        success: true,
+        timestamp: Date.now()
+      }
     };
     APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     APClientConnectorRaw.initialize(connectorClientConfig);
     let success: boolean = false;
     try {
       success = await APConnectorHealthCheck.checkUrlAccess();
-      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check connector url', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'check connector url', success: success });
       if(!success) {
-        APConnectorHealthCheck.healthCheckResult.summary.success = false;
+        healthCheckResult.summary.success = false;
         throw new Error('access url check failed');
       }
 
-      // call URL: GET /about 
-      success = await APConnectorHealthCheck.checkAbout();
-      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check connector about', success: success });
-      if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+      // // call URL: GET /about 
+      // success = await APConnectorHealthCheck.checkAbout();
+      // APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check connector about', success: success });
+      // if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
 
       // call api: GET /about
-      success = await APConnectorHealthCheck.apiGetAbout();
-      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'get connector api: /about', success: success });
-      if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+      const apiGetAboutResult = await APConnectorHealthCheck.apiGetAbout();
+      success = apiGetAboutResult.success;
+      healthCheckResult.healthCheckLog.push({ action: 'get connector about', success: success });
+      if(!success) healthCheckResult.summary.success = false;
+
+      // healthcheck
+      const apiGetHealthCheckResult = await APConnectorHealthCheck.apiGetHealthCheck();
+      healthCheckResult.healthCheckLog.push({ action: 'connector health check', success: success });
+      if(!success) healthCheckResult.summary.success = false;
+
+      // configuration check
+      success = APConnectorHealthCheck.checkConfiguration(configContext, apiGetAboutResult.connectorAbout);
+      healthCheckResult.healthCheckLog.push({ action: 'configuration cross check', success: success });
+      if(!success) healthCheckResult.summary.success = false;
 
       success = await APConnectorHealthCheck.checkPlatformAdminCredentials();
-      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=platform-admin', success: success });
-      if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;
+      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=platform-admin', success: success });
+      if(!success) healthCheckResult.summary.success = false;
 
       success = await APConnectorHealthCheck.checkOrgAdminCredentials();
-      APConnectorHealthCheck.healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=org-admin', success: success });
-      if(!success) APConnectorHealthCheck.healthCheckResult.summary.success = false;  
+      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=org-admin', success: success });
+      if(!success) healthCheckResult.summary.success = false;  
 
     } catch (e) {
       APClientConnectorOpenApi.logError(logName, e);
       throw e;
     } finally {
       APClientConnectorOpenApi.tmpUninitialize();
-      return APConnectorHealthCheck.healthCheckResult;
+      return healthCheckResult;
     }
   }  
 

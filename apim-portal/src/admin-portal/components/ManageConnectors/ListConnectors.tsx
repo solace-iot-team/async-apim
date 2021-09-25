@@ -12,10 +12,12 @@ import {
   ListApsConnectorsResponse 
 } from "@solace-iot-team/apim-server-openapi-browser";
 
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APConnectorHealthCheck, THealthCheckResult } from "../../../utils/APConnectorHealthCheck";
-import { APConnectorApiCalls, APConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { THealthCheckResult } from "../../../utils/Globals";
+import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -42,6 +44,8 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   type TManagedObject = TViewManagedObject;
   type TManagedObjectList = Array<TManagedObject>;
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
+  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
@@ -63,9 +67,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
-        const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+        const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
         // console.log(`${logName}: apConnectorInfo = ${JSON.stringify(apConnectorInfo, null, 2)}`);
-        const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
+        const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
         _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
@@ -150,12 +154,21 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     );
   }
 
-  const aboutBodyTemplate = (managedObject: TManagedObject) => {
+  const infoBodyTemplate = (managedObject: TManagedObject) => {
+    let EventPortalIsProxyMode: string = '?';
+    let ConnectorVersion: string = '?';
+    let ConnectorOpenApiVersion: string = '?';
+    if(managedObject.apConnectorInfo) {
+      const portalAbout = managedObject.apConnectorInfo.connectorAbout.portalAbout;
+      EventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      if(portalAbout.connectorServerVersionStr) ConnectorVersion = portalAbout.connectorServerVersionStr; 
+      if(portalAbout.connectorOpenApiVersionStr) ConnectorOpenApiVersion = portalAbout.connectorOpenApiVersionStr; 
+    }
     return (
       <div>
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(managedObject.apConnectorInfo?.connectorAbout, null, 2)}
-        </pre>
+        <div>EventPortal:Event API Products proxy: {EventPortalIsProxyMode}</div>
+        <div>Connector Version: {ConnectorVersion}</div>
+        <div>API Version: {ConnectorOpenApiVersion}</div>
       </div>
     )
   }
@@ -185,6 +198,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     return (
       <div className="card">
           <DataTable
+            className="p-datatable-sm"
             ref={dt}
             autoLayout={true}
             header={renderDataTableHeader()}
@@ -196,18 +210,18 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             sortMode="single" sortField="name" sortOrder={1}
             scrollable 
-            scrollHeight="1200px" 
+            scrollHeight="800px" 
             expandedRows={expandedManagedObjectDataTableRows}
             onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
             rowExpansionTemplate={rowExpansionTemplate}
             dataKey="id"  
           >
             <Column expander style={{ width: '3em' }} />  
-            <Column field="isActive" header="Active?" body={ManageConnectorsCommon.isActiveBodyTemplate} sortable />
-            <Column field="healthCheckPassed" header="Health Check" sortable />
+            <Column field="isActive" header="Active?" headerStyle={{ width: '10em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.isActiveBodyTemplate} sortable />
+            <Column field="healthCheckPassed" header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} sortable />
             <Column field="id" header="Id" />
             <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column header="Info" body={aboutBodyTemplate}/>
+            <Column header="Info" body={infoBodyTemplate}/>
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>

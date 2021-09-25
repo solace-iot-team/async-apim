@@ -2,6 +2,11 @@
 import { OpenAPI, ApiError } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 
+export type APConnectorClientOpenApiInfo = {
+  base: string,
+  versionStr: string
+}
+
 export class APClientConnectorOpenApi {
   private static orgSettings?: {
     config: APSConnectorClientConfig
@@ -11,14 +16,14 @@ export class APClientConnectorOpenApi {
   private static isInitialized: boolean = false;
 
   public static initialize = (config: APSConnectorClientConfig) => {
-    // const funcName: string = `initialize`;
-    // const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
+    const funcName: string = `initialize`;
+    const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
     APClientConnectorOpenApi.config = (JSON.parse(JSON.stringify(config)));
     OpenAPI.BASE = `${APClientConnectorOpenApi.config.protocol}://${APClientConnectorOpenApi.config.host}:${APClientConnectorOpenApi.config.port}/${APClientConnectorOpenApi.config.apiVersion}`;
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
     OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
     APClientConnectorOpenApi.isInitialized = true;
-    // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
+    console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
   } 
 
   public static uninitialize = () => {
@@ -40,6 +45,13 @@ export class APClientConnectorOpenApi {
       APClientConnectorOpenApi.initialize(APClientConnectorOpenApi.orgSettings.config);
     } else {
       APClientConnectorOpenApi.uninitialize();
+    }
+  }
+
+  public static getOpenApiInfo = (): APConnectorClientOpenApiInfo => {
+    return {
+      base: OpenAPI.BASE,
+      versionStr: OpenAPI.VERSION
     }
   }
 

@@ -9,16 +9,18 @@ import {
   APSConnector
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APConnectorHealthCheck, THealthCheckResult } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewManagedObject } from "./ManageConnectorsCommon";
+import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { THealthCheckResult } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
-import { APConnectorApiCalls, APConnectorInfo } from "../../../utils/APConnectorApiCalls";
 
 export interface IViewConnectorProps {
   connectorId: TManagedObjectId;
@@ -34,6 +36,8 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
 
   type TManagedObject = TViewManagedObject;
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
+  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const dt = React.useRef<any>(null);
@@ -45,8 +49,8 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR, `retrieve details for connector: ${props.connectorDisplayName}`);
     try { 
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
-      const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-      const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
+      const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+      const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
       setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

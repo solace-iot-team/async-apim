@@ -3,15 +3,22 @@ import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APSConnector } from "@solace-iot-team/apim-server-openapi-browser";
 import { TAPRbacRoleList, APRbac } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
-import { APConnectorApiCalls, APConnectorInfo } from "../../utils/APConnectorApiCalls";
+import { APConnectorApiCalls, TAPConnectorInfo } from "../../utils/APConnectorApiCalls";
+import { TAPConfigIssueList, TAPPortalInfo, THealthCheckResult } from "../../utils/Globals";
+import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 
 // const componentName: string = "ConfigContextProvider";
 
+export type TAPHealthCheckResult = {
+  portalHealthCheckResult?: THealthCheckResult,
+  connectorHealthCheckResult?: THealthCheckResult
+}
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   rbacRoleList: TAPRbacRoleList,
   connector?: APSConnector,
-  connectorInfo?: APConnectorInfo
+  connectorInfo?: TAPConnectorInfo,
+  portalInfo?: TAPPortalInfo
 }
 
 export interface IConfigContextProviderProps {
@@ -21,7 +28,8 @@ export interface IConfigContextProviderProps {
 type ConfigContextAction = 
   | { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: TAPRbacRoleList }
   | { type: 'SET_CONFIG_CONNECTOR', connector: APSConnector | undefined }
-  | { type: 'SET_CONNECTOR_INFO', connectorInfo: APConnectorInfo | undefined }
+  | { type: 'SET_CONNECTOR_INFO', connectorInfo: TAPConnectorInfo | undefined }
+  | { type: 'SET_PORTAL_INFO', portalInfo: TAPPortalInfo | undefined }
   | { type: 'default'};
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
@@ -48,6 +56,11 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
         return { 
           ...state,
           connectorInfo: action.connectorInfo
+        }
+      case 'SET_PORTAL_INFO':
+        return { 
+          ...state,
+          portalInfo: action.portalInfo
         }
       default: 
         return state;  
@@ -78,17 +91,28 @@ export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (pro
   }
 
   const getActiveConnectorInfo = async(apsConnector: APSConnector | undefined) => {
-    const funcName = 'getActiveConnectorInfo';
-    const logName= `${componentName}.${funcName}()`;
-    if(!apsConnector) throw new Error(`${logName}: apsConnector is undefined`);
-    const apConnectorInfo: APConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+    // const funcName = 'getActiveConnectorInfo';
+    // const logName= `${componentName}.${funcName}()`;
+    let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
+    if(apsConnector) {
+      apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+    }
     dispatch( { type: 'SET_CONNECTOR_INFO', connectorInfo: apConnectorInfo });
+  }
+
+  const getPortalInfo = ()  => {
+    const portalInfo: TAPPortalInfo = {
+      connectorClientOpenApiInfo: APClientConnectorOpenApi.getOpenApiInfo(),
+      portalServerClientOpenApiInfo: APSClientOpenApi.getOpenApiInfo()
+    };
+    dispatch( { type: 'SET_PORTAL_INFO', portalInfo: portalInfo });
   }
 
   const doInitialize = async () => {
     await getConfigRbacRoleList();
     const apsConnector: APSConnector | undefined = await getActiveConnectorInstance();
     await getActiveConnectorInfo(apsConnector);
+    getPortalInfo();
   }
 
   React.useEffect(() => {

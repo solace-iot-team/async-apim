@@ -1,6 +1,11 @@
 
 import { OpenAPI as APSOpenAPI, ApiError as APSApiError } from '@solace-iot-team/apim-server-openapi-browser';
 
+export type APSClientOpenApiInfo = {
+  base: string,
+  versionStr: string
+}
+
 export type TAPSClientOpenApiConfig = {
   apsServerUrl?: URL,
   // protocol?: EAPSClientProtocol,
@@ -50,6 +55,13 @@ export class APSClientOpenApi {
     // TOKEN?: string | Resolver<string>;
     // HEADERS?: Headers | Resolver<Headers>;
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
+  }
+
+  public static getOpenApiInfo = (): APSClientOpenApiInfo => {
+    return {
+      base: APSOpenAPI.BASE,
+      versionStr: APSOpenAPI.VERSION
+    }
   }
 
   public static isInstanceOfApiError(error: Error): boolean {

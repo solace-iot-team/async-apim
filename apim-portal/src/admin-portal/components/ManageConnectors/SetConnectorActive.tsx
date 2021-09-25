@@ -40,7 +40,7 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SET_CONNECTOR_ACTIVE, `set connector active: ${props.connectorDisplayName}`);
     try { 
       await ApsConfigService.setApsConnectorActive(props.connectorId);
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }

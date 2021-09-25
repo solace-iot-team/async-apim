@@ -3,9 +3,8 @@ import {
   APSId 
 } from '@solace-iot-team/apim-server-openapi-browser';
 
-import { Globals } from '../../../utils/Globals';
-import { THealthCheckResult } from '../../../utils/APConnectorHealthCheck';
-import { APConnectorInfo } from '../../../utils/APConnectorApiCalls';
+import { Globals, THealthCheckResult } from '../../../utils/Globals';
+import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 
 export type TManagedObjectId = APSId;
 
@@ -16,7 +15,7 @@ export type TViewManagedObject = {
   displayName: string,
   globalSearch: string,
   apiObject: TViewApiObject,
-  apConnectorInfo: APConnectorInfo | undefined,
+  apConnectorInfo: TAPConnectorInfo | undefined,
   healthCheckResult: THealthCheckResult
   healthCheckPassed: string
 }
@@ -44,7 +43,7 @@ export class ManageConnectorsCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apConnectorInfo: APConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
+  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
     return {
       id: viewApiObject.connectorId,
       displayName: viewApiObject.displayName,

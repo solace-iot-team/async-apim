@@ -1,6 +1,36 @@
 import yaml from "js-yaml";
+import { SemVer } from "semver";
+import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
+import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
+import { APSClientOpenApiInfo } from "./APSClientOpenApi";
 
+export type THealthCheckLogEntry = {
+  action: string,
+  success: boolean
+}
+export type THealthCheckLog = Array<THealthCheckLogEntry>;
+export type THealthCheckSummary = {
+  performed: boolean,
+  success: boolean,
+  timestamp: number
+}
+export type THealthCheckResult = {
+  healthCheckLog: THealthCheckLog,
+  summary: THealthCheckSummary
+}
 
+export type TAPPortalInfo = {
+  connectorClientOpenApiInfo: APConnectorClientOpenApiInfo
+  portalServerClientOpenApiInfo: APSClientOpenApiInfo
+}
+export enum EAPConfigIssueNames {
+  CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH'
+}
+export type TAPConfigIssue = {
+  issue: EAPConfigIssueNames,
+  details: any
+}
+export type TAPConfigIssueList = Array<TAPConfigIssue>;
 export enum EAppState {
   ADMIN_PORTAL = 'ADMIN_PORTAL',
   DEVELOPER_PORTAL = 'DEVELOPER_PORTAL',
@@ -128,6 +158,28 @@ export class Globals {
     console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
   }
 
+  public static crossCheckConfiguration = (configContext: TAPConfigContext): TAPConfigIssueList => {
+    let issueList: TAPConfigIssueList = [];
+
+    // use SemVer and do the actual comparison 
+    const connectorServerOpenApiVersionStr = configContext.connectorInfo?.connectorAbout.portalAbout.connectorOpenApiVersionStr;
+    const portalConnectorClientOpenApiVersionStr = configContext.portalInfo?.connectorClientOpenApiInfo.versionStr;
+    if(connectorServerOpenApiVersionStr && portalConnectorClientOpenApiVersionStr) {
+      const connectorServerOpenApiSemVer: SemVer = new SemVer(connectorServerOpenApiVersionStr);
+      const portalConnectorClientOpenApiSemVer: SemVer = new SemVer(portalConnectorClientOpenApiVersionStr);
+      if(portalConnectorClientOpenApiSemVer.compare(connectorServerOpenApiSemVer) !== 0) {
+        const i1: TAPConfigIssue = {
+          issue: EAPConfigIssueNames.CONNECTOR_OPENAPI_VERSION_MISMATCH,
+          details: {
+            connectorServerOpenApiVersion: configContext.connectorInfo?.connectorAbout.portalAbout.connectorOpenApiVersionStr,
+            connectorClientOpenApiVersion: configContext.portalInfo?.connectorClientOpenApiInfo.versionStr
+          }
+        };
+        issueList.push(i1);  
+      }
+    }    
+    return issueList;
+  }
 }
 
 export class GlobalElementStyles {

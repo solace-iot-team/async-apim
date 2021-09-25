@@ -10,6 +10,7 @@ import { Loading } from "../Loading/Loading";
 import { EditUserProfile } from "./EditUserProfile";
 import { EditUserCredentials } from "./EditUserCredentials";
 import { EditUserSettings } from "./EditUserSettings";
+import { ShowUserInfo } from "./ShowUserInfo";
 
 import "../APComponents.css";
 import "./ManageUserAccount.css";
@@ -26,6 +27,7 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
+    VIEW_USER_INFO = "VIEW_USER_INFO",
     MANAGE_USER_PROFILE = "MANAGE_USER_PROFILE",
     MANAGE_USER_CREDENTIALS = "MANAGE_USER_CREDENTIALS",
     MANAGE_USER_SETTINGS = "MANAGE_USER_SETTINGS",
@@ -54,13 +56,14 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [showUserInfoComponent, setShowUserInfoComponent] = React.useState<boolean>(false);
   const [showUserProfileComponent, setShowUserProfileComponent] = React.useState<boolean>(false);
   const [showUserCredentialsComponent, setShowUserCredentialsComponent] = React.useState<boolean>(false);
   const [showUserSettingsComponent, setShowUserSettingsComponent] = React.useState<boolean>(false);
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_PROFILE);
+    setNewComponentState(E_COMPONENT_STATE.VIEW_USER_INFO);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -81,6 +84,10 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
 
+  const onViewUserInfo = (): void => {
+    setNewComponentState(E_COMPONENT_STATE.VIEW_USER_INFO);
+  }
+
   const onManageUserProfile = (): void => {
     setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_PROFILE);
   }
@@ -99,6 +106,7 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
 
     return (
       <React.Fragment>
+        <Button label="Info" icon="pi pi-fw pi-info-circle" className="p-button-text p-button-plain p-button-outlined" onClick={onViewUserInfo} />
         <Button label="Profile" icon="pi pi-fw pi-user" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserProfile} />
         <Button label="Credentials" icon="pi pi-fw pi-lock" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserCredentials} />
         <Button label="Settings" icon="pi pi-fw pi-cog" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserSettings} />
@@ -132,21 +140,31 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
       setShowUserProfileComponent(false);
       setShowUserCredentialsComponent(false);
       setShowUserSettingsComponent(false);
+      setShowUserInfoComponent(false);
+    }
+    else if(componentState.currentState === E_COMPONENT_STATE.VIEW_USER_INFO) {
+      setShowUserProfileComponent(false);
+      setShowUserCredentialsComponent(false);
+      setShowUserSettingsComponent(false);
+      setShowUserInfoComponent(true);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_PROFILE) {
       setShowUserProfileComponent(true);
       setShowUserCredentialsComponent(false);
       setShowUserSettingsComponent(false);
+      setShowUserInfoComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_CREDENTIALS) {
       setShowUserProfileComponent(false);
       setShowUserCredentialsComponent(true);
       setShowUserSettingsComponent(false);
+      setShowUserInfoComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_SETTINGS) {
       setShowUserProfileComponent(false);
       setShowUserCredentialsComponent(false);
       setShowUserSettingsComponent(true);
+      setShowUserInfoComponent(false);
     } else {
       throw new Error(`${logName}: unhandled state combination. componentState=${JSON.stringify(componentState)}`);
     }
@@ -161,6 +179,14 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
         renderToolbar()
       }
 
+      {showUserInfoComponent && 
+        <ShowUserInfo
+          onSuccess={onSubComponentSuccess} 
+          onError={onSubComponentError} 
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading} 
+        />
+      }
       {showUserProfileComponent && 
         <EditUserProfile
           onSuccess={onSubComponentSuccess} 

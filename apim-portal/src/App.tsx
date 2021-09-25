@@ -3,6 +3,7 @@ import { useHistory, Route, Switch } from 'react-router-dom';
 
 import { Config } from "./Config";
 import { UserContext } from './components/UserContextProvider/UserContextProvider';
+import { ConfigContext } from "./components/ConfigContextProvider/ConfigContextProvider";
 
 // * Admin Portal *
 import { AdminPortalHomePage } from "./admin-portal/pages/AdminPortalHomePage";
@@ -13,7 +14,15 @@ import { DeveloperPortalHomePage } from "./developer-portal/pages/DeveloperPorta
 import { DeveloperPortalAppRoutes } from "./developer-portal/DeveloperPortalAppRoutes";
 import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperPortalSideBar/DeveloperPortalSideBar";
 
-import { EUIEmbeddableResourcePaths, EUIDeveloperToolsResourcePaths, EUICommonResourcePaths, EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths, EAppState, TLocationStateAppState } from './utils/Globals';
+import { 
+  EUIEmbeddableResourcePaths, 
+  EUIDeveloperToolsResourcePaths, 
+  EUICommonResourcePaths, 
+  EUIAdminPortalResourcePaths, 
+  EUIDeveloperPortalResourcePaths, 
+  EAppState, 
+  TLocationStateAppState, 
+} from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { HomePage } from './pages/HomePage';
 import { UserLoginPage } from './pages/UserLoginPage';
@@ -41,12 +50,14 @@ import './App.css';
 const App: React.FC = () => {
   const componentName = 'App';
   
-  const IS_DEBUG: boolean = true;
+  const IS_DEBUG: boolean = false;
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [isDebug, setIsDebug] = React.useState<boolean>(IS_DEBUG);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
+  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [showDeveloperPortal, setShowDeveloperPortal] = React.useState<boolean>(false);
   const [showAdminPortal, setShowAdminPortal] = React.useState<boolean>(false);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -54,6 +65,8 @@ const App: React.FC = () => {
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [showEmbeddablePages, setShowEmbeddablePages] = React.useState<boolean>(Config.getUseEmbeddablePages());
   const appPortalHistory = useHistory<TLocationStateAppState>();
+
+  const navigateTo = (path: string): void => { appPortalHistory.push(path); }
 
   const navigateToWithoutStateChange = (path: string): void => { 
     appPortalHistory.push({
@@ -63,6 +76,23 @@ const App: React.FC = () => {
       }
     }); 
   }
+
+  // const doCheckConfig = () => {
+  //   const issueList: TAPConfigIssueList = Globals.checkConfiguration(configContext);
+  //   dispatchConfigContextAction( { type: 'SET_CONFIG_ISSUE_LIST', configIssueList: issueList });
+  //   if (issueList.length > 0) {
+  //     // if logged in: if has access to system health ==> show that
+  //     // otherwise: logout and show error fatal
+  //     navigateTo(EUICommonResourcePaths.ErrorFatalConfiguration);
+  //   }
+  // }
+
+  // React.useEffect( () => {
+
+  //   // in Apps.tsx: listen to that state, don't listen to anything else
+
+  //   doCheckConfig();
+  // }, [configContext.connector, configContext.portalInfo]);
 
   React.useEffect(() => {
     calculateShowStates(userContext.currentAppState);
@@ -112,7 +142,7 @@ const App: React.FC = () => {
     <React.Fragment>
       <ShowUserMessage />
       <NavBar />
-      {/* { isDebug && userContext && displayStateInfo() } */}
+      { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
           {showDeveloperPortal &&

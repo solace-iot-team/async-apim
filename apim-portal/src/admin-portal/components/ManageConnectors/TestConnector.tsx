@@ -9,9 +9,11 @@ import {
   APSConnector
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { THealthCheckResult } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APConnectorHealthCheck, THealthCheckResult } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
 import { APClientConnectorRaw } from "../../../utils/APClientConnectorRaw";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
@@ -33,6 +35,8 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const TestingDialogHeader = "Performing health check ...";
   const ResultDialogHeader = "Heath check details:";
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
+  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [apsConnector, setApsConnector] = React.useState<APSConnector>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showTestDialog, setShowTestDialog] = React.useState<boolean>(true);
@@ -47,7 +51,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
       // console.log(`${logName}: apsConnector = ${JSON.stringify(apsConnector, null, 2)}`);
       setApsConnector(apsConnector);
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -64,7 +68,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
     props.onLoadingChange(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `test configuration for ${apsConnector.displayName}`);
     try {
-      const _healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(apsConnector.connectorClientConfig);    
+      const _healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
       callState.success = _healthCheckResult.summary.success;
       setHealthCheckResult(_healthCheckResult);
       // console.log(`${logName}: healthCheckResult=${JSON.stringify(_healthCheckResult, null, 2)}`);

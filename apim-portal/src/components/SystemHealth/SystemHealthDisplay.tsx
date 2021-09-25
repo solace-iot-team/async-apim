@@ -5,12 +5,19 @@ import { useHistory } from 'react-router-dom';
 
 import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { Divider } from "primereact/divider";
 
-import { APConnectorHealthCheck, THealthCheckResult, THealthCheckSummary } from "../../utils/APConnectorHealthCheck";
+import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { APHealthCheckContext } from "../APHealthCheckContextProvider";
+import { APConnectorHealthCheck } from "../../utils/APConnectorHealthCheck";
 import { APClientConnectorRaw } from "../../utils/APClientConnectorRaw";
-import { EUIAdminPortalResourcePaths } from "../../utils/Globals";
+import { 
+  EUIAdminPortalResourcePaths, 
+  Globals, 
+  TAPConfigIssueList, 
+  THealthCheckResult, 
+  THealthCheckSummary 
+} from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 
 import "../APComponents.css";
@@ -22,28 +29,48 @@ export interface ISystemHealthProps {
 export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystemHealthProps) => {
   // const componentName = 'SystemHealthDisplay';
 
+  // const healthCheckInterval_ms: number = 30000;
+  const healthCheckInterval_ms: number = 5000;
+
   const connectorHealthCheckResultNotPerformed: THealthCheckResult = {
     healthCheckLog: [{action: 'check connector', success: false}],
-    summary: { performed: false, success: false }
+    summary: { 
+      performed: false, 
+      success: false,
+      timestamp: Date.now()
+    }
   }
   const systemHealthCheckSummaryNotPerformed: THealthCheckSummary = {
-    performed: false, success: false
+    performed: false, 
+    success: false,
+    timestamp: Date.now()
   }
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const history = useHistory();
   const op = React.useRef<any>(null);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [delay, setDelay] = React.useState<number>(30000); 
+  const [delay, setDelay] = React.useState<number>(healthCheckInterval_ms); 
   const [count, setCount] = React.useState<number>(0);
   const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<THealthCheckResult>(connectorHealthCheckResultNotPerformed);
   const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<THealthCheckSummary>(systemHealthCheckSummaryNotPerformed);
+  const [configIssueList, setConfigIssueList] = React.useState<TAPConfigIssueList>([]);
 
   React.useEffect(() => {
     setCount(count + 1);
     doSystemHealthCheck();
   }, [configContext]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
+  }, [connectorHealthCheckResult])
+
+  React.useEffect(() => {
+    dispatchHealthCheckContextAction({ type: 'SET_CONFIG_ISSUE_LIST', configIssueList: configIssueList});
+  }, [configIssueList])
 
   useInterval( () => 
     {
@@ -59,7 +86,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     let _connectorHealthCheckResult: THealthCheckResult = connectorHealthCheckResultNotPerformed;
     if(configContext.connector) {
       try {
-        _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext.connector.connectorClientConfig);
+        _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, configContext.connector.connectorClientConfig);
       } catch(e) {
         APClientConnectorRaw.logError(e);
         throw e;
@@ -68,8 +95,10 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     setConnectorHealthCheckResult(_connectorHealthCheckResult);
     setSystemHealthCheckSummary({
       performed: _connectorHealthCheckResult.summary.performed,
-      success: _connectorHealthCheckResult.summary.success
+      success: _connectorHealthCheckResult.summary.success,
+      timestamp: Date.now()
     });
+    setConfigIssueList(Globals.crossCheckConfiguration(configContext));
   }
 
   const renderConnectorHealthInfo = () => {

@@ -4,15 +4,14 @@ import { BrowserRouter } from "react-router-dom";
 import { ConfigContextProvider } from './components/ConfigContextProvider/ConfigContextProvider';
 import { AuthContextProvider } from './components/AuthContextProvider/AuthContextProvider';
 import { UserContextProvider } from './components/UserContextProvider/UserContextProvider';
+import { APHealthCheckContextProvider } from './components/APHealthCheckContextProvider';
 import App from './App';
 // import reportWebVitals from './reportWebVitals';
 import { Config } from './Config';
-// import { APSClient } from './utils/APSClient';
 import { APSClientOpenApi } from './utils/APSClientOpenApi';
 import './index.css';
 
 Config.initialize();
-// APSClient.initialize(Config.getAPSClientOpenApiConfig());
 APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 
 ReactDOM.render(
@@ -20,7 +19,9 @@ ReactDOM.render(
     <ConfigContextProvider>
       <AuthContextProvider>
         <UserContextProvider>
-          <App />
+          <APHealthCheckContextProvider>
+            <App />
+          </APHealthCheckContextProvider>            
         </UserContextProvider>
       </AuthContextProvider>      
     </ConfigContextProvider>

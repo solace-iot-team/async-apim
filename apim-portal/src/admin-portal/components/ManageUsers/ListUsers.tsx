@@ -301,11 +301,11 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
       }
       
       {/* DEBUG selected managedObject */}
-      {/* {managedObjectList.length > 0 && selectedManagedObject && 
+      {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      } */}
+      }
 
     </div>
   );

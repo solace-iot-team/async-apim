@@ -3,9 +3,6 @@ import {
   ApisService, 
   About,
   AdministrationService,
-  APISummaryList,
-  APIList,
-  APIInfoList
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { TAPOrganizationId } from '../components/APComponentsCommon';
@@ -15,9 +12,24 @@ import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from '../components/APComponen
 import { Globals } from './Globals';
 
 import yaml from "js-yaml";
+import { APConnectorApiMismatchError, APError } from './APError';
+import { APLogger } from './APLogger';
 
-export type APConnectorInfo = {
-  connectorAbout: About
+// export type TAPConnectorAbout = About & {
+//   test_ConnectorOpenApiVersion: string
+// }
+export type TAPConnectorPortalAbout = {
+  isEventPortalApisProxyMode: boolean,
+  connectorServerVersionStr?: string,
+  connectorOpenApiVersionStr?: string
+}
+export type TAPConnectorAbout = {
+  apiAbout: About,
+  portalAbout: TAPConnectorPortalAbout
+}
+
+export type TAPConnectorInfo = {
+  connectorAbout: TAPConnectorAbout
 }
 
 export type TGetAsyncApiSpecResult = {
@@ -26,11 +38,53 @@ export type TGetAsyncApiSpecResult = {
   apiInfo?: APIInfo
 }
 
+export type TTransformApiAboutToAPConnectorAboutResult = {
+  apConnectorAbout: TAPConnectorAbout,
+  apError?: APError
+}
+
 export class APConnectorApiHelper {
 
   // public static isAPIInfoList = (result: APIList | APISummaryList | APIInfoList): result is APIInfoList => {
   //   return (<APIInfoList>result)[0].version != undefined;
   // }    
+  public static transformApiAboutToAPConnectorAbout = (apiAbout: About): TTransformApiAboutToAPConnectorAboutResult => {
+    const funcName = 'transformApiAboutToAPConnectorAbout';
+    const logName = `${APConnectorApiHelper.name}.${funcName}()`;
+    let result: TTransformApiAboutToAPConnectorAboutResult = {
+      apConnectorAbout: {
+        apiAbout: apiAbout,
+        portalAbout: {
+          isEventPortalApisProxyMode: apiAbout.APIS_PROXY_MODE ? apiAbout.APIS_PROXY_MODE : false
+        }
+      }
+    }
+    const createResult = (apError: APError | undefined): TTransformApiAboutToAPConnectorAboutResult => {
+      return {
+        ...result,
+        apError: apError
+      }
+    }
+    if(!apiAbout.version) return createResult(new APConnectorApiMismatchError(logName, 'apiAbout.version is undefined'));
+    const apiAboutVersionConnectorOpenApiVersionField = 'platform-api-openapi';
+    const apiAboutVersionconnectorServerVersionField = 'platform-api-server';
+    const connectorOpenApiVersionStr: string | undefined = apiAbout.version.version[apiAboutVersionConnectorOpenApiVersionField];
+    const connectorServerVersionStr: string | undefined = apiAbout.version.version[apiAboutVersionconnectorServerVersionField];
+    if(!connectorOpenApiVersionStr) return createResult(new APConnectorApiMismatchError(logName, `connectorOpenApiVersionStr is undefined, reading from 'version.version[${apiAboutVersionConnectorOpenApiVersionField}]'`));
+    if(!connectorServerVersionStr) return createResult(new APConnectorApiMismatchError(logName, `connectorServerVersionStr is undefined, reading from 'version.version[${apiAboutVersionconnectorServerVersionField}]`));
+    result = {
+      ...result,
+      apConnectorAbout: {
+        ...result.apConnectorAbout,
+        portalAbout: {
+          ...result.apConnectorAbout.portalAbout,
+          connectorOpenApiVersionStr: connectorOpenApiVersionStr,
+          connectorServerVersionStr: connectorServerVersionStr  
+        }
+      }
+    };
+    return createResult(undefined);
+  }
   public static getAsyncApiSpecJsonAsString = (asyncApiSpec: TAPAsyncApiSpec): string => {
     const funcName = 'getAsyncApiSpecJsonAsString';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
@@ -114,15 +168,19 @@ export class APConnectorApiHelper {
 
 export class APConnectorApiCalls {
   
-  public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<APConnectorInfo | undefined> => {
+  public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorInfo | undefined> => {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
     APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
-    let result: APConnectorInfo | undefined;
+    let result: TAPConnectorInfo | undefined;
     try {
-      const connectorAbout: About = await AdministrationService.about();
+      const apiAbout: About = await AdministrationService.about();
+      const transformResult: TTransformApiAboutToAPConnectorAboutResult = APConnectorApiHelper.transformApiAboutToAPConnectorAbout(apiAbout);      
+      if(transformResult.apError) {
+        APLogger.error(APLogger.createLogEntry(logName, transformResult.apError));
+      }
       result = {
-        connectorAbout: connectorAbout
+        connectorAbout: transformResult.apConnectorAbout
       }
     } catch (e: any) {
       APClientConnectorOpenApi.logError(logName, e);

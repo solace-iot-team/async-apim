@@ -162,7 +162,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     const funcName = 'renderLeftToolbarContent';
     const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
-    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.APIS_PROXY_MODE);
+    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode);
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
