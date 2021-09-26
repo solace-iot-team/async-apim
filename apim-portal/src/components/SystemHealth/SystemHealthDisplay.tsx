@@ -33,7 +33,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   const healthCheckInterval_ms: number = 5000;
 
   const connectorHealthCheckResultNotPerformed: THealthCheckResult = {
-    healthCheckLog: [{action: 'check connector', success: false}],
+    healthCheckLog: [{action: 'check connector', success: false, details: {} }],
     summary: { 
       performed: false, 
       success: false,

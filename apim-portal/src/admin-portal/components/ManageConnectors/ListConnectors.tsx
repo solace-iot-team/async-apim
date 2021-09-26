@@ -239,7 +239,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
       }
 
-      {managedObjectList.length > 0 && 
+      {managedObjectList && managedObjectList.length > 0 && 
         renderManagedObjectDataTable()
       }
       

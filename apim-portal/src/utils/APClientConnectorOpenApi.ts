@@ -1,6 +1,7 @@
 
 import { OpenAPI, ApiError } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { Mutex, MutexInterface } from "async-mutex";
 
 export type APConnectorClientOpenApiInfo = {
   base: string,
@@ -14,6 +15,8 @@ export class APClientConnectorOpenApi {
   };
   private static config: APSConnectorClientConfig;  
   private static isInitialized: boolean = false;
+  private static mutex = new Mutex();
+  private static mutexReleaser: MutexInterface.Releaser;
 
   public static initialize = (config: APSConnectorClientConfig) => {
     const funcName: string = `initialize`;
@@ -30,7 +33,8 @@ export class APClientConnectorOpenApi {
     APClientConnectorOpenApi.isInitialized = false;
   }
 
-  public static tmpInitialize = (tmpConfig: APSConnectorClientConfig) => {
+  public static tmpInitialize = async (tmpConfig: APSConnectorClientConfig) => {
+    APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
     if(APClientConnectorOpenApi.isInitialized) {
       APClientConnectorOpenApi.orgSettings = {
         config: JSON.parse(JSON.stringify(APClientConnectorOpenApi.config)),
@@ -40,12 +44,13 @@ export class APClientConnectorOpenApi {
     APClientConnectorOpenApi.initialize(tmpConfig);
   }
 
-  public static tmpUninitialize = () => {
+  public static tmpUninitialize = async () => {
     if(APClientConnectorOpenApi.orgSettings) {
       APClientConnectorOpenApi.initialize(APClientConnectorOpenApi.orgSettings.config);
     } else {
       APClientConnectorOpenApi.uninitialize();
     }
+    APClientConnectorOpenApi.mutexReleaser();
   }
 
   public static getOpenApiInfo = (): APConnectorClientOpenApiInfo => {

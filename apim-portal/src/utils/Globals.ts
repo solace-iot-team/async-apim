@@ -6,7 +6,8 @@ import { APSClientOpenApiInfo } from "./APSClientOpenApi";
 
 export type THealthCheckLogEntry = {
   action: string,
-  success: boolean
+  success: boolean,
+  details: any
 }
 export type THealthCheckLog = Array<THealthCheckLogEntry>;
 export type THealthCheckSummary = {

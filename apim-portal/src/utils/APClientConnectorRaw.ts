@@ -1,4 +1,5 @@
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { Mutex, MutexInterface } from 'async-mutex';
 
 export type APClientConnectorRawResult = {
   readonly url: string;
@@ -21,6 +22,8 @@ export class APClientConnectorRaw {
   private static baseUrl: string;
   private static basePath: string | undefined = undefined;
   private static aboutPath: string = 'about.json';
+  private static mutex = new Mutex();
+  private static mutexReleaser: MutexInterface.Releaser;
 
   private static getUrl = (path: string): string => {
     return `${APClientConnectorRaw.baseUrl}/${path}`;
@@ -50,9 +53,14 @@ export class APClientConnectorRaw {
     throw error;
   }
 
-  public static initialize = (connectorClientConfig: APSConnectorClientConfig) => {
+  public static initialize = async (connectorClientConfig: APSConnectorClientConfig) => {
+    APClientConnectorRaw.mutexReleaser = await APClientConnectorRaw.mutex.acquire();
     APClientConnectorRaw.connectorClientConfig = (JSON.parse(JSON.stringify(connectorClientConfig)));
     APClientConnectorRaw.baseUrl = `${connectorClientConfig.protocol}://${connectorClientConfig.host}:${connectorClientConfig.port}`;
+  }
+
+  public static unInitialize = () => {
+    APClientConnectorRaw.mutexReleaser();
   }
 
   public static logError = (e: any): void => {

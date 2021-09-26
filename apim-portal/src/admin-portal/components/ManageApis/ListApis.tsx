@@ -9,9 +9,7 @@ import { Button } from 'primereact/button';
 import { 
   APIInfo,
   APIInfoList,
-  APIList,
   ApisService,
-  APISummaryList,
 } from '@solace-iot-team/platform-api-openapi-client-fe';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";

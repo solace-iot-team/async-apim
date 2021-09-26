@@ -168,12 +168,12 @@ export class APConnectorHealthCheck {
         timestamp: Date.now()
       }
     };
-    APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
-    APClientConnectorRaw.initialize(connectorClientConfig);
+    await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
+    await APClientConnectorRaw.initialize(connectorClientConfig);
     let success: boolean = false;
     try {
       success = await APConnectorHealthCheck.checkUrlAccess();
-      healthCheckResult.healthCheckLog.push({ action: 'check connector url', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'check connector url', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) {
         healthCheckResult.summary.success = false;
         throw new Error('access url check failed');
@@ -187,32 +187,33 @@ export class APConnectorHealthCheck {
       // call api: GET /about
       const apiGetAboutResult = await APConnectorHealthCheck.apiGetAbout();
       success = apiGetAboutResult.success;
-      healthCheckResult.healthCheckLog.push({ action: 'get connector about', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'get connector about', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) healthCheckResult.summary.success = false;
 
       // healthcheck
       const apiGetHealthCheckResult = await APConnectorHealthCheck.apiGetHealthCheck();
-      healthCheckResult.healthCheckLog.push({ action: 'connector health check', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'connector health check', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) healthCheckResult.summary.success = false;
 
       // configuration check
       success = APConnectorHealthCheck.checkConfiguration(configContext, apiGetAboutResult.connectorAbout);
-      healthCheckResult.healthCheckLog.push({ action: 'configuration cross check', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'configuration cross check', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) healthCheckResult.summary.success = false;
 
       success = await APConnectorHealthCheck.checkPlatformAdminCredentials();
-      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=platform-admin', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=platform-admin', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) healthCheckResult.summary.success = false;
 
       success = await APConnectorHealthCheck.checkOrgAdminCredentials();
-      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=org-admin', success: success });
+      healthCheckResult.healthCheckLog.push({ action: 'check service user credentials & role=org-admin', success: success, details: APClientConnectorOpenApi.getOpenApiInfo() });
       if(!success) healthCheckResult.summary.success = false;  
 
     } catch (e) {
       APClientConnectorOpenApi.logError(logName, e);
       throw e;
     } finally {
-      APClientConnectorOpenApi.tmpUninitialize();
+      await APClientConnectorOpenApi.tmpUninitialize();
+      await APClientConnectorRaw.unInitialize();
       return healthCheckResult;
     }
   }  
