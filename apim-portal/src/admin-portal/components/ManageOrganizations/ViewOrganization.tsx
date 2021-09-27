@@ -11,7 +11,7 @@ import {
   ApiProductsService, 
   DevelopersService, 
   AppsService 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -46,12 +46,32 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationDisplayName}`);
     try { 
-      const apiOrganization = await AdministrationService.getOrganization(props.organizationId);
-      const envResponse = await EnvironmentsService.listEnvironments(apiOrganization.name, 1);        
-      const apiResponse = await ApisService.listApis(apiOrganization.name);
-      const apiProductResponse = await ApiProductsService.listApiProducts(apiOrganization.name, 1);
-      const developerResponse = await DevelopersService.listDevelopers(apiOrganization.name, 1);
-      const appResponse = await AppsService.listApps(apiOrganization.name, undefined, 1);
+      const apiOrganization = await AdministrationService.getOrganization({
+        organizationName: props.organizationId
+      });
+      const envResponse = await EnvironmentsService.listEnvironments({
+        organizationName: apiOrganization.name, 
+        pageSize: 1,
+        pageNumber: 1
+      });        
+      const apiResponse = await ApisService.listApis({
+        organizationName: apiOrganization.name
+      });
+      const apiProductResponse = await ApiProductsService.listApiProducts({
+        organizationName: apiOrganization.name, 
+        pageSize: 1,
+        pageNumber: 1
+      });
+      const developerResponse = await DevelopersService.listDevelopers({
+        organizationName: apiOrganization.name, 
+        pageSize: 1, 
+        pageNumber: 1
+      });
+      const appResponse = await AppsService.listApps({
+        organizationName: apiOrganization.name, 
+        pageSize: 1,
+        pageNumber: 1
+      });
       setManagedObject(ManageOrganizationsCommon.transformViewApiObjectToViewManagedObject(apiOrganization, {
           hasEnvironments: envResponse.length > 0,
           hasApis: apiResponse.length > 0,

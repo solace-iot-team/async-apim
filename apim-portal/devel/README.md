@@ -51,7 +51,7 @@ npm install
 
 ### Build Connector OpenAPI for Browser
 ````bash
-# NOTE: in platform-api/release/platform-api-openapi-client-fe
+# NOTE: in platform-api/release/apim-connector-openapi-browser
 npm install
 npm run updateVersion
 npm run prepublishOnly
@@ -59,19 +59,19 @@ npm run prepublishOnly
 
 ### Link Connector OpenAPI to Global
 ````bash
-# NOTE: in platform-api/release/platform-api-openapi-client-fe
+# NOTE: in platform-api/release/apim-connector-openapi-browser
 npm link # creates link in global node_modules
 ````
 
 ### Link Connector OpenAPI from Global
 ````bash
 # NOTE: in apim-portal
-npm link @solace-iot-team/platform-api-openapi-client-fe
+npm link @solace-iot-team/apim-connector-openapi-browser
 ````
 ### UnLink Connector OpenAPI from Global
 ````bash
 # NOTE: in apim-portal
-npm unlink --no-save @solace-iot-team/platform-api-openapi-client-fe
+npm unlink --no-save @solace-iot-team/apim-connector-openapi-browser
 # NOTE: now install the released package
 npm install
 ````

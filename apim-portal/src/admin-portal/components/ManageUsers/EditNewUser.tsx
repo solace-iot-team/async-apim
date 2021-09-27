@@ -19,7 +19,7 @@ import {
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { Organization, AdministrationService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
@@ -195,7 +195,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         // TODO: create user message or warning to pop up and render in page
         throw new Error('cannot get list of organizations (no active connector config)');
       } else {
-        const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations();
+        const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations({});
         setAvailableOrganizationList(apiOrganizationList);
       }
     } catch(e: any) {

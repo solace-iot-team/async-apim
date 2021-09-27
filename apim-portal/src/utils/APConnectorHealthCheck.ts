@@ -5,7 +5,7 @@ import {
   ApiError as APConnectorApiError, 
   Organization,
   About
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { APClientConnectorRaw } from './APClientConnectorRaw';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
@@ -110,7 +110,7 @@ export class APConnectorHealthCheck {
     const funcName = 'checkPlatformAdminCredentials';
     const logName= `${APConnectorHealthCheck.name}.${funcName}()`;
     try {
-      await AdministrationService.listOrganizations();
+      await AdministrationService.listOrganizations({});
       return true;
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -130,23 +130,31 @@ export class APConnectorHealthCheck {
     try {
       let doCreateOrg: boolean = false;
       try {
-        await AdministrationService.getOrganization(testOrg.name);
+        await AdministrationService.getOrganization({
+          organizationName: testOrg.name
+        });
       } catch (e) {
         doCreateOrg = true;
       } 
-      if (doCreateOrg) await AdministrationService.createOrganization(testOrg);
+      if (doCreateOrg) await AdministrationService.createOrganization({
+        requestBody: testOrg
+      });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       throw e;
     }  
     try {
-      await EnvironmentsService.listEnvironments(testOrg.name);  
+      await EnvironmentsService.listEnvironments({
+        organizationName: testOrg.name
+      });  
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       apiError = e;
     }
     try {
-      await AdministrationService.deleteOrganization(testOrg.name);
+      await AdministrationService.deleteOrganization({
+        organizationName: testOrg.name
+      });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       throw e;

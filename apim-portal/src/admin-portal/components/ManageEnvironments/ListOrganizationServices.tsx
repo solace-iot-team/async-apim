@@ -5,7 +5,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 
-import { EnvironmentsService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -76,7 +76,9 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_SERVICE_LIST, `retrieve service list for organization`);
     try { 
-      const serviceList: TOrganizationServiceList = await EnvironmentsService.listServices(props.organizationName);
+      const serviceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
+        organizationName: props.organizationName
+      });
       setOrganizationServiceList(serviceList);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

@@ -1,4 +1,4 @@
-import { APIInfo } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { APIInfo } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type TManagedObjectId = string;
 export type TViewApiObject = string;

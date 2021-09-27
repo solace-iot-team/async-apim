@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { EnvironmentsService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -39,7 +39,10 @@ export const DeleteEnvironment: React.FC<IDeleteEnvironmentProps> = (props: IDel
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ENVIRONMENT, `delete environment: ${props.environmentDisplayName}`);
     try { 
-      await EnvironmentsService.deleteEnvironment(props.organizationName, props.environmentName);
+      await EnvironmentsService.deleteEnvironment({
+        organizationName: props.organizationName, 
+        envName: props.environmentName
+      });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

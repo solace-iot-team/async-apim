@@ -6,7 +6,7 @@ import { Dialog } from 'primereact/dialog';
 
 import { 
   AppsService, 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { 
   APSUserId, 
@@ -51,7 +51,11 @@ export const DeveloperPortalDeleteUserApp: React.FC<IDeveloperPortalDeleteUserAp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_USER_APP, `delete app: ${appDisplayName}`);
     try { 
-      await AppsService.deleteDeveloperApp(orgId, userId, appId);
+      await AppsService.deleteDeveloperApp({
+        organizationName: orgId, 
+        appName: appId,
+        developerUsername: userId
+      });
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

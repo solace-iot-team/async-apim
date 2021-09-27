@@ -3,7 +3,7 @@ import {
   ApisService, 
   About,
   AdministrationService,
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { TAPOrganizationId } from '../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
@@ -189,7 +189,11 @@ export class APConnectorApiCalls {
     const funcName = 'getAsyncApiSpec';
     const logName = `${APConnectorApiCalls.name}.${funcName}()`;
     try { 
-      const apiAny: any = await ApisService.getApi(orgId, apiId, 'application/json');
+      const apiAny: any = await ApisService.getApi({
+        organizationName: orgId, 
+        apiName: apiId, 
+        format: 'application/json'
+      });
       // console.log(`${logName}: typeof(apiAny) = ${typeof(apiAny)}`);
       let api: object;
       if(typeof(apiAny) === 'string') {
@@ -198,7 +202,10 @@ export class APConnectorApiCalls {
         api = apiAny
       }
       // console.log(`${logName}: api = ${JSON.stringify(api, null, 2)}`);
-      const apiInfo: APIInfo = await ApisService.getApiInfo(orgId, apiId);
+      const apiInfo: APIInfo = await ApisService.getApiInfo({
+        organizationName: orgId, 
+        apiName: apiId
+      });
       return {
         apiCallState: initialApiCallState,
         asyncApiSpec: {

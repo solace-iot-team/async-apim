@@ -6,7 +6,7 @@ import { Dialog } from 'primereact/dialog';
 
 import { 
   AdministrationService, 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -38,7 +38,9 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete user: ${props.organizationDisplayName}`);
     try { 
-      await AdministrationService.deleteOrganization(props.organizationId);
+      await AdministrationService.deleteOrganization({
+        organizationName: props.organizationId
+      });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

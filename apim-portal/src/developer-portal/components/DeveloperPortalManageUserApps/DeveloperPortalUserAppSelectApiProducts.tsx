@@ -6,7 +6,7 @@ import { Dialog } from 'primereact/dialog';
 
 import { 
   AppsService, 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { 
   APSUserId, 

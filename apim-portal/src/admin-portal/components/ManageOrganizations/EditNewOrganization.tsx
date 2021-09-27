@@ -12,7 +12,7 @@ import { classNames } from 'primereact/utils';
 import { 
   AdministrationService, 
   Organization
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -112,7 +112,13 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${managedObjectDisplayName}`);
     try { 
-      const apiOrganization: Organization = await AdministrationService.getOrganization(managedObjectId);
+      
+      // const apiOrganization: Organization = await AdministrationService.getOrganization(managedObjectId);
+
+      const apiOrganization: Organization = await AdministrationService.getOrganization({
+        organizationName: managedObjectId
+      });
+      
       setManagedObject(transformGetApiObjectToManagedObject(apiOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -127,7 +133,14 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `update organization: ${managedObject.apiObject.name}`);
     try { 
-      await AdministrationService.updateOrganization(managedObjectId, transformManagedObjectToUpdateApiObject(managedObject));
+      // await AdministrationService.updateOrganization(managedObjectId, transformManagedObjectToUpdateApiObject(managedObject));
+
+      await AdministrationService.updateOrganization({
+        organizationName: managedObjectId, 
+        requestBody: transformManagedObjectToUpdateApiObject(managedObject)
+      });
+
+
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -141,7 +154,9 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_ORGANIZATION, `create organization: ${managedObject.apiObject.name}`);
     try { 
-      const createdApiObject: Organization = await AdministrationService.createOrganization(transformManagedObjectToCreateApiObject(managedObject));
+      const createdApiObject: Organization = await AdministrationService.createOrganization({
+        requestBody: transformManagedObjectToCreateApiObject(managedObject)
+      });
       setCreatedManagedObjectId(createdApiObject.name);
       setCreatedManagedObjectDisplayName(createdApiObject.name);      
     } catch(e) {

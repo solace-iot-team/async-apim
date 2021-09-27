@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { ApiError, APIImport, ApisService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { ApiError, APIImport, ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -42,7 +42,10 @@ export const EventPortalImportApiDialog: React.FC<IEventPortalImportApiDialogPro
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve ${ManagedObjectDisplayName}: ${props.eventPortalApiDisplayName}`);
     let anyError: any = undefined;
     try { 
-      await ApisService.getApi(props.organizationId, props.connectorApiId);
+      await ApisService.getApi({
+        organizationName: props.organizationId, 
+        apiName: props.connectorApiId
+      });
       // throw new Error(`${logName}: testing error`);
       setExistsApi(true);
     } catch(e: any) {
@@ -71,7 +74,15 @@ export const EventPortalImportApiDialog: React.FC<IEventPortalImportApiDialogPro
         overwrite: existsApi,
         id: props.eventPortalApiId
       }
-      await ApisService.importApi(props.organizationId, apiImportRequest);
+      
+      // await ApisService.importApi(props.organizationId, apiImportRequest);
+
+      await ApisService.importApi({
+        organizationName: props.organizationId, 
+        requestBody: apiImportRequest
+      });
+
+
       // throw new Error(`${logName}: testing error`);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

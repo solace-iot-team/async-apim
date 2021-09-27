@@ -10,7 +10,7 @@ import {
   App,
   AppsService,
   WebHook
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 
 import { APRenderUtils } from "../../../utils/APRenderUtils";
@@ -115,7 +115,12 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP_LIST, `retrieve list of apps for ${props.userId}`);
     try { 
-      const apiAppList: Array<App> = await AppsService.listDeveloperApps(props.organizationId, props.userId, undefined, pageSize, pageNumber);
+      const apiAppList: Array<App> = await AppsService.listDeveloperApps({
+        organizationName: props.organizationId, 
+        developerUsername: props.userId, 
+        pageSize: pageSize, 
+        pageNumber: pageNumber
+      });
       const totalCount: number = 1000; // should be returned by previous call
       let _managedObjectList: TManagedObjectList = [];
       for(const apiApp of apiAppList) {

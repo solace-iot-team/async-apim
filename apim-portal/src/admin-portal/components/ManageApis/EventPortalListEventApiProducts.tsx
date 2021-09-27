@@ -11,7 +11,7 @@ import {
   EventAPIProduct, 
   EventAPIProductList, 
   EventPortalService, 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -75,7 +75,9 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_EVENT_PORTAL_CALL_STATE_ACTIONS.API_GET_EVENT_API_PRODUCT_LIST, 'retrieve list of Event Api Products');
     try { 
-      const eventApiProductList: EventAPIProductList = await EventPortalService.listEventApiProducts(props.organizationId);
+      const eventApiProductList: EventAPIProductList = await EventPortalService.listEventApiProducts({
+        organizationName: props.organizationId
+      });
       setManagedObjectList(transformEventApiProductListToManagedObjectList(eventApiProductList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

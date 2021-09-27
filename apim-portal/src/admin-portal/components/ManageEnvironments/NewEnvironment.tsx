@@ -16,7 +16,7 @@ import {
   Protocol, 
   Endpoint, 
   Environment 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -98,7 +98,10 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_ENIRONMENT, `create environment: ${managedObject.displayName}`);
     try { 
       const apiObject: TCreateApiObject = transformManagedObjectToCreateApiObject(managedObject);
-      const apiObjectResult: Environment = await EnvironmentsService.createEnvironment(props.organizationName, apiObject);
+      const apiObjectResult: Environment = await EnvironmentsService.createEnvironment({
+        organizationName: props.organizationName, 
+        requestBody: apiObject
+      });
       setCreatedManagedObjectId(apiObjectResult.name);
       setCreatedManagedObjectDisplayName(apiObjectResult.displayName);      
     } catch(e) {

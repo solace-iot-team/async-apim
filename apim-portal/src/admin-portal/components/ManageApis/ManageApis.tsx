@@ -17,7 +17,7 @@ import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigC
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APIInfo } from "@solace-iot-team/platform-api-openapi-client-fe";
+import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;

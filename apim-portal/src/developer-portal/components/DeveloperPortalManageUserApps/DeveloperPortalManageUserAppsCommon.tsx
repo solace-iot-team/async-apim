@@ -1,6 +1,6 @@
 import { 
   App
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { Globals } from '../../../utils/Globals';
 
 export type TManagedObjectId = string;

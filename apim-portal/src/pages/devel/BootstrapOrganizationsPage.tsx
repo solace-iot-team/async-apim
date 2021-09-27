@@ -6,7 +6,7 @@ import { Toast } from 'primereact/toast';
 
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { Loading } from '../../components/Loading/Loading';
-import { AdministrationService, Organization } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { AdministrationService, Organization } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 
 type TApiObject = Organization;
@@ -53,9 +53,21 @@ export const BootstrapOrganizationsPage: React.FC = () => {
     setApiCallStatus(null);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `delete all organizations`);
     try {
-      const organizationList: Array<Organization> = await AdministrationService.listOrganizations();
+      
+      // const organizationList: Array<Organization> = await AdministrationService.listOrganizations();
+
+      const organizationList: Array<Organization> = await AdministrationService.listOrganizations({});
+
+
       for (const organization of organizationList) {
-        await AdministrationService.deleteOrganization(organization.name);
+        
+        // await AdministrationService.deleteOrganization(organization.name);
+
+        await AdministrationService.deleteOrganization({
+          organizationName: organization.name
+        });
+
+
       }
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -74,9 +86,20 @@ export const BootstrapOrganizationsPage: React.FC = () => {
     try { 
       let apiObject: TApiObject = transformManagedObjectToApiObject(managedObject);
       try {
-        await AdministrationService.deleteOrganization(apiObject.name);
+        // await AdministrationService.deleteOrganization(apiObject.name);
+
+        await AdministrationService.deleteOrganization({
+          organizationName: apiObject.name
+        });
+
       } catch(e) {}
-      await AdministrationService.createOrganization(apiObject);  
+      
+      // await AdministrationService.createOrganization(apiObject);  
+
+      await AdministrationService.createOrganization({
+        requestBody: apiObject
+      });  
+
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

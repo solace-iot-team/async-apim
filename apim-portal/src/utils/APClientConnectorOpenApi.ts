@@ -1,5 +1,5 @@
 
-import { OpenAPI, ApiError } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { OpenAPI, ApiError } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { Mutex, MutexInterface } from "async-mutex";
 

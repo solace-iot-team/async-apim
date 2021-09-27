@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { ApisService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -38,7 +38,10 @@ export const DeleteApi: React.FC<IDeleteApiProps> = (props: IDeleteApiProps) => 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_API, `delete API: ${props.apiDisplayName}`);
     try { 
-      await ApisService.deleteApi(props.organizationId, props.apiId);
+      await ApisService.deleteApi({
+        organizationName: props.organizationId,
+        apiName: props.apiId
+      });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

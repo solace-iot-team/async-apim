@@ -9,7 +9,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 
-import { ApisService, APIInfo } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { ApisService, APIInfo } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { APConnectorApiCalls, APConnectorApiHelper, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
@@ -146,7 +146,11 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     try { 
       const specStr: string = transformManagedObjectToUpdateApiObject(managedObject);
       // console.log(`${logName}: specStr=${specStr}`);
-      await ApisService.updateApi(props.organizationId, managedObject.id, specStr);
+      await ApisService.updateApi({
+        organizationName: props.organizationId,
+        apiName: managedObject.id,
+        requestBody: specStr
+      });
       setUpdatedManagedObjectDisplayName(managedObject.displayName);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -165,7 +169,16 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
       if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
       const specStr: string = transformManagedObjectToCreateApiObject(managedObject);
       // console.log(`${logName}: specStr=${specStr}`);
-      await ApisService.createApi(props.organizationId, managedObject.id, specStr);
+      
+      
+      // await ApisService.createApi(props.organizationId, managedObject.id, specStr);
+
+      await ApisService.createApi({
+        organizationName: props.organizationId, 
+        apiName: managedObject.id, 
+        requestBody: specStr
+      });
+
       setCreatedManagedObjectId(managedObject.id);
       setCreatedManagedObjectDisplayName(managedObject.displayName);      
     } catch(e: any) {

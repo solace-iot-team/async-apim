@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 
-import { EnvironmentsService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -41,7 +41,10 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT, `retrieve details for environment: ${props.environmentDisplayName}`);
     try { 
-      const apiObject: TApiObject = await EnvironmentsService.getEnvironment(props.organizationName, props.environmentName);
+      const apiObject: TApiObject = await EnvironmentsService.getEnvironment({
+        organizationName: props.organizationName, 
+        envName: props.environmentName
+      });      
       // throw new Error(`${logName}: testing error`);
       setManagedObject(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject));
     } catch(e) {

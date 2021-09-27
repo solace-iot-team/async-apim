@@ -5,7 +5,7 @@ import {
   EnvironmentResponse, 
   EnvironmentsService, 
   Protocol 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
@@ -174,7 +174,17 @@ export class DeveloperPortalCommonApiCalls {
     let apiProductList: TApiProductList = [];
     let totalCount: number = 0;
     try {
-      apiProductList = await ApiProductsService.listApiProducts(organizationId, pageSize, pageNumber);
+      
+      
+      // apiProductList = await ApiProductsService.listApiProducts(organizationId, pageSize, pageNumber);
+
+
+      apiProductList = await ApiProductsService.listApiProducts({
+        organizationName: organizationId, 
+        pageSize: pageSize, 
+        pageNumber: pageNumber
+      });
+
       totalCount = 1000; // should be returned by previous call
     } catch (e: any) {
       if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
@@ -194,7 +204,14 @@ export class DeveloperPortalCommonApiCalls {
                   return environment.name === apiEnvironmentName;
                 });
                 if(!found) {
-                  const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(organizationId, apiEnvironmentName);
+                  
+                  // const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(organizationId, apiEnvironmentName);
+
+                  const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+                    organizationName: organizationId, 
+                    envName: apiEnvironmentName
+                  });
+
                   apiEnvironmentList.push(resp);
                 }
               }

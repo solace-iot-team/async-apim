@@ -1,7 +1,7 @@
 
 import React from "react";
 
-import { APIInfo } from "@solace-iot-team/platform-api-openapi-client-fe";
+import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";

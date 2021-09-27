@@ -8,7 +8,7 @@ import {
   ApiError,
   Developer, 
   DevelopersService 
-} from "@solace-iot-team/platform-api-openapi-client-fe";
+} from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSUser, 
   APSUserId 
@@ -109,7 +109,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     let existApiDeveloper: boolean = true;
     let anyError: any = undefined;
     try {
-      const apiDeveloper: Developer = await DevelopersService.getDeveloper(props.organizationName, props.userId);
+      const apiDeveloper: Developer = await DevelopersService.getDeveloper({
+        organizationName: props.organizationName, 
+        developerUsername: props.userId
+      });
     } catch(e: any) {
       if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
@@ -119,7 +122,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     }
     if(!anyError && !existApiDeveloper) {
       try { 
-        const apiDeveloper: Developer = await DevelopersService.createDeveloper(props.organizationName, transformAPSUserToApiDeveloper(userContext.user));
+        const apiDeveloper: Developer = await DevelopersService.createDeveloper({
+          organizationName: props.organizationName, 
+          requestBody: transformAPSUserToApiDeveloper(userContext.user)
+        });
       } catch(e: any) {
         anyError = e;
       }  

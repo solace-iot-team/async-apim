@@ -11,7 +11,7 @@ import {
   ApisService,
   EnvironmentResponse,
   EnvironmentsService
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -73,11 +73,27 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for product: ${props.apiProductDisplayName}`);
     try { 
-      const apiProduct: APIProduct = await ApiProductsService.getApiProduct(props.organizationId, props.apiProductId);
+      
+      // const apiProduct: APIProduct = await ApiProductsService.getApiProduct(props.organizationId, props.apiProductId);
+
+      const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
+        organizationName: props.organizationId, 
+        apiProductName: props.apiProductId
+      });
+
       let apiEnvironmentList: Array<EnvironmentResponse> = [];
       if(apiProduct.environments) {
         for(const apiEnvironmentName of apiProduct.environments) {
-          const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(props.organizationId, apiEnvironmentName);
+
+
+          // const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(props.organizationId, apiEnvironmentName);
+
+
+          const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+            organizationName: props.organizationId, 
+            envName: apiEnvironmentName
+          });
+
           apiEnvironmentList.push(resp);
         }
       }
@@ -95,7 +111,11 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const api: any = await ApisService.getApi(props.organizationId, apiId, "application/json");
+      const api: any = await ApisService.getApi({
+        organizationName: props.organizationId, 
+        apiName: apiId, 
+        format: "application/json"
+      });
       setApiSpec(api);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

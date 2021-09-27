@@ -9,7 +9,7 @@ import {
   AppResponse,
   AppsService,
   WebHook
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -71,7 +71,12 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve details for app: ${props.appDisplayName}`);
     try { 
-      const apiUserApp: AppResponse = await AppsService.getDeveloperApp(props.organizationId, props.userId, props.appId, "smf");
+      const apiUserApp: AppResponse = await AppsService.getDeveloperApp({
+        organizationName: props.organizationId, 
+        developerUsername: props.userId, 
+        appName: props.appId, 
+        topicSyntax: "smf"
+      });
       setManagedObject(transformViewApiObjectToViewManagedObject(apiUserApp));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);

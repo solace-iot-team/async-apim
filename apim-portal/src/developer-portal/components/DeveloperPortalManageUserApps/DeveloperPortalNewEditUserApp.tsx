@@ -18,7 +18,7 @@ import {
   App,
   ApiProductsService,
   APIProduct
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { 
   APSUserId
@@ -207,11 +207,28 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve details for app: ${appDisplayName}`);
     try { 
-      const apiUserApp: AppResponse = await AppsService.getDeveloperApp(orgId, userId, appId, "smf");
+      
+      
+      // const apiUserApp: AppResponse = await AppsService.getDeveloperApp(orgId, userId, appId, "smf");
+
+      const apiUserApp: AppResponse = await AppsService.getDeveloperApp({
+        organizationName: orgId, 
+        developerUsername: userId, 
+        appName: appId, 
+        topicSyntax: "smf"
+      });
+
       // get all api products display names
       let apiProductSelectItemList: TApiEntitySelectItemList = [];
       for(const apiProductName of apiUserApp.apiProducts) {
-        const apiProduct: APIProduct = await ApiProductsService.getApiProduct(orgId, apiProductName);
+
+        // const apiProduct: APIProduct = await ApiProductsService.getApiProduct(orgId, apiProductName);
+
+        const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
+          organizationName: orgId, 
+          apiProductName: apiProductName
+        });
+
         apiProductSelectItemList.push({
           displayName: apiProduct.displayName,
           id: apiProduct.name
@@ -233,7 +250,12 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP, `update app: ${appDisplayName}`);
     try { 
-      await AppsService.updateDeveloperApp(orgId, userId, appId, transformManagedObjectToUpdateApiObject(managedObject));
+      await AppsService.updateDeveloperApp({
+        organizationName: orgId, 
+        developerUsername: userId, 
+        appName: appId, 
+        requestBody: transformManagedObjectToUpdateApiObject(managedObject)
+      });
       if(appDisplayName !== managedObject.apiObject.displayName) setUpdatedManagedObjectDisplayName(managedObject.apiObject.displayName);      
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -248,7 +270,11 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_USER_APP, `create app: ${managedObject.apiObject.displayName}`);
     try { 
-      const createdApiObject: App = await AppsService.createDeveloperApp(orgId, userId, transformManagedObjectToCreateApiObject(managedObject));
+      const createdApiObject: App = await AppsService.createDeveloperApp({
+        organizationName: orgId, 
+        developerUsername: userId, 
+        requestBody: transformManagedObjectToCreateApiObject(managedObject)
+      });
       setCreatedManagedObjectId(createdApiObject.name);
       setCreatedManagedObjectDisplayName(createdApiObject.displayName);      
     } catch(e: any) {

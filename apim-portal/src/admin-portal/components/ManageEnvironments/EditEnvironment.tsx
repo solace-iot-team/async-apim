@@ -16,7 +16,7 @@ import {
   Protocol, 
   Endpoint, 
   EnvironmentPatch 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -137,7 +137,10 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT, `retrieve details for environment: ${props.environmentDisplayName}`);
     try { 
-      const apiObject: TGetApiObject = await EnvironmentsService.getEnvironment(props.organizationName, props.environmentName);
+      const apiObject: TGetApiObject = await EnvironmentsService.getEnvironment({
+        organizationName: props.organizationName, 
+        envName: props.environmentName
+      });
       setManagedObject(transformGetApiObjectToManagedObject(apiObject));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -152,7 +155,15 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT, `update environment: ${props.environmentDisplayName}`);
     try { 
       const apiObject: TUpdateApiObject = transformManagedObjectToUpdateApiObject(managedObject);
-      await EnvironmentsService.updateEnvironment(props.organizationName, props.environmentName, apiObject);
+      
+      // await EnvironmentsService.updateEnvironment(props.organizationName, props.environmentName, apiObject);
+
+      await EnvironmentsService.updateEnvironment({
+        organizationName: props.organizationName, 
+        envName: props.environmentName, 
+        requestBody: apiObject
+      });
+
       setUpdatedManagedObjectDisplayName(apiObject.displayName);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

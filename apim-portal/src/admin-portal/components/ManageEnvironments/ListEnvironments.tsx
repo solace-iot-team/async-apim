@@ -9,7 +9,7 @@ import { Button } from 'primereact/button';
 import { 
   EnvironmentsService, 
   EnvironmentListItem 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -61,13 +61,24 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
       let hasNextPage: boolean = true;
       let nextPage: number = 1;
       while (hasNextPage) {
-        const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments(props.organizationName, undefined, nextPage++);
+        const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
+          organizationName: props.organizationName,
+          pageNumber: nextPage++,
+          pageSize: 999
+        });
         if(_environmentList.length === 0) hasNextPage = false;
         else environmentList.push(..._environmentList);
       }
       let _managedObjectList: TManagedObjectList = [];
       for(const environment of environmentList) {
-        const apiObject: TApiObject = await EnvironmentsService.getEnvironment(props.organizationName, environment.name);
+        
+        // const apiObject: TApiObject = await EnvironmentsService.getEnvironment(props.organizationName, environment.name);
+
+        const apiObject: TApiObject = await EnvironmentsService.getEnvironment({
+          organizationName: props.organizationName, 
+          envName: environment.name
+        });
+
         _managedObjectList.push(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject));
       }
       setManagedObjectList(_managedObjectList);

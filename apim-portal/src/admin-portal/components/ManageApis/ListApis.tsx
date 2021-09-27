@@ -10,7 +10,7 @@ import {
   APIInfo,
   APIInfoList,
   ApisService,
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -86,7 +86,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiResult = await ApisService.listApis(props.organizationId, undefined, undefined, undefined, undefined, "extended");
+      const apiResult = await ApisService.listApis({
+        organizationName: props.organizationId,
+        format: "extended"
+      });
       const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;
       let _managedObjectList: TManagedObjectList = [];
       for(const apiInfo of apiAPIInfoList) {

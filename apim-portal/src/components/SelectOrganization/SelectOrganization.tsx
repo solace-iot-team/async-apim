@@ -9,7 +9,7 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { ApiCallState } from '../../utils/ApiCallState'
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
-import { Organization, AdministrationService } from '@solace-iot-team/platform-api-openapi-client-fe';
+import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 
 import "../APComponents.css";
@@ -97,7 +97,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     setIsGetSelectObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.API_GET_SELECT_OBJECT_LIST, 'retrieve list of organizations');
     try { 
-      const apiSelectObjectList: TApiObjectList = await AdministrationService.listOrganizations();
+      const apiSelectObjectList: TApiObjectList = await AdministrationService.listOrganizations({});
       // console.log(`${logName}: apiSelectObjectList=${JSON.stringify(apiSelectObjectList, null, 2)} `);
       setSelectObjectList(transformApiObjectListToSelectObjectList(apiSelectObjectList));
     } catch(e) {

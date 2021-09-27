@@ -13,7 +13,7 @@ import {
   ApiProductsService, 
   DevelopersService, 
   AppsService 
-} from '@solace-iot-team/platform-api-openapi-client-fe';
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -59,13 +59,28 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_LIST, 'retrieve list of organizations');
     try { 
       let _managedObjectList: TManagedObjectList = [];
-      const apiOrganizationList = await AdministrationService.listOrganizations();
+      const apiOrganizationList = await AdministrationService.listOrganizations({});
       for(const apiOrganization of apiOrganizationList) {
-        const envResponse = await EnvironmentsService.listEnvironments(apiOrganization.name, 1);        
-        // const apiResponse = await ApisService.listApis(apiOrganization.name, 1);
-        const apiProductResponse = await ApiProductsService.listApiProducts(apiOrganization.name, 1);
-        const developerResponse = await DevelopersService.listDevelopers(apiOrganization.name, 1);
-        const appResponse = await AppsService.listApps(apiOrganization.name, undefined, 1);
+        const envResponse = await EnvironmentsService.listEnvironments({
+          organizationName: apiOrganization.name, 
+          pageNumber: 1,
+          pageSize: 1
+        });        
+        const apiProductResponse = await ApiProductsService.listApiProducts({
+          organizationName: apiOrganization.name, 
+          pageNumber: 1,
+          pageSize: 1
+        });
+        const developerResponse = await DevelopersService.listDevelopers({
+          organizationName: apiOrganization.name, 
+          pageNumber: 1,
+          pageSize: 1
+        });
+        const appResponse = await AppsService.listApps({
+          organizationName: apiOrganization.name, 
+          pageNumber: 1,
+          pageSize: 1
+        });
         _managedObjectList.push({
           ...ManageOrganizationsCommon.transformViewApiObjectToViewManagedObject(apiOrganization),
           hasInfo: {
