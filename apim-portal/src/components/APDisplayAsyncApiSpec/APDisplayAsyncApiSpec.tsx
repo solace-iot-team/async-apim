@@ -65,6 +65,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
     const buttonClassName: string = "p-button-text p-button-plain p-button-outlined";
     let jsxButtonList: Array<JSX.Element> = [
       <APButtonDownloadContentAsFile 
+        key={`${componentName}_json`}
         buttonLabel={ToolbarButtonLabel_DownloadJson}
         buttonClassName={buttonClassName}
         jsonContentObject={props.schema}
@@ -75,6 +76,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
         onError={onDownloadError}
       />,
       <APButtonDownloadContentAsFile 
+        key={`${componentName}_yaml`}
         buttonLabel={ToolbarButtonLabel_DownloadYaml}
         buttonClassName={buttonClassName}
         jsonContentObject={props.schema}

@@ -84,20 +84,22 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     }
   }
 
-  const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    const funcName = 'transformManagedObjectToUpdateApiObject';
-    const logName = `${componentName}.${funcName}()`;
-    if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
-    return APConnectorApiHelper.getAsyncApiSpecJsonAsString(managedObject.asyncApiSpec);
-  }
-
-  const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    const funcName = 'transformManagedObjectToCreateApiObject';
+  const _transformManagedObjectToApiString = (managedObject: TManagedObject): string => {
+    const funcName = '_transformManagedObjectToApiString';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
     const res = APConnectorApiHelper.getAsyncApiSpecAsJson(managedObject.asyncApiSpec);
     if(typeof(res) === 'string') throw new Error(`${logName}: ${res}`);
-    return APConnectorApiHelper.getAsyncApiSpecJsonAsString(res);
+    // console.log(`${logName}: res = ${JSON.stringify(res, null, 2)}`);
+    return APConnectorApiHelper.getAsyncApiSpecJsonAsString(managedObject.asyncApiSpec);
+  }
+
+  const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
+    return _transformManagedObjectToApiString(managedObject);
+  }
+
+  const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
+    return _transformManagedObjectToApiString(managedObject);
   }
 
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
@@ -114,12 +116,9 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
     const funcName = 'transformFormDataToManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    if(!formData.asyncApiSpec) throw new Error(`${logName}: formData.asyncApiSpec is undefined`);
-    let asyncApiSpec: TAPAsyncApiSpec | undefined = undefined;
-    if(formData.formAsyncApiSpecString) {
-      asyncApiSpec = APConnectorApiHelper.getAsyncApiSpecJsonFromString(formData.formAsyncApiSpecString);
-      // console.log(`${logName}: aysncApiSpec=\n${JSON.stringify(asyncApiSpec, null, 2)}`);
-    }
+    if(!formData.formAsyncApiSpecString) throw new Error(`${logName}: formData.formAsyncApiSpecString is undefined`);
+    const asyncApiSpec = APConnectorApiHelper.getAsyncApiSpecJsonFromString(formData.formAsyncApiSpecString);
+    // console.log(`${logName}: aysncApiSpec=\n${JSON.stringify(asyncApiSpec, null, 2)}`);
     return {
       ...formData,
       displayName: formData.id,
@@ -132,7 +131,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     // const funcName = 'apiGetManagedObject';
     // const logName = `${componentName}.${funcName}()`;
     const initialApiCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${managedObjectDisplayName}`);
-    const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, managedObjectId, EAPAsyncApiSpecFormat.JSON, initialApiCallState);
+    const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, managedObjectId, initialApiCallState);
     if(result.apiCallState.success && result.apiInfo && result.asyncApiSpec) {
       setManagedObject(transformGetManagedObjectToManagedObject(managedObjectId, managedObjectDisplayName, result.apiInfo, result.asyncApiSpec));
     }
@@ -302,6 +301,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   const renderApisToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [
       <APButtonLoadFileContents 
+        key={`${componentName}_loadFileContents`}
         buttonLabel={ToolbarFormFieldAsyncApiUploadFromFileButtonLabel}
         buttonIcon='pi pi-cloud-upload'
         buttonClassName='p-button-text p-button-plain p-button-outlined'

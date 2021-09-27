@@ -186,7 +186,7 @@ export class Globals {
 export class GlobalElementStyles {
   public static breadcrumbLink = (): any => {
     return {
-      'text-decoration': 'underline'
+      'textDecoration': 'underline'
     }
   }
 }

@@ -60,7 +60,7 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
     const initialApiCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apiDisplayName}`);
-    const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, props.apiId, EAPAsyncApiSpecFormat.JSON, initialApiCallState);
+    const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, props.apiId, initialApiCallState);
     if(result.apiCallState.success && result.apiInfo && result.asyncApiSpec) {
       setManagedObject(transformGetManagedObjectToManagedObject(props.apiId, props.apiDisplayName, result.apiInfo, result.asyncApiSpec));
     }

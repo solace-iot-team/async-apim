@@ -86,10 +86,11 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     try { 
-      const apiResult = await ApisService.listApis(props.organizationId, undefined, undefined, "extended");
+      const apiResult = await ApisService.listApis(props.organizationId, undefined, undefined, undefined, undefined, "extended");
       const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;
       let _managedObjectList: TManagedObjectList = [];
       for(const apiInfo of apiAPIInfoList) {
+        // console.log(`${logName}: apiInfo=${JSON.stringify(apiInfo, null, 2)}`);
         if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
         _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo));
       }

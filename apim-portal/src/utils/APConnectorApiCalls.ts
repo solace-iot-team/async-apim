@@ -100,10 +100,10 @@ export class APConnectorApiHelper {
     return JSON.stringify(asyncApiSpec.spec, null, 2);
   }
 
-  public static getAsyncApiSpecJsonFromString = (asyncApiSpecJsonString: string): TAPAsyncApiSpec => {
+  public static getAsyncApiSpecJsonFromString = (asyncApiSpecString: string): TAPAsyncApiSpec => {
     const funcName = 'getAsyncApiSpecJsonFromString';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
-    const result: TAPAsyncApiSpec | string = APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: asyncApiSpecJsonString });
+    const result: TAPAsyncApiSpec | string = APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: asyncApiSpecString });
     if(typeof(result) === 'string') throw new Error(`${logName}: invalid asyncApiSpecJsonString, result=${result}`);
     return result;
   }
@@ -131,8 +131,8 @@ export class APConnectorApiHelper {
       }
       case EAPAsyncApiSpecFormat.UNKNOWN: {
         try {
-          JSON.parse(asyncApiSpec.spec);
-          return { format: EAPAsyncApiSpecFormat.JSON, spec: asyncApiSpec.spec };
+          const parsedSpec: any = JSON.parse(asyncApiSpec.spec);
+          return { format: EAPAsyncApiSpecFormat.JSON, spec: parsedSpec };
         } catch(jsonError: any) {
           console.error(`${logName}: jsonError=${jsonError}`);
           try {
@@ -185,17 +185,24 @@ export class APConnectorApiCalls {
     }
   }
 
-  public static getAsyncApiSpec = async(orgId: TAPOrganizationId, apiId: string, apiSpecFormat: EAPAsyncApiSpecFormat, initialApiCallState: TApiCallState): Promise<TGetAsyncApiSpecResult> => {
+  public static getAsyncApiSpec = async(orgId: TAPOrganizationId, apiId: string, initialApiCallState: TApiCallState): Promise<TGetAsyncApiSpecResult> => {
     const funcName = 'getAsyncApiSpec';
     const logName = `${APConnectorApiCalls.name}.${funcName}()`;
     try { 
-      const _apiSpecFormat: EAPAsyncApiSpecFormat.JSON | EAPAsyncApiSpecFormat.YAML = (apiSpecFormat === EAPAsyncApiSpecFormat.JSON || apiSpecFormat === EAPAsyncApiSpecFormat.YAML ? apiSpecFormat : EAPAsyncApiSpecFormat.JSON);
-      const api: any = await ApisService.getApi(orgId, apiId, _apiSpecFormat);
+      const apiAny: any = await ApisService.getApi(orgId, apiId, 'application/json');
+      // console.log(`${logName}: typeof(apiAny) = ${typeof(apiAny)}`);
+      let api: object;
+      if(typeof(apiAny) === 'string') {
+        api = JSON.parse(apiAny);
+      } else {
+        api = apiAny
+      }
+      // console.log(`${logName}: api = ${JSON.stringify(api, null, 2)}`);
       const apiInfo: APIInfo = await ApisService.getApiInfo(orgId, apiId);
       return {
         apiCallState: initialApiCallState,
         asyncApiSpec: {
-          format: _apiSpecFormat,
+          format: EAPAsyncApiSpecFormat.JSON,
           spec: api
         },
         apiInfo: apiInfo
