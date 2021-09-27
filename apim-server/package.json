@@ -12,7 +12,7 @@
     "dev:nopretty": "nodemon server/index.ts",
     "dev:debug": "nodemon --exec \"node -r ts-node/register --inspect-brk\" server/index.ts | pino-pretty",
     "lint": "eslint -c .eslintrc.js \"{server, test}/**/*.{js,ts,tsx}\" --quiet",
-    "test": "source ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts && unset_source_env",
+    "test": "source ./test/source.env.sh && ./test/mongodb/start.mongo.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts && ./test/mongodb/stop.mongo.sh && unset_source_env",
     "test:pretty": "source ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.inline.spec.ts | pino-pretty && unset_source_env",
     "test:debug": "mocha -r ts-node/register --inspect-brk test/**/*.ts --exit"
   },

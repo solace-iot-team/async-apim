@@ -54,7 +54,9 @@ describe(`${scriptName}`, () => {
         const result: ListApsConnectorsResponse = await ApsConfigService.listApsConnectors();
         const apsConnectorList: Array<APSConnector> = result.list;
         for (const apsConnector of apsConnectorList) {
-          await ApsConfigService.deleteApsConnector(apsConnector.connectorId);
+          await ApsConfigService.deleteApsConnector({
+            connectorId: apsConnector.connectorId
+          });
         }
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -93,7 +95,9 @@ describe(`${scriptName}`, () => {
         const result: ListApsConnectorsResponse  = await ApsConfigService.listApsConnectors();
         const apsConnectorList: Array<APSConnector> = result.list;
         for (const apsConnector of apsConnectorList) {
-          await ApsConfigService.deleteApsConnector(apsConnector.connectorId);
+          await ApsConfigService.deleteApsConnector({
+            connectorId: apsConnector.connectorId
+          });
         }
         const { list, meta } = await ApsConfigService.listApsConnectors();
         finalList = list;
@@ -115,7 +119,9 @@ describe(`${scriptName}`, () => {
             ...apsConnectorCreateTemplate,
             connectorId: apsConnectorTemplate.connectorId + '_' + i,
           }
-          const created: APSConnector = await ApsConfigService.createApsConnector(apsConnectorCreate);
+          const created: APSConnector = await ApsConfigService.createApsConnector({
+            requestBody: apsConnectorCreate
+          });
           expect(created.isActive, 'isActive not false').equal(false);
         }
       } catch (e) {
@@ -142,8 +148,12 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should return duplicate key error`, async() => {
       let response: APSConnector;
       try {
-        response = await ApsConfigService.createApsConnector(apsConnectorTemplate);
-        response = await ApsConfigService.createApsConnector(apsConnectorTemplate);
+        response = await ApsConfigService.createApsConnector({
+          requestBody: apsConnectorTemplate
+        });
+        response = await ApsConfigService.createApsConnector({
+          requestBody: apsConnectorTemplate
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -156,7 +166,9 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should get 1 connector`, async() => {
       let apsConnector: APSConnector;
       try {
-        apsConnector = await ApsConfigService.getApsConnector(apsConnectorTemplate.connectorId);
+        apsConnector = await ApsConfigService.getApsConnector({
+          connectorId: apsConnectorTemplate.connectorId
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -171,7 +183,9 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should not find connector`, async() => {
       let apsConnector: APSConnector;
       try {
-        apsConnector = await ApsConfigService.getApsConnector("unknown_connector_id");
+        apsConnector = await ApsConfigService.getApsConnector({
+          connectorId: "unknown_connector_id"
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -202,7 +216,10 @@ describe(`${scriptName}`, () => {
         isActive: false
       }
       try {
-        replaced = await ApsConfigService.replaceApsConnector(connectorId, replaceRequest);
+        replaced = await ApsConfigService.replaceApsConnector({
+          connectorId: connectorId, 
+          requestBody: replaceRequest
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -227,8 +244,13 @@ describe(`${scriptName}`, () => {
       let apsConnector: APSConnector;
       const connectorId: APSId = apsConnectorTemplate.connectorId;
       try {
-        apsConnector = await ApsConfigService.replaceApsConnector(connectorId, apsConnectorTemplate);
-        apsConnector = await ApsConfigService.setApsConnectorActive(connectorId);
+        apsConnector = await ApsConfigService.replaceApsConnector({
+          connectorId: connectorId, 
+          requestBody: apsConnectorTemplate
+        });
+        apsConnector = await ApsConfigService.setApsConnectorActive({
+          connectorId: connectorId
+        });
         apsConnector = await ApsConfigService.getActiveApsConnector();
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -241,7 +263,9 @@ describe(`${scriptName}`, () => {
       let apsConnector: APSConnector;
       const connectorId: APSId = apsConnectorTemplate.connectorId + '_0';
       try {
-        apsConnector = await ApsConfigService.setApsConnectorActive(connectorId);
+        apsConnector = await ApsConfigService.setApsConnectorActive({
+          connectorId: connectorId
+        });
         apsConnector = await ApsConfigService.getActiveApsConnector();
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -260,7 +284,10 @@ describe(`${scriptName}`, () => {
         }
       };
       try {
-        const result: APSConnector  = await ApsConfigService.replaceApsConnector(connectorId, toReplace);
+        const result: APSConnector  = await ApsConfigService.replaceApsConnector({
+          connectorId: connectorId, 
+          requestBody: toReplace
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;

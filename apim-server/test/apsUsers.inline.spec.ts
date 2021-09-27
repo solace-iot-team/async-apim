@@ -66,13 +66,18 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
         }
         for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -99,7 +104,10 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
@@ -123,15 +131,20 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
         }
         for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
-        const { list, meta } = await ApsUsersService.listApsUsers();
+        const { list, meta } = await ApsUsersService.listApsUsers({});
         finalApsUserList = list;
         finalMeta = { meta: meta };
       } catch (e) {
@@ -158,7 +171,9 @@ describe(`${scriptName}`, () => {
               last: apsUserTemplate.profile.last
             }
           }
-          const apsUserResponse: APSUser = await ApsUsersService.createApsUser(apsUser);
+          const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
+            requestBody: apsUser
+          });
           const userId2 = `x-${iStr}_${apsUserTemplate2.userId}@aps.com`;
           const apsUser2: APSUser = {
             ...apsUserTemplate2,
@@ -170,7 +185,9 @@ describe(`${scriptName}`, () => {
               last: apsUserTemplate.profile.last
             }
           }
-          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser(apsUser2);
+          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser({
+            requestBody: apsUser2
+          });
         }  
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -187,7 +204,10 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
@@ -206,7 +226,10 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'profile.email';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(undefined, undefined, sortFieldName, sortDirection);
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            sortFieldName: sortFieldName, 
+            sortDirection: sortDirection
+          });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -217,7 +240,10 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'isActivated';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(undefined, undefined, sortFieldName, sortDirection);
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            sortFieldName: sortFieldName, 
+            sortDirection: sortDirection
+          });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -228,7 +254,10 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'rubbish';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(undefined, undefined, sortFieldName, sortDirection);
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            sortFieldName: sortFieldName, 
+            sortDirection: sortDirection
+          });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -245,8 +274,12 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should return duplicate key error`, async() => {
       let response: APSUser;
       try {
-        response = await ApsUsersService.createApsUser(apsUserTemplate);
-        response = await ApsUsersService.createApsUser(apsUserTemplate);
+        response = await ApsUsersService.createApsUser({
+          requestBody: apsUserTemplate
+        });
+        response = await ApsUsersService.createApsUser({
+          requestBody: apsUserTemplate
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -259,7 +292,9 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should get 1 user`, async() => {
       let apsUser: APSUser;
       try {
-        apsUser = await ApsUsersService.getApsUser(apsUserTemplate.userId);
+        apsUser = await ApsUsersService.getApsUser({
+          userId: apsUserTemplate.userId
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.getApsUser()`;
@@ -271,7 +306,9 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should not find user`, async() => {
       let apsUser: APSUser;
       try {
-        apsUser = await ApsUsersService.getApsUser("unknown_user_id");
+        apsUser = await ApsUsersService.getApsUser({
+          userId: "unknown_user_id"
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -299,7 +336,10 @@ describe(`${scriptName}`, () => {
       }
       const targetApsUser = _.mergeWith(apsUserTemplate, updateRequest, updateCustomizer);
       try {
-        updatedApsUser = await ApsUsersService.updateApsUser(userId, updateRequest);
+        updatedApsUser = await ApsUsersService.updateApsUser({
+          userId: userId, 
+          requestBody: updateRequest
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.updateApsUser()`;
@@ -313,8 +353,13 @@ describe(`${scriptName}`, () => {
       let existingApsUser: APSUser;
       const userId = apsUserTemplate.userId;
       try {
-        existingApsUser = await ApsUsersService.getApsUser(userId);
-        updatedApsUser = await ApsUsersService.updateApsUser(userId, {});
+        existingApsUser = await ApsUsersService.getApsUser({
+          userId: userId
+        });
+        updatedApsUser = await ApsUsersService.updateApsUser({
+          userId: userId, 
+          requestBody: {}
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.updateApsUser()`;
@@ -326,7 +371,10 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should handle update user not found`, async() => {
       const userId = 'unknown-user-id';
       try {
-        await ApsUsersService.updateApsUser(userId, {});
+        await ApsUsersService.updateApsUser({
+          userId: userId, 
+          requestBody: {}
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -355,7 +403,10 @@ describe(`${scriptName}`, () => {
         userId: userId
       }
       try {
-        replacedApsUser = await ApsUsersService.replaceApsUser(userId, replaceRequest);
+        replacedApsUser = await ApsUsersService.replaceApsUser({
+          userId: userId, 
+          requestBody: replaceRequest
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.updateApsUser()`;
@@ -370,7 +421,9 @@ describe(`${scriptName}`, () => {
         userId: ''
       }
       try {
-        await ApsUsersService.createApsUser(toCreate);
+        await ApsUsersService.createApsUser({
+          requestBody: toCreate
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -389,7 +442,9 @@ describe(`${scriptName}`, () => {
         userId: ' sdssdsd '
       }
       try {
-        await ApsUsersService.createApsUser(toCreate);
+        await ApsUsersService.createApsUser({
+          requestBody: toCreate
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -417,7 +472,10 @@ describe(`${scriptName}`, () => {
         }
       }
       try {
-        replacedApsUser = await ApsUsersService.replaceApsUser(userId, replaceRequest);
+        replacedApsUser = await ApsUsersService.replaceApsUser({
+          userId: userId, 
+          requestBody: replaceRequest
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -456,15 +514,20 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
         }
         for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
-        const { list, meta } = await ApsUsersService.listApsUsers();
+        const { list, meta } = await ApsUsersService.listApsUsers({});
         finalApsUserList = list;
         finalMeta = { meta: meta };
       } catch (e) {
@@ -493,7 +556,9 @@ describe(`${scriptName}`, () => {
               last: 'last1'
             }
           }
-          const apsUserResponse: APSUser = await ApsUsersService.createApsUser(apsUser);
+          const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
+            requestBody: apsUser
+          });
           const apsUser2: APSUser = {
             ...apsUser,
             userId: `${apsUser.userId}-2`,
@@ -502,7 +567,9 @@ describe(`${scriptName}`, () => {
               last: 'last2'
             }
           }
-          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser(apsUser2);
+          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser({
+            requestBody: apsUser2
+          });
         }  
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -519,7 +586,11 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(pageSize, pageNumber, undefined, undefined, 'last1');
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber, 
+            searchWordList: 'last1'
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
@@ -537,7 +608,11 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(pageSize, pageNumber, undefined, undefined, 'last2');
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber, 
+            searchWordList: 'last2'
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);

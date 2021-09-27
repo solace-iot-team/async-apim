@@ -94,6 +94,7 @@ const generateOpenApiNodeClient = () => {
       output: outputOpenApiNodeClientDir,
       httpClient: HttpClient.NODE,
       exportSchemas: true,
+      useOptions: true
       // request: './custom/request.ts'      
   })
   .then(() => {
@@ -113,7 +114,8 @@ const generateOpenApiBrowserClient = () => {
   OpenAPI.generate({
       input: inputApiSpecFile,
       output: outputOpenApiBrowserClientDir,
-      exportSchemas: true
+      exportSchemas: true,
+      useOptions: true
   })
   .then(() => {
     return;

@@ -79,7 +79,9 @@ export class APSConnectorsService {
               }
             };
             try {
-              await ApsConfigService.createApsConnector(create);
+              await ApsConfigService.createApsConnector({
+                requestBody: create
+              });
             } catch (e: any) {
               ServerLogger.debug(ServerLogger.createLogEntry(logName, 
                 { 
@@ -99,7 +101,9 @@ export class APSConnectorsService {
             // set to active if so
             if(bootstrapApsConnector.isActive) {
               try {
-                await ApsConfigService.setApsConnectorActive(bootstrapApsConnector.connectorId);
+                await ApsConfigService.setApsConnectorActive({
+                  connectorId: bootstrapApsConnector.connectorId
+                });
               } catch(e: any) {
                 ServerLogger.debug(ServerLogger.createLogEntry(logName, 
                   { 

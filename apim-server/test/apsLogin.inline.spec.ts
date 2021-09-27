@@ -53,13 +53,18 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
         }
         for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -86,15 +91,20 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers(pageSize, pageNumber);
+          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
           if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
           pageNumber++;
           apsUserList.push(...resultListApsUsers.list);
         }
         for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
-        const { list, meta } = await ApsUsersService.listApsUsers();
+        const { list, meta } = await ApsUsersService.listApsUsers({});
         finalApsUserList = list;
         finalMeta = { meta: meta };
       } catch (e) {
@@ -108,7 +118,9 @@ describe(`${scriptName}`, () => {
 
     it(`${scriptName}: should create login user`, async() => {
       try {
-        const created = await ApsUsersService.createApsUser(apsUserLoginTemplate);
+        const created = await ApsUsersService.createApsUser({
+          requestBody: apsUserLoginTemplate
+        });
         expect(created, 'user not created correctly').to.deep.equal(apsUserLoginTemplate);
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -121,7 +133,9 @@ describe(`${scriptName}`, () => {
       const loginPwd: string = apsUserLoginTemplate.password;
       let loggedIn: APSUser;
       try {
-        loggedIn = await ApsLoginService.login({ userId: loginUserId, userPwd: loginPwd });
+        loggedIn = await ApsLoginService.login({
+          requestBody: { userId: loginUserId, userPwd: loginPwd }
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -135,7 +149,9 @@ describe(`${scriptName}`, () => {
       const loginPwd: string = 'wrong';
       let loggedIn: APSUser;
       try {
-        loggedIn = await ApsLoginService.login({ userId: loginUserId, userPwd: loginPwd });
+        loggedIn = await ApsLoginService.login({
+          requestBody: { userId: loginUserId, userPwd: loginPwd }
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -150,7 +166,9 @@ describe(`${scriptName}`, () => {
       const loginPwd: string = 'wrong';
       let loggedIn: APSUser;
       try {
-        loggedIn = await ApsLoginService.login({ userId: loginUserId, userPwd: loginPwd });
+        loggedIn = await ApsLoginService.login({
+          requestBody: { userId: loginUserId, userPwd: loginPwd }
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -168,7 +186,9 @@ describe(`${scriptName}`, () => {
         userPwd: loginPwd
       }
       try {
-        const loggedIn: APSUser = await ApsLoginService.login(loginCredentials);
+        const loggedIn: APSUser = await ApsLoginService.login({
+          requestBody: loginCredentials
+        });
         expect(loggedIn.roles, 'roles not an array').to.be.an('array');
         expect(loggedIn.roles, 'more than 1 role').length(1);
         expect(loggedIn.roles[0], 'role is not root').equal(EAPSAuthRole.ROOT);
@@ -186,7 +206,9 @@ describe(`${scriptName}`, () => {
         userPwd: loginPwd
       }
       try {
-        const loggedIn: APSUser = await ApsLoginService.login({ userId: 'unknown', userPwd: loginCredentials.userPwd });
+        const loggedIn: APSUser = await ApsLoginService.login({
+          requestBody: { userId: 'unknown', userPwd: loginCredentials.userPwd }
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -204,7 +226,9 @@ describe(`${scriptName}`, () => {
         userPwd: loginPwd
       }
       try {
-        const loggedIn: APSUser = await ApsLoginService.login({ userId: loginCredentials.userId, userPwd: 'wrong' });
+        const loggedIn: APSUser = await ApsLoginService.login({
+          requestBody: { userId: loginCredentials.userId, userPwd: 'wrong' }
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
@@ -221,7 +245,10 @@ describe(`${scriptName}`, () => {
         isActivated: false,
       }
       try {
-        replaced = await ApsUsersService.replaceApsUser(apsUserLoginTemplate.userId, replaceRequest);
+        replaced = await ApsUsersService.replaceApsUser({
+          userId: apsUserLoginTemplate.userId, 
+          requestBody: replaceRequest
+        });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false).to.be.true;
@@ -234,7 +261,9 @@ describe(`${scriptName}`, () => {
       const loginPwd: string = apsUserLoginTemplate.password;
       let loggedIn: APSUser;
       try {
-        loggedIn = await ApsLoginService.login({ userId: loginUserId, userPwd: loginPwd });
+        loggedIn = await ApsLoginService.login({
+          requestBody: { userId: loginUserId, userPwd: loginPwd }
+        });
         expect(false, 'should not have logged in successfully, user is not active').to.be.true;
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;

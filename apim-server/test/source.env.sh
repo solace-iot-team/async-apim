@@ -34,7 +34,7 @@ unset_source_env() {
 # Env vars for server:
 export APIM_SERVER_PORT="3004"
 export APIM_SERVER_API_BASE="/apim-server/v1"
-export APIM_SERVER_MONGO_CONNECTION_STRING="mongodb://localhost:27019/?retryWrites=true&w=majority"
+export APIM_SERVER_MONGO_CONNECTION_STRING="mongodb://localhost:27020/?retryWrites=true&w=majority"
 export APIM_SERVER_MONGO_DB="solace-apim-server"
 export APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION="true"
 export APIM_SERVER_LOGGER_APP_ID="apim-server"
