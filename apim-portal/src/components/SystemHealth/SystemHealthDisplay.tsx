@@ -29,9 +29,10 @@ export interface ISystemHealthProps {
 export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystemHealthProps) => {
   // const componentName = 'SystemHealthDisplay';
 
-  // const healthCheckInterval_ms: number = 30000;
-  const healthCheckInterval_ms: number = 5000;
-
+  const healthCheckInterval_ms: number = 30000;
+  // const healthCheckInterval_ms: number = 5000;
+  // const healthCheckInterval_ms: number = 300000;
+  
   const connectorHealthCheckResultNotPerformed: THealthCheckResult = {
     healthCheckLog: [{action: 'check connector', success: false, details: {} }],
     summary: { 

@@ -103,15 +103,9 @@ export class APConnectorApiHelper {
   public static getAsyncApiSpecJsonFromString = (asyncApiSpecJsonString: string): TAPAsyncApiSpec => {
     const funcName = 'getAsyncApiSpecJsonFromString';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
-    try {
-      const specObject: any = JSON.parse(asyncApiSpecJsonString);
-      return {
-        format: EAPAsyncApiSpecFormat.JSON,
-        spec: specObject
-      }
-    } catch(e:any) {
-      throw new Error(`${logName}: cannot parse string as JSON, error=${e}`);
-    }
+    const result: TAPAsyncApiSpec | string = APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: asyncApiSpecJsonString });
+    if(typeof(result) === 'string') throw new Error(`${logName}: invalid asyncApiSpecJsonString, result=${result}`);
+    return result;
   }
 
   public static getAsyncApiSpecAsJson = (asyncApiSpec: TAPAsyncApiSpec): TAPAsyncApiSpec | string => {
