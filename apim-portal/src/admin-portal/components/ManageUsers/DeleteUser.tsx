@@ -38,8 +38,10 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_USER, `delete user: ${props.userId}`);
     try { 
-      await ApsUsersService.deleteApsUser(props.userId);
-    } catch(e) {
+      await ApsUsersService.deleteApsUser({
+        userId: props.userId
+      });
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }

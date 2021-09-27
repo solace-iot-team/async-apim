@@ -44,7 +44,9 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userId}`);
     try { 
-      const apsUser: APSUser = await ApsUsersService.getApsUser(props.userId);
+      const apsUser: APSUser = await ApsUsersService.getApsUser({
+        userId: props.userId
+      });
       setManagedObject(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

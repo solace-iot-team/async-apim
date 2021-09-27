@@ -111,9 +111,11 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
       }
     }
     try { 
-      const loggedInUser: APSUser = await ApsLoginService.login(apsUserLoginCredentials)
+      const loggedInUser: APSUser = await ApsLoginService.login({
+        requestBody: apsUserLoginCredentials
+      });
       setLoggedInUser(loggedInUser);
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState.success = false;
       callState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(e);

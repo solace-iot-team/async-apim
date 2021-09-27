@@ -144,7 +144,9 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${managedObjectId}`);
     try { 
-      const apsUser: APSUser = await ApsUsersService.getApsUser(managedObjectId);
+      const apsUser: APSUser = await ApsUsersService.getApsUser({
+        userId: managedObjectId
+      });
       setManagedObject(transformGetApiObjectToManagedObject(apsUser));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -159,7 +161,10 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${managedObjectId}`);
     try { 
-      await ApsUsersService.replaceApsUser(managedObjectId, transformManagedObjectToReplaceApiObject(managedObject));
+      await ApsUsersService.replaceApsUser({
+        userId: managedObjectId, 
+        requestBody: transformManagedObjectToReplaceApiObject(managedObject)
+      });
       setUpdatedManagedObjectDisplayName(managedObject.userId);      
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -174,7 +179,9 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_USER, `create user: ${managedObject.userId}`);
     try { 
-      const createdApiObject: APSUser = await ApsUsersService.createApsUser(transformManagedObjectToCreateApiObject(managedObject));
+      const createdApiObject: APSUser = await ApsUsersService.createApsUser({
+        requestBody: transformManagedObjectToCreateApiObject(managedObject)
+      });
       setCreatedManagedObjectId(createdApiObject.userId);
       setCreatedManagedObjectDisplayName(createdApiObject.userId);      
     } catch(e: any) {

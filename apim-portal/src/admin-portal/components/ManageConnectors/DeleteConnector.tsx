@@ -39,8 +39,10 @@ export const DeleteConnector: React.FC<IDeleteConnectorProps> = (props: IDeleteC
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_CONNECTOR, `delete connector: ${props.connectorDisplayName}`);
     try { 
-      await ApsConfigService.deleteApsConnector(props.connectorId);
-    } catch(e) {
+      await ApsConfigService.deleteApsConnector({
+        connectorId: props.connectorId
+      });
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }

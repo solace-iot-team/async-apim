@@ -33,7 +33,9 @@ export class ManageUserAccountCommon {
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${managedObjectId}`);
     let resultManagedObject: APSUser | undefined = undefined;
     try { 
-      const apsUser: APSUser = await ApsUsersService.getApsUser(managedObjectId);
+      const apsUser: APSUser = await ApsUsersService.getApsUser({
+        userId: managedObjectId
+      });
       resultManagedObject = ManageUserAccountCommon.transformGetApiObjectToManagedObject(apsUser);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -51,7 +53,10 @@ export class ManageUserAccountCommon {
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER, `update user: ${managedObjectId}`);
     let resultManagedObject: APSUser | undefined = undefined;
     try { 
-      const apsUser: APSUser = await ApsUsersService.updateApsUser(managedObjectId, updateApiObject);
+      const apsUser: APSUser = await ApsUsersService.updateApsUser({
+        userId: managedObjectId, 
+        requestBody: updateApiObject
+      });
       resultManagedObject = apsUser;
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

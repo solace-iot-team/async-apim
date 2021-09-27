@@ -81,7 +81,9 @@ export const NewConnector: React.FC<INewConnectorProps> = (props: INewConnectorP
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_CONNECTOR, `create connector: ${managedObject.displayName}`);
     try { 
-      const createdApiObject: APSConnector = await ApsConfigService.createApsConnector(transformManagedObjectToCreateApiObject(managedObject));
+      const createdApiObject: APSConnector = await ApsConfigService.createApsConnector({
+        requestBody: transformManagedObjectToCreateApiObject(managedObject)
+      });
       setCreatedManagedObjectId(createdApiObject.connectorId);
       setCreatedManagedObjectDisplayName(createdApiObject.displayName);      
     } catch(e: any) {

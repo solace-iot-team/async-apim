@@ -159,13 +159,15 @@ export const BootstrapUsersPage: React.FC = () => {
     try {
       let hasUsers = true;
       while (hasUsers) {
-        const response: ListApsUsersResponse = await ApsUsersService.listApsUsers();
+        const response: ListApsUsersResponse = await ApsUsersService.listApsUsers({});
         for (const apsUser of response.list) {
-          await ApsUsersService.deleteApsUser(apsUser.userId);
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
         }
         hasUsers = response.meta.totalCount > response.list.length;
       }
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -183,9 +185,11 @@ export const BootstrapUsersPage: React.FC = () => {
     const apiObject: APSUser = transformManagedObjectToApiObject(managedObject);
     try {
       try {
-        await ApsUsersService.getApsUser(apiObject.userId);
+        await ApsUsersService.getApsUser({
+          userId: apiObject.userId
+        });
         isCreate = false;
-      } catch (e) {
+      } catch (e: any) {
         if(APSClientOpenApi.isInstanceOfApiError(e)) {
           const apiError: APSApiError = e;
           if (apiError.status === 404) isCreate = true;
@@ -193,11 +197,16 @@ export const BootstrapUsersPage: React.FC = () => {
         }
       }
       if ( isCreate ) {
-        await ApsUsersService.createApsUser(apiObject);
+        await ApsUsersService.createApsUser({
+          requestBody: apiObject
+        });
       } else {
-        await ApsUsersService.replaceApsUser(apiObject.userId, apiObject);
+        await ApsUsersService.replaceApsUser({
+          userId: apiObject.userId, 
+          requestBody: apiObject
+        });
       }
-    } catch(e) {
+    } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }

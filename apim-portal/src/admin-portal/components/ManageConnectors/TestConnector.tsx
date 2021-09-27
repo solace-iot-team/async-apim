@@ -48,7 +48,9 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR, `retrieve details for connector: ${props.connectorDisplayName}`);
     try { 
-      const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
+      const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
+        connectorId: props.connectorId
+      });
       // console.log(`${logName}: apsConnector = ${JSON.stringify(apsConnector, null, 2)}`);
       setApsConnector(apsConnector);
     } catch(e: any) {

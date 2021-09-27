@@ -109,12 +109,13 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try { 
-      const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers(
-        pageSize, 
-        pageNumber,
-        sortFieldName, 
-        sortDirection, 
-        searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined);
+      const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
+        pageSize: pageSize,
+        pageNumber: pageNumber,
+        sortFieldName: sortFieldName,
+        sortDirection: sortDirection,
+        searchWordList: searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined
+      });
       const totalCount: number = listApsUsersResponse.meta.totalCount;
       const apsUserList: APSUserList = listApsUsersResponse.list;
       let _managedObjectList: TManagedObjectList = [];

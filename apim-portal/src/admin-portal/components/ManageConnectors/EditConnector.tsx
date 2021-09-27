@@ -81,7 +81,9 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR, `retrieve details for connector: ${props.connectorDisplayName}`);
     try { 
-      const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
+      const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
+        connectorId: props.connectorId
+      });
       setManagedObject(transformGetApiObjectToManagedObject(apsConnector));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -95,7 +97,10 @@ export const EditConnector: React.FC<IEditConnectorProps> = (props: IEditConnect
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_CONNECTOR, `update connector: ${props.connectorDisplayName}`);
     try { 
-      await ApsConfigService.replaceApsConnector(props.connectorId, transformManagedObjectToReplaceApiObject(managedObject));
+      await ApsConfigService.replaceApsConnector({
+        connectorId: props.connectorId, 
+        requestBody: transformManagedObjectToReplaceApiObject(managedObject)
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

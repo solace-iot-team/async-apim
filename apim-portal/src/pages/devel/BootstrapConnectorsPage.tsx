@@ -102,7 +102,9 @@ export const BootstrapConnectorsPage: React.FC = () => {
       const listApsConnectorsResponse: ListApsConnectorsResponse = await ApsConfigService.listApsConnectors();
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
       for (const apsConnector of apsConnectorList) {
-        await ApsConfigService.deleteApsConnector(apsConnector.connectorId);
+        await ApsConfigService.deleteApsConnector({
+          connectorId: apsConnector.connectorId
+        });
       }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -122,7 +124,9 @@ export const BootstrapConnectorsPage: React.FC = () => {
     const apiObject: APSConnector = transformManagedObjectToApiObject(managedObject);
     try {
       try {
-        await ApsConfigService.getApsConnector(apiObject.connectorId);
+        await ApsConfigService.getApsConnector({
+          connectorId: apiObject.connectorId
+        });
         isCreate = false;
       } catch (e: any) {
         if(APSClientOpenApi.isInstanceOfApiError(e)) {
@@ -132,9 +136,14 @@ export const BootstrapConnectorsPage: React.FC = () => {
         }
       }
       if ( isCreate ) {
-        await ApsConfigService.createApsConnector(apiObject);
+        await ApsConfigService.createApsConnector({
+          requestBody: apiObject
+        });
       } else {
-        await ApsConfigService.replaceApsConnector(apiObject.connectorId, apiObject);
+        await ApsConfigService.replaceApsConnector({
+          connectorId: apiObject.connectorId, 
+          requestBody: apiObject
+        });
       }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

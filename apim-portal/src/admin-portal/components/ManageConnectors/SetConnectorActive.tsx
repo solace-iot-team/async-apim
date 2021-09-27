@@ -50,7 +50,9 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR, `retrieve details for connector: ${props.connectorDisplayName}`);
     try { 
-      const apsConnector: APSConnector = await ApsConfigService.getApsConnector(props.connectorId);
+      const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
+        connectorId: props.connectorId
+      });
       const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
       const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
       setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
@@ -67,7 +69,9 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SET_CONNECTOR_ACTIVE, `set connector active: ${props.connectorDisplayName}`);
     try { 
-      await ApsConfigService.setApsConnectorActive(props.connectorId);
+      await ApsConfigService.setApsConnectorActive({
+        connectorId: props.connectorId
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
