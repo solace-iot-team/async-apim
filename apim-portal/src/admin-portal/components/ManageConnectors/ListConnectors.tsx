@@ -68,7 +68,6 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       let _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
         const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-        console.log(`${logName}: apsConnector=${apsConnector.displayName}, apConnectorInfo = ${JSON.stringify(apConnectorInfo, null, 2)}`);
         const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
         _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
       }
@@ -243,6 +242,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         renderManagedObjectDataTable()
       }
       
+      {/* ** DEBUG ** */}
       {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}

@@ -34,6 +34,8 @@ export class APClientConnectorOpenApi {
   }
 
   public static tmpInitialize = async (tmpConfig: APSConnectorClientConfig) => {
+    const funcName: string = `tmpInitialize`;
+    const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
     APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
     if(APClientConnectorOpenApi.isInitialized) {
       APClientConnectorOpenApi.orgSettings = {
@@ -42,6 +44,7 @@ export class APClientConnectorOpenApi {
       }
     }
     APClientConnectorOpenApi.initialize(tmpConfig);
+    // console.log(`${logName}: OpenAPI=${JSON.stringify(OpenAPI, null, 2)}`);
   }
 
   public static tmpUninitialize = async () => {
@@ -58,6 +61,10 @@ export class APClientConnectorOpenApi {
       base: OpenAPI.BASE,
       versionStr: OpenAPI.VERSION
     }
+  }
+
+  public static getOpenApi = (): any => {
+    return OpenAPI;
   }
 
   public static isInstanceOfApiError(error: any): boolean {

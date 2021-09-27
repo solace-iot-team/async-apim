@@ -81,6 +81,16 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const renderHealthCheckInfo = () => {
+    return(
+      <>
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(managedObject?.healthCheckResult, null, 2)};
+        </pre>
+      </>
+    );
+  }
+
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -103,10 +113,8 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
             <Column field="host" header="Host" />
             <Column field="port" header='Port' />
             <Column field="apiVersion" header='API Version' />
-            <Column field="adminUser" header="Admin User" />
-            <Column field="adminUserPwd" header="Admin User Password" />
-            <Column field="apiUser" header="API User" />
-            <Column field="apiUserPwd" header="API User Password" />
+            <Column field="serviceUser" header="Service User" />
+            <Column field="serviceUserPwd" header="Service User Password" />
           </DataTable>
         </div>
       );
@@ -130,6 +138,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
             <Column field="displayName" header="Name" />
             <Column field="id" header="Id" />
         </DataTable>
+        { renderHealthCheckInfo() }
       </div>
     )
   }
@@ -142,6 +151,13 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {managedObject && renderManagedObject() }
+
+      {/* ** DEBUG ** */}
+      {/* {managedObject && 
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(managedObject, null, 2)}
+        </pre>
+      } */}
 
     </div>
   );

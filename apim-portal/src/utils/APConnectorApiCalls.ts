@@ -165,7 +165,7 @@ export class APConnectorApiCalls {
   public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorInfo | undefined> => {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
-    APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
+    await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;
     try {
       const apiAbout: About = await AdministrationService.about();
@@ -180,7 +180,7 @@ export class APConnectorApiCalls {
       APClientConnectorOpenApi.logError(logName, e);
       result = undefined;
     } finally {
-      APClientConnectorOpenApi.tmpUninitialize();
+      await APClientConnectorOpenApi.tmpUninitialize();
       return result;
     }
   }
