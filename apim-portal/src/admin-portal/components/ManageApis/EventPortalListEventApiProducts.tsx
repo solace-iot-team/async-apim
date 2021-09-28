@@ -30,6 +30,7 @@ export interface IEventPortalListEventApiProductsProps {
   onLoadListSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onSelect: (connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => void;
+  onViewEventApiProduct: (connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => void; 
 }
  
 export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiProductsProps> = (props: IEventPortalListEventApiProductsProps) => {
@@ -44,7 +45,7 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
   }
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject;
-  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
+  // type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -113,16 +114,14 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
     setSelectedManagedObject(event.data);
   }  
 
-  const onManagedObjectOpen = (managedObject: TManagedObject | undefined): void => {
-    if(!managedObject) return;
-    if(managedObject.apiObject.websiteUrl) {
-      Globals.openUrlInNewTab(managedObject.apiObject.websiteUrl);
-    }
-  }
-
   const onImport = (managedObject: TManagedObject | undefined): void => {
     if(!managedObject) return;
     props.onSelect(managedObject.apiObject.name, managedObject.apiObject.id, managedObject.apiObject.name);
+  }
+
+  const onViewAsyncApi = (managedObject: TManagedObject | undefined): void => {
+    if(!managedObject) return;
+    props.onViewEventApiProduct(managedObject.apiObject.name, managedObject.apiObject.id, managedObject.apiObject.name);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -131,26 +130,18 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
   }
 
   const renderDataTableHeader = (): JSX.Element => {
-    const isImportDisabled: boolean = !selectedManagedObject;
+    const isSelectedDisabled: boolean = !selectedManagedObject;
     return (
       <div className="table-header">
         <div className="table-header-container">
-          <Button label='Import Selected' icon="pi pi-cloud-download" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => onImport(selectedManagedObject)} disabled={isImportDisabled} />
+          <Button label='Import Selected' icon="pi pi-cloud-download" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => onImport(selectedManagedObject)} disabled={isSelectedDisabled} />
+          <Button label='View Selected' icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => onViewAsyncApi(selectedManagedObject)} disabled={isSelectedDisabled} />
         </div>        
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
         </span>
       </div>
-    );
-  }
-
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    const isViewAsyncApiSpecButtonDisabled: boolean = !managedObject.apiObject.websiteUrl;
-    return (
-      <React.Fragment>
-        <Button tooltip="view async api spec" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => onManagedObjectOpen(managedObject)} disabled={isViewAsyncApiSpecButtonDisabled} />
-      </React.Fragment>
     );
   }
 
@@ -161,14 +152,14 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
           <DataTable
             ref={dt}
             className="p-datatable-sm"
-            // autoLayout={true}
+            autoLayout={true}
             header={renderDataTableHeader()}
             value={managedObjectList}
             globalFilter={globalFilter}
             selectionMode="single"
             selection={selectedManagedObject}
             onRowClick={onManagedObjectSelect}
-            onRowDoubleClick={(e) => onManagedObjectOpen(selectedManagedObject)}
+            onRowDoubleClick={(e) => onViewAsyncApi(selectedManagedObject)}
             sortMode="single" sortField="displayName" sortOrder={1}
             scrollable 
             scrollHeight="1200px" 
@@ -177,9 +168,8 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
             {/* <Column field="apiObject.id" header="Id" /> */}
             <Column field="apiObject.name" header="Name" sortable filterField="globalSearch" />
             <Column field="apiObject.summary" header="Summary" />
-            <Column field="apiObject.description" header="Description" />            
-            <Column field="apiObject.version" header="Version" />
-            <Column body={actionBodyTemplate} headerStyle={{width: '12em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}/>
+            <Column field="apiObject.description" header="Description" headerStyle={{width: '60em'}}/>            
+            <Column field="apiObject.version" header="Version" headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center'}}/>
         </DataTable>
       </div>
     );

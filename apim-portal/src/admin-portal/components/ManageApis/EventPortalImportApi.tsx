@@ -5,15 +5,15 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { Loading } from "../../../components/Loading/Loading";
-import { E_EVENT_PORTAL_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { TManagedObjectId } from "./ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { EventPortalListEventApiProducts } from "./EventPortalListEventApiProducts";
 import { EventPortalImportApiDialog } from "./EventPortalImportApiDialog";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { EventPortalViewEventApiProduct } from "./EventPortalViewEventApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 export interface IEventPortalImportApiProps {
   organizationId: TAPOrganizationId;
@@ -28,12 +28,14 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
   const componentName = 'EventPortalImportApi';
 
   const breadCrumbLabelList = ['Event Portal:Event API Products'];
+  const ToolbarButtonLabelBackToList = "back to list";
+  const ToolbarButtonLabelImport = 'Import';
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
     MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
-    // MANAGED_OBJECT_IMPORT = "MANAGED_OBJECT_IMPORT",
-    MANAGED_OBJECT_IMPORT_DIALOG = "MANAGED_OBJECT_IMPORT_DIALOG"
+    MANAGED_OBJECT_IMPORT_DIALOG = "MANAGED_OBJECT_IMPORT_DIALOG",
+    VIEW_EVENT_API_PRODUCT = 'VIEW_EVENT_API_PRODUCT'
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -56,22 +58,14 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     });
   }
   
-  // const ToolbarNewManagedObjectButtonLabel = 'New';
-  // const ToolbarEditManagedObjectButtonLabel = 'Edit';
-  // const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
-  // const ToolbarButtonLabelImportEventPortal = 'Import from Event Portal';
-
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  // const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
-  // const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [importManagedObjectId, setImportManagedObjectId] = React.useState<TManagedObjectId>();
   const [importManagedObjectDisplayName, setImportManagedObjectDisplayName] = React.useState<string>();
   const [importEventPortalId, setImportEventPortalId] = React.useState<string>();
-
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showImportComponent, setShowImportComponent] = React.useState<boolean>(false);
+  const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -83,44 +77,6 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   if(!managedObjectDisplayName) return;
-  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-  //     ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-  //   else props.onBreadCrumbLabelList([]);
-  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if (apiCallStatus !== null) {
-  //     if(apiCallStatus.success) {
-  //       switch (apiCallStatus.context.action) {
-  //         case E_CALL_STATE_ACTIONS.API_DELETE_API:
-  //         case E_CALL_STATE_ACTIONS.API_CREATE_API:
-  //         case E_CALL_STATE_ACTIONS.API_UPDATE_API:
-  //             props.onSuccess(apiCallStatus);
-  //           break;
-  //         default:
-  //       }
-  //     } else props.onError(apiCallStatus);
-  //   }
-  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   const funcName = 'useEffect[apiCallStatus]';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   if (apiCallStatus !== null) {
-  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
-  //     else if(apiCallStatus.context.action === E_EVENT_PORTAL_CALL_STATE_ACTIONS.SELECT_EVENT_API_PRODUCT) {
-  //       if(!selectedManagedObjectId) throw new Error(`${logName}: selectedManagedObjectId is undefined`);
-  //       if(!selectedManagedObjectDisplayName) throw new Error(`${logName}: selectedManagedObjectDisplayName is undefined`);
-  //       props.onSelectSuccess(apiCallStatus, selectedManagedObjectId, selectedManagedObjectDisplayName);
-  //     }
-  //   }
-  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-  
-  // * sub-component callbacks *
-
   // * Import from Event Portal *
   const onImportEventApiProduct = (connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => {
     setApiCallStatus(null);
@@ -128,6 +84,19 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     setImportManagedObjectId(connectorId);
     setImportManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_DIALOG);
+  }
+
+  const onEventPortalViewEventApiProductImport = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_DIALOG);    
+  }
+
+  const onViewEventApiProduct = (connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => {
+    setApiCallStatus(null);
+    setImportEventPortalId(eventPortalId);
+    setImportManagedObjectId(connectorId);
+    setImportManagedObjectDisplayName(displayName);
+    setNewComponentState(E_COMPONENT_STATE.VIEW_EVENT_API_PRODUCT);
   }
   const onListEventApiProductsSuccess = (apiCallState: TApiCallState) => {
     // do nothing
@@ -145,64 +114,19 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
   
   const onEventPortalImportApiDialogCancel = () : void => {
     setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setPreviousComponentState();
   }
 
-  // * Toolbar *
-  // const renderLeftToolbarContent = (): JSX.Element | undefined => {
-  //   if(!componentState.currentState) return undefined;
-  //   if(showListComponent) return (
-  //     <React.Fragment>
-  //       <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-  //       <Button label={ToolbarButtonLabelImportEventPortal} icon="pi pi-plus" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
-  //     </React.Fragment>
-  //   );
-  //   if(showViewComponent) return (
-  //     <React.Fragment>
-  //       <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-  //       <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-  //       <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-  //     </React.Fragment>
-  //   );
-  //   if(showEditComponent) return undefined;
-  //   if(showDeleteComponent) return undefined;
-  //   if(showNewComponent) return undefined;
-  // }
-  // const renderToolbar = (): JSX.Element => {
-  //   const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
-  //   if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
-  //   else return (<React.Fragment></React.Fragment>);
-  // }
-  
-  // const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  // }
-  // const onImportManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
-  //   setApiCallStatus(apiCallState);
+  const onEventPortalViewEventApiProductError = (apiCallState: TApiCallState) => {
+    setPreviousComponentState();
+    setApiCallStatus(apiCallState);
+    props.onError(apiCallState);
+  }
 
-  //   if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-  //     setManagedObjectId(newId);
-  //     setManagedObjectDisplayName(newDisplayName);
-  //     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  //   }
-  //   else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  // }
-  // const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: string | undefined) => {
-  //   setApiCallStatus(apiCallState);
-  //   if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-  //     if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
-  //     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  //   }
-  //   else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  // }
-  // const onSubComponentError = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  // }
-
-  // const onSubComponentCancel = () => {
-  //   setPreviousComponentState();
-  // }
+  const onBackToList = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+  }
 
   const calculateShowStates = (componentState: TComponentState) => {
     const funcName = 'calculateShowStates';
@@ -210,26 +134,52 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowImportComponent(false);
+      setShowViewComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowImportComponent(false);
+      setShowViewComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_DIALOG) {
-      setShowListComponent(true);
+      // setShowListComponent(true); // leave as is
       setShowImportComponent(true);
+      // setShowViewComponent(false); // leave as is
+    }
+    else if(componentState.currentState === E_COMPONENT_STATE.VIEW_EVENT_API_PRODUCT) {
+      setShowListComponent(false);
+      setShowImportComponent(false);
+      setShowViewComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
     }
   }
 
+  // * Toolbar *
+  const renderLeftToolbarContent = (): JSX.Element | undefined => {
+    if(!componentState.currentState) return undefined;
+    if(showViewComponent) return (
+      <>
+        <Button label={ToolbarButtonLabelBackToList} icon="pi pi-arrow-left" onClick={onBackToList} className="p-button-text p-button-plain"/>
+        <Button label={ToolbarButtonLabelImport} icon="pi pi-cloud-download" onClick={onEventPortalViewEventApiProductImport} className="p-button-text p-button-plain p-button-outlined"/>
+        
+      </>
+    );
+    else return undefined;
+  }
+  
+  const renderToolbar = (): JSX.Element => {
+    const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
+    if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
+    else return (<React.Fragment></React.Fragment>);
+  }
+
+
   return (
     <div className="manage-apis">
 
-      {/* <Loading show={isLoading} />       */}
-      
-      {/* { !isLoading && renderToolbar() } */}
+      { renderToolbar() }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
@@ -241,6 +191,7 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
           onLoadListSuccess={onListEventApiProductsSuccess} 
           onLoadingChange={props.onLoadingChange} 
           onSelect={onImportEventApiProduct}
+          onViewEventApiProduct={onViewEventApiProduct}
         />
       }
 
@@ -253,6 +204,16 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
           onSuccess={onImportEventApiProductSuccess} 
           onError={onImportEventApiProductError}
           onCancel={onEventPortalImportApiDialogCancel}
+          onLoadingChange={props.onLoadingChange}
+        />      
+      }
+
+      {showViewComponent && importManagedObjectId && importManagedObjectDisplayName && importEventPortalId &&
+        <EventPortalViewEventApiProduct
+          organizationId={props.organizationId}
+          eventApiProductId={importEventPortalId}
+          eventApiProductDisplayName={importManagedObjectDisplayName}
+          onError={onEventPortalViewEventApiProductError}
           onLoadingChange={props.onLoadingChange}
         />      
       }
