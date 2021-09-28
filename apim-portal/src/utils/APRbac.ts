@@ -70,6 +70,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageOrganizationApis,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
     ]
   },
   {
