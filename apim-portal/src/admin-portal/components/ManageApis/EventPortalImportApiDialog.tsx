@@ -74,15 +74,10 @@ export const EventPortalImportApiDialog: React.FC<IEventPortalImportApiDialogPro
         overwrite: existsApi,
         id: props.eventPortalApiId
       }
-      
-      // await ApisService.importApi(props.organizationId, apiImportRequest);
-
       await ApisService.importApi({
         organizationName: props.organizationId, 
         requestBody: apiImportRequest
       });
-
-
       // throw new Error(`${logName}: testing error`);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

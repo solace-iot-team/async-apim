@@ -5,7 +5,7 @@ import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
@@ -95,19 +95,11 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
       <React.Fragment>
         <div className="p-col-12">
           <div className="api-view">
-            {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
             <div className="api-view-detail-left">
-              {/* <div>Source: {managedObjectDisplay.apiInfo?.source}</div> */}
             </div>
             <div className="api-view-detail-right">
               <div>Id: {managedObjectDisplay.id}</div>
               <div>Source: {managedObjectDisplay.apiInfo?.source}</div>
-              {/* <div>
-                <div>Info:</div>
-                <pre style={ { fontSize: '10px' }} >
-                  {JSON.stringify(managedObjectDisplay.apiInfo, null, 2)}
-                </pre>
-              </div>   */}
             </div>            
           </div>
         </div>  

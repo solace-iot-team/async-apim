@@ -75,8 +75,6 @@ export const DeleteApi: React.FC<IDeleteApiProps> = (props: IDeleteApiProps) => 
   }
 
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
-    // const funcName = 'renderDeleteManagedObjectDialogContent';
-    // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <p>Deleting API <b>{props.apiDisplayName}</b>.</p>

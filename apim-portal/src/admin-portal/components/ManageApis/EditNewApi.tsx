@@ -44,7 +44,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
 
   type TUpdateApiObject = string;
   type TCreateApiObject = string;
-  // type TGetApiObject = any;
   type TManagedObject = {
     id: TManagedObjectId,
     displayName: string,
@@ -169,16 +168,11 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
       if(!managedObject.asyncApiSpec) throw new Error(`${logName}: managedObject.asyncApiSpec is undefined, managedObject=${JSON.stringify(managedObject)}`);
       const specStr: string = transformManagedObjectToCreateApiObject(managedObject);
       // console.log(`${logName}: specStr=${specStr}`);
-      
-      
-      // await ApisService.createApi(props.organizationId, managedObject.id, specStr);
-
       await ApisService.createApi({
         organizationName: props.organizationId, 
         apiName: managedObject.id, 
         requestBody: specStr
       });
-
       setCreatedManagedObjectId(managedObject.id);
       setCreatedManagedObjectDisplayName(managedObject.displayName);      
     } catch(e: any) {
@@ -322,7 +316,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
         initialCallState={ApiCallState.getInitialCallState('LOAD_ASYNC_API_SPEC_FROM_FILE', `load async api spec from file`)}
         onSuccess={onUploadSpecFromFileSuccess}
         onError={onUploadSpecFromFileError}
-        // onCancel={onUploadSpecFromFileCancel}
       />,
     ];
     return (

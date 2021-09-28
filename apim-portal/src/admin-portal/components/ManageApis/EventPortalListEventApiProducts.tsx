@@ -1,6 +1,5 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
@@ -19,7 +18,8 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { Globals } from "../../../utils/Globals";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { E_EVENT_PORTAL_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { Config } from "../../../Config";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -44,8 +44,6 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
     globalSearch: string
   }
   type TManagedObjectList = Array<TManagedObject>;
-  type TManagedObjectTableDataRow = TManagedObject;
-  // type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -74,7 +72,7 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_EVENT_PORTAL_CALL_STATE_ACTIONS.API_GET_EVENT_API_PRODUCT_LIST, 'retrieve list of Event Api Products');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EVENT_API_PRODUCT_LIST, 'retrieve list of Event Api Products');
     try { 
       const eventApiProductList: EventAPIProductList = await EventPortalService.listEventApiProducts({
         organizationName: props.organizationId
@@ -103,7 +101,7 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      if(apiCallStatus.context.action === E_EVENT_PORTAL_CALL_STATE_ACTIONS.API_GET_EVENT_API_PRODUCT_LIST) {
+      if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_EVENT_API_PRODUCT_LIST) {
         props.onLoadListSuccess(apiCallStatus);
       }
     }
@@ -205,7 +203,7 @@ export const EventPortalListEventApiProducts: React.FC<IEventPortalListEventApiP
       }
 
       {/* DEBUG OUTPUT         */}
-      {renderDebugSelectedManagedObject()}
+      {Config.getUseDevelTools() && renderDebugSelectedManagedObject()}
 
     </div>
   );

@@ -11,6 +11,7 @@ import {
   APIInfoList,
   ApisService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { Config } from '../../../Config';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -44,8 +45,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo): TViewManagedObject => {
-    // const funcName = 'transformViewApiObjectToViewManagedObject';
-    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
     const globalSearch = {
       apiObject: viewApiObject,
       apiInfo: apiInfo
@@ -61,10 +60,8 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
-      // const funcName = '_transformManagedObjectToTableDataRow';
-      // const logName = `${componentName}.${funcName}()`;
       return {
-        ...managedObject,
+        ...managedObject
       }
     }
     return managedObjectList.map( (managedObject: TManagedObject) => {
@@ -151,8 +148,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   const actionBodyTemplate = (managedObject: TManagedObject) => {
-    // const funcName = 'actionBodyTemplate';
-    // const logName = `${componentName}.${funcName}()`;
     const showButtonsEditDelete: boolean = (managedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
     return (
         <React.Fragment>
@@ -168,8 +163,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   const renderManagedObjectDataTable = () => {
-    // const funcName = 'renderManagedObjectDataTable';
-    // const logName = `${componentName}.${funcName}()`;
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
       <div className="card">
@@ -211,7 +204,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     } 
   }
 
-  const renderDebugSelectedManagedObject = () => {
+  const renderDebugSelectedManagedObject = (): JSX.Element => {
     if(managedObjectList.length > 0 && selectedManagedObject) {
       const _d = {
         ...selectedManagedObject,
@@ -222,7 +215,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
           {JSON.stringify(_d, null, 2)}
         </pre>
       );
-    }
+    } else return (<></>);
   }
 
   return (
@@ -235,7 +228,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
       {renderContent()}
       
       {/* DEBUG OUTPUT         */}
-      {renderDebugSelectedManagedObject()}
+      {Config.getUseDevelTools() && renderDebugSelectedManagedObject()}
 
     </div>
   );

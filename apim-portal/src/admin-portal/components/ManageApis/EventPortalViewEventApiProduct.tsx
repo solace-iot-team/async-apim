@@ -1,18 +1,17 @@
 
 import React from "react";
 
-import { APIInfo, EventPortalService } from "@solace-iot-team/apim-connector-openapi-browser";
+import { EventPortalService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
-import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 export interface IEventPortalViewEventApiProductProps {
   organizationId: TAPOrganizationId,
@@ -29,11 +28,8 @@ export const EventPortalViewEventApiProduct: React.FC<IEventPortalViewEventApiPr
     id: TManagedObjectId,
     displayName: string,
     asyncApiSpec: TAPAsyncApiSpec;
-    // apiInfo: APIInfo
   }
-  type TManagedObjectDisplay = TManagedObject & {
-    anotherField: string
-  }
+  type TManagedObjectDisplay = TManagedObject;
 
   const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, asyncApiSpec: TAPAsyncApiSpec): TManagedObject => {
     return {
@@ -45,15 +41,13 @@ export const EventPortalViewEventApiProduct: React.FC<IEventPortalViewEventApiPr
 
   const transformManagedObjectToDisplay = (managedObject: TManagedObject): TManagedObjectDisplay => {
     return {
-      ...managedObject,
-      anotherField: 'placeholder'
+      ...managedObject
     }
   }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const dt = React.useRef<any>(null);
-
+  
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
@@ -105,10 +99,7 @@ export const EventPortalViewEventApiProduct: React.FC<IEventPortalViewEventApiPr
   const onSpecDownloadSuccess = (_callState: TApiCallState): void => {}
 
   const onSpecDownloadError = (callState: TApiCallState): void => {
-    const funcName = 'onSpecDownloadError';
-    const logName = `${componentName}.${funcName}()`;
-
-    alert(`${logName}: download error`);
+    setApiCallStatus(callState);
   }
 
   const renderManagedObject = () => {
@@ -121,18 +112,11 @@ export const EventPortalViewEventApiProduct: React.FC<IEventPortalViewEventApiPr
       <React.Fragment>
         <div className="p-col-12">
           <div className="api-view">
-            {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
             <div className="api-view-detail-left">
               <div>Name: {managedObjectDisplay.displayName}</div>
             </div>
             <div className="api-view-detail-right">
               <div>Id: {managedObjectDisplay.id}</div>
-              {/* <div>
-                <div>Info:</div>
-                <pre style={ { fontSize: '10px' }} >
-                  {JSON.stringify(managedObjectDisplay.apiInfo, null, 2)}
-                </pre>
-              </div>   */}
             </div>            
           </div>
         </div>  

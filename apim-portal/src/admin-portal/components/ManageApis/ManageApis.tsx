@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
+import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewManagedObject } from "./ManageApisCommon";
@@ -17,7 +18,6 @@ import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigC
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;
