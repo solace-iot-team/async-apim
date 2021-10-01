@@ -10,19 +10,31 @@ import {
   APSUserId, 
 } from '@solace-iot-team/apim-server-openapi-browser';
 
+import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { TApiEntitySelectItem, TApiEntitySelectItemList, TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { 
+  TApiEntitySelectItem, 
+  TApiEntitySelectItemList, 
+  TAPLazyLoadingTableParameters, 
+  TAPOrganizationId 
+} from "../../../components/APComponentsCommon";
 import { 
   E_CALL_STATE_ACTIONS, 
 } from "./DeveloperPortalManageUserAppsCommon";
-import { DeveloperPortalCommon, DeveloperPortalCommonApiCalls, TApiGetApiProductListResult, TManagedApiProduct, TManagedApiProductList, TManagedProductId } from "../DeveloperPortalCommon";
+import { 
+  DeveloperPortalCommon, 
+  DeveloperPortalCommonApiCalls, 
+  TApiGetApiProductListResult, 
+  TManagedApiProduct, 
+  TManagedApiProductList, 
+  TManagedProductId 
+} from "../DeveloperPortalCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { Globals } from "../../../utils/Globals";
 
 
 // export type TApiProductIdList = Array<string>;
@@ -51,7 +63,7 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
     environmentListAsStringList: Array<string>
   };
   type TManagedProductTableDataList = Array<TManagedProductTableDataRow>;
-
+ 
   const transformApiProductSelectItemListToTableGlobalFilter = (apiProductSelectItemList: TApiEntitySelectItemList): string => {
     const idList: Array<TManagedProductId> = apiProductSelectItemList.map( (apiProductSelectItem: TApiEntitySelectItem) => {
       return apiProductSelectItem.id;

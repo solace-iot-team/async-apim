@@ -67,10 +67,17 @@ export enum EFileExtension {
   JSON='json',
   YAML='yaml'
 }
+
 export class APComponentsCommon {
 
   public static transformTableSortDirectionToApiSortDirection = (tableSortDirection: DataTableSortOrderType): EAPSSortDirection => {
     return tableSortDirection === 1 ? EAPSSortDirection.ASC : EAPSSortDirection.DESC;
+  }
+
+  public static transformSelectItemListToSelectItemIdList = (selectItemList: TApiEntitySelectItemList): TApiEntitySelectItemIdList => {
+    return selectItemList.map( (selectItem: TApiEntitySelectItem) => {
+      return selectItem.id;
+    });
   }
   
 }

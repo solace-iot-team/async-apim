@@ -1,0 +1,68 @@
+.manage-api-products .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.manage-api-products .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.manage-api-products .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.manage-api-products .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manage-api-products .ap-api-product-error {
+  border-color: #df2121;
+}
+.manage-api-products .card form {
+  margin-top: 2rem;
+}
+.manage-api-products .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .manage-api-products .card {
+    width: 80%;
+  }
+}
+.manage-api-products .api-product-view {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-api-products .api-product-view .api-product-view-detail-left {
+  flex: 1 1 0;
+}
+.manage-api-products .api-product-view .api-product-view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+}
+
+.manage-api-products .api-product-description {
+  margin: 0 0 1rem 0;
+}
+
+.manage-api-products .select-apis-dialog-content {
+  background-color: transparent;
+}
+
+.manage-api-products .select-environments-dialog-content {
+  background-color: transparent;
+}
+
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}

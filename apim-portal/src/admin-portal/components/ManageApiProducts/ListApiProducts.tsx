@@ -6,62 +6,70 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-import { 
-  APIInfo,
-  APIInfoList,
-  ApisService,
-} from '@solace-iot-team/apim-connector-openapi-browser';
 import { Config } from '../../../Config';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { 
+  TManagedApiProductId, 
+  TViewManagedApiProduct,
+  TApiGetApiProductListResult,
+  APApiObjectsApiCalls,
+  APApiObjectsCommon, 
+} from '../../../components/APApiObjectsCommon';
 
 import '../../../components/APComponents.css';
-import "./ManageApis.css";
+import "./ManageApiProducts.css";
 
-export interface IListApisProps {
+export interface IListApiProductsProps {
   organizationId: TAPOrganizationId,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string, viewManagedObject: TViewManagedObject) => void;
+  onManagedObjectEdit: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string) => void;
+  onManagedObjectDelete: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string) => void;
+  onManagedObjectView: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string, viewManagedObject: TViewManagedApiProduct) => void;
 }
 
-export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
-  const componentName = 'ListApis';
+export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
+  const componentName = 'ListApiProducts';
 
-  const MessageNoManagedObjectsFoundCreateNew = 'No APIs found - create a new API.';
+  const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
-  type TManagedObject = TViewManagedObject;
+  type TManagedObject = TViewManagedApiProduct;
   type TManagedObjectList = Array<TManagedObject>;
-  type TManagedObjectTableDataRow = TManagedObject;
+  type TManagedObjectTableDataRow = TManagedObject & {
+    apiInfoListAsDisplayStringList: Array<string>,
+    protocolListAsString: string,
+    attributeListAsString: string,
+    environmentListAsStringList: Array<string>,
+    globalSearch: string
+  };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
-
-  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo): TViewManagedObject => {
-    const globalSearch = {
-      apiObject: viewApiObject,
-      apiInfo: apiInfo
-    }
-    return {
-      id: viewApiObject,
-      displayName: viewApiObject,
-      apiObject: viewApiObject,
-      apiInfo: apiInfo,
-      globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
-    }
-  }
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
+      const managedObjectTableDataRow: TManagedObjectTableDataRow = {
+        ...managedObject,
+        // asyncApiDisplayNameListAsString: DeveloperPortalCommon.getApiDisplayNameListAsString(managedProduct.apiProduct.apis),
+        // protocolListAsString: DeveloperPortalCommon.getProtocolListAsString(managedProduct.apiProduct.protocols),
+        // attributeListAsString: DeveloperPortalCommon.getAttributeNamesAsString(managedProduct.apiProduct.attributes),
+        // environmentListAsStringList: DeveloperPortalCommon.getEnvironmentsAsDisplayList(managedProduct.apiEnvironmentList, managedProduct.apiProduct.environments)
+        apiInfoListAsDisplayStringList: APApiObjectsCommon.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
+        protocolListAsString: 'protocolListAsString',
+        attributeListAsString: 'attributeListAsString',
+        environmentListAsStringList: ['environmentListAsStringList'],
+        globalSearch: ''
+      };
+      const globaSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
       return {
-        ...managedObject
+        ...managedObjectTableDataRow,
+        globalSearch: globaSearch
       }
     }
     return managedObjectList.map( (managedObject: TManagedObject) => {
@@ -81,27 +89,12 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
-    try { 
-      const apiResult = await ApisService.listApis({
-        organizationName: props.organizationId,
-        format: "extended"
-      });
-      const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;
-      let _managedObjectList: TManagedObjectList = [];
-      for(const apiInfo of apiAPIInfoList) {
-        // console.log(`${logName}: apiInfo=${JSON.stringify(apiInfo, null, 2)}`);
-        if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo));
-      }
-      setManagedObjectList(_managedObjectList);
-    } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
+    const initialCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
+    const result: TApiGetApiProductListResult = await APApiObjectsApiCalls.apiGetApiProductList(props.organizationId, initialCallState);
+    setManagedObjectList(result.viewManagedApiProductList);
+    setApiCallStatus(result.apiCallState);
     setIsGetManagedObjectListInProgress(false);
-    return callState;
+    return result.apiCallState;
   }
 
   const doInitialize = async () => {
@@ -148,18 +141,20 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   const actionBodyTemplate = (managedObject: TManagedObject) => {
-    const showButtonsEditDelete: boolean = (managedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
-          { showButtonsEditDelete &&
-            <>
-              <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-              <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-            </>
-          }
+          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
+          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
         </React.Fragment>
     );
+  }
+
+  const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(rowData.environmentListAsStringList);
+  }
+  const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(rowData.apiInfoListAsDisplayStringList);
   }
 
   const renderManagedObjectDataTable = () => {
@@ -170,6 +165,9 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             ref={dt}
             className="p-datatable-sm"
             autoLayout={true}
+            resizableColumns 
+            columnResizeMode="expand"
+            showGridlines
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
@@ -187,8 +185,13 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
           >
             {/* <Column field="id" header="Id" sortable /> */}
             <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiInfo.source" header="Source" sortable />
-            <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column field="apiProduct.description" header="Description" />
+            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable />
+            <Column body={apisBodyTemplate} header="API(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column field="protocolListAsString" header="Exposed Protocols" />
+            <Column field="attributeListAsString" header="Controlled Attributes" />
+            <Column body={environmentsBodyTemplate} header="API Gateway(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}/>
         </DataTable>
       </div>
     );
@@ -219,9 +222,9 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   return (
-    <div className="manage-apis">
+    <div className="manage-api-products">
 
-      <APComponentHeader header='APIs:' />
+      <APComponentHeader header='API Products:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
