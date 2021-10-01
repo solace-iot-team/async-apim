@@ -595,6 +595,10 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               { renderEnvironmentsToolbar() }
             </div>
             <Divider />
+            <div>
+              <p>TODO: protocols: show union of all protocols from all selected envs. no protocols without envs.</p>
+            </div>
+            <Divider />
             {renderManagedObjectFormFooter()}
           </form>  
         </div>

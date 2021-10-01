@@ -37,7 +37,6 @@ export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: IS
     // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
-        <p>TODO: Select Env ==&gt; expand and show select protocols table. unselect Env ==&gt; collapse protocols</p>
         <SearchSelectEnvironments
           organizationId={props.organizationId}
           currentSelectedEnvironmetItemList={props.currentSelectedEnvironmentItemList}
