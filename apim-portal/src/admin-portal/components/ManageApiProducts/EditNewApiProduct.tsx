@@ -8,7 +8,11 @@ import { MultiSelect } from "primereact/multiselect";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
-import { Divider } from "primereact/divider";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
+import { Checkbox } from "primereact/checkbox";
+import { InputNumber } from "primereact/inputnumber";
 import { classNames } from 'primereact/utils';
 
 import { 
@@ -18,27 +22,43 @@ import {
   APIProductPatch,
   ApiProductsService,
   APIInfoList,
-  EnvironmentsService
+  EnvironmentsService,
+  EnvironmentResponse,
+  Protocol,
+  APIParameter,
+  ClientOptionsGuaranteedMessaging
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { APApiObjectsCommon, APEnvironmentObjectsCommon, TAPEnvironmentViewManagedObject, TAPEnvironmentViewManagedOjbectList } from "../../../components/APApiObjectsCommon";
+import { 
+  APApiObjectsCommon, 
+  APApiProductsCommon, 
+  APEnvironmentObjectsCommon, 
+  TAPEnvironmentViewManagedObjectList, 
+  TApiEnvironmentList 
+} from "../../../components/APApiObjectsCommon";
 import { 
   APComponentsCommon,
-  TApiEntitySelectItem, 
   TApiEntitySelectItemIdList, 
   TApiEntitySelectItemList, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./ManageApiProductsCommon";
 import { SelectApis } from "./SelectApis";
+import { SelectEnvironments } from "./SelectEnvironments";
+import { APManageAttributes } from "../../../components/APManageAttributes/APManageAttributes";
+import { TAPAttribute, TAPAttributeList } from "../../../utils/APConnectorApiCalls";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { SelectEnvironments } from "./SelectEnvironments";
+
+// TODO: delete me when finished
+import { APManageApiParameter } from "../../../components/APApiParameters/APManageApiParameter";
+import { TAPApiParameter } from "../../../components/APApiParameters/APApiParametersCommon";
+import { APManageApiParameterAttribute, TAPManagedApiParameterAttribute } from "../../../components/APManageApiParameterAttribute/APManageApiParameterAttribute";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -59,18 +79,28 @@ export interface IEditNewApiProductProps {
 export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEditNewApiProductProps) => {
   const componentName = 'EditNewApiProduct';
 
+  type TViewProtocol = Protocol & {
+    // environmentList: TApiEntitySelectItemIdList
+  }
+  type TViewProtocolList = Array<TViewProtocol>;
   type TUpdateApiObject = APIProductPatch;
   type TCreateApiObject = APIProduct;
   type TManagedObject = {
     apiProduct: APIProduct,
     apiInfoList: APIInfoList,
-    environmentList: TAPEnvironmentViewManagedOjbectList
+    apiEnvironmentList: TApiEnvironmentList,
+    environmentList: TAPEnvironmentViewManagedObjectList,
   }
   type TManagedObjectFormData = TManagedObject & {
     apiSelectItemIdList: TApiEntitySelectItemIdList, 
-    environmentSelectItemIdList: TApiEntitySelectItemIdList, 
+    environmentSelectItemIdList: TApiEntitySelectItemIdList,
+    selectedProtocolList: TViewProtocolList,
+    clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging,
+    attributeList: TAPAttributeList
   }
   
+  const ButtonLabelSelectApis = 'Select API(s)';
+  const ButtonLabelSelectEnvironments = 'Select Environment(s)';
   const emptyManagedObject: TManagedObject = {
     apiProduct: {
       apis: [],
@@ -82,8 +112,9 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       subResources: []
     },
     apiInfoList: [],
+    apiEnvironmentList: [],
     environmentList: []
-  }
+  };
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -92,20 +123,32 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApis, setShowSelectApis] = React.useState<boolean>(false);
+  const [selectedApiInfoList, setSelectedApiInfoList] = React.useState<APIInfoList>([]);
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
-
+  const [selectedEnvironmentList, setSelectedEnvironmentList] = React.useState<TApiEnvironmentList>([]);
+  const [selectedProtocolList, setSelectedProtocolList] = React.useState<TViewProtocolList>([]);
+  const [selectedApiParameterList, setSelectedApiParameterList] = React.useState<Array<APIParameter>>([]);
+  // manage ApiParameterAttribute
+  const [manageApiParameterAttributesDataTableGlobalFilter, setManageApiParameterAttributesDataTableGlobalFilter] = React.useState<string>();
+  const manageApiParameterAttributesDataTableRef = React.useRef<any>(null);
+  const [selectedApisCombinedApiParameterList, setSelectedApisCombinedApiParameterList] = React.useState<Array<APIParameter>>([]);
+  const [selectedApisCombinedApiParameter, setSelectedApisCombinedApiParameter] = React.useState<APIParameter>();
+  const [presetAttribute, setPresetAttribute] = React.useState<TAPAttribute>();
   // inForm: MultiSelect
   const [inFormCurrentMultiSelectOptionApiSelectItemList, setInFormCurrentMultiSelectOptionApiSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
   const [inFormCurrentMultiSelectOptionEnvironmentSelectItemList, setInFormCurrentMultiSelectOptionEnvironmentSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
+  const formId = componentName;
+  const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
-  const transformGetApiObjectsToManagedObject = (apiProduct: APIProduct, apiInfoList: APIInfoList, environmentList: TAPEnvironmentViewManagedOjbectList): TManagedObject => {
+  const transformGetApiObjectsToManagedObject = (apiProduct: APIProduct, apiInfoList: APIInfoList, apiEnvironmentList: TApiEnvironmentList, environmentList: TAPEnvironmentViewManagedObjectList): TManagedObject => {
     return {
       apiProduct: {
         ...apiProduct,
         approvalType: apiProduct.approvalType ? apiProduct.approvalType : APIProduct.approvalType.AUTO
       },
       apiInfoList: apiInfoList,
+      apiEnvironmentList: apiEnvironmentList,
       environmentList: environmentList
     }
   }
@@ -113,85 +156,156 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return managedObject.apiProduct;
   }
   const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    return managedObject.apiProduct;
+    const apiProduct = managedObject.apiProduct;
+    return {
+      displayName: apiProduct.displayName,
+      description: apiProduct.description,
+      approvalType: apiProduct.approvalType,
+      attributes: apiProduct.attributes,
+      clientOptions: apiProduct.clientOptions,
+      environments: apiProduct.environments,
+      protocols: apiProduct.protocols,
+      pubResources: apiProduct.pubResources,
+      subResources: apiProduct.subResources,
+      apis: apiProduct.apis
+    }
+  }
+  const transformApiEnvironmentListToViewProtocolList = (environmentList: TApiEnvironmentList): TViewProtocolList => {
+    // const funcName = 'transformApiEnvironmentListToViewProtocolList';
+    // const logName = `${componentName}.${funcName}()`;
+    let viewProtocolList: TViewProtocolList = [];
+    for(const environment of environmentList) {
+      const exposedProtocols: Array<Protocol> = environment.exposedProtocols ? environment.exposedProtocols : [];
+      viewProtocolList.push(...exposedProtocols);
+    }
+    const unique = new Map<string, number>();
+    let distinct = [];
+    for(let i=0; i < viewProtocolList.length; i++) {      
+      if(!unique.has(viewProtocolList[i].name)) {
+        distinct.push(viewProtocolList[i]);
+        unique.set(viewProtocolList[i].name, 1);
+      } 
+    }
+    return distinct;
+  }
+  const transformViewEnvironmentListToViewProtocolList = (environmentList: TAPEnvironmentViewManagedObjectList): TViewProtocolList => {
+    // const funcName = 'transformApiEnvironmentListToViewProtocolList';
+    // const logName = `${componentName}.${funcName}()`;
+    let apiEnvironmentList: TApiEnvironmentList = [];
+    for(const env of environmentList) {
+      apiEnvironmentList.push(env.apiEnvironment);
+    }
+    return transformApiEnvironmentListToViewProtocolList(apiEnvironmentList);
   }
 
-
-  // BEGIN COMMON 
-  // const transformSelectItemListToSelectItemIdList = (selectItemList: TApiEntitySelectItemList): TApiEntitySelectItemIdList => {
-  //   return selectItemList.map( (selectItem: TApiEntitySelectItem) => {
-  //     return selectItem.id;
-  //   });
-  // }
-
-  // * ApiInfo *
-  // const transformApiInfoListToSelectItemIdList = (apiInfoList: APIInfoList): TApiEntitySelectItemIdList => {
-  //   const funcName = 'transformApiInfoListToSelectItemIdList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   return apiInfoList.map( (apiInfo: APIInfo) => {
-  //     if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-  //     return apiInfo.name;
-  //   });
-  // }
-  // const transformApiInfoListToSelectItemList = (apiInfoList: APIInfoList): TApiEntitySelectItemList => {
-  //   const funcName = 'transformManagedObjectApiInfoListToSelectItemList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   return apiInfoList.map( (apiInfo: APIInfo) => {
-  //     if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-  //     return {
-  //       id: apiInfo.name,
-  //       displayName: apiInfo.name
-  //     }
-  //   });
-  // }
-
-  // * Environment *
-  // const transformManagedObjectEnvironmentListToSelectItemIdList = (environmentList: TAPEnvironmentViewManagedOjbectList): TApiEntitySelectItemIdList => {
-  //   const funcName = 'transformManagedObjectEnvironmentListToSelectItemIdList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   return environmentList.map( (environment: TAPEnvironmentViewManagedObject) => {
-  //     return environment.name;
-  //   });
-  // }
-  // const transformManagedObjectApiInfoListToSelectItemList = (apiInfoList: APIInfoList): TApiEntitySelectItemList => {
-  //   const funcName = 'transformManagedObjectApiInfoListToSelectItemList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   return apiInfoList.map( (apiInfo: APIInfo) => {
-  //     if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-  //     return {
-  //       id: apiInfo.name,
-  //       displayName: apiInfo.name
-  //     }
-  //   });
-  // }
-
-  // END COMMON
-
+  const createCombinedApiParameterList = (selectedApiInfoList: APIInfoList): Array<APIParameter> => {
+    const funcName = 'createCombinedApiParameterList';
+    const logName = `${componentName}.${funcName}()`;
+    const mergeEnumLists = (one: Array<string> | undefined, two: Array<string> | undefined): Array<string> | undefined => {
+      let mergedList: Array<string> = [];
+      if(!one && !two) return undefined;
+      if(one) {
+        if(two) mergedList = one.concat(two);
+        else mergedList = one;
+      } else if(two) {
+        mergedList = two;
+      }
+      // dedup mergedList
+      const unique = new Map<string, number>();
+      let distinct = [];
+      for(let i=0; i < mergedList.length; i++) {
+        if(!unique.has(mergedList[i])) {
+          distinct.push(mergedList[i]);
+          unique.set(mergedList[i], 1);
+        }
+      }
+      return distinct;
+    }
+    let apiParameterList: Array<APIParameter> = [];
+    for(const apiInfo of selectedApiInfoList) {
+      if(apiInfo.apiParameters) {
+        for(const newApiParameter of apiInfo.apiParameters) {
+          // console.log(`${logName}: start: apiParameterList=${JSON.stringify(apiParameterList)}`);
+          const found: APIParameter | undefined = apiParameterList.find( (exsistingApiParameter: APIParameter) => {
+            if(exsistingApiParameter.name === newApiParameter.name) {
+              if(exsistingApiParameter.type !== newApiParameter.type) {
+                console.warn(`${logName}: how to handle mismatching api parameter types: name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`)
+                // alert(`${logName}: TODO: handle mismatching api parameter types, name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`);  
+                // throw new Error(`${logName}: TODO: handle mismatching api parameter types, name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`);  
+              }
+              return true;
+            }  
+          });
+          if(found) {
+            // merge the two enums if they have them
+            // console.log(`${logName}: found.enum=${JSON.stringify(found.enum)}`)
+            // console.log(`${logName}: newApiParameter.enum=${JSON.stringify(newApiParameter.enum)}`)
+            const newEnumList: Array<string> | undefined = mergeEnumLists(found.enum, newApiParameter.enum);
+            // console.log(`${logName}: newEnumList=${JSON.stringify(newEnumList)}`);
+            if(newEnumList) {
+              const idx = apiParameterList.findIndex( (elem: APIParameter) => {
+                return elem.name === found.name;
+              });
+              apiParameterList[idx].enum = newEnumList;
+            }
+          } else apiParameterList.push(newApiParameter);
+        }
+      }
+    }
+    return apiParameterList;
+  }
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
-    return {
+    const defaultClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging = {
+      requireQueue: false,
+      accessType: ClientOptionsGuaranteedMessaging.accessType.EXCLUSIVE,
+      maxMsgSpoolUsage: 500,
+      maxTtl: 86400
+    } 
+    let formDataClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
+    if(managedObject.apiProduct.clientOptions && managedObject.apiProduct.clientOptions.guaranteedMessaging) {
+      formDataClientOptionsGuaranteedMessaging = managedObject.apiProduct.clientOptions.guaranteedMessaging;
+    } else {
+      formDataClientOptionsGuaranteedMessaging = defaultClientOptionsGuaranteedMessaging;
+    }
+    let fd: TManagedObjectFormData = {
       ...managedObject,
       apiSelectItemIdList: APApiObjectsCommon.transformApiInfoListToSelectItemIdList(managedObject.apiInfoList),
       environmentSelectItemIdList: APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemIdList(managedObject.environmentList),
-    };
+      selectedProtocolList: managedObject.apiProduct.protocols ? managedObject.apiProduct.protocols : transformViewEnvironmentListToViewProtocolList(managedObject.environmentList),
+      clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
+      attributeList: managedObject.apiProduct.attributes
+    }
+    return fd;
   }
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
     // const funcName = 'transformFormDataToManagedObject';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: formData=${JSON.stringify(formData, null, 2)}`);
-    return {
+    let mo: TManagedObject = {
       apiProduct: {
         ...formData.apiProduct,
         apis: formData.apiSelectItemIdList,
-        attributes: [],
+        attributes: formData.attributeList,
         environments: formData.environmentSelectItemIdList,
         pubResources: [],
         subResources: [],
-        // protocols: [],
-        // clientOptions:   
+        protocols: formData.selectedProtocolList,
+        // TODO: remove if omitting deletes it - IT DOESN'T
+        clientOptions: {
+          guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
+        }
       },
       apiInfoList: [],
+      apiEnvironmentList: [],
       environmentList: []
-    }
+    };
+    // add if omitting it deletes it - it doesn't delete it!
+    // if(formData.clientOptionsGuaranteedMessaging.requireQueue) {
+    //   mo.apiProduct.clientOptions = {
+    //     guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
+    //   }
+    // } else delete mo.apiProduct.clientOptions;
+    return mo;
   }
 
   // * Api Calls *
@@ -214,17 +328,19 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         apiInfoList.push(apiInfo);
       }
       // get environment 
-      let environmentList: TAPEnvironmentViewManagedOjbectList = [];
+      let environmentList: TAPEnvironmentViewManagedObjectList = [];
+      let apiEnvironmentList: TApiEnvironmentList = [];
       if(apiProduct.environments) {
         for(const environmentName of apiProduct.environments) {
-          const envResponse = await EnvironmentsService.getEnvironment({
+          const envResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
             organizationName: props.organizationId,
             envName: environmentName
           });
           environmentList.push(APEnvironmentObjectsCommon.transformEnvironmentResponseToEnvironmentViewManagedObject(envResponse));
+          apiEnvironmentList.push(envResponse);
         }
       }
-      setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, environmentList));
+      setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, apiEnvironmentList, environmentList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -271,6 +387,51 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;
   }
 
+  const apiGetSelectedEnvironmentList = async(envIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
+    const funcName = 'apiGetSelectedEnvironmentList';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, `retrieve selected environment list`);
+    try {
+      let apiEnvList: TApiEnvironmentList = [];
+      for(const envId of envIdList) {
+        const apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+          organizationName: props.organizationId,
+          envName: envId
+        });
+        apiEnvList.push(apiEnvironmentResponse);
+      }
+      setSelectedEnvironmentList(apiEnvList);
+      setSelectedProtocolList(transformApiEnvironmentListToViewProtocolList(apiEnvList));
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;  
+  }
+
+  const apiGetSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
+    const funcName = 'apiGetSelectedApiInfoList';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, `retrieve selected api info list`);
+    try {
+      let apiInfoList: APIInfoList = [];
+      for(const apiId of apiIdList) {
+        const apiInfo: APIInfo = await ApisService.getApiInfo({
+          organizationName: props.organizationId,
+          apiName: apiId
+        });
+        apiInfoList.push(apiInfo);
+      }
+      setSelectedApiInfoList(apiInfoList);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;  
+  }
+
   // * useEffect Hooks *
   const doInitialize = async () => {
     const funcName = 'doInitialize';
@@ -301,6 +462,21 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }, [managedObjectFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    setSelectedApisCombinedApiParameterList(createCombinedApiParameterList(selectedApiInfoList));
+  }, [selectedApiInfoList]);
+  
+  React.useEffect(() => {
+    if(selectedApisCombinedApiParameter) {
+      const attribute: TAPAttribute = {
+        name: selectedApisCombinedApiParameter.name,
+        value: selectedApisCombinedApiParameter.enum ? selectedApisCombinedApiParameter.enum.join(',') : ''
+      }
+      setPresetAttribute(attribute);
+    }
+  }, [selectedApisCombinedApiParameter]);
+  
+
+  React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
     const logName = `${componentName}.${funcName}()`;
     if (apiCallStatus !== null) {
@@ -329,31 +505,81 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     setInFormCurrentMultiSelectOptionApiSelectItemList(modifiedSelectedApiEntityList);
     const modifiedIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedApiEntityList);
     managedObjectUseForm.setValue('apiSelectItemIdList', modifiedIdList);
+    managedObjectUseForm.trigger('apiSelectItemIdList');
     setShowSelectApis(false);
+    onApisSelect(modifiedIdList);
   }
 
   const onManagedObjectFormSelectApisCancel = () => {
     setShowSelectApis(false);
   }
 
-  // * Search + Select Environments *
+  const doUpdateSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList) => {
+    // const funcName = 'doUpdateAvailableProtocolList';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
+    await apiGetSelectedApiInfoList(apiIdList);
+  }
+
+  const onApisSelect = (apiIdList: TApiEntitySelectItemIdList) => {
+    doUpdateSelectedApiInfoList(apiIdList);
+  }
+
+  // * Search + Select Environments & Protocols *
   const onSearchEnvironments = () => {
     setShowSelectEnvironments(true);
   }
 
-  const onManagedObjectFormSelectEnvironmentsSuccess = (apiCallState: TApiCallState, modifiedSelectedApiEntityList: TApiEntitySelectItemList) => {
+  const onManagedObjectFormSelectEnvironmentsSuccess = (apiCallState: TApiCallState, modifiedSelectedEnvEntityList: TApiEntitySelectItemList) => {
     const funcName = 'onManagedObjectFormSelectEnvironmentsSuccess';
     const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: modifiedSelectedApiEntityList=${JSON.stringify(modifiedSelectedApiEntityList, null, 2)}`);
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
-    setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(modifiedSelectedApiEntityList);
-    const modifiedIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedApiEntityList);
+    setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(modifiedSelectedEnvEntityList);
+    const modifiedIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedEnvEntityList);
     managedObjectUseForm.setValue('environmentSelectItemIdList', modifiedIdList);
+    managedObjectUseForm.trigger('environmentSelectItemIdList');
     setShowSelectEnvironments(false);
+    onEnvironmentsSelect(modifiedIdList);
   }
 
   const onManagedObjectFormSelectEnvironmentsCancel = () => {
     setShowSelectEnvironments(false);
+  }
+
+  const doUpdateAvailableProtocolList = async(envIdList: TApiEntitySelectItemIdList) => {
+    // const funcName = 'doUpdateAvailableProtocolList';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
+    await apiGetSelectedEnvironmentList(envIdList);
+  }
+  const onEnvironmentsSelect = (envIdList: TApiEntitySelectItemIdList) => {
+    // const funcName = 'onEnvironmentsSelect';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
+    doUpdateAvailableProtocolList(envIdList);
+  }
+
+  // * Attributes *
+  const onAttributeListUpdate = (attributeList: TAPAttributeList) => {
+    const funcName = 'onAttributeListUpdate';
+    const logName = `${componentName}.${funcName}()`;
+
+    // must not change FormData, which updates values in form
+    // instead: update separate state
+    // onSubmit: merge into formData
+
+    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    managedObjectFormData.attributeList = attributeList;
+    // const _managedObjectFormData: TManagedObjectFormData = {
+    //   ...managedObjectFormData,
+    //   apiProduct: {
+    //     ...managedObjectFormData.apiProduct,
+    //     attributes: attributeList
+    //   }
+    // };
+    // setManagedObjectFormData(_managedObjectFormData);
+    // alert(`${logName}: updated attribute list = ${JSON.stringify(attributeList, null, 2)}`);
   }
 
   // * Form *
@@ -365,23 +591,49 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     managedObjectUseForm.setValue('apiProduct.displayName', managedObjectFormData.apiProduct.displayName);
     managedObjectUseForm.setValue('apiProduct.description', managedObjectFormData.apiProduct.description);
     managedObjectUseForm.setValue('apiProduct.approvalType', managedObjectFormData.apiProduct.approvalType);
+    managedObjectUseForm.setValue('apiProduct.attributes', managedObjectFormData.apiProduct.attributes);
+    // client options: guaranteed messaging
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', managedObjectFormData.clientOptionsGuaranteedMessaging.requireQueue);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', managedObjectFormData.clientOptionsGuaranteedMessaging.accessType);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxTtl', managedObjectFormData.clientOptionsGuaranteedMessaging.maxTtl);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxMsgSpoolUsage', managedObjectFormData.clientOptionsGuaranteedMessaging.maxMsgSpoolUsage);    
     managedObjectUseForm.setValue('apiSelectItemIdList', managedObjectFormData.apiSelectItemIdList);
     setInFormCurrentMultiSelectOptionApiSelectItemList(APApiObjectsCommon.transformApiInfoListToSelectItemList(managedObjectFormData.apiInfoList));
+    setSelectedApiInfoList(managedObjectFormData.apiInfoList);
     managedObjectUseForm.setValue('environmentSelectItemIdList', managedObjectFormData.environmentSelectItemIdList);
     setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemList(managedObjectFormData.environmentList));
+    setSelectedEnvironmentList(managedObjectFormData.apiEnvironmentList);
+    setSelectedProtocolList(managedObjectFormData.selectedProtocolList);
   }
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doSubmitManagedObject';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: managedObject=${JSON.stringify(managedObject, null, 2)}`);
     props.onLoadingChange(true);
     if(props.action === EAction.NEW) await apiCreateManagedObject(managedObject);
     else await apiUpdateManagedObject(managedObject);
     props.onLoadingChange(false);
   }
 
-  const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
+  const isSelectedProtocolListValid = (): boolean => {
+    return selectedProtocolList.length > 0;
+  }
+
+  const onSubmitManagedObjectForm = (newManagedObjectFormData: TManagedObjectFormData) => {
+    const funcName = 'onSubmitManagedObjectForm';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
+    // alert(`${logName}: managedObjectFormData.attributeList = ${JSON.stringify(managedObjectFormData.attributeList)}`);
+    setIsFormSubmitted(true);
+    if(!isSelectedProtocolListValid()) return false;
+    const _managedObjectFormData: TManagedObjectFormData = {
+      ...newManagedObjectFormData,
+      attributeList: managedObjectFormData.attributeList,
+      selectedProtocolList: selectedProtocolList
+    }
+    doSubmitManagedObject(transformFormDataToManagedObject(_managedObjectFormData));
   }
 
   const onCancelManagedObjectForm = () => {
@@ -389,7 +641,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // setIsFormSubmitted(true);
+    setIsFormSubmitted(true);
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
@@ -401,6 +653,10 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return _fieldError && <small className="p-error">{_fieldError.message}</small>;
   }
 
+  const displaySelectedProtocolsErrorMessage = () => {
+    if(isFormSubmitted && !isSelectedProtocolListValid()) return <p className="p-error">Select at least 1 protocol.</p>;
+  }
+
   const managedObjectFormFooterRightToolbarTemplate = () => {
     const getSubmitButtonLabel = (): string => {
       if (props.action === EAction.NEW) return 'Create';
@@ -409,7 +665,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return (
       <React.Fragment>
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+        <Button key={componentName+getSubmitButtonLabel()} form={formId} type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
       </React.Fragment>
     );
   }
@@ -422,7 +678,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
   const renderApisToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [
-      <Button style={ { width: '20rem' } } type="button" label="Search APIs" className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchApis()} />,
+      <Button style={ { width: '20rem' } } type="button" label={ButtonLabelSelectApis} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchApis()} />,
     ];
     return (
       <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
@@ -431,10 +687,504 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
   const renderEnvironmentsToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [
-      <Button style={ { width: '20rem' } } type="button" label="Search Environments" className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchEnvironments()} />,
+      <Button style={ { width: '20rem' } } type="button" label={ButtonLabelSelectEnvironments} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchEnvironments()} />,
     ];
     return (
       <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
+    );
+  }
+
+  const [expandedApiPermissionRow, setExpandedApiPermissionRow] = React.useState<any>(null);
+
+  const renderManageApiParametersTable = (): JSX.Element => {
+    const isRowSelected = (rowData: APIParameter): boolean => {
+      const found = selectedApiParameterList.find(element => element.name === rowData.name);
+      return (found !== undefined);
+    }
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            API Parameters - Example with picklist
+          </span>
+        </div>
+      );
+    }
+    const renderApiParameterRowExpansionTemplate = (row: APIInfo) => {
+      const funcName = 'renderApiParameterRowExpansionTemplate';
+      const logName = `${componentName}.${funcName}()`;
+
+      const apiParameterValueBodyTemplate = (rowData: APIParameter): JSX.Element => {
+        return (
+          <div>
+            {/* {rowData.enum && rowData.enum.join(',')} */}
+            {rowData.enum ? rowData.enum.join(',') : 'No values defined.'}
+          </div>
+        );
+      }
+      const apiParameterBodyTemplate = (rowData: APIParameter): JSX.Element => {
+        const onSave = (apApiParameter: TAPApiParameter) => {
+          alert(`${logName}: apiParameterBodyTemplate.onSucces(): apApiParameter=${JSON.stringify(apApiParameter, null, 2)}`);
+        }
+        const onCancel = () => {
+          alert(`${logName}: apiParameterBodyTemplate.onCancel()`);
+        }
+
+        return (
+          <APManageApiParameter
+            apiParameter={rowData} 
+            isEditEnabled={isRowSelected(rowData)}
+            onSave={onSave}
+            onCancel={onCancel}
+          />
+        )
+      }
+
+      const apiProductValuesBodyTemplate = (rowData: APIParameter): JSX.Element => {
+        const onSaveApiProductAttribute = (apManagedApiParameterAttribute: TAPManagedApiParameterAttribute) => {
+          alert(`${logName}: apiProductValuesBodyTemplate.onSaveApiProductAttribute(): apApiParameter=${JSON.stringify(apManagedApiParameterAttribute, null, 2)}`);
+        }
+        const onDeleteApiProductAttribute = (apManagedApiParameterAttribute: TAPManagedApiParameterAttribute) => {
+          alert(`${logName}: apiProductValuesBodyTemplate.onDeleteApiProductAttribute(): apApiParameter=${JSON.stringify(apManagedApiParameterAttribute, null, 2)}`);
+        }
+        const apManagedApiParameterAttribute: TAPManagedApiParameterAttribute = {
+          apiParameter: rowData,
+          // apiAttribute: ??
+        }
+        
+        return (
+          <APManageApiParameterAttribute
+            apManagedApiParameterAttribute={apManagedApiParameterAttribute}
+            options={{
+              mode: 'apiProductValues'
+            }}
+            onSave={onSaveApiProductAttribute}
+            onDelete={onDeleteApiProductAttribute}
+          />
+        );
+      }
+
+      const dataTableList = row.apiParameters;
+      // console.log(`${logName}: dataTableList=${JSON.stringify(dataTableList, null, 2)}`);
+      return (
+        <div className="sub-table">
+          <p>Select parameters & values to control.</p>
+          <DataTable 
+            dataKey="name"  
+            className="p-datatable-sm"
+            value={dataTableList}
+            // autoLayout={true}
+            selectionMode="checkbox"
+            selection={selectedApiParameterList}
+            onSelectionChange={(e) => setSelectedApiParameterList(e.value)}
+            // sorting
+            sortMode='single'
+            sortField="name"
+            sortOrder={1}          
+
+          >
+            <Column selectionMode="multiple" style={{width:'3em'}} />
+            <Column field="name" header="Parameter" style={{width: '10em'}} />
+            {/* <Column field="type" header="Type" /> */}
+            {/* <Column field="enum" header="API Values" /> */}
+            <Column body={apiParameterValueBodyTemplate} header="API Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/>
+            <Column body={apiProductValuesBodyTemplate} header="API Product Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/>
+
+            {/* <Column body={apiParameterBodyTemplate} header="OLD API Product Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/> */}
+
+            {/* <Column field="transformedServiceClassDisplayedAttributes.highAvailability" header="Availability" /> */}
+          </DataTable>
+          {/* DEBUG */}
+          <p>selectedApiParameterList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(selectedApiParameterList, null, 2)}
+          </pre>
+        </div>
+      );
+    }
+    if(selectedApiInfoList.length === 0) return (<></>);
+    return (
+      <React.Fragment>        
+        {/* {displaySelectedProtocolsErrorMessage()} */}
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable
+          collapsed={true}
+        >
+          <DataTable 
+            // ref={dt}
+            dataKey="name"
+            className="p-datatable-sm"
+            // header="Select protocols:"
+            value={selectedApiInfoList}
+            autoLayout={true}
+            // selection={selectedProtocolList}
+            // onSelectionChange={(e) => setSelectedProtocolList(e.value)}
+            // sorting
+            sortMode='single'
+            sortField="name"
+            sortOrder={1}          
+            // row expansion
+            expandedRows={expandedApiPermissionRow}
+            onRowToggle={(e) => setExpandedApiPermissionRow(e.data)}
+            rowExpansionTemplate={renderApiParameterRowExpansionTemplate}
+          >
+            {/* <Column selectionMode="multiple" style={{width:'3em'}} /> */}
+            <Column expander style={{ width: '3em' }} />  
+            <Column field="name" header="API" style={{width: '20em'}} />
+            <Column field="version" header="Version" style={{width: '5em'}} />
+            <Column field="description" header="Description" />
+          </DataTable>
+        </Panel>
+      </React.Fragment>
+    )
+  }
+
+  const renderProtocolsSelectionTable = (): JSX.Element => {
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Protocols
+          </span>
+        </div>
+      );
+    }
+    if(selectedEnvironmentList.length === 0) return (<></>);
+    const exposedProtocolList: TViewProtocolList = transformApiEnvironmentListToViewProtocolList(selectedEnvironmentList);
+    return (  
+      <React.Fragment>
+        {displaySelectedProtocolsErrorMessage()}
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable
+          collapsed
+        >
+          {displaySelectedProtocolsErrorMessage()}
+          <DataTable 
+            className="p-datatable-sm"
+            // header="Select protocols:"
+            value={exposedProtocolList}
+            // autoLayout={true}
+            selection={selectedProtocolList}
+            onSelectionChange={(e) => setSelectedProtocolList(e.value)}
+            // sorting
+            sortMode='single'
+            sortField="name"
+            sortOrder={1}          
+          >
+            <Column selectionMode="multiple" style={{width:'3em'}} />
+            <Column field="name" header="Protocol" style={{width: '20em'}} />
+            <Column field="version" header="Version" />
+          </DataTable>
+        </Panel>
+      </React.Fragment>
+    );
+  }
+
+  const renderManageApiParameterAttributes = (): JSX.Element => {
+    // const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+    //   const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+    //   const className = `${options.className} p-jc-start`;
+    //   const titleClassName = `${options.titleClassName} p-pl-1`;
+    //   return (
+    //     <div className={className} style={{ justifyContent: 'left'}} >
+    //       <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+    //         <span className={toggleIcon}></span>
+    //       </button>
+    //       <span className={titleClassName}>
+    //         API Parameters
+    //       </span>
+    //     </div>
+    //   );
+    // }
+    const apiParameterValueBodyTemplate = (rowData: APIParameter): JSX.Element => {
+      return (
+        <div>
+          {rowData.enum ? rowData.enum.join(',') : 'No values defined.'}
+        </div>
+      );
+    }
+    const renderDataTableHeader = (): JSX.Element => {
+      const onInputFilter = (event: React.FormEvent<HTMLInputElement>) => {
+        setManageApiParameterAttributesDataTableGlobalFilter(event.currentTarget.value);
+      }
+      return (
+        <div className="table-header">
+          <div>API Parameters</div>
+          <div>
+            <span className="p-input-icon-left">
+              <i className="pi pi-search" />
+              <InputText type="search" placeholder='search ...' onInput={onInputFilter} style={{width: '500px'}}/>
+            </span>
+          </div>  
+        </div>
+      );
+    }  
+    // main
+    // if(selectedApisCombinedApiParameterList.length === 0) return (
+    //   <>
+    //   <p>No API Parameters available.</p>
+    //   </>
+    // );
+    return (
+      <React.Fragment>        
+        {/* <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable
+          collapsed={false}
+        > */}
+          <DataTable 
+            style={{'border-width': 'thin'}}
+            ref={manageApiParameterAttributesDataTableRef}
+            dataKey="name"
+            className="p-datatable-sm"
+            header={renderDataTableHeader()}
+            value={selectedApisCombinedApiParameterList}
+            emptyMessage='No API Parameters available.'
+            globalFilter={manageApiParameterAttributesDataTableGlobalFilter}
+            autoLayout={false}
+            selectionMode="single"
+            // onRowClick={onManagedObjectSelect}
+            // onRowDoubleClick={(e) => onManagedObjectOpen(e)}
+            selection={selectedApisCombinedApiParameter}
+            onSelectionChange={(e) => setSelectedApisCombinedApiParameter(e.value)}
+            scrollable 
+            scrollHeight="200px" 
+            sortMode='single'
+            sortField="name"
+            sortOrder={1}          
+          >
+            <Column field="name" header="API Parameter" style={{width: '20em'}} sortable />
+            {/* <Column field="type" header="Type" style={{width: '5em'}} /> */}
+            <Column 
+              header="API Value(s)" 
+              filterField='enum'
+              body={apiParameterValueBodyTemplate}
+              bodyStyle={{
+                'overflow-wrap': 'break-word',
+                'word-wrap': 'break-word'
+              }} 
+            />
+          </DataTable>
+          {/* DEBUG */}
+          {/* <p>selectedApisCombinedApiParameter:</p>
+          <pre style={ { fontSize: '8px' }} >
+            {JSON.stringify(selectedApisCombinedApiParameter)}
+          </pre> */}
+          {/* <p>presetAttribute:</p>
+          <pre style={ { fontSize: '8px' }} >
+            {JSON.stringify(presetAttribute)}
+          </pre> */}
+        {/* </Panel> */}
+      </React.Fragment>
+    );
+  }
+
+  const renderManageAttributes = (): JSX.Element => {
+    const funcName = 'renderManageAttributes';
+    const logName = `${componentName}.${funcName}()`;
+
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Attributes
+          </span>
+        </div>
+      );
+    }
+    // main
+    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
+    return (  
+      <React.Fragment>
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable={true}
+          collapsed={attributeList.length === 0}
+        >
+          <React.Fragment>
+            {renderManageApiParameterAttributes()}
+            <div className='p-mb-6'/>
+            <APManageAttributes
+              formId={componentName+'_APManageAttributes'}
+              presetAttribute={presetAttribute}
+              attributeList={attributeList}
+              onChange={onAttributeListUpdate}
+            />
+          </React.Fragment>
+        </Panel>
+      </React.Fragment>
+    );
+  }
+
+  const renderManageClientOptions = () => {
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Client Options
+          </span>
+        </div>
+      );
+    }
+    const renderManageClientOptionsGuaranteedMessaging = () => {
+      // const isDisabled: boolean = !(managedObjectUseForm.watch(['clientOptionsGuaranteedMessaging.requireQueue'])[0]);
+      // console.log(`managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
+
+      // TODO: custom validation if unchecked => rewrite rules with validate function
+      // const validateMaxTTL = (maxTTL: number): any => {
+      //   return true;
+      //   if(isDisabled) return true;
+      //   // could call validation function for maxTTL
+      //   return `isDisabled = ${isDisabled}, maxTTL=${maxTTL}`;
+      // }
+      return (
+        <div className='card'>
+          <div className="p-text-bold">Guaranteed Messaging:</div>
+          <div className="p-ml-3 p-mt-3">
+          {/* requireQueue */}
+          <div className="p-field p-field-checkbox">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="clientOptionsGuaranteedMessaging.requireQueue"
+              render={( { field, fieldState }) => {
+                return(
+                  <Checkbox
+                    inputId={field.name}
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.checked)}                                  
+                    className={classNames({ 'p-invalid': fieldState.invalid })}                                       
+                  />
+              )}}
+            />
+            <label htmlFor="clientOptionsGuaranteedMessaging.requireQueue" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.requireQueue })}> Enabled</label>
+            {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.requireQueue)}
+          </div>
+          {/* Access Type */}
+          <div className="p-field">
+            <span className="p-float-label">
+              <Controller
+                name="clientOptionsGuaranteedMessaging.accessType"
+                control={managedObjectUseForm.control}
+                rules={{
+                  required: "Select access type.",
+                }}
+                render={( { field, fieldState }) => {
+                    return(
+                      <Dropdown
+                        id={field.name}
+                        {...field}
+                        options={APApiProductsCommon.getQueueAccessTypeSelectList()} 
+                        onChange={(e) => field.onChange(e.value)}
+                        className={classNames({ 'p-invalid': fieldState.invalid })}     
+                        // disabled={isDisabled}                                   
+                      />                        
+                    )}}
+              />
+              <label htmlFor="clientOptionsGuaranteedMessaging.accessType" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.accessType })}>Access Type*</label>
+              <small id="clientOptionsGuaranteedMessaging.accessType-help">
+                Queue access type.
+              </small>              
+            </span>
+            {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.accessType)}
+          </div>
+          {/* Max TTL */}
+          <div className="p-field">
+            <span className="p-float-label">
+              <Controller
+                control={managedObjectUseForm.control}
+                name="clientOptionsGuaranteedMessaging.maxTtl"
+                rules={APConnectorFormValidationRules.ClientOptionsGuaranteedMessaging_MaxTTL()}
+                // custom, isDisabled dependent function
+                // rules={{
+                //   validate: validateMaxTTL
+                // }}
+                render={( { field, fieldState }) => {
+                  return(
+                    <InputNumber
+                      id={field.name}
+                      {...field}
+                      onChange={(e) => field.onChange(e.value)}
+                      mode="decimal" 
+                      useGrouping={false}
+                      className={classNames({ 'p-invalid': fieldState.invalid })}      
+                      // disabled={isDisabled}      
+                      />
+                )}}
+              />
+              <label htmlFor="clientOptionsGuaranteedMessaging.maxTtl" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxTtl })}>Max TTL (seconds) *</label>
+              <small id="clientOptionsGuaranteedMessaging.maxTtl-help">Max Time-to-Live. Retention policy for message on the queue in seconds. Set to 0 if messages are to be kept indefinitely.</small>              
+            </span>
+            {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxTtl)}
+          </div>
+          {/* Max Spool Usage */}
+          <div className="p-field">
+            <span className="p-float-label">
+              <Controller
+                control={managedObjectUseForm.control}
+                name="clientOptionsGuaranteedMessaging.maxMsgSpoolUsage"
+                rules={APConnectorFormValidationRules.ClientOptionsGuaranteedMessaging_MaxSpoolUsage()}
+                render={( { field, fieldState }) => {
+                  return(
+                    <InputNumber
+                      id={field.name}
+                      {...field}
+                      onChange={(e) => field.onChange(e.value)}
+                      mode="decimal" 
+                      useGrouping={false}
+                      className={classNames({ 'p-invalid': fieldState.invalid })}      
+                      // disabled={isDisabled}                 
+                    />
+                )}}
+              />
+              <label htmlFor="clientOptionsGuaranteedMessaging.maxMsgSpoolUsage" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxMsgSpoolUsage })}>Max Spool Usage (MB) *</label>
+              <small id="clientOptionsGuaranteedMessaging.maxMsgSpoolUsage-help">
+                Maximum message spool usage allowed by the Queue, in megabytes (MB). 
+                A value of 0 only allows spooling of the last message received and disables quota checking.
+              </small>              
+            </span>
+            {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxMsgSpoolUsage)}
+          </div>
+          </div>
+        </div>
+      );
+    }
+    return (  
+      <React.Fragment>
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable={true}
+          collapsed={true}
+        >
+          { renderManageClientOptionsGuaranteedMessaging() }
+        </Panel>
+      </React.Fragment>
     );
   }
 
@@ -445,7 +1195,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return (
       <div className="card">
         <div className="p-fluid">
-          <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+          <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
             {/* Id */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
@@ -528,7 +1278,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <Dropdown
                           id={field.name}
                           {...field}
-                          options={APApiObjectsCommon.getApprovalTypeSelectList()} 
+                          options={APApiProductsCommon.getApprovalTypeSelectList()} 
                           onChange={(e) => field.onChange(e.value)}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        
@@ -553,7 +1303,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                           display="chip"
                           value={field.value ? [...field.value] : []} 
                           options={inFormCurrentMultiSelectOptionApiSelectItemList} 
-                          onChange={(e) => { field.onChange(e.value); }}
+                          onChange={(e) => { field.onChange(e.value); onApisSelect(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
                           // style={{width: '500px'}} 
@@ -561,7 +1311,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="apiSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiSelectItemIdList })}>APIs*</label>
+                <label htmlFor="apiSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiSelectItemIdList })}>API(s)*</label>
               </span>
               { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.apiSelectItemIdList) }
               { renderApisToolbar() }
@@ -581,7 +1331,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                           display="chip"
                           value={field.value ? [...field.value] : []} 
                           options={inFormCurrentMultiSelectOptionEnvironmentSelectItemList} 
-                          onChange={(e) => { field.onChange(e.value); }}
+                          onChange={(e) => { field.onChange(e.value); onEnvironmentsSelect(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
                           // style={{width: '500px'}} 
@@ -589,18 +1339,27 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="environmentSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.environmentSelectItemIdList })}>Environments*</label>
+                <label htmlFor="environmentSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.environmentSelectItemIdList })}>Environment(s)*</label>
               </span>
               { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.environmentSelectItemIdList) }
               { renderEnvironmentsToolbar() }
+              { renderProtocolsSelectionTable() } 
             </div>
-            <Divider />
-            <div>
-              <p>TODO: protocols: show union of all protocols from all selected envs. no protocols without envs.</p>
-            </div>
-            <Divider />
-            {renderManagedObjectFormFooter()}
           </form>  
+          {/* apiParameters */}
+          <div className="p-field">
+            { renderManageApiParametersTable() } 
+          </div>
+          {/* attributes */}
+          <div className="p-field">
+          { renderManageAttributes() }
+          </div>
+          {/* client options */}
+          <div className="p-field">
+          { renderManageClientOptions() }
+          </div>
+          {/* footer */}
+          { renderManagedObjectFormFooter() }
         </div>
       </div>
     );
@@ -619,7 +1378,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && 
+      {managedObjectFormData && 
         renderManagedObjectForm()
       }
 
@@ -656,14 +1415,66 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       } */}
       {managedObjectFormData && 
         <React.Fragment>
-          <p>managedObjectUseForm:</p>
+          {/* <p>selectedEnvironmentList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(selectedEnvironmentList, null, 2)}
+          </pre> */}
+          {/* <p>selectedProtocolList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(selectedProtocolList, null, 2)}
+          </pre> */}
+          {/* <p>managedObjectFormData.selectedProtocolList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.selectedProtocolList, null, 2)}
+          </pre> */}
+          {/* <p>managedObject:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObject, null, 2)}
+          </pre> */}
+          {/* <p>managedObjectUseForm:</p>
           <pre style={ { fontSize: '10px' }} >
             {JSON.stringify(managedObjectUseForm.getValues(), null, 2)}
-          </pre>
-          <p>managedObjectFormData:</p>
+          </pre> */}
+
+          {/* <p>managedObjectFormData:</p>
           <pre style={ { fontSize: '10px' }} >
             {JSON.stringify(managedObjectFormData, null, 2)}
-          </pre>
+          </pre> */}
+
+          {/* <p>managedObjectFormData.apiProduct:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.apiProduct, null, 2)}
+          </pre> */}
+
+          {/* <p>managedObjectFormData.apiProduct.attributes:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.apiProduct.attributes, null, 2)}
+          </pre> */}
+
+          {/* <p>managedObjectFormData.clientOptionsGuaranteedMessaging:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.clientOptionsGuaranteedMessaging, null, 2)}
+          </pre> */}
+
+          {/* <p>selectedApisCombinedApiParameterList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(selectedApisCombinedApiParameterList, null, 2)}
+          </pre> */}
+
+          {/* <p>managedObjectFormData.apiSelectItemIdList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.apiSelectItemIdList, null, 2)}
+          </pre> */}
+
+          {/* <p>selectedApiInfoList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(selectedApiInfoList, null, 2)}
+          </pre> */}
+
+          {/* <p>managedObjectFormData.apiInfoList:</p>
+          <pre style={ { fontSize: '10px' }} >
+            {JSON.stringify(managedObjectFormData.apiInfoList, null, 2)}
+          </pre> */}
         </React.Fragment>
       }
     </div>

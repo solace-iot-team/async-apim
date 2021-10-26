@@ -64,21 +64,17 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
         const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
           organizationName: props.organizationName,
           pageNumber: nextPage++,
-          pageSize: 999
+          pageSize: 100
         });
         if(_environmentList.length === 0) hasNextPage = false;
         else environmentList.push(..._environmentList);
       }
       let _managedObjectList: TManagedObjectList = [];
       for(const environment of environmentList) {
-        
-        // const apiObject: TApiObject = await EnvironmentsService.getEnvironment(props.organizationName, environment.name);
-
         const apiObject: TApiObject = await EnvironmentsService.getEnvironment({
           organizationName: props.organizationName, 
           envName: environment.name
         });
-
         _managedObjectList.push(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject));
       }
       setManagedObjectList(_managedObjectList);

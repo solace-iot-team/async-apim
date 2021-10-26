@@ -25,7 +25,7 @@ import {
   APApiObjectsCommon, 
   APEnvironmentObjectsCommon, 
   TAPEnvironmentViewManagedObject, 
-  TAPEnvironmentViewManagedOjbectList
+  TAPEnvironmentViewManagedObjectList
 } from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 
@@ -103,6 +103,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
   const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
+  const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -116,7 +117,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
       const apiEnvironmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
         organizationName: props.organizationId
       });
-      let viewManagedObjectList: TAPEnvironmentViewManagedOjbectList = [];
+      let viewManagedObjectList: TAPEnvironmentViewManagedObjectList = [];
       for(const apiEnvironment of apiEnvironmentList) {
         const apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
           organizationName: props.organizationId,
@@ -210,7 +211,61 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     else return MessageNoManagedObjectsFound;
   }
 
+  // const renderEndpointSelectionTable = () => {
+  //   if(!selectedOrganizationService) return;
+  //   const _availableServiceEndpointList: TServiceEndpointList = transformOrganizationServiceToEndpointList(selectedOrganizationService);
+  //   return (  
+  //     <React.Fragment>
+  //       {displaySelectedProtocolsErrorMessage()}
+  //       <DataTable 
+  //         className="p-datatable-sm"
+  //         header="Select protocols to expose:"
+  //         value={_availableServiceEndpointList}
+  //         autoLayout={true}
+  //         selection={selectedExposedServiceEndpointList}
+  //         onSelectionChange={(e) => setSelectedExposedServiceEndpointList(e.value)}
+  //       >
+  //         <Column selectionMode="multiple" style={{width:'3em'}}/>
+  //         <Column field="protocol.name" header="Protocol" />
+  //         <Column field="protocol.version" header="Version" />
+  //         <Column field="secure" header='Secure?' />
+  //         <Column field="compressed" header='Compressed?' />
+  //         <Column field="uri" header="Endpoint" />
+  //       </DataTable>
+  //     </React.Fragment>
+  //   );
+  // }
+
   const renderManagedObjectDataTable = (): JSX.Element => {
+
+    const protocolsExpansionTemplate = (row: TManagedObjectTableDataRow) => {
+
+      const tmpExposedProtocolsBodyTemplate = (row: TManagedObjectTableDataRow): JSX.Element => {
+        return (
+          <div>{JSON.stringify(row.apiEnvironment.exposedProtocols)}</div>
+        );
+      }
+      // row.apiEnvironment.exposedProtocols
+      const protocolDataTableList = [row];
+  
+      return (
+        <div className="select-protocols-sub-table">
+          <DataTable 
+            className="p-datatable-sm"
+            value={protocolDataTableList}
+            autoLayout={true}
+            dataKey="id"
+          >
+            <Column field="apiEnvironment.exposedProtocols" header="exposedProtocols" body={tmpExposedProtocolsBodyTemplate} />
+            {/* <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} /> */}
+            {/* <Column field="hasInfo.hasApiProducts" header="API Products" body={ManageOrganizationsCommon.hasApiProductsBodyTemplate}/>
+            <Column field="hasInfo.hasDevelopers" header="Developers" body={ManageOrganizationsCommon.hasDevelopersBodyTemplate} />
+            <Column field="hasInfo.hasApps" header="Apps" body={ManageOrganizationsCommon.hasAppsBodyTemplate}/> */}
+          </DataTable>
+        </div>
+      );
+    }
+
     return (
       <div className="card">
           <DataTable
@@ -234,7 +289,12 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             sortMode='single'
             sortField="displayName"
             sortOrder={1}
+            // expansion
+            expandedRows={expandedManagedObjectDataTableRows}
+            onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
+            rowExpansionTemplate={protocolsExpansionTemplate}
           >
+            <Column expander style={{ width: '3em' }} />
             <Column selectionMode="multiple" style={{width:'3em'}}/>
             <Column field="displayName" header="Name" sortable filterField="globalSearch" />
             <Column field="apiEnvironment.serviceName" header="Service Name" sortable />

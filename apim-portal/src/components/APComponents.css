@@ -25,6 +25,11 @@
   font-weight: 700;
 }
 
+.ap-component-section-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
 .ap-display-asyncapispec {
   max-width: 1200px;
 }

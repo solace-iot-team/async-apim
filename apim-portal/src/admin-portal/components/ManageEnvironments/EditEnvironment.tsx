@@ -61,7 +61,12 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   }
 
   const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    return managedObject;
+    return {
+      displayName: managedObject.displayName,
+      description: managedObject.description,
+      serviceId: managedObject.serviceId,
+      exposedProtocols: managedObject.exposedProtocols
+    }
   }
 
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {

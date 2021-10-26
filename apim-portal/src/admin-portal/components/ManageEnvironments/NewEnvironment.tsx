@@ -202,7 +202,7 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
       ...managedObjectFormData,
       exposedProtocols: transformServiceEndpointListToProtocolList(selectedExposedServiceEndpointList),
       serviceId: selectedOrganizationService.serviceId
-    }
+    };
     doSubmitManagedObject(transformFormDataToManagedObject(_managedObjectFormData));
   }
 

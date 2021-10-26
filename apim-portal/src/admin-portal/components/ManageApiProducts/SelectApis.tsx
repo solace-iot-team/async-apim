@@ -36,7 +36,7 @@ export const SelectApis: React.FC<ISelectApisProps> = (props: ISelectApisProps) 
     // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
-        <p>currentSelectedApiItemList={JSON.stringify(props.currentSelectedApiItemList, null, 2)}</p>
+        {/* <p>currentSelectedApiItemList={JSON.stringify(props.currentSelectedApiItemList, null, 2)}</p> */}
         <SearchSelectApis 
           organizationId={props.organizationId}
           currentSelectedApiItemList={props.currentSelectedApiItemList}
@@ -59,7 +59,7 @@ export const SelectApis: React.FC<ISelectApisProps> = (props: ISelectApisProps) 
         closable={false}
         onHide={()=> {}}
       >
-        <div className=".manage-api-products .select-apis-dialog-content">
+        <div className="manage-api-products select-apis-dialog-content">
             {renderSelectDialogContent()}
         </div>
         <ApiCallStatusError apiCallStatus={apiCallStatus} />

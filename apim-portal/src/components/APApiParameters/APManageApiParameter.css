@@ -1,0 +1,28 @@
+.manage-api-parameter .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ap-manage-api-parameter .ap-edit-dialog-content {
+  background-color: transparent;
+}
+
+.ap-manage-api-parameter .ap-edit-dialog-content .ap-picklist {
+  background-color: transparent;
+}
+
+/* // style={ { 'background': 'none', 'border': 'none', 'paddingTop': '0rem', 'paddingBottom': '0rem', 'marginBottom': '0rem !important' } }  */
+
+.ap-manage-api-parameter .ap-edit-dialog-content .ap-message {
+  /* padding-top: 1rem; */
+  padding-bottom: 20rem;
+}
+
+.ap-message {
+  padding-bottom: 1rem;
+}
+
+.ap-error {
+  padding-bottom: 1rem;
+}

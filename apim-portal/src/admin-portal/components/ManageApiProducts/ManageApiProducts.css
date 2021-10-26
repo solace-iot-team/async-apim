@@ -59,6 +59,12 @@
   background-color: transparent;
 }
 
+.manage-api-products .select-protocols-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+
 .button-set-footer {
   display: flex;
   flex-wrap: nowrap;

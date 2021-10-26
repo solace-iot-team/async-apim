@@ -100,6 +100,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       label: 'DEVEL',
       items: [
         {
+          label: 'Test API Product Attributes',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.ManageAttributesDevel); }
+        },
+        {
           label: 'Boostrap Organizations',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapOrganizations); }

@@ -15,9 +15,13 @@ import yaml from "js-yaml";
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
 
-// export type TAPConnectorAbout = About & {
-//   test_ConnectorOpenApiVersion: string
-// }
+// TODO: should be defined in the OPEN API
+export type TAPAttribute = {
+  name: string,
+  value: string
+}
+export type TAPAttributeList = Array<TAPAttribute>;
+
 export type TAPConnectorPortalAbout = {
   isEventPortalApisProxyMode: boolean,
   connectorServerVersionStr?: string,

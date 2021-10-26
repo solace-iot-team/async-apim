@@ -1,3 +1,5 @@
+import { SelectItem } from 'primereact/api';
+
 import { 
   ApiError,
   APIInfo,
@@ -5,6 +7,7 @@ import {
   APIProduct, 
   ApiProductsService, 
   ApisService, 
+  ClientOptionsGuaranteedMessaging, 
   EnvironmentResponse, 
   EnvironmentsService, 
   Protocol
@@ -21,7 +24,7 @@ export type TAPEnvironmentViewManagedObject = {
   apiEnvironment: EnvironmentResponse
   globalSearch: string
 }
-export type TAPEnvironmentViewManagedOjbectList = Array<TAPEnvironmentViewManagedObject>;
+export type TAPEnvironmentViewManagedObjectList = Array<TAPEnvironmentViewManagedObject>;
 
 // * Manage Apis *
 export type TAPApiViewManagedObject = {
@@ -67,13 +70,13 @@ export class APEnvironmentObjectsCommon {
     }
   }
 
-  public static transformEnvironmentListToSelectItemIdList = (environmentList: TAPEnvironmentViewManagedOjbectList): TApiEntitySelectItemIdList => {
+  public static transformEnvironmentListToSelectItemIdList = (environmentList: TAPEnvironmentViewManagedObjectList): TApiEntitySelectItemIdList => {
     return environmentList.map( (environment: TAPEnvironmentViewManagedObject) => {
       return environment.id;
     });
   }
 
-  public static transformEnvironmentListToSelectItemList = (environmentList: TAPEnvironmentViewManagedOjbectList): TApiEntitySelectItemList => {
+  public static transformEnvironmentListToSelectItemList = (environmentList: TAPEnvironmentViewManagedObjectList): TApiEntitySelectItemList => {
     return environmentList.map( (environment: TAPEnvironmentViewManagedObject) => {
       return {
         id: environment.id,
@@ -99,11 +102,6 @@ export class APApiObjectsCommon {
     });  
   }
 
-  public static getApprovalTypeSelectList = (): Array<APIProduct.approvalType> => {
-    const e: any = APIProduct.approvalType;
-    return Object.keys(e).map(k => e[k]);
-  }  
-
   public static transformApiInfoListToSelectItemIdList = (apiInfoList: APIInfoList): TApiEntitySelectItemIdList => {
     const funcName = 'transformApiInfoListToSelectItemIdList';
     const logName = `${APApiObjectsCommon.name}.${funcName}()`;
@@ -128,6 +126,23 @@ export class APApiObjectsCommon {
 }
 
 export class APApiProductsCommon {
+
+  public static getBooleanSelectList = (): Array<SelectItem> => {
+    return [
+      { label: 'yes', value: true },
+      { label: 'no', value: false }
+    ];
+  }  
+
+  public static getQueueAccessTypeSelectList = (): Array<ClientOptionsGuaranteedMessaging.accessType> => {
+    const e: any = ClientOptionsGuaranteedMessaging.accessType;
+    return Object.keys(e).map(k => e[k]);
+  }  
+
+  public static getApprovalTypeSelectList = (): Array<APIProduct.approvalType> => {
+    const e: any = APIProduct.approvalType;
+    return Object.keys(e).map(k => e[k]);
+  }  
 
   public static transformApiProductToViewManagedApiProduct = (apiProduct: TApiProduct, apiEnvironmentList: TApiEnvironmentList, apiInfoList: APIInfoList): TViewManagedApiProduct => {
     return {

@@ -2,6 +2,13 @@ import React from "react";
 
 export class APRenderUtils {
 
+  // public static renderStringListAsString = (stringList: Array<string>, label?: string): JSX.Element => {
+  //   return (
+  //     <React.Fragment>
+  //       <p>{label ? `${label}: ` : ''}{stringList.join(', ')}</p>
+  //     </React.Fragment>
+  //   );
+  // }
   public static renderStringListAsDivList = (stringList: Array<string>): JSX.Element => {
     let jsxElementList: Array<JSX.Element> = [];
 
