@@ -34,22 +34,24 @@
 }
 .manage-api-products .api-product-view {
   display: flex;
-  align-items: center;
   padding: 1rem;
   width: 100%;
 }
 .manage-api-products .api-product-view .api-product-view-detail-left {
   flex: 1 1 0;
+  align-items: center;
 }
 .manage-api-products .api-product-view .api-product-view-detail-right {
   display: flex;
   flex-direction: column;
   font-style: italic;
+  margin-left: 2.5rem;
 }
 
-.manage-api-products .api-product-description {
+/* .manage-api-products .api-product-description {
   margin: 0 0 1rem 0;
-}
+  flex-wrap: wrap;
+} */
 
 .manage-api-products .select-apis-dialog-content {
   background-color: transparent;

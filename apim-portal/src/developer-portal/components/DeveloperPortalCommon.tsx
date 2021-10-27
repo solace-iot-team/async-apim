@@ -9,6 +9,7 @@ import {
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
+import { APRenderUtils } from '../../utils/APRenderUtils';
 
 import { Globals } from '../../utils/Globals';
 
@@ -58,14 +59,7 @@ export class DeveloperPortalCommon {
   }
 
   public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
-    if(protocolList) {
-      let _protocolList: Array<string> = [];
-      protocolList.forEach( (protocol: Protocol) => {
-        _protocolList.push(`${protocol.name}(${protocol.version})`);
-      });
-      return _protocolList.join(', ');
-    }
-    else return '';
+    return APRenderUtils.getProtocolListAsString(protocolList);
   }
 
   public static getAttributeInfoAsString = (attributeList?: TApiAttributeList): string => {

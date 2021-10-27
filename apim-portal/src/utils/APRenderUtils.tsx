@@ -1,14 +1,36 @@
 import React from "react";
+import { Protocol } from "@solace-iot-team/apim-connector-openapi-browser";
+import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
 
 export class APRenderUtils {
 
-  // public static renderStringListAsString = (stringList: Array<string>, label?: string): JSX.Element => {
-  //   return (
-  //     <React.Fragment>
-  //       <p>{label ? `${label}: ` : ''}{stringList.join(', ')}</p>
-  //     </React.Fragment>
-  //   );
-  // }
+  public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
+    if(protocolList) {
+      let _protocolList: Array<string> = [];
+      protocolList.forEach( (protocol: Protocol) => {
+        _protocolList.push(`${protocol.name}(${protocol.version})`);
+      });
+      return _protocolList.sort().join(', ');
+    }
+    else return '';
+  }
+
+  public static getAttributeListAsString = (attributeList?: TAPAttributeList): string => {
+    return APRenderUtils.getAttributeListAsStringList(attributeList).join(' | ');
+  }
+
+  public static getAttributeListAsStringList = (attributeList?: TAPAttributeList): Array<string> => {
+    if(attributeList) {
+      let _attributeList: Array<string> = [];
+      attributeList.forEach( (attribute: TAPAttribute) => {
+        const attributeStr: string = `${attribute.name}=${attribute.value}`;
+        _attributeList.push(attributeStr);
+      });
+      return _attributeList.sort();
+    }
+    else return [];
+  }
+
   public static renderStringListAsDivList = (stringList: Array<string>): JSX.Element => {
     let jsxElementList: Array<JSX.Element> = [];
 
