@@ -1,8 +1,18 @@
 import React from "react";
-import { Protocol } from "@solace-iot-team/apim-connector-openapi-browser";
+import { 
+  APIInfo, 
+  APIInfoList, 
+  Protocol 
+} from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
 
 export class APRenderUtils {
+
+  public static getApiInfoListAsDisplayStringList = (apiInfoList: APIInfoList ): Array<string> => {
+    return apiInfoList.map( (apiInfo: APIInfo) => {
+      return `${apiInfo.name} (${apiInfo.source})`;
+    });  
+  }
 
   public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
     if(protocolList) {
@@ -13,6 +23,13 @@ export class APRenderUtils {
       return _protocolList.sort().join(', ');
     }
     else return '';
+  }
+
+  public static getAttributeNameList = (attributeList?: TAPAttributeList): Array<string> => {
+    if(!attributeList) return [];
+    return attributeList.map( (attribute: TAPAttribute) => {
+      return attribute.name;  
+    });
   }
 
   public static getAttributeListAsString = (attributeList?: TAPAttributeList): string => {

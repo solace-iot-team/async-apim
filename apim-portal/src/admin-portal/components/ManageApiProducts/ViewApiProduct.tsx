@@ -188,13 +188,13 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               <div><b>Approval type</b>: {managedObjectDisplay.apiProduct.approvalType}</div>
               {/* <div className="p-text-bold">API(s):</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.apis.join(', ')}</div> */}
-              <div className="p-text-bold">API(s):</div>
+              <div className="p-text-bold">APIs:</div>
               {renderShowApiButtons()}
-              <div className="p-text-bold">Environment(s):</div>
+              <div className="p-text-bold">Environments:</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div>
-              <div className="p-text-bold">Protocol(s):</div>
+              <div className="p-text-bold">Protocols:</div>
               <div className="p-ml-2">{managedObjectDisplay.protocolListAsString}</div>
-              <div className="p-text-bold">Attribute(s):</div>
+              <div className="p-text-bold">Attributes:</div>
               <APDisplayAttributes
                 attributeList={managedObjectDisplay.apiProduct.attributes}
                 emptyMessage="No attributes defined"

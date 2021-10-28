@@ -96,12 +96,6 @@ export class APApiObjectsCommon {
     return list.join(' ');
   }
 
-  public static getApiInfoListAsDisplayStringList = (apiInfoList: APIInfoList ): Array<string> => {
-    return apiInfoList.map( (apiInfo: APIInfo) => {
-      return `${apiInfo.name} (${apiInfo.source})`;
-    });  
-  }
-
   public static transformApiInfoListToSelectItemIdList = (apiInfoList: APIInfoList): TApiEntitySelectItemIdList => {
     const funcName = 'transformApiInfoListToSelectItemIdList';
     const logName = `${APApiObjectsCommon.name}.${funcName}()`;
@@ -154,79 +148,6 @@ export class APApiProductsCommon {
     };
   }
 
-  public static getAsyncApiDisplayNameListAsString = (asyncApiDisplayNameList: string[] ): string => {
-    return asyncApiDisplayNameList.join(', ');
-  }
-
-  public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
-    if(protocolList) {
-      let _protocolList: Array<string> = [];
-      protocolList.forEach( (protocol: Protocol) => {
-        _protocolList.push(`${protocol.name}(${protocol.version})`);
-      });
-      return _protocolList.join(', ');
-    }
-    else return '';
-  }
-
-  // public static getAttributeInfoAsString = (attributeList?: TApiAttributeList): string => {
-  //   if(attributeList) {
-  //     let _attributeList: Array<string> = [];
-  //     attributeList.forEach( (attribute: TApiAttribute) => {
-  //       const attributeStr: string = `${attribute.name}: ${attribute.value}`;
-  //       _attributeList.push(attributeStr);
-  //     });
-  //     return _attributeList.join(' | ');
-  //   }
-  //   else return '';
-  // }
-
-  // public static getAttributeNamesAsString = (attributeList?: TApiAttributeList): string => {
-  //   if(attributeList) {
-  //     let _attributeList: Array<string> = [];
-  //     attributeList.forEach( (attribute: TApiAttribute) => {
-  //       _attributeList.push(`${attribute.name}`);
-  //     });
-  //     return _attributeList.join(', ');
-  //   }
-  //   else return '';
-  // }
-
-  // public static getEnvironmentsAsString = (apiEnvironmentList: TApiEnvironmentList, apiEnvironmentNameList?: TApiEnvironmentNameList): string => {
-  //   const funcName = 'getEnvironmentsAsString';
-  //   const logName = `${DeveloperPortalCommon.name}.${funcName}()`;
-  //   if(!apiEnvironmentNameList) return '';
-  //   let _environmentStrList: Array<string> = [];
-  //   apiEnvironmentNameList.forEach( (environmentName: string) => {
-  //     const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
-  //       return environment.name === environmentName;
-  //     });
-  //     if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
-  //     _environmentStrList.push(
-  //       `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
-  //     );
-  //   });
-  //   return _environmentStrList.join(', ');
-  // }
-
-  // public static getEnvironmentsAsDisplayList = (apiEnvironmentList: TApiEnvironmentList, apiEnvironmentNameList?: TApiEnvironmentNameList): Array<string> => {
-  //   const funcName = 'getEnvironmentsAsDisplayList';
-  //   const logName = `${DeveloperPortalCommon.name}.${funcName}()`;
-  //   if(!apiEnvironmentNameList) return [];
-  //   let _environmentStrList: Array<string> = [];
-  //   apiEnvironmentNameList.forEach( (environmentName: string) => {
-  //     const envDetails = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
-  //       return environment.name === environmentName;
-  //     });
-  //     if(!envDetails) throw new Error(`${logName}: not envDetails for environmentName=${environmentName}`);
-  //     _environmentStrList.push(
-  //       `${envDetails.displayName} (${envDetails.datacenterProvider}:${envDetails.datacenterId})`
-  //     );
-  //   });
-  //   return _environmentStrList;
-  // }
-
-  
 }
 
 export class APApiObjectsApiCalls {

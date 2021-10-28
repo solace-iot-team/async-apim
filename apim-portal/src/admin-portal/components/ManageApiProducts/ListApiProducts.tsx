@@ -19,7 +19,6 @@ import {
   TViewManagedApiProduct,
   TApiGetApiProductListResult,
   APApiObjectsApiCalls,
-  APApiObjectsCommon, 
 } from '../../../components/APApiObjectsCommon';
 
 import '../../../components/APComponents.css';
@@ -46,8 +45,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   type TManagedObjectTableDataRow = TManagedObject & {
     apiInfoListAsDisplayStringList: Array<string>,
     protocolListAsString: string,
-    attributeListAsString: string,
-    environmentListAsStringList: Array<string>,
     globalSearch: string
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
@@ -56,20 +53,14 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
       const managedObjectTableDataRow: TManagedObjectTableDataRow = {
         ...managedObject,
-        // asyncApiDisplayNameListAsString: DeveloperPortalCommon.getApiDisplayNameListAsString(managedProduct.apiProduct.apis),
-        // protocolListAsString: DeveloperPortalCommon.getProtocolListAsString(managedProduct.apiProduct.protocols),
-        // attributeListAsString: DeveloperPortalCommon.getAttributeNamesAsString(managedProduct.apiProduct.attributes),
-        // environmentListAsStringList: DeveloperPortalCommon.getEnvironmentsAsDisplayList(managedProduct.apiEnvironmentList, managedProduct.apiProduct.environments)
-        apiInfoListAsDisplayStringList: APApiObjectsCommon.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
-        protocolListAsString: 'protocolListAsString',
-        attributeListAsString: 'attributeListAsString',
-        environmentListAsStringList: ['environmentListAsStringList'],
+        apiInfoListAsDisplayStringList: APRenderUtils.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
+        protocolListAsString: APRenderUtils.getProtocolListAsString(managedObject.apiProduct.protocols),
         globalSearch: ''
       };
-      const globaSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
+      const globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
       return {
         ...managedObjectTableDataRow,
-        globalSearch: globaSearch
+        globalSearch: globalSearch
       }
     }
     return managedObjectList.map( (managedObject: TManagedObject) => {
@@ -150,8 +141,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     );
   }
 
+  const attributesBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.apiProduct.attributes));
+  }
+
   const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(rowData.environmentListAsStringList);
+    return APRenderUtils.renderStringListAsDivList(rowData.apiProduct.environments ? rowData.apiProduct.environments : []);
+    // return APRenderUtils.renderStringListAsDivList(rowData.environmentListAsStringList);
   }
   const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
     return APRenderUtils.renderStringListAsDivList(rowData.apiInfoListAsDisplayStringList);
@@ -183,15 +179,14 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             sortField="displayName"
             sortOrder={1}
           >
-            {/* <Column field="id" header="Id" sortable /> */}
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiProduct.description" header="Description" />
-            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable />
-            <Column body={apisBodyTemplate} header="API(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
-            <Column field="protocolListAsString" header="Exposed Protocols" />
-            <Column field="attributeListAsString" header="Controlled Attributes" />
-            <Column body={environmentsBodyTemplate} header="API Gateway(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
-            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}/>
+            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ 'vertical-align': 'top' }}/>
+            {/* <Column field="apiProduct.description" header="Description" /> */}
+            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ 'vertical-align': 'top' }} />
+            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', 'vertical-align': 'top' }}/>
+            <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ 'vertical-align': 'top' }} />
+            <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', 'vertical-align': 'top' }}/>
+            <Column field="protocolListAsString" header="Protocols" bodyStyle={{ 'vertical-align': 'top' }} />
+            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', 'vertical-align': 'top' }}/>
         </DataTable>
       </div>
     );
@@ -231,7 +226,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       {renderContent()}
       
       {/* DEBUG OUTPUT         */}
-      {Config.getUseDevelTools() && renderDebugSelectedManagedObject()}
+      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
 
     </div>
   );
