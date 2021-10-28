@@ -179,14 +179,14 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             sortField="displayName"
             sortOrder={1}
           >
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ 'vertical-align': 'top' }}/>
+            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
             {/* <Column field="apiProduct.description" header="Description" /> */}
-            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ 'vertical-align': 'top' }} />
-            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', 'vertical-align': 'top' }}/>
-            <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ 'vertical-align': 'top' }} />
-            <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', 'vertical-align': 'top' }}/>
-            <Column field="protocolListAsString" header="Protocols" bodyStyle={{ 'vertical-align': 'top' }} />
-            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', 'vertical-align': 'top' }}/>
+            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ verticalAlign: 'top' }} />
+            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
+            <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column field="protocolListAsString" header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
+            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>
     );
