@@ -9,12 +9,12 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
-import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
+import { ManageApps } from '../components/ManageApps/ManageApps';
 
 import "../../pages/Pages.css";
 
-export const ManageApiProductsPage: React.FC = () => {
-  const componentName = 'ManageApiProductsPage';
+export const ManageAppsPage: React.FC = () => {
+  const componentName = 'ManageAppsPage';
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -41,9 +41,9 @@ export const ManageApiProductsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'API Products',
+        label: 'APPs',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
       }
     ];
     breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
@@ -70,7 +70,7 @@ export const ManageApiProductsPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       {organizationId && 
-        <ManageApiProducts
+        <ManageApps
           organizationId={organizationId}
           onSuccess={onSuccess} 
           onError={onError} 

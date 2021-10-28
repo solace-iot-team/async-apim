@@ -12,7 +12,8 @@ import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
 import { ViewSystemHealthPage } from "./pages/ViewSystemHealthPage";
 import { ManageEnvironmentsPage } from "./pages/ManageEnvironmentsPage";
 import { ManageApisPage } from "./pages/ManageApisPage";
-import { ManageApiProductssPage } from "./pages/ManageApiProductsPage";
+import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
+import { ManageAppsPage } from './pages/ManageAppsPage';
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
@@ -28,7 +29,8 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         /* Organization */
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
-        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductssPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
     ]
   );
 }
