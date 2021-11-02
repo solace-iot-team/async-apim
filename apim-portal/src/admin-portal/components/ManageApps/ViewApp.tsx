@@ -29,11 +29,10 @@ import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../componen
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
-import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
+import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
@@ -96,17 +95,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   // Owner
   const [showOwnerDetails, setShowOwnerDetails] = React.useState<boolean>();
 
-  // // * Api Calls *
-
-/* TODO: 
-- retrieve developer / team app: AppResponse
-- retrieve user
-- now we have product attributes
-- show APP attributes
-- edit: app attributes based on product attributes
-
-*/
-
+  // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -180,8 +169,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
   // * useEffect Hooks *
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
@@ -197,57 +184,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // const renderShowApiButtons = () => {
-  //   const funcName = 'renderShowApiButtons';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
-
-  //   const onShowApi = (event: any): void => {
-  //     setShowApiId(event.currentTarget.dataset.id);
-  //   }
-  
-  //   let jsxButtonList: Array<JSX.Element> = [];
-
-  //   for (const apiId of managedObjectDisplay?.apiProduct.apis) {
-  //     jsxButtonList.push(
-  //       <Button 
-  //         label={apiId} 
-  //         key={apiId} 
-  //         data-id={apiId} 
-  //         // icon="pi pi-folder-open" 
-  //         // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-  //         className="p-button-text p-button-plain" 
-  //         style={{ whiteSpace: 'nowrap' }}          
-  //         onClick={onShowApi}
-  //       />        
-  //     );
-  //   }
-  //   const renderButtons = () => {
-  //     return (
-  //       <div className="p-grid">
-  //         {jsxButtonList}
-  //       </div>
-  //     );
-  //   }
-  //   return (
-  //     <Toolbar         
-  //       style={{ 
-  //         background: 'none',
-  //         border: 'none'
-  //       }} 
-  //       left={renderButtons()}
-  //     />
-  //   );
-  // }
-
-
   const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
-    const funcName = 'renderApiProducts';
-    const logName = `${componentName}.${funcName}()`;
-    const dataTableList = apiProductList;
-    let expandedRows: any = {};
-    expandedRows[`${dataTableList[0].name}`] = true;
-
     const rowExpansionTemplate = (rowData: TApiProduct) => {
       return (
         <div>
@@ -292,13 +229,13 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.attributes));
     }
   
+    const dataTableList = apiProductList;
+
     return (
       <div className="card">
         <DataTable
           ref={viewProductsDataTableRef}
           dataKey="name"
-          // autoLayout={true}
-          // header="API Products"
           value={dataTableList}
           sortMode="single" 
           sortField="name" 
@@ -314,7 +251,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
             field="displayName" 
             header="API Product" 
             bodyStyle={{ verticalAlign: 'top' }}
-            // style={{width: '30%'}}
           />
           <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }}/>
           <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
@@ -325,9 +261,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
   }
 
-
   const getOwnerDisplayStr = (managedObjectDisplay: TManagedObjectDisplay): string => {
-    // return `${managedObjectDisplay.apsUser.userId} (${managedObjectDisplay.apsUser.profile.first} ${managedObjectDisplay.apsUser.profile.last})`;
     return `${managedObjectDisplay.apsUser.userId}`;
   }
 
@@ -358,9 +292,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   }
 
   const renderOwner = (managedObjectDisplay: TManagedObjectDisplay): JSX.Element => {
-    // const funcName = 'renderOwner';
-    // const logName = `${componentName}.${funcName}()`;
-
     const onOwnerClick = (event: any): void => {
       setShowOwnerDetails(true);
     }
@@ -376,6 +307,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       />
     );
   }
+
   const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     return (
       <React.Fragment>
@@ -387,6 +319,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       </React.Fragment>  
     );
   }
+
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;

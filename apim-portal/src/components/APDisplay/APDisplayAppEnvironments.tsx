@@ -9,16 +9,14 @@ import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 import { 
   AppEnvironment
 } from "@solace-iot-team/apim-connector-openapi-browser";
+import { Globals } from "../../utils/Globals";
 import { APDisplayEndpoints } from "./APDisplayEndpoints";
 import { APDisplayAppPermissions } from "./APDisplayAppPermissions";
 import { EApiTopicSyntax } from "../APApiObjectsCommon";
 
 import "../APComponents.css";
-import { Globals } from "../../utils/Globals";
 
 export interface IAPDisplayAppEnvironmentsProps {
-  // appId: CommonName;
-  // appDisplayName: CommonDisplayName;
   appEnvironmentList_smf: Array<AppEnvironment>;
   appEnvironmentList_mqtt: Array<AppEnvironment>;
   className?: string;
@@ -26,10 +24,6 @@ export interface IAPDisplayAppEnvironmentsProps {
 
 export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> = (props: IAPDisplayAppEnvironmentsProps) => {
   const componentName='APDisplayAppEnvironments';
-
-  // const [jsxElementList, setJsxElementList] = React.useState<Array<JSX.Element>>();
-  
-  // const appProtocolssDataTableRef = React.useRef<any>(null);
 
   const topicSyntaxOptions: Array<string> = Object.values(EApiTopicSyntax);
   const [selectedTopicSyntax, setSelectedTopicSyntax] = React.useState<EApiTopicSyntax>(EApiTopicSyntax.SMF);
@@ -39,34 +33,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
   const appEnvironmentsPermissionsDataTableRef = React.useRef<any>(null);
   const [expandedAppEnvironmentsPermissionsDataTableRows, setExpandedAppEnvironmentsPermissionsDataTableRows] = React.useState<any>(null);
 
-  // const appEnvironmentExapandedDataTableRef = React.useRef<any>(null);
-
-  // const doInitialize = () => {
-  //   let attributesJSXElementList: Array<JSX.Element> = [];    
-  //   const addAttributeJSXElement = (attribute: TAPAttribute) => {
-  //     const jsxElem: JSX.Element = (
-  //       <li>
-  //         {attribute.name}: [{attribute.value}]
-  //       </li>
-  //     );
-  //     attributesJSXElementList.push(jsxElem);
-  //   }
-  //   if(props.attributeList && props.attributeList.length > 0) {
-  //     props.attributeList.forEach( (attribute: TAPAttribute) => {
-  //       addAttributeJSXElement(attribute);  
-  //     });
-  //     setJsxElementList(attributesJSXElementList);
-  //   }
-  // }
-
-  React.useEffect(() => {
-    // doInitialize();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-
   const renderAppEnvironmentsEndpoints = (appEnvironmentList: Array<AppEnvironment>): JSX.Element => {
-    const funcName = 'renderAppEnvironmentsEndpoints';
-    const logName = `${componentName}.${funcName}()`;
 
     const rowExpansionTemplateAppEnvironmentEndpoint = (appEnvironmentRow: AppEnvironment) => {
       const funcName = 'rowExpansionTemplateAppEnvironmentEndpoint';

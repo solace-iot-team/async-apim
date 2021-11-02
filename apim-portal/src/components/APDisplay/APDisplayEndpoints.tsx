@@ -22,10 +22,6 @@ export const APDisplayEndpoints: React.FC<IAPDisplayEndpointsProps> = (props: IA
 
   const dataTableRef = React.useRef<any>(null);
 
-  // React.useEffect(() => {
-  //   // doInitialize();
-  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const attributesBodyTemplate = (endpointRow: Endpoint): JSX.Element => {
     return (
       <React.Fragment>
@@ -34,10 +30,9 @@ export const APDisplayEndpoints: React.FC<IAPDisplayEndpointsProps> = (props: IA
     );
   }
 
-
   const renderComponent = (endpointList: Array<Endpoint>): JSX.Element => {
-    const funcName = 'renderComponent';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderComponent';
+    // const logName = `${componentName}.${funcName}()`;
 
     return (
       <DataTable

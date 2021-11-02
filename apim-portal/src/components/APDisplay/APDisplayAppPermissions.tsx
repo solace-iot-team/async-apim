@@ -41,21 +41,7 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
   const dataTableHeaderPublishPermissions = "Publish Permissions";
   const subscribePermissionsDataTableRef = React.useRef<any>(null);
   const [subscribePermissionsExpandedRows, setSubscribePermissionsExpandedRows] = React.useState<Array<any>>([]);
-  // const subscribePermissionsExpandedDataTableRef = React.useRef<any>(null);
   const publishPermissionsDataTableRef = React.useRef<any>(null);
-
-
-  // React.useEffect(() => {
-  //   // doInitialize();
-  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // const attributesBodyTemplate = (endpointRow: Endpoint): JSX.Element => {
-  //   return (
-  //     <React.Fragment>
-  //       {APRenderUtils.getEndpointAttributesAsString(endpointRow)}
-  //     </React.Fragment>
-  //   );
-  // }
 
   const transformApiPermissionListToAPChannelPermissionList = (apiPermissionList: Array<Record<string, ChannelPermission>>): TAPChannelPermissionsList => {
     return apiPermissionList.map( (elem: Record<string, ChannelPermission>) => {
@@ -119,8 +105,8 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
     }
   }
   const renderPermissions = (permissionType: EPermissionType, permissionList?: Array<Record<string, ChannelPermission>>) => {
-    const funcName = 'renderPermissions';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderPermissions';
+    // const logName = `${componentName}.${funcName}()`;
 
     if(!permissionList) return (
       <span>{getEmptyPermissionMessage(permissionType)}</span>
@@ -157,8 +143,8 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
   }
 
   const renderComponent = (permissions: Permissions): JSX.Element => {
-    const funcName = 'renderComponent';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderComponent';
+    // const logName = `${componentName}.${funcName}()`;
 
     return (
       <React.Fragment>

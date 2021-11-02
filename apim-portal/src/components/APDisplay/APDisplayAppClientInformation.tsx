@@ -7,7 +7,6 @@ import { Column } from "primereact/column";
 import { 
   ClientInformationGuaranteedMessaging,
 } from "@solace-iot-team/apim-connector-openapi-browser";
-import { APRenderUtils } from "../../utils/APRenderUtils";
 import { 
   TAPAppClientInformation, 
   TAPAppClientInformationList 
@@ -22,16 +21,13 @@ export interface IAPDisplayAppClientInformationProps {
 }
 
 export const APDisplayAppClientInformation: React.FC<IAPDisplayAppClientInformationProps> = (props: IAPDisplayAppClientInformationProps) => {
-  const componentName='APDisplayAppClientInformation';
+  // const componentName='APDisplayAppClientInformation';
 
   const componentDataTableRef = React.useRef<any>(null);
   const [componentExpandedDataTableRows, setComponentExpandedDataTableRows] = React.useState<any>(null);
   const componentExpansionDataTableRef = React.useRef<any>(null);
   
   const renderGuaranteedMessaging = (rowData: TAPAppClientInformation): JSX.Element => {
-    // const funcName = 'renderGuaranteedMessaging';
-    // const logName = `${componentName}.${funcName}()`;
-
     const dataTableList: Array<ClientInformationGuaranteedMessaging> = [rowData.guaranteedMessaging];
     return (
       <DataTable
@@ -47,9 +43,6 @@ export const APDisplayAppClientInformation: React.FC<IAPDisplayAppClientInformat
   }
 
   const renderComponent = (appClientInformationList: TAPAppClientInformationList): JSX.Element => {
-    // const funcName = 'renderComponent';
-    // const logName = `${componentName}.${funcName}()`;
-
     return (
       <DataTable
         className="p-datatable-sm"
