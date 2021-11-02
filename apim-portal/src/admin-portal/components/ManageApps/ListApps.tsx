@@ -6,55 +6,71 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-import { Config } from '../../../Config';
+import { ApiProductsService, AppListItem, AppsService, CommonDisplayName } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { 
   TManagedApiProductId, 
-  TViewManagedApiProduct,
-  TApiGetApiProductListResult,
-  APApiObjectsApiCalls,
+  TViewManagedApp,
+  TViewManagedAppList,
+  TApiProductList,
+  TApiProduct,
 } from '../../../components/APApiObjectsCommon';
 
 import '../../../components/APComponents.css';
-import "./ManageApiProducts.css";
+import "./ManageApps.css";
 
-export interface IListApiProductsProps {
+export interface IListAppsProps {
   organizationId: TAPOrganizationId,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string, viewManagedObject: TViewManagedApiProduct) => void;
+  onManagedObjectView: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string, viewManagedObject: TViewManagedApp) => void;
 }
 
-export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
-  const componentName = 'ListApiProducts';
+export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
+  const componentName = 'ListApps';
 
-  const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const MessageNoManagedObjectsFound = 'No APPs found.';
+  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TViewManagedApiProduct;
-  type TManagedObjectList = Array<TManagedObject>;
+  type TManagedObject = TViewManagedApp;
+  type TManagedObjectList = TViewManagedAppList;
   type TManagedObjectTableDataRow = TManagedObject & {
-    apiInfoListAsDisplayStringList: Array<string>,
-    protocolListAsString: string,
+    apiProductDisplayNameList: Array<CommonDisplayName>,
     globalSearch: string
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
+  const transformViewApiObjectToViewManagedObject = (appListItem: AppListItem, apiProductList: TApiProductList): TManagedObject => {
+    const funcName = 'transformViewApiObjectToViewManagedObject';
+    const logName = `${componentName}.${funcName}()`;
+    if(!appListItem.name) throw new Error(`${logName}: appListItem.name is undefined`);
+    return {
+      id: appListItem.name,
+      displayName: appListItem.displayName ? appListItem.displayName : appListItem.name,
+      appListItem: appListItem,
+      apiProductList: apiProductList
+    }
+  }
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
+    const _createApiProductDisplayNameList = (apiProductList: TApiProductList): Array<CommonDisplayName> => {
+      return apiProductList.map( (apiProduct: TApiProduct) => {
+        return apiProduct.displayName
+      });
+    }
     const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
       const managedObjectTableDataRow: TManagedObjectTableDataRow = {
         ...managedObject,
-        apiInfoListAsDisplayStringList: APRenderUtils.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
-        protocolListAsString: APRenderUtils.getProtocolListAsString(managedObject.apiProduct.protocols),
+        apiProductDisplayNameList: _createApiProductDisplayNameList(managedObject.apiProductList),
         globalSearch: ''
       };
       const globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
@@ -80,12 +96,32 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
-    const initialCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
-    const result: TApiGetApiProductListResult = await APApiObjectsApiCalls.apiGetApiProductList(props.organizationId, initialCallState);
-    setManagedObjectList(result.viewManagedApiProductList);
-    setApiCallStatus(result.apiCallState);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_LIST, `retrieve list of apps`);
+    try { 
+      const apiAppList: Array<AppListItem> = await AppsService.listApps({
+        organizationName: props.organizationId, 
+      });
+      let _managedObjectList: TManagedObjectList = [];
+      for(const apiAppListItem of apiAppList) {
+        if(!apiAppListItem.apiProducts) throw new Error(`${logName}: apiAppListItem.apiProducts is undefined`);
+        let _apApiProductList: TApiProductList = [];
+        for(const apiApiProductId of apiAppListItem.apiProducts) {
+          const apiApiProduct = await ApiProductsService.getApiProduct({
+            organizationName: props.organizationId,
+            apiProductName: apiApiProductId
+          });
+          _apApiProductList.push(apiApiProduct);
+        }
+        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiAppListItem, _apApiProductList));
+      }
+      setManagedObjectList(_managedObjectList);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
     setIsGetManagedObjectListInProgress(false);
-    return result.apiCallState;
+    return callState;
   }
 
   const doInitialize = async () => {
@@ -122,7 +158,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
-        <div className="table-header-container" />
+        <div className="table-header-container">
+          buttons to filter: approved, pending
+        </div>
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
@@ -136,21 +174,12 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
         </React.Fragment>
     );
   }
 
-  const attributesBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.apiProduct.attributes));
-  }
-
-  const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(rowData.apiProduct.environments ? rowData.apiProduct.environments : []);
-    // return APRenderUtils.renderStringListAsDivList(rowData.environmentListAsStringList);
-  }
-  const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(rowData.apiInfoListAsDisplayStringList);
+  const apiProductsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
+    return APRenderUtils.renderStringListAsDivList(rowData.apiProductDisplayNameList);
   }
 
   const renderManagedObjectDataTable = () => {
@@ -180,12 +209,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             sortOrder={1}
           >
             <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
-            {/* <Column field="apiProduct.description" header="Description" /> */}
-            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-            <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-            <Column field="protocolListAsString" header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
+            <Column field="appListItem.status" header="State" sortable bodyStyle={{ verticalAlign: 'top' }}/>
+            <Column field="appListItem.appType" header="Type" sortable bodyStyle={{ verticalAlign: 'top' }}/>
+            <Column field="appListItem.ownerId" header="Owner" sortable bodyStyle={{ verticalAlign: 'top' }}/>
+            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
             <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>
@@ -195,7 +222,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const renderContent = () => {
 
     if(managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
-      return (<h3>{MessageNoManagedObjectsFoundCreateNew}</h3>);
+      return (<h3>{MessageNoManagedObjectsFound}</h3>);
     }
     if(managedObjectList.length > 0 && !isGetManagedObjectListInProgress) {
       return renderManagedObjectDataTable();
@@ -217,16 +244,16 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   return (
-    <div className="manage-api-products">
+    <div className="ap-manage-apps">
 
-      <APComponentHeader header='API Products:' />
+      <APComponentHeader header='APPs:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {renderContent()}
       
       {/* DEBUG OUTPUT         */}
-      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
+      {renderDebugSelectedManagedObject()}
 
     </div>
   );

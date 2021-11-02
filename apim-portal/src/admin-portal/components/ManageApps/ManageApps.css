@@ -1,12 +1,25 @@
-.ap-placeholder {
-  display: flex;
-}
-/* .manage-api-products .table-header {
+.ap-manage-apps .table-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.manage-api-products .sub-table {
+.ap-manage-apps .ap-app-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-manage-apps .ap-app-view .ap-app-view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-manage-apps .ap-app-view .ap-app-view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
+/*.manage-api-products .sub-table {
   padding-left: 2rem;
   padding-top: 0rem;
   padding-bottom: 1rem;

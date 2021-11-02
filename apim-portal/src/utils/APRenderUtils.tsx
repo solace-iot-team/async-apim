@@ -2,6 +2,7 @@ import React from "react";
 import { 
   APIInfo, 
   APIInfoList, 
+  Endpoint, 
   Protocol 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
@@ -23,6 +24,13 @@ export class APRenderUtils {
       return _protocolList.sort().join(', ');
     }
     else return '';
+  }
+
+  public static getEndpointAttributesAsString = (endpoint: Endpoint): string => {
+    if(endpoint.secure ==='yes' && endpoint.compressed === 'yes') return 'secure+compressed';
+    if(endpoint.secure === 'yes') return 'secure';
+    if(endpoint.compressed === 'yes') return 'compressed';
+    return 'plain';
   }
 
   public static getAttributeNameList = (attributeList?: TAPAttributeList): Array<string> => {
@@ -48,7 +56,7 @@ export class APRenderUtils {
     else return [];
   }
 
-  public static renderStringListAsDivList = (stringList: Array<string>): JSX.Element => {
+  public static renderStringListAsDivList = (stringList?: Array<string>): JSX.Element => {
     let jsxElementList: Array<JSX.Element> = [];
 
     const addJSXElement = (str: string) => {
@@ -57,10 +65,11 @@ export class APRenderUtils {
       );
       jsxElementList.push(jsxElem);
     }
-
-    stringList.forEach( (str: string) => {
-      addJSXElement(str);
-    });
+    if(stringList) {
+      stringList.forEach( (str: string) => {
+        addJSXElement(str);
+      });  
+    }
     return (
       <React.Fragment>
         {jsxElementList}

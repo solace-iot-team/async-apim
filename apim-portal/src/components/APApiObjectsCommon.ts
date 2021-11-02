@@ -7,10 +7,10 @@ import {
   APIProduct, 
   ApiProductsService, 
   ApisService, 
+  AppListItem, 
   ClientOptionsGuaranteedMessaging, 
   EnvironmentResponse, 
   EnvironmentsService, 
-  Protocol
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../utils/ApiCallState";
@@ -34,6 +34,10 @@ export type TAPApiViewManagedObject = {
   globalSearch: string
 }
 
+export enum EApiTopicSyntax {
+  SMF = "smf",
+  MQTT = "mqtt"
+}
 // * Manage Api Products *
 export type TApiProduct = APIProduct;
 export type TApiProductList = Array<TApiProduct>;
@@ -57,6 +61,15 @@ export type TApiGetApiInfoListResult = {
   apiCallState: TApiCallState,
   apiInfoList: APIInfoList
 }
+
+// Manage Apps
+export type TViewManagedApp = {
+  id: string,
+  displayName: string,
+  appListItem: AppListItem,
+  apiProductList: TApiProductList
+}
+export type TViewManagedAppList = Array<TViewManagedApp>;
 
 export class APEnvironmentObjectsCommon {
 

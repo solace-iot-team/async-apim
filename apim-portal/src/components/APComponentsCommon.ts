@@ -1,5 +1,10 @@
 import { DataTableSortOrderType } from 'primereact/datatable';
 import { EAPSSortDirection } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  ClientInformationGuaranteedMessaging, 
+  CommonDisplayName, 
+  CommonName 
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -42,6 +47,13 @@ export type TAPAsyncApiSpec = {
   format: EAPAsyncApiSpecFormat,
   spec: any
 }
+
+export type TAPAppClientInformation = {
+  guaranteedMessaging: ClientInformationGuaranteedMessaging
+  apiProductName: CommonName,
+  apiProductDisplayName: CommonDisplayName
+}
+export type TAPAppClientInformationList = Array<TAPAppClientInformation>;
 
 export type TAPLazyLoadingTableParameters = {
   isInitialSetting: boolean, // differentiate between first time and subsequent times

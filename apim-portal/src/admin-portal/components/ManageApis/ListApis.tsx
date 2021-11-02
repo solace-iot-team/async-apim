@@ -178,7 +178,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             onRowClick={onManagedObjectSelect}
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             scrollable 
-            scrollHeight="800px" 
+            // scrollHeight="800px" 
             dataKey="id"  
             // sorting
             sortMode='single'

@@ -347,7 +347,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
             <Column expander style={{ width: '3em' }} />  
             <Column field="displayName" header="Name" sortable />
             <Column field="apiObject.status" header="Status" sortable />
-            <Column body={apiProductsBodyTemplate} header="API Product(s)" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
+            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
             <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
         </DataTable>
       </div>
