@@ -37,7 +37,8 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     UNDEFINED = "UNDEFINED",
     MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
     MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
-    MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
+    MANAGED_OBJECT_EDIT_ATTRIBUTES = "MANAGED_OBJECT_EDIT_ATTRIBUTES",
+    // MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
     // MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
     // MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW"
   }
@@ -62,7 +63,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     });
   }
   
-  const ToolbarEditManagedObjectButtonLabel = 'Edit';
+  const ToolbarEditAttributesManagedObjectButtonLabel = 'Edit Attributes';
 
   // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   // const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
@@ -74,8 +75,8 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
-  
+  // const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
+  const [showEditAttributesComponent, setShowEditAttributesComponent] = React.useState<boolean>(false);
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -88,7 +89,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   React.useEffect(() => {
     if(!managedObjectDisplayName) return;
     if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-        componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
+        componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES
       ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
     else props.onBreadCrumbLabelList([]);
   }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -116,19 +117,19 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
-  // * Edit Object *
-  const onEditManagedObjectFromToolbar = () => {
-    const funcName = 'onEditManagedObjectFromToolbar';
+  // * Edit Attributes *
+  const onEditAttributesFromToolbar = () => {
+    const funcName = 'onEditAttributesFromToolbar';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
-    onEditManagedObject(managedObjectId, managedObjectDisplayName);
+    onEditAttributesManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onEditManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onEditAttributesManagedObject = (id: TManagedObjectId, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES);
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
@@ -141,20 +142,23 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     //   </React.Fragment>
     // );
     if(showViewComponent) {          
-      // if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
       return (
         <React.Fragment>
-          <div>TODO: showViewComponent: what buttons here?</div>
-          {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
+          {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/> */}
+          <Button 
+            label={ToolbarEditAttributesManagedObjectButtonLabel} 
+            icon="pi pi-pencil" 
+            onClick={onEditAttributesFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+          />        
+          {/* <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
         </React.Fragment>
       );
     }
-    if(showEditComponent) {
+    if(showEditAttributesComponent) {
       return (
         <React.Fragment>
-          <div>TODO: showEditComponent: what buttons here?</div>
+          <div>TODO: showEditAttributesComponent: what buttons here?</div>
           {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
           <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
@@ -201,22 +205,22 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);
-      setShowEditComponent(false);
+      setShowEditAttributesComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
-      setShowEditComponent(false);
+      setShowEditAttributesComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
-      setShowEditComponent(false);
+      setShowEditAttributesComponent(false);
     }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES) {
       setShowListComponent(false);
       setShowViewComponent(false);
-      setShowEditComponent(true);
+      setShowEditAttributesComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -231,22 +235,16 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
       { !isLoading && renderToolbar() }
 
       {showListComponent && 
-        // <div>TODO: showListComponent</div>
         <ListApps
           key={componentState.previousState}
           organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
-          onManagedObjectEdit={onEditManagedObject}
+          onManagedObjectEdit={onEditAttributesManagedObject}
           onManagedObjectView={onViewManagedObject}
         />
       }
-
-{/* appId: string;
-  appDisplayName: string;
-  appType: AppListItem.appType;
-  appOwnerId: string; */}
 
       {showViewComponent && managedObjectId && managedObjectDisplayName && 
         viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
@@ -261,8 +259,8 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
           onLoadingChange={setIsLoading}
         />      
       }
-      {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <div>TODO: showEditComponent</div>
+      {showEditAttributesComponent && managedObjectId && managedObjectDisplayName &&
+        <div>TODO: showEditAttributesComponent</div>
 
         // <EditNewApiProduct
         //   action={EAction.EDIT}
