@@ -21,13 +21,17 @@ export const APDisplayAttributes: React.FC<IAPDisplayAttributesProps> = (props: 
     const addAttributeJSXElement = (attribute: TAPAttribute) => {
       const jsxElem: JSX.Element = (
         <li>
-          {attribute.name}: [{attribute.value}]
+          {attribute.name}: {attribute.value}
         </li>
       );
       attributesJSXElementList.push(jsxElem);
     }
     if(props.attributeList && props.attributeList.length > 0) {
-      props.attributeList.forEach( (attribute: TAPAttribute) => {
+      const sortedList: TAPAttributeList = props.attributeList.sort( (first: TAPAttribute, second: TAPAttribute) => {
+        if(first.name < second.name) return -1;
+        else return 1;
+      });
+      sortedList.forEach( (attribute: TAPAttribute) => {
         addAttributeJSXElement(attribute);  
       });
       setJsxElementList(attributesJSXElementList);

@@ -8,17 +8,15 @@ import { Loading } from "../../../components/Loading/Loading";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { TViewManagedApp } from '../../../components/APApiObjectsCommon';
-// import { E_CALL_STATE_ACTIONS } from './ManageApiProductsCommon';
-// import { ListApiProducts } from "./ListApiProducts";
-// import { EAction, EditNewApiProduct } from "./EditNewApiProduct";
-// import { DeleteApiProduct } from "./DeleteApiProduct";
-// import { ViewApiProduct } from "./ViewApiProduct";
-
-import '../../../components/APComponents.css';
-import "./ManageApps.css";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { ListApps } from "./ListApps";
 import { ViewApp } from "./ViewApp";
+import { EditAppAttributes } from "./EditAppAttributes";
+import { ApproveApp } from "./ApproveApp";
+
+import '../../../components/APComponents.css';
+import "./ManageApps.css";
+import { AppResponse, AppStatus } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IManageAppsProps {
   organizationId: TAPOrganizationId;
@@ -38,9 +36,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
     MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
     MANAGED_OBJECT_EDIT_ATTRIBUTES = "MANAGED_OBJECT_EDIT_ATTRIBUTES",
-    // MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
-    // MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-    // MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW"
+    MANAGED_OBJECT_APPROVE = "MANAGED_OBJECT_APPROVE",
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -64,6 +60,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   }
   
   const ToolbarEditAttributesManagedObjectButtonLabel = 'Edit Attributes';
+  const ToolbarApproveManagedObjectButtonLabel = 'Approve';
 
   // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   // const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
@@ -75,8 +72,11 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  // const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
+  const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
+  const [viewAppApiAppResponse, setViewAppApiAppResponse] = React.useState<AppResponse>();
+  const [showApproveComponent, setShowApproveComponent] = React.useState<boolean>(false);
   const [showEditAttributesComponent, setShowEditAttributesComponent] = React.useState<boolean>(false);
+
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -131,6 +131,21 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES);
   }
+  // * Approve *
+  const onApproveFromToolbar = () => {
+    const funcName = 'onApproveFromToolbar';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
+    onApproveManagedObject(managedObjectId, managedObjectDisplayName);
+  }
+  const onApproveManagedObject = (id: TManagedObjectId, displayName: string): void => {
+    setApiCallStatus(null);
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_APPROVE);
+  }
+
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderLeftToolbarContent';
@@ -150,7 +165,15 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
             icon="pi pi-pencil" 
             onClick={onEditAttributesFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
-          />        
+          />
+          {viewAppApiAppResponse && viewAppApiAppResponse.status !== AppStatus.APPROVED && 
+            <Button 
+              label={ToolbarApproveManagedObjectButtonLabel} 
+              icon="pi pi-check" 
+              onClick={onApproveFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+            />        
+          }
           {/* <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
         </React.Fragment>
       );
@@ -173,21 +196,19 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   }
   
   // * prop callbacks *
+  const onViewAppLoadingFinished = (apiAppResponse: AppResponse) => {
+    setViewAppApiAppResponse(apiAppResponse);
+  }
+
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: string | undefined) => {
+  const onApproveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
-      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    }
-    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setRefreshViewComponentKey(refreshViewComponentKey + 1);
   }
-  // const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  // }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
@@ -206,21 +227,32 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditAttributesComponent(false);
+      setShowApproveComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditAttributesComponent(false);
+      setShowApproveComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditAttributesComponent(false);
+      setShowApproveComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditAttributesComponent(true);
+      setShowApproveComponent(false);
+    }
+    else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
+              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_APPROVE) {
+      setShowListComponent(false);
+      setShowViewComponent(true);
+      setShowEditAttributesComponent(false);
+      setShowApproveComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -249,6 +281,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
       {showViewComponent && managedObjectId && managedObjectDisplayName && 
         viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
         <ViewApp
+          key={refreshViewComponentKey}
           organizationId={props.organizationId}
           appId={managedObjectId}
           appDisplayName={managedObjectDisplayName}
@@ -257,22 +290,36 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
+          onLoadingFinished={onViewAppLoadingFinished}
         />      
       }
       {showEditAttributesComponent && managedObjectId && managedObjectDisplayName &&
-        <div>TODO: showEditAttributesComponent</div>
-
-        // <EditNewApiProduct
-        //   action={EAction.EDIT}
-        //   organizationId={props.organizationId}
-        //   apiProductId={managedObjectId}
-        //   apiProductDisplayName={managedObjectDisplayName}
-        //   onNewSuccess={onNewManagedObjectSuccess} 
-        //   onEditSuccess={onEditManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
+        <EditAppAttributes
+          organizationId={props.organizationId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          appType={viewManagedObject.appListItem.appType}
+          appOwnerId={viewManagedObject.appListItem.ownerId}
+          onEditSuccess={onSubComponentSuccess} 
+          onError={onSubComponentError} 
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+        />      
+      }
+      {showApproveComponent && managedObjectId && managedObjectDisplayName &&
+        viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
+        <ApproveApp
+          organizationId={props.organizationId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          appType={viewManagedObject.appListItem.appType}
+          appOwnerId={viewManagedObject.appListItem.ownerId}
+          onSuccess={onApproveManagedObjectSuccess} 
+          onError={onSubComponentError} 
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+        />      
       }
     </div>
   );

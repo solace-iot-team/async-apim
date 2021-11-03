@@ -186,10 +186,10 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               <div className="p-text-bold">Description:</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.description}</div>
               <div><b>Approval type</b>: {managedObjectDisplay.apiProduct.approvalType}</div>
-              {/* <div className="p-text-bold">API(s):</div>
-              <div className="p-ml-2">{managedObjectDisplay.apiProduct.apis.join(', ')}</div> */}
+
               <div className="p-text-bold">APIs:</div>
               {renderShowApiButtons()}
+
               <div className="p-text-bold">Environments:</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div>
               <div className="p-text-bold">Protocols:</div>

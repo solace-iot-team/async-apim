@@ -113,7 +113,6 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
       );
     }  
     return (
-      // <div className="card" style={{ width: '80em'}}>
       <React.Fragment>
         <DataTable
           ref={attributeDataTableRef}
@@ -128,20 +127,10 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
           sortOrder={1}
         >
           <Column field="name" header="Attribute Name" sortable style={{ width: "20em"}}/>
-          <Column field="value" header="Attribute Value" 
-            bodyStyle={{
-              'overflow-wrap': 'break-word',
-              'word-wrap': 'break-word'
-            }} 
-          />
-          <Column 
-            body={actionBodyTemplate} 
-            headerStyle={{width: '5em', textAlign: 'center'}} 
-            bodyStyle={{textAlign: 'center' }}
-          />
+          <Column field="value" header="Attribute Value" bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} />
+          <Column body={actionBodyTemplate} bodyStyle={{ width: '3em', textAlign: 'end' }} />
         </DataTable>
       </React.Fragment>        
-      // </div>
     );
   }
 

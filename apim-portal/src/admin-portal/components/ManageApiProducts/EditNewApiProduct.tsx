@@ -947,7 +947,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           collapsed={false}
         > */}
           <DataTable 
-            style={{'border-width': 'thin'}}
+            style={{borderWidth: 'thin'}}
             ref={manageApiParameterAttributesDataTableRef}
             dataKey="name"
             className="p-datatable-sm"
@@ -974,8 +974,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               filterField='enum'
               body={apiParameterValueBodyTemplate}
               bodyStyle={{
-                'overflow-wrap': 'break-word',
-                'word-wrap': 'break-word'
+                overflowWrap: 'break-word',
+                wordWrap: 'break-word'
               }} 
             />
           </DataTable>

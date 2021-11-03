@@ -33,16 +33,20 @@ import { APDisplayAppClientInformation } from "../../../components/APDisplay/APD
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
+import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
+import { Divider } from "primereact/divider";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
   appId: string;
   appDisplayName: string;
   appType: AppListItem.appType;
-  appOwnerId: string;
+  appOwnerId: string;  
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  onLoadingFinished: (apiAppResponse: AppResponse) => void;
 }
 
 export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
@@ -179,8 +183,14 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    const funcName = 'useEffect[apiCallStatus]';
+    const logName = `${componentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
+      if(apiCallStatus.success && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_APP) {
+        if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+        props.onLoadingFinished(managedObjectDisplay.apiAppResponse_smf);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -261,53 +271,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
   }
 
-  const getOwnerDisplayStr = (managedObjectDisplay: TManagedObjectDisplay): string => {
-    return `${managedObjectDisplay.apsUser.userId}`;
-  }
-
-  const renderOwnerDetails = (managedObjectDisplay: TManagedObjectDisplay): JSX.Element => {
-    const profile = managedObjectDisplay.apsUser.profile;
-    return(
-      <Dialog 
-        header={`User Id: ${getOwnerDisplayStr(managedObjectDisplay)}`} 
-        visible={true} 
-        position='top-right' 
-        modal={false}
-        style={{ width: '50vw' }} 
-        onHide={()=> {setShowOwnerDetails(false)}}
-        draggable={true} 
-        resizable={true}
-      >
-        <div className="p-m-0">
-          <div><b>First</b>: {profile.first}</div>
-          <div><b>Last</b>: {profile.last}</div>
-          <div><b>E-Mail</b>: {profile.email}</div>
-          {/* DEBUG */}
-          {/* <pre style={ { fontSize: '8px' }} >
-           {JSON.stringify(managedObjectDisplay.apsUser, null, 2)};
-           </pre> */}
-        </div>
-      </Dialog>
-    );
-  }
-
-  const renderOwner = (managedObjectDisplay: TManagedObjectDisplay): JSX.Element => {
-    const onOwnerClick = (event: any): void => {
-      setShowOwnerDetails(true);
-    }
-    // main
-    return (
-      <Button
-        label={getOwnerDisplayStr(managedObjectDisplay)}
-        key={props.appOwnerId}
-        data-id={props.appOwnerId}
-        className="p-button-text p-button-plain" 
-        style={{ whiteSpace: 'nowrap', padding: 'unset' }}          
-        onClick={onOwnerClick}
-      />
-    );
-  }
-
   const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     return (
       <React.Fragment>
@@ -353,6 +316,21 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         </div>
       );
     }
+    const panelHeaderTemplateAppApis = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            APP APIs
+          </span>
+        </div>
+      );
+    }
     if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
     if(!managedObjectDisplay.apiAppResponse_smf.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_smf.environments is undefined`);
     if(!managedObjectDisplay.apiAppResponse_mqtt.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt.environments is undefined`);
@@ -365,7 +343,13 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.description}</div> */}
               <div><b>Status</b>: {managedObjectDisplay.apiAppResponse_smf.status}</div>
               <div><b>Type</b>: {props.appType}</div>
-              <div><b>Owner</b>: {renderOwner(managedObjectDisplay)} - TODO: for API Team, not user</div>
+              <APDisplayOwner 
+                label='Owner'
+                ownerId={props.appOwnerId}
+                ownerType={props.appType === AppListItem.appType.DEVELOPER ? 'apsUser' : 'apsTeam'}
+                apsUser={managedObjectDisplay.apsUser}
+                className='xx'
+              />
               <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
 
               {/* APP Attributes */}
@@ -375,6 +359,23 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
+
+              {/* App Apis */}
+              <Panel 
+                headerTemplate={panelHeaderTemplateAppApis} 
+                toggleable
+                collapsed={true}
+                className="p-pt-2"
+              >
+                <APDisplayAppAsyncApis 
+                  organizationId={props.organizationId}
+                  appId={props.appId}
+                  appDisplayName={props.appDisplayName}
+                  label="Select API"
+                  onError={props.onError}
+                  onLoadingChange={props.onLoadingChange}
+                />
+              </Panel>
 
               {/* APP Webhooks */}
               <div className="p-text-bold">APP Webhooks:</div>
@@ -425,27 +426,27 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     ); 
   }
 
-  const renderDebug = (): JSX.Element => {
-    if(managedObjectDisplay) {
-      const _d = {
-        ...managedObjectDisplay,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <div>
-          <hr/>
-          <h1>ManagedObjectDisplay.apiAppResponse_smf.clientInformation:</h1>
-          <pre style={ { fontSize: '8px' }} >
-            {JSON.stringify(_d.apiAppResponse_smf.clientInformation, null, 2)}
-          </pre>
-        </div>
-      );
-    } else return (<></>);
-  }
+  // const renderDebug = (): JSX.Element => {
+  //   if(managedObjectDisplay) {
+  //     const _d = {
+  //       ...managedObjectDisplay,
+  //       globalSearch: 'not shown...'
+  //     }
+  //     return (
+  //       <div>
+  //         <hr/>
+  //         <h1>ManagedObjectDisplay.apiAppResponse_smf.clientInformation:</h1>
+  //         <pre style={ { fontSize: '8px' }} >
+  //           {JSON.stringify(_d.apiAppResponse_smf.clientInformation, null, 2)}
+  //         </pre>
+  //       </div>
+  //     );
+  //   } else return (<></>);
+  // }
 
   return (
     <React.Fragment>
-      <div className="manage-apps">
+      <div className="ap-manage-apps">
 
         <APComponentHeader header={`APP: ${props.appDisplayName}`} />
 
@@ -453,11 +454,9 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
         {managedObjectDisplay && renderManagedObjectDisplay() }
 
-        {managedObjectDisplay && showOwnerDetails && renderOwnerDetails(managedObjectDisplay)}
-
       </div>
       {/* DEBUG */}
-      {renderDebug()}
+      {/* {renderDebug()} */}
     </React.Fragment>
   );
 }
