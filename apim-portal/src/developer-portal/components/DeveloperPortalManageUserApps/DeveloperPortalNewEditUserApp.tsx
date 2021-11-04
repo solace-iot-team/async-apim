@@ -32,7 +32,6 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TAPOrganizationId, TApiEntitySelectItemList, TApiEntitySelectItem, TApiEntitySelectItemIdList } from "../../../components/APComponentsCommon";
 import { 
   E_CALL_STATE_ACTIONS, 
-  DeveloperPortalManageUserAppsCommon, 
   TManagedObjectId,
 } from "./DeveloperPortalManageUserAppsCommon";
 

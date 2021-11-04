@@ -9,6 +9,8 @@ import {
   ApisService, 
   AppListItem, 
   ClientOptionsGuaranteedMessaging, 
+  CommonDisplayName, 
+  CommonName, 
   EnvironmentResponse, 
   EnvironmentsService, 
 } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -17,6 +19,9 @@ import { ApiCallState, TApiCallState } from "../utils/ApiCallState";
 import { Globals } from "../utils/Globals";
 import { TApiEntitySelectItem, TApiEntitySelectItemIdList, TApiEntitySelectItemList, TAPOrganizationId } from "./APComponentsCommon";
 
+
+export type TManagedObjectId = CommonName;
+export type TManagedObjectDisplayName = CommonDisplayName;
 // * Environments *
 export type TAPEnvironmentViewManagedObject = {
   id: TManagedApiProductId,

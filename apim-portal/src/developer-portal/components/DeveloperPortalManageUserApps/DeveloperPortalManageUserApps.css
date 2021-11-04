@@ -1,121 +1,20 @@
-.apd-manageuserapps .table-header {
+.apd-manage-user-apps .table-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.apd-manageuserapps .sub-table {
-  padding-left: 2rem;
-  padding-top: 0rem;
-  padding-bottom: 1rem;
-}
-.apd-manageuserapps .sub-sub-table {
-  padding-left: 2rem;
-  padding-top: 0rem;
-  padding-bottom: 0rem;
-}
-.apd-manageuserapps .confirmation-content {
+.apd-manage-user-apps .apd-app-view {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.apd-manageuserapps .ap-api-error {
-  border-color: #df2121;
-}
-.apd-manageuserapps .badge-active {
-  background-color: transparent;
-}
-.apd-manageuserapps .card form {
-  margin-top: 2rem;
-}
-.apd-manageuserapps .card .p-field {
-  margin-bottom: 2.5rem;
-}
-@media screen and (max-width: 100px) {
-  .manage-users .card {
-    width: 80%;
-  }
-}
-.button-set-footer {
-  display: flex;
-  flex-wrap: nowrap;
-}
-.button-set-footer .p-button-label {
-  display: flex;
-}
-
-.apd-manageuserapps .api-userapp-view {
-  display: flex;
-  align-items: center;
   padding: 1rem;
   width: 100%;
 }
-.apd-manageuserapps .api-userapp-view .api-userapp-view-detail {
+.apd-manage-user-apps .apd-app-view .apd-app-view-detail-left {
   flex: 1 1 0;
+  align-items: center;
 }
-.apd-manageuserapps .api-userapp-name {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-.apd-manageuserapps .api-userapp-description {
-  margin: 0 0 1rem 0;
-}
-.apd-manageuserapps .api-userapp-app-id {
-  font-size: 0.8rem;
-  font-weight: 400;
-}
-.apd-manageuserapps .api-userapp-view .api-userapp-action {
+.apd-manage-user-apps .apd-app-view .apd-app-view-detail-right {
   display: flex;
   flex-direction: column;
-}
-
-/* .apd-manageuserapps .api-userapp-view .api-product-apis {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-} */
-
-.apd-select-products-dialog-content {
-  background-color: transparent;
-}
-
-.apd-manageuserapps
-  .api-userapp-view
-  .api-userapp-view-detail
-  .api-userapp-toolbar {
-  background: none;
-  border: none;
-}
-
-@media screen and (max-width: 576px) {
-  .apd-manageuserapps .api-userapp-view {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .apd-manageuserapps .api-userapp-view img {
-    width: 75%;
-    margin: 2rem 0;
-  }
-
-  .apd-manageuserapps .api-userapp-view .api-userapp-view-detail {
-    text-align: center;
-  }
-
-  /* .apd-manageuserapps .api-userapp-view .api-product-apis {
-    align-self: center;
-  } */
-
-  /* .apd-manageuserapps .api-userapp-view .api-userapp-action {
-    display: flex;
-    flex-direction: column;
-  } */
-
-  .apd-manageuserapps .api-userapp-view .api-userapp-action {
-    margin-top: 2rem;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
+  font-style: italic;
+  margin-left: 2.5rem;
 }

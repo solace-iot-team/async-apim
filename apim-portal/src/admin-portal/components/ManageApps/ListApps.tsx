@@ -5,8 +5,14 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
-import { ApiProductsService, AppListItem, AppsService, CommonDisplayName } from "@solace-iot-team/apim-connector-openapi-browser";
+import { 
+  ApiProductsService, 
+  AppListItem, 
+  AppsService, 
+  CommonDisplayName 
+} from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -16,24 +22,24 @@ import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { 
-  TManagedApiProductId, 
   TViewManagedApp,
   TViewManagedAppList,
   TApiProductList,
   TApiProduct,
+  TManagedObjectId,
+  TManagedObjectDisplayName,
 } from '../../../components/APApiObjectsCommon';
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
 export interface IListAppsProps {
   organizationId: TAPOrganizationId,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedApiProductId, managedObjectDisplayName: string, viewManagedObject: TViewManagedApp) => void;
+  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
+  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName, viewManagedObject: TViewManagedApp) => void;
 }
 
 export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
@@ -169,7 +175,6 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
         setSelectedGlobalFilter(params.value);
         setGlobalFilter(params.value);
       }
-      // alert(`params.value = ${JSON.stringify(params.value)}`);
     }
     return (
       <div className="table-header">
@@ -201,7 +206,6 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
-          {/* <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  /> */}
         </React.Fragment>
     );
   }
@@ -219,7 +223,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             className="p-datatable-sm"
             autoLayout={true}
             resizableColumns 
-            columnResizeMode="expand"
+            columnResizeMode="fit"
             showGridlines={false}
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}

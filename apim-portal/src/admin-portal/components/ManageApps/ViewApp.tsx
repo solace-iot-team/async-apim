@@ -1,10 +1,8 @@
 
 import React from "react";
 
-import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Dialog } from "primereact/dialog";
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 
 import { 
@@ -30,14 +28,14 @@ import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
-
-import '../../../components/APComponents.css';
-import "./ManageApps.css";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplayAppCredentials";
+
+import '../../../components/APComponents.css';
+import "./ManageApps.css";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
