@@ -36,6 +36,8 @@ import "./ManageApps.css";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";
+import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
+import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplayAppCredentials";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
@@ -197,32 +199,10 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
     const rowExpansionTemplate = (rowData: TApiProduct) => {
       return (
-        <div>
-          <DataTable 
-            className="p-datatable-sm"
-            value={rowData.attributes}
-            // autoLayout={true}
-            sortMode="single" 
-            sortField="name" 
-            sortOrder={1}  
-          >
-            <Column 
-              field="name" 
-              header="Attribute Name" 
-              bodyStyle={{ verticalAlign: 'top' }}
-              style={{width: '30%'}}
-              sortable
-            />
-            <Column 
-              field="value" 
-              header="Attribute Values"
-              bodyStyle={{
-                'overflow-wrap': 'break-word',
-                'word-wrap': 'break-word'
-              }} 
-            />
-          </DataTable>
-        </div>
+        <APDisplayAttributes
+          attributeList={rowData.attributes}
+          emptyMessage="No attributes defined."
+        />
       );
     }
     const environmentsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
@@ -238,12 +218,21 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     const attributesBodyTemplate = (rowData: TApiProduct): JSX.Element => {
       return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.attributes));
     }
-  
+    const apisBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return APRenderUtils.renderStringListAsDivList(rowData.apis);
+    }    
+    const apiProductNameBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return (
+        <div className="p-text-bold">{rowData.displayName}</div>
+      );
+    }
+
     const dataTableList = apiProductList;
 
     return (
       <div className="card">
         <DataTable
+          className="p-datatable-sm"
           ref={viewProductsDataTableRef}
           dataKey="name"
           value={dataTableList}
@@ -257,11 +246,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
           rowExpansionTemplate={rowExpansionTemplate}
         >
           <Column expander style={{ width: '3em' }} />  
-          <Column 
-            field="displayName" 
-            header="API Product" 
-            bodyStyle={{ verticalAlign: 'top' }}
-          />
+          <Column body={apiProductNameBodyTemplate} header="API Product" bodyStyle={{ verticalAlign: 'top' }} />
+          <Column body={apisBodyTemplate} header="APIs" bodyStyle={{ verticalAlign: 'top' }}/>
           <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }}/>
           <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
           <Column body={protocolsBodyTemplate} header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
@@ -286,6 +272,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
+    
     const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -316,6 +303,51 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         </div>
       );
     }
+    const panelHeaderTemplateWebhooks = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            APP Webhooks
+          </span>
+        </div>
+      );
+    }
+    const panelHeaderTemplateCredentials     = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            APP Credentials
+          </span>
+        </div>
+      );
+    }    
+    const panelHeaderTemplateAppAttributes = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            APP Attributes
+          </span>
+        </div>
+      );
+    }
     const panelHeaderTemplateAppApis = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -331,6 +363,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         </div>
       );
     }
+    // main
     if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
     if(!managedObjectDisplay.apiAppResponse_smf.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_smf.environments is undefined`);
     if(!managedObjectDisplay.apiAppResponse_mqtt.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt.environments is undefined`);
@@ -353,12 +386,18 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
 
               {/* APP Attributes */}
-              <div className="p-text-bold">APP Attributes:</div>
-              <APDisplayAttributes
-                attributeList={managedObjectDisplay.apiAppResponse_smf.attributes}
-                emptyMessage="No attributes defined"
-                className="p-ml-4"
-              />
+              <Panel 
+                headerTemplate={panelHeaderTemplateAppAttributes} 
+                toggleable
+                collapsed={false}
+                className="p-pt-2"
+              >
+                <APDisplayAttributes
+                  attributeList={managedObjectDisplay.apiAppResponse_smf.attributes}
+                  emptyMessage="No attributes defined."
+                  // className="p-ml-4"
+                />
+              </Panel>
 
               {/* App Apis */}
               <Panel 
@@ -371,19 +410,36 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                   organizationId={props.organizationId}
                   appId={props.appId}
                   appDisplayName={props.appDisplayName}
-                  label="Select API"
+                  label="Click to view API"
                   onError={props.onError}
                   onLoadingChange={props.onLoadingChange}
                 />
               </Panel>
 
               {/* APP Webhooks */}
-              <div className="p-text-bold">APP Webhooks:</div>
-              <div>TODO: display webhooks</div>
+              <Panel 
+                headerTemplate={panelHeaderTemplateWebhooks} 
+                toggleable
+                collapsed={true}
+                className="p-pt-2"
+              >
+                <APDisplayAppWebhooks 
+                  appWebhookList={managedObjectDisplay.apiAppResponse_smf.webHooks ? managedObjectDisplay.apiAppResponse_smf.webHooks : []} 
+                  emptyMessage="No Webhooks defined."              
+                />
+              </Panel>
 
               {/* APP Credentials */}
-              <div className="p-text-bold">APP Credentials:</div>
-              <div>TODO: display credentials (for user, not for API Team)</div>
+              <Panel 
+                headerTemplate={panelHeaderTemplateCredentials} 
+                toggleable
+                collapsed={true}
+                className="p-pt-2"
+              >
+                <APDisplayAppCredentials
+                  appCredentials={managedObjectDisplay.apiAppResponse_smf.credentials} 
+                />
+              </Panel>
 
               {/* APP Endpoints & Permissions */}
               <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
@@ -395,18 +451,15 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 collapsed={true}
                 className="p-pt-2"
               >
-                {/* DEBUG */}
-                {/* <h1>managedObjectDisplay.apAppClientInformationList:</h1>
-                <pre style={ { fontSize: '8px' }} >
-                  {JSON.stringify(managedObjectDisplay.apAppClientInformationList, null, 2)}
-                </pre> */}
                 <APDisplayAppClientInformation 
                   appClientInformationList={managedObjectDisplay.apAppClientInformationList}
                   emptyMessage="No Client Information defined."
                   // className="p-ml-2"                
                 />
               </Panel>
-
+              {/* References */}
+              <Divider />
+              <div><b>References:</b></div>
               {/* API Product */}
               <Panel 
                 headerTemplate={panelHeaderTemplateApiProducts} 
@@ -414,7 +467,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 collapsed={true}
                 className="p-pt-2"
               >
-                <div className="p-ml-2">{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
+                <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
               </Panel>
             </div>
             <div className="ap-app-view-detail-right">
@@ -426,23 +479,23 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     ); 
   }
 
-  // const renderDebug = (): JSX.Element => {
-  //   if(managedObjectDisplay) {
-  //     const _d = {
-  //       ...managedObjectDisplay,
-  //       globalSearch: 'not shown...'
-  //     }
-  //     return (
-  //       <div>
-  //         <hr/>
-  //         <h1>ManagedObjectDisplay.apiAppResponse_smf.clientInformation:</h1>
-  //         <pre style={ { fontSize: '8px' }} >
-  //           {JSON.stringify(_d.apiAppResponse_smf.clientInformation, null, 2)}
-  //         </pre>
-  //       </div>
-  //     );
-  //   } else return (<></>);
-  // }
+  const renderDebug = (): JSX.Element => {
+    if(managedObjectDisplay) {
+      const _d = {
+        ...managedObjectDisplay,
+        globalSearch: 'not shown...'
+      }
+      return (
+        <div>
+          <hr/>
+          <h1>ManagedObjectDisplay.apiAppResponse_smf.credentials:</h1>
+          <pre style={ { fontSize: '8px' }} >
+            {JSON.stringify(_d.apiAppResponse_smf.credentials, null, 2)}
+          </pre>
+        </div>
+      );
+    } else return (<></>);
+  }
 
   return (
     <React.Fragment>

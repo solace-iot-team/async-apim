@@ -1,7 +1,10 @@
 
 import React from "react";
 
-import { TAPAttribute, TAPAttributeList } from "../../utils/APConnectorApiCalls";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+
+import { TAPAttributeList } from "../../utils/APConnectorApiCalls";
 
 import "../APComponents.css";
 
@@ -14,40 +17,52 @@ export interface IAPDisplayAttributesProps {
 export const APDisplayAttributes: React.FC<IAPDisplayAttributesProps> = (props: IAPDisplayAttributesProps) => {
   const componentName='APDisplayAttributes';
 
-  const [jsxElementList, setJsxElementList] = React.useState<Array<JSX.Element>>();
+  const dataTableRef = React.useRef<any>(null);
 
-  const doInitialize = () => {
-    let attributesJSXElementList: Array<JSX.Element> = [];    
-    const addAttributeJSXElement = (attribute: TAPAttribute) => {
-      const jsxElem: JSX.Element = (
-        <li>
-          {attribute.name}: {attribute.value}
-        </li>
-      );
-      attributesJSXElementList.push(jsxElem);
-    }
-    if(props.attributeList && props.attributeList.length > 0) {
-      const sortedList: TAPAttributeList = props.attributeList.sort( (first: TAPAttribute, second: TAPAttribute) => {
-        if(first.name < second.name) return -1;
-        else return 1;
-      });
-      sortedList.forEach( (attribute: TAPAttribute) => {
-        addAttributeJSXElement(attribute);  
-      });
-      setJsxElementList(attributesJSXElementList);
-    }
+  const renderComponent = (attributeList: TAPAttributeList): JSX.Element => {
+    return (
+      <React.Fragment>
+        <DataTable
+          className="p-datatable-sm"
+          ref={dataTableRef}
+          value={attributeList}
+          dataKey="name"
+          sortMode="single" 
+          sortField="name" 
+          sortOrder={1}
+          scrollable 
+          // scrollHeight="200px" 
+        >
+          <Column 
+            field="name" 
+            header="Attribute Name" 
+            bodyStyle={{ verticalAlign: 'top' }}
+            style={{width: '20%'}}
+            sortable    
+          />
+          <Column 
+            field="value" 
+            header="Attribute Values"
+            bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
+          />
+        </DataTable>
+        {/* DEBUG */}
+        {/* <pre style={ { fontSize: '12px' }} >
+          {JSON.stringify(attributeList, null, 2)}
+        </pre> */}
+      </React.Fragment>
+    );
   }
-
-  React.useEffect(() => {
-    doInitialize();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <div className={props.className ? props.className : 'card'}>
-      <ul style={{ "listStyle": "disc" }}>
-        { jsxElementList }
-        { !jsxElementList && <li>{props.emptyMessage}</li> }
-      </ul>
-    </div>
+    {props.attributeList && props.attributeList.length > 0 &&
+      renderComponent(props.attributeList)
+    }
+    {(!props.attributeList || props.attributeList.length === 0) && 
+      <span>{props.emptyMessage}</span>
+    }
+  </div>
+
   );
 }

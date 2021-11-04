@@ -35,8 +35,8 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
     PUBLISH = "PUBLISH"
   }
 
-  const emptySubscribePermissionListMessage = 'No subscribe permissions defined';
-  const emptyPublishPermissionListMessage = 'No publish permissions defined';
+  const emptySubscribePermissionListMessage = 'No subscribe permissions defined.';
+  const emptyPublishPermissionListMessage = 'No publish permissions defined.';
   const dataTableHeaderSubscribePermissions = "Subscribe Permissions";
   const dataTableHeaderPublishPermissions = "Publish Permissions";
   const subscribePermissionsDataTableRef = React.useRef<any>(null);

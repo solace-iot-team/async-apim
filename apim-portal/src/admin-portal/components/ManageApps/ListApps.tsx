@@ -12,7 +12,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { 
@@ -25,6 +25,7 @@ import {
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
 export interface IListAppsProps {
   organizationId: TAPOrganizationId,
@@ -89,6 +90,12 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
+  const selectGlobalFilterOptions: TApiEntitySelectItemList = [
+    { id: 'pending', displayName: 'pending' },
+    { id: 'approved', displayName: 'approved' },
+    { id: '', displayName: 'all'}
+  ]
+  const [selectedGlobalFilter, setSelectedGlobalFilter] = React.useState<string>('');
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
@@ -153,17 +160,38 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
     setGlobalFilter(event.currentTarget.value);
+    setSelectedGlobalFilter(event.currentTarget.value);
   }
  
   const renderDataTableHeader = (): JSX.Element => {
+    const onSelectedGlobalFilterChange = (params: SelectButtonChangeParams) => {
+      if(params.value !== null) {
+        setSelectedGlobalFilter(params.value);
+        setGlobalFilter(params.value);
+      }
+      // alert(`params.value = ${JSON.stringify(params.value)}`);
+    }
     return (
       <div className="table-header">
         <div className="table-header-container">
-          buttons to filter: approved, pending
+          <SelectButton 
+            value={selectedGlobalFilter} 
+            options={selectGlobalFilterOptions} 
+            optionLabel="displayName"
+            optionValue="id"
+            onChange={onSelectedGlobalFilterChange} 
+            style={{ textAlign: 'end' }}
+          />
         </div>
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
-          <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
+          <InputText 
+            type="search" 
+            placeholder={GlobalSearchPlaceholder} 
+            onInput={onInputGlobalFilter} 
+            style={{width: '500px'}}
+            value={globalFilter}
+          />
         </span>
       </div>
     );
@@ -173,7 +201,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     return (
         <React.Fragment>
           <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
+          {/* <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  /> */}
         </React.Fragment>
     );
   }
@@ -192,7 +220,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             autoLayout={true}
             resizableColumns 
             columnResizeMode="expand"
-            showGridlines
+            showGridlines={false}
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
@@ -213,7 +241,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             <Column field="appListItem.appType" header="Type" sortable bodyStyle={{ verticalAlign: 'top' }}/>
             <Column field="appListItem.ownerId" header="Owner" sortable bodyStyle={{ verticalAlign: 'top' }}/>
             <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
-            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column body={actionBodyTemplate} headerStyle={{width: '3em'}} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>
     );
@@ -253,7 +281,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
       {renderContent()}
       
       {/* DEBUG OUTPUT         */}
-      {renderDebugSelectedManagedObject()}
+      {/* {renderDebugSelectedManagedObject()} */}
 
     </div>
   );
