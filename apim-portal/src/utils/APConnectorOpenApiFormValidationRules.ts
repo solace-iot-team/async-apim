@@ -1,5 +1,5 @@
 import {
-  $attributes, $ClientOptionsGuaranteedMessaging
+  $attributes, $ClientOptionsGuaranteedMessaging, $WebHook
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../components/APComponentsCommon";
@@ -33,6 +33,24 @@ export class APConnectorFormValidationRules {
         message: 'Max Spool Usage must be >= 0.',
       }
     }
+  }
+
+  public static Webhook_Uri = (): any => {
+    // const fixPattern = '^[a-zA-Z0-9_,\*\?-]*$';
+    const fixPattern = 'https?:\\/\\/[A-Za-z\\.:0-9\\-]*.';
+    // pattern: 'https?:\\/\\/[A-Za-z\\.:0-9\\-]*.{0,200}$',
+    return {
+      required: "Enter fully qualified URI. Example: http://my.callback.com.",
+      maxLength: {
+        value: $WebHook.properties.uri.maxLength,
+        message: `Maximum of ${$WebHook.properties.uri.maxLength} chars.`
+      },
+      pattern: {
+        // value: new RegExp($attributes.contains.properties.value.pattern),
+        value: new RegExp(fixPattern),
+        message: `Invalid name. Pattern: ${$WebHook.properties.uri.pattern}`
+      }
+    };
   }
 
   public static AttributeName = (): any => {

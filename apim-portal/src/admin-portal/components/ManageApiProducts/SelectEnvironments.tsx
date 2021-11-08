@@ -59,7 +59,7 @@ export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: IS
         closable={false}
         onHide={()=> {}}
       >
-        <div className=".manage-api-products .select-environments-dialog-content">
+        <div className="manage-api-products select-environments-dialog-content">
             {renderSelectDialogContent()}
         </div>
         <ApiCallStatusError apiCallStatus={apiCallStatus} />

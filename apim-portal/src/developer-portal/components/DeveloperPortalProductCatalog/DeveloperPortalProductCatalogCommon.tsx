@@ -5,7 +5,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { Globals } from '../../../utils/Globals';
-import { TApiAttribute } from '../DeveloperPortalCommon';
+import { TApiAttribute } from '../_todo.DeveloperPortalCommon';
 
 export enum E_COMPONENT_STATE {
   UNDEFINED = "UNDEFINED",

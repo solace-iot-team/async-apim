@@ -33,7 +33,7 @@ import {
   TApiGetApiProductListResult, 
   TManagedApiProduct, 
   TManagedApiProductList 
-} from "../DeveloperPortalCommon";
+} from "../_todo.DeveloperPortalCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";

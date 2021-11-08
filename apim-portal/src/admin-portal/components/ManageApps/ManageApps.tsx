@@ -68,7 +68,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   
   const ToolbarEditAttributesManagedObjectButtonLabel = 'Edit Attributes';
   const ToolbarApproveManagedObjectButtonLabel = 'Approve';
-  const ToolbarRevokeManagedObjectButtonLabel = 'Revoke';
+  // const ToolbarRevokeManagedObjectButtonLabel = 'Revoke';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */

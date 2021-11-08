@@ -185,7 +185,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           }
         </React.Fragment>
       );
-      }
+    }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;

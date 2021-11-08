@@ -16,20 +16,17 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { 
-  E_CALL_STATE_ACTIONS, 
-  TManagedObjectId, 
-} from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
+import { TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { TManagedObject } from "../../../components/ManageUserAccount/ManageUserAccountCommon";
 
 export interface IDeveloperPortalDeleteUserAppProps {
   organizationId: TAPOrganizationId,
   userId: APSUserId,
   appId: TManagedObjectId,
-  appDisplayName: string,
+  appDisplayName: TManagedObjectDisplayName,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;

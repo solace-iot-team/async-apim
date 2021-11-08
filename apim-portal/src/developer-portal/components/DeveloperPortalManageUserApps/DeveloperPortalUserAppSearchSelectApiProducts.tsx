@@ -5,45 +5,36 @@ import { InputText } from "primereact/inputtext";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
+import { InputTextarea } from "primereact/inputtextarea";
 
-import { 
-  APSUserId, 
-} from '@solace-iot-team/apim-server-openapi-browser';
+import { APSUserId } from '@solace-iot-team/apim-server-openapi-browser';
+import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { 
-  TApiEntitySelectItem, 
+  TApiEntitySelectItem,
   TApiEntitySelectItemList, 
-  TAPLazyLoadingTableParameters, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
+import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { 
-  E_CALL_STATE_ACTIONS, 
-} from "./DeveloperPortalManageUserAppsCommon";
-import { 
-  DeveloperPortalCommon, 
-  DeveloperPortalCommonApiCalls, 
+  APApiObjectsApiCalls, 
   TApiGetApiProductListResult, 
-  TManagedApiProduct, 
-  TManagedApiProductList, 
-  TManagedProductId 
-} from "../DeveloperPortalCommon";
+  TViewManagedApiProduct
+} from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
 
-
-// export type TApiProductIdList = Array<string>;
 export interface IDeveloperPortalUserAppSearchSelectApiProductsProps {
   organizationId: TAPOrganizationId,
   userId: APSUserId,
   currentSelectedApiProductItemList: TApiEntitySelectItemList,
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, selectedApiProducts: TApiEntitySelectItemList) => void;
+  onSave: (apiCallState: TApiCallState, selectedApiProductItemList: TApiEntitySelectItemList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -51,206 +42,118 @@ export interface IDeveloperPortalUserAppSearchSelectApiProductsProps {
 export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperPortalUserAppSearchSelectApiProductsProps> = (props: IDeveloperPortalUserAppSearchSelectApiProductsProps) => {
   const componentName = 'DeveloperPortalUserAppSearchSelectApiProducts';
 
-  const DialogHeader = 'Search & Select API Product(s):';
   const MessageNoManagedObjectsFound = "No API Products found."
   const MessageNoManagedObjectsFoundWithFilter = 'No API Products found for filter';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search...';
 
-  type TManagedProductTableDataRow = TManagedApiProduct & {
-    apiDisplayNameListAsString: string,
+  type TManagedObject = TViewManagedApiProduct;
+  type TManagedObjectList = Array<TManagedObject>;
+  type TManagedObjectTableDataRow = TManagedObject & {
+    apiInfoListAsDisplayStringList: Array<string>,
     protocolListAsString: string,
-    attributeListAsString: string,
-    environmentListAsStringList: Array<string>
+    globalSearch: string
   };
-  type TManagedProductTableDataList = Array<TManagedProductTableDataRow>;
+  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
  
-  const transformApiProductSelectItemListToTableGlobalFilter = (apiProductSelectItemList: TApiEntitySelectItemList): string => {
-    const idList: Array<TManagedProductId> = apiProductSelectItemList.map( (apiProductSelectItem: TApiEntitySelectItem) => {
-      return apiProductSelectItem.id;
-    });
-    return idList.join(' ');
-  }
-
-  const transformApiProductSelectItemListToManagedProductTableDataList = (apiProductSelectItemList: TApiEntitySelectItemList, managedProductList: TManagedApiProductList): TManagedProductTableDataList => {
-    const funcName = 'transformApiProductSelectItemListToManagedProductTableDataList';
-    const logName = `${componentName}.${funcName}()`;
-    let _managedProductTableDataList: TManagedProductTableDataList = [];
-    apiProductSelectItemList.forEach( (apiProductSelectItem: TApiEntitySelectItem) => {
-      const found: TManagedApiProduct | undefined = managedProductList.find( (managedProduct: TManagedApiProduct) => {
-        return managedProduct.id === apiProductSelectItem.id;
-      });
-      if(!found) throw new Error(`${logName}: apiProductSelectItem.id=${apiProductSelectItem.id} not found in managedProductList.`);
-      _managedProductTableDataList.push({
-        ...found,
-        apiDisplayNameListAsString: DeveloperPortalCommon.getApiDisplayNameListAsString(found.apiProduct.apis),
-        protocolListAsString: DeveloperPortalCommon.getProtocolListAsString(found.apiProduct.protocols),
-        attributeListAsString: DeveloperPortalCommon.getAttributeNamesAsString(found.apiProduct.attributes),
-        environmentListAsStringList: DeveloperPortalCommon.getEnvironmentsAsDisplayList(found.apiEnvironmentList, found.apiProduct.environments)
-      });
-    });
-    return _managedProductTableDataList;
-  }
-
-  const transformManagedProductListToTableDataList = (managedProductList: TManagedApiProductList): TManagedProductTableDataList => {
-    const transformManagedProductToTableDataRow = (managedProduct: TManagedApiProduct): TManagedProductTableDataRow => {
+  const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
+    const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
+      const managedObjectTableDataRow: TManagedObjectTableDataRow = {
+        ...managedObject,
+        // apiInfoListAsDisplayStringList: APRenderUtils.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
+        apiInfoListAsDisplayStringList: managedObject.apiProduct.apis,
+        protocolListAsString: APRenderUtils.getProtocolListAsString(managedObject.apiProduct.protocols),
+        globalSearch: ''
+      };
+      const _globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
       return {
-        ...managedProduct,
-        apiDisplayNameListAsString: DeveloperPortalCommon.getApiDisplayNameListAsString(managedProduct.apiProduct.apis),
-        protocolListAsString: DeveloperPortalCommon.getProtocolListAsString(managedProduct.apiProduct.protocols),
-        attributeListAsString: DeveloperPortalCommon.getAttributeNamesAsString(managedProduct.apiProduct.attributes),
-        environmentListAsStringList: DeveloperPortalCommon.getEnvironmentsAsDisplayList(managedProduct.apiEnvironmentList, managedProduct.apiProduct.environments)
+        ...managedObjectTableDataRow,
+        globalSearch: _globalSearch
       }
     }
-    return managedProductList.map( (managedProduct: TManagedApiProduct) => {
-      return transformManagedProductToTableDataRow(managedProduct);
+    return managedObjectList.map( (managedObject: TManagedObject) => {
+      return _transformManagedObjectToTableDataRow(managedObject);
     });
   }
+  const transformManagedObjectTableDataListToManagedObjectItemList = (moTableDataList: TManagedObjectTableDataList): TApiEntitySelectItemList => {
+    const _transformRowData = (rowData: TManagedObjectTableDataRow): TApiEntitySelectItem => {
+      return {
+        id: rowData.id,
+        displayName: rowData.displayName
+      };
+    }
+    return moTableDataList.map( (rowData: TManagedObjectTableDataRow) => {
+      return _transformRowData(rowData);
+    });
+  }
+  const createSelectedManagedObjectTableDataList = (motdList: TManagedObjectTableDataList, selectedMOItemList: TApiEntitySelectItemList): TManagedObjectTableDataList => {
+    let result: TManagedObjectTableDataList = [];
+    selectedMOItemList.forEach( (item: TApiEntitySelectItem) => {
+      const found: TManagedObjectTableDataRow | undefined = motdList.find( (row: TManagedObjectTableDataRow) => {
+        return row.id === item.id;
+      });
+      if(found) result.push(found);
+    });
+    return result;
+  }
+  const doValidateSelectedApiProducts = () => {
+    const funcName = 'doValidateSelectedApiProducts';
+    const logName = `${componentName}.${funcName}()`;
+    const getDupes = (input: Array<CommonName>): Array<CommonName> => {
+      return input.reduce( (acc: Array<string>, currentValue: string, currentIndex: number, arr: Array<CommonName>) => {
+        if(arr.indexOf(currentValue) !== currentIndex && acc.indexOf(currentValue) < 0) acc.push(currentValue); 
+        return acc;
+      }, []);
+    }
+    let apiNameList: Array<CommonName> = [];
+    selectedManagedObjectTableDataList.forEach( (row: TManagedObjectTableDataRow) => {
+      apiNameList.push(...row.apiProduct.apis);
+    });
+    let m: string | undefined = undefined;
+    const _dupes: Array<CommonName> = getDupes(apiNameList);
+    if(_dupes.length > 0) {
+      m = `Cannot select API Products that contain the same APIs. Duplicate APIs: ${_dupes.join(', ')}.`;
+    }
+    setSelectionErrorMessage(m);
 
-  const transformTableDataListToApiProductItemList = (managedProductTableDataList: TManagedProductTableDataList): TManagedApiProductList => {
-    return managedProductTableDataList;
   }
 
-  const [tableSelectedApiProductList, setTableSelectedApiProductList] = React.useState<TManagedProductTableDataList>([]);
-  // const [selectedApiProductItemList, setSelectedApiProductItemList] = React.useState<TApiProductSelectItemList>([]);
-  const [managedProductList, setManagedProductList] = React.useState<TManagedApiProductList>([]);
-  // const [showSelectDialog, setShowSelectDialog] = React.useState<boolean>(true);
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
+  // const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
+  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
+  const [selectionErrorMessage, setSelectionErrorMessage] = React.useState<string>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
-  // * Lazy Loading * 
-  const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
-  const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
-    isInitialSetting: true,
-    first: 0, // index of the first row to be displayed
-    rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
-    page: 0,
-    sortField: 'apiProduct.name',
-    sortOrder: 1
-  });
-  const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
-  const [lazyLoadingTableIsLoading, setLazyLoadingTableIsLoading] = React.useState<boolean>(false);
-  // * Global Filter *
   const [globalFilter, setGlobalFilter] = React.useState<string>();
-  // * Data Table *
   const dt = React.useRef<any>(null);
-  // const [dataTableSelectedRow, setDataTableSelectedRow] = React.useState<TManagedProductTableDataRow>();
-
-
-  // const transformApiProductToManagedProduct = (apiProduct: APIProduct, apiEnvironmentList: Array<EnvironmentResponse>): TManagedProduct => {
-  //   return {
-  //     id: apiProduct.name,
-  //     displayName: apiProduct.displayName ? apiProduct.displayName : apiProduct.name,
-  //     apiProduct: apiProduct,
-  //     apiEnvironmentList: apiEnvironmentList
-  //   }
-  // }
 
   // * Api Calls *
-  // const apiGetApiProductList = async(pageSize: number, pageNumber: number): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetApiProductList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   setIsGetManagedObjectListInProgress(true);
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
-  //   let anyError: any = undefined;
-  //   let apiProductList: TApiProductList = [];
-  //   let totalCount: number = 0;
-  //   try {
-  //     apiProductList = await ApiProductsService.listApiProducts(props.organizationId, pageSize, pageNumber);
-  //     totalCount = 1000; // should be returned by previous call
-  //   } catch (e: any) {
-  //     if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
-  //       const apiError: ApiError = e;
-  //       if(apiError.status !== 404) anyError = e;
-  //     } else anyError = e;
-  //   }
-  //   if(!anyError) {
-  //     if(apiProductList.length > 0) {
-  //       try { 
-  //         let managedProductList: TManagedProductList = [];
-  //         let apiEnvironmentList: Array<EnvironmentResponse> = [];
-  //         for(const apiProduct of apiProductList) {
-  //           if(apiProduct.environments) {
-  //             for(const apiEnvironmentName of apiProduct.environments) {
-  //               const found = apiEnvironmentList.find( (environment: EnvironmentResponse) => {
-  //                 return environment.name === apiEnvironmentName;
-  //               });
-  //               if(!found) {
-  //                 const resp: EnvironmentResponse = await EnvironmentsService.getEnvironment(props.organizationId, apiEnvironmentName);
-  //                 apiEnvironmentList.push(resp);
-  //               }
-  //             }
-  //           }
-  //           managedProductList.push(transformApiProductToManagedProduct(apiProduct, apiEnvironmentList));
-  //         }  
-  //         setManagedProductList(managedProductList);
-  //       } catch(e: any) {
-  //         anyError = e;
-  //       }
-  //     } else {
-  //       setManagedProductList([]);
-  //     }
-  //     setLazyLoadingTableTotalRecords(totalCount);
-  //   }
-  //   if(anyError) {
-  //     APClientConnectorOpenApi.logError(logName, anyError);
-  //     callState = ApiCallState.addErrorToApiCallState(anyError, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   setIsGetManagedObjectListInProgress(false);
-  //   return callState;
-  // }
-
-  const doLoadPage = async () => {
-    // const funcName = 'doLoadPage';
+  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
+    // const funcName = 'apiGetManagedObjectList';
     // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: lazyLoadingTableParams = ${JSON.stringify(lazyLoadingTableParams, null, 2)}`);
-    setLazyLoadingTableIsLoading(true);
-    const pageNumber: number = lazyLoadingTableParams.page + 1;
-    const pageSize: number = lazyLoadingTableParams.rows;
-
-    await Globals.sleep(3000);
-
-
-    // Activate when connector can do search + sort
-    // const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
-    // const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
-    // const searchWordList: string | undefined = globalFilter;
-
-    setIsGetManagedObjectListInProgress(true);
-    const initialCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
-    // TODO: once search is enabled in Connector API:
-    // search for props.currentSelectedApiProductItemList[].id
-    // await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
-    const result: TApiGetApiProductListResult = await DeveloperPortalCommonApiCalls.apiGetApiProductList(props.organizationId, initialCallState, pageSize, pageNumber);
+    const initialCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
+    const result: TApiGetApiProductListResult = await APApiObjectsApiCalls.apiGetApiProductList(props.organizationId, initialCallState);
+    setManagedObjectTableDataList(transformManagedObjectListToTableDataList(result.viewManagedApiProductList));
     setApiCallStatus(result.apiCallState);
-    setManagedProductList(result.managedApiProductList);
-    if(result.apiTotalCount) setLazyLoadingTableTotalRecords(result.apiTotalCount);
-    setLazyLoadingTableIsLoading(false);
-    setIsGetManagedObjectListInProgress(false);
-
-    if(lazyLoadingTableParams.isInitialSetting) {
-      setTableSelectedApiProductList(transformApiProductSelectItemListToManagedProductTableDataList(props.currentSelectedApiProductItemList, result.managedApiProductList));
-      setGlobalFilter(transformApiProductSelectItemListToTableGlobalFilter(props.currentSelectedApiProductItemList));
-    }
+    return result.apiCallState;
   }
 
   // * useEffect Hooks *
-  
-
-  // React.useEffect( () => {
-  //   const funcName = 'useEffect([])';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   console.log(`${logName}: props.currentSelectedApiProductItemList=${JSON.stringify(props.currentSelectedApiProductItemList, null, 2)}`);
-  //   setTableSelectedApiProductList(transformApiProductSelectItemListToManagedProductTableDataList(props.currentSelectedApiProductItemList, managedProductList: TManagedApiProductList));
-  // }, []);
+  const doInitialize = async () => {
+    props.onLoadingChange(true);
+    await apiGetManagedObjectList();
+    props.onLoadingChange(false);
+  }
 
   React.useEffect(() => {
-    doLoadPage();
-  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    doInitialize();
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // TODO: enable when search is enabled in Connector
-  // React.useEffect(() => {
-  //   doLoadPage();
-  // }, [globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  React.useEffect(() => {
+    if(!managedObjectTableDataList) return;
+    setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedApiProductItemList));
+    // does not work for primereact/DataTable native filter
+    // setGlobalFilter(APApiObjectsCommon.transformSelectItemListToTableGlobalFilter(props.currentSelectedApiItemList));
+  }, [managedObjectTableDataList]); 
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -258,23 +161,16 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    // if(selectedManagedObjectTableDataList.length > 0) {
+      doValidateSelectedApiProducts();
+    // }
+  }, [selectedManagedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   // * UI Controls *
-  // const doDeleteManagedObject = async () => {
-  //   props.onLoadingChange(true);
-  //   await apiDeleteManagedObject(props.organizationId, props.userId, props.appId, props.appDisplayName);
-  //   props.onLoadingChange(false);
-  // }
-
   const onSaveSelectedApiProducts = () => {
-    // const funcName = 'onSaveSelectedApiProducts';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: tableSelectedApiProductList=${JSON.stringify(tableSelectedApiProductList, null, 2)}`);
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_API_PRODUCTS, `select api products`), transformTableDataListToApiProductItemList(tableSelectedApiProductList));
+    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_API_PRODUCTS, `select api products`), transformManagedObjectTableDataListToManagedObjectItemList(selectedManagedObjectTableDataList));
   }
-
-  // const onCancel = () => {
-  //   props.onCancel();
-  // }
 
   // * Data Table *
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -282,11 +178,19 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
     setGlobalFilter(_globalFilter);
   }
  
+  const onSelectionChange = (event: any): void => {
+    setSelectedManagedObjectTableDataList(event.value);
+  }
+
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
-          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedApiProducts} disabled={tableSelectedApiProductList.length === 0} />
+          <Button 
+            type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" 
+            onClick={onSaveSelectedApiProducts} 
+            disabled={(selectedManagedObjectTableDataList.length === 0 || selectionErrorMessage !== undefined)} 
+          />
           <Button type="button" label="Cancel" className="p-button-text p-button-plain p-mr-2" onClick={props.onCancel} />
         </div>        
         <div style={{ alignContent: "right"}}>
@@ -294,7 +198,7 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
             <i className="pi pi-search" />
             <InputText 
               type="search" placeholder={GlobalSearchPlaceholder} style={{width: '500px'}} 
-              disabled={true} // TODO enable when search works
+              disabled={false}
               onInput={onInputGlobalFilter}  
               value={globalFilter}
             />
@@ -303,43 +207,17 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
       </div>
     );
   }
-  // const renderDataTableHeader = (): JSX.Element => {
-  //   return (
-  //     <div className="table-header">
-  //       <div className="table-header-container" />
-  //       <span className="p-input-icon-left">
-  //         <i className="pi pi-search" />
-  //         <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}} disabled />
-  //       </span>
-  //     </div>
-  //   );
-  // }
 
-  // const actionBodyTemplate = (managedObject: TManagedProduct) => {
-  //   return (
-  //       <React.Fragment>
-  //         <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
-  //       </React.Fragment>
-  //   );
-  // }
-
-  const apiGatewaysBodyTemplate = (row: TManagedProductTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(row.environmentListAsStringList);
+  const attributesBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.apiProduct.attributes));
   }
 
-  const onSelectionChange = (event: any): void => {
-    // console.log(`onSelectionChange: event.value = ${JSON.stringify(event.value, null, 2)}`);
-    setTableSelectedApiProductList(event.value);
+  const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(rowData.apiProduct.environments ? rowData.apiProduct.environments : []);
+    // return APRenderUtils.renderStringListAsDivList(rowData.environmentListAsStringList);
   }
-
-  const onPageSelect = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
-  }
-
-  const onSort = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
+  const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(rowData.apiInfoListAsDisplayStringList);
   }
 
   const renderManagedObjectTableEmptyMessage = () => {
@@ -348,72 +226,87 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
   }
 
   const renderManagedObjectDataTable = () => {
-    let managedObjectTableDataList: TManagedProductTableDataList = transformManagedProductListToTableDataList(managedProductList);    
     return (
-      <div className="card">
-          <DataTable
-            ref={dt}
-            className="p-datatable-sm"
-            autoLayout={true}
-            resizableColumns 
-            columnResizeMode="expand"
-            showGridlines
-            header={renderDataTableHeader()}
-            value={managedObjectTableDataList}
-            globalFilter={globalFilter}
-            scrollable 
-            scrollHeight="800px" 
-            dataKey="id"  
-            emptyMessage={renderManagedObjectTableEmptyMessage()}
-            // selection
-            selection={tableSelectedApiProductList}
-            onSelectionChange={onSelectionChange}
-            // lazyLoading & pagination
-            lazy={true}
-            paginator={true}
-            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-            rowsPerPageOptions={lazyLoadingTableRowsPerPageOptions}
-            first={lazyLoadingTableParams.first}
-            rows={lazyLoadingTableParams.rows}
-            totalRecords={lazyLoadingTableTotalRecords}
-            onPage={onPageSelect}
-            loading={lazyLoadingTableIsLoading}
-            // sorting
-            sortMode='single'
-            onSort={onSort} 
-            sortField={lazyLoadingTableParams.sortField} 
-            sortOrder={lazyLoadingTableParams.sortOrder}
-          >
-            <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiProduct.description" header="Description" />
-            <Column field="apiDisplayNameListAsString" header="API(s)" />
-            <Column field="apiProduct.approvalType" header="Approval" sortable/>
-            <Column field="protocolListAsString" header="Exposed Protocols" />
-            <Column field="attributeListAsString" header="Controlled Attributes" />
-            <Column body={apiGatewaysBodyTemplate} header="API Gateway(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
-            {/* <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/> */}
-        </DataTable>
-      </div>
+      <DataTable
+        ref={dt}
+        className="p-datatable-sm"
+        autoLayout={true}
+        resizableColumns 
+        columnResizeMode="expand"
+        showGridlines={false}
+        header={renderDataTableHeader()}
+        value={managedObjectTableDataList}
+        globalFilter={globalFilter}
+        scrollable 
+        dataKey="id"  
+        emptyMessage={renderManagedObjectTableEmptyMessage()}
+        // selection
+        selection={selectedManagedObjectTableDataList}
+        onSelectionChange={onSelectionChange}
+        // sorting
+        sortMode='single'
+        sortField="displayName"
+        sortOrder={1}
+      >
+        <Column selectionMode="multiple" style={{width:'3em'}} bodyStyle={{ verticalAlign: 'top' }} />
+        <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }} />
+        <Column field="apiProduct.description" header="Description" bodyStyle={{ verticalAlign: 'top' }}/>
+        <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ verticalAlign: 'top' }} />
+        <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+        <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
+        <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+        <Column field="protocolListAsString" header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
+      </DataTable>
     );
   }
 
+  const renderHelp = () => {
+    return(
+      <div className="p-mb-2">
+        <small id={componentName+'help'} >
+          Select 1 or multiple API Products. Note: They must not contain the same APIs.
+        </small>              
+    </div>
+    )
+  }
+
+  const renderErrorMessage = (): JSX.Element => {
+    if(selectionErrorMessage) {
+      return (
+        <div className="card p-fluid">
+          <div className="p-field">
+            <InputTextarea 
+              id="apiError" 
+              value={selectionErrorMessage} 
+              className='p-invalid'
+              style={{color: 'red', resize: 'none'}}
+              rows={1}
+              contentEditable={false}
+            />
+          </div>
+        </div>  
+      );
+    } else return (<React.Fragment></React.Fragment>);
+  }
+
+  const renderContent = () => {
+    if(managedObjectTableDataList.length > 0 ) {
+      return (
+        <React.Fragment>
+          { renderHelp() }
+          { renderErrorMessage() }
+          { renderManagedObjectDataTable() }
+        </React.Fragment>
+      )
+    } 
+  }
+
   return (
-    <div className="apd-manageuserapps">
-      <APComponentHeader header={DialogHeader} />  
+    <div className="apd-manage-user-apps">
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {/* {managedProductList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFound}</h3>
-      } */}
-
-      {/* {(managedProductList.length > 0 || (managedProductList.length === 0 && globalFilter && globalFilter !== '')) && 
-        renderManagedObjectDataTable()
-      } */}
-
-      {renderManagedObjectDataTable()}
+      {renderContent()}
 
       {/* DEBUG selected managedObject */}
       {/* {managedProductList.length > 0 && tableSelectedApiProductList && 

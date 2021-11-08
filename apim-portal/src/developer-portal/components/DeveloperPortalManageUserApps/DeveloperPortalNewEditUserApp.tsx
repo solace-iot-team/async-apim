@@ -4,12 +4,10 @@ import { useForm, Controller, FieldError } from 'react-hook-form';
 
 import { InputText } from 'primereact/inputtext';
 import { MultiSelect } from 'primereact/multiselect';
-import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
-
 
 import { 
   AppResponse, 
@@ -19,26 +17,26 @@ import {
   ApiProductsService,
   APIProduct
 } from '@solace-iot-team/apim-connector-openapi-browser';
-
 import { 
   APSUserId
 } from '@solace-iot-team/apim-server-openapi-browser';
-
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId, TApiEntitySelectItemList, TApiEntitySelectItem, TApiEntitySelectItemIdList } from "../../../components/APComponentsCommon";
 import { 
-  E_CALL_STATE_ACTIONS, 
-  TManagedObjectId,
-} from "./DeveloperPortalManageUserAppsCommon";
+  TAPOrganizationId, 
+  TApiEntitySelectItemList, 
+  TApiEntitySelectItemIdList, 
+  APComponentsCommon
+} from "../../../components/APComponentsCommon";
+import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
+import { DeveloperPortalUserAppSelectApiProducts } from "./DeveloperPortalUserAppSelectApiProducts";
+import { EApiTopicSyntax, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { DeveloperPortalUserAppSelectApiProducts } from "./DeveloperPortalUserAppSelectApiProducts";
-import { TApiProductList, TApiProductNameList } from "../DeveloperPortalCommon";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -49,7 +47,7 @@ export interface IDeveloperPortalNewEditUserAppProps {
   organizationId: TAPOrganizationId,
   userId: APSUserId,
   appId?: TManagedObjectId,
-  appDisplayName?: string,
+  appDisplayName?: TManagedObjectDisplayName,
   onError: (apiCallState: TApiCallState) => void;
   onNewSuccess: (apiCallState: TApiCallState, newUserId: TManagedObjectId, newDisplayName: string) => void;
   onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
@@ -65,14 +63,11 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   type TGetApiObject = AppResponse;
   type TManagedObject = {
     apiObject: AppResponse
-    apiProductSelectItemList: TApiEntitySelectItemList
+    apiProductSelectItemList: TApiEntitySelectItemList,
   }
   type TManagedObjectFormData = TManagedObject & {
-    apiProductSelectItemIdList: TApiEntitySelectItemIdList
+    apiProductSelectItemIdList: TApiEntitySelectItemIdList,
   };
-  // type TManagedObjectFormDataFieldApiProductSelectItem = { label: string, value: string };
-  // type TManagedObjectFormDataFieldApiProductSelectItemList = Array<TManagedObjectFormDataFieldApiProductSelectItem>;
-
   const emptyManagedObject: TManagedObject = {
     apiProductSelectItemList: [],
     apiObject: {
@@ -83,21 +78,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       }
     }
   }
-
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [showSelectApiProducts, setShowSelectApiProducts] = React.useState<boolean>(false);
-  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
-  const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
-  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
-  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
-  // inForm: MultiSelect Api Products
-  const [inFormCurrentMultiSelectOptionApiProductSelectItemList, setInFormCurrentMultiSelectOptionApiProductSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
-  // const [inFormCurrentMultiSelectValueApiProductSelectItemIdList, setInFormCurrentMultiSelectValueApiProductSelectItemIdList] = React.useState<TApiEntitySelectItemIdList>([]);
-
-  const managedObjectUseForm = useForm<TManagedObjectFormData>();
-
-
   const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject, apiProductSelectItemList: TApiEntitySelectItemList): TManagedObject => {
     return {
       apiProductSelectItemList: apiProductSelectItemList,
@@ -107,16 +87,20 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       }
     }
   }
-
   const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    return {
-      ...managedObject.apiObject
-    }
+    const updateApiObject: TUpdateApiObject = {
+      // apiProducts: APComponentsCommon.transformSelectItemListToSelectItemIdList(managedObject.apiProductSelectItemList),
+      apiProducts: managedObject.apiObject.apiProducts,
+      attributes: managedObject.apiObject.attributes,
+      callbackUrl: managedObject.apiObject.callbackUrl,
+      credentials: managedObject.apiObject.credentials,
+      displayName: managedObject.apiObject.displayName
+    };
+    return updateApiObject;
   }
-
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    const funcName = 'transformManagedObjectToCreateApiObject';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'transformManagedObjectToCreateApiObject';
+    // const logName = `${componentName}.${funcName}()`;
     const createApiObject: TCreateApiObject = {
       name: managedObject.apiObject.name,
       displayName: managedObject.apiObject.displayName,
@@ -128,19 +112,13 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       webHooks: managedObject.apiObject.webHooks,
       credentials: managedObject.apiObject.credentials
     }
-    console.log(`${logName}: createApiObject=${JSON.stringify(createApiObject, null, 2)}`);
+    // console.log(`${logName}: createApiObject=${JSON.stringify(createApiObject, null, 2)}`);
     return createApiObject;
-  }
-
-  const transformManagedObjectApiProductSelectItemListToSelectItemIdList = (apiProductSelectItemList: TApiEntitySelectItemList): TApiEntitySelectItemIdList => {
-    return apiProductSelectItemList.map( (apiProductSelectItem: TApiEntitySelectItem) => {
-      return apiProductSelectItem.id;
-    });
   }
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
     return {
       ...managedObject,
-      apiProductSelectItemIdList: transformManagedObjectApiProductSelectItemListToSelectItemIdList(managedObject.apiProductSelectItemList)
+      apiProductSelectItemIdList: APComponentsCommon.transformSelectItemListToSelectItemIdList(managedObject.apiProductSelectItemList),
     }
   }
 
@@ -155,6 +133,23 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     // console.log(`${logName}: managedObject=${JSON.stringify(managedObject, null, 2)}`);
     return managedObject;
   }
+
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [showSelectApiProducts, setShowSelectApiProducts] = React.useState<boolean>(false);
+  const [selectedApiProductList, setSelectedApiProductList] = React.useState<Array<APIProduct>>([]);
+  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
+  const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
+  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
+  // inForm: MultiSelect Api Products
+  const [inFormCurrentMultiSelectOptionApiProductSelectItemList, setInFormCurrentMultiSelectOptionApiProductSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
+  // const [inFormCurrentMultiSelectValueApiProductSelectItemIdList, setInFormCurrentMultiSelectValueApiProductSelectItemIdList] = React.useState<TApiEntitySelectItemIdList>([]);
+
+  const managedObjectUseForm = useForm<TManagedObjectFormData>();
+  const formId = componentName;
+  const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
+
 
   // const transformManagedObjectApiProductSelectItemListToApiProductIdList = (apiProductSelectItemList: TApiProductSelectItemList): Array<string> => {
   //   const apiProductIdList: Array<string> = [];
@@ -206,36 +201,25 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve details for app: ${appDisplayName}`);
     try { 
-      
-      
-      // const apiUserApp: AppResponse = await AppsService.getDeveloperApp(orgId, userId, appId, "smf");
-
-      const apiUserApp: AppResponse = await AppsService.getDeveloperApp({
+      const _apiAppResponse: AppResponse = await AppsService.getDeveloperApp({
         organizationName: orgId, 
         developerUsername: userId, 
         appName: appId, 
-        topicSyntax: "smf"
+        topicSyntax: EApiTopicSyntax.SMF
       });
-
       // get all api products display names
-      let apiProductSelectItemList: TApiEntitySelectItemList = [];
-      for(const apiProductName of apiUserApp.apiProducts) {
-
-        // const apiProduct: APIProduct = await ApiProductsService.getApiProduct(orgId, apiProductName);
-
+      let _apiProductSelectItemList: TApiEntitySelectItemList = [];
+      for(const apiProductName of _apiAppResponse.apiProducts) {
         const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
           organizationName: orgId, 
           apiProductName: apiProductName
         });
-
-        apiProductSelectItemList.push({
+        _apiProductSelectItemList.push({
           displayName: apiProduct.displayName,
           id: apiProduct.name
         });
       }
-      // const newManagedObject: TManagedObject = transformGetApiObjectToManagedObject(apiUserApp, apiProductSelectItemList);
-      // alert(`${logName}: \n newManagedObject. = ${JSON.stringify(newManagedObject.apiProductSelectItemList)}`);
-      setManagedObject(transformGetApiObjectToManagedObject(apiUserApp, apiProductSelectItemList));
+      setManagedObject(transformGetApiObjectToManagedObject(_apiAppResponse, _apiProductSelectItemList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -284,6 +268,28 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     return callState;
   }
 
+  // const apiGetSelectedApiProductList = async(apiProductIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
+  //   const funcName = 'apiGetSelectedApiProductList';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, `retrieve selected api products details`);
+  //   try {
+  //     let _apiProductList: Array<APIProduct> = [];
+  //     for(const apiProductId of apiProductIdList) {
+  //       const _apiProduct: APIProduct = await ApiProductsService.getApiProduct({
+  //         organizationName: props.organizationId, 
+  //         apiProductName: apiProductId
+  //       });
+  //       _apiProductList.push(_apiProduct);
+  //     }
+  //     setSelectedApiProductList(_apiProductList);
+  //   } catch(e: any) {
+  //     APClientConnectorOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;  
+  // }
+
   // * useEffect Hooks *
   const doInitialize = async () => {
     const funcName = 'doInitialize';
@@ -312,25 +318,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
   }, [managedObjectFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   const funcName = 'useEffect[managedObjectApiProductSelectItemList]';
-  //   const logName = `${componentName}.${funcName}()`;
-
-  //   doSetManagedObjectApiProductSelectItemListFormData(managedObjectApiProductSelectItemList);
-  //   console.log(`${logName}: before: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
-  //   if(managedObjectFormData) {
-  //     const _managedObjectFormData: TManagedObjectFormData = {
-  //       ...managedObjectFormData,
-  //       apiObject: {
-  //         ...managedObjectFormData.apiObject,
-  //         apiProducts: transformManagedObjectApiProductSelectItemListToApiProductIdList(managedObjectApiProductSelectItemList)
-  //       }
-  //     }
-  //     setManagedObjectFormData(_managedObjectFormData);
-  //     console.log(`${logName}: after: managedObjectFormData=${JSON.stringify(_managedObjectFormData, null, 2)}`);
-  //   }
-  // }, [managedObjectApiProductSelectItemList]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
     const logName = `${componentName}.${funcName}()`;
@@ -348,6 +335,12 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Select Api Products *
+  React.useEffect(() => {
+    const funcName = 'useEffect[selectedApiProductList]';
+    const logName = `${componentName}.${funcName}()`;
+    if(selectedApiProductList.length > 0 ) alert(`${logName}: validate selected api product list for not having the same apis ...`);
+  }, [selectedApiProductList]) /* eslint-disable-line react-hooks/exhaustive-deps */
+
   const onSearchApiProducts = () => {
     setShowSelectApiProducts(true);
   }
@@ -358,22 +351,31 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     // console.log(`${logName}: modifiedSelectedApiProductList=${JSON.stringify(modifiedSelectedApiProductList, null, 2)}`);
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
     setInFormCurrentMultiSelectOptionApiProductSelectItemList(modifiedSelectedApiProductList);
-    const modifiedMultiSelectValueApiProductSelectItemIdList: TApiEntitySelectItemIdList = transformManagedObjectApiProductSelectItemListToSelectItemIdList(modifiedSelectedApiProductList);
+    const modifiedMultiSelectValueApiProductSelectItemIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedApiProductList);
     // setInFormCurrentMultiSelectValueApiProductSelectItemIdList(modifiedMultiSelectValueApiProductSelectItemIdList);
     managedObjectUseForm.setValue('apiProductSelectItemIdList', modifiedMultiSelectValueApiProductSelectItemIdList);
+    managedObjectUseForm.trigger('apiProductSelectItemIdList');
     setShowSelectApiProducts(false);
+    // onApiProductsSelect(modifiedMultiSelectValueApiProductSelectItemIdList);
   }
-
   const onManagedObjectFormSelectApiProductsCancel = () => {
     setShowSelectApiProducts(false);
   }
 
-  // const doSetManagedObjectApiProductSelectItemListFormData = (productSelectItemList: TApiProductSelectItemList) => {
-  //   const apiProductNameList: TApiProductNameList = [];
-  //   productSelectItemList.forEach( (productSelectItem: TApiProductSelectItem) => {
-  //     apiProductNameList.push(productSelectItem.id);
-  //   });
-  //   managedObjectUseForm.setValue('apiObject.apiProducts', apiProductNameList);  
+  // const doUpdateSelectedApiProductInfoList = async(apiProductIdList: TApiEntitySelectItemIdList) => {
+  //   // const funcName = 'doUpdateAvailableProtocolList';
+  //   // const logName = `${componentName}.${funcName}()`;
+  //   // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
+  //   props.onLoadingChange(true);
+  //   await apiGetSelectedApiProductList(apiProductIdList);
+  //   props.onLoadingChange(false);
+  // }
+
+  // const onApiProductsSelect = (apiProductIdList: TApiEntitySelectItemIdList) => {
+  //   // const funcName = 'onApiProductsSelect';
+  //   // const logName = `${componentName}.${funcName}()`;
+  //   // alert(`${logName}: apiProductIdList=${JSON.stringify(apiProductIdList)}`);
+  //   doUpdateSelectedApiProductInfoList(apiProductIdList);
   // }
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
@@ -394,7 +396,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
     const funcName = 'doSubmitManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: managedObject = ${JSON.stringify(managedObject, null, 2)}`);
+    // console.log(`${logName}: managedObject = ${JSON.stringify(managedObject, null, 2)}`);
     props.onLoadingChange(true);
     if(props.action === EAction.NEW) await apiCreateManagedObject(props.organizationId, props.userId, managedObject);
     else {
@@ -404,7 +406,32 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     props.onLoadingChange(false);
   }
 
+  // const validateSelectedApiProductList = (selectApiProductsIdList: TApiEntitySelectItemIdList): boolean | string => {
+  //   // const funcName = 'validateSelectedApiProductList';
+  //   // const logName = `${componentName}.${funcName}()`;
+  //   // alert(`${logName}: check if all api products are compatible, \nselectApiProductsIdList=${JSON.stringify(selectApiProductsIdList)} \nselectedApiProductList=${JSON.stringify(selectedApiProductList)}`);
+  //   return `validateSelectedApiProductList: \nselectApiProductsIdList=${JSON.stringify(selectApiProductsIdList, null, 2)}\nselectedApiProductList=${JSON.stringify(selectedApiProductList, null, 2)}`;
+  // }
+  // const isSelectedApiProductListValid = (): boolean => {
+  //   const funcName = 'isSelectedApiProductListValid';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   alert(`${logName}: check if all api products are compatible, selectedApiProductList=${JSON.stringify(selectedApiProductList)}`);
+  //   let isValid = true;
+  //   // check if all ApiProducts are compatible
+
+  //   isValid = isValid && selectedApiProductList.length > 0;
+
+  //   return isValid;
+  // }
+
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
+    setIsFormSubmitted(true);
+    // if(!isSelectedApiProductListValid()) return false;
+    // const _managedObjectFormData: TManagedObjectFormData = {
+    //   ...newManagedObjectFormData,
+    //   attributeList: managedObjectFormData.attributeList,
+    //   selectedProtocolList: selectedProtocolList
+    // }
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -413,7 +440,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // setIsFormSubmitted(true);
+    setIsFormSubmitted(true);
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
@@ -432,7 +459,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     }
     return (
       <React.Fragment>
-        {/* <Button type="button" label="Show/Hide Data" className="p-button-text p-button-plain" onClick={onTestShowHideFormData} /> */}
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
         <Button type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
       </React.Fragment>
@@ -454,15 +480,14 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     );
   }
 
-
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
     const isNew: boolean = (props.action === EAction.NEW);
     return (
-      <div className="card">
+      <div className="card p-mt-4">
         <div className="p-fluid">
-          <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+          <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
             {/* Id */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
@@ -489,13 +514,11 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
             {/* DisplayName */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
-                {/* <i className="pi pi-envelope" /> */}
                 <Controller
                   name="apiObject.displayName"
                   control={managedObjectUseForm.control}
                   rules={APConnectorFormValidationRules.DisplayName()}
                   render={( { field, fieldState }) => {
-                      // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(
                         <InputText
                           id={field.name}
@@ -516,35 +539,21 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
                   name="apiProductSelectItemIdList"
                   control={managedObjectUseForm.control}
                   rules={{
-                    required: "Choose at least 1 API Product."
+                    required: "Choose at least 1 API Product.",
+                    // validate: validateSelectedApiProductList
                   }}
                   render={( { field, fieldState }) => {
-                      console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                      console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
+                      // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                      // console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
                       return(
                         <MultiSelect
                           display="chip"
-                          // disabled={true}
-                          // dropdownIcon='pi pi-external-link'
-                          // dropdownIcon=''
                           value={field.value ? [...field.value] : []} 
                           options={inFormCurrentMultiSelectOptionApiProductSelectItemList} 
-
-
-                          // onChange={(e) => field.onChange(e.value)}
-
-
-                          onChange={(e) => { 
-                            // const funcName = 'apiObject.apiProducts.onChange';
-                            // const logName = `${componentName}.${funcName}()`;
-                            // console.log(`${logName}: e.value=${JSON.stringify(e.value, null, 2)}`);
-                            field.onChange(e.value);
-                            // setInFormCurrentMultiSelectValueApiProductSelectItemIdList(e.value);
-                          }}
-
+                          // onChange={(e) => { field.onChange(e.value); onApiProductsSelect(e.value); }}
+                          onChange={(e) => { field.onChange(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
-                          // style={{width: '500px'}} 
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}
@@ -553,6 +562,9 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
               </span>
               { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.apiProductSelectItemIdList) }
               { renderApiProductsToolbar() }
+            </div>
+            <div>
+              <h1>TODO: add/edit multiple webhooks ...</h1>
             </div>
             {/* <div className="p-field">
               <span className="p-float-label">
@@ -588,23 +600,17 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       </div>
     );
   }
-  
+
   return (
-    <div className="apd-manageuserapps">
+    <div className="apd-manage-user-apps">
 
-      {props.action === EAction.NEW && 
-        <APComponentHeader header='Create App:' />
-      }
+      { props.action === EAction.NEW && <APComponentHeader header='Create App:' /> }
 
-      {props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit App: ${props.appId}`} />
-      }
+      { props.action === EAction.EDIT && <APComponentHeader header={`Edit App: ${props.appDisplayName}`} /> }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObjectFormData && 
-        renderManagedObjectForm()
-      }
+      { managedObjectFormData && renderManagedObjectForm() }
 
       {showSelectApiProducts &&
         <DeveloperPortalUserAppSelectApiProducts 

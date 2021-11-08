@@ -1306,7 +1306,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                           onChange={(e) => { field.onChange(e.value); onApisSelect(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
-                          // style={{width: '500px'}} 
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}

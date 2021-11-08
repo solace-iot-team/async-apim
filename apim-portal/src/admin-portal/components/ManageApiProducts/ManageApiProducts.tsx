@@ -320,7 +320,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
         />
       }
-      { showNewComponent &&
+      {showNewComponent &&
         <EditNewApiProduct
           action={EAction.NEW}
           organizationId={props.organizationId}

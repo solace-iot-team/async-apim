@@ -19,19 +19,16 @@ import { UserContext } from "../../../components/UserContextProvider/UserContext
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./DeveloperPortalManageUserAppsCommon";
-// import { ListUsers } from "./ListUsers";
-// import { ViewUser } from "./ViewUser";
-// import { DeleteUser } from "./DeleteUser";
-// import { EAction, EditNewUser } from "./EditNewUser";
-
-import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { Globals } from "../../../utils/Globals";
 import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEditUserApp";
 import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
+import { TManagedObjectId } from "../../../components/APApiObjectsCommon";
+
+import '../../../components/APComponents.css';
+import "./DeveloperPortalManageUserApps.css";
+import { DeveloperPortalManageUserAppWebhooks } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooks";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationName: TAPOrganizationId;
@@ -51,6 +48,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
     MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
     MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
+    MANAGED_OBJECT_EDIT_WEBHOOKS = "MANAGED_OBJECT_EDIT_WEBHOOKS",
     MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
     MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
   }
@@ -86,6 +84,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
 
   const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
+  const ToolbarEditWebhooksManagedObjectButtonLabel = 'Edit Webhooks (only if http enabled + publish operation in any channel';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -98,6 +97,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
+  const [showEditWebhooksComponent, setShowEditWebhooksComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
 
@@ -205,6 +205,20 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
+  // * Edit Webhooks *
+  const onEditWebhooksManagedObjectFromToolbar = () => {
+    const funcName = 'onEditWebhooksManagedObjectFromToolbar';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
+    onEditWebhooksManagedObject(managedObjectId, managedObjectDisplayName);
+  }
+  const onEditWebhooksManagedObject = (id: TManagedObjectId, displayName: string): void => {
+    setApiCallStatus(null);
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_WEBHOOKS);
+  }
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
@@ -231,6 +245,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
         <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+        <Button label={ToolbarEditWebhooksManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditWebhooksManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
         <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
       </React.Fragment>
     );
@@ -270,6 +285,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
+  const onEditWebhooksManagedObjectSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    setPreviousComponentState();
+  }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
@@ -288,6 +307,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -295,6 +315,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -303,6 +324,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
@@ -310,6 +332,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
     }
@@ -318,6 +341,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
@@ -325,6 +349,15 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
+      setShowEditWebhooksComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_WEBHOOKS) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowEditWebhooksComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -332,19 +365,19 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
+      setShowEditWebhooksComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
     }
   }
 
   return (
-    <div className="manage-users">
+    <div className="apd-manage-user-apps">
 
       <Loading show={isLoading} />      
       
-      {!isLoading &&
-        renderToolbar()
-      }
+      {!isLoading && renderToolbar() }
+      
       {showListComponent && 
         <DeveloperPortalListUserApps
           key={componentState.previousState}
@@ -402,6 +435,18 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           appDisplayName={managedObjectDisplayName}
           onNewSuccess={onNewManagedObjectSuccess} 
           onEditSuccess={onEditManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+        />
+      }
+      {showEditWebhooksComponent && managedObjectId && managedObjectDisplayName &&
+        <DeveloperPortalManageUserAppWebhooks
+          organizationId={props.organizationName}
+          userId={props.userId}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          onSuccess={onEditWebhooksManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}

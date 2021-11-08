@@ -38,7 +38,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const componentName = 'ListApiProducts';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search...';
 
   type TManagedObject = TViewManagedApiProduct;
   type TManagedObjectList = Array<TManagedObject>;

@@ -7,22 +7,17 @@ import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 
 import { 
-  APIInfo, 
-  APIInfoList, 
-  ApisService, 
   EnvironmentListItem, 
   EnvironmentResponse,
   EnvironmentsService
 } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiEntitySelectItem, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { 
-  APApiObjectsCommon, 
   APEnvironmentObjectsCommon, 
   TAPEnvironmentViewManagedObject, 
   TAPEnvironmentViewManagedObjectList
@@ -31,7 +26,6 @@ import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { env } from "shelljs";
 
 
 export interface ISearchSelectEnvironmentsProps {
@@ -49,7 +43,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   const DialogHeader = 'Search & Select Environment(s):';
   const MessageNoManagedObjectsFound = "No Environments found."
   const MessageNoManagedObjectsFoundWithFilter = 'No Environments found for filter';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search...';
 
   type TManagedObjectTableDataRow = TAPEnvironmentViewManagedObject;
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
@@ -64,33 +59,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     });
     return result;
   }
-
-  // const transformApiEnvironmentListToDataTableList =(apiEnvironmentList: Array<EnvironmentListItem>): TManagedObjectTableDataList => {
-  //   const transformApiEnvironmentToDataTableRow = (environment: EnvironmentListItem): TManagedObjectTableDataRow => {
-  //     const funcName = 'transformApiEnvironmentToDataTableRow';
-  //     const logName = `${componentName}.${funcName}()`;
-  //     return {
-  //       id: environment.name,
-  //       displayName: environment.displayName ? environment.displayName : environment.name,
-  //       apiEnvironment: environment,
-  //       globalSearch: 
-  //     }
-
-
-  //     if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-  //     const globalSearch = apiInfo;
-  //     return {
-  //       id: apiInfo.name,
-  //       displayName: apiInfo.name,
-  //       apiInfo: apiInfo,
-  //       globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
-  //     };
-  //   }
-  //   return apiEnvironmentList.map( (environment: EnvironmentListItem) => {
-  //     return transformApiInfoToDataTableRow(environment);
-  //   });
-  // }
-
   const transformTableDataListToSelectItemList = (tableDataList: TManagedObjectTableDataList): TApiEntitySelectItemList => {
     return tableDataList.map( (row: TManagedObjectTableDataRow) => {
       return {
@@ -99,7 +67,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
       }
     });
   }
-
 
   const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
   const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
@@ -147,8 +114,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   React.useEffect(() => {
     if(!managedObjectTableDataList) return;
     setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedEnvironmetItemList));
-    // does not work for primereact/DataTable native filter
-    // setGlobalFilter(APApiObjectsCommon.transformSelectItemListToTableGlobalFilter(props.currentSelectedApiItemList));
   }, [managedObjectTableDataList]); 
   
   React.useEffect(() => {
@@ -160,15 +125,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // * UI Controls *
 
   const onSaveSelectedEnvironments = () => {
-    // const funcName = ' onSaveSelectedApis';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: selectedManagedObjectTableDataList=${JSON.stringify(selectedManagedObjectTableDataList, null, 2)}`);
     props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), transformTableDataListToSelectItemList(selectedManagedObjectTableDataList));
   }
-
-  // const onCancel = () => {
-  //   props.onCancel();
-  // }
 
   // * Data Table *
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -198,10 +156,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     );
   }
 
-  // const apiGatewaysBodyTemplate = (row: TManagedProductTableDataRow): JSX.Element => {
-  //   return APRenderUtils.renderStringListAsDivList(row.environmentListAsStringList);
-  // }
-
   const onSelectionChange = (event: any): void => {
     setSelectedManagedObjectTableDataList(event.value);
   }
@@ -211,43 +165,15 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     else return MessageNoManagedObjectsFound;
   }
 
-  // const renderEndpointSelectionTable = () => {
-  //   if(!selectedOrganizationService) return;
-  //   const _availableServiceEndpointList: TServiceEndpointList = transformOrganizationServiceToEndpointList(selectedOrganizationService);
-  //   return (  
-  //     <React.Fragment>
-  //       {displaySelectedProtocolsErrorMessage()}
-  //       <DataTable 
-  //         className="p-datatable-sm"
-  //         header="Select protocols to expose:"
-  //         value={_availableServiceEndpointList}
-  //         autoLayout={true}
-  //         selection={selectedExposedServiceEndpointList}
-  //         onSelectionChange={(e) => setSelectedExposedServiceEndpointList(e.value)}
-  //       >
-  //         <Column selectionMode="multiple" style={{width:'3em'}}/>
-  //         <Column field="protocol.name" header="Protocol" />
-  //         <Column field="protocol.version" header="Version" />
-  //         <Column field="secure" header='Secure?' />
-  //         <Column field="compressed" header='Compressed?' />
-  //         <Column field="uri" header="Endpoint" />
-  //       </DataTable>
-  //     </React.Fragment>
-  //   );
-  // }
-
   const renderManagedObjectDataTable = (): JSX.Element => {
 
     const protocolsExpansionTemplate = (row: TManagedObjectTableDataRow) => {
-
       const tmpExposedProtocolsBodyTemplate = (row: TManagedObjectTableDataRow): JSX.Element => {
         return (
           <div>{JSON.stringify(row.apiEnvironment.exposedProtocols)}</div>
         );
       }
-      // row.apiEnvironment.exposedProtocols
-      const protocolDataTableList = [row];
-  
+      const protocolDataTableList = [row];  
       return (
         <div className="select-protocols-sub-table">
           <DataTable 
@@ -257,10 +183,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             dataKey="id"
           >
             <Column field="apiEnvironment.exposedProtocols" header="exposedProtocols" body={tmpExposedProtocolsBodyTemplate} />
-            {/* <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} /> */}
-            {/* <Column field="hasInfo.hasApiProducts" header="API Products" body={ManageOrganizationsCommon.hasApiProductsBodyTemplate}/>
-            <Column field="hasInfo.hasDevelopers" header="Developers" body={ManageOrganizationsCommon.hasDevelopersBodyTemplate} />
-            <Column field="hasInfo.hasApps" header="Apps" body={ManageOrganizationsCommon.hasAppsBodyTemplate}/> */}
           </DataTable>
         </div>
       );
@@ -301,8 +223,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             <Column field="apiEnvironment.msgVpnName" header="Msg Vpn Name" sortable />
             <Column field="apiEnvironment.datacenterProvider" header="Datacenter Provider" sortable />
             <Column field="apiEnvironment.description" header="Description" />
-            {/* <Column body={apiGatewaysBodyTemplate} header="API Gateway(s)" bodyStyle={{textAlign: 'left', overflow: 'visible'}}/> */}
-            {/* <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/> */}
         </DataTable>
       </div>
     );
@@ -315,23 +235,14 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {/* {managedProductList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFound}</h3>
-      } */}
-
-      {/* {(managedProductList.length > 0 || (managedProductList.length === 0 && globalFilter && globalFilter !== '')) && 
-        renderManagedObjectDataTable()
-      } */}
-
-      {/* { managedObjectTableDataList.length > 0 && globalFilter && selectedManagedObjectTableDataList && */}
       { renderManagedObjectDataTable() }
 
-      {/* DEBUG selected managedObjects */}
-      {managedObjectTableDataList.length > 0 && selectedManagedObjectTableDataList && 
+      {/* DEBUG */}
+      {/* {managedObjectTableDataList.length > 0 && selectedManagedObjectTableDataList && 
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(selectedManagedObjectTableDataList, null, 2)}
         </pre>
-      }
+      } */}
 
     </div>
   );

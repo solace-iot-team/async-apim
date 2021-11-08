@@ -13,16 +13,17 @@ import { APRenderUtils } from '../../utils/APRenderUtils';
 
 import { Globals } from '../../utils/Globals';
 
-// export enum E_COMPONENT_STATE {
-//   UNDEFINED = "UNDEFINED",
-//   MANAGED_OBJECT_LIST_LIST_VIEW = "MANAGED_OBJECT_LIST_LIST_VIEW",
-//   MANAGED_OBJECT_LIST_GRID_VIEW = "MANAGED_OBJECT_LIST_GRID_VIEW",
-//   MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW"
-// }
 
-// export type TManagedObjectId = string;
+export enum E_COMPONENT_STATE {
+  UNDEFINED = "UNDEFINED",
+  MANAGED_OBJECT_LIST_LIST_VIEW = "MANAGED_OBJECT_LIST_LIST_VIEW",
+  MANAGED_OBJECT_LIST_GRID_VIEW = "MANAGED_OBJECT_LIST_GRID_VIEW",
+  MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW"
+}
 
-// export type TViewApiObject = APIProduct;
+export type TManagedObjectId = string;
+
+export type TViewApiObject = APIProduct;
 
 export type TApiProductName = string;
 export type TApiProductNameList = Array<TApiProductName>;
@@ -31,13 +32,13 @@ export type TApiProductList = Array<APIProduct>;
 export type TApiEnvironmentNameList = Array<string>;
 export type TApiEnvironmentList = Array<EnvironmentResponse>;
 
-// export type TViewManagedObject = {
-//   id: TManagedObjectId,
-//   displayName: string,
-//   globalSearch: string,
-//   apiObject: TViewApiObject,
-//   apiEnvironmentList: Array<EnvironmentResponse> 
-// }
+export type TViewManagedObject = {
+  id: TManagedObjectId,
+  displayName: string,
+  globalSearch: string,
+  apiObject: TViewApiObject,
+  apiEnvironmentList: Array<EnvironmentResponse> 
+}
 
 export type TApiAttribute = {
   name: string,
@@ -45,11 +46,11 @@ export type TApiAttribute = {
 }
 export type TApiAttributeList = Array<TApiAttribute>;
 
-// export enum E_CALL_STATE_ACTIONS {
-//   API_GET_PRODUCT_LIST = 'API_GET_PRODUCT_LIST',
-//   API_GET_PRODUCT = "API_GET_PRODUCT",
-//   API_GET_API = "API_GET_API"
-// }
+export enum E_CALL_STATE_ACTIONS {
+  API_GET_PRODUCT_LIST = 'API_GET_PRODUCT_LIST',
+  API_GET_PRODUCT = "API_GET_PRODUCT",
+  API_GET_API = "API_GET_API"
+}
 
 export class DeveloperPortalCommon {
 

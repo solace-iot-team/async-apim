@@ -213,6 +213,7 @@ export class APApiObjectsApiCalls {
       apiProductList = await ApiProductsService.listApiProducts({
         organizationName: organizationId
       });
+      // throw new Error(`${logName}: testing error display`);
     } catch (e: any) {
       if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;

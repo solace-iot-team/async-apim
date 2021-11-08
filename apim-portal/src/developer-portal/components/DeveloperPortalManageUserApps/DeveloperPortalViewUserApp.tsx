@@ -20,8 +20,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { TApiProductList } from "../DeveloperPortalCommon";
-import { EApiTopicSyntax, TApiProduct } from "../../../components/APApiObjectsCommon";
+import { EApiTopicSyntax, TApiProduct, TApiProductList, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
@@ -35,8 +34,8 @@ import "./DeveloperPortalManageUserApps.css";
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,
   userId: APSUserId,
-  appId: string,
-  appDisplayName: string,
+  appId: TManagedObjectId,
+  appDisplayName: TManagedObjectDisplayName,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
