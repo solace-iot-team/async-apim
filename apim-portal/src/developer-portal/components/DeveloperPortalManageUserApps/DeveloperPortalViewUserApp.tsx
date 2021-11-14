@@ -1,16 +1,15 @@
 
 import React from "react";
 
-import { DataTable } from 'primereact/datatable';
-import { Column } from "primereact/column";
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
-import { Divider } from "primereact/divider";
 
 import { 
   ApiProductsService,
   AppEnvironment,
   AppResponse,
   AppsService,
+  EnvironmentResponse,
+  EnvironmentsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 
@@ -19,7 +18,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
-import { TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedWebhook, TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId, TAPViewManagedWebhookList } from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
@@ -27,9 +26,24 @@ import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAp
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplayAppCredentials";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
+import { areWebhooksAvailable4App } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooksCommon";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
+import { Divider } from "primereact/divider";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+
+export type TViewDeveloperPortalUserApp = {
+  apiAppResponse_smf: AppResponse;
+  apiAppResponse_mqtt: AppResponse;
+  apiProductList: TApiProductList;
+  apAppClientInformationList: TAPAppClientInformationList;
+  apAreWebhooksAvailable: boolean;
+  apViewManagedWebhookList: TAPViewManagedWebhookList
+}
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,
@@ -37,21 +51,25 @@ export interface IDeveloperPortalViewUserAppProps {
   appId: TManagedObjectId,
   appDisplayName: TManagedObjectDisplayName,
   onError: (apiCallState: TApiCallState) => void;
-  onSuccess: (apiCallState: TApiCallState) => void;
+  onLoadingStart: () => void;
+  onLoadingFinished: (viewApp: TViewDeveloperPortalUserApp) => void;
+  // onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  // onAreAppWebhooksEnabled: (enabled: boolean) => void;
 }
 
 export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppProps> = (props: IDeveloperPortalViewUserAppProps) => {
   const componentName = 'DeveloperPortalViewUserApp';
 
-  type TManagedObjectDisplay = {
-    apiAppResponse_smf: AppResponse;
-    apiAppResponse_mqtt: AppResponse;
-    apiProductList: TApiProductList;
-    apAppClientInformationList: TAPAppClientInformationList;
-  }
+  type TManagedObjectDisplay = TViewDeveloperPortalUserApp;
 
-  const createManagedObjectDisplay = (apiAppResponse_smf: AppResponse, apiAppResponse_mqtt: AppResponse, apiProductList: TApiProductList): TManagedObjectDisplay => {
+  const createManagedObjectDisplay = (
+    apiAppResponse_smf: AppResponse, 
+    apiAppResponse_mqtt: AppResponse, 
+    apiProductList: TApiProductList, 
+    apiAppEnvironmentResponseList: Array<EnvironmentResponse>
+  ): TManagedObjectDisplay => {
+  
     const funcName = 'createManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
     // add apiProductDisplayName to ClientInformation
@@ -77,6 +95,8 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
       apiAppResponse_mqtt: apiAppResponse_mqtt,
       apiProductList: apiProductList,
       apAppClientInformationList: _apAppClientInformationList,
+      apAreWebhooksAvailable: areWebhooksAvailable4App(apiAppResponse_smf.environments),
+      apViewManagedWebhookList: APManagedWebhook.createManagedWebhookList(apiAppResponse_smf, apiAppEnvironmentResponseList)
     }
     return managedObjectDisplay;
   }
@@ -113,7 +133,17 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         });
         _apiProductList.push(apiApiProduct);
       }
-      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList));
+      if(!_apiAppResponse_smf.environments) throw new Error(`${logName}: _apiAppResponse_smf.environments is undefined`);
+      let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
+      for(const _apiAppEnvironment of _apiAppResponse_smf.environments) {
+        if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
+        const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+          organizationName: props.organizationId,
+          envName: _apiAppEnvironment.name
+        });
+        _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
+      }
+      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -122,22 +152,95 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     return callState;
   }
 
-  // * useEffect Hooks *
-  const doInitialize = async () => {
-    props.onLoadingChange(true);
+  // * initialize *
+  const doInitializeFinish = (mod: TManagedObjectDisplay) => {
+    props.onLoadingFinished(mod);
+  }
+  const doInitializeStart = async () => {
+    props.onLoadingStart();
     await apiGetManagedObject();
-    props.onLoadingChange(false);
   }
 
+  // * useEffect Hooks *
   React.useEffect(() => {
-    doInitialize();
+    doInitializeStart();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(managedObjectDisplay) doInitializeFinish(managedObjectDisplay);
+  }, [managedObjectDisplay]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+
+  // TODO: create a new component: APDisplayAppAPIProductReferences
+  // TODO: use also in Admin Portal: ManageUserApps:ViewApp
+  const viewProductsDataTableRef = React.useRef<any>(null);
+  const [expandedViewProductsDataTableRows, setExpandedViewProductsDataTableRows] = React.useState<any>(null);
+  const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
+    const rowExpansionTemplate = (rowData: TApiProduct) => {
+      return (
+        <APDisplayAttributes
+          attributeList={rowData.attributes}
+          emptyMessage="No attributes defined."
+        />
+      );
+    }
+    const environmentsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return APRenderUtils.renderStringListAsDivList(rowData.environments ? rowData.environments : []);
+    }  
+    const protocolsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return (
+        <React.Fragment>
+          {APRenderUtils.getProtocolListAsString(rowData.protocols)}
+        </React.Fragment>
+      );
+    }
+    const attributesBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.attributes));
+    }
+    const apisBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return APRenderUtils.renderStringListAsDivList(rowData.apis);
+    }    
+    const apiProductNameBodyTemplate = (rowData: TApiProduct): JSX.Element => {
+      return (
+        <div className="p-text-bold">{rowData.displayName}</div>
+      );
+    }
+
+    const dataTableList = apiProductList;
+
+    return (
+      <div className="card">
+        <DataTable
+          className="p-datatable-sm"
+          ref={viewProductsDataTableRef}
+          dataKey="name"
+          value={dataTableList}
+          sortMode="single" 
+          sortField="name" 
+          sortOrder={1}
+          scrollable 
+          // scrollHeight="200px" 
+          expandedRows={expandedViewProductsDataTableRows}
+          onRowToggle={(e) => setExpandedViewProductsDataTableRows(e.data)}
+          rowExpansionTemplate={rowExpansionTemplate}
+        >
+          <Column expander style={{ width: '3em' }} />  
+          <Column body={apiProductNameBodyTemplate} header="API Product" bodyStyle={{ verticalAlign: 'top' }} />
+          <Column body={apisBodyTemplate} header="APIs" bodyStyle={{ verticalAlign: 'top' }}/>
+          <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }}/>
+          <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+          <Column body={protocolsBodyTemplate} header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
+        </DataTable>
+      </div>
+    );
+  }
 
   const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     return (
@@ -155,21 +258,21 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
     
-    // const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
-    //   const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-    //   const className = `${options.className} p-jc-start`;
-    //   const titleClassName = `${options.titleClassName} p-pl-1`;
-    //   return (
-    //     <div className={className} style={{ justifyContent: 'left'}} >
-    //       <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-    //         <span className={toggleIcon}></span>
-    //       </button>
-    //       <span className={titleClassName}>
-    //         API Products
-    //       </span>
-    //     </div>
-    //   );
-    // }
+    const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            API Products
+          </span>
+        </div>
+      );
+    }
     const panelHeaderTemplateClientInformation = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -181,21 +284,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
           </button>
           <span className={titleClassName}>
             APP Client Information
-          </span>
-        </div>
-      );
-    }
-    const panelHeaderTemplateWebhooks = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP Webhooks
           </span>
         </div>
       );
@@ -265,7 +353,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               <Panel 
                 headerTemplate={panelHeaderTemplateAppAttributes} 
                 toggleable
-                collapsed={false}
+                collapsed={true}
                 className="p-pt-2"
               >
                 <APDisplayAttributes
@@ -292,17 +380,12 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               </Panel>
 
               {/* APP Webhooks */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateWebhooks} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAppWebhooks 
-                  appWebhookList={managedObjectDisplay.apiAppResponse_smf.webHooks ? managedObjectDisplay.apiAppResponse_smf.webHooks : []} 
+              { managedObjectDisplay.apAreWebhooksAvailable &&
+                <APDisplayAppWebhooksPanel 
+                  appViewManagedWebhookList={managedObjectDisplay.apViewManagedWebhookList} 
                   emptyMessage="No Webhooks defined."              
                 />
-              </Panel>
+              }
 
               {/* APP Credentials */}
               <Panel 
@@ -333,17 +416,17 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
                 />
               </Panel>
               {/* References */}
-              {/* <Divider /> */}
-              {/* <div><b>References:</b></div> */}
+              <Divider />
+              <div><b>References:</b></div>
               {/* API Product */}
-              {/* <Panel 
+              <Panel 
                 headerTemplate={panelHeaderTemplateApiProducts} 
                 toggleable
                 collapsed={true}
                 className="p-pt-2"
               >
                 <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
-              </Panel> */}
+              </Panel>
             </div>
             <div className="apd-app-view-detail-right">
               <div>Id: {managedObjectDisplay.apiAppResponse_smf.name}</div>

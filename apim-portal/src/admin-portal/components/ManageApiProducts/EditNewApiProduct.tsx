@@ -1351,11 +1351,11 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           </div>
           {/* attributes */}
           <div className="p-field">
-          { renderManageAttributes() }
+            { renderManageAttributes() }
           </div>
           {/* client options */}
           <div className="p-field">
-          { renderManageClientOptions() }
+            { renderManageClientOptions() }
           </div>
           {/* footer */}
           { renderManagedObjectFormFooter() }

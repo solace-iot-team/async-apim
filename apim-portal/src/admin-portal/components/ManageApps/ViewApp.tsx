@@ -10,7 +10,9 @@ import {
   AppEnvironment, 
   AppListItem, 
   AppResponse,
-  AppsService
+  AppsService,
+  EnvironmentResponse,
+  EnvironmentsService
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSUser, ApsUsersService
@@ -22,7 +24,7 @@ import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedWebhook, TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId, TAPViewManagedWebhookList } from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
@@ -36,6 +38,7 @@ import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplay
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
@@ -58,9 +61,17 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     apiProductList: TApiProductList;
     apAppClientInformationList: TAPAppClientInformationList;
     apsUser: APSUser;
+    apViewManagedWebhookList: TAPViewManagedWebhookList;
   }
 
-  const createManagedObjectDisplay = (apiAppResponse_smf: AppResponse, apiAppResponse_mqtt: AppResponse, apiProductList: TApiProductList, apsUser: APSUser): TManagedObjectDisplay => {
+  const createManagedObjectDisplay = (
+    apiAppResponse_smf: AppResponse, 
+    apiAppResponse_mqtt: AppResponse, 
+    apiProductList: TApiProductList, 
+    apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
+    apsUser: APSUser
+  ): TManagedObjectDisplay => {
+  
     const funcName = 'createManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
     // add apiProductDisplayName to ClientInformation
@@ -86,7 +97,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       apiAppResponse_mqtt: apiAppResponse_mqtt,
       apiProductList: apiProductList,
       apAppClientInformationList: _apAppClientInformationList,
-      apsUser: apsUser
+      apsUser: apsUser,
+      apViewManagedWebhookList: APManagedWebhook.createManagedWebhookList(apiAppResponse_smf, apiAppEnvironmentResponseList)
     }
     return managedObjectDisplay;
   }
@@ -151,6 +163,16 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         });
         _apiProductList.push(apiApiProduct);
       }
+      if(!_apiAppResponse_smf.environments) throw new Error(`${logName}: _apiAppResponse_smf.environments is undefined`);
+      let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
+      for(const _apiAppEnvironment of _apiAppResponse_smf.environments) {
+        if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
+        const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+          organizationName: props.organizationId,
+          envName: _apiAppEnvironment.name
+        });
+        _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
+      }
       let _apsUser: APSUser | undefined = undefined;
       try {
         _apsUser = await ApsUsersService.getApsUser({
@@ -162,7 +184,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         throw(e);
       }
       if(!_apsUser) throw new Error(`${logName}: _apsUser is undefined`);
-      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apsUser));
+      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList, _apsUser));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -251,8 +273,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
           <Column body={protocolsBodyTemplate} header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
         </DataTable>
       </div>
-    )
-
+    );
   }
 
   const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
@@ -297,21 +318,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
           </button>
           <span className={titleClassName}>
             APP Client Information
-          </span>
-        </div>
-      );
-    }
-    const panelHeaderTemplateWebhooks = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP Webhooks
           </span>
         </div>
       );
@@ -415,17 +421,10 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               </Panel>
 
               {/* APP Webhooks */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateWebhooks} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAppWebhooks 
-                  appWebhookList={managedObjectDisplay.apiAppResponse_smf.webHooks ? managedObjectDisplay.apiAppResponse_smf.webHooks : []} 
+              <APDisplayAppWebhooksPanel 
+                  appViewManagedWebhookList={managedObjectDisplay.apViewManagedWebhookList} 
                   emptyMessage="No Webhooks defined."              
                 />
-              </Panel>
 
               {/* APP Credentials */}
               <Panel 

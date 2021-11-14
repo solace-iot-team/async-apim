@@ -37,6 +37,8 @@ import { EApiTopicSyntax, TManagedObjectDisplayName, TManagedObjectId } from "..
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
+import { DeveloperPortalManageUserAppWebhooks } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooks";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -563,9 +565,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
               { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.apiProductSelectItemIdList) }
               { renderApiProductsToolbar() }
             </div>
-            <div>
-              <h1>TODO: add/edit multiple webhooks ...</h1>
-            </div>
+
             {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller

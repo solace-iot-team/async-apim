@@ -1,5 +1,5 @@
 import {
-  $attributes, $ClientOptionsGuaranteedMessaging, $WebHook
+  $attributes, $ClientOptionsGuaranteedMessaging, $WebHook, $WebHookBasicAuth, $WebHookHeaderAuth
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../components/APComponentsCommon";
@@ -7,6 +7,27 @@ import { APConnectorApiHelper } from "./APConnectorApiCalls";
 
 export class APConnectorFormValidationRules {
   
+  private static getMaxLengthRule = (schema: any): any => {
+    if(schema.maxLength) return {
+      value: schema.maxLength,
+      message: `Maximum of ${schema.maxLength} chars.`
+    }
+  }
+
+  private static getMinLengthRule = (schema: any): any => {
+    if(schema.minLength) return {
+      value: schema.minLength,
+      message: `Minimum of ${schema.minLength} chars.`
+    }
+  }
+
+  private static getPatternRule = (schema: any, message: string): any => {
+    if(schema.pattern) return {
+      value: new RegExp(schema.pattern),
+      message: `${message}. Pattern: ${schema.pattern}`
+    }
+  }
+
   public static ClientOptionsGuaranteedMessaging_MaxTTL = (): any => {
     return {
       required: "Enter Max TTL.",
@@ -51,6 +72,72 @@ export class APConnectorFormValidationRules {
         message: `Invalid name. Pattern: ${$WebHook.properties.uri.pattern}`
       }
     };
+  }
+
+  public static WebhookBasicAuth_Username = (): any => {
+    const schema = $WebHookBasicAuth.properties.username;
+    const rules: any = {
+    }
+    if(schema.isRequired) rules['required'] = 'Enter username';
+    return rules;
+  }
+
+  public static WebhookBasicAuth_Password = (): any => {
+    const fixPattern = '^[\\S]*$';
+    // pattern: '[\\S]{8,256}',
+    const schema = $WebHookBasicAuth.properties.password;
+    const rules: any = {
+      pattern: {
+        value: new RegExp(fixPattern),
+        message: `Invalid password. Pattern: ${schema.pattern}`
+      }
+    }
+    if(schema.isRequired) rules['required'] = 'Enter password';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    return rules;
+  }
+
+  public static WebhookHeaderAuth_HeaderName = (): any => {
+    const schema = $WebHookHeaderAuth.properties.headerName;
+    // pattern: '[\\s\\S]{1,512}',
+    const fixPattern = '^[\\S]*$';
+    schema.pattern = fixPattern;
+    const rules: any = {};
+    if(schema.isRequired) rules['required'] = 'Enter header name.';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid header name');
+    return rules;
+  }
+
+  public static WebhookHeaderAuth_HeaderValue = (): any => {
+    const schema = $WebHookHeaderAuth.properties.headerValue;
+    // pattern: '[\\s\\S]{1,512}',
+    const fixPattern = '^[\\S]*$';
+    schema.pattern = fixPattern;
+    const rules: any = {};
+    if(schema.isRequired) rules['required'] = 'Enter header value.';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid header value');
+    return rules;
+  }
+
+  public static TrustedCN = (): any => {
+    const schema = {
+      type: 'string',
+      isRequired: true,
+      maxLength: 512,
+      minLength: 1,
+      pattern: '^[\\S]*$',
+    };
+    const rules: any = {};
+    if(schema.isRequired) rules['required'] = 'Enter trusted CN.';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid trusted CN');
+    return rules;
   }
 
   public static AttributeName = (): any => {

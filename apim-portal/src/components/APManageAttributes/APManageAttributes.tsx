@@ -61,7 +61,11 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
   }, [managedAttribute]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(isManagedAttributeListChanged) props.onChange(managedAttributeList);
+    if(isManagedAttributeListChanged) {
+      attributeUseForm.clearErrors();
+      if(attributeUseForm.getValues('name') !== '') attributeUseForm.trigger();
+      props.onChange(managedAttributeList);
+    }
   }, [managedAttributeList]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

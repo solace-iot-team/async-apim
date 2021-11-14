@@ -16,18 +16,20 @@ import {
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { TAPOrganizationId } from "../../../../components/APComponentsCommon";
+import { APManagedWebhook, TApiEntitySelectItem, TAPOrganizationId, TAPViewManagedWebhook } from "../../../../components/APComponentsCommon";
 import { 
   E_CALL_STATE_ACTIONS, 
+  getNumberWebhooksUndefined4App, 
   TViewManagedAppWebhookList,
-  TViewManagedWebhook
 } from "./DeveloperPortalManageUserAppWebhooksCommon";
 import { DeveloperPortalListUserAppWebhooks } from "./DeveloperPortalListUserAppWebhooks";
-// import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./DeveloperPortalNewEditUserAppWebhook";
+import { DeveloperPortalDeleteUserAppWebhook } from "./DeveloperPortalDeleteUserAppWebhook";
+import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./DeveloperPortalNewEditUserAppWebhook";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./DeveloperPortalNewEditUserAppWebhook";
+import { Globals } from "../../../../utils/Globals";
+import { Loading } from "../../../../components/Loading/Loading";
 
 export interface IDeveloperPortalManageUserAppWebhooksProps {
   organizationId: TAPOrganizationId;
@@ -38,6 +40,8 @@ export interface IDeveloperPortalManageUserAppWebhooksProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
+  // TODO: required to set here?
+  // onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
 }
 
 export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalManageUserAppWebhooksProps> = (props: IDeveloperPortalManageUserAppWebhooksProps) => {
@@ -74,49 +78,62 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New';
+  const ToolbarBackToAppButtonLabel = 'Back to App';
+  const ToolbarNewManagedObjectButtonLabel = 'New Webhook';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  const [managedWebhook, setManagedWebhook] = React.useState<TViewManagedWebhook>();
+  const [managedWebhook, setManagedWebhook] = React.useState<TAPViewManagedWebhook>();
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  // const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
+  const [refreshComponentCounter, setRefreshComponentCounter] = React.useState<number>(0);
   // const [viewAppApiAppResponse, setViewAppApiAppResponse] = React.useState<AppResponse>();
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [newPresetEnvSelectItem, setNewPresetEnvSelectItem] = React.useState<TApiEntitySelectItem>();
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
 
   // * transformations *
   const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse, apiAppEnvironmentResponseList: Array<EnvironmentResponse>): TManagedObject => {
-    const createManagedWebhook = (apiWebHook: WebHook, apiAppEnvironmentResponseList: Array<EnvironmentResponse>): TViewManagedWebhook => {
-      const funcName = 'createManagedWebhook';
-      const logName = `${componentName}.${funcName}()`;
-      let _webhookApiEnvironmentResponseList: Array<EnvironmentResponse> = [];
-      apiWebHook.environments?.forEach( (envName: string) => {
-        const found: EnvironmentResponse | undefined = apiAppEnvironmentResponseList.find( (envResponse: EnvironmentResponse) => {
-          return (envResponse.name === envName)
-        });
-        if(!found) throw new Error(`${logName}: cound not find webhook env=${envName} in app environment list: ${JSON.stringify(apiAppEnvironmentResponseList)}`);
-        _webhookApiEnvironmentResponseList.push(found);
-      });
-      const viewManagedWebhook: TViewManagedWebhook = {
-        apSynthId: JSON.stringify(apiWebHook),
-        apiWebHook: apiWebHook,
-        webhookApiEnvironmentResponseList: _webhookApiEnvironmentResponseList
-      }
-      return viewManagedWebhook;
-    }
+    // const createManagedWebhook = (apiAppResponse: AppResponse, apiWebHook: WebHook, apiAppEnvironmentResponseList: Array<EnvironmentResponse>): TAPViewManagedWebhook => {
+    //   const funcName = 'createManagedWebhook';
+    //   const logName = `${componentName}.${funcName}()`;
+    //   let _webhookApiEnvironmentResponseList: Array<EnvironmentResponse> = [];
+    //   apiWebHook.environments?.forEach( (envName: string) => {
+    //     const found: EnvironmentResponse | undefined = apiAppEnvironmentResponseList.find( (envResponse: EnvironmentResponse) => {
+    //       return (envResponse.name === envName)
+    //     });
+    //     if(!found) throw new Error(`${logName}: cound not find webhook env=${envName} in app environment list: ${JSON.stringify(apiAppEnvironmentResponseList)}`);
+    //     _webhookApiEnvironmentResponseList.push(found);
+    //   });
+    //   const viewManagedWebhook: TAPViewManagedWebhook = {
+    //     apSynthId: JSON.stringify(apiWebHook),
+    //     apiWebHook: {
+    //       ...apiWebHook,
+    //         // TODO
+    //         // when connector api ready: tlsOptions.trustedCNs(list of strings) - map to list of objects in TAPTrustedCNList
+    //       trustedCNList: [{name: 'api-one'}, {name:'api-two'}]
+    //     },
+    //     webhookApiEnvironmentResponseList: _webhookApiEnvironmentResponseList,
+    //     apiAppResponse: apiAppResponse
+    //   }
+    //   return viewManagedWebhook;
+    // }
     // main
     const apiAppWebhookList: Array<WebHook> = apiAppResponse.webHooks ? apiAppResponse.webHooks : [];
-    let _managedWebhookList: Array<TViewManagedWebhook> = [];
+    let _managedWebhookList: Array<TAPViewManagedWebhook> = [];
     apiAppWebhookList.forEach( (apiAppWebHook: WebHook) => {
-      const viewManagedWebhook: TViewManagedWebhook = createManagedWebhook(apiAppWebHook, apiAppEnvironmentResponseList);
+      const viewManagedWebhook: TAPViewManagedWebhook = APManagedWebhook.createManagedWebhook(apiAppResponse, apiAppWebHook, apiAppEnvironmentResponseList);
+      // viewManagedWebhook.apWebhookStatus = {
+      //    summaryStatus: false,
+      //    details: { todo: 'get the status from broker service'} 
+      // }
       _managedWebhookList.push(viewManagedWebhook);
     });
     return {
@@ -150,6 +167,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         });
         _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
       }
+      // TODO: get the status for all webhooks
       setManagedObject(transformGetApiObjectToManagedObject(_apiAppResponse, _apiAppEnvironmentResponseList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -161,8 +179,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   
   // * useEffect Hooks *
   const doInitialize = async () => {
-    const funcName = 'doInitialize';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doInitialize';
+    // const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
@@ -177,6 +195,24 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const doRefreshComponentData = async () => {
+    const funcName = 'doRefreshComponentData';
+    const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: refreshing ...`);
+    setIsLoading(true);
+    // props.onLoadingChange(true);
+    await apiGetManagedObject();
+    // props.onLoadingChange(false);
+    setIsLoading(false);
+  }
+  React.useEffect(() => {
+    if(refreshComponentCounter > 0) doRefreshComponentData();
+  }, [refreshComponentCounter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+
+
+  // TODO: set the app display name + manage webhooks?
+  // TODO: if so, app display name needs a command/link: page+app-name+view
   // React.useEffect(() => {
   //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
   //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_ATTRIBUTES
@@ -189,7 +225,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
           case E_CALL_STATE_ACTIONS.API_GET_USER_APP:
-            break;
+          case E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP:
+              break;
           default:
             props.onSuccess(apiCallStatus);
           }
@@ -197,8 +234,11 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const onBackToApp = (): void => {
+    props.onCancel();
+  }
   //  * View Object *
-  const onViewManagedWebhook = (mwh: TViewManagedWebhook): void => {
+  const onViewManagedWebhook = (mwh: TAPViewManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
@@ -208,6 +248,14 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
+  const onNewManagedWebhookAnyEnv = () => {
+    setNewPresetEnvSelectItem(undefined);
+    onNewManagedWebhook();
+  }
+  const onCreateNewWebhook4Env = (envName: CommonName, envDisplayName: CommonDisplayName): void => {
+    setNewPresetEnvSelectItem({ id: envName, displayName: envDisplayName});
+    onNewManagedWebhook();
+  }
   // * Edit *
   const onEditManagedWebhookFromToolbar = () => {
     const funcName = 'onEditManagedWebhookFromToolbar';
@@ -215,7 +263,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     if(!managedWebhook) throw new Error(`${logName}: managedWebhook is undefined for componentState=${componentState}`);
     onEditManagedWebhook(managedWebhook);
   }
-  const onEditManagedWebhook = (mwh: TViewManagedWebhook): void => {
+  const onEditManagedWebhook = (mwh: TAPViewManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
@@ -227,38 +275,55 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     if(!managedWebhook) throw new Error(`${logName}: managedWebhook is undefined for componentState=${componentState}`);
     onDeleteManagedWebhook(managedWebhook);
   }
-  const onDeleteManagedWebhook = (mwh: TViewManagedWebhook): void => {
+  const onDeleteManagedWebhook = (mwh: TAPViewManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
   
   // * Toolbar *
-  const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderLeftToolbarContent';
+  const getLeftToolbarContent = (): Array<JSX.Element> | undefined => {
+    const funcName = 'getLeftToolbarContent';
     const logName = `${componentName}.${funcName}()`;
-    if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedWebhook} className="p-button-text p-button-plain p-button-outlined"/>
-      </React.Fragment>
-    );
-    if(showViewComponent) {          
-      return (
-        <React.Fragment>
-          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedWebhook} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        </React.Fragment>
+    if(!componentState.currentState || !managedObject) return undefined;
+    let jsxButtonList: Array<JSX.Element> = [
+      <Button key={componentName+ToolbarBackToAppButtonLabel} label={ToolbarBackToAppButtonLabel} icon="pi pi-chevron-left" onClick={onBackToApp} className="p-button-text p-button-plain p-button-outlined"/>
+    ];
+    if(showListComponent) {
+      if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+      // TODO:HERE
+      // managedObject?.managedWebhookList
+      jsxButtonList.push(
+        <Button 
+          key={componentName+ToolbarNewManagedObjectButtonLabel} 
+          label={ToolbarNewManagedObjectButtonLabel} 
+          icon="pi pi-plus" 
+          onClick={onNewManagedWebhookAnyEnv} 
+          className="p-button-text p-button-plain p-button-outlined"
+          disabled={getNumberWebhooksUndefined4App(managedObject.managedWebhookList, managedObject.apiAppEnvironmentResponseList) === 0}
+        />
       );
+      return jsxButtonList;
+    }
+    if(showViewComponent) {          
+      // jsxButtonList.push(
+      //   <Button key={componentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedWebhook} className="p-button-text p-button-plain p-button-outlined"/>
+      // );
+      jsxButtonList.push(
+        <Button key={componentName+ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
+      );
+      jsxButtonList.push(
+        <Button key={componentName+ToolbarDeleteManagedObjectButtonLabel} label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+      ); 
+      return jsxButtonList;
     }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
   }
   const renderToolbar = (): JSX.Element => {
-    const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
-    if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
+    const leftToolbarContent: Array<JSX.Element> | undefined = getLeftToolbarContent();
+    if(leftToolbarContent) return (<Toolbar className="p-mb-4" left={leftToolbarContent} />);
     else return (<React.Fragment></React.Fragment>);
   }
   
@@ -275,9 +340,11 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
   }
-  const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
+  const onDeleteManagedWebhookSuccess = (apiCallState: TApiCallState) => {
+    // alert(`delete success - should re-initialize webhooks`);
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setPreviousComponentState();
+    setRefreshComponentCounter(refreshComponentCounter + 1);
   }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -348,7 +415,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   return (
     <div className="apd-manage-user-apps">
 
-      {/* <Loading show={isLoading} /> */}
+      <Loading show={isLoading} />
       
       {/* { !isLoading && renderToolbar() } */}
 
@@ -356,6 +423,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
 
       {showListComponent && managedObject &&
         <DeveloperPortalListUserAppWebhooks
+          // key={componentState.previousState}
           organizationId={props.organizationId}
           userId={props.userId}
           viewManagedAppWebhookList={managedObject}
@@ -364,12 +432,17 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
           // onError={onSubComponentError} 
           // onSuccess={onListManagedObjectsSuccess}
           onViewManagedWebhook={onViewManagedWebhook}
+          onDeleteManagedWebhook={onDeleteManagedWebhook}
+          // onCreateNewWebhook: (envName: CommonName, envDisplayName: CommonDisplayName) => void;
+          onCreateNewWebhook={onCreateNewWebhook4Env}
           // onLoadingChange={setIsLoading} 
         />
       }
 
       {showViewComponent && managedWebhook &&
-        <p>TODO: showViewComponent </p>
+        <React.Fragment>
+          <p>TODO: showViewComponent </p>
+        </React.Fragment>
         // <ViewApp
         //   key={refreshViewComponentKey}
         //   organizationId={props.organizationId}
@@ -383,8 +456,17 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         //   onLoadingFinished={onViewAppLoadingFinished}
         // />      
       }
-      {/* {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
-        <p>TODO: showDeleteComponent </p>
+      {showDeleteComponent && managedObject && managedWebhook && 
+        <DeveloperPortalDeleteUserAppWebhook
+          organizationId={props.organizationId}
+          userId={props.userId}
+          viewManagedAppWebhookList={managedObject}
+          deleteManagedWebhook={managedWebhook}
+          onSuccess={onDeleteManagedWebhookSuccess}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={props.onLoadingChange} 
+        />
         // <DeleteApiProduct
         //   organizationId={props.organizationId}
         //   apiProductId={managedObjectId}
@@ -394,13 +476,14 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         //   onCancel={onSubComponentCancel}
         //   onLoadingChange={setIsLoading}
         // />
-      } */}
+      }
       {showNewComponent && managedObject &&
         <DeveloperPortalNewEditUserAppWebhook 
           action={EAction.NEW}
           organizationId={props.organizationId}
           userId={props.userId}
           viewManagedAppWebhookList={managedObject}
+          presetEnvSelectItem={newPresetEnvSelectItem}
           onNewSuccess={onNewManagedObjectSuccess}
           onEditSuccess={onEditManagedObjectSuccess}
           onError={onSubComponentError}
@@ -426,12 +509,12 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
       {/* DEBUG */}
       <React.Fragment>
         <hr/> 
-        <h1>managedWebhook:</h1>
+        <h1>{componentName}.managedWebhook:</h1>
         <pre style={ { fontSize: '10px' }} >
             {JSON.stringify(managedWebhook, null, 2)}
         </pre>
         <hr/> 
-        <h1>managedObject:</h1>
+        <h1>{componentName}.managedObject:</h1>
         <pre style={ { fontSize: '10px' }} >
             {JSON.stringify(managedObject, null, 2)}
         </pre>

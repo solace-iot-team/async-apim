@@ -28,7 +28,7 @@ import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { Globals } from "../../../utils/Globals";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { TApiEntitySelectItemList, TAPLazyLoadingTableParameters, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 
@@ -219,6 +219,14 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     return APRenderUtils.renderStringListAsDivList(rowData.apiProductDisplayNameList);
   }
 
+  const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
+    // create single list of all environments for all apiProducts
+    // api: get the displayNames for the environments as well
+    return APRenderUtils.renderStringListAsDivList(['TODO', 'GET ENVS']);
+  }
+  const webhooksBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
+    return 'TODO: if webhooks possible, then number of webhooks or list of URIs?';
+  }
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
@@ -246,9 +254,11 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
             sortOrder={1}
           >
             <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column field="appListItem.status" header="State" sortable bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
-            <Column body={actionBodyTemplate} headerStyle={{width: '3em'}} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column field="appListItem.status" header="State" sortable headerStyle={{width: '7em'}} bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} />
+            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{verticalAlign: 'top'}} />
+            <Column body={environmentsBodyTemplate} header="Environment(s)" bodyStyle={{textAlign: 'left'}}/>
+            <Column body={webhooksBodyTemplate} header="Webhook(s)" />
+            {/* <Column body={actionBodyTemplate} headerStyle={{width: '3em'}} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/> */}
         </DataTable>
       </div>
     );
