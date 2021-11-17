@@ -146,7 +146,7 @@ export const APManageTrustedCNs: React.FC<IAPManageTrustedCNsProps> = (props: IA
           className="p-datatable-sm"
           showGridlines={false}
           value={managed_TrustedCNList}
-          emptyMessage='No attributes defined.'
+          emptyMessage='No trusted common names defined.'
           scrollable 
           dataKey="name"  
           sortMode='single'

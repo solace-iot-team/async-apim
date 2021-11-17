@@ -17,11 +17,11 @@ import {
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPDeveloperPortalUserAppDisplay, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { DeveloperPortalViewUserApp, TViewDeveloperPortalUserApp } from "./DeveloperPortalViewUserApp";
+import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEditUserApp";
 import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 import { TManagedObjectId } from "../../../components/APApiObjectsCommon";
@@ -84,7 +84,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
 
   const ToolbarNewManagedObjectButtonLabel = 'New App';
   const ToolbarEditManagedObjectButtonLabel = 'Edit App';
-  const ToolbarEditWebhooksManagedObjectButtonLabel = 'Edit Webhooks';
+  const ToolbarManageWebhooksManagedObjectButtonLabel = 'Manage Webhooks';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete App';
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -96,7 +96,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  const [viewComponentManagedObjectDisplay, setViewComponentManagedObjectDisplay] = React.useState<TViewDeveloperPortalUserApp>();
+  const [viewComponentManagedObjectDisplay, setViewComponentManagedObjectDisplay] = React.useState<TAPDeveloperPortalUserAppDisplay>();
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showEditWebhooksComponent, setShowEditWebhooksComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
@@ -247,20 +247,19 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       </React.Fragment>
     );
     if(showViewComponent) {
-      // if(!viewComponentManagedObjectDisplay) throw new Error(`${logName}: viewComponentManagedObjectDisplay is undefined`);
       if(!viewComponentManagedObjectDisplay) return undefined;
       const jsxButtonList: Array<JSX.Element> = [
         <Button key={componentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>,
         <Button key={componentName+ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>,
-        <Button 
-          key={componentName+ToolbarEditWebhooksManagedObjectButtonLabel}
-          label={ToolbarEditWebhooksManagedObjectButtonLabel} 
-          icon="pi pi-pencil" 
-          onClick={onEditWebhooksManagedObjectFromToolbar} 
-          className="p-button-text p-button-plain p-button-outlined"
-          // mo.apiAppResponse.environments, mo.webhookApiEnvironmentResponseList
-          disabled={!viewComponentManagedObjectDisplay.apAreWebhooksAvailable}
-        />,
+        // <Button 
+        //   key={componentName+ToolbarEditWebhooksManagedObjectButtonLabel}
+        //   label={ToolbarEditWebhooksManagedObjectButtonLabel} 
+        //   icon="pi pi-pencil" 
+        //   onClick={onEditWebhooksManagedObjectFromToolbar} 
+        //   className="p-button-text p-button-plain p-button-outlined"
+        //   // mo.apiAppResponse.environments, mo.webhookApiEnvironmentResponseList
+        //   disabled={!viewComponentManagedObjectDisplay.isAppWebhookCapable}
+        // />,
         <Button 
           key={componentName+ToolbarDeleteManagedObjectButtonLabel}
           label={ToolbarDeleteManagedObjectButtonLabel} 
@@ -279,9 +278,28 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
   }
+  const renderRightToolbarContent = (): JSX.Element | undefined => {
+    if(!componentState.currentState) return undefined;
+    if(showViewComponent) {
+      if(!viewComponentManagedObjectDisplay) return undefined;
+      return (
+        <React.Fragment>
+          <Button 
+            key={componentName+ToolbarManageWebhooksManagedObjectButtonLabel}
+            label={ToolbarManageWebhooksManagedObjectButtonLabel} 
+            // icon="pi pi-pencil" 
+            onClick={onEditWebhooksManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+            disabled={!viewComponentManagedObjectDisplay.isAppWebhookCapable}
+          />
+        </React.Fragment>
+      );
+    }
+  }
   const renderToolbar = (): JSX.Element => {
-    const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
-    if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
+    const leftToolbarContent: JSX.Element | undefined = renderLeftToolbarContent();
+    const rightToolbarContent: JSX.Element | undefined = renderRightToolbarContent();
+    if(leftToolbarContent || rightToolbarContent) return (<Toolbar className="p-mb-4" left={leftToolbarContent} right={rightToolbarContent} />);
     else return (<React.Fragment></React.Fragment>);
   }
   
@@ -426,7 +444,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
           onLoadingStart={() => setIsLoading(true)}
-          onLoadingFinished={(viewApp: TViewDeveloperPortalUserApp) => { setViewComponentManagedObjectDisplay(viewApp); setIsLoading(false); }}
+          onLoadingFinished={(viewApp: TAPDeveloperPortalUserAppDisplay) => { setViewComponentManagedObjectDisplay(viewApp); setIsLoading(false); }}
         />      
       }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&

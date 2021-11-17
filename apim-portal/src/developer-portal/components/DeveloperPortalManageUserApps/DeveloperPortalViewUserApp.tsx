@@ -2,6 +2,9 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { Divider } from "primereact/divider";
 
 import { 
   ApiProductsService,
@@ -18,32 +21,22 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
-import { APManagedWebhook, TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId, TAPViewManagedWebhookList } from "../../../components/APComponentsCommon";
+import { 
+  APManagedUserAppDisplay,
+  TAPDeveloperPortalUserAppDisplay, 
+  TAPOrganizationId 
+} from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
-import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplayAppCredentials";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
-import { areWebhooksAvailable4App } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooksCommon";
+import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
-import { Divider } from "primereact/divider";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-
-export type TViewDeveloperPortalUserApp = {
-  apiAppResponse_smf: AppResponse;
-  apiAppResponse_mqtt: AppResponse;
-  apiProductList: TApiProductList;
-  apAppClientInformationList: TAPAppClientInformationList;
-  apAreWebhooksAvailable: boolean;
-  apViewManagedWebhookList: TAPViewManagedWebhookList
-}
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,
@@ -52,54 +45,14 @@ export interface IDeveloperPortalViewUserAppProps {
   appDisplayName: TManagedObjectDisplayName,
   onError: (apiCallState: TApiCallState) => void;
   onLoadingStart: () => void;
-  onLoadingFinished: (viewApp: TViewDeveloperPortalUserApp) => void;
-  // onSuccess: (apiCallState: TApiCallState) => void;
+  onLoadingFinished: (managedUserAppDisplay: TAPDeveloperPortalUserAppDisplay) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  // onAreAppWebhooksEnabled: (enabled: boolean) => void;
 }
 
 export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppProps> = (props: IDeveloperPortalViewUserAppProps) => {
   const componentName = 'DeveloperPortalViewUserApp';
 
-  type TManagedObjectDisplay = TViewDeveloperPortalUserApp;
-
-  const createManagedObjectDisplay = (
-    apiAppResponse_smf: AppResponse, 
-    apiAppResponse_mqtt: AppResponse, 
-    apiProductList: TApiProductList, 
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>
-  ): TManagedObjectDisplay => {
-  
-    const funcName = 'createManagedObjectDisplay';
-    const logName = `${componentName}.${funcName}()`;
-    // add apiProductDisplayName to ClientInformation
-    let _apAppClientInformationList: TAPAppClientInformationList = [];
-    if(apiAppResponse_smf.clientInformation) {
-      for (const ci of apiAppResponse_smf.clientInformation) {
-        if(ci.guaranteedMessaging) {
-          const found = apiProductList.find( (apiProduct: TApiProduct) => {
-            return (apiProduct.name === ci.guaranteedMessaging?.apiProduct)
-          });
-          if(!found) throw new Error(`${logName}: could not find ci.guaranteedMessaging.apiProduct=${ci.guaranteedMessaging.apiProduct} in apiProductList=${JSON.stringify(apiProductList)}`);
-          const _apAppClientInformation: TAPAppClientInformation = {
-            guaranteedMessaging: ci.guaranteedMessaging,
-            apiProductName: found.name,
-            apiProductDisplayName: found.displayName
-          }
-          _apAppClientInformationList.push(_apAppClientInformation);
-        }
-      }
-    }
-    const managedObjectDisplay: TManagedObjectDisplay = {
-      apiAppResponse_smf: apiAppResponse_smf,
-      apiAppResponse_mqtt: apiAppResponse_mqtt,
-      apiProductList: apiProductList,
-      apAppClientInformationList: _apAppClientInformationList,
-      apAreWebhooksAvailable: areWebhooksAvailable4App(apiAppResponse_smf.environments),
-      apViewManagedWebhookList: APManagedWebhook.createManagedWebhookList(apiAppResponse_smf, apiAppEnvironmentResponseList)
-    }
-    return managedObjectDisplay;
-  }
+  type TManagedObjectDisplay = TAPDeveloperPortalUserAppDisplay;
 
   const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -143,7 +96,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         });
         _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
       }
-      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList));
+      setManagedObjectDisplay(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -379,13 +332,12 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
                 />
               </Panel>
 
-              {/* APP Webhooks */}
-              { managedObjectDisplay.apAreWebhooksAvailable &&
-                <APDisplayAppWebhooksPanel 
-                  appViewManagedWebhookList={managedObjectDisplay.apViewManagedWebhookList} 
-                  emptyMessage="No Webhooks defined."              
-                />
-              }
+              {/* App Webhooks */}
+              <APDisplayAppWebhooksPanel
+                isAppWebhooksCapable={managedObjectDisplay.isAppWebhookCapable}
+                managedWebhookList={managedObjectDisplay.apManagedWebhookList}
+                emptyMessage="No Webhooks defined."              
+              />
 
               {/* APP Credentials */}
               <Panel 
@@ -419,7 +371,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               <Divider />
               <div><b>References:</b></div>
               {/* API Product */}
-              <Panel 
+              <Panel                 
                 headerTemplate={panelHeaderTemplateApiProducts} 
                 toggleable
                 collapsed={true}

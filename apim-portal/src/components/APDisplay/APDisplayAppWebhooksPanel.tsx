@@ -2,45 +2,39 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { TAPViewManagedWebhook } from "../APComponentsCommon";
-import { 
-  APDisplayAppWebhooks, 
-  TAPDisplayAppWebhooksDataTableList, 
-  transformAPViewManagedWebhookListToDataTableList 
-} from "./APDisplayAppWebhooks";
+import { APManagedWebhook, TAPManagedWebhookList } from "../APComponentsCommon";
+import { APDisplayAppWebhooks } from "./APDisplayAppWebhooks";
 
 import "../APComponents.css";
 
 export interface IAPDisplayAppWebhooksPanelProps {
-  appViewManagedWebhookList: Array<TAPViewManagedWebhook>;
+  isAppWebhooksCapable: boolean;
+  managedWebhookList: TAPManagedWebhookList; 
   emptyMessage: string;
   className?: string;
 }
 
 export const APDisplayAppWebhooksPanel: React.FC<IAPDisplayAppWebhooksPanelProps> = (props: IAPDisplayAppWebhooksPanelProps) => {
-  const componentName='APDisplayAppWebhooksPanel';
-
-  const [dataTableList, setDataTableList] = React.useState<TAPDisplayAppWebhooksDataTableList>();
-
-  React.useEffect(() => {
-    // TODO: may need to get the status?
-    setDataTableList(transformAPViewManagedWebhookListToDataTableList(props.appViewManagedWebhookList));
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // const componentName='APDisplayAppWebhooksPanel';
 
   const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
-    const funcName = 'panelHeaderTemplate';
-    const logName = `${componentName}.${funcName}()`;
-    if(!dataTableList) throw new Error(`${logName}: dataTableList is undefined`);
     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
     const className = `${options.className} p-jc-start`;
     const titleClassName = `${options.titleClassName} p-pl-1`;
+    let title: string = 'App Webhooks';
+    if(props.isAppWebhooksCapable) {
+      const numberWebhooks: number = APManagedWebhook.getNumberWebhooksDefined4App(props.managedWebhookList);
+      title = title + ` (${numberWebhooks})`;
+    } else {
+      title = title + ' - no webhooks functionality available'
+    }
     return (
       <div className={className} style={{ justifyContent: 'left'}} >
         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
           <span className={toggleIcon}></span>
         </button>
         <span className={titleClassName}>
-          {`APP Webhooks (${dataTableList.length})`}
+          {title}
         </span>
       </div>
     );
@@ -55,7 +49,7 @@ export const APDisplayAppWebhooksPanel: React.FC<IAPDisplayAppWebhooksPanelProps
         className="p-pt-2"
       >
         <APDisplayAppWebhooks 
-          appViewManagedWebhookList={props.appViewManagedWebhookList} 
+          managedWebhookList={props.managedWebhookList} 
           emptyMessage="No Webhooks defined."              
           className={props.className}
         />
@@ -65,7 +59,7 @@ export const APDisplayAppWebhooksPanel: React.FC<IAPDisplayAppWebhooksPanelProps
 
   return (
     <div className={props.className ? props.className : 'card'}>
-      {dataTableList && renderComponent()}
+      {renderComponent()}
     </div>
   );
 }

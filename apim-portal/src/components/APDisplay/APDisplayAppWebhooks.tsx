@@ -8,44 +8,12 @@ import {
   APManagedWebhook, 
   TAPManagedWebhook, 
   TAPManagedWebhookList, 
-  TAPViewManagedWebhook, 
-  TAPViewManagedWebhookList 
 } from "../APComponentsCommon";
 
 import "../APComponents.css";
 
-export type TAPDisplayAppWebhooksDataTableRow = {
-  apViewManagedWebhook: TAPViewManagedWebhook;
-  apManagedWebhook: TAPManagedWebhook;
-  synthId: string;
-}
-export type TAPDisplayAppWebhooksDataTableList = Array<TAPDisplayAppWebhooksDataTableRow>;
-
-export const transformAPViewManagedWebhookListToDataTableList = (appViewManagedWebhookList: TAPViewManagedWebhookList): TAPDisplayAppWebhooksDataTableList => {
-  // const funcName = 'transformAPViewManagedWebhookListToDataTableList';
-  // const logName = `${componentName}.${funcName}()`;
-  let dataTableList: TAPDisplayAppWebhooksDataTableList = [];
-  appViewManagedWebhookList.forEach( (apViewManagedWebhook: TAPViewManagedWebhook) => {      
-    const apManagedWebhookList: TAPManagedWebhookList = APManagedWebhook.createAPManagedWebhookListFromApiWebhookList([apViewManagedWebhook.apiWebHook], apViewManagedWebhook.webhookApiEnvironmentResponseList);
-    apManagedWebhookList.forEach( (apManagedWebhook: TAPManagedWebhook) => {
-      dataTableList.push({
-        synthId: `${apManagedWebhook.environment.name}`,
-        apViewManagedWebhook: apViewManagedWebhook,
-        apManagedWebhook: apManagedWebhook
-      });
-    });
-  });
-  // // DEBUG
-  // dataTableList.forEach( (row: TDataTableRow) => {
-  //   console.log(`${logName}: row.synthId = ${JSON.stringify(row.synthId, null, 2)}`);
-  //   console.log(`${logName}: row.apManagedWebhook = ${JSON.stringify(row.apManagedWebhook, null, 2)}`);
-  // });
-  // // throw new Error(`${logName}: continue here`);
-  return dataTableList;
-}
-
 export interface IAPDisplayAppWebhooksProps {
-  appViewManagedWebhookList: TAPViewManagedWebhookList;
+  managedWebhookList: TAPManagedWebhookList; 
   emptyMessage: string;
   className?: string;
 }
@@ -53,6 +21,13 @@ export interface IAPDisplayAppWebhooksProps {
 export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props: IAPDisplayAppWebhooksProps) => {
   const componentName='APDisplayAppWebhooks';
 
+  type TAPDisplayAppWebhooksDataTableRow = TAPManagedWebhook;
+  type TAPDisplayAppWebhooksDataTableList = Array<TAPDisplayAppWebhooksDataTableRow>;
+  
+  const transformAPManagedWebhookListToDataTableList = (managedWebhookList: TAPManagedWebhookList): TAPDisplayAppWebhooksDataTableList => {
+    return managedWebhookList;
+  }
+  
   const [dataTableList, setDataTableList] = React.useState<TAPDisplayAppWebhooksDataTableList>([]);
   const componentDataTableRef = React.useRef<any>(null);
   // const [componentExpandedDataTableRows, setComponentExpandedDataTableRows] = React.useState<any>(null);
@@ -60,47 +35,32 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
   
   React.useEffect(() => {
     // TODO: may need to get the status?
-    setDataTableList(transformAPViewManagedWebhookListToDataTableList(props.appViewManagedWebhookList));
+    setDataTableList(transformAPManagedWebhookListToDataTableList(props.managedWebhookList));
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // const renderGuaranteedMessaging = (rowData: TAPAppClientInformation): JSX.Element => {
-  //   const dataTableList: Array<ClientInformationGuaranteedMessaging> = [rowData.guaranteedMessaging];
-  //   return (
-  //     <DataTable
-  //       ref={componentExpansionDataTableRef}
-  //       dataKey="name"
-  //       header="Guaranteed Messaging"
-  //       value={dataTableList}
-  //     >
-  //       <Column field="name" header="Queue Name" />
-  //       <Column field="accessType" header="Access Type" />
-  //     </DataTable>
-  //   );
-  // }
 
   const emptyBodyTemplate = (): JSX.Element => {
     return (<span className="pi pi-minus" style={{ color: 'gray'}}/>)
   }
 
   const environmentsBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow): string => {
-    return rowData.apManagedWebhook.environment.displayName;
+    return rowData.webhookEnvironmentReference.entityRef.displayName;
   }
 
   const methodBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow) => {
-    if(!rowData.apManagedWebhook) return emptyBodyTemplate();
-    return rowData.apViewManagedWebhook?.apiWebHook.method;
+    if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
+    return rowData.webhookWithoutEnvs.method;
   }
   const uriBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow) => {
-    if(!rowData.apViewManagedWebhook) return emptyBodyTemplate();
-    return rowData.apViewManagedWebhook?.apiWebHook.uri;
+    if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
+    return rowData.webhookWithoutEnvs.uri;
   }
 
   const authenticationBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow): JSX.Element => {
-    // if(!rowData.apViewManagedWebhook) return emptyBodyTemplate();
-    if(rowData.apManagedWebhook.apiWebhookWithoutEnvs.authentication) {
+    if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
+    if(rowData.webhookWithoutEnvs.authentication) {
       return (
           <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(rowData.apManagedWebhook.apiWebhookWithoutEnvs.authentication, null, 2)}
+            {JSON.stringify(rowData.webhookWithoutEnvs.authentication, null, 2)}
           </pre>
       );
     } else {
@@ -108,25 +68,24 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
     }
   }
   const statusBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow) => {
-    if(rowData.apViewManagedWebhook.apWebhookStatus) {
-      if(rowData.apViewManagedWebhook.apWebhookStatus.summaryStatus) return (<span className="pi pi-check" style={{ color: 'green'}}/>);
+    if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
+    if(rowData.webhookStatus) {
+      if(rowData.webhookStatus.summaryStatus) return (<span className="pi pi-check" style={{ color: 'green'}}/>);
       else return (<span className="pi pi-times" style={{ color: 'red'}}/>);
     } else {
       return (<span className="pi pi-question" style={{ color: 'gray'}}/>);
     }
   }
 
-
   const renderComponent = (dataTableList: TAPDisplayAppWebhooksDataTableList): JSX.Element => {
-
     return (
       <DataTable
         className="p-datatable-sm"
         ref={componentDataTableRef}
-        dataKey="synthId"
+        dataKey="webhookEnvironmentReference.entityRef.name"
         value={dataTableList}
         sortMode="single" 
-        sortField="apManagedWebhook.environment.displayName" 
+        sortField="webhookEnvironmentReference.entityRef.displayName" 
         sortOrder={1}
       >
         <Column 
@@ -134,14 +93,12 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
           body={environmentsBodyTemplate} 
           bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}  
           sortable 
-          sortField="apManagedWebhook.environment.displayName" 
+          sortField="webhookEnvironmentReference.entityRef.displayName" 
         />
         <Column 
           header="Method" 
           body={methodBodyTemplate} 
           bodyStyle={{verticalAlign: 'top'}} 
-          sortable 
-          sortField="apViewManagedWebhook?.apiWebHook.method"
         />
         <Column 
           header="URI" 
@@ -159,7 +116,7 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
       {dataTableList.length > 0 &&
         renderComponent(dataTableList)
       }
-      {props.appViewManagedWebhookList.length === 0 && 
+      {props.managedWebhookList.length === 0 && 
         <span>{props.emptyMessage}</span>
       }
     </div>

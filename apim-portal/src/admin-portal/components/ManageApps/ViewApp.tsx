@@ -24,7 +24,15 @@ import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APManagedWebhook, TAPAppClientInformation, TAPAppClientInformationList, TAPOrganizationId, TAPViewManagedWebhookList } from "../../../components/APComponentsCommon";
+import { 
+  APManagedUserAppDisplay,
+  APManagedWebhook, 
+  TAPAdminPortalUserAppDisplay, 
+  TAPAppClientInformation, 
+  TAPAppClientInformationList, 
+  TAPManagedWebhookList, 
+  TAPOrganizationId 
+} from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
@@ -55,53 +63,56 @@ export interface IViewAppProps {
 export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const componentName = 'ViewApp';
 
-  type TManagedObjectDisplay = {
-    apiAppResponse_smf: AppResponse;
-    apiAppResponse_mqtt: AppResponse;
-    apiProductList: TApiProductList;
-    apAppClientInformationList: TAPAppClientInformationList;
-    apsUser: APSUser;
-    apViewManagedWebhookList: TAPViewManagedWebhookList;
-  }
+// same for admin & developer portal
+  type TManagedObjectDisplay = TAPAdminPortalUserAppDisplay;
 
-  const createManagedObjectDisplay = (
-    apiAppResponse_smf: AppResponse, 
-    apiAppResponse_mqtt: AppResponse, 
-    apiProductList: TApiProductList, 
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
-    apsUser: APSUser
-  ): TManagedObjectDisplay => {
+  // type TManagedObjectDisplay = {
+  //   apiAppResponse_smf: AppResponse;
+  //   apiAppResponse_mqtt: AppResponse;
+  //   apiProductList: TApiProductList;
+  //   apAppClientInformationList: TAPAppClientInformationList;
+  //   apsUser: APSUser;
+  //   apManagedWebhookList: TAPManagedWebhookList;
+  // }
+
+  // const createManagedObjectDisplay = (
+  //   apiAppResponse_smf: AppResponse, 
+  //   apiAppResponse_mqtt: AppResponse, 
+  //   apiProductList: TApiProductList, 
+  //   apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
+  //   apsUser: APSUser
+  // ): TManagedObjectDisplay => {
   
-    const funcName = 'createManagedObjectDisplay';
-    const logName = `${componentName}.${funcName}()`;
-    // add apiProductDisplayName to ClientInformation
-    let _apAppClientInformationList: TAPAppClientInformationList = [];
-    if(apiAppResponse_smf.clientInformation) {
-      for (const ci of apiAppResponse_smf.clientInformation) {
-        if(ci.guaranteedMessaging) {
-          const found = apiProductList.find( (apiProduct: TApiProduct) => {
-            return (apiProduct.name === ci.guaranteedMessaging?.apiProduct)
-          });
-          if(!found) throw new Error(`${logName}: could not find ci.guaranteedMessaging?.apiProduct=${ci.guaranteedMessaging?.apiProduct} in apiProductList=${JSON.stringify(apiProductList)}`);
-          const _apAppClientInformation: TAPAppClientInformation = {
-            guaranteedMessaging: ci.guaranteedMessaging,
-            apiProductName: found.name,
-            apiProductDisplayName: found.displayName
-          }
-          _apAppClientInformationList.push(_apAppClientInformation);
-        }
-      }
-    }
-    const managedObjectDisplay: TManagedObjectDisplay = {
-      apiAppResponse_smf: apiAppResponse_smf,
-      apiAppResponse_mqtt: apiAppResponse_mqtt,
-      apiProductList: apiProductList,
-      apAppClientInformationList: _apAppClientInformationList,
-      apsUser: apsUser,
-      apViewManagedWebhookList: APManagedWebhook.createManagedWebhookList(apiAppResponse_smf, apiAppEnvironmentResponseList)
-    }
-    return managedObjectDisplay;
-  }
+  //   const funcName = 'createManagedObjectDisplay';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   // add apiProductDisplayName to ClientInformation
+  //   let _apAppClientInformationList: TAPAppClientInformationList = [];
+  //   if(apiAppResponse_smf.clientInformation) {
+  //     for (const ci of apiAppResponse_smf.clientInformation) {
+  //       if(ci.guaranteedMessaging) {
+  //         const found = apiProductList.find( (apiProduct: TApiProduct) => {
+  //           return (apiProduct.name === ci.guaranteedMessaging?.apiProduct)
+  //         });
+  //         if(!found) throw new Error(`${logName}: could not find ci.guaranteedMessaging?.apiProduct=${ci.guaranteedMessaging?.apiProduct} in apiProductList=${JSON.stringify(apiProductList)}`);
+  //         const _apAppClientInformation: TAPAppClientInformation = {
+  //           guaranteedMessaging: ci.guaranteedMessaging,
+  //           apiProductName: found.name,
+  //           apiProductDisplayName: found.displayName
+  //         }
+  //         _apAppClientInformationList.push(_apAppClientInformation);
+  //       }
+  //     }
+  //   }
+  //   const managedObjectDisplay: TManagedObjectDisplay = {
+  //     apiAppResponse_smf: apiAppResponse_smf,
+  //     apiAppResponse_mqtt: apiAppResponse_mqtt,
+  //     apiProductList: apiProductList,
+  //     apAppClientInformationList: _apAppClientInformationList,
+  //     apsUser: apsUser,
+  //     apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse_smf, apiAppEnvironmentResponseList)
+  //   }
+  //   return managedObjectDisplay;
+  // }
 
   const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -184,7 +195,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         throw(e);
       }
       if(!_apsUser) throw new Error(`${logName}: _apsUser is undefined`);
-      setManagedObjectDisplay(createManagedObjectDisplay(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList, _apsUser));
+      setManagedObjectDisplay(APManagedUserAppDisplay.createAPAdminPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList, _apsUser));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -422,9 +433,10 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
               {/* APP Webhooks */}
               <APDisplayAppWebhooksPanel 
-                  appViewManagedWebhookList={managedObjectDisplay.apViewManagedWebhookList} 
-                  emptyMessage="No Webhooks defined."              
-                />
+                isAppWebhooksCapable={managedObjectDisplay.isAppWebhookCapable}
+                managedWebhookList={managedObjectDisplay.apManagedWebhookList} 
+                emptyMessage="No Webhooks defined."              
+              />
 
               {/* APP Credentials */}
               <Panel 

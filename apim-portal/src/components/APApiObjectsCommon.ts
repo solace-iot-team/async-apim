@@ -31,6 +31,11 @@ export type TAPEnvironmentViewManagedObject = {
 }
 export type TAPEnvironmentViewManagedObjectList = Array<TAPEnvironmentViewManagedObject>;
 
+export type TAPApiEntityRef = {
+  name: CommonName,
+  displayName: CommonDisplayName
+}
+
 // * Manage Apis *
 export type TAPApiViewManagedObject = {
   id: string,

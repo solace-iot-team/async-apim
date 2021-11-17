@@ -8,8 +8,6 @@ import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
-import { MultiSelect } from "primereact/multiselect";
-import { Password } from "primereact/password";
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 
 import { 
@@ -19,7 +17,8 @@ import {
   CommonName,
   WebHookAuth,
   WebHookBasicAuth,
-  WebHookHeaderAuth
+  WebHookHeaderAuth,
+  AppStatus
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { 
@@ -33,17 +32,17 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
-  TApiEntitySelectItem,
+  APManagedWebhook,
   TApiEntitySelectItemList,
+  TAPManagedAppWebhooks,
+  TAPManagedWebhook,
+  TAPManagedWebhookList,
   TAPOrganizationId,
   TAPTrustedCNList,
-  TAPViewManagedWebhook, 
 } from "../../../../components/APComponentsCommon";
 import { 
-  createWebhookEnabledEnvironmentList,
   EWebhookAuthMethodSelectIdNone,
   E_CALL_STATE_ACTIONS, 
-  TViewManagedAppWebhookList, 
 } from "./DeveloperPortalManageUserAppWebhooksCommon";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { APManageTrustedCNs } from "../../../../components/APManageTrustedCNs/APManageTrustedCNs";
@@ -56,16 +55,14 @@ export enum EAction {
   NEW = 'NEW'
 }
 export interface IDeveloperPortalNewEditUserAppWebhookProps {
-  action: EAction,
-  organizationId: TAPOrganizationId,
-  userId: APSUserId,
-  // appResponse: AppResponse,
-  viewManagedAppWebhookList: TViewManagedAppWebhookList,
-  viewManagedWebhook?: TAPViewManagedWebhook;
-  presetEnvSelectItem?: TApiEntitySelectItem;
+  action: EAction;
+  organizationId: TAPOrganizationId;
+  userId: APSUserId;
+  managedAppWebhooks: TAPManagedAppWebhooks;
+  managedWebhook: TAPManagedWebhook;
   onError: (apiCallState: TApiCallState) => void;
-  onNewSuccess: (apiCallState: TApiCallState) => void;
-  onEditSuccess: (apiCallState: TApiCallState) => void;
+  onNewSuccess: (apiCallState: TApiCallState, newManagedWebhook: TAPManagedWebhook) => void;
+  onEditSuccess: (apiCallState: TApiCallState, updatedManagedWebhook: TAPManagedWebhook) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -74,7 +71,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   const componentName = 'DeveloperPortalNewEditUserAppWebhook';
 
   type TUpdateApiObject = AppPatch;
-  type TManagedObject = TAPViewManagedWebhook;
+  type TManagedObject = TAPManagedWebhook;
 
   enum EProtocolSelect {
     HTTP = "http",
@@ -105,20 +102,19 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     selectedWebhookAuthMethodId: TWebhookAuthMethodSelectId;
     webhookBasicAuth: WebHookBasicAuth;
     webhookHeaderAuth: WebHookHeaderAuth;
-    environmentSelectItemList: TApiEntitySelectItemList;
-    selectedEnvironmentName: CommonName;
+    // environmentSelectItemList: TApiEntitySelectItemList;
+    // selectedEnvironmentName: CommonName;
     apTrustedCNList: TAPTrustedCNList;
   };
 
   const emptyManagedObject: TManagedObject = {
-    apSynthId: 'new',
-    apiWebHook: {
+    references: props.managedWebhook.references,
+    webhookEnvironmentReference: props.managedWebhook.webhookEnvironmentReference,
+    webhookWithoutEnvs: {
       method: WebHook.method.POST,
       mode: WebHook.mode.SERIAL,
       uri: ''
-    },
-    webhookApiEnvironmentResponseList: [],
-    apiAppResponse: props.viewManagedAppWebhookList.apiAppResponse
+    }
   }
   const emptyWebhookBasicAuth: WebHookBasicAuth = {
     authMethod: WebHookBasicAuth.authMethod.BASIC,
@@ -132,85 +128,72 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }
 
   const transformManagedObjectToUpdateApiObject = (mo: TManagedObject): TUpdateApiObject => {
-    const funcName = 'transformManagedObjectToUpdateApiObject';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);
-    // alert(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);
-
-    const newManagedWebhookList: Array<TAPViewManagedWebhook> = props.viewManagedAppWebhookList.managedWebhookList.concat([]);
-    const idx: number = newManagedWebhookList.findIndex( (mwh: TAPViewManagedWebhook) => {
-      return (mwh.apSynthId === mo.apSynthId);
-    });
-    if(idx > -1) newManagedWebhookList.splice(idx, 1, mo);
-    else newManagedWebhookList.push(mo);
-    const newApiWebHookList: Array<WebHook> = newManagedWebhookList.map( (mwh: TAPViewManagedWebhook) => {
-      // fix when connector api ready
-      let copyOfWebhook: TAPViewManagedWebhook | any = JSON.parse(JSON.stringify(mwh.apiWebHook));
-      delete copyOfWebhook.trustedCNList;
-      return copyOfWebhook;
-      // return mwh.apiWebHook;
-    });
-    const updateApiObject: TUpdateApiObject = {
-      webHooks: newApiWebHookList
-    };
-    console.log(`${logName}: updateApiObject=${JSON.stringify(updateApiObject, null, 2)}`);
-
-    return updateApiObject;
+    // const funcName = 'transformManagedObjectToUpdateApiObject';
+    // const logName = `${componentName}.${funcName}()`;
+    const newManagedWebhookList: TAPManagedWebhookList = APManagedWebhook.createNewManagedWebhookList(props.managedAppWebhooks, mo);
+    const _appPatch: AppPatch = APManagedWebhook.createApiAppUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
+    // console.log(`${logName}: _appPatch=${JSON.stringify(_appPatch, null, 2)}`);
+    return _appPatch;
   }
 
   const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
     const funcName = 'transformManagedObjectToFormData';
     const logName = `${componentName}.${funcName}()`;
+    if(!mo.webhookWithoutEnvs) throw new Error(`${logName}: mo.webhookWithoutEnvs is undefined`);
     let protocol: EProtocolSelect = EProtocolSelect.HTTP;
     let host: string = '';
     let port: number = 80;
     let resource: string = '';
-    if(mo.apiWebHook.uri !== '') {
-      const url: URL = new URL(mo.apiWebHook.uri);
+    if(mo.webhookWithoutEnvs.uri !== '') {
+      const url: URL = new URL(mo.webhookWithoutEnvs.uri);
       protocol = url.protocol === 'http' ? EProtocolSelect.HTTP : EProtocolSelect.HTTPS;
       host = url.hostname;
       if(url.port) port = parseInt(url.port);  
       resource = `${url.pathname}${url.search}`; 
     }
+    // authentication
     let selectedWebhookAuthMethodId: TWebhookAuthMethodSelectId;
     let webhookBasicAuth: WebHookBasicAuth = emptyWebhookBasicAuth;
     let webhookHeaderAuth: WebHookHeaderAuth = emptyWebhookHeaderAuth;
-    if(!mo.apiWebHook.authentication) selectedWebhookAuthMethodId = EWebhookAuthMethodSelectIdNone.NONE;
-    else if(mo.apiWebHook.authentication.authMethod) selectedWebhookAuthMethodId = mo.apiWebHook.authentication.authMethod;
-    else throw new Error(`${logName}: mo.apiWebHook.authentication.authMethod is undefined`);
+    if(!mo.webhookWithoutEnvs.authentication) selectedWebhookAuthMethodId = EWebhookAuthMethodSelectIdNone.NONE;
+    else if(mo.webhookWithoutEnvs.authentication.authMethod) selectedWebhookAuthMethodId = mo.webhookWithoutEnvs.authentication.authMethod;
+    else throw new Error(`${logName}: mo.webhookWithoutEnvs.authentication.authMethod is undefined`);
     
+    // alert(`${logName}: mo.webhookWithoutEnvs.authentication = ${JSON.stringify(mo.webhookWithoutEnvs.authentication, null, 2)}`);
+    // alert(`${logName}: selectedWebhookAuthMethodId=${selectedWebhookAuthMethodId}`);
+
     switch (selectedWebhookAuthMethodId) {
       case EWebhookAuthMethodSelectIdNone.NONE:
         break;
       case WebHookBasicAuth.authMethod.BASIC:
-        if(!mo.apiWebHook.authentication) throw new Error(`${logName}: mo.apiWebHook.authentication is undefined`);
-        webhookBasicAuth = mo.apiWebHook.authentication as WebHookBasicAuth;
+        if(!mo.webhookWithoutEnvs.authentication) throw new Error(`${logName}: mo.webhookWithoutEnvs.authentication is undefined`);
+        webhookBasicAuth = mo.webhookWithoutEnvs.authentication as WebHookBasicAuth;
         break;
       case WebHookHeaderAuth.authMethod.HEADER:
-        if(!mo.apiWebHook.authentication) throw new Error(`${logName}: mo.apiWebHook.authentication is undefined`);
-        webhookHeaderAuth = mo.apiWebHook.authentication as WebHookHeaderAuth;
+        if(!mo.webhookWithoutEnvs.authentication) throw new Error(`${logName}: mo.webhookWithoutEnvs.authentication is undefined`);
+        webhookHeaderAuth = mo.webhookWithoutEnvs.authentication as WebHookHeaderAuth;
         break;
       default:
         Globals.assertNever(logName, selectedWebhookAuthMethodId);
     }
 
     // environment
-    let webhookEnvironmentSelectItemList: TApiEntitySelectItemList;
-    if(props.presetEnvSelectItem) {
-      webhookEnvironmentSelectItemList = [props.presetEnvSelectItem];
-    } else {
-      webhookEnvironmentSelectItemList = createWebhookEnabledEnvironmentList(mo.apiAppResponse.environments, mo.webhookApiEnvironmentResponseList);      
-    }
-    let webhookEnvironmentName: CommonName;
-    if(props.action === EAction.EDIT) {
-      if(!mo.apiWebHook.environments) throw new Error(`${logName}: mo.apiWebHook.environments is undefined`);
-      if(mo.apiWebHook.environments.length !== 1) throw new Error(`${logName}: mo.apiWebHook.environments.length !== 1`);
-      webhookEnvironmentName = mo.apiWebHook.environments[0];
-    } else {
-      webhookEnvironmentName = webhookEnvironmentSelectItemList[0].id;
-    }
+    // let webhookEnvironmentSelectItemList: TApiEntitySelectItemList;
+    // if(props.presetEnvSelectItem) {
+    //   webhookEnvironmentSelectItemList = [props.presetEnvSelectItem];
+    // } else {
+    //   webhookEnvironmentSelectItemList = createWebhookEnabledEnvironmentList(mo.apiAppResponse.environments, mo.webhookApiEnvironmentResponseList);      
+    // }
+    // let webhookEnvironmentName: CommonName;
+    // if(props.action === EAction.EDIT) {
+    //   if(!mo.apiWebHook.environments) throw new Error(`${logName}: mo.apiWebHook.environments is undefined`);
+    //   if(mo.apiWebHook.environments.length !== 1) throw new Error(`${logName}: mo.apiWebHook.environments.length !== 1`);
+    //   webhookEnvironmentName = mo.apiWebHook.environments[0];
+    // } else {
+    //   webhookEnvironmentName = webhookEnvironmentSelectItemList[0].id;
+    // }
     let apTrustedCNList: TAPTrustedCNList = [];
-    if(mo.apiWebHook.tlsOptions && mo.apiWebHook.tlsOptions.tlsTrustedCommonNames) apTrustedCNList = mo.apiWebHook.tlsOptions.tlsTrustedCommonNames;
+    if(mo.webhookWithoutEnvs.tlsOptions && mo.webhookWithoutEnvs.tlsOptions.tlsTrustedCommonNames) apTrustedCNList = mo.webhookWithoutEnvs.tlsOptions.tlsTrustedCommonNames;
 
     const mofd: TManagedObjectFormData = {
       protocol: protocol,
@@ -220,13 +203,14 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
       selectedWebhookAuthMethodId: selectedWebhookAuthMethodId,
       webhookBasicAuth: webhookBasicAuth,
       webhookHeaderAuth: webhookHeaderAuth,
-      httpMethod: mo.apiWebHook.method,
-      deliveryMode: mo.apiWebHook.mode,
-      environmentSelectItemList: webhookEnvironmentSelectItemList,
-      selectedEnvironmentName: webhookEnvironmentName,
+      httpMethod: mo.webhookWithoutEnvs.method,
+      deliveryMode: mo.webhookWithoutEnvs.mode,
+      // environmentSelectItemList: [mo.webhookEnvironmentReference].map( (x) => { return { id: x.entityRef.name, displayName: x.entityRef.displayName}}),
+      // selectedEnvironmentName: mo.webhookEnvironmentReference.entityRef.name,
       apTrustedCNList: apTrustedCNList
     }
     // console.log(`${logName}: mofd=${JSON.stringify(mofd, null, 2)}`);
+    // alert(`${logName}: check mofd in console...`);
     return mofd;
   }
 
@@ -258,37 +242,42 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
       method: formData.httpMethod,
       mode: formData.deliveryMode,
       authentication: transformAuthMethodToWebHookAuth(formData),
-      environments: [formData.selectedEnvironmentName]
+      // environments: [formData.selectedEnvironmentName],
+      environments: [props.managedWebhook.webhookEnvironmentReference.entityRef.name],
+      tlsOptions: {
+        tlsTrustedCommonNames: formData.apTrustedCNList
+      }
     }
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
     const new_mo: TManagedObject = {
-      apiWebHook: apiWebHook,
-      apSynthId: 'dummy',
-      webhookApiEnvironmentResponseList: [],
-      apiAppResponse: managedObject.apiAppResponse
+      references: managedObject.references,
+      webhookEnvironmentReference: managedObject.webhookEnvironmentReference,
+      webhookWithoutEnvs: apiWebHook
     }
     return new_mo;
   }
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [newManagedObject, setNewManagedObject] = React.useState<TManagedObject>();
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
-  const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
+  // const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
   // * Api Calls *
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP, `update webhooks for app: ${props.viewManagedAppWebhookList.appDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP, `update webhooks for app: ${props.managedAppWebhooks.appDisplayName}`);
     try { 
       await AppsService.updateDeveloperApp({
         organizationName: props.organizationId, 
         developerUsername: props.userId, 
-        appName: props.viewManagedAppWebhookList.appId, 
+        appName: props.managedAppWebhooks.appId, 
         requestBody: transformManagedObjectToUpdateApiObject(mo)
       });
+      setNewManagedObject(mo);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -302,8 +291,8 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     const funcName = 'doInitialize';
     const logName = `${componentName}.${funcName}()`;
     if(props.action === EAction.EDIT) {
-      if(!props.viewManagedWebhook) throw new Error(`${logName}: action=${props.action} - one or more props undefined, props=${JSON.stringify(props)}`);
-      setManagedObject(props.viewManagedWebhook);
+      if(!props.managedWebhook) throw new Error(`${logName}: action=${props.action} - one or more props undefined, props=${JSON.stringify(props)}`);
+      setManagedObject(props.managedWebhook);
     } else {
       setManagedObject(emptyManagedObject);
     }
@@ -326,16 +315,22 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
     const logName = `${componentName}.${funcName}()`;
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(props.action === EAction.NEW && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP) {
-        props.onNewSuccess(apiCallStatus);
-      }  
-      else if(props.action === EAction.EDIT && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP) {
-        props.onEditSuccess(apiCallStatus);
+    if (apiCallStatus === null) return;
+    if(!apiCallStatus.success) props.onError(apiCallStatus);
+    else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP) {
+      if(!newManagedObject) return;
+      switch(props.action) {
+        case EAction.NEW: 
+          props.onNewSuccess(apiCallStatus, newManagedObject);
+          break;
+        case EAction.EDIT: 
+          props.onEditSuccess(apiCallStatus, newManagedObject);
+          break;
+        default:
+          Globals.assertNever(logName, props.action);
       }
     }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [apiCallStatus, newManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (formData: TManagedObjectFormData) => {
     const funcName = 'doPopulateManagedObjectFormDataValues';
@@ -348,12 +343,16 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     managedObjectUseForm.setValue('deliveryMode', formData.deliveryMode);
     // auth
     managedObjectUseForm.setValue('selectedWebhookAuthMethodId', formData.selectedWebhookAuthMethodId);
-    managedObjectUseForm.setValue('webhookBasicAuth', formData.webhookBasicAuth);
-    managedObjectUseForm.setValue('webhookHeaderAuth', formData.webhookHeaderAuth);
+    managedObjectUseForm.setValue('webhookBasicAuth.authMethod', formData.webhookBasicAuth.authMethod);
+    managedObjectUseForm.setValue('webhookBasicAuth.username', formData.webhookBasicAuth.username);
+    managedObjectUseForm.setValue('webhookBasicAuth.password', formData.webhookBasicAuth.password);
+    managedObjectUseForm.setValue('webhookHeaderAuth.authMethod', formData.webhookHeaderAuth.authMethod);
+    managedObjectUseForm.setValue('webhookHeaderAuth.headerName', formData.webhookHeaderAuth.headerName);
+    managedObjectUseForm.setValue('webhookHeaderAuth.headerValue', formData.webhookHeaderAuth.headerValue);
     // env
-    managedObjectUseForm.setValue('selectedEnvironmentName', formData.selectedEnvironmentName);  
+    // managedObjectUseForm.setValue('selectedEnvironmentName', formData.selectedEnvironmentName);  
     // trusted CNs
-    // managedObjectUseForm.setValue('apTrustedCNList', formData.apTrustedCNList);
+    managedObjectUseForm.setValue('apTrustedCNList', formData.apTrustedCNList);
   }
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
@@ -366,7 +365,10 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }
 
   const onSubmitManagedObjectForm = (formData: TManagedObjectFormData) => {
-    setIsFormSubmitted(true);
+    // const funcName = 'onSubmitManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
+    // setIsFormSubmitted(true);
     doSubmitManagedObject(transformFormDataToManagedObject(formData));
   }
 
@@ -375,27 +377,42 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    setIsFormSubmitted(true);
+    // setIsFormSubmitted(true);
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
     return fieldError && <small className="p-error">{fieldError.message}</small>    
   }
 
-  const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
-    let _fieldError: any = fieldErrorList;
-    return _fieldError && <small className="p-error">{_fieldError.message}</small>;
-  }
+  // const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
+  //   let _fieldError: any = fieldErrorList;
+  //   return _fieldError && <small className="p-error">{_fieldError.message}</small>;
+  // }
 
   const managedObjectFormFooterRightToolbarTemplate = () => {
-    const getSubmitButtonLabel = (): string => {
-      if (props.action === EAction.NEW) return 'Create';
-      else return 'Save';
+    const getSubmitButton = (): JSX.Element => {
+      const funcName = 'getSubmitButton';
+      const logName = `${componentName}.${funcName}()`;
+      const appStatus: AppStatus | undefined = props.managedAppWebhooks.apiAppResponse.status;
+      if(!appStatus) throw new Error(`${logName}: appStatus is undefined`);
+      switch(appStatus) {
+        case AppStatus.PENDING:
+          return (
+            <Button form={formId} type="submit" label='Save' icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" style={{ width: '12em'}} />
+          );
+        case AppStatus.APPROVED:
+          return (
+            <Button form={formId} type="submit" label='Provision' icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" style={{ width: '12em'}} />
+          );
+        default:
+          Globals.assertNever(logName, appStatus);
+      }
+      return (<></>);
     }
     return (
       <React.Fragment>
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button form={formId} type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+        {getSubmitButton()}
       </React.Fragment>
     );
   }
@@ -406,22 +423,25 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     )
   }
 
-  const renderManagedObjectFormWebhookBasicAuth = () => {
+  const renderManagedObjectFormWebhookBasicAuth = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId) => {
+    const isActive: boolean = (webhookAuthMethodSelectId === WebHookBasicAuth.authMethod.BASIC);
     return (
-      <div className="p-ml-4">
+      <div className="p-ml-4" hidden={!isActive}>
         {/* username */}
         <div className="p-field">
           <span className="p-float-label">
             <Controller
               name="webhookBasicAuth.username"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.WebhookBasicAuth_Username()}
+              rules={isActive && APConnectorFormValidationRules.WebhookBasicAuth_Username()}
               render={( { field, fieldState }) => {
+                console.log(`renderManagedObjectFormWebhookBasicAuth: field = ${JSON.stringify(field)}`);
                 return(
                   <InputText
                     id={field.name}
                     {...field}
                     className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                    disabled={!isActive}               
                   />
               )}}
             />
@@ -435,16 +455,22 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             <Controller
               name="webhookBasicAuth.password"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.WebhookBasicAuth_Password()}
+              rules={isActive && APConnectorFormValidationRules.WebhookBasicAuth_Password()}
               render={( { field, fieldState }) => {
                 return(
-                  <Password
+                  <InputText
                     id={field.name}
-                    toggleMask={true}
-                    feedback={false}        
                     {...field}
-                    className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                    className={classNames({ 'p-invalid': fieldState.invalid })}           
+                    disabled={!isActive}               
                   />
+                  // <Password
+                  //   id={field.name}
+                  //   toggleMask={true}
+                  //   feedback={false}        
+                  //   {...field}
+                  //   className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                  // />
               )}}
             />
             <label htmlFor="webhookBasicAuth.password" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.webhookBasicAuth?.password })}>Password*</label>
@@ -455,22 +481,25 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     );
   }
 
-  const renderManagedObjectFormWebhookHeaderAuth = () => {
+  const renderManagedObjectFormWebhookHeaderAuth = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId) => {
+    const isActive: boolean = (webhookAuthMethodSelectId === WebHookHeaderAuth.authMethod.HEADER);
     return (
-      <div className="p-ml-4">
+      <div className="p-ml-4" hidden={!isActive}>
         {/* header name */}
         <div className="p-field">
           <span className="p-float-label">
             <Controller
               name="webhookHeaderAuth.headerName"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.WebhookHeaderAuth_HeaderName()}
+              rules={isActive && APConnectorFormValidationRules.WebhookHeaderAuth_HeaderName()}
               render={( { field, fieldState }) => {
+                // console.log(`${logName}: field = ${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                 return(
                   <InputText
                     id={field.name}
                     {...field}
                     className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                    disabled={!isActive}               
                   />
               )}}
             />
@@ -484,13 +513,14 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             <Controller
               name="webhookHeaderAuth.headerValue"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.WebhookHeaderAuth_HeaderValue()}
+              rules={isActive && APConnectorFormValidationRules.WebhookHeaderAuth_HeaderValue()}
               render={( { field, fieldState }) => {
                 return(
                   <InputText
                     id={field.name}
                     {...field}
-                    className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                    className={classNames({ 'p-invalid': fieldState.invalid })}        
+                    disabled={!isActive}               
                   />
               )}}
             />
@@ -502,18 +532,14 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     );
   }
   const renderManagedObjectFormWebhookAuthMethodDetails = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId) => {
-    const funcName = 'renderManagedObjectFormWebhookAuthMethodDetails';
-    const logName = `${componentName}.${funcName}()`;
-    switch (webhookAuthMethodSelectId) {
-      case EWebhookAuthMethodSelectIdNone.NONE:
-        return (<></>);
-      case WebHookBasicAuth.authMethod.BASIC:
-        return renderManagedObjectFormWebhookBasicAuth();
-      case WebHookHeaderAuth.authMethod.HEADER:
-        return renderManagedObjectFormWebhookHeaderAuth(); 
-      default:
-        Globals.assertNever(logName, webhookAuthMethodSelectId);
-    }
+    // const funcName = 'renderManagedObjectFormWebhookAuthMethodDetails';
+    // const logName = `${componentName}.${funcName}()`;
+    return (
+      <React.Fragment>
+        {renderManagedObjectFormWebhookBasicAuth(webhookAuthMethodSelectId)}
+        {renderManagedObjectFormWebhookHeaderAuth(webhookAuthMethodSelectId)}
+      </React.Fragment>
+    );
   }
 
   const renderManageTrustedCNs = (): JSX.Element => {
@@ -523,9 +549,14 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     const onTrustedCNListUpdate = (trustedCNList: TAPTrustedCNList) => {
       const funcName = 'onTrustedCNListUpdate';
       const logName = `${componentName}.${funcName}()`;
-      alert(`${logName}: trustedCNList=${JSON.stringify(trustedCNList, null, 2)}`);
+      // alert(`${logName}: trustedCNList=${JSON.stringify(trustedCNList, null, 2)}`);
       if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-      managedObjectFormData.apTrustedCNList = trustedCNList;
+      const newMofd: TManagedObjectFormData = {
+        ...managedObjectFormData,
+        apTrustedCNList: trustedCNList
+      }
+      // console.log(`${logName}: newMofd = ${JSON.stringify(newMofd, null, 2)}`);
+      setManagedObjectFormData(newMofd);
     }
   
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
@@ -573,7 +604,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
-    const isNew: boolean = (props.action === EAction.NEW);
+    // const isNew: boolean = (props.action === EAction.NEW);
     
     const validateResource = (resource: string): any => {
       if(resource === '') return "Enter resource.";
@@ -589,12 +620,12 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     }
 
     const selectedWebhookAuthMethodId: TWebhookAuthMethodSelectId = managedObjectUseForm.watch('selectedWebhookAuthMethodId');
-     return (
-      <div className="card p-mt-4">
+    return (
+      <div className="card p-mt-6">
         <div className="p-fluid">
           <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
             {/* environments */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="selectedEnvironmentName"
@@ -619,7 +650,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
                 <label htmlFor="selectedEnvironmentName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.selectedEnvironmentName })}>Environment*</label>
               </span>
               { displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.selectedEnvironmentName) }
-            </div>
+            </div> */}
             {/* protocol */}
             <div className="p-field">
               <span className="p-float-label">
@@ -761,7 +792,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
 
             {/* auth method */}
             <div className="p-field">
-              TODO: make auth method a panel?
+              TODO: make auth method a panel?, TODO: fix switching - values are taken from same form data
             </div>
             <div className="p-field">
               <span className="p-float-label">
@@ -804,29 +835,47 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     );
   }
 
+  const renderInfo = () => {
+    return (
+      <React.Fragment>
+        <div><b>App Status</b>: {managedObject?.references.apiAppResponse.status}</div>
+        <div><b>Environment</b>: {managedObject?.webhookEnvironmentReference.entityRef.displayName}</div>
+      </React.Fragment>
+    );
+  }
+
+  const getComponentHeader = (): string => {
+    const funcName = 'getComponentHeader';
+    const logName = `${componentName}.${funcName}()`;
+    const appStatus: AppStatus | undefined = props.managedAppWebhooks.apiAppResponse.status;
+    if(!appStatus) throw new Error(`${logName}: appStatus is undefined`);
+    switch(appStatus) {
+      case AppStatus.PENDING:
+        if(props.action === EAction.NEW) return `Create New Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        else if(props.action === EAction.EDIT) return `Edit Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        else throw new Error(`${logName}: unknown props.action = ${props.action}`);
+      case AppStatus.APPROVED:
+        if(props.action === EAction.NEW) return `Provision New Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        else if(props.action === EAction.EDIT) return `Re-Provision Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        else throw new Error(`${logName}: unknown props.action = ${props.action}`);
+      default:
+        Globals.assertNever(logName, appStatus);
+    }
+    return '';
+  }
+
   return (
     <div className="apd-manage-user-apps">
 
-      { props.action === EAction.NEW && <APComponentHeader header={`Create New Webhook for App: ${props.viewManagedAppWebhookList.appDisplayName}`} /> }
-
-      { props.action === EAction.EDIT && <APComponentHeader header={`Edit Webhook for App: ${props.viewManagedAppWebhookList.appDisplayName}`} /> }
+      <APComponentHeader header={getComponentHeader()} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      <p>TODO: environments: only show the ones without a webhook, if only 1 ==&gt; prefill, if 2 ==&gt; leave empty (createWebhookEnabledEnvironmentList)</p>
-      { managedObjectFormData && renderManagedObjectForm() }
+      <div className="p-mt-4">
+        {renderInfo()}
+      </div>
 
-      {/* {showSelectApiProducts &&
-        <DeveloperPortalUserAppSelectApiProducts 
-          organizationId={props.organizationId}
-          userId={props.userId}
-          currentSelectedApiProductItemList={inFormCurrentMultiSelectOptionApiProductSelectItemList}
-          onSave={onManagedObjectFormSelectApiProductsSuccess}
-          onError={props.onError}          
-          onCancel={onManagedObjectFormSelectApiProductsCancel}
-          onLoadingChange={props.onLoadingChange}
-        />
-      }  */}
+      { managedObjectFormData && renderManagedObjectForm() }
 
     </div>
   );
