@@ -100,13 +100,11 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
     }
 
     return (
-      <div className="card">
-        {/* {Common.renderSubComponentHeader(`Environment: ${managedObject.displayName} (${managedObject.id})`)} */}
+      <div className="card p-mt-4">
         <DataTable header={'Description: ' + managedObject.apiObject.description} />
-        <h4>PubSub+ Service:</h4>
         <DataTable
           ref={dt}
-          // header="PubSub+ Service:"
+          header="PubSub+ Service:"
           value={dataTableList}
           expandedRows={expandedRows}
           rowExpansionTemplate={rowExpansionTemplate}
@@ -127,7 +125,7 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
   return (
     <div className="ap-environments">
 
-      <APComponentHeader header={`Environment: ${props.environmentDisplayName} (${props.environmentName})`} />
+      <APComponentHeader header={`Environment: ${props.environmentDisplayName}`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

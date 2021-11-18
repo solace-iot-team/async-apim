@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListEnvironments } from "./ListEnvironments";
@@ -12,10 +12,13 @@ import { ViewEnvironment } from "./ViewEnvironment";
 import { EditEnvironment } from "./EditEnvironment";
 import { DeleteEnvironment } from "./DeleteEnvironment";
 import { NewEnvironment } from "./NewEnvironment";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageEnvironmentsCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
+import { E_MANAGED_OBJECT_CALL_STATE_ACTIONS } from "./ListUnregisteredOrganizationServices";
+import { EnvironmentListItem, EnvironmentsService } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 export interface IManageEnvironmentsProps {
   organizationName: TAPOrganizationId;
@@ -63,6 +66,8 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [availableOrganizationServiceList, setAvailableOrganizationServiceList] = React.useState<TOrganizationServiceList>();
+  const [areOrganizationServicesAvailable, setAreOrganizationServicesAvailable] = React.useState<boolean>(false);
   const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
@@ -71,11 +76,52 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
 
+  // * Api Calls *
+  type TOrganizationServiceList = Array<TOrganizationService>;
+  const apiGetAvailableOrganizationServiceList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetAvailableOrganizationServiceList';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST, `retrieve service list for organization`);
+    try { 
+      const _entireServiceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
+        organizationName: props.organizationName
+      });
+      console.log(`${logName}: _entireServiceList.name[] = ${JSON.stringify(_entireServiceList.map( (x) => { return x.name}))}`);
+
+      const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
+        organizationName: props.organizationName
+      });
+      let _availableServiceList: TOrganizationServiceList = [];
+      _entireServiceList.forEach( (_service: TOrganizationService) => {
+        const exists = _environmentList.find( (env: EnvironmentListItem) => {
+          return _service.serviceId === env.serviceId;
+        });
+        if(!exists) _availableServiceList.push(_service);
+      });
+      setAvailableOrganizationServiceList(_availableServiceList);
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doInitialize = async() => {
+    setIsLoading(true);
+    await apiGetAvailableOrganizationServiceList();
+    setIsLoading(false);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+  }
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
- 
+
+  React.useEffect(() => {
+    if(availableOrganizationServiceList) setAreOrganizationServicesAvailable(availableOrganizationServiceList.length > 0);
+  }, [availableOrganizationServiceList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -94,9 +140,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
         switch (apiCallStatus.context.action) {
           case E_CALL_STATE_ACTIONS.API_DELETE_ENVIRONMENT:
           case E_CALL_STATE_ACTIONS.API_CREATE_ENIRONMENT:
+            doInitialize();
+          break;
           case E_CALL_STATE_ACTIONS.API_UPDATE_ENVIRONMENT:
-              props.onSuccess(apiCallStatus);
-            break;
+            // props.onSuccess(apiCallStatus);
+          break;
           default:
         }
       } else props.onError(apiCallStatus);
@@ -148,18 +196,31 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-      </React.Fragment>
-    );
-    if(showViewComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-      </React.Fragment>
-    );
+    if(showListComponent) {
+      if(areOrganizationServicesAvailable) {
+        return (
+          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        );
+      } else return undefined;
+    }
+    if(showViewComponent) {
+      if(areOrganizationServicesAvailable) {
+        return (
+          <React.Fragment>
+            <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+            <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+          </React.Fragment>  
+        );
+      } else {
+        return (
+          <React.Fragment>
+            <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+          </React.Fragment> 
+        );
+      }
+    }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;

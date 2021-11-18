@@ -23,11 +23,11 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { ListOrganizationServices } from "./ListOrganizationServices";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
+import { ListUnregisteredOrganizationServices } from "./ListUnregisteredOrganizationServices";
 
 export interface INewEnvironmentProps {
   organizationName: TAPOrganizationId;
@@ -239,6 +239,9 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
   const renderManagedObjectCreateForm = () => {
     return (
       <div className="card">
+        <div>
+          TODO: show only serviceIds that are not yet used
+        </div>
         <div className="p-fluid">
           <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">            
             {/* name */}
@@ -313,12 +316,12 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
               {displayEditManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.description)}
             </div>
             {displaySelectedServiceErrorMessage()}
-            <ListOrganizationServices
+            <ListUnregisteredOrganizationServices
               organizationName={props.organizationName}
               onSuccess={onListOrganizationServicesSuccess} 
               onError={props.onError} 
               onLoadingChange={props.onLoadingChange}
-              tableHeader="Select a PubSub+ Service:"
+              tableHeader="Select an available PubSub+ Service:"
               onSelectOrganizationService={onSelectOrganizationService}
               onNoOrganizationServicesFound={onNoOrganizationServicesFound}
             />

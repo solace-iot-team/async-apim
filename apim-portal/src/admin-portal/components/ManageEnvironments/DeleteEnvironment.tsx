@@ -79,7 +79,7 @@ export const DeleteEnvironment: React.FC<IDeleteEnvironmentProps> = (props: IDel
     return (
       <React.Fragment>
         <p>Are you sure you want to delele environment</p>
-        <p> <b>{props.environmentDisplayName} ({props.environmentName}) </b>?</p>
+        <p><b>{props.environmentDisplayName}</b>?</p>
       </React.Fragment>  
     );
   }

@@ -5,7 +5,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 
-import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { EnvironmentListItem, EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -16,10 +16,10 @@ import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
 
 export enum E_MANAGED_OBJECT_CALL_STATE_ACTIONS {
-  API_GET_ORGANIZATION_SERVICE_LIST = "API_GET_ORGANIZATION_SERVICE_LIST"
+  API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST = "API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST"
 }
 
-export interface IListOrganizationServicesProps {
+export interface IListUnregisteredOrganizationServicesProps {
   organizationName: TAPOrganizationId;
   tableHeader: string;
   onError: (apiCallState: TApiCallState) => void;
@@ -29,8 +29,8 @@ export interface IListOrganizationServicesProps {
   onNoOrganizationServicesFound: () => void;
 }
 
-export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> = (props: IListOrganizationServicesProps) => {
-  const componentName = 'ListOrganizationServices';
+export const ListUnregisteredOrganizationServices: React.FC<IListUnregisteredOrganizationServicesProps> = (props: IListUnregisteredOrganizationServicesProps) => {
+  const componentName = 'ListUnregisteredOrganizationServices';
 
   type TOrganizationServiceList = Array<TOrganizationService>;
   type TOrganizationServiceTableDataRow = TOrganizationService & {
@@ -64,22 +64,32 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
 
   // * State *
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [organizationServiceList, setOrganizationServiceList] = React.useState<TOrganizationServiceList>([]);
+  const [availableOrganizationServiceList, setAvailableOrganizationServiceList] = React.useState<TOrganizationServiceList>([]);
   const [selectedOrganizationServiceTableDataRow, setSelectedOrganizationServiceTableDataRow] = React.useState<TOrganizationServiceTableDataRow>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const organizationServiceListDataTableRef = React.useRef<any>(null);
   const [organizationServiceListDataTableGlobalFilter, setOrganizationServiceListDataTableGlobalFilter] = React.useState<string>('');
 
   // * Api Calls *
-  const apiGetOrganizationServiceList = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetOrganizationServiceList';
+  const apiGetAvailableOrganizationServiceList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetAvailableOrganizationServiceList';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_SERVICE_LIST, `retrieve service list for organization`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST, `retrieve available service list for organization`);
     try { 
-      const serviceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
+      const _entireServiceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
         organizationName: props.organizationName
       });
-      setOrganizationServiceList(serviceList);
+      const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
+        organizationName: props.organizationName
+      });
+      let _availableServiceList: TOrganizationServiceList = [];
+      _entireServiceList.forEach( (_service: TOrganizationService) => {
+        const exists = _environmentList.find( (env: EnvironmentListItem) => {
+          return _service.serviceId === env.serviceId;
+        });
+        if(!exists) _availableServiceList.push(_service);
+      });
+      setAvailableOrganizationServiceList(_availableServiceList);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -91,7 +101,7 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
   // * useEffect Hooks *
   const doInitialize = async () => {
     setIsLoading(true);
-    await apiGetOrganizationServiceList();
+    await apiGetAvailableOrganizationServiceList();
     setIsLoading(false);
   }
 
@@ -114,8 +124,8 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_SERVICE_LIST:
-            if(organizationServiceList.length === 0) props.onNoOrganizationServicesFound();
+          case E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST:
+            if(availableOrganizationServiceList.length === 0) props.onNoOrganizationServicesFound();
             break;
           default:
         }
@@ -147,9 +157,9 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
     const funcName = 'renderOrganizationServiceListDataTable';
     const logName = `${componentName}.${funcName}()`;
     
-    if(organizationServiceList.length === 0) throw new Error(`${logName}: organizationServiceList is empty`);
+    if(availableOrganizationServiceList.length === 0) throw new Error(`${logName}: organizationServiceList is empty`);
     
-    const _organizationServicesTableDataList: TOrganizationServicesTableDataList = transformOrganizationServiceListToTableDataList(organizationServiceList);
+    const _organizationServicesTableDataList: TOrganizationServicesTableDataList = transformOrganizationServiceListToTableDataList(availableOrganizationServiceList);
 
     return (
       <div className="card">
@@ -183,11 +193,11 @@ export const ListOrganizationServices: React.FC<IListOrganizationServicesProps> 
 
   return (
     <div className="ap-environments">
-      {!isLoading && organizationServiceList.length > 0 &&
+      {!isLoading && availableOrganizationServiceList.length > 0 &&
         renderOrganizationServiceListDataTable()
       }
-      {!isLoading && organizationServiceList.length === 0 &&
-        <p className="p-error">No PubSub+ Services found.</p>
+      {!isLoading && availableOrganizationServiceList.length === 0 &&
+        <p className="p-error">No available PubSub+ Services found.</p>
       }
     </div>
   );

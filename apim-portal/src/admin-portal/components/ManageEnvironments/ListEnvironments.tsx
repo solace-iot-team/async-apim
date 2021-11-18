@@ -148,7 +148,7 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   const actionBodyTemplate = (managedObject: TManagedObject) => {
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
+          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} /> */}
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
         </React.Fragment>
@@ -203,7 +203,7 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
     }
 
     return (
-      <div className="card">
+      <div className="card p-mt-4">
           <DataTable
             ref={dt}
             autoLayout={true}
@@ -214,22 +214,24 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
             selection={selectedManagedObject}
             onRowClick={onManagedObjectSelect}
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-            sortMode="single" sortField="name" sortOrder={1}
-            scrollable 
-            scrollHeight="1200px" 
+            sortMode="single" 
+            sortField="displayName" 
+            sortOrder={1}
+            // scrollable 
+            // scrollHeight="1200px" 
             expandedRows={expandedManagedObjectDataTableRows}
             onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
             rowExpansionTemplate={rowExpansionTemplatePubSubService}
             dataKey="id"  
           >
             <Column expander style={{ width: '3em' }} />  
-            <Column field="id" header="Id" />
+            {/* <Column field="id" header="Id" /> */}
             <Column field="displayName" header="Name" sortable filterField="globalSearch" />
             <Column field="apiObject.serviceName" header="Service Name" sortable />
             <Column field="apiObject.msgVpnName" header="Msg Vpn Name" sortable />
             <Column field="apiObject.datacenterProvider" header="Datacenter Provider" sortable />
             <Column field="apiObject.description" header="Description" />
-            <Column body={actionBodyTemplate} headerStyle={{width: '12em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible'}}/>
+            <Column headerStyle={{width: '12em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right' }}/>
         </DataTable>
       </div>
     );
