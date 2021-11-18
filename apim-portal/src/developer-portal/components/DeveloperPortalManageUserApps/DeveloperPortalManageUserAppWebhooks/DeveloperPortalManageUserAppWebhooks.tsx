@@ -3,6 +3,7 @@ import React from "react";
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   AppResponse,
@@ -27,10 +28,11 @@ import { DeveloperPortalListUserAppWebhooks } from "./DeveloperPortalListUserApp
 import { DeveloperPortalDeleteUserAppWebhook } from "./DeveloperPortalDeleteUserAppWebhook";
 import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./DeveloperPortalNewEditUserAppWebhook";
 import { Loading } from "../../../../components/Loading/Loading";
+import { DeveloperPortalViewUserAppWebhook } from "./DeveloperPortalViewUserAppWebhook";
+import { E_MANAGE_USER_APP_COMPONENT_STATE, E_MANAGE_WEBHOOK_COMPONENT_STATE } from "../DeveloperPortalManageUserAppsCommon";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { DeveloperPortalViewUserAppWebhook } from "./DeveloperPortalViewUserAppWebhook";
 
 export interface IDeveloperPortalManageUserAppWebhooksProps {
   organizationId: TAPOrganizationId;
@@ -41,8 +43,9 @@ export interface IDeveloperPortalManageUserAppWebhooksProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
-  // TODO: required to set here?
-  // onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
+  // parentBreadCrumbItemList: Array<MenuItem>;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHere: (manageUserAppComponentState: E_MANAGE_USER_APP_COMPONENT_STATE, appId: CommonName, appDisplayName: CommonDisplayName) => void;
 }
 
 export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalManageUserAppWebhooksProps> = (props: IDeveloperPortalManageUserAppWebhooksProps) => {
@@ -50,23 +53,15 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
 
   type TManagedObject = TAPManagedAppWebhooks;
 
-  enum E_COMPONENT_STATE {
-    UNDEFINED = "UNDEFINED",
-    MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
-    MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
-    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
-    MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
-    MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE"
-  }
   type TComponentState = {
-    previousState: E_COMPONENT_STATE,
-    currentState: E_COMPONENT_STATE
+    previousState: E_MANAGE_WEBHOOK_COMPONENT_STATE,
+    currentState: E_MANAGE_WEBHOOK_COMPONENT_STATE
   }
   const initialComponentState: TComponentState = {
-    previousState: E_COMPONENT_STATE.UNDEFINED,
-    currentState: E_COMPONENT_STATE.UNDEFINED
+    previousState: E_MANAGE_WEBHOOK_COMPONENT_STATE.UNDEFINED,
+    currentState: E_MANAGE_WEBHOOK_COMPONENT_STATE.UNDEFINED
   }
-  const setNewComponentState = (newState: E_COMPONENT_STATE) => {
+  const setNewComponentState = (newState: E_MANAGE_WEBHOOK_COMPONENT_STATE) => {
     setComponentState({
       previousState: componentState.currentState,
       currentState: newState
@@ -81,10 +76,11 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   
   const ToolbarBackToAppButtonLabel = 'Back to App';
   const ToolbarBackToAppWebhookButtonLabel = 'Back to Webhooks';
-  const ToolbarNewManagedObjectButtonLabel = 'New Webhook';
+  // const ToolbarNewManagedObjectButtonLabel = 'New Webhook';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
+  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
@@ -93,7 +89,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
+  // const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
   const [refreshComponentCounter, setRefreshComponentCounter] = React.useState<number>(0);
   // const [viewAppApiAppResponse, setViewAppApiAppResponse] = React.useState<AppResponse>();
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
@@ -159,6 +155,15 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     return callState;
   }
   
+  const DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    // const funcName = 'DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName} ...`);
+    props.onNavigateHere(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS, props.appId, props.appDisplayName);
+    // call controller setComponentState(state, appId, appDisplayName)
+    // alert(`${logName}: componentState = ${componentState}, appId=${props.appId}, appDisplayName = ${props.appDisplayName}`);
+  }
+
   // * useEffect Hooks *
   const doInitialize = async () => {
     // const funcName = 'doInitialize';
@@ -166,10 +171,15 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
 
   React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: `Manage Webhooks`,
+      command: DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand
+    }]);
+
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
   
@@ -211,13 +221,13 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
 
   const onBackToAppWebhooks = () => {
     setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   //  * View Object *
   const onViewManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New *
   // const onNewManagedWebhook = (): void => {
@@ -235,7 +245,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const onNewManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setManagedWebhook(mwh);
     setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
   // * Edit *
   const onEditManagedWebhookFromToolbar = () => {
@@ -247,7 +257,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const onEditManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
   // * Delete
   const onDeleteManagedWebhookFromToolbar = () => {
@@ -259,7 +269,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const onDeleteManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setApiCallStatus(null);
     setManagedWebhook(mwh);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
   
   // * Toolbar *
@@ -329,7 +339,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   }
   const onDeleteManagedWebhookSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshComponentCounter(refreshComponentCounter + 1);
   }
   const onSubComponentError = (apiCallState: TApiCallState) => {
@@ -342,51 +352,51 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const calculateShowStates = (componentState: TComponentState) => {
     const funcName = 'calculateShowStates';
     const logName = `${componentName}.${funcName}()`;
-    if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
+    if(!componentState.currentState || componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowNewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
+    else if(componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowNewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
     }
-    else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
-              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+    else if(  componentState.previousState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
+              componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
-    else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+    else if(  componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
     }
-    else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
-      componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+    else if(  componentState.previousState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
+      componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
+    else if( componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
+    else if( componentState.currentState === E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);

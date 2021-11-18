@@ -6,6 +6,7 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
+import { MenuItem } from "primereact/api";
 
 import { 
   ApiProductsService,
@@ -44,6 +45,7 @@ export interface IDeveloperPortalListUserAppsProps {
   onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
   onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
   onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsProps> = (props: IDeveloperPortalListUserAppsProps) => {
@@ -149,6 +151,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   }
 
   React.useEffect(() => {
+    props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

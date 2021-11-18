@@ -5,12 +5,15 @@ import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Divider } from "primereact/divider";
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   ApiProductsService,
   AppEnvironment,
   AppResponse,
   AppsService,
+  CommonDisplayName,
+  CommonName,
   EnvironmentResponse,
   EnvironmentsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -20,13 +23,13 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE } from "./DeveloperPortalManageUserAppsCommon";
 import { 
   APManagedUserAppDisplay,
   TAPDeveloperPortalUserAppDisplay, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
-import { EApiTopicSyntax, TApiProduct, TApiProductList, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
+import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
@@ -41,12 +44,14 @@ import "./DeveloperPortalManageUserApps.css";
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,
   userId: APSUserId,
-  appId: TManagedObjectId,
-  appDisplayName: TManagedObjectDisplayName,
+  appId: CommonName,
+  appDisplayName: CommonDisplayName,
   onError: (apiCallState: TApiCallState) => void;
   onLoadingStart: () => void;
   onLoadingFinished: (managedUserAppDisplay: TAPDeveloperPortalUserAppDisplay) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHere: (componentState: E_MANAGE_USER_APP_COMPONENT_STATE, appId: CommonName, appDisplayName: CommonDisplayName) => void;
 }
 
 export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppProps> = (props: IDeveloperPortalViewUserAppProps) => {
@@ -105,6 +110,15 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     return callState;
   }
 
+  const DeveloperPortalViewUserApp_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    // const funcName = 'DeveloperPortalViewUserApp_onNavigateHereCommand';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName} ...`);
+    props.onNavigateHere(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.appId, props.appDisplayName);
+    // call controller setComponentState(state, appId, appDisplayName)
+    // alert(`${logName}: componentState = ${componentState}, appId=${props.appId}, appDisplayName = ${props.appDisplayName}`);
+  }
+
   // * initialize *
   const doInitializeFinish = (mod: TManagedObjectDisplay) => {
     props.onLoadingFinished(mod);
@@ -116,6 +130,10 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   // * useEffect Hooks *
   React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: `App: ${props.appDisplayName}`,
+      command: DeveloperPortalViewUserApp_onNavigateHereCommand
+    }]);
     doInitializeStart();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

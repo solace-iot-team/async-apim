@@ -24,7 +24,7 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -34,9 +34,10 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
+  // const addBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
+  //   setBreadCrumbItemList(newItemList);
+  // }
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
@@ -46,9 +47,15 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
     })
+    // breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
+    //   breadcrumbItems.push({ label: breadCrumbLabel });
+    // })
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -67,15 +74,19 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
 
   return (
     <React.Fragment>
+      
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
+      
+      {breadCrumbItemList && renderBreadcrumbs()}
+      
       {organizationName &&
         <DeveloperPortalManageUserApps
           organizationName={organizationName}
           userId={userContext.user.userId}
           onSuccess={onSuccess} 
           onError={onError} 
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
+          setBreadCrumbItemList={setBreadCrumbItemList}
+          // addBreadCrumbItemList={addBreadCrumbItemList}
         />
       }
     </React.Fragment>
