@@ -4,7 +4,6 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 import { MenuItem } from "primereact/api";
 
@@ -12,24 +11,24 @@ import {
   ApiProductsService,
   App,
   AppListItem,
+  AppResponse,
   AppsService,
   CommonDisplayName,
+  CommonName,
+  EnvironmentResponse,
+  EnvironmentsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 import { 
   TApiProduct,
   TApiProductList,
-  TManagedObjectDisplayName,
-  TManagedObjectId, 
-  TViewManagedApp, 
-  TViewManagedAppList 
 } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { Globals } from "../../../utils/Globals";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPManagedWebhook, TAPManagedWebhookList } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 
@@ -37,14 +36,14 @@ import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalListUserAppsProps {
-  organizationId: TAPOrganizationId,
+  organizationId: CommonName,
   userId: APSUserId,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
+  onManagedObjectEdit: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
+  onManagedObjectDelete: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
+  onManagedObjectView: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -54,35 +53,37 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const MessageNoManagedObjectsFoundCreateNew = 'No Apps found - create a new App.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TViewManagedApp;
-  type TManagedObjectList = TViewManagedAppList;
+  type TManagedObject = TAPDeveloperPortalUserAppDisplay;
+  type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
-    apiProductDisplayNameList: Array<TManagedObjectDisplayName>,
+    productDisplayNameList: Array<CommonDisplayName>,
+    environmentDisplayNameList: Array<CommonDisplayName>;
+    environmentWithWebhookDefinedDisplayNameList: Array<CommonDisplayName>;
     globalSearch: string
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const transformViewApiObjectToViewManagedObject = (appListItem: AppListItem, apiProductList: TApiProductList): TManagedObject => {
-    const funcName = 'transformViewApiObjectToViewManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    if(!appListItem.name) throw new Error(`${logName}: appListItem.name is undefined`);
-    return {
-      id: appListItem.name,
-      displayName: appListItem.displayName ? appListItem.displayName : appListItem.name,
-      appListItem: appListItem,
-      apiProductList: apiProductList
-    }
-  }
-  const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
+  const transformManagedObjectListToTableDataList = (moList: TManagedObjectList): TManagedObjectTableDataList => {
     const _createApiProductDisplayNameList = (apiProductList: TApiProductList): Array<CommonDisplayName> => {
       return apiProductList.map( (apiProduct: TApiProduct) => {
         return apiProduct.displayName
       });
     }
-    const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
+    const _createEnvWithWebhookDefinedList = (mwhList: TAPManagedWebhookList): Array<CommonDisplayName> => {
+      let l: Array<CommonDisplayName> = [];
+      mwhList.forEach( (mwh: TAPManagedWebhook) => {
+        if(mwh.webhookWithoutEnvs) l.push(mwh.webhookEnvironmentReference.entityRef.displayName);
+      });
+      return l;
+    }
+    const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
+      const funcName = '_transformManagedObjectToTableDataRow';
+      const logName = `${componentName}.${funcName}()`;
       const managedObjectTableDataRow: TManagedObjectTableDataRow = {
-        ...managedObject,
-        apiProductDisplayNameList: _createApiProductDisplayNameList(managedObject.apiProductList),
+        ...mo,
+        productDisplayNameList:_createApiProductDisplayNameList(mo.apiProductList),
+        environmentDisplayNameList: mo.apiEnvironmentResponseList.map( (x) => { if(!x.displayName) throw new Error(`${logName}: `); return x.displayName; }),
+        environmentWithWebhookDefinedDisplayNameList: _createEnvWithWebhookDefinedList(mo.apManagedWebhookList),
         globalSearch: ''
       };
       const globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
@@ -91,11 +92,10 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
         globalSearch: globalSearch
       }
     }
-    return managedObjectList.map( (managedObject: TManagedObject) => {
-      return _transformManagedObjectToTableDataRow(managedObject);
+    return moList.map( (mo: TManagedObject) => {
+      return _transformManagedObjectToTableDataRow(mo);
     });
   }
-
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -121,20 +121,38 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
         organizationName: props.organizationId, 
         developerUsername: props.userId
       });
-      let _managedObjectList: TManagedObjectList = [];
-      for(const apiAppListItem of apiAppList) {
-        if(!apiAppListItem.apiProducts) throw new Error(`${logName}: apiAppListItem.apiProducts is undefined`);
-        let _apApiProductList: TApiProductList = [];
-        for(const apiApiProductId of apiAppListItem.apiProducts) {
+      // get details for each App
+      let _appDisplayList: Array<TAPDeveloperPortalUserAppDisplay> = [];
+      for(const apiApp of apiAppList) {
+        const _apiAppResponse: AppResponse = await AppsService.getDeveloperApp({
+          organizationName: props.organizationId,
+          developerUsername: props.userId,
+          appName: apiApp.name
+        });
+        // _apiAppResponseList.push(apiAppResponse);
+        // get the product details
+        let _apiAppProductList: TApiProductList = [];
+        for(const apiAppProductId of _apiAppResponse.apiProducts) {
           const apiApiProduct = await ApiProductsService.getApiProduct({
             organizationName: props.organizationId,
-            apiProductName: apiApiProductId
+            apiProductName: apiAppProductId
           });
-          _apApiProductList.push(apiApiProduct);
+          _apiAppProductList.push(apiApiProduct);
         }
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiAppListItem, _apApiProductList));
+        // get all environments
+        let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
+        if(!_apiAppResponse.environments) throw new Error(`${logName}: apiAppResponse.environments is undefined`);
+        for(const _apiAppEnvironment of _apiAppResponse.environments) {
+          if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
+          const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
+            organizationName: props.organizationId,
+            envName: _apiAppEnvironment.name
+          })
+          _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
+        }
+        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse, _apiAppResponse, _apiAppProductList, _apiAppEnvironmentResponseList))
       }
-      setManagedObjectList(_managedObjectList);
+      setManagedObjectList(_appDisplayList);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -169,7 +187,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
 
   const onManagedObjectOpen = (event: any): void => {
     const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName);
+    props.onManagedObjectView(managedObject.appName, managedObject.appDisplayName);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -210,25 +228,16 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     );
   }
 
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    return (
-        <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
-        </React.Fragment>
-    );
-  }
-
   const apiProductsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-    return APRenderUtils.renderStringListAsDivList(rowData.apiProductDisplayNameList);
+    return APRenderUtils.renderStringListAsDivList(rowData.productDisplayNameList);
   }
-
   const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-    // create single list of all environments for all apiProducts
-    // api: get the displayNames for the environments as well
-    return APRenderUtils.renderStringListAsDivList(['TODO', 'GET ENVS']);
+    return APRenderUtils.renderStringListAsDivList(rowData.environmentDisplayNameList);
   }
   const webhooksBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-    return 'TODO: if webhooks possible, then number of webhooks or list of URIs?';
+    if(!rowData.isAppWebhookCapable) return ('N/A');
+    if(rowData.environmentWithWebhookDefinedDisplayNameList.length === 0) return ('None defined.');
+    return APRenderUtils.renderStringListAsDivList(rowData.environmentWithWebhookDefinedDisplayNameList);
   }
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
@@ -237,7 +246,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           <DataTable
             ref={managedObjectListDataTableRef}
             className="p-datatable-sm"
-            autoLayout={true}
+            // autoLayout={true}
             resizableColumns 
             columnResizeMode="fit"
             showGridlines={false}
@@ -250,18 +259,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             scrollable 
             scrollHeight="800px" 
-            dataKey="id"  
+            dataKey="appName"  
             // sorting
             sortMode='single'
-            sortField="displayName"
+            sortField="appDisplayName"
             sortOrder={1}
           >
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column field="appListItem.status" header="State" sortable headerStyle={{width: '7em'}} bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} />
-            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{verticalAlign: 'top'}} />
-            <Column body={environmentsBodyTemplate} header="Environment(s)" bodyStyle={{textAlign: 'left'}}/>
-            <Column body={webhooksBodyTemplate} header="Webhook(s)" />
-            {/* <Column body={actionBodyTemplate} headerStyle={{width: '3em'}} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/> */}
+            <Column header="Name" field="appDisplayName" bodyStyle={{ verticalAlign: 'top' }} sortable filterField="globalSearch" />
+            <Column header="State" headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable />
+            <Column header="API Products" body={apiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Environment(s)" body={environmentsBodyTemplate}  bodyStyle={{textAlign: 'left'}}/>
+            <Column header="Webhook(s)" body={webhooksBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }}/>
         </DataTable>
       </div>
     );
@@ -277,6 +285,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   }
 
   const renderDebug = (): JSX.Element => {
+    return (<></>);
     if(managedObjectList.length > 0 && selectedManagedObject) {
       const _d = {
         ...selectedManagedObject,

@@ -79,9 +79,12 @@ export enum EAPManagedUserAppDisplay_Type {
   TAPAdminPortalUserAppDisplay = "TAPAdminPortalUserAppDisplay"
 }
 type TAPManagedUserAppDisplay_Base = {
+  appName: CommonName;
+  appDisplayName: CommonDisplayName;
   apiAppResponse_smf: AppResponse;
   apiAppResponse_mqtt: AppResponse;
   apiProductList: Array<APIProduct>;
+  apiEnvironmentResponseList: Array<EnvironmentResponse>;
   apAppClientInformationList: TAPAppClientInformationList;
   apManagedWebhookList: TAPManagedWebhookList;  
   isAppWebhookCapable: boolean;
@@ -148,9 +151,12 @@ export class APManagedUserAppDisplay {
       }
     
       const _base: TAPManagedUserAppDisplay_Base = {
+        appName: apiAppResponse_smf.name,
+        appDisplayName: apiAppResponse_smf.displayName ? apiAppResponse_smf.displayName : apiAppResponse_smf.name,
         apiAppResponse_smf: apiAppResponse_smf,
         apiAppResponse_mqtt: apiAppResponse_mqtt,
         apiProductList: apiProductList,
+        apiEnvironmentResponseList: apiAppEnvironmentResponseList,
         apAppClientInformationList: _apAppClientInformationList,
         apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse_smf, apiAppEnvironmentResponseList),
         isAppWebhookCapable: APManagedUserAppDisplay.isAppWebhookCapable(apiAppResponse_smf.environments),

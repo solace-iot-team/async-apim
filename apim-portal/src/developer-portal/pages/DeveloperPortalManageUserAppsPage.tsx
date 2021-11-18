@@ -18,13 +18,13 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -33,11 +33,6 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
-
-  // const addBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-  //   setBreadCrumbItemList(newItemList);
-  // }
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
@@ -53,9 +48,6 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
         style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
       });
     })
-    // breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-    //   breadcrumbItems.push({ label: breadCrumbLabel });
-    // })
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -86,7 +78,6 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
-          // addBreadCrumbItemList={addBreadCrumbItemList}
         />
       }
     </React.Fragment>
