@@ -10,8 +10,6 @@ import {
   AppsService,
   CommonDisplayName, 
   CommonName,
-  EnvironmentResponse,
-  EnvironmentsService
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
@@ -74,13 +72,9 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     });
   }
   
-  const ToolbarBackToAppButtonLabel = 'Back to App';
-  const ToolbarBackToAppWebhookButtonLabel = 'Back to Webhooks';
-  // const ToolbarNewManagedObjectButtonLabel = 'New Webhook';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
-  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
@@ -89,23 +83,18 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  // const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
   const [refreshComponentCounter, setRefreshComponentCounter] = React.useState<number>(0);
-  // const [viewAppApiAppResponse, setViewAppApiAppResponse] = React.useState<AppResponse>();
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
-  // const [newPresetEnvSelectItem, setNewPresetEnvSelectItem] = React.useState<TApiEntitySelectItem>();
-  // const [newAPManagedWebhook, setNewAPManagedWebhook] = React.useState<TAPManagedWebhook>();
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
 
   // * transformations *
-  const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse, apiAppEnvironmentResponseList: Array<EnvironmentResponse>): TManagedObject => {
+  const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse): TManagedObject => {
     return {
       appId: apiAppResponse.name,
       appDisplayName: apiAppResponse.displayName ? apiAppResponse.displayName : apiAppResponse.name,
       apiAppResponse: apiAppResponse,
-      apiAppEnvironmentResponseList: apiAppEnvironmentResponseList,
-      apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse, apiAppEnvironmentResponseList)
+      apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse)
     };
   }
 
@@ -130,23 +119,12 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         developerUsername: props.userId,
         appName: props.appId
       });
-      // get all the environments
-      if(!_apiAppResponse.environments) throw new Error(`${logName}: _apiAppResponse.environments is undefined`);
-      let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
-      for(const _apiAppEnvironment of _apiAppResponse.environments) {
-        if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
-        const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-          organizationName: props.organizationId,
-          envName: _apiAppEnvironment.name
-        });
-        _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
-      }
-      let _mo: TManagedObject = transformGetApiObjectToManagedObject(_apiAppResponse, _apiAppEnvironmentResponseList);
+      let _mo: TManagedObject = transformGetApiObjectToManagedObject(_apiAppResponse);
       // get the status for each webhook
       for( const _apManagedWebhook of _mo.apManagedWebhookList) {
         _apManagedWebhook.webhookStatus = await apiGetWebhookStatus(_apManagedWebhook);
       }
-      setManagedObject(transformGetApiObjectToManagedObject(_apiAppResponse, _apiAppEnvironmentResponseList));
+      setManagedObject(transformGetApiObjectToManagedObject(_apiAppResponse));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -156,18 +134,11 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   }
   
   const DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-    // const funcName = 'DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName} ...`);
     props.onNavigateHere(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS, props.appId, props.appDisplayName);
-    // call controller setComponentState(state, appId, appDisplayName)
-    // alert(`${logName}: componentState = ${componentState}, appId=${props.appId}, appDisplayName = ${props.appDisplayName}`);
   }
 
   // * useEffect Hooks *
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
@@ -179,7 +150,6 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
       label: `Manage Webhooks`,
       command: DeveloperPortalManageUserAppWebhooks_onNavigateHereCommand
     }]);
-
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
   
@@ -188,13 +158,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doRefreshComponentData = async () => {
-    const funcName = 'doRefreshComponentData';
-    const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: refreshing ...`);
     setIsLoading(true);
-    // props.onLoadingChange(true);
     await apiGetManagedObject();
-    // props.onLoadingChange(false);
     setIsLoading(false);
   }
   React.useEffect(() => {
@@ -215,14 +180,6 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onBackToApp = (): void => {
-    props.onCancel();
-  }
-
-  const onBackToAppWebhooks = () => {
-    setApiCallStatus(null);
-    setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  }
   //  * View Object *
   const onViewManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setApiCallStatus(null);
@@ -230,18 +187,6 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New *
-  // const onNewManagedWebhook = (): void => {
-  //   setApiCallStatus(null);
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
-  // }
-  // const onNewManagedWebhookAnyEnv = () => {
-  //   setNewPresetEnvSelectItem(undefined);
-  //   onNewManagedWebhook();
-  // }
-  // const onCreateNewWebhook4Env = (envName: CommonName, envDisplayName: CommonDisplayName): void => {
-  //   setNewPresetEnvSelectItem({ id: envName, displayName: envDisplayName});
-  //   onNewManagedWebhook();
-  // }
   const onNewManagedWebhook = (mwh: TAPManagedWebhook): void => {
     setManagedWebhook(mwh);
     setApiCallStatus(null);
@@ -274,34 +219,10 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   
   // * Toolbar *
   const getLeftToolbarContent = (): Array<JSX.Element> | undefined => {
-    // const funcName = 'getLeftToolbarContent';
-    // const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState || !managedObject) return undefined;
     let jsxButtonList: Array<JSX.Element> = [
-      <Button key={componentName+ToolbarBackToAppButtonLabel} label={ToolbarBackToAppButtonLabel} icon="pi pi-chevron-left" onClick={onBackToApp} className="p-button-text p-button-plain"/>
     ];
-    if(showListComponent) {
-      // if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-      // jsxButtonList.push(
-      //   <Button 
-      //     key={componentName+ToolbarNewManagedObjectButtonLabel} 
-      //     label={ToolbarNewManagedObjectButtonLabel} 
-      //     icon="pi pi-plus" 
-      //     onClick={onNewManagedWebhookAnyEnv} 
-      //     className="p-button-text p-button-plain p-button-outlined"
-      //     disabled={APManagedWebhook.getNumberWebhooksUndefined4App(managedObject.apManagedWebhookList, managedObject.apiAppEnvironmentResponseList) === 0}
-      //   />
-      // );
-    }
-    if(showViewComponent || showEditComponent || showNewComponent) {
-      jsxButtonList.push(  
-        <Button key={componentName+ToolbarBackToAppWebhookButtonLabel} label={ToolbarBackToAppWebhookButtonLabel} icon="pi pi-chevron-left" onClick={onBackToAppWebhooks} className="p-button-text p-button-plain"/>
-      );
-    }
     if(showViewComponent) {          
-      // jsxButtonList.push(
-      //   <Button key={componentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedWebhook} className="p-button-text p-button-plain p-button-outlined"/>
-      // );
       jsxButtonList.push(
         <Button key={componentName+ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
       );
@@ -309,10 +230,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         <Button key={componentName+ToolbarDeleteManagedObjectButtonLabel} label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedWebhookFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
       ); 
     }
-    return jsxButtonList;
-    // if(showEditComponent) return undefined;
-    // if(showDeleteComponent) return undefined;
-    // if(showNewComponent) return undefined;
+    if(jsxButtonList.length > 0 ) return jsxButtonList;
+    else return undefined;
   }
   const renderToolbar = (): JSX.Element => {
     const leftToolbarContent: Array<JSX.Element> | undefined = getLeftToolbarContent();
@@ -321,10 +240,6 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   }
   
   // * prop callbacks *
-  // const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  // }
   const onEditManagedWebhookSuccess = (apiCallState: TApiCallState, updatedManagedWebhook: TAPManagedWebhook) => {
     setApiCallStatus(apiCallState);
     setManagedWebhook(updatedManagedWebhook);
@@ -413,8 +328,6 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
 
       <Loading show={isLoading} />
       
-      {/* { !isLoading && renderToolbar() } */}
-
       { renderToolbar() }
 
       {showListComponent && managedObject &&

@@ -8,7 +8,6 @@ import { Toolbar } from "primereact/toolbar";
 import { 
   ApiProductsService, 
   APIProduct, 
-  ApisService,
   EnvironmentResponse,
   EnvironmentsService
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -73,9 +72,6 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for product: ${props.apiProductDisplayName}`);
     try { 
-      
-      // const apiProduct: APIProduct = await ApiProductsService.getApiProduct(props.organizationId, props.apiProductId);
-
       const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
         organizationName: props.organizationId, 
         apiProductName: props.apiProductId
@@ -106,17 +102,18 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     return callState;
   }
 
-  const apiGetApi = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
-    const funcName = 'apiGetApi';
+  const apiGetApiSpec = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
+    const funcName = 'apiGetApiSpec';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const api: any = await ApisService.getApi({
+      const apiProductApiSpec: any = await ApiProductsService.getApiProductApiSpecification({
         organizationName: props.organizationId, 
-        apiName: apiId, 
+        apiProductName: props.apiProductId,
+        apiName: apiId,
         format: "application/json"
       });
-      setApiSpec(api);
+      setApiSpec(apiProductApiSpec);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -132,9 +129,9 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
     props.onLoadingChange(false);
   }
 
-  const doFetchApi = async (apiId: string) => {
+  const doFetchApiSpec = async (apiId: string) => {
     props.onLoadingChange(true);
-    await apiGetApi(apiId, apiId);
+    await apiGetApiSpec(apiId, apiId);
     props.onLoadingChange(false);
   }
 
@@ -149,7 +146,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProd
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(showApiId) doFetchApi(showApiId);
+    if(showApiId) doFetchApiSpec(showApiId);
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onShowApi = (event: any): void => {

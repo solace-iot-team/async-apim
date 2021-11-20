@@ -10,13 +10,10 @@ import { MenuItem } from "primereact/api";
 import { 
   ApiProductsService,
   App,
-  AppListItem,
   AppResponse,
   AppsService,
   CommonDisplayName,
   CommonName,
-  EnvironmentResponse,
-  EnvironmentsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
@@ -79,10 +76,11 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
       const funcName = '_transformManagedObjectToTableDataRow';
       const logName = `${componentName}.${funcName}()`;
+      if(!mo.apiAppResponse_smf.environments) throw new Error(`${logName}: mo.apiAppResponse_smf.environments is undefined`);
       const managedObjectTableDataRow: TManagedObjectTableDataRow = {
         ...mo,
         productDisplayNameList:_createApiProductDisplayNameList(mo.apiProductList),
-        environmentDisplayNameList: mo.apiEnvironmentResponseList.map( (x) => { if(!x.displayName) throw new Error(`${logName}: `); return x.displayName; }),
+        environmentDisplayNameList: mo.apiAppResponse_smf.environments.map( (x) => { return APManagedUserAppDisplay.getAppEnvironmentDisplayName(x) }),
         environmentWithWebhookDefinedDisplayNameList: _createEnvWithWebhookDefinedList(mo.apManagedWebhookList),
         globalSearch: ''
       };
@@ -129,8 +127,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           developerUsername: props.userId,
           appName: apiApp.name
         });
-        // _apiAppResponseList.push(apiAppResponse);
-        // get the product details
         let _apiAppProductList: TApiProductList = [];
         for(const apiAppProductId of _apiAppResponse.apiProducts) {
           const apiApiProduct = await ApiProductsService.getApiProduct({
@@ -139,18 +135,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           });
           _apiAppProductList.push(apiApiProduct);
         }
-        // get all environments
-        let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
-        if(!_apiAppResponse.environments) throw new Error(`${logName}: apiAppResponse.environments is undefined`);
-        for(const _apiAppEnvironment of _apiAppResponse.environments) {
-          if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
-          const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-            organizationName: props.organizationId,
-            envName: _apiAppEnvironment.name
-          })
-          _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
-        }
-        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse, _apiAppResponse, _apiAppProductList, _apiAppEnvironmentResponseList))
+        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse, _apiAppResponse, _apiAppProductList))
       }
       setManagedObjectList(_appDisplayList);
     } catch(e: any) {

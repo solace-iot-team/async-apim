@@ -8,7 +8,8 @@ import { Divider } from "primereact/divider";
 import { 
   APIProduct, 
   ApiProductsService, 
-  ApisService 
+  CommonDisplayName, 
+  CommonName
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -66,9 +67,6 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
         organizationName: props.organizationId,
         apiProductName: props.apiProductId
       });
-
-      // get all the other lists ...
-
       const getManagedObject: TGetManagedObject = {
         apiProduct: apiProduct,
         apiEnvironmentList: [],
@@ -85,17 +83,18 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     return callState;
   }
 
-  const apiGetApi = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
-    const funcName = 'apiGetApi';
+  const apiGetApiSpec = async(apiId: CommonName, apiDisplayName: CommonDisplayName): Promise<TApiCallState> => {
+    const funcName = 'apiGetApiSpec';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const api: any = await ApisService.getApi({
+      const apiProductApiSpec: any = await ApiProductsService.getApiProductApiSpecification({
         organizationName: props.organizationId, 
-        apiName: apiId, 
+        apiProductName: props.apiProductId,
+        apiName: apiId,
         format: "application/json"
       });
-      setApiSpec(api);
+      setApiSpec(apiProductApiSpec);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -121,14 +120,14 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const doFetchApi = async (apiId: string) => {
+  const doFetchApiSpec = async (apiId: string) => {
     props.onLoadingChange(true);
-    await apiGetApi(apiId, apiId);
+    await apiGetApiSpec(apiId, apiId);
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
-    if(showApiId) doFetchApi(showApiId);
+    if(showApiId) doFetchApiSpec(showApiId);
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderShowApiButtons = () => {

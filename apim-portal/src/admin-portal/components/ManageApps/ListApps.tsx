@@ -4,7 +4,6 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
 import { 
@@ -202,14 +201,6 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     );
   }
 
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    return (
-        <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
-        </React.Fragment>
-    );
-  }
-
   const apiProductsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
     return APRenderUtils.renderStringListAsDivList(rowData.apiProductDisplayNameList);
   }
@@ -245,7 +236,6 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             <Column field="appListItem.appType" header="Type" sortable bodyStyle={{ verticalAlign: 'top' }}/>
             <Column field="appListItem.ownerId" header="Owner" sortable bodyStyle={{ verticalAlign: 'top' }}/>
             <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
-            <Column body={actionBodyTemplate} headerStyle={{width: '3em'}} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>
     );

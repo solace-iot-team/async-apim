@@ -14,8 +14,6 @@ import {
   AppsService,
   CommonDisplayName,
   CommonName,
-  EnvironmentResponse,
-  EnvironmentsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
 
@@ -61,9 +59,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // // API Products Data Table
-  // const viewProductsDataTableRef = React.useRef<any>(null);
-  // const [expandedViewProductsDataTableRows, setExpandedViewProductsDataTableRows] = React.useState<any>(null);
   
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -91,17 +86,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         });
         _apiProductList.push(apiApiProduct);
       }
-      if(!_apiAppResponse_smf.environments) throw new Error(`${logName}: _apiAppResponse_smf.environments is undefined`);
-      let _apiAppEnvironmentResponseList: Array<EnvironmentResponse> = [];
-      for(const _apiAppEnvironment of _apiAppResponse_smf.environments) {
-        if(!_apiAppEnvironment.name) throw new Error(`${logName}: _apiAppEnvironment.name is undefined`);
-        const _apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-          organizationName: props.organizationId,
-          envName: _apiAppEnvironment.name
-        });
-        _apiAppEnvironmentResponseList.push(_apiEnvironmentResponse);
-      }
-      setManagedObjectDisplay(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apiAppEnvironmentResponseList));
+      setManagedObjectDisplay(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -111,12 +96,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   }
 
   const DeveloperPortalViewUserApp_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-    // const funcName = 'DeveloperPortalViewUserApp_onNavigateHereCommand';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName} ...`);
     props.onNavigateHere(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.appId, props.appDisplayName);
-    // call controller setComponentState(state, appId, appDisplayName)
-    // alert(`${logName}: componentState = ${componentState}, appId=${props.appId}, appDisplayName = ${props.appDisplayName}`);
   }
 
   // * initialize *

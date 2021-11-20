@@ -9,13 +9,10 @@ import {
   CommonDisplayName, 
   CommonName, 
   Endpoint, 
-  EnvironmentResponse, 
   Protocol, 
   WebHook
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPApiEntityRef } from './APApiObjectsCommon';
-import { ApproveApp } from '../admin-portal/components/ManageApps/ApproveApp';
-import { Globals } from '../utils/Globals';
 
 
 export type TAPApiCallState = {
@@ -84,7 +81,6 @@ type TAPManagedUserAppDisplay_Base = {
   apiAppResponse_smf: AppResponse;
   apiAppResponse_mqtt: AppResponse;
   apiProductList: Array<APIProduct>;
-  apiEnvironmentResponseList: Array<EnvironmentResponse>;
   apAppClientInformationList: TAPAppClientInformationList;
   apManagedWebhookList: TAPManagedWebhookList;  
   isAppWebhookCapable: boolean;
@@ -98,6 +94,13 @@ export type TAPAdminPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
 }
 
 export class APManagedUserAppDisplay {
+
+  public static getAppEnvironmentDisplayName = (appEnv: AppEnvironment): CommonDisplayName => {
+    const funcName = 'getAppEnvironmentDisplayName';
+    const logName = `${APManagedUserAppDisplay.name}.${funcName}()`;
+    if(!appEnv.name) throw new Error(`${logName}: appEnv.name is undefined`);
+    return appEnv.displayName ? appEnv.displayName : appEnv.name;
+  }
 
   public static isAppEnvironmentWebhookCapable = (appEnv: AppEnvironment): boolean => {
     let isCapable: boolean = false;
@@ -123,11 +126,8 @@ export class APManagedUserAppDisplay {
   private static createAPManagedUserAppDisplay_Base_From_ApiEntities = (
     apiAppResponse_smf: AppResponse, 
     apiAppResponse_mqtt: AppResponse, 
-    apiProductList: Array<APIProduct>, 
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
+    apiProductList: Array<APIProduct>
     ): TAPManagedUserAppDisplay_Base => {
-      // TODO: AppEnvironment.displayName
-      // remove appEnvironmentResponseList from params when done
       const funcName = 'createAPManagedUserAppDisplayFromApiEntities';
       const logName = `${APManagedWebhook.name}.${funcName}()`;
 
@@ -156,9 +156,8 @@ export class APManagedUserAppDisplay {
         apiAppResponse_smf: apiAppResponse_smf,
         apiAppResponse_mqtt: apiAppResponse_mqtt,
         apiProductList: apiProductList,
-        apiEnvironmentResponseList: apiAppEnvironmentResponseList,
         apAppClientInformationList: _apAppClientInformationList,
-        apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse_smf, apiAppEnvironmentResponseList),
+        apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse_smf),
         isAppWebhookCapable: APManagedUserAppDisplay.isAppWebhookCapable(apiAppResponse_smf.environments),
       }
       return _base;
@@ -167,11 +166,10 @@ export class APManagedUserAppDisplay {
   public static createAPDeveloperPortalAppDisplayFromApiEntities = (
     apiAppResponse_smf: AppResponse, 
     apiAppResponse_mqtt: AppResponse, 
-    apiProductList: Array<APIProduct>, 
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
+    apiProductList: Array<APIProduct>
     ): TAPDeveloperPortalUserAppDisplay => {
 
-      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList, apiAppEnvironmentResponseList);
+      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList);
       return {
         ..._base,
         type: EAPManagedUserAppDisplay_Type.TAPDeveloperPortalUserAppDisplay
@@ -181,12 +179,11 @@ export class APManagedUserAppDisplay {
   public static createAPAdminPortalAppDisplayFromApiEntities = (
     apiAppResponse_smf: AppResponse, 
     apiAppResponse_mqtt: AppResponse, 
-    apiProductList: Array<APIProduct>, 
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>,
+    apiProductList: Array<APIProduct>,
     apsUser: APSUser
     ): TAPAdminPortalUserAppDisplay => {
 
-      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList, apiAppEnvironmentResponseList);
+      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList);
       return {
         ..._base,
         type: EAPManagedUserAppDisplay_Type.TAPAdminPortalUserAppDisplay,
@@ -205,14 +202,11 @@ export type TAPManagedAppWebhooks = {
   appId: CommonName;
   appDisplayName: CommonDisplayName;
   apiAppResponse: AppResponse;
-  apiAppEnvironmentResponseList: Array<EnvironmentResponse>;
   apManagedWebhookList: TAPManagedWebhookList;  
 }
 export type TAPManagedWebhook = {
   references: {
     apiAppResponse: AppResponse;
-    // TODO: AppEnvironment.displayName: remove reference
-    apiAppEnvironmentResponseList: Array<EnvironmentResponse>;
   }
   webhookEnvironmentReference: {
     entityRef: TAPApiEntityRef;
@@ -225,9 +219,7 @@ export type TAPManagedWebhookList = Array<TAPManagedWebhook>;
 
 export class APManagedWebhook {
 
-  public static createAPManagedWebhookListFromApiWebhook = (apiWebhook: WebHook, appResponse: AppResponse, appEnvironmentResponseList: Array<EnvironmentResponse>): TAPManagedWebhookList => {
-    // TODO: AppEnvironment.displayName
-    // remove appEnvironmentResponseList from params when done
+  public static createAPManagedWebhookListFromApiWebhook = (apiWebhook: WebHook, appResponse: AppResponse): TAPManagedWebhookList => {
     const funcName = 'createAPManagedWebhookListFromApiWebhook';
     const logName = `${APManagedWebhook.name}.${funcName}()`;
     const appEnvList: Array<AppEnvironment> = appResponse.environments ? appResponse.environments : [];
@@ -238,22 +230,15 @@ export class APManagedWebhook {
           return (envName === appEnv.name);
         });
         if(!appEnv) throw new Error(`${logName}: appEnv is undefined`);
-
-        // find the display name
-        const envResponseWithDisplayName: EnvironmentResponse | undefined = appEnvironmentResponseList.find( (envResp: EnvironmentResponse) => {
-          return (envName === envResp.name);
-        });
-        if(!envResponseWithDisplayName) throw new Error(`${logName}: envResponseWithDisplayName is undefined`);
         
         apManagedWebhookList.push({
           references: {
             apiAppResponse: appResponse,
-            apiAppEnvironmentResponseList: appEnvironmentResponseList
           },
           webhookEnvironmentReference: {
             entityRef: {
               name: envName,
-              displayName: envResponseWithDisplayName.displayName ? envResponseWithDisplayName.displayName : envName
+              displayName: appEnv.displayName ? appEnv.displayName : envName
             },
             isEnvironmentWebhookCapable: APManagedUserAppDisplay.isAppEnvironmentWebhookCapable(appEnv)
           },
@@ -267,22 +252,14 @@ export class APManagedWebhook {
       // create one for every environment
       appEnvList.forEach( (appEnv: AppEnvironment) => {
         if(!appEnv.name) throw new Error(`${logName}: appEnv.name is undefined`);
-
-        // find the display name
-        const envResponseWithDisplayName: EnvironmentResponse | undefined = appEnvironmentResponseList.find( (envResp: EnvironmentResponse) => {
-          return (appEnv.name === envResp.name);
-        });
-        if(!envResponseWithDisplayName) throw new Error(`${logName}: envResponseWithDisplayName is undefined`);
-
         apManagedWebhookList.push({
           references: {
             apiAppResponse: appResponse,
-            apiAppEnvironmentResponseList: appEnvironmentResponseList
           },
           webhookEnvironmentReference: {
             entityRef: {
               name: appEnv.name,
-              displayName: envResponseWithDisplayName.displayName ? envResponseWithDisplayName.displayName : envResponseWithDisplayName.name
+              displayName: appEnv.displayName ? appEnv.displayName : appEnv.name
             },
             isEnvironmentWebhookCapable: APManagedUserAppDisplay.isAppEnvironmentWebhookCapable(appEnv)
           },
@@ -296,9 +273,7 @@ export class APManagedWebhook {
     return apManagedWebhookList;
   }
   
-  public static createAPManagedWebhookListFromApiEntities = (appResponse: AppResponse, appEnvironmentResponseList: Array<EnvironmentResponse>): TAPManagedWebhookList => {
-    // TODO: AppEnvironment.displayName
-    // remove appEnvironmentResponseList from params when done
+  public static createAPManagedWebhookListFromApiEntities = (appResponse: AppResponse): TAPManagedWebhookList => {
     const funcName = 'createAPManagedWebhookListFromApiEntities';
     const logName = `${APManagedWebhook.name}.${funcName}()`;
 
@@ -306,7 +281,7 @@ export class APManagedWebhook {
     let _apManagedWebhookList: TAPManagedWebhookList = [];
     apiAppWebhookList.forEach( (apiWebhook: WebHook) => {
       _apManagedWebhookList.push(
-        ...APManagedWebhook.createAPManagedWebhookListFromApiWebhook(apiWebhook, appResponse, appEnvironmentResponseList)
+        ...APManagedWebhook.createAPManagedWebhookListFromApiWebhook(apiWebhook, appResponse)
       );
     });
     // now find the envs without a webhook and add a managedWebhook for each
@@ -317,22 +292,14 @@ export class APManagedWebhook {
         return (wh.webhookEnvironmentReference.entityRef.name === appEnv.name);
       });
       if(!found) {
-
-        // find the display name
-        const envResponseWithDisplayName: EnvironmentResponse | undefined = appEnvironmentResponseList.find( (envResp: EnvironmentResponse) => {
-          return (appEnv.name === envResp.name);
-        });
-        if(!envResponseWithDisplayName) throw new Error(`${logName}: envResponseWithDisplayName is undefined`);
-
         _apManagedWebhookList.push( {
           references: {
             apiAppResponse: appResponse,
-            apiAppEnvironmentResponseList: appEnvironmentResponseList
           },
           webhookEnvironmentReference: {
             entityRef: {
               name: appEnv.name,
-              displayName: envResponseWithDisplayName.displayName ? envResponseWithDisplayName.displayName : envResponseWithDisplayName.name
+              displayName: appEnv.displayName ? appEnv.displayName : appEnv.name
             },
             isEnvironmentWebhookCapable: APManagedUserAppDisplay.isAppEnvironmentWebhookCapable(appEnv)
           },
@@ -380,28 +347,7 @@ export class APManagedWebhook {
     return _newMWHList;
   }
 
-  public static getNumberWebhooksUndefined4App = (existingAPManagedWebhookList: TAPManagedWebhookList, availableEnvResponseList: Array<EnvironmentResponse>): number => {
-    // const funcName = 'getNumberWebhooksUndefined4App';
-    // const logName = `${APManagedWebhook.name}.${funcName}()`;
-    let envNameListWithWebhook: Array<string> = [];
-    existingAPManagedWebhookList.forEach( (apManagedWebhook: TAPManagedWebhook) => {
-      if(apManagedWebhook.webhookWithoutEnvs) envNameListWithWebhook.push(apManagedWebhook.webhookEnvironmentReference.entityRef.name);
-    });
-    // console.log(`${logName}: envNameListWithWebhook=${JSON.stringify(envNameListWithWebhook, null, 2)}`);
-    let numberAvailableEnvs: number = 0;
-    availableEnvResponseList.forEach( (envResponse: EnvironmentResponse) => {
-      const found = envNameListWithWebhook.find( (envName: string) =>{
-        return (envResponse.name === envName)
-      });
-      if(!found) numberAvailableEnvs++;
-    });
-    // console.log(`${logName}: numberAvailableEnvs = ${numberAvailableEnvs}`)
-    return numberAvailableEnvs;
-  }
-
   public static getNumberWebhooksDefined4App = (apManagedWebhookList: TAPManagedWebhookList): number => {
-    // const funcName = 'getNumberWebhooksDefined4App';
-    // const logName = `${APManagedWebhook.name}.${funcName}()`;
     let numDefined: number = 0;
     apManagedWebhookList.forEach( (mhw: TAPManagedWebhook) => {
       if(mhw.webhookWithoutEnvs) numDefined++;
