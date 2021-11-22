@@ -313,6 +313,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     // main
     if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
     if(!managedObjectDisplay.apiAppResponse_smf.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_smf.environments is undefined`);
+    if(!managedObjectDisplay.apiAppResponse_mqtt) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt is undefined`);
     if(!managedObjectDisplay.apiAppResponse_mqtt.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt.environments is undefined`);
     return (
       <React.Fragment>

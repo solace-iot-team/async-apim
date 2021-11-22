@@ -79,7 +79,7 @@ type TAPManagedUserAppDisplay_Base = {
   appName: CommonName;
   appDisplayName: CommonDisplayName;
   apiAppResponse_smf: AppResponse;
-  apiAppResponse_mqtt: AppResponse;
+  apiAppResponse_mqtt?: AppResponse;
   apiProductList: Array<APIProduct>;
   apAppClientInformationList: TAPAppClientInformationList;
   apManagedWebhookList: TAPManagedWebhookList;  
@@ -125,8 +125,8 @@ export class APManagedUserAppDisplay {
 
   private static createAPManagedUserAppDisplay_Base_From_ApiEntities = (
     apiAppResponse_smf: AppResponse, 
-    apiAppResponse_mqtt: AppResponse, 
-    apiProductList: Array<APIProduct>
+    apiProductList: Array<APIProduct>,
+    apiAppResponse_mqtt?: AppResponse, 
     ): TAPManagedUserAppDisplay_Base => {
       const funcName = 'createAPManagedUserAppDisplayFromApiEntities';
       const logName = `${APManagedWebhook.name}.${funcName}()`;
@@ -165,11 +165,11 @@ export class APManagedUserAppDisplay {
 
   public static createAPDeveloperPortalAppDisplayFromApiEntities = (
     apiAppResponse_smf: AppResponse, 
-    apiAppResponse_mqtt: AppResponse, 
-    apiProductList: Array<APIProduct>
+    apiProductList: Array<APIProduct>,
+    apiAppResponse_mqtt?: AppResponse 
     ): TAPDeveloperPortalUserAppDisplay => {
 
-      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList);
+      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiProductList, apiAppResponse_mqtt);
       return {
         ..._base,
         type: EAPManagedUserAppDisplay_Type.TAPDeveloperPortalUserAppDisplay
@@ -183,7 +183,7 @@ export class APManagedUserAppDisplay {
     apsUser: APSUser
     ): TAPAdminPortalUserAppDisplay => {
 
-      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiAppResponse_mqtt, apiProductList);
+      const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiProductList, apiAppResponse_mqtt);
       return {
         ..._base,
         type: EAPManagedUserAppDisplay_Type.TAPAdminPortalUserAppDisplay,

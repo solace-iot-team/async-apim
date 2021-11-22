@@ -25,7 +25,13 @@ import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { Globals } from "../../../utils/Globals";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPManagedWebhook, TAPManagedWebhookList } from "../../../components/APComponentsCommon";
+import { 
+  APManagedUserAppDisplay, 
+  TAPDeveloperPortalUserAppDisplay, 
+  TApiEntitySelectItemList, 
+  TAPManagedWebhook, 
+  TAPManagedWebhookList 
+} from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 
@@ -112,6 +118,8 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
+    console.log(`${logName}: starting: managedObjectList.length=${managedObjectList.length}`);
+
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP_LIST, `retrieve list of apps for ${props.userId}`);
     try { 
@@ -122,20 +130,21 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
       // get details for each App
       let _appDisplayList: Array<TAPDeveloperPortalUserAppDisplay> = [];
       for(const apiApp of apiAppList) {
-        const _apiAppResponse: AppResponse = await AppsService.getDeveloperApp({
+        const _apiAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
           organizationName: props.organizationId,
           developerUsername: props.userId,
-          appName: apiApp.name
+          appName: apiApp.name,
+          topicSyntax: 'smf'
         });
         let _apiAppProductList: TApiProductList = [];
-        for(const apiAppProductId of _apiAppResponse.apiProducts) {
+        for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
           const apiApiProduct = await ApiProductsService.getApiProduct({
             organizationName: props.organizationId,
             apiProductName: apiAppProductId
           });
           _apiAppProductList.push(apiApiProduct);
         }
-        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse, _apiAppResponse, _apiAppProductList))
+        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppProductList, undefined))
       }
       setManagedObjectList(_appDisplayList);
     } catch(e: any) {
