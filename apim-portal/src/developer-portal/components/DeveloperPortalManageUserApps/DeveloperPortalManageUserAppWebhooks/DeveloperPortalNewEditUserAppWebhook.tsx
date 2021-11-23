@@ -33,7 +33,6 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
   APManagedWebhook,
-  TApiEntitySelectItemList,
   TAPManagedAppWebhooks,
   TAPManagedWebhook,
   TAPManagedWebhookList,
@@ -427,15 +426,16 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     const isActive: boolean = (webhookAuthMethodSelectId === WebHookBasicAuth.authMethod.BASIC);
     return (
       <div className="p-ml-4" hidden={!isActive}>
+      {/* <div className="p-ml-4"> */}
         {/* username */}
         <div className="p-field">
           <span className="p-float-label">
             <Controller
               name="webhookBasicAuth.username"
               control={managedObjectUseForm.control}
-              rules={isActive && APConnectorFormValidationRules.WebhookBasicAuth_Username()}
+              rules={APConnectorFormValidationRules.WebhookBasicAuth_Username(isActive)}
               render={( { field, fieldState }) => {
-                console.log(`renderManagedObjectFormWebhookBasicAuth: field = ${JSON.stringify(field)}`);
+                // console.log(`renderManagedObjectFormWebhookBasicAuth: field = ${JSON.stringify(field)}`);
                 return(
                   <InputText
                     id={field.name}
@@ -455,7 +455,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             <Controller
               name="webhookBasicAuth.password"
               control={managedObjectUseForm.control}
-              rules={isActive && APConnectorFormValidationRules.WebhookBasicAuth_Password()}
+              rules={APConnectorFormValidationRules.WebhookBasicAuth_Password(isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputText
@@ -485,13 +485,14 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     const isActive: boolean = (webhookAuthMethodSelectId === WebHookHeaderAuth.authMethod.HEADER);
     return (
       <div className="p-ml-4" hidden={!isActive}>
+      {/* <div className="p-ml-4"> */}
         {/* header name */}
         <div className="p-field">
           <span className="p-float-label">
             <Controller
               name="webhookHeaderAuth.headerName"
               control={managedObjectUseForm.control}
-              rules={isActive && APConnectorFormValidationRules.WebhookHeaderAuth_HeaderName()}
+              rules={APConnectorFormValidationRules.WebhookHeaderAuth_HeaderName(isActive)}
               render={( { field, fieldState }) => {
                 // console.log(`${logName}: field = ${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                 return(
@@ -513,7 +514,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             <Controller
               name="webhookHeaderAuth.headerValue"
               control={managedObjectUseForm.control}
-              rules={isActive && APConnectorFormValidationRules.WebhookHeaderAuth_HeaderValue()}
+              rules={APConnectorFormValidationRules.WebhookHeaderAuth_HeaderValue(isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputText
@@ -792,9 +793,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
 
             {/* auth method */}
             <div className="p-field">
-              TODO: make auth method a panel?, TODO: fix switching - values are taken from same form data
-            </div>
-            <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="selectedWebhookAuthMethodId"
@@ -808,7 +806,10 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
                           id={field.name}
                           {...field}
                           options={Object.values(EWebhookAuthMethodSelectId)} 
-                          onChange={(e) => { field.onChange(e.value) }}
+                          onChange={(e) => { 
+                            field.onChange(e.value);
+                            managedObjectUseForm.clearErrors();
+                          }}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        
                   )}}
@@ -819,7 +820,8 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             </div>
 
             {/* auth details */}
-            { selectedWebhookAuthMethodId && renderManagedObjectFormWebhookAuthMethodDetails(selectedWebhookAuthMethodId) }
+            {/* { selectedWebhookAuthMethodId && renderManagedObjectFormWebhookAuthMethodDetails(selectedWebhookAuthMethodId) } */}
+            { renderManagedObjectFormWebhookAuthMethodDetails(selectedWebhookAuthMethodId) }
           </form>  
             
           {/* trusted CNs Form */}

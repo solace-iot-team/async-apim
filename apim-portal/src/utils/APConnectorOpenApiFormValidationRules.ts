@@ -1,11 +1,22 @@
 import {
-  $attributes, $ClientOptionsGuaranteedMessaging, $WebHook, $WebHookBasicAuth, $WebHookHeaderAuth
+  $attributes, $ClientOptionsGuaranteedMessaging, $CommonName, $CustomCloudEndpoint, $Organization, $WebHook, $WebHookBasicAuth, $WebHookHeaderAuth
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../components/APComponentsCommon";
 import { APConnectorApiHelper } from "./APConnectorApiCalls";
 
 export class APConnectorFormValidationRules {
+
+  private static createFormPattern = (apiPattern: string) => {
+    return `^${apiPattern}$`;
+  }
+  private static getFormPatternRule = (schema: any, message: string): any => {
+    if(schema.pattern) return {
+      value: new RegExp(APConnectorFormValidationRules.createFormPattern(schema.pattern)),
+      message: `${message}. Pattern: ${schema.pattern}`
+    }
+  }
+
   
   private static getMaxLengthRule = (schema: any): any => {
     if(schema.maxLength) return {
@@ -26,6 +37,36 @@ export class APConnectorFormValidationRules {
       value: new RegExp(schema.pattern),
       message: `${message}. Pattern: ${schema.pattern}`
     }
+  }
+
+  public static Organization_Token = (requiredMessage: string, isActive: boolean): any => {
+    // this is fragile, but let's use it for now
+    const api_schema = $Organization.properties['cloud-token'].contains[0];
+    const rules: any = {};
+    rules['required'] = (isActive ? requiredMessage : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined);
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getPatternRule(api_schema, 'Invalid Solace Cloud Token format') : undefined);
+    return rules;
+  }
+  public static Organization_Url = (): any => {
+    // this is fragile, but let's use it for now
+    const api_schema = $CustomCloudEndpoint.properties.baseUrl;
+    // // hardcode here instead
+    // const schema = {
+    //   type: 'string',
+    //   isRequired: true,
+    //   maxLength: 16384,
+    //   minLength: 1,
+    //   pattern: '[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*'
+    //   // pattern: '[A-Za-z0-9-_=]*'
+    // };
+    const rules: any = {};
+    rules['required'] = 'Enter Url.';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(api_schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(api_schema);
+    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(api_schema, 'Invalid Url format');
+    return rules;
   }
 
   public static ClientOptionsGuaranteedMessaging_MaxTTL = (): any => {
@@ -74,53 +115,48 @@ export class APConnectorFormValidationRules {
     };
   }
 
-  public static WebhookBasicAuth_Username = (): any => {
+  // const api_schema = $Organization.properties['cloud-token'].contains[0];
+  // const rules: any = {};
+  // rules['required'] = (isActive ? requiredMessage : false);
+  // rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+  // rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined);
+  // rules['pattern'] = (isActive ? APConnectorFormValidationRules.getPatternRule(api_schema, 'Invalid Solace Cloud Token format') : undefined);
+  // return rules;
+
+  public static WebhookBasicAuth_Username = (isActive: boolean): any => {
     const schema = $WebHookBasicAuth.properties.username;
-    const rules: any = {
-    }
-    if(schema.isRequired) rules['required'] = 'Enter username';
+    const rules: any = {}
+    if(schema.isRequired) rules['required'] = (isActive ? 'Enter username.' : false);
     return rules;
   }
 
-  public static WebhookBasicAuth_Password = (): any => {
-    const fixPattern = '^[\\S]*$';
-    // pattern: '[\\S]{8,256}',
-    const schema = $WebHookBasicAuth.properties.password;
-    const rules: any = {
-      pattern: {
-        value: new RegExp(fixPattern),
-        message: `Invalid password. Pattern: ${schema.pattern}`
-      }
-    }
-    if(schema.isRequired) rules['required'] = 'Enter password';
-    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
-    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+  public static WebhookBasicAuth_Password = (isActive: boolean): any => {
+    const schema = $WebHookBasicAuth.properties.password;    
+    const rules: any = {};
+    if(schema.isRequired) rules['required'] = (isActive ? 'Enter password.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(schema) : undefined);
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(schema, 'Invalid password') : undefined);
     return rules;
   }
 
-  public static WebhookHeaderAuth_HeaderName = (): any => {
+  public static WebhookHeaderAuth_HeaderName = (isActive: boolean): any => {
     const schema = $WebHookHeaderAuth.properties.headerName;
-    // pattern: '[\\s\\S]{1,512}',
-    const fixPattern = '^[\\S]*$';
-    schema.pattern = fixPattern;
     const rules: any = {};
-    if(schema.isRequired) rules['required'] = 'Enter header name.';
-    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
-    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
-    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid header name');
+    if(schema.isRequired) rules['required'] = (isActive ? 'Enter header name.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(schema) : undefined);
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(schema, 'Invalid header name') : undefined);
     return rules;
   }
 
-  public static WebhookHeaderAuth_HeaderValue = (): any => {
+  public static WebhookHeaderAuth_HeaderValue = (isActive: boolean): any => {
     const schema = $WebHookHeaderAuth.properties.headerValue;
-    // pattern: '[\\s\\S]{1,512}',
-    const fixPattern = '^[\\S]*$';
-    schema.pattern = fixPattern;
     const rules: any = {};
-    if(schema.isRequired) rules['required'] = 'Enter header value.';
-    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
-    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
-    rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid header value');
+    if(schema.isRequired) rules['required'] = (isActive ? 'Enter header value.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(schema) : undefined);
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(schema, 'Invalid header value') : undefined);
     return rules;
   }
 
@@ -179,6 +215,36 @@ export class APConnectorFormValidationRules {
         message: `Invalid name. Pattern: ${$attributes.contains.properties.value.pattern}`
       }
     };
+  }
+  public static CommonName = (): any => {
+    const schema = $CommonName;
+    const rules: any = {};
+    rules['required'] = 'Enter unique Organization Name.';
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, 'Invalid Organization Name');
+    return rules;
+
+    // const minLength: number = schema.minLength;
+    // const maxLength: number = schema.maxLength;
+    // // const pattern: string = '^[A-Za-z0-9_-]*$';
+    // const pattern: string = APConnectorFormValidationRules.createFormPattern(schema.pattern);
+    // return {
+    //   required: "Enter unique Name.",
+    //   minLength: {
+    //     value: minLength,
+    //     message: `Minimum of ${minLength} chars.`
+    //   },
+    //   maxLength: {
+    //     value: maxLength,
+    //     message: `Maximum of ${maxLength} chars.`
+    //   },
+    //   pattern: {
+    //     value: new RegExp(pattern),
+    //     message: `Invalid Name. Pattern: ${pattern}`
+    //     // message: `Invalid Name. Use numbers, letters, '_', '-' only. Pattern: ${pattern}`
+    //   }
+    // }
   }
   public static Name = (): any => {
     const minLength: number  = 4;

@@ -6,7 +6,7 @@ import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
-import { EUIAdminPortalResourcePaths } from '../../utils/Globals';
+import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 
 import "../../pages/Pages.css";
@@ -40,6 +40,7 @@ export const ManageOrganizationsPage: React.FC = () => {
       },
       { 
         label: 'Organizations',
+        style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations) }
       }
     ];

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { useForm, Controller, FieldError } from 'react-hook-form';
 
 import { InputTextarea } from "primereact/inputtextarea";
@@ -11,7 +11,11 @@ import { classNames } from 'primereact/utils';
 
 import { 
   AdministrationService, 
-  Organization
+  CloudToken, 
+  CommonName, 
+  CustomCloudEndpoint, 
+  Organization,
+  SempV2Authentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -23,6 +27,8 @@ import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageOrganizationsCom
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { Globals } from "../../../utils/Globals";
+import { Dropdown } from "primereact/dropdown";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -42,21 +48,84 @@ export interface IEditNewOrganizationProps {
 export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: IEditNewOrganizationProps) => {
   const componentName = 'EditNewOrganziation';
 
+  // Service Discovery & Provisioning:
+  // - Solace Cloud: 
+  //    - <provide cloud token>, 
+  //    - provide baseUrl (default solace cloud standard)
+  // - Custom: provide sempv2Authentication + solace cloud baseUrl
+  // Event Portal Integration:
+  // - optional entry:
+  //   - base Url + token
+  // - if no entry ==> copy Solace Cloud token + eventPortal base Url
+
+  enum EAPServiceIntegrationType {
+    SELECT = 'Select ...',
+    SOLACE_CLOUD = 'Solace Cloud Services',
+    CUSTOM = 'Custom Services'
+  }
+
+  type TAPCustomServiceIntegration = {
+    sempv2Authentication: SempV2Authentication;
+    baseUrlStr: string;
+  }
+
+  type TAPOrganizationManagedObject = {
+    apiObject: Organization;
+    serviceIntegrationType: EAPServiceIntegrationType;
+    solaceCloudServiceIntegration: CustomCloudEndpoint;
+    customServiceIntegration: TAPCustomServiceIntegration;
+    eventPortalIntegration: CustomCloudEndpoint;
+  };
+
+  // enum EAPOrganizationType {
+  //   SELECT = 'Select ...',
+  //   SOLACE_CLOUD_SINGLE_TOKEN = 'Solace Cloud Single Token',
+  //   SOLACE_CLOUD_COMPOSITE_TOKEN = 'Solace Cloud Composite Token',
+  //   CUSTOM_SERVICE = 'Custom Service'
+  // }
+
+  const CDefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0';
+  const CDefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal';
+
   type TUpdateApiObject = Organization;
   type TCreateApiObject = Organization;
   type TGetApiObject = Organization;
-  type TManagedObject = {
-    displayName: string,
-    apiObject: Organization
-  };
-  type TManagedObjectFormData = TManagedObject & {
-    solaceCloudToken: string
+  type TManagedObject = TAPOrganizationManagedObject;
+  type TManagedObjectFormData = {
+    // here: all the fields user manages in the Form ...    
+    name: CommonName;
+    selectedServiceIntegrationType: EAPServiceIntegrationType;
+    selectedServiceIntegration_SolaceCloud: CustomCloudEndpoint;
+    selectedServiceIntegration_Custom: TAPCustomServiceIntegration;
+    selectedEventPortalIntegration: CustomCloudEndpoint;
+    // singleSolaceCloudToken: string;
+    // compositeCloudTokens: {
+    //   solaceCloudServices: CustomCloudEndpoint;
+    //   solaceEventPortal: CustomCloudEndpoint;  
+    // }
   };
 
   const emptyManagedObject: TManagedObject = {
-    displayName: '',
+    serviceIntegrationType: EAPServiceIntegrationType.SELECT,
+    solaceCloudServiceIntegration: {
+      baseUrl: CDefaultSolaceCloudBaseUrlStr,
+      token: ''
+    },
+    customServiceIntegration: {
+      baseUrlStr: '',
+      sempv2Authentication: {
+        authType: SempV2Authentication.authType.APIKEY,
+        apiKeyLocation: SempV2Authentication.apiKeyLocation.HEADER,
+        apiKeyName: 'apiKey'
+      }
+    },
+    eventPortalIntegration: {
+      baseUrl: CDefaultEventPortalBaseUrlStr,
+      token: ''
+    },
     apiObject: {
       name: '',
+      "cloud-token": ''
     }
   }
 
@@ -66,44 +135,115 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
+  const formId = componentName;
 
-  const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
+  const transformGetApiObjectToManagedObject = (apiObject: TGetApiObject): TManagedObject => {
+    const funcName = 'transformGetApiObjectToManagedObject';
+    const logName = `${componentName}.${funcName}()`;
+    // service integration type 
+    let _serviceIntegrationType: EAPServiceIntegrationType = emptyManagedObject.serviceIntegrationType;
+    let _solaceCloudServiceIntegration: CustomCloudEndpoint = emptyManagedObject.solaceCloudServiceIntegration;
+    let _eventPortalIntegration: CustomCloudEndpoint = emptyManagedObject.eventPortalIntegration;
+    let _customServiceIntegration: TAPCustomServiceIntegration = emptyManagedObject.customServiceIntegration;
+    if(apiObject["cloud-token"]) {
+      _serviceIntegrationType = EAPServiceIntegrationType.SOLACE_CLOUD;
+      if( typeof apiObject["cloud-token"] === 'string' ) {
+        _solaceCloudServiceIntegration = {
+          baseUrl: CDefaultSolaceCloudBaseUrlStr,
+          token: apiObject['cloud-token']
+        };
+      }
+      else if(typeof apiObject["cloud-token"] === 'object') {
+        if(apiObject['cloud-token'].cloud) {
+          _solaceCloudServiceIntegration = apiObject['cloud-token'].cloud;          
+        }
+        if(apiObject['cloud-token'].eventPortal) {
+          _eventPortalIntegration = apiObject['cloud-token'].eventPortal;
+        }
+
+      }
+    }
+    if(apiObject.sempV2Authentication) {
+      _serviceIntegrationType = EAPServiceIntegrationType.CUSTOM;
+      if(typeof apiObject['cloud-token'] !== 'object') throw new Error(`${logName}: typeof apiObject['cloud-token'] !== 'object'`);
+      if(!apiObject["cloud-token"].cloud) throw new Error(`${logName}: apiObject["cloud-token"].cloud is undefined`);
+      _customServiceIntegration = {
+        baseUrlStr: apiObject["cloud-token"].cloud.baseUrl,
+        sempv2Authentication: apiObject.sempV2Authentication
+      }
+    }
     return { 
-      displayName: getApiObject.name,
-      apiObject: getApiObject
+      apiObject: apiObject,
+      serviceIntegrationType: _serviceIntegrationType,
+      solaceCloudServiceIntegration: _solaceCloudServiceIntegration,
+      customServiceIntegration: _customServiceIntegration,
+      eventPortalIntegration: _eventPortalIntegration
     }
   }
 
-  const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    return managedObject.apiObject;
+  const transformManagedObjectToUpdateApiObject = (mo: TManagedObject): TUpdateApiObject => {
+    return mo.apiObject;
   }
 
-  const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    return managedObject.apiObject;
+  const transformManagedObjectToCreateApiObject = (mo: TManagedObject): TCreateApiObject => {
+    return mo.apiObject;
   }
 
-  const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
+  const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
     const funcName = 'transformManagedObjectToFormData';
     const logName = `${componentName}.${funcName}()`;
-    let solaceCloudToken: string = '';
-    if(managedObject.apiObject["cloud-token"]) {
-      if( typeof managedObject.apiObject["cloud-token"] === 'string' ) solaceCloudToken = managedObject.apiObject["cloud-token"];
-      else throw new Error(`${logName}: cannot handle composite cloud-token definition`);
+    console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+    const formData: TManagedObjectFormData = {
+      name: mo.apiObject.name,
+      selectedServiceIntegrationType: mo.serviceIntegrationType,
+      selectedServiceIntegration_SolaceCloud: mo.solaceCloudServiceIntegration,
+      selectedServiceIntegration_Custom: mo.customServiceIntegration,
+      selectedEventPortalIntegration: mo.eventPortalIntegration
     }
-    return {
-      ...managedObject,
-      solaceCloudToken: solaceCloudToken
-    }
+    return formData;
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-    return {
-      ...formData,
-      apiObject: {
-        ...formData.apiObject,
-        "cloud-token": formData.solaceCloudToken
-      }
-    }
+    const funcName = 'transformFormDataToManagedObject';
+    const logName = `${componentName}.${funcName}()`;
+    console.log(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
+
+    throw new Error(`${logName}: continue here`);
+// continue here
+
+    // const mo: TManagedObject = {
+    //   apiObject: {
+    //     ...formData.managedObject.apiObject,
+    //   },
+    //   organizationType: formData.selectedOrganizationType
+    // }
+    // // now set the correct org config
+    // switch (formData.selectedOrganizationType) {
+    //   case EAPOrganizationType.SELECT:
+    //     throw new Error(`${logName}: formData.selectedOrganizationType === ${EAPOrganizationType.SELECT}`);
+    //     break;
+    //   case EAPOrganizationType.SINGLE_SOLACE_CLOUD_TOKEN:
+    //     mo.apiObject["cloud-token"] = formData.singleSolaceCloudToken;
+    //     break;
+    //   case EAPOrganizationType.COMPOSITE_CLOUD_TOKENS:
+    //     if(!formData.compositeCloudTokens) throw new Error(`${logName}: formData.compositeCloudTokensis undefined`);
+    //     mo.apiObject["cloud-token"] = {
+    //       cloud: formData.compositeCloudTokens.solaceCloudServices,
+    //       eventPortal: formData.compositeCloudTokens.solaceEventPortal
+    //     }
+    //     break;
+    //   default:
+    //     Globals.assertNever(logName, formData.selectedOrganizationType);
+    // }
+    // return mo;
+
+    // return {
+    //   ...formData,
+    //   apiObject: {
+    //     ...formData.apiObject,
+    //     "cloud-token": formData.solaceCloudToken
+    //   }
+    // }
   }
 
   // * Api Calls *
@@ -112,13 +252,9 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${managedObjectDisplayName}`);
     try { 
-      
-      // const apiOrganization: Organization = await AdministrationService.getOrganization(managedObjectId);
-
       const apiOrganization: Organization = await AdministrationService.getOrganization({
         organizationName: managedObjectId
-      });
-      
+      });      
       setManagedObject(transformGetApiObjectToManagedObject(apiOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -133,14 +269,10 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `update organization: ${managedObject.apiObject.name}`);
     try { 
-      // await AdministrationService.updateOrganization(managedObjectId, transformManagedObjectToUpdateApiObject(managedObject));
-
       await AdministrationService.updateOrganization({
         organizationName: managedObjectId, 
         requestBody: transformManagedObjectToUpdateApiObject(managedObject)
       });
-
-
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -212,9 +344,18 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
-    managedObjectUseForm.setValue('apiObject.name', managedObjectFormData.apiObject.name);
-    managedObjectUseForm.setValue('solaceCloudToken', managedObjectFormData.solaceCloudToken);
+  const doPopulateManagedObjectFormDataValues = (mofd: TManagedObjectFormData) => {
+    const funcName = 'doPopulateManagedObjectFormDataValues';
+    const logName = `${componentName}.${funcName}()`;
+    throw new Error(`${logName}: continue here`);
+
+    // managedObjectUseForm.setValue('managedObject.apiObject.name', mofd.managedObject.apiObject.name);
+    // managedObjectUseForm.setValue('selectedOrganizationType', mofd.selectedOrganizationType);
+    // managedObjectUseForm.setValue('singleSolaceCloudToken', mofd.singleSolaceCloudToken);
+    // managedObjectUseForm.setValue('compositeCloudTokens.solaceCloudServices.baseUrl', mofd.compositeCloudTokens.solaceCloudServices.baseUrl);
+    // managedObjectUseForm.setValue('compositeCloudTokens.solaceCloudServices.token', mofd.compositeCloudTokens.solaceCloudServices.token);
+    // managedObjectUseForm.setValue('compositeCloudTokens.solaceEventPortal.baseUrl', mofd.compositeCloudTokens.solaceEventPortal.baseUrl);
+    // managedObjectUseForm.setValue('compositeCloudTokens.solaceEventPortal.token', mofd.compositeCloudTokens.solaceEventPortal.token);
   }
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
@@ -240,6 +381,11 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
+    // const funcName = 'onInvalidSubmitManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`invalid form ...`);
+    // console.log(`${logName}: managedObjectUseForm.formState.errors.singleSolaceCloudToken = ${JSON.stringify(managedObjectUseForm.formState.errors.singleSolaceCloudToken, null, 2)}`);
+    // managedObjectUseForm.formState.errors.singleSolaceCloudToken
     // setIsFormSubmitted(true);
   }
 
@@ -260,7 +406,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     return (
       <React.Fragment>
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+        <Button form={formId} type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
       </React.Fragment>
     );
   }
@@ -271,65 +417,239 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     )
   }
 
-  const renderManagedObjectForm = () => {
-    const isNewUser: boolean = (props.action === EAction.NEW);
+  // const renderManagedObjectFormCompositeToken = (organizationType: EAPOrganizationType) => {
+  //   const isActive: boolean = (organizationType === EAPOrganizationType.COMPOSITE_CLOUD_TOKENS);
+  //   return (
+  //     <div className="p-ml-4" >
+  //     {/* <div className="p-ml-4" hidden={!isActive}> */}
+  //       {/* <div>compositeCloudTokens:</div>
+  //       <pre style={ { fontSize: '10px' }} >
+  //         {JSON.stringify(managedObjectUseForm.getValues('compositeCloudTokens'), null, 2)}
+  //       </pre> */}
+  //       {/* Solace Cloud base url */}
+  //       <div className="p-field">
+  //         <span>Solace Cloud (Services):</span>
+  //       </div>
+  //       <div className="p-field">
+  //         <span className="p-float-label">
+  //           <Controller
+  //             name="compositeCloudTokens.solaceCloudServices.baseUrl"
+  //             control={managedObjectUseForm.control}
+  //             rules={isActive && APConnectorFormValidationRules.Organization_Url()}
+  //             render={( { field, fieldState }) => {
+  //                 // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+  //                 return(
+  //                   <InputText
+  //                     id={field.name}
+  //                     {...field}
+  //                     className={classNames({ 'p-invalid': fieldState.invalid })}                    
+  //                     disabled={!isActive}                  
+  //                   />
+  //             )}}
+  //           />
+  //           <label htmlFor="compositeCloudTokens.solaceCloudServices.baseUrl" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceCloudServices?.baseUrl })}>Solace Cloud Base URL*</label>
+  //         </span>
+  //         {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceCloudServices?.baseUrl)}
+  //       </div>
+  //       {/* Solace Cloud Token Service Discovery */}
+  //       <div className="p-field">
+  //         <span className="p-float-label">
+  //           <Controller
+  //             name="compositeCloudTokens.solaceCloudServices.token"
+  //             control={managedObjectUseForm.control}
+  //             // rules={isActive && APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token (Services).')}
+  //             rules={APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token (Services).', isActive)}
+  //             render={( { field, fieldState }) => {
+  //                 // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+  //                 return(
+  //                   <InputTextarea
+  //                     id={field.name}
+  //                     {...field}
+  //                     className={classNames({ 'p-invalid': fieldState.invalid })}                    
+  //                     disabled={!isActive}                  
+  //                   />
+  //             )}}
+  //           />
+  //           <label htmlFor="compositeCloudTokens.solaceCloudServices.token" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceCloudServices?.token })}>Solace Cloud Token*</label>
+  //         </span>
+  //         {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceCloudServices?.token)}
+  //       </div>
+  //       {/* Event Portal base url */}
+  //       <div className="p-field">
+  //         <span>Event Portal:</span>
+  //       </div>
+  //       <div className="p-field">
+  //         <span className="p-float-label">
+  //           <Controller
+  //             name="compositeCloudTokens.solaceEventPortal.baseUrl"
+  //             control={managedObjectUseForm.control}
+  //             rules={isActive && APConnectorFormValidationRules.Organization_Url()}
+  //             render={( { field, fieldState }) => {
+  //                 // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+  //                 return(
+  //                   <InputText
+  //                     id={field.name}
+  //                     {...field}
+  //                     className={classNames({ 'p-invalid': fieldState.invalid })}              
+  //                     disabled={!isActive}                  
+  //                   />
+  //               )}}
+  //           />
+  //           <label htmlFor="compositeCloudTokens.solaceEventPortal.baseUrl" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceEventPortal?.baseUrl })}>Event Portal Base URL*</label>
+  //         </span>
+  //         {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceEventPortal?.baseUrl)}
+  //       </div>
+  //       {/* Event Portal token */}
+  //       <div className="p-field">
+  //         <span className="p-float-label">
+  //           <Controller
+  //             name="compositeCloudTokens.solaceEventPortal.token"
+  //             control={managedObjectUseForm.control}
+  //             // rules={isActive && APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token (Event Portal).')}
+  //             rules={APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token (Event Portal).', isActive)}
+  //             render={( { field, fieldState }) => {
+  //                 // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+  //                 return(
+  //                   <InputTextarea
+  //                     id={field.name}
+  //                     {...field}
+  //                     className={classNames({ 'p-invalid': fieldState.invalid })}            
+  //                     disabled={!isActive}                  
+  //                   />
+  //             )}}
+  //           />
+  //           <label htmlFor="compositeCloudTokens.solaceEventPortal.token" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceEventPortal?.token })}>Event Portal Token*</label>
+  //         </span>
+  //         {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.compositeCloudTokens?.solaceEventPortal?.token)}
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // const renderManagedObjectFormSingleToken = (organizationType: EAPOrganizationType) => {
+  //   const isActive: boolean = (organizationType === EAPOrganizationType.SINGLE_SOLACE_CLOUD_TOKEN);
+  //   return (
+  //     // <div className="p-ml-4" hidden={!isActive}>
+  //     <div className="p-ml-4">
+  //       {/* Solace Cloud Token */}
+  //       <div className="p-field">
+  //         <span className="p-float-label">
+  //           <Controller
+  //             name="singleSolaceCloudToken"
+  //             control={managedObjectUseForm.control}
+  //             rules={APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token.', isActive)}
+  //             render={( { field, fieldState }) => {
+  //                 console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+  //                 return(
+  //                   <InputTextarea
+  //                     id={field.name}
+  //                     {...field}
+  //                     className={classNames({ 'p-invalid': fieldState.invalid })}      
+  //                     disabled={!isActive}                  
+  //                   />
+  //             )}}
+  //           />
+  //           <label htmlFor="singleSolaceCloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.singleSolaceCloudToken })}>Solace Cloud Token*</label>
+  //         </span>
+  //         {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.singleSolaceCloudToken)}
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  // const renderManagedObjectFormOrganizationDetails = (organizationType: EAPOrganizationType) => {
+  const renderManagedObjectFormOrganizationDetails = () => {
     return (
-      <div className="card">
-        <div className="p-fluid">
-          <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
-            {/* name */}
-            <div className="p-field">
-              <span className="p-float-label p-input-icon-right">
-                <i className="pi pi-key" />
-                <Controller
-                  name="apiObject.name"
-                  control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.Name()}
-                  render={( { field, fieldState }) => {
-                      // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
-                      return(
-                        <InputText
-                          id={field.name}
-                          {...field}
-                          autoFocus={isNewUser}
-                          disabled={!isNewUser}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
-                />
-                <label htmlFor="apiObject.name" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiObject?.name })}>Name*</label>
-              </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiObject?.name)}
-            </div>
-            {/* Solace Cloud Token */}
-            <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  name="solaceCloudToken"
-                  control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Enter Solace Cloud Token."
-                  }}
-                  render={( { field, fieldState }) => {
-                      // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
-                      return(
-                        <InputTextarea
-                          id={field.name}
-                          {...field}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
-                />
-                <label htmlFor="solaceCloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.solaceCloudToken })}>Solace Cloud Token*</label>
-              </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.solaceCloudToken)}
-            </div>
-            <Divider />
-            {renderManagedObjectFormFooter()}
-          </form>  
-        </div>
-      </div>
+      <React.Fragment>
+        <p>TODO: implement me</p>
+        {/* {renderManagedObjectFormSingleToken(organizationType)}
+        {renderManagedObjectFormCompositeToken(organizationType)} */}
+      </React.Fragment>
     );
+  }
+
+  const renderManagedObjectForm = () => {
+
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${componentName}.${funcName}()`;
+    throw new Error(`${logName}: continue here`);
+
+
+    // const isNew: boolean = (props.action === EAction.NEW);
+    // const selectedOrganizationType: EAPOrganizationType = managedObjectUseForm.watch('selectedOrganizationType');
+
+    // return (
+    //   <div className="card">
+    //     <div className="p-fluid">
+    //       <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+    //         {/* name */}
+    //         <div className="p-field">
+    //           <span className="p-float-label p-input-icon-right">
+    //             <i className="pi pi-key" />
+    //             <Controller
+    //               name="managedObject.apiObject.name"
+    //               control={managedObjectUseForm.control}
+    //               rules={APConnectorFormValidationRules.CommonName()}
+    //               render={( { field, fieldState }) => {
+    //                   // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+    //                   return(
+    //                     <InputText
+    //                       id={field.name}
+    //                       {...field}
+    //                       autoFocus={isNew}
+    //                       disabled={!isNew}
+    //                       className={classNames({ 'p-invalid': fieldState.invalid })}                       
+    //                     />
+    //               )}}
+    //             />
+    //             <label htmlFor="managedObject.apiObject.name" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.managedObject?.apiObject?.name })}>Name*</label>
+    //           </span>
+    //           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.managedObject?.apiObject?.name)}
+    //         </div>
+    //         {/* organization Type */}
+    //         <div className="p-field">
+    //           <span className="p-float-label">
+    //             <Controller
+    //               name="selectedOrganizationType"
+    //               control={managedObjectUseForm.control}
+    //               rules={{
+    //                 required: "Select Organization Type.",
+    //               }}
+    //               render={( { field, fieldState }) => {
+    //                   return(
+    //                     <Dropdown
+    //                       id={field.name}
+    //                       {...field}
+    //                       options={Object.values(EAPOrganizationType)} 
+    //                       // onChange={(e) => { field.onChange(e.value) }}
+    //                       onChange={(e) => { 
+                          
+    //                         field.onChange(e.value);
+    //                         managedObjectUseForm.clearErrors();
+                          
+    //                       }}
+    //                       className={classNames({ 'p-invalid': fieldState.invalid })}                       
+    //                     />                        
+    //               )}}
+    //             />
+    //             <label htmlFor="selectedOrganizationType" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.selectedOrganizationType })}>Organization Type*</label>
+    //           </span>
+    //           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.selectedOrganizationType)}
+    //         </div>
+
+    //         {/* org details */}
+    //         {/* { selectedOrganizationType && managedObjectUseForm.clearErrors()} */}
+
+    //         {/* { selectedOrganizationType && renderManagedObjectFormOrganizationDetails(selectedOrganizationType) } */}
+
+    //         { renderManagedObjectFormOrganizationDetails(selectedOrganizationType)}
+
+    //       </form>  
+    //       {/* footer */}
+    //       {renderManagedObjectFormFooter()}
+    //     </div>
+    //   </div>
+    // );
   }
   
   return (

@@ -36,7 +36,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete user: ${props.organizationDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete organization: ${props.organizationDisplayName}`);
     try { 
       await AdministrationService.deleteOrganization({
         organizationName: props.organizationId
