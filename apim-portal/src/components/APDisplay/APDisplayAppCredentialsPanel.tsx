@@ -2,39 +2,31 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { APManagedWebhook, TAPManagedWebhookList } from "../APComponentsCommon";
-import { APDisplayAppWebhooks } from "./APDisplayAppWebhooks";
+import { Credentials } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APDisplayAppCredentials } from "./APDisplayAppCredentials";
 
 import "../APComponents.css";
 
-export interface IAPDisplayAppWebhooksPanelProps {
-  isAppWebhooksCapable: boolean;
-  managedWebhookList: TAPManagedWebhookList; 
-  emptyMessage: string;
+export interface IAPDisplayAppCredentialsPanelProps {
+  appCredentials: Credentials;
   className?: string;
+  header?: string;
 }
 
-export const APDisplayAppWebhooksPanel: React.FC<IAPDisplayAppWebhooksPanelProps> = (props: IAPDisplayAppWebhooksPanelProps) => {
-  // const componentName='APDisplayAppWebhooksPanel';
+export const APDisplayCredentialsPanel: React.FC<IAPDisplayAppCredentialsPanelProps> = (props: IAPDisplayAppCredentialsPanelProps) => {
+  // const componentName='APDisplayCredentialsPanel';
 
   const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
     const className = `${options.className} p-jc-start`;
     const titleClassName = `${options.titleClassName} p-pl-1`;
-    let title: string = 'App Webhooks';
-    if(props.isAppWebhooksCapable) {
-      const numberWebhooks: number = APManagedWebhook.getNumberWebhooksDefined4App(props.managedWebhookList);
-      title = title + ` (${numberWebhooks})`;
-    } else {
-      title = title + ' (N/A)'
-    }
     return (
       <div className={className} style={{ justifyContent: 'left'}} >
         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
           <span className={toggleIcon}></span>
         </button>
         <span className={titleClassName}>
-          {title}
+          {props.header}
         </span>
       </div>
     );
@@ -48,10 +40,8 @@ export const APDisplayAppWebhooksPanel: React.FC<IAPDisplayAppWebhooksPanelProps
         collapsed={true}
         className="p-pt-2"
       >
-        <APDisplayAppWebhooks 
-          managedWebhookList={props.managedWebhookList} 
-          emptyMessage="Webhooks not supported by API Products / Environments."              
-          className={props.className}
+        <APDisplayAppCredentials
+          appCredentials={props.appCredentials} 
         />
       </Panel>
     );

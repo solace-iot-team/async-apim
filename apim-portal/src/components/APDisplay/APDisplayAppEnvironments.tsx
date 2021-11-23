@@ -114,7 +114,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
           dataKey="name"
           value={appEnvironmentList}
           sortMode="single" 
-          sortField="name" 
+          sortField="displayName"
           sortOrder={1}
           scrollable 
           expandedRows={expandedAppEnvironmentsPermissionsDataTableRows}
@@ -122,7 +122,8 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
           rowExpansionTemplate={rowExpansionTemplateAppEnvironmentPermission}
         >
           <Column expander style={{ width: '3em' }} />  
-          <Column field="name" header="Environment" bodyStyle={{ verticalAlign: 'top' }} />
+          {/* <Column field="name" header="Environment" bodyStyle={{ verticalAlign: 'top' }} /> */}
+          <Column field="displayName" header="Environment" bodyStyle={{ verticalAlign: 'top' }} sortable />
       </DataTable>
       </div>
     );

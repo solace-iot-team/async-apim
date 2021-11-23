@@ -284,9 +284,11 @@ export class APManagedWebhook {
         ...APManagedWebhook.createAPManagedWebhookListFromApiWebhook(apiWebhook, appResponse)
       );
     });
-    // now find the envs without a webhook and add a managedWebhook for each
+    // now find the envs without a webhook and add a managedWebhook for each, if env is webhook capable
     const appEnvList: Array<AppEnvironment> = appResponse.environments ? appResponse.environments : [];
     appEnvList.forEach( (appEnv: AppEnvironment) => {
+      const _isAppEnvWebhookCapable: boolean = APManagedUserAppDisplay.isAppEnvironmentWebhookCapable(appEnv);
+      if(!_isAppEnvWebhookCapable) return;
       if(!appEnv.name) throw new Error(`${logName}: appEnv.name is undefined`);
       const found = _apManagedWebhookList.find( (wh: TAPManagedWebhook) => {
         return (wh.webhookEnvironmentReference.entityRef.name === appEnv.name);
@@ -301,7 +303,7 @@ export class APManagedWebhook {
               name: appEnv.name,
               displayName: appEnv.displayName ? appEnv.displayName : appEnv.name
             },
-            isEnvironmentWebhookCapable: APManagedUserAppDisplay.isAppEnvironmentWebhookCapable(appEnv)
+            isEnvironmentWebhookCapable: true
           },
           webhookWithoutEnvs: undefined,
           webhookStatus: undefined,

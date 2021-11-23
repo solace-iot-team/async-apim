@@ -1,4 +1,4 @@
 node_modules
-_todo
+_todo*
 build
 public/*about.json

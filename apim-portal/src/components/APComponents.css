@@ -35,6 +35,12 @@
   max-width: 1200px;
 }
 
-/* .ap-button {
-
-} */
+.ap-display-component-header {
+  border: 1px;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  color: #495057;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  font-weight: 600;
+}

@@ -13,64 +13,58 @@ import "../APComponents.css";
 export interface IAPDisplayAppCredentialsProps {
   appCredentials: Credentials;
   className?: string;
+  header?: string;
+  headerClassName?: string;
 }
 
 export const APDisplayAppCredentials: React.FC<IAPDisplayAppCredentialsProps> = (props: IAPDisplayAppCredentialsProps) => {
   const componentName='APDisplayAppCredentials';
 
-  // const componentDataTableRef = React.useRef<any>(null);
-  // const [componentExpandedDataTableRows, setComponentExpandedDataTableRows] = React.useState<any>(null);
-  // const componentExpansionDataTableRef = React.useRef<any>(null);
-  
-  // const renderGuaranteedMessaging = (rowData: TAPAppClientInformation): JSX.Element => {
-  //   const dataTableList: Array<ClientInformationGuaranteedMessaging> = [rowData.guaranteedMessaging];
-  //   return (
-  //     <DataTable
-  //       ref={componentExpansionDataTableRef}
-  //       dataKey="name"
-  //       header="Guaranteed Messaging"
-  //       value={dataTableList}
-  //     >
-  //       <Column field="name" header="Queue Name" />
-  //       <Column field="accessType" header="Access Type" />
-  //     </DataTable>
-  //   );
-  // }
+  const componentDataTableRef = React.useRef<any>(null);
 
-  const renderComponent = (appCredentials: Credentials): JSX.Element => {
-
+  const renderComponentHeader = (): JSX.Element => {
+    if(!props.header) return (<React.Fragment></React.Fragment>);
+    const className: string = props.headerClassName ? props.headerClassName : "ap-display-component-header";
+    return (
+        <div className={className}>Credentials</div>
+    );
+  }
+  const renderComponentContent = (): JSX.Element => {
+    const dataTableList = [
+      {
+        consumerKey: props.appCredentials.secret?.consumerKey,
+        consumerSecret: props.appCredentials.secret?.consumerSecret,
+        expiresAt: props.appCredentials.expiresAt
+      }
+    ];
+    return (
+      <div className="p-ml-2">
+        <DataTable
+          className="p-datatable-sm"
+          ref={componentDataTableRef}
+          value={dataTableList}
+          // header={props.header}
+        >
+          <Column field="consumerKey" header="Username" />
+          <Column field="consumerSecret" header="Password" />
+          <Column field="expiresAt" header="Expires At" />
+        </DataTable>
+      </div>
+    );
+  }
+  const renderComponent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(appCredentials, null, 2)}
-        </pre>
+        {renderComponentHeader()}
+        {renderComponentContent()}
       </React.Fragment>
     );
-
-    // return (
-    //   <DataTable
-    //     className="p-datatable-sm"
-    //     ref={componentDataTableRef}
-    //     dataKey="apiProductName"
-    //     value={appClientInformationList}
-    //     sortMode="single" 
-    //     sortField="apiProductDisplayName" 
-    //     sortOrder={1}
-    //     scrollable 
-    //     expandedRows={componentExpandedDataTableRows}
-    //     onRowToggle={(e) => setComponentExpandedDataTableRows(e.data)}
-    //     rowExpansionTemplate={renderGuaranteedMessaging}
-    //   >
-    //     <Column expander style={{ width: '3em' }} />  
-    //     <Column field="apiProductDisplayName" header="API Product" />
-    //   </DataTable>
-    // );
   }
 
   return (
     <div className={props.className ? props.className : 'card'}>
       {
-        renderComponent(props.appCredentials)
+        renderComponent()
       }
     </div>
   );

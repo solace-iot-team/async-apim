@@ -2,6 +2,7 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
+import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Divider } from "primereact/divider";
@@ -24,6 +25,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE } from "./DeveloperPortalManageUserAppsCommon";
 import { 
   APManagedUserAppDisplay,
+  APManagedWebhook,
   TAPDeveloperPortalUserAppDisplay, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
@@ -38,6 +40,9 @@ import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { APDisplayCredentialsPanel } from "../../../components/APDisplay/APDisplayAppCredentialsPanel";
+import { APDisplayClientInformationPanel } from "../../../components/APDisplay/APDisplayAppClientInformationPanel";
+import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,
@@ -59,7 +64,9 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  
+  // tabs
+  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
+
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
@@ -204,11 +211,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
       </React.Fragment>  
     );
   }
-  
-  const renderManagedObjectDisplay = () => {
-    const funcName = 'renderManagedObjectDisplay';
-    const logName = `${componentName}.${funcName}()`;
-    
+
     const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -224,66 +227,24 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         </div>
       );
     }
-    const panelHeaderTemplateClientInformation = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP Client Information
-          </span>
-        </div>
-      );
+
+  const getWebhooksTabHeader = (): string => {
+    const funcName = 'getWebhooksTabHeader';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+
+    if(managedObjectDisplay.isAppWebhookCapable) {
+      const numberWebhooks: number = APManagedWebhook.getNumberWebhooksDefined4App(managedObjectDisplay.apManagedWebhookList);
+      return `Webhooks (${numberWebhooks})`;
+    } else {
+      return `Webhooks (N/A)`;
     }
-    const panelHeaderTemplateCredentials = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP Credentials
-          </span>
-        </div>
-      );
-    }    
-    const panelHeaderTemplateAppAttributes = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP Attributes
-          </span>
-        </div>
-      );
-    }
-    const panelHeaderTemplateAppApis = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            APP APIs
-          </span>
-        </div>
-      );
-    }
+  }
+
+  const renderManagedObjectDisplay = () => {
+    const funcName = 'renderManagedObjectDisplay';
+    const logName = `${componentName}.${funcName}()`;
+    
     // main
     if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
     if(!managedObjectDisplay.apiAppResponse_smf.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_smf.environments is undefined`);
@@ -294,78 +255,45 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         <div className="p-col-12">
           <div className="apd-app-view">
             <div className="apd-app-view-detail-left">
-              <div className="p-text-bold">TODO:</div>
-              <div className="p-ml-2">re-imagine this view for developer needs: connect, pub/sub, queue, ...</div>
-              {/* <div className="p-text-bold">Description:</div> */}
-              {/* <div className="p-ml-2">{managedObjectDisplay.apiAppResponse_smf.des}</div> */}
+              {/* <div className="p-text-bold">TODO:</div>
+              <div className="p-ml-2">re-imagine this view for developer needs: connect, pub/sub, queue, ...</div> */}
               <div><b>Status</b>: {managedObjectDisplay.apiAppResponse_smf.status}</div>
               <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
 
-              {/* APP Attributes */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateAppAttributes} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAttributes
-                  attributeList={managedObjectDisplay.apiAppResponse_smf.attributes}
-                  emptyMessage="No attributes defined."
-                />
-              </Panel>
+              <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+                <TabPanel header='General'>
+                  <APDisplayCredentialsPanel
+                    appCredentials={managedObjectDisplay.apiAppResponse_smf.credentials} 
+                    header="Credentials"
+                  />
 
-              {/* App Apis */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateAppApis} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAppAsyncApis 
-                  organizationId={props.organizationId}
-                  appId={props.appId}
-                  appDisplayName={props.appDisplayName}
-                  label="Click to view API"
-                  onError={props.onError}
-                  onLoadingChange={props.onLoadingChange}
-                />
-              </Panel>
+                  <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
 
-              {/* App Webhooks */}
-              <APDisplayAppWebhooksPanel
-                isAppWebhooksCapable={managedObjectDisplay.isAppWebhookCapable}
-                managedWebhookList={managedObjectDisplay.apManagedWebhookList}
-                emptyMessage="No Webhooks defined."              
-              />
+                  <APDisplayClientInformationPanel
+                    appClientInformationList={managedObjectDisplay.apAppClientInformationList}
+                    emptyMessage="No Client Information defined."
+                    header='Client Information'
+                  />
 
-              {/* APP Credentials */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateCredentials} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAppCredentials
-                  appCredentials={managedObjectDisplay.apiAppResponse_smf.credentials} 
-                />
-              </Panel>
+                </TabPanel>
+                <TabPanel header='Async API Specs'>
+                  <APDisplayAppAsyncApis 
+                    organizationId={props.organizationId}
+                    appId={props.appId}
+                    appDisplayName={props.appDisplayName}
+                    label="Click to view API"
+                    onError={props.onError}
+                    onLoadingChange={props.onLoadingChange}
+                  />
+                </TabPanel>
+                <TabPanel header={getWebhooksTabHeader()}>
+                  <APDisplayAppWebhooks
+                    managedWebhookList={managedObjectDisplay.apManagedWebhookList}
+                    emptyMessage="Webhooks not supported by API Products / Environments."              
+                  />
+                </TabPanel>
+              </TabView>
 
-              {/* APP Endpoints & Permissions */}
-              <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
-
-              {/* App Client Information */}
-              <Panel 
-                headerTemplate={panelHeaderTemplateClientInformation} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <APDisplayAppClientInformation 
-                  appClientInformationList={managedObjectDisplay.apAppClientInformationList}
-                  emptyMessage="No Client Information defined."
-                  // className="p-ml-2"                
-                />
-              </Panel>
               {/* References */}
               <Divider />
               <div><b>References:</b></div>
@@ -387,6 +315,190 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
       </React.Fragment>
     ); 
   }
+
+  
+  // const renderManagedObjectDisplay = () => {
+  //   const funcName = 'renderManagedObjectDisplay';
+  //   const logName = `${componentName}.${funcName}()`;
+    
+  //   const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           API Products
+  //         </span>
+  //       </div>
+  //     );
+  //   }
+  //   const panelHeaderTemplateClientInformation = (options: PanelHeaderTemplateOptions) => {
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           APP Client Information
+  //         </span>
+  //       </div>
+  //     );
+  //   }
+  //   const panelHeaderTemplateCredentials = (options: PanelHeaderTemplateOptions) => {
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           APP Credentials
+  //         </span>
+  //       </div>
+  //     );
+  //   }    
+  //   const panelHeaderTemplateAppAttributes = (options: PanelHeaderTemplateOptions) => {
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           APP Attributes
+  //         </span>
+  //       </div>
+  //     );
+  //   }
+  //   const panelHeaderTemplateAppApis = (options: PanelHeaderTemplateOptions) => {
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           APP APIs
+  //         </span>
+  //       </div>
+  //     );
+  //   }
+  //   // main
+  //   if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+  //   if(!managedObjectDisplay.apiAppResponse_smf.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_smf.environments is undefined`);
+  //   if(!managedObjectDisplay.apiAppResponse_mqtt) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt is undefined`);
+  //   if(!managedObjectDisplay.apiAppResponse_mqtt.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt.environments is undefined`);
+  //   return (
+  //     <React.Fragment>
+  //       <div className="p-col-12">
+  //         <div className="apd-app-view">
+  //           <div className="apd-app-view-detail-left">
+  //             <div className="p-text-bold">TODO:</div>
+  //             <div className="p-ml-2">re-imagine this view for developer needs: connect, pub/sub, queue, ...</div>
+  //             {/* <div className="p-text-bold">Description:</div> */}
+  //             {/* <div className="p-ml-2">{managedObjectDisplay.apiAppResponse_smf.des}</div> */}
+  //             <div><b>Status</b>: {managedObjectDisplay.apiAppResponse_smf.status}</div>
+  //             <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
+
+  //             {/* APP Attributes */}
+  //             <Panel 
+  //               headerTemplate={panelHeaderTemplateAppAttributes} 
+  //               toggleable
+  //               collapsed={true}
+  //               className="p-pt-2"
+  //             >
+  //               <APDisplayAttributes
+  //                 attributeList={managedObjectDisplay.apiAppResponse_smf.attributes}
+  //                 emptyMessage="No attributes defined."
+  //               />
+  //             </Panel>
+
+  //             {/* App Apis */}
+  //             <Panel 
+  //               headerTemplate={panelHeaderTemplateAppApis} 
+  //               toggleable
+  //               collapsed={true}
+  //               className="p-pt-2"
+  //             >
+  //               <APDisplayAppAsyncApis 
+  //                 organizationId={props.organizationId}
+  //                 appId={props.appId}
+  //                 appDisplayName={props.appDisplayName}
+  //                 label="Click to view API"
+  //                 onError={props.onError}
+  //                 onLoadingChange={props.onLoadingChange}
+  //               />
+  //             </Panel>
+
+  //             {/* App Webhooks */}
+  //             <APDisplayAppWebhooksPanel
+  //               isAppWebhooksCapable={managedObjectDisplay.isAppWebhookCapable}
+  //               managedWebhookList={managedObjectDisplay.apManagedWebhookList}
+  //               emptyMessage="No Webhooks defined."              
+  //             />
+
+  //             {/* APP Credentials */}
+  //             <Panel 
+  //               headerTemplate={panelHeaderTemplateCredentials} 
+  //               toggleable
+  //               collapsed={true}
+  //               className="p-pt-2"
+  //             >
+  //               <APDisplayAppCredentials
+  //                 appCredentials={managedObjectDisplay.apiAppResponse_smf.credentials} 
+  //               />
+  //             </Panel>
+
+  //             {/* APP Endpoints & Permissions */}
+  //             <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
+
+  //             {/* App Client Information */}
+  //             <Panel 
+  //               headerTemplate={panelHeaderTemplateClientInformation} 
+  //               toggleable
+  //               collapsed={true}
+  //               className="p-pt-2"
+  //             >
+  //               <APDisplayAppClientInformation 
+  //                 appClientInformationList={managedObjectDisplay.apAppClientInformationList}
+  //                 emptyMessage="No Client Information defined."
+  //                 // className="p-ml-2"                
+  //               />
+  //             </Panel>
+  //             {/* References */}
+  //             <Divider />
+  //             <div><b>References:</b></div>
+  //             {/* API Product */}
+  //             <Panel                 
+  //               headerTemplate={panelHeaderTemplateApiProducts} 
+  //               toggleable
+  //               collapsed={true}
+  //               className="p-pt-2"
+  //             >
+  //               <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
+  //             </Panel>
+  //           </div>
+  //           <div className="apd-app-view-detail-right">
+  //             <div>Id: {managedObjectDisplay.apiAppResponse_smf.name}</div>
+  //           </div>            
+  //         </div>
+  //       </div>  
+  //     </React.Fragment>
+  //   ); 
+  // }
 
 
   return (

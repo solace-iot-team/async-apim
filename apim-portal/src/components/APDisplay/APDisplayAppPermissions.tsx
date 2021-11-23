@@ -131,13 +131,14 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
         expandedRows={subscribePermissionsExpandedRows}
         onRowToggle={(e) => setSubscribePermissionsExpandedRows(e.data)}
         rowExpansionTemplate={permissionsRowExpansionTemplate}
+        emptyMessage={getEmptyPermissionMessage(permissionType)}
       >
         <Column expander style={{ width: '3em' }} />  
         <Column field="channel" header="Channel" sortable />
       </DataTable>
-      <pre style={ { fontSize: '8px' }} >
+      {/* <pre style={ { fontSize: '8px' }} >
         {JSON.stringify(dataTableList, null, 2)};
-      </pre>
+      </pre> */}
       </React.Fragment>
     );
   }

@@ -21,3 +21,13 @@
 .apd-manage-user-apps .card .p-field {
   margin-bottom: 2.5rem;
 }
+
+.apd-info-header {
+  border: 1px;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  color: #495057;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  font-weight: 600;
+}
