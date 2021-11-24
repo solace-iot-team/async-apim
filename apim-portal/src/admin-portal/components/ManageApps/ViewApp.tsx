@@ -219,18 +219,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     );
   }
 
-  const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
-    return (
-      <React.Fragment>
-        <APDisplayAppEnvironments
-          appEnvironmentList_smf={appEnvironmentList_smf}
-          appEnvironmentList_mqtt={appEnvironmentList_mqtt}
-          // className="p-ml-2"
-        />
-      </React.Fragment>  
-    );
-  }
-
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
@@ -384,7 +372,11 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               </Panel>
 
               {/* APP Endpoints & Permissions */}
-              <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
+              <APDisplayAppEnvironments
+                appResponse_smf={managedObjectDisplay.apiAppResponse_smf}
+                appResponse_mqtt={managedObjectDisplay.apiAppResponse_mqtt}
+                // className="p-ml-2"
+              />
 
               {/* App Client Information */}
               <Panel 

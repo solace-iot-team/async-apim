@@ -7,7 +7,7 @@ import { SelectButton } from 'primereact/selectbutton';
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 
 import { 
-  AppEnvironment
+  AppEnvironment, AppResponse, AppStatus
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Globals } from "../../utils/Globals";
 import { APDisplayEndpoints } from "./APDisplayEndpoints";
@@ -17,8 +17,8 @@ import { EApiTopicSyntax } from "../APApiObjectsCommon";
 import "../APComponents.css";
 
 export interface IAPDisplayAppEnvironmentsProps {
-  appEnvironmentList_smf: Array<AppEnvironment>;
-  appEnvironmentList_mqtt: Array<AppEnvironment>;
+  appResponse_smf: AppResponse;
+  appResponse_mqtt: AppResponse;
   className?: string;
 }
 
@@ -69,10 +69,23 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
     );
   }
 
-  const renderAppEnvironmentsPermissions = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
+  const renderAppEnvironmentsPermissions = (appStatus: AppStatus, appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     const funcName = 'renderAppEnvironmentsPermissions';
     const logName = `${componentName}.${funcName}()`;
 
+    const getPermissionsNote = (appStatus: AppStatus): JSX.Element => {
+      const funcName = 'getPermissionsNote';
+      const logName = `${componentName}.${funcName}()`;
+        switch(appStatus) {
+        case AppStatus.PENDING:
+          return (<p>Note: Permissions pending approval.</p>);
+        case AppStatus.APPROVED:
+          return (<></>);
+        default:
+          Globals.assertNever(logName, appStatus);
+      }
+      return (<></>);
+    }
     const rowExpansionTemplateAppEnvironmentPermission = (appEnvironmentRow: AppEnvironment) => {
       const funcName = 'rowExpansionTemplateAppEnvironmentPermission';
       const logName = `${componentName}.${funcName}()`;
@@ -102,6 +115,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
   
     return (
       <div className="card">
+        {getPermissionsNote(appStatus)}
         <SelectButton 
           value={selectedTopicSyntax} 
           options={topicSyntaxOptions} 
@@ -129,7 +143,11 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
     );
   }
 
-  const renderComponent = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
+  const renderComponent = (appResponse_smf: AppResponse, appResponse_mqtt: AppResponse): JSX.Element => {
+    const funcName = 'renderComponent';
+    const logName = `${componentName}.${funcName}()`;
+
+    // const renderComponent = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     const panelHeaderTemplateEndpoints = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -161,6 +179,10 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
       );
     }
 
+    if(!appResponse_smf.environments) throw new Error(`${logName}: appResponse_smf.environments is undefined`);
+    if(!appResponse_smf.status) throw new Error(`${logName}: appResponse_smf.status is undefined`);
+    if(!appResponse_mqtt.environments) throw new Error(`${logName}: appResponse_mqtt.environments is undefined`);
+
     return (
       <React.Fragment>
         <Panel 
@@ -169,7 +191,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
           collapsed={true}
           className="p-pt-2"
         >
-          <div className="p-ml-2">{renderAppEnvironmentsEndpoints(appEnvironmentList_smf)}</div>
+          <div className="p-ml-2">{renderAppEnvironmentsEndpoints(appResponse_smf.environments)}</div>
         </Panel>
         <Panel 
           headerTemplate={panelHeaderTemplatePermissions} 
@@ -177,7 +199,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
           collapsed={true}
           className="p-pt-2"
         >
-          <div className="p-ml-2">{renderAppEnvironmentsPermissions(appEnvironmentList_smf, appEnvironmentList_mqtt)}</div>
+          <div className="p-ml-2">{renderAppEnvironmentsPermissions(appResponse_smf.status, appResponse_smf.environments, appResponse_mqtt.environments)}</div>
         </Panel>
       </React.Fragment>
     );
@@ -185,7 +207,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
 
   return (
     <div className={props.className ? props.className : 'card'}>
-      { renderComponent(props.appEnvironmentList_smf, props.appEnvironmentList_mqtt) }
+      { renderComponent(props.appResponse_smf, props.appResponse_mqtt) }
     </div>
   );
 }

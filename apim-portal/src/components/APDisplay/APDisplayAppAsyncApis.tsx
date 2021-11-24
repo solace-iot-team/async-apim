@@ -149,7 +149,7 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
           data-id={apiId} 
           // icon="pi pi-folder-open" 
           // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-          className="p-button-text p-button-plain" 
+          className="p-button-text p-button-plain p-button-outlined" 
           style={buttonStyle}          
           onClick={onClick}
         />        
@@ -188,10 +188,9 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {/* DEBUG */}
-      <pre style={ { fontSize: '8px' }} >
+      {/* <pre style={ { fontSize: '8px' }} >
         {JSON.stringify(managedObjectDisplay, null, 2)}
-      </pre>
-
+      </pre> */}
 
     </React.Fragment> 
   );

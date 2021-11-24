@@ -200,18 +200,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     );
   }
 
-  const renderAppEnvironments = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
-    return (
-      <React.Fragment>
-        <APDisplayAppEnvironments
-          appEnvironmentList_smf={appEnvironmentList_smf}
-          appEnvironmentList_mqtt={appEnvironmentList_mqtt}
-          // className="p-ml-2"
-        />
-      </React.Fragment>  
-    );
-  }
-
     const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
@@ -267,7 +255,11 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
                     header="Credentials"
                   />
 
-                  <div>{renderAppEnvironments(managedObjectDisplay.apiAppResponse_smf.environments, managedObjectDisplay.apiAppResponse_mqtt.environments)}</div>
+                  <APDisplayAppEnvironments
+                    appResponse_smf={managedObjectDisplay.apiAppResponse_smf}
+                    appResponse_mqtt={managedObjectDisplay.apiAppResponse_mqtt}
+                    // className="p-ml-2"
+                  />
 
                   <APDisplayClientInformationPanel
                     appClientInformationList={managedObjectDisplay.apAppClientInformationList}
