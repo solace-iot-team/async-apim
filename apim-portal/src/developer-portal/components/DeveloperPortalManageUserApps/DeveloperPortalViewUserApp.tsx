@@ -243,8 +243,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         <div className="p-col-12">
           <div className="apd-app-view">
             <div className="apd-app-view-detail-left">
-              {/* <div className="p-text-bold">TODO:</div>
-              <div className="p-ml-2">re-imagine this view for developer needs: connect, pub/sub, queue, ...</div> */}
               <div><b>Status</b>: {managedObjectDisplay.apiAppResponse_smf.status}</div>
               <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
 

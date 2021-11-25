@@ -1,30 +1,30 @@
 
 import React from "react";
 
-import { DataTable } from 'primereact/datatable';
-import { Column } from "primereact/column";
-
 import { 
   AdministrationService, 
-  EnvironmentsService, 
-  ApisService, 
-  ApiProductsService, 
-  DevelopersService, 
-  AppsService 
+  CommonName,
+  CommonDisplayName
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageOrganizationsCommon, TManagedObjectId, TViewManagedObject } from "./ManageOrganizationsCommon";
+import { 
+  EAPBrokerServiceDiscoveryProvisioningType, 
+  EAPOrganizationConfigType, 
+  E_CALL_STATE_ACTIONS, 
+  ManageOrganizationsCommon, 
+  TAPOrganizationConfig 
+} from "./ManageOrganizationsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export interface IViewOrganizationProps {
-  organizationId: TManagedObjectId;
-  organizationDisplayName: string;
+  organizationId: CommonName;
+  organizationDisplayName: CommonDisplayName;
   reInitializeTrigger: number,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -34,7 +34,7 @@ export interface IViewOrganizationProps {
 export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewOrganizationProps) => {
   const componentName = 'ViewOrganization';
 
-  type TManagedObject = TViewManagedObject;
+  type TManagedObject = TAPOrganizationConfig;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -49,36 +49,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
       const apiOrganization = await AdministrationService.getOrganization({
         organizationName: props.organizationId
       });
-      const envResponse = await EnvironmentsService.listEnvironments({
-        organizationName: apiOrganization.name, 
-        pageSize: 1,
-        pageNumber: 1
-      });        
-      const apiResponse = await ApisService.listApis({
-        organizationName: apiOrganization.name
-      });
-      const apiProductResponse = await ApiProductsService.listApiProducts({
-        organizationName: apiOrganization.name, 
-        pageSize: 1,
-        pageNumber: 1
-      });
-      const developerResponse = await DevelopersService.listDevelopers({
-        organizationName: apiOrganization.name, 
-        pageSize: 1, 
-        pageNumber: 1
-      });
-      const appResponse = await AppsService.listApps({
-        organizationName: apiOrganization.name, 
-        pageSize: 1,
-        pageNumber: 1
-      });
-      setManagedObject(ManageOrganizationsCommon.transformViewApiObjectToViewManagedObject(apiOrganization, {
-          hasEnvironments: envResponse.length > 0,
-          hasApis: apiResponse.length > 0,
-          hasApiProducts: apiProductResponse.length > 0,
-          hasApps: appResponse.length > 0,
-          hasDevelopers: developerResponse.length > 0
-        }));
+      setManagedObject(ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -108,56 +79,98 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const renderToken = (title: string, token: string): JSX.Element => {
+    return (
+      <React.Fragment>
+        <div>{title}:</div>
+          <div className="p-ml-2" style={{ fontSize: '12px', maxWidth: '1000px', overflowWrap: 'break-word', wordWrap: 'break-word' }}>{token}</div>
+      </React.Fragment>
+    );
+  }
+  const renderSimple = (mo: TManagedObject): JSX.Element => {
+    const isActive: boolean = (mo.configType === EAPOrganizationConfigType.SIMPLE);
+    if(!isActive) return (<></>);
+    return (
+      <React.Fragment>
+        {renderToken('Cloud Token', mo.configSimple.cloudToken)}
+      </React.Fragment>
+    );
+  }
+  const renderAdvanced_SolaceCloud = (mo: TManagedObject): JSX.Element => {
+    const isActive: boolean = (mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD);
+    if(!isActive) return (<></>);
+    return (
+      <React.Fragment>
+        <div><b>Type</b>: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type}</div>
+        <div>Base URL: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.baseUrl}</div>
+        {renderToken('Cloud Token', mo.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken)}
+      </React.Fragment>
+    );
+  }
+  const renderAdvanced_ReverseProxy = (mo: TManagedObject): JSX.Element => {
+    const isActive: boolean = (mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY);
+    if(!isActive) return (<></>);
+    return (
+      <React.Fragment>
+        <div><b>Type</b>: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type}</div>
+        <div style={{ fontSize: '12px' }}>{JSON.stringify(mo.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy)}</div>
+      </React.Fragment>
+    );
+  }
+  const renderAdvanced_EventPortal = (mo: TManagedObject): JSX.Element => {
+    return (
+      <React.Fragment>
+        <div>Base URL: {mo.configAdvancedEventPortal.baseUrl}</div>
+        {renderToken('Cloud Token', mo.configAdvancedEventPortal.cloudToken)}
+      </React.Fragment>
+    );
+  }
+  const renderAdvanced = (mo: TManagedObject): JSX.Element => {
+    const isActive: boolean = (mo.configType === EAPOrganizationConfigType.ADVANCED);
+    if(!isActive) return (<></>);
+    return (
+      <React.Fragment>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">
+          Broker Gateway Service Discovery &amp; Provisioning:
+        </div>
+        <div className="p-ml-4">
+          {renderAdvanced_SolaceCloud(mo)}
+          {renderAdvanced_ReverseProxy(mo)}
+        </div>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">
+          Event Portal:
+        </div>
+        <div className="p-ml-4">
+          {renderAdvanced_EventPortal(mo)}
+        </div>
+      </React.Fragment>
+    );
+  }
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
+
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-    const dataTableList = [managedObject];
-    let expandedRows: any = {};
-    expandedRows[`${dataTableList[0].id}`] = true;
-
-    const rowExpansionTemplate = (managedObject: TManagedObject) => {
-
-      const dataTableList = [managedObject];
-  
-      return (
-        <div className="sub-table">
-          <DataTable 
-            className="p-datatable-sm"
-            value={dataTableList}
-            autoLayout={true}
-            dataKey="id"
-          >
-            <Column field="hasInfo.hasEnvironments" header="Environments" body={ManageOrganizationsCommon.hasEnvironmentsBodyTemplate} />
-            <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} />
-            <Column field="hasInfo.hasApiProducts" header="API Products" body={ManageOrganizationsCommon.hasApiProductsBodyTemplate}/>
-            <Column field="hasInfo.hasDevelopers" header="Developers" body={ManageOrganizationsCommon.hasDevelopersBodyTemplate} />
-            <Column field="hasInfo.hasApps" header="Apps" body={ManageOrganizationsCommon.hasAppsBodyTemplate}/>
-          </DataTable>
-        </div>
-      );
-    }
 
     return (
-      <div className="card">
-        <DataTable
-          className="p-datatable-sm"
-          ref={dt}
-          autoLayout={true}
-          value={dataTableList}
-          expandedRows={expandedRows}
-          rowExpansionTemplate={rowExpansionTemplate}
-          dataKey="id"  
-          >
-            <Column field="displayName" header="Name" />
-            <Column field="type" header="Type" />
-        </DataTable>
-      </div>
+      <React.Fragment>
+        <div className="p-col-12">
+          <div className="organization-view">
+            <div className="detail-left">
+              <div><b>Type</b>: {managedObject.configType}</div>
+              {renderSimple(managedObject)}
+              {renderAdvanced(managedObject)}
+            </div>
+            <div className="detail-right">
+              <div>Id: {managedObject.name}</div>
+            </div>            
+          </div>
+        </div>    
+      </React.Fragment>
     );
   }
-
   return (
-    <div className="manage-users">
+    <div className="manage-organizations">
 
       <APComponentHeader header={`Organization: ${props.organizationDisplayName}`} />
 

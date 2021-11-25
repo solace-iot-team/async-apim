@@ -5,19 +5,19 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
 import { 
-  AdministrationService, 
+  AdministrationService, CommonDisplayName, CommonName, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageOrganizationsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export interface IDeleteOrganizationProps {
-  organizationId: TManagedObjectId;
-  organizationDisplayName: string;
+  organizationId: CommonName;
+  organizationDisplayName: CommonDisplayName;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;

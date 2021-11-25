@@ -44,3 +44,14 @@
   border-top-left-radius: 3px;
   font-weight: 600;
 }
+
+.ap-display-sub-component-header {
+  border: 1px;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  color: #495057;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  font-weight: 600;
+  font-style: italic;
+}

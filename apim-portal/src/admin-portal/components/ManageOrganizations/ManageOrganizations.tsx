@@ -4,9 +4,10 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageOrganizationsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
 import { ListOrganizations } from "./ListOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { EAction, EditNewOrganziation } from "./EditNewOrganization";
@@ -60,7 +61,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
+  const [managedObjectId, setManagedObjectId] = React.useState<CommonName>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -102,7 +103,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onViewManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -122,7 +123,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onEditManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onEditManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -136,7 +137,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onDeleteManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onDeleteManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -176,7 +177,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: CommonName, newDisplayName: CommonDisplayName) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(newId);

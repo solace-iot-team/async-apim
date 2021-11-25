@@ -42,3 +42,19 @@
 .button-set-footer .p-button-label {
   display: flex;
 }
+
+.manage-organizations .organization-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-organizations .organization-view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.manage-organizations .organization-view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}

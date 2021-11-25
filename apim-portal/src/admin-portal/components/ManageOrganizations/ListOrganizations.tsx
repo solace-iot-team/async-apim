@@ -8,18 +8,19 @@ import { Button } from 'primereact/button';
 
 import { 
   AdministrationService, 
-  EnvironmentsService, 
-  ApisService, 
-  ApiProductsService, 
-  DevelopersService, 
-  AppsService 
+  CommonDisplayName,
+  CommonName
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageOrganizationsCommon, TManagedObjectId, TViewManagedObject } from "./ManageOrganizationsCommon";
+import { 
+  E_CALL_STATE_ACTIONS, 
+  ManageOrganizationsCommon, 
+  TAPOrganizationConfig, 
+} from "./ManageOrganizationsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -28,22 +29,20 @@ export interface IListOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
+  onManagedObjectEdit: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
+  onManagedObjectDelete: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
+  onManagedObjectView: (managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName) => void;
 }
 
 export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: IListOrganizationsProps) => {
   const componentName = 'ListOrganizations';
-
   const MessageNoManagedObjectsFoundCreateNew = 'No Organizations found - create a new organization.'
 
-  type TManagedObject = TViewManagedObject;
+  type TManagedObject = TAPOrganizationConfig;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
-  const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
 
@@ -61,36 +60,9 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
       let _managedObjectList: TManagedObjectList = [];
       const apiOrganizationList = await AdministrationService.listOrganizations({});
       for(const apiOrganization of apiOrganizationList) {
-        const envResponse = await EnvironmentsService.listEnvironments({
-          organizationName: apiOrganization.name, 
-          pageNumber: 1,
-          pageSize: 1
-        });        
-        const apiProductResponse = await ApiProductsService.listApiProducts({
-          organizationName: apiOrganization.name, 
-          pageNumber: 1,
-          pageSize: 1
-        });
-        const developerResponse = await DevelopersService.listDevelopers({
-          organizationName: apiOrganization.name, 
-          pageNumber: 1,
-          pageSize: 1
-        });
-        const appResponse = await AppsService.listApps({
-          organizationName: apiOrganization.name, 
-          pageNumber: 1,
-          pageSize: 1
-        });
-        _managedObjectList.push({
-          ...ManageOrganizationsCommon.transformViewApiObjectToViewManagedObject(apiOrganization),
-          hasInfo: {
-            hasEnvironments: envResponse.length > 0,
-            // hasApis: apiResponse.length > 0,
-            hasApiProducts: apiProductResponse.length > 0,
-            hasApps: appResponse.length > 0,
-            hasDevelopers: developerResponse.length > 0
-          }
-        });
+        const mo: TManagedObject = ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization);
+        console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+        _managedObjectList.push({...mo});
       }
       setManagedObjectList(_managedObjectList);
     } catch(e) {
@@ -126,20 +98,8 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
   }  
 
   const onManagedObjectOpen = (event: any): void => {
-    const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName);
-  }
-
-  const onExpandAll = () => {
-    let _expandedRows: any = {};
-    managedObjectList.forEach( (mangedObject: TManagedObject) => {
-      _expandedRows[`${mangedObject.id}`] = true;
-    });
-    setExpandedManagedObjectDataTableRows(_expandedRows);
-  }
-
-  const onCollapseAll = () => {
-    setExpandedManagedObjectDataTableRows(null);
+    const mo: TManagedObject = event.data as TManagedObject;
+    props.onManagedObjectView(mo.name, mo.name);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -149,11 +109,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
-        {/* <h2 className="p-m-0">{DataTableHeader}</h2> */}
-        <div className="table-header-container">
-          <Button icon="pi pi-plus" label="Expand All" onClick={onExpandAll} className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" />
-          <Button icon="pi pi-minus" label="Collapse All" onClick={onCollapseAll} className="p-button-rounded p-button-outlined p-button-secondary" />
-        </div>        
+        <div className="table-header-container" />
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText type="search" placeholder="Search ..." onInput={onInputGlobalFilter} style={{width: '500px'}}/>
@@ -164,39 +120,14 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
   const actionBodyTemplate = (managedObject: TManagedObject) => {
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.name, managedObject.name)} /> */}
+          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.name, managedObject.name)}  />
+          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.name, managedObject.name)} />
         </React.Fragment>
     );
   }
 
   const renderManagedObjectDataTable = () => {
-    // const funcName = 'renderManagedObjectDataTable';
-    // const logName = `${componentName}.${funcName}()`;
-    
-    const rowExpansionTemplate = (managedObject: TManagedObject) => {
-
-      const dataTableList = [managedObject];
-  
-      return (
-        <div className="sub-table">
-          <DataTable 
-            className="p-datatable-sm"
-            value={dataTableList}
-            autoLayout={true}
-            dataKey="id"
-          >
-            <Column field="hasInfo.hasEnvironments" header="Environments" body={ManageOrganizationsCommon.hasEnvironmentsBodyTemplate} />
-            {/* <Column field="hasInfo.hasApis" header="APIs" body={ManageOrganizationsCommon.hasApisBodyTemplate} /> */}
-            <Column field="hasInfo.hasApiProducts" header="API Products" body={ManageOrganizationsCommon.hasApiProductsBodyTemplate}/>
-            <Column field="hasInfo.hasDevelopers" header="Developers" body={ManageOrganizationsCommon.hasDevelopersBodyTemplate} />
-            <Column field="hasInfo.hasApps" header="Apps" body={ManageOrganizationsCommon.hasAppsBodyTemplate}/>
-          </DataTable>
-        </div>
-      );
-    }
-
     return (
       <div className="card">
           <DataTable
@@ -212,16 +143,12 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             sortMode="single" sortField="name" sortOrder={1}
             scrollable 
-            scrollHeight="800px" 
-            expandedRows={expandedManagedObjectDataTableRows}
-            onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
-            rowExpansionTemplate={rowExpansionTemplate}
-            dataKey="id"  
+            dataKey="name"  
           >
             <Column expander style={{ width: '3em' }} />
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="type" header="Type" />
-            <Column body={actionBodyTemplate} headerStyle={{width: '15em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column field="name" header="Name" sortable />
+            <Column field="configType" header="Type" sortable />
+            <Column body={actionBodyTemplate} headerStyle={{width: '8em' }} bodyStyle={{textAlign: 'right'}}/>
         </DataTable>
       </div>
     );
