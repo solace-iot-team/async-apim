@@ -5,19 +5,18 @@ import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { Divider } from "primereact/divider";
 
-import { AppsService } from "@solace-iot-team/apim-connector-openapi-browser";
+import { ApiProductsService, CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { TAPOrganizationId } from "../APComponentsCommon";
 import { APDisplayAsyncApiSpec } from "../APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
-
 import "../APComponents.css";
 
-export interface IAPDisplayAppAsyncApisProps {
+export interface IAPDisplayApiProductAsyncApisProps {
   organizationId: TAPOrganizationId,
-  appId: string;
-  appDisplayName: string;
+  apiProductId: CommonName;
+  apiProductDisplayName: CommonDisplayName;
   label: string;
   className?: string;
   buttonStyle?: React.CSSProperties;
@@ -25,8 +24,8 @@ export interface IAPDisplayAppAsyncApisProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (props: IAPDisplayAppAsyncApisProps) => {
-  const componentName='APDisplayAppAsyncApis';
+export const APDisplayApiProductAsyncApis: React.FC<IAPDisplayApiProductAsyncApisProps> = (props: IAPDisplayApiProductAsyncApisProps) => {
+  const componentName='APDisplayApiProductAsyncApis';
 
   const defaultButtonStyle: React.CSSProperties = {
     whiteSpace: 'nowrap', 
@@ -35,12 +34,12 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
   }
 
   enum E_CALL_STATE_ACTIONS {
-    API_GET_APP_API_LIST = "API_GET_APP_API_LIST",
-    API_GET_APP_API = 'API_GET_APP_API'
+    API_GET_API_PRODUCT_API_LIST = "API_GET_API_PRODUCT_API_LIST",
+    API_GET_API_PRODUCT_API = 'API_GET_API_PRODUCT_API'
   }
   
   type TManagedObjectDisplay = {
-    appApiNameList: Array<string>
+    apiApiProductApiNameList: Array<string>
   }
 
   const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();  
@@ -51,14 +50,14 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
   const apiGetManagedObjectDisplay = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_API_LIST, `retrieve api list for app: ${props.appDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_API_LIST, `retrieve api list for api product: ${props.apiProductDisplayName}`);
     try { 
-      const apiAppApiNameList: Array<string> = await AppsService.listAppApiSpecifications({
+      const apiApiProductApiNameList: Array<CommonName> = await ApiProductsService.listApiProductApis({
         organizationName: props.organizationId,
-        appName: props.appId
+        apiProductName: props.apiProductId
       });
       const _mod: TManagedObjectDisplay = {
-        appApiNameList: apiAppApiNameList
+        apiApiProductApiNameList: apiApiProductApiNameList
       }
       setManagedObjectDisplay(_mod);
     } catch(e: any) {
@@ -69,14 +68,14 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
     return callState;
   }
 
-  const apiGetAppApi = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
-    const funcName = 'apiGetAppApi';
+  const apiGetApiProductApi = async(apiId: CommonName, apiDisplayName: CommonDisplayName): Promise<TApiCallState> => {
+    const funcName = 'apiGetApiProductApi';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_API, `retrieve api spec: ${apiDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const apiSpec: any = await AppsService.getAppApiSpecification({
+      const apiSpec: any = await ApiProductsService.getApiProductApiSpecification({
         organizationName: props.organizationId,
-        appName: props.appId,
+        apiProductName: props.apiProductId,
         apiName: apiId,
         format: "application/json"
       });
@@ -98,7 +97,7 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
 
   const doFetchAppApi = async (apiId: string) => {
     props.onLoadingChange(true);
-    await apiGetAppApi(apiId, apiId);
+    await apiGetApiProductApi(apiId, apiId);
     props.onLoadingChange(false);
   }
 
@@ -141,7 +140,7 @@ export const APDisplayAppAsyncApis: React.FC<IAPDisplayAppAsyncApisProps> = (pro
     if(props.buttonStyle) buttonStyle = props.buttonStyle;
     else buttonStyle = defaultButtonStyle;
     let jsxButtonList: Array<JSX.Element> = [];
-    for (const apiId of managedObjectDisplay.appApiNameList) {
+    for (const apiId of managedObjectDisplay.apiApiProductApiNameList) {
       jsxButtonList.push(
         <Button 
           label={apiId} 

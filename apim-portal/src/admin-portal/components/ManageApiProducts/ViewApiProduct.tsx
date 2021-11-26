@@ -55,7 +55,6 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<any>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const dt = React.useRef<any>(null);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {

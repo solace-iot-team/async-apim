@@ -1,15 +1,16 @@
 
 import React from "react";
 
-import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
+import { Button } from "primereact/button";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListApiProducts } from "./DeveloperPortalListApiProducts";
-import { E_COMPONENT_STATE, TManagedObjectId } from "./DeveloperPortalProductCatalogCommon";
+import { E_COMPONENT_STATE } from "./DeveloperPortalProductCatalogCommon";
 import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -48,8 +49,8 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
-  const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
+  const [managedObjectId, setManagedObjectId] = React.useState<CommonName>();
+  const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<CommonDisplayName>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
 
@@ -78,40 +79,30 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onViewManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-  const onListAsList = () => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW);
-  }
-  const onListAsGrid = () => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_GRID_VIEW);
-  }
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
-      <React.Fragment>
-      </React.Fragment>
-    );
-    if(showViewComponent) return (
-      <React.Fragment>
-      </React.Fragment>
-    );
+    if(showListComponent) return undefined;
+    if(showViewComponent) return  undefined;
     return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
+    const onImplementMe = () => { alert('implement me'); }
+
     if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
+    if(showViewComponent) return (
       <React.Fragment>
-        <Button icon="pi pi-list" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsList}/>        
-        <Button icon="pi pi-th-large" className="p-button-text p-button-plain p-button-outlined" onClick={onListAsGrid}/>        
+        <Button icon="pi pi-bolt" label="SUBSCRIBE?" className="p-button-text p-button-plain p-button-outlined" onClick={onImplementMe}/>        
       </React.Fragment>
     );
+    return undefined;
   }
   const renderToolbar = (): JSX.Element => {
     const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
@@ -124,9 +115,9 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }
   
   // * prop callbacks *
-  const onListViewSuccess = (apiCallState: TApiCallState, componentState: E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW | E_COMPONENT_STATE.MANAGED_OBJECT_LIST_GRID_VIEW) => {
+  const onListViewSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(componentState);
+    // setNewComponentState(componentState);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -141,9 +132,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       setShowListComponent(false);
       setShowViewComponent(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW ||
-            componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_GRID_VIEW
-            ) {
+    else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
     }
@@ -165,11 +154,10 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
         <DeveloperPortalListApiProducts
           key={componentState.previousState}
           organizationId={props.organizationName}
-          componentState={componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW?E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW:E_COMPONENT_STATE.MANAGED_OBJECT_LIST_GRID_VIEW}
           onSuccess={onListViewSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
-          onManagedProductView={onViewManagedObject}
+          onManagedObjectOpen={onViewManagedObject}
         />
       }
       {showViewComponent && managedObjectId && managedObjectDisplayName &&

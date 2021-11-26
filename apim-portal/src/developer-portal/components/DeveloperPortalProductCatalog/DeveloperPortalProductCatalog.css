@@ -46,13 +46,21 @@
 
 .adp-productcatalog .api-product-view {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   padding: 1rem;
   width: 100%;
 }
-.adp-productcatalog .api-product-view .api-product-view-detail {
+.adp-productcatalog .api-product-view .api-product-view-detail-left {
   flex: 1 1 0;
+  align-items: center;
 }
+.adp-productcatalog .api-product-view .api-product-view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
 .adp-productcatalog .api-product-name {
   font-size: 1.5rem;
   font-weight: 700;
@@ -80,7 +88,7 @@
   border: none;
 }
 
-@media screen and (max-width: 576px) {
+/* @media screen and (max-width: 576px) {
   .adp-productcatalog .api-product-view {
     flex-direction: column;
     align-items: center;
@@ -92,6 +100,7 @@
   }
 
   .adp-productcatalog .api-product-view .api-product-view-detail {
+    flex: 1 1 0;
     text-align: center;
   }
 
@@ -111,4 +120,4 @@
     align-items: center;
     width: 100%;
   }
-}
+} */

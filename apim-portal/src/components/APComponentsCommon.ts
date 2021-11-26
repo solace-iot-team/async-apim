@@ -9,11 +9,13 @@ import {
   CommonDisplayName, 
   CommonName, 
   Endpoint, 
+  EnvironmentResponse, 
   Protocol, 
   WebHook
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPApiEntityRef } from './APApiObjectsCommon';
-
+import { Globals } from '../utils/Globals';
+import { APRenderUtils } from '../utils/APRenderUtils';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -32,18 +34,6 @@ export type TAPUserMessage = {
     userMessage: string
   }
 }
-export type TAPOrganization = {
-  displayName: string,
-  name: TAPOrganizationId,
-  type: string,
-  solaceCloudToken?: string,
-  hasEnvironments: boolean,
-  hasApis: boolean,
-  hasApiProducts: boolean,
-  hasDevelopers: boolean,
-  hasApps: boolean
-}
-export type TAPOrganizationList = Array<TAPOrganization>;
 export type TAPOrganizationId = string;
 export type TAPOrganizationIdList = Array<TAPOrganizationId>;
 export type TAPEnvironmentName = string;
@@ -56,6 +46,11 @@ export type TAPAsyncApiSpec = {
   format: EAPAsyncApiSpecFormat,
   spec: any
 }
+export type TAPAttribute = {
+  name: string,
+  value: string
+}
+export type TAPAttributeList = Array<TAPAttribute>;
 
 // * client information *
 export type TAPAppClientInformation = {
@@ -69,8 +64,75 @@ export type TAPAppClientInformationList = Array<TAPAppClientInformation>;
 export type TAPTrustedCN = string;
 export type TAPTrustedCNList = Array<TAPTrustedCN>;
 
-// * App *
+// * API Product *
+export enum EAPManagedApiProductDisplay_Type {
+  TAPDeveloperPortalApiProductDisplay = "TAPDeveloperPortalApiProductDisplay",
+  TAPAdminPortalApiProductDisplay = "TAPAdminPortalApiProductDisplay"
+}
+type TAPManagedApiProductDisplay_Base = {
+  apApiProductName: CommonName;
+  apApiProductDisplayName: CommonDisplayName;
+  apiApiProduct: APIProduct;
+  apiEnvironmentList: Array<EnvironmentResponse>;
+}
+export type TAPDeveloperPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
+  apType: EAPManagedApiProductDisplay_Type
+};
+export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
+  apType: EAPManagedApiProductDisplay_Type
+}
+export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
 
+export class APManagedApiProductDisplay {
+  public static generateGlobalSearchContent = (apManagedApiProductDisplay: TAPApiProductDisplay): string => {
+    const filtered = {
+      ...apManagedApiProductDisplay,
+    }
+    return Globals.generateDeepObjectValuesString(filtered);
+  }
+  public static getApApiDisplayNameListAsString = (apiDisplayNameList: Array<CommonDisplayName> ): string => {
+    if(apiDisplayNameList) return apiDisplayNameList.join(', ');
+    else return '';
+  }
+  public static getApProtocolListAsString = (apiProtocolList?: Array<Protocol> ): string => {
+    return APRenderUtils.getProtocolListAsString(apiProtocolList);
+  }
+  public static getApAttributeNamesAsString = (apiAttributeList?: TAPAttributeList): string => {
+    if(apiAttributeList) {
+      const list: Array<string> = apiAttributeList.map( (attribute: TAPAttribute) => {
+        return attribute.name;
+      });
+      return list.join(', ');
+    }
+    else return '';
+  }
+  public static getApEnvironmentsAsDisplayList = (apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
+    const funcName = 'getApEnvironmentsAsDisplayList';
+    const logName = `${APManagedApiProductDisplay.name}.${funcName}()`;
+    return apiEnvironmentList.map( (envResp: EnvironmentResponse) => {
+      return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`
+    });
+  }
+  private static createAPManagedApiProductDisplay_Base_From_ApiEntities = (apiApiProduct: APIProduct, apiEnvRespList: Array<EnvironmentResponse>): TAPManagedApiProductDisplay_Base => {
+      const _base: TAPManagedApiProductDisplay_Base = {
+        apApiProductName: apiApiProduct.name,
+        apApiProductDisplayName: apiApiProduct.displayName,
+        apiApiProduct: apiApiProduct,
+        apiEnvironmentList: apiEnvRespList
+      }
+      return _base;
+  }
+  public static createAPDeveloperPortalApiProductDisplayFromApiEntities = (apiApiProduct: APIProduct, apiEnvRespList: Array<EnvironmentResponse>): TAPDeveloperPortalApiProductDisplay => {
+    const _base = APManagedApiProductDisplay.createAPManagedApiProductDisplay_Base_From_ApiEntities(apiApiProduct, apiEnvRespList);
+    return {
+      ..._base,
+      apType: EAPManagedApiProductDisplay_Type.TAPDeveloperPortalApiProductDisplay
+    }
+  }
+
+}
+ 
+// * App *
 export enum EAPManagedUserAppDisplay_Type {
   TAPDeveloperPortalUserAppDisplay = "TAPDeveloperPortalUserAppDisplay",
   TAPAdminPortalUserAppDisplay = "TAPAdminPortalUserAppDisplay"
@@ -128,7 +190,7 @@ export class APManagedUserAppDisplay {
     apiProductList: Array<APIProduct>,
     apiAppResponse_mqtt?: AppResponse, 
     ): TAPManagedUserAppDisplay_Base => {
-      const funcName = 'createAPManagedUserAppDisplayFromApiEntities';
+      const funcName = 'createAPManagedUserAppDisplay_Base_From_ApiEntities';
       const logName = `${APManagedWebhook.name}.${funcName}()`;
 
       // add apiProductDisplayName to ClientInformation
