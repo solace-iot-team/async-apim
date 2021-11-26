@@ -47,20 +47,20 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         command: () => { props.onSwitchToAdminPortal(); }
       },
       {
-        label: 'Catalog',
-        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
-      },
-      {
         label: 'My Apps',
         disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageUserApplications),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
       },
       {
-        label: 'Team Applications',
-        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
+        label: 'API Products',
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
       },
+      // {
+      //   label: 'Team Applications',
+      //   disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
+      //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
+      // },
     ];
     return items;
   }
