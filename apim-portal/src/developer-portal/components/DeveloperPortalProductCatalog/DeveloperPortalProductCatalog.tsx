@@ -14,6 +14,7 @@ import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-o
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
+import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
 
 export interface IDeveloperPortalProductCatalogProps {
   organizationName: TAPOrganizationId;
@@ -147,11 +148,10 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
 
       <Loading show={isLoading} />      
       
-      {!isLoading &&
-        renderToolbar()
-      }
+      {!isLoading && renderToolbar() }
+      
       {showListComponent && 
-        <DeveloperPortalListApiProducts
+        <DeveloperPortalGridListApiProducts
           key={componentState.previousState}
           organizationId={props.organizationName}
           onSuccess={onListViewSuccess} 
@@ -160,6 +160,18 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
           onManagedObjectOpen={onViewManagedObject}
         />
       }
+
+      {/* {showListComponent && 
+        <DeveloperPortalListApiProducts
+          key={componentState.previousState}
+          organizationId={props.organizationName}
+          onSuccess={onListViewSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading} 
+          onManagedObjectOpen={onViewManagedObject}
+        />
+      } */}
+
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <DeveloperPortalViewApiProduct 
           organizationId={props.organizationName}

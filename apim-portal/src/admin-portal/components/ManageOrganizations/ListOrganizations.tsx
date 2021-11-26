@@ -145,7 +145,6 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
             scrollable 
             dataKey="name"  
           >
-            <Column expander style={{ width: '3em' }} />
             <Column field="name" header="Name" sortable />
             <Column field="configType" header="Type" sortable />
             <Column body={actionBodyTemplate} headerStyle={{width: '8em' }} bodyStyle={{textAlign: 'right'}}/>

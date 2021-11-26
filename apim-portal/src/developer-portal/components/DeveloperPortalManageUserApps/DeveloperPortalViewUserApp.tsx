@@ -280,17 +280,17 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               </TabView>
 
               {/* References */}
-              <Divider />
-              <div><b>References:</b></div>
+              {/* <Divider />
+              <div><b>References:</b></div> */}
               {/* API Product */}
-              <Panel                 
+              {/* <Panel                 
                 headerTemplate={panelHeaderTemplateApiProducts} 
                 toggleable
                 collapsed={true}
                 className="p-pt-2"
               >
                 <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
-              </Panel>
+              </Panel> */}
             </div>
             <div className="apd-app-view-detail-right">
               <div>Id: {managedObjectDisplay.apiAppResponse_smf.name}</div>
