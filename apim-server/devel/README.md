@@ -56,9 +56,9 @@ vi mongodb/start.mongo.sh
 # start
 mongodb/start.mongo.sh
 # login
-docker exec -it apim-server-mongodb bash
+docker exec -it apim-devel-server-mongodb bash
 # docker logs
-docker logs apim-server-mongodb
+docker logs apim-devel-server-mongodb
 ````
 
 ### Stop Mongo Docker Container

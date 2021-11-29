@@ -15,6 +15,7 @@ apim-connector-system/stop.system.sh
 
 ## Start Devel Portal
 ````bash
+npm install
 npm start
 ````
 

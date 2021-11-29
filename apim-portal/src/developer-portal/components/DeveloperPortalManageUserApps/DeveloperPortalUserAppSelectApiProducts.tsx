@@ -7,7 +7,6 @@ import { APSUserId } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { TViewManagedApiProductList } from "../../../components/APApiObjectsCommon";
 import { DeveloperPortalUserAppSearchSelectApiProducts } from "./DeveloperPortalUserAppSearchSelectApiProducts";
 
 import '../../../components/APComponents.css';
