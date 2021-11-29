@@ -1,8 +1,6 @@
 
 import React from "react";
 
-import { DataTable } from 'primereact/datatable';
-import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { DataView, DataViewLayoutOptions, DataViewLayoutType } from 'primereact/dataview';
@@ -16,17 +14,15 @@ import {
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
-import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APManagedApiProductDisplay, TAPDeveloperPortalApiProductDisplay } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "././DeveloperPortalProductCatalogCommon";
+import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
 import "./DeveloperPortalProductCatalogGridList.css";
-import { Globals } from "../../../utils/Globals";
 
 export interface IDeveloperPortalGridListApiProductsProps {
   organizationId: CommonName;
@@ -40,7 +36,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const componentName = 'DeveloperPortalGridListApiProducts';
 
   const MessageNoManagedProductsFound = "No API Products found."
-  const MessageNoManagedProductsFoundWithFilter = 'No API Products found for filter';
+  const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
   const DefaultApiProductCategory = 'Solace AsyncAPI';
   const PlaceholderImageUrl = 'https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png';
@@ -67,7 +63,6 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
         apProtocolListAsString: APManagedApiProductDisplay.getApProtocolListAsString(mo.apiApiProduct.protocols),
         apAttributeListAsString: APManagedApiProductDisplay.getApAttributeNamesAsString(mo.apiApiProduct.attributes),
         apEnvironmentListAsStringList: APManagedApiProductDisplay.getApEnvironmentsAsDisplayList(mo.apiEnvironmentList),
-        // apEnvironmentListAsStringList: APManagedApiProductDisplay.getApEnvironmentsAsDisplayList(mo.apiEnvironmentList, mo.apiApiProduct.environments),
         apApiProductCategory: DefaultApiProductCategory,
         apApiProductImageUrl: DefaultApiProductImageUrl,
         globalSearch: ''
@@ -82,13 +77,33 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
       return _transformManagedObjectToTableDataRow(mo);
     });
   }
+  const transformManagedObjectTableDataListToFilteredList = (motdList: TManagedObjectTableDataList, filterStr: string): TManagedObjectTableDataList => {
+    const funcName = 'transformManagedObjectTableDataListToFilteredList';
+    const logName = `${componentName}.${funcName}()`;
+
+    const filterList: Array<string> = filterStr.split(' ');
+    let _filteredMotdList: TManagedObjectTableDataList = [];
+    motdList.forEach( (dataRow: TManagedObjectTableDataRow) => {
+      filterList.forEach( (search: string) => {
+        if(dataRow.globalSearch.includes(search)) {
+        // if(dataRow.globalSearch.includes(search.toLowerCase())) {
+          console.log(`${logName}: found search=${search} in ${dataRow.apApiProductDisplayName} ...`);
+          _filteredMotdList.push(dataRow);
+        }
+      });  
+    });
+    console.log(`${logName}: _filteredMotdList.length=${_filteredMotdList.length}`);
+    // console.log(`${logName}: _filteredMotdList=${JSON.stringify(_filteredMotdList, null, 2)}`);
+    return _filteredMotdList;
+  }
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
-  // const [managedObjectDisplayList, setManagedObjectDisplayList] = React.useState<TManagedObjectList>([]);  
-  const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
-  const [globalFilter, setGlobalFilter] = React.useState<string>();
+  const [globalFilter, setGlobalFilter] = React.useState<string>('');
+
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
+  const [filteredManagedObjectTableDataList, setFilteredManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
 
   // grid/list
   const [dataViewLayoutType, setDataViewLayoutType] = React.useState<DataViewLayoutType>('grid');
@@ -129,7 +144,6 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
         _moList.push(APManagedApiProductDisplay.createAPDeveloperPortalApiProductDisplayFromApiEntities(apiApiProduct, _apiEnvList));
       }
       setManagedObjectList(_moList);
-      // setManagedObjectDisplayList(_moList);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -150,6 +164,14 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    setManagedObjectTableDataList(transformManagedObjectListToTableDataList(managedObjectList));
+  }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    setFilteredManagedObjectTableDataList(transformManagedObjectTableDataListToFilteredList(managedObjectTableDataList, globalFilter));
+  }, [managedObjectTableDataList, globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) props.onSuccess(apiCallStatus);
       else props.onError(apiCallStatus);
@@ -157,77 +179,16 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
-  // const onManagedObjectSelect = (event: any): void => {
-  //   setSelectedManagedObject(event.data);
-  // }  
 
   const onManagedObjectOpen = (event: any): void => {
     const id = event.currentTarget.dataset.id;
     const displayName = event.currentTarget.dataset.display_name;
-    // alert(`event.currentTarget.dataset = ${JSON.stringify(event.currentTarget.dataset)}`);
     props.onManagedObjectOpen(id, displayName);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
-    const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
-    setGlobalFilter(_globalFilter);
+    setGlobalFilter(event.currentTarget.value);
   }
-
-  // const renderDataTableHeader = (): JSX.Element => {
-  //   return (
-  //     <div className="table-header">
-  //       <div className="table-header-container" />
-  //       <span className="p-input-icon-left">
-  //         <i className="pi pi-search" />
-  //         <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}} value={globalFilter} />
-  //       </span>
-  //     </div>
-  //   );
-  // }
-
-  // const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-  //   return APRenderUtils.renderStringListAsDivList(rowData.apEnvironmentListAsStringList);
-  // }
-
-  // const renderManagedProductTableEmptyMessage = () => {
-  //   if(globalFilter && globalFilter !== '') return `${MessageNoManagedProductsFoundWithFilter}: ${globalFilter}.`;
-  //   else return MessageNoManagedProductsFound;
-  // }
-
-  // const renderManagedObjectDataTable = () => {
-  //   const managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
-  //   return (
-  //     <div className="card">
-  //         <DataTable
-  //           ref={managedObjectListDataTableRef}
-  //           className="p-datatable-sm"
-  //           showGridlines={false}
-  //           header={renderDataTableHeader()}
-  //           value={managedObjectTableDataList}
-  //           globalFilter={globalFilter}
-  //           selectionMode="single"
-  //           selection={selectedManagedObject}
-  //           onRowClick={onManagedObjectSelect}
-  //           onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-  //           scrollable 
-  //           dataKey="apApiProductName"  
-  //           emptyMessage={renderManagedProductTableEmptyMessage()}
-  //           // sorting
-  //           sortMode='single'
-  //           sortField="apApiProductDisplayName"
-  //           sortOrder={1}
-  //         >
-  //           <Column header="Name" field="apApiProductDisplayName" bodyStyle={{verticalAlign: 'top'}} sortable filterField="globalSearch" />
-  //           {/* <Column header="Description" field="apiObject.description" bodyStyle={{verticalAlign: 'top'}} /> */}
-  //           <Column header="API(s)" field="apApiDisplayNameListAsString" bodyStyle={{verticalAlign: 'top'}} />
-  //           <Column header="Controlled Attributes" field="apAttributeListAsString" bodyStyle={{verticalAlign: 'top'}} />
-  //           <Column header="Approval" headerStyle={{width: '8em'}} field="apiApiProduct.approvalType" bodyStyle={{verticalAlign: 'top'}} sortable/>
-  //           <Column header="API Gateway(s)" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top'}} />
-  //           <Column header="Exposed Protocols" field="apProtocolListAsString" bodyStyle={{verticalAlign: 'top'}} />
-  //       </DataTable>
-  //     </div>
-  //   );
-  // }
 
   const renderHeader = (): React.ReactNode => {
     return (
@@ -256,6 +217,18 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     }
     return 'should never get here';
   }
+  const getDetailsButton = (dataRow: TManagedObjectTableDataRow): JSX.Element => {
+    return (
+      <Button
+        label='Details'
+        key={componentName + dataRow.apApiProductName}
+        data-id={dataRow.apApiProductName}
+        data-display_name={dataRow.apApiProductDisplayName}
+        className="p-button-text p-button-plain p-button-outlined" 
+        onClick={onManagedObjectOpen}
+      />
+    );
+  }
   const renderApiProductAsListItem = (dataRow: TManagedObjectTableDataRow) => {
     return (
       <div className="p-col-12">
@@ -264,19 +237,21 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
           <div className="product-list-detail">
             <div className="product-name">{dataRow.apApiProductDisplayName}</div>
             <div className="product-description">{dataRow.apiApiProduct.description}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameListAsString}</div>
+            <div className="product-api-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
+            <div className="product-api-name-list">Environments: {dataRow.apEnvironmentListAsStringList.join(', ')}</div>
+            <div className="product-api-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
+          </div>
+          <div className="product-list-right">
             <div>
               <i className="pi pi-tag product-category-icon"></i>
               <span className="product-category">{dataRow.apApiProductCategory}</span>
             </div>
             <div>
-              {/* <i className="pi pi-check product-category-icon"></i> */}
               <span className={`product-badge status-${dataRow.apiApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.apiApiProduct.approvalType)}</span>
             </div>
+            <div className="p-mt-6">{getDetailsButton(dataRow)}</div>
           </div>
-          <div className="product-list-action">
-          <span className="product-price">${'65'}</span>
-          <Button icon="pi pi-shopping-cart" label="Add to Cart" />
-        </div>
       </div>
     </div>
   );
@@ -295,24 +270,17 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
               <span className={`product-badge status-${dataRow.apiApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.apiApiProduct.approvalType)}</span>
             </div>
           </div>
-          <div className="product-grid-item-content">
+          <div className="product-grid-item-content p-mt-4">
             {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
-            <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} />
+            {/* <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} /> */}
             <div className="product-name">{dataRow.apApiProductDisplayName}</div>
             <div className="product-description">{dataRow.apiApiProduct.description}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameListAsString}</div>
           </div>
           <div className="product-grid-item-bottom">
-            <span className="product-price">${'65'}</span>
-            {/* <Button icon="pi pi-shopping-cart" label="Add to Cart" /> */}
-            <Button
-              label='Details'
-              key={componentName + dataRow.apApiProductName}
-              data-id={dataRow.apApiProductName}
-              data-display_name={dataRow.apApiProductDisplayName}
-              className="p-button-text p-button-plain p-button-outlined" 
-              onClick={onManagedObjectOpen}
-            />
-
+            {/* <span className="product-price">${'65'}</span> */}
+            <span></span>
+            {getDetailsButton(dataRow)}
           </div>
         </div>
       </div>
@@ -324,12 +292,11 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
     else if (layoutType === 'grid') return renderApiProductAsGridItem(dataRow);
 }
   const renderView = () => {
-    const managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     const header = renderHeader();
     return (
       <div className="card">
           <DataView 
-            value={managedObjectTableDataList} 
+            value={filteredManagedObjectTableDataList} 
             layout={dataViewLayoutType} 
             header={header}
             itemTemplate={renderApiProduct} 
@@ -342,10 +309,11 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
     );
   }
   const renderContent = () => {
-    if(managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
+    if(filteredManagedObjectTableDataList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
+      if(globalFilter && globalFilter !== '') return (<h3>{MessageNoManagedProductsFoundWithFilter}</h3>);
       return (<h3>{MessageNoManagedProductsFound}</h3>);
     }
-    if(managedObjectList.length > 0 && !isGetManagedObjectListInProgress) {
+    if(filteredManagedObjectTableDataList.length > 0 && !isGetManagedObjectListInProgress) {
       return renderView();
     } 
   }
@@ -373,13 +341,6 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
 
       {renderContent()}
       
-      {/* DEBUG selected managedProduct */}
-      {/* {managedProductList.length > 0 && selectedManagedProduct && 
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedProduct, null, 2)}
-        </pre>
-      } */}
-
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
+
 export enum E_CALL_STATE_ACTIONS {
   API_GET_USER_APP_LIST = "API_GET_USER_APP_LIST",
   API_DELETE_USER_APP = "API_DELETE_USER_APP",
@@ -28,4 +30,9 @@ export enum E_MANAGE_WEBHOOK_COMPONENT_STATE {
   MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
   MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
   MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE"
+}
+
+export type TAPDeveloperPortalApiProductCompositeId = {
+  apiProductId: CommonName;
+  apiProductDisplayName: CommonDisplayName
 }

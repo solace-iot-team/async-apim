@@ -32,10 +32,10 @@ export const DeveloperPortalUserAppSelectApiProducts: React.FC<IDeveloperPortalU
     return (
       <React.Fragment>
         {/* DEBUG */}
-        <p>props.currentSelectedApiProductItemList:</p>
+        {/* <p>props.currentSelectedApiProductItemList:</p>
         <pre style={ { fontSize: '8px' }} >
           {JSON.stringify(props.currentSelectedApiProductItemList)}
-        </pre>
+        </pre> */}
         <DeveloperPortalUserAppSearchSelectApiProducts 
           organizationId={props.organizationId}
           userId={props.userId}

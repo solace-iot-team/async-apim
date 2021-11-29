@@ -1,11 +1,9 @@
 
 import React from "react";
 
-import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Divider } from "primereact/divider";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
@@ -195,22 +193,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     );
   }
 
-    const panelHeaderTemplateApiProducts = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            API Products
-          </span>
-        </div>
-      );
-    }
-
   const getWebhooksTabHeader = (): string => {
     const funcName = 'getWebhooksTabHeader';
     const logName = `${componentName}.${funcName}()`;
@@ -278,19 +260,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
                   />
                 </TabPanel>
               </TabView>
-
-              {/* References */}
-              {/* <Divider />
-              <div><b>References:</b></div> */}
-              {/* API Product */}
-              {/* <Panel                 
-                headerTemplate={panelHeaderTemplateApiProducts} 
-                toggleable
-                collapsed={true}
-                className="p-pt-2"
-              >
-                <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
-              </Panel> */}
             </div>
             <div className="apd-app-view-detail-right">
               <div>Id: {managedObjectDisplay.apiAppResponse_smf.name}</div>

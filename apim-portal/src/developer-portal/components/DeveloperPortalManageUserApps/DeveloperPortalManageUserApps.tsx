@@ -20,9 +20,9 @@ import {
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
-import { TAPDeveloperPortalUserAppDisplay, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
-import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE } from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./DeveloperPortalManageUserAppsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEditUserApp";
@@ -36,6 +36,7 @@ import "./DeveloperPortalManageUserApps.css";
 export interface IDeveloperPortalManageUserAppsProps {
   organizationName: TAPOrganizationId;
   userId: APSUserId;
+  createAppWithApiProductCompositeId?: TAPDeveloperPortalApiProductCompositeId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
@@ -74,6 +75,14 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       userName: apsUser.userId
     }
   }
+  const transformApiProductCompositeIdToSelectItemIdList = (apiProductCompositeId: TAPDeveloperPortalApiProductCompositeId): TApiEntitySelectItemList => {
+    return [
+      {
+        id: apiProductCompositeId.apiProductId,
+        displayName: apiProductCompositeId.apiProductDisplayName
+      }
+    ];
+  }
 
   const ToolbarNewManagedObjectButtonLabel = 'New App';
   const ToolbarEditManagedObjectButtonLabel = 'Edit App';
@@ -96,7 +105,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-
+  const [presetApiProductSelectItemList, setPresetApiProductSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
   // * Api Calls *  
   const apiCreateDeveloper = async(): Promise<TApiCallState> => {
     const funcName = 'apiCreateDeveloper';
@@ -139,13 +148,20 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.CREATE_API_DEVELOPER);
     const apiCallState: TApiCallState = await apiCreateDeveloper();
     if(!apiCallState.success) setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.INTERNAL_ERROR);
-    else setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    else {
+      if(props.createAppWithApiProductCompositeId) {
+        setPresetApiProductSelectItemList(transformApiProductCompositeIdToSelectItemIdList(props.createAppWithApiProductCompositeId));
+        setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+      } else {
+        setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+      }
+    }
     setIsLoading(false);
   }
 
 
   // * useEffect Hooks *
-  React.useEffect(() => {
+  React.useEffect(() => {    
     initialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -491,6 +507,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
+          presetApiProductSelectItemList={presetApiProductSelectItemList}
         />
       }
       {showEditComponent && managedObjectId && managedObjectDisplayName &&

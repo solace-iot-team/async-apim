@@ -76,7 +76,7 @@ type TAPManagedApiProductDisplay_Base = {
   apiEnvironmentList: Array<EnvironmentResponse>;
 }
 export type TAPDeveloperPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
-  apType: EAPManagedApiProductDisplay_Type
+  apType: EAPManagedApiProductDisplay_Type;
 };
 export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
   apType: EAPManagedApiProductDisplay_Type
@@ -126,7 +126,7 @@ export class APManagedApiProductDisplay {
     const _base = APManagedApiProductDisplay.createAPManagedApiProductDisplay_Base_From_ApiEntities(apiApiProduct, apiEnvRespList);
     return {
       ..._base,
-      apType: EAPManagedApiProductDisplay_Type.TAPDeveloperPortalApiProductDisplay
+      apType: EAPManagedApiProductDisplay_Type.TAPDeveloperPortalApiProductDisplay,
     }
   }
 

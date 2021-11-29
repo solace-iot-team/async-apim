@@ -29,7 +29,8 @@ import {
   TAPOrganizationId, 
   TApiEntitySelectItemList, 
   TApiEntitySelectItemIdList, 
-  APComponentsCommon
+  APComponentsCommon,
+  TApiEntitySelectItem
 } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalUserAppSelectApiProducts } from "./DeveloperPortalUserAppSelectApiProducts";
@@ -48,6 +49,7 @@ export interface IDeveloperPortalNewEditUserAppProps {
   userId: APSUserId,
   appId?: TManagedObjectId,
   appDisplayName?: TManagedObjectDisplayName,
+  presetApiProductSelectItemList?: TApiEntitySelectItemList,
   onError: (apiCallState: TApiCallState) => void;
   onNewSuccess: (apiCallState: TApiCallState, newUserId: TManagedObjectId, newDisplayName: string) => void;
   onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
@@ -235,7 +237,11 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       await apiGetManagedObject(props.organizationId, props.userId, props.appId, props.appDisplayName);
       props.onLoadingChange(false);
     } else {
-      setManagedObject(emptyManagedObject);
+      let mo: TManagedObject = emptyManagedObject;
+      if(props.presetApiProductSelectItemList) {
+        mo.apiProductSelectItemList = props.presetApiProductSelectItemList;
+      }
+      setManagedObject(mo);
     }
   }
 

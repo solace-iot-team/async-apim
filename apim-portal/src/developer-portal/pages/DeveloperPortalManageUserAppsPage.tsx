@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -10,6 +10,7 @@ import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../util
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserApps';
+import { TAPDeveloperPortalApiProductCompositeId } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon';
 
 import "../../pages/Pages.css";
 
@@ -19,12 +20,23 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [locationState, setLocationState] = React.useState<TAPDeveloperPortalApiProductCompositeId>();
+  const location = useLocation<TAPDeveloperPortalApiProductCompositeId>();
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
+
+  React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: location.state=${JSON.stringify(location.state)}`);
+    if(location.state) {
+      setLocationState(location.state);
+    }
+  }, [location.state]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -78,6 +90,7 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
+          createAppWithApiProductCompositeId={locationState}
         />
       }
     </React.Fragment>

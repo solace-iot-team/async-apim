@@ -146,7 +146,6 @@ export const DeveloperPortalListApiProducts: React.FC<IDeveloperPortalListApiPro
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
-  // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
   }  

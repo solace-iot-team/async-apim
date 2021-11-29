@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from "primereact/button";
@@ -7,14 +8,15 @@ import { Button } from "primereact/button";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { DeveloperPortalListApiProducts } from "./DeveloperPortalListApiProducts";
 import { E_COMPONENT_STATE } from "./DeveloperPortalProductCatalogCommon";
 import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
+import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
+import { TAPDeveloperPortalApiProductCompositeId } from "../DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon";
+import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
-import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
 
 export interface IDeveloperPortalProductCatalogProps {
   organizationName: TAPOrganizationId;
@@ -24,7 +26,7 @@ export interface IDeveloperPortalProductCatalogProps {
 }
 
 export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCatalogProps> = (props: IDeveloperPortalProductCatalogProps) => {
-  // const componentName = 'DeveloperPortalProductCatalog';
+  const componentName = 'DeveloperPortalProductCatalog';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -87,6 +89,26 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
+  // * Create App *
+
+  const manageAppsHistory = useHistory<TAPDeveloperPortalApiProductCompositeId>();
+
+
+  const onCreateAppWithProduct = () => {
+    const funcName = 'onCreateAppWithProduct';
+    const logName = `${componentName}.${funcName}()`;
+
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined`);
+    manageAppsHistory.push({
+      pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
+      state: {
+        apiProductId: managedObjectId,
+        apiProductDisplayName: managedObjectDisplayName
+      }
+    });
+  }
+
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
@@ -95,12 +117,11 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
-    const onImplementMe = () => { alert('implement me'); }
 
     if(!componentState.currentState) return undefined;
     if(showViewComponent) return (
       <React.Fragment>
-        <Button icon="pi pi-bolt" label="SUBSCRIBE?" className="p-button-text p-button-plain p-button-outlined" onClick={onImplementMe}/>        
+        <Button icon="pi pi-plus" label="Create App" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateAppWithProduct}/>        
       </React.Fragment>
     );
     return undefined;
@@ -160,17 +181,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
           onManagedObjectOpen={onViewManagedObject}
         />
       }
-
-      {/* {showListComponent && 
-        <DeveloperPortalListApiProducts
-          key={componentState.previousState}
-          organizationId={props.organizationName}
-          onSuccess={onListViewSuccess} 
-          onError={onSubComponentError} 
-          onLoadingChange={setIsLoading} 
-          onManagedObjectOpen={onViewManagedObject}
-        />
-      } */}
 
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <DeveloperPortalViewApiProduct 
