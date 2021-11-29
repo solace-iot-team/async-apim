@@ -16,8 +16,18 @@ apim-connector-system/stop.system.sh
 ## Start Devel Portal
 ````bash
 npm install
+````
+````bash
+# react script
 npm start
 ````
+````bash
+# static server
+npm run build
+npm install -g serve
+serve -s build
+````
+
 
 ## Using APIM Server OpenAPI from Local Release
 ````bash
