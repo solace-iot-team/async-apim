@@ -88,7 +88,7 @@ export class APManagedApiProductDisplay {
     const filtered = {
       ...apManagedApiProductDisplay,
     }
-    return Globals.generateDeepObjectValuesString(filtered);
+    return Globals.generateDeepObjectValuesString(filtered).toLowerCase();
   }
   public static getApApiDisplayNameListAsString = (apiDisplayNameList: Array<CommonDisplayName> ): string => {
     if(apiDisplayNameList) return apiDisplayNameList.join(', ');
