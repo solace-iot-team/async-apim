@@ -81,19 +81,29 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     const funcName = 'transformManagedObjectTableDataListToFilteredList';
     const logName = `${componentName}.${funcName}()`;
 
-    const filterList: Array<string> = filterStr.split(' ');
+    if(filterStr === '') return motdList;
+    const filterList: Array<string> = filterStr.toLowerCase().split(' ').filter( (s: string) => {
+      return (s !== '');
+    });
+    // alert(`${logName}: filterList=${JSON.stringify(filterList, null, 2)}`);
+    if(filterList.length === 0) return motdList;
+
     let _filteredMotdList: TManagedObjectTableDataList = [];
     motdList.forEach( (dataRow: TManagedObjectTableDataRow) => {
       filterList.forEach( (search: string) => {
         if(dataRow.globalSearch.includes(search)) {
-        // if(dataRow.globalSearch.includes(search.toLowerCase())) {
-          console.log(`${logName}: found search=${search} in ${dataRow.apApiProductDisplayName} ...`);
-          _filteredMotdList.push(dataRow);
+          // console.log(`${logName}: found search=${search} in ${dataRow.apApiProductDisplayName} ...`);
+          const found: number = _filteredMotdList.findIndex( (existingDataRow: TManagedObjectTableDataRow) => {
+            return dataRow.apApiProductName === existingDataRow.apApiProductName;
+          });
+          if(found === -1 ) {
+            // console.log(`${logName}: adding ${dataRow.apApiProductDisplayName} ...`);
+            _filteredMotdList.push(dataRow);
+          }
         }
       });  
     });
-    console.log(`${logName}: _filteredMotdList.length=${_filteredMotdList.length}`);
-    // console.log(`${logName}: _filteredMotdList=${JSON.stringify(_filteredMotdList, null, 2)}`);
+    // console.log(`${logName}: _filteredMotdList.length=${_filteredMotdList.length}`);
     return _filteredMotdList;
   }
 
@@ -112,7 +122,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: starting: managedObjectList.length=${managedObjectList.length}`);
+    // console.log(`${logName}: starting: managedObjectList.length=${managedObjectList.length}`);
 
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
