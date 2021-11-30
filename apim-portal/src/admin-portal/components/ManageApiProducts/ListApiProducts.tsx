@@ -44,18 +44,24 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   type TManagedObject = TViewManagedApiProduct;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
-    apiInfoListAsDisplayStringList: Array<string>,
-    protocolListAsString: string,
-    globalSearch: string
+    apiInfoListAsDisplayStringList: Array<string>;
+    protocolListAsString: string;
+    guaranteedMessagingEnabled: boolean;
+    globalSearch: string;
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
-    const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
+    const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
+      let _gm: boolean = false;
+      if(mo.apiProduct.clientOptions && mo.apiProduct.clientOptions.guaranteedMessaging && mo.apiProduct.clientOptions.guaranteedMessaging.requireQueue) {
+        _gm = mo.apiProduct.clientOptions.guaranteedMessaging.requireQueue;
+      }
       const managedObjectTableDataRow: TManagedObjectTableDataRow = {
-        ...managedObject,
-        apiInfoListAsDisplayStringList: APRenderUtils.getApiInfoListAsDisplayStringList(managedObject.apiInfoList),
-        protocolListAsString: APRenderUtils.getProtocolListAsString(managedObject.apiProduct.protocols),
+        ...mo,
+        apiInfoListAsDisplayStringList: APRenderUtils.getApiInfoListAsDisplayStringList(mo.apiInfoList),
+        protocolListAsString: APRenderUtils.getProtocolListAsString(mo.apiProduct.protocols),
+        guaranteedMessagingEnabled: _gm,
         globalSearch: ''
       };
       const globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
@@ -135,7 +141,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const actionBodyTemplate = (managedObject: TManagedObject) => {
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
+          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} /> */}
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
         </React.Fragment>
@@ -152,6 +158,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
   const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
     return APRenderUtils.renderStringListAsDivList(rowData.apiInfoListAsDisplayStringList);
+  }
+  const guaranteedMessagingBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
+    return rowData.guaranteedMessagingEnabled.toString();
   }
 
   const renderManagedObjectDataTable = () => {
@@ -186,8 +195,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
             <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
             <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-            <Column field="protocolListAsString" header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={actionBodyTemplate} headerStyle={{width: '10em', textAlign: 'center'}} bodyStyle={{textAlign: 'center', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column header="Protocols" field="protocolListAsString"  bodyStyle={{ verticalAlign: 'top' }} />
+            <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField="guaranteedMessagingEnabled"/>
+            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>
     );
