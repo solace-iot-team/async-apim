@@ -221,7 +221,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
           <div className="apd-app-view">
             <div className="apd-app-view-detail-left">
               <div><b>Status</b>: {managedObjectDisplay.apiAppResponse_smf.status}</div>
-              <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
+              {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
 
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='General'>

@@ -15,11 +15,6 @@ import yaml from "js-yaml";
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
 
-// TODO: should be defined in the OPEN API
-// export type TAPTrustedCN = {
-//   name: string
-// }
-// export type TAPTrustedCNList = Array<TAPTrustedCN>;
 export type TAPAttribute = {
   name: string,
   value: string

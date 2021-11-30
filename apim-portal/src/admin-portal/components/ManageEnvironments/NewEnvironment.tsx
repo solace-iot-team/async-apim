@@ -239,9 +239,6 @@ export const NewEnvironment: React.FC<INewEnvironmentProps> = (props: INewEnviro
   const renderManagedObjectCreateForm = () => {
     return (
       <div className="card">
-        <div>
-          TODO: show only serviceIds that are not yet used
-        </div>
         <div className="p-fluid">
           <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">            
             {/* name */}

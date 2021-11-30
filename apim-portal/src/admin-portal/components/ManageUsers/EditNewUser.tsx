@@ -121,8 +121,8 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       })
     });
     return selectItems.sort( (e1: TOrganizationSelectItem, e2: TOrganizationSelectItem) => {
-      if(e1.label < e2.label) return -1;
-      if(e1.label > e2.label) return 1;
+      if(e1.label.toLowerCase() < e2.label.toLowerCase()) return -1;
+      if(e1.label.toLowerCase() > e2.label.toLowerCase()) return 1;
       return 0;
     });
   }

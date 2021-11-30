@@ -55,11 +55,6 @@ import { TAPAttribute, TAPAttributeList } from "../../../utils/APConnectorApiCal
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
-// TODO: delete me when finished
-import { APManageApiParameter } from "../../../components/APApiParameters/APManageApiParameter";
-import { TAPApiParameter } from "../../../components/APApiParameters/APApiParametersCommon";
-import { APManageApiParameterAttribute, TAPManagedApiParameterAttribute } from "../../../components/APManageApiParameterAttribute/APManageApiParameterAttribute";
-
 export enum EAction {
   EDIT = 'EDIT',
   NEW = 'NEW'
@@ -230,8 +225,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
             if(exsistingApiParameter.name === newApiParameter.name) {
               if(exsistingApiParameter.type !== newApiParameter.type) {
                 console.warn(`${logName}: how to handle mismatching api parameter types: name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`)
-                // alert(`${logName}: TODO: handle mismatching api parameter types, name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`);  
-                // throw new Error(`${logName}: TODO: handle mismatching api parameter types, name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`);  
               }
               return true;
             }  
@@ -278,9 +271,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return fd;
   }
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-    // const funcName = 'transformFormDataToManagedObject';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: formData=${JSON.stringify(formData, null, 2)}`);
     let mo: TManagedObject = {
       apiProduct: {
         ...formData.apiProduct,
@@ -290,7 +280,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         pubResources: [],
         subResources: [],
         protocols: formData.selectedProtocolList,
-        // TODO: remove if omitting deletes it - IT DOESN'T
         clientOptions: {
           guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
         }
@@ -299,12 +288,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       apiEnvironmentList: [],
       environmentList: []
     };
-    // add if omitting it deletes it - it doesn't delete it!
-    // if(formData.clientOptionsGuaranteedMessaging.requireQueue) {
-    //   mo.apiProduct.clientOptions = {
-    //     guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
-    //   }
-    // } else delete mo.apiProduct.clientOptions;
     return mo;
   }
 
@@ -515,9 +498,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const doUpdateSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList) => {
-    // const funcName = 'doUpdateAvailableProtocolList';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
     await apiGetSelectedApiInfoList(apiIdList);
   }
 
@@ -548,15 +528,9 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const doUpdateAvailableProtocolList = async(envIdList: TApiEntitySelectItemIdList) => {
-    // const funcName = 'doUpdateAvailableProtocolList';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
     await apiGetSelectedEnvironmentList(envIdList);
   }
   const onEnvironmentsSelect = (envIdList: TApiEntitySelectItemIdList) => {
-    // const funcName = 'onEnvironmentsSelect';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: envIdList = ${JSON.stringify(envIdList, null, 2)}`);
     doUpdateAvailableProtocolList(envIdList);
   }
 
@@ -571,15 +545,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
     managedObjectFormData.attributeList = attributeList;
-    // const _managedObjectFormData: TManagedObjectFormData = {
-    //   ...managedObjectFormData,
-    //   apiProduct: {
-    //     ...managedObjectFormData.apiProduct,
-    //     attributes: attributeList
-    //   }
-    // };
-    // setManagedObjectFormData(_managedObjectFormData);
-    // alert(`${logName}: updated attribute list = ${JSON.stringify(attributeList, null, 2)}`);
   }
 
   // * Form *
@@ -607,9 +572,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
-    // const funcName = 'doSubmitManagedObject';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: managedObject=${JSON.stringify(managedObject, null, 2)}`);
     props.onLoadingChange(true);
     if(props.action === EAction.NEW) await apiCreateManagedObject(managedObject);
     else await apiUpdateManagedObject(managedObject);
@@ -624,8 +586,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
-    // alert(`${logName}: managedObjectFormData.attributeList = ${JSON.stringify(managedObjectFormData.attributeList)}`);
     setIsFormSubmitted(true);
     if(!isSelectedProtocolListValid()) return false;
     const _managedObjectFormData: TManagedObjectFormData = {
@@ -694,158 +654,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     );
   }
 
-  const [expandedApiPermissionRow, setExpandedApiPermissionRow] = React.useState<any>(null);
-
-  const renderManageApiParametersTable = (): JSX.Element => {
-    const isRowSelected = (rowData: APIParameter): boolean => {
-      const found = selectedApiParameterList.find(element => element.name === rowData.name);
-      return (found !== undefined);
-    }
-    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            API Parameters - Example with picklist
-          </span>
-        </div>
-      );
-    }
-    const renderApiParameterRowExpansionTemplate = (row: APIInfo) => {
-      const funcName = 'renderApiParameterRowExpansionTemplate';
-      const logName = `${componentName}.${funcName}()`;
-
-      const apiParameterValueBodyTemplate = (rowData: APIParameter): JSX.Element => {
-        return (
-          <div>
-            {/* {rowData.enum && rowData.enum.join(',')} */}
-            {rowData.enum ? rowData.enum.join(',') : 'No values defined.'}
-          </div>
-        );
-      }
-      const apiParameterBodyTemplate = (rowData: APIParameter): JSX.Element => {
-        const onSave = (apApiParameter: TAPApiParameter) => {
-          alert(`${logName}: apiParameterBodyTemplate.onSucces(): apApiParameter=${JSON.stringify(apApiParameter, null, 2)}`);
-        }
-        const onCancel = () => {
-          alert(`${logName}: apiParameterBodyTemplate.onCancel()`);
-        }
-
-        return (
-          <APManageApiParameter
-            apiParameter={rowData} 
-            isEditEnabled={isRowSelected(rowData)}
-            onSave={onSave}
-            onCancel={onCancel}
-          />
-        )
-      }
-
-      const apiProductValuesBodyTemplate = (rowData: APIParameter): JSX.Element => {
-        const onSaveApiProductAttribute = (apManagedApiParameterAttribute: TAPManagedApiParameterAttribute) => {
-          alert(`${logName}: apiProductValuesBodyTemplate.onSaveApiProductAttribute(): apApiParameter=${JSON.stringify(apManagedApiParameterAttribute, null, 2)}`);
-        }
-        const onDeleteApiProductAttribute = (apManagedApiParameterAttribute: TAPManagedApiParameterAttribute) => {
-          alert(`${logName}: apiProductValuesBodyTemplate.onDeleteApiProductAttribute(): apApiParameter=${JSON.stringify(apManagedApiParameterAttribute, null, 2)}`);
-        }
-        const apManagedApiParameterAttribute: TAPManagedApiParameterAttribute = {
-          apiParameter: rowData,
-          // apiAttribute: ??
-        }
-        
-        return (
-          <APManageApiParameterAttribute
-            apManagedApiParameterAttribute={apManagedApiParameterAttribute}
-            options={{
-              mode: 'apiProductValues'
-            }}
-            onSave={onSaveApiProductAttribute}
-            onDelete={onDeleteApiProductAttribute}
-          />
-        );
-      }
-
-      const dataTableList = row.apiParameters;
-      // console.log(`${logName}: dataTableList=${JSON.stringify(dataTableList, null, 2)}`);
-      return (
-        <div className="sub-table">
-          <p>Select parameters & values to control.</p>
-          <DataTable 
-            dataKey="name"  
-            className="p-datatable-sm"
-            value={dataTableList}
-            // autoLayout={true}
-            selectionMode="checkbox"
-            selection={selectedApiParameterList}
-            onSelectionChange={(e) => setSelectedApiParameterList(e.value)}
-            // sorting
-            sortMode='single'
-            sortField="name"
-            sortOrder={1}          
-
-          >
-            <Column selectionMode="multiple" style={{width:'3em'}} />
-            <Column field="name" header="Parameter" style={{width: '10em'}} />
-            {/* <Column field="type" header="Type" /> */}
-            {/* <Column field="enum" header="API Values" /> */}
-            <Column body={apiParameterValueBodyTemplate} header="API Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/>
-            <Column body={apiProductValuesBodyTemplate} header="API Product Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/>
-
-            {/* <Column body={apiParameterBodyTemplate} header="OLD API Product Values" bodyStyle={{textAlign: 'left', overflow: 'scroll'}}/> */}
-
-            {/* <Column field="transformedServiceClassDisplayedAttributes.highAvailability" header="Availability" /> */}
-          </DataTable>
-          {/* DEBUG */}
-          <p>selectedApiParameterList:</p>
-          <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(selectedApiParameterList, null, 2)}
-          </pre>
-        </div>
-      );
-    }
-    if(selectedApiInfoList.length === 0) return (<></>);
-    return (
-      <React.Fragment>        
-        {/* {displaySelectedProtocolsErrorMessage()} */}
-        <Panel 
-          headerTemplate={panelHeaderTemplate} 
-          toggleable
-          collapsed={true}
-        >
-          <DataTable 
-            // ref={dt}
-            dataKey="name"
-            className="p-datatable-sm"
-            // header="Select protocols:"
-            value={selectedApiInfoList}
-            autoLayout={true}
-            // selection={selectedProtocolList}
-            // onSelectionChange={(e) => setSelectedProtocolList(e.value)}
-            // sorting
-            sortMode='single'
-            sortField="name"
-            sortOrder={1}          
-            // row expansion
-            expandedRows={expandedApiPermissionRow}
-            onRowToggle={(e) => setExpandedApiPermissionRow(e.data)}
-            rowExpansionTemplate={renderApiParameterRowExpansionTemplate}
-          >
-            {/* <Column selectionMode="multiple" style={{width:'3em'}} /> */}
-            <Column expander style={{ width: '3em' }} />  
-            <Column field="name" header="API" style={{width: '20em'}} />
-            <Column field="version" header="Version" style={{width: '5em'}} />
-            <Column field="description" header="Description" />
-          </DataTable>
-        </Panel>
-      </React.Fragment>
-    )
-  }
-
   const renderProtocolsSelectionTable = (): JSX.Element => {
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
@@ -895,21 +703,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const renderManageApiParameterAttributes = (): JSX.Element => {
-    // const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
-    //   const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-    //   const className = `${options.className} p-jc-start`;
-    //   const titleClassName = `${options.titleClassName} p-pl-1`;
-    //   return (
-    //     <div className={className} style={{ justifyContent: 'left'}} >
-    //       <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-    //         <span className={toggleIcon}></span>
-    //       </button>
-    //       <span className={titleClassName}>
-    //         API Parameters
-    //       </span>
-    //     </div>
-    //   );
-    // }
     const apiParameterValueBodyTemplate = (rowData: APIParameter): JSX.Element => {
       return (
         <div>
@@ -934,61 +727,49 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       );
     }  
     // main
-    // if(selectedApisCombinedApiParameterList.length === 0) return (
-    //   <>
-    //   <p>No API Parameters available.</p>
-    //   </>
-    // );
     return (
       <React.Fragment>        
-        {/* <Panel 
-          headerTemplate={panelHeaderTemplate} 
-          toggleable
-          collapsed={false}
-        > */}
-          <DataTable 
-            style={{borderWidth: 'thin'}}
-            ref={manageApiParameterAttributesDataTableRef}
-            dataKey="name"
-            className="p-datatable-sm"
-            header={renderDataTableHeader()}
-            value={selectedApisCombinedApiParameterList}
-            emptyMessage='No API Parameters available.'
-            globalFilter={manageApiParameterAttributesDataTableGlobalFilter}
-            autoLayout={false}
-            selectionMode="single"
-            // onRowClick={onManagedObjectSelect}
-            // onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-            selection={selectedApisCombinedApiParameter}
-            onSelectionChange={(e) => setSelectedApisCombinedApiParameter(e.value)}
-            scrollable 
-            scrollHeight="200px" 
-            sortMode='single'
-            sortField="name"
-            sortOrder={1}          
-          >
-            <Column field="name" header="API Parameter" style={{width: '20em'}} sortable />
-            {/* <Column field="type" header="Type" style={{width: '5em'}} /> */}
-            <Column 
-              header="API Value(s)" 
-              filterField='enum'
-              body={apiParameterValueBodyTemplate}
-              bodyStyle={{
-                overflowWrap: 'break-word',
-                wordWrap: 'break-word'
-              }} 
-            />
-          </DataTable>
-          {/* DEBUG */}
-          {/* <p>selectedApisCombinedApiParameter:</p>
-          <pre style={ { fontSize: '8px' }} >
-            {JSON.stringify(selectedApisCombinedApiParameter)}
-          </pre> */}
-          {/* <p>presetAttribute:</p>
-          <pre style={ { fontSize: '8px' }} >
-            {JSON.stringify(presetAttribute)}
-          </pre> */}
-        {/* </Panel> */}
+        <DataTable 
+          style={{borderWidth: 'thin'}}
+          ref={manageApiParameterAttributesDataTableRef}
+          dataKey="name"
+          className="p-datatable-sm"
+          header={renderDataTableHeader()}
+          value={selectedApisCombinedApiParameterList}
+          emptyMessage='No API Parameters available.'
+          globalFilter={manageApiParameterAttributesDataTableGlobalFilter}
+          autoLayout={false}
+          selectionMode="single"
+          // onRowClick={onManagedObjectSelect}
+          // onRowDoubleClick={(e) => onManagedObjectOpen(e)}
+          selection={selectedApisCombinedApiParameter}
+          onSelectionChange={(e) => setSelectedApisCombinedApiParameter(e.value)}
+          scrollable 
+          scrollHeight="200px" 
+          sortMode='single'
+          sortField="name"
+          sortOrder={1}          
+        >
+          <Column field="name" header="API Parameter" style={{width: '20em'}} sortable />
+          <Column 
+            header="API Value(s)" 
+            filterField='enum'
+            body={apiParameterValueBodyTemplate}
+            bodyStyle={{
+              overflowWrap: 'break-word',
+              wordWrap: 'break-word'
+            }} 
+          />
+        </DataTable>
+        {/* DEBUG */}
+        {/* <p>selectedApisCombinedApiParameter:</p>
+        <pre style={ { fontSize: '8px' }} >
+          {JSON.stringify(selectedApisCombinedApiParameter)}
+        </pre> */}
+        {/* <p>presetAttribute:</p>
+        <pre style={ { fontSize: '8px' }} >
+          {JSON.stringify(presetAttribute)}
+        </pre> */}
       </React.Fragment>
     );
   }
@@ -1054,16 +835,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       );
     }
     const renderManageClientOptionsGuaranteedMessaging = () => {
-      // const isDisabled: boolean = !(managedObjectUseForm.watch(['clientOptionsGuaranteedMessaging.requireQueue'])[0]);
-      // console.log(`managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
-
-      // TODO: custom validation if unchecked => rewrite rules with validate function
-      // const validateMaxTTL = (maxTTL: number): any => {
-      //   return true;
-      //   if(isDisabled) return true;
-      //   // could call validation function for maxTTL
-      //   return `isDisabled = ${isDisabled}, maxTTL=${maxTTL}`;
-      // }
       return (
         <div className='card'>
           <div className="p-text-bold">Guaranteed Messaging:</div>
@@ -1345,10 +1116,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               { renderProtocolsSelectionTable() } 
             </div>
           </form>  
-          {/* apiParameters */}
-          <div className="p-field">
-            { renderManageApiParametersTable() } 
-          </div>
           {/* attributes */}
           <div className="p-field">
             { renderManageAttributes() }

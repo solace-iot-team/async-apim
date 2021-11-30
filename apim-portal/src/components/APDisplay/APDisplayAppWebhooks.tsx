@@ -10,6 +10,8 @@ import {
 } from "../APComponentsCommon";
 
 import "../APComponents.css";
+import { WebHookAuth, WebHookBasicAuth, WebHookHeaderAuth } from "@solace-iot-team/apim-connector-openapi-browser";
+import { Globals } from "../../utils/Globals";
 
 export interface IAPDisplayAppWebhooksProps {
   managedWebhookList: TAPManagedWebhookList; 
@@ -55,12 +57,25 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
   }
 
   const authenticationBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow): JSX.Element => {
+    const funcName = 'authenticationBodyTemplate';
+    const logName = `${componentName}.${funcName}()`;
+
     if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
     if(rowData.webhookWithoutEnvs.authentication) {
+      const whAuth: WebHookAuth = rowData.webhookWithoutEnvs.authentication;
+      if(!whAuth.authMethod) throw new Error(`${logName}: whAuth.authMethod is undefined`);
+      switch(whAuth.authMethod) {
+        case WebHookBasicAuth.authMethod.BASIC:
+          return (<div>{WebHookBasicAuth.authMethod.BASIC}</div>);
+        case WebHookHeaderAuth.authMethod.HEADER:
+          return (<div>{WebHookHeaderAuth.authMethod.HEADER}</div>);
+        default:
+          Globals.assertNever(logName, whAuth.authMethod);
+      }
       return (
-          <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(rowData.webhookWithoutEnvs.authentication, null, 2)}
-          </pre>
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(rowData.webhookWithoutEnvs.authentication, null, 2)}
+        </pre>
       );
     } else {
       return <>None</>
@@ -89,13 +104,15 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
       >
         <Column 
           header="Environment" 
+          headerStyle={{ width: '18em' }}
           body={environmentsBodyTemplate} 
           bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}  
           sortable 
           sortField="webhookEnvironmentReference.entityRef.displayName" 
         />
         <Column 
-          header="Method" 
+          header="Method"
+          headerStyle={{ width: '7em' }}
           body={methodBodyTemplate} 
           bodyStyle={{verticalAlign: 'top'}} 
         />
@@ -104,8 +121,13 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
           body={uriBodyTemplate} 
           bodyStyle={{ verticalAlign: 'top' }} 
         />
-        <Column body={authenticationBodyTemplate} header="Authentication" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-        <Column body={statusBodyTemplate} header="Status" headerStyle={{ width: '5em', textAlign: 'center' }} bodyStyle={{textAlign: 'center' }}/>
+        <Column 
+          header="Authentication" 
+          headerStyle={{ width: '8em' }} 
+          body={authenticationBodyTemplate} 
+          bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}
+        />
+        <Column header="Status" headerStyle={{ width: '5em', textAlign: 'center' }} body={statusBodyTemplate}  bodyStyle={{textAlign: 'center' }}/>
       </DataTable>
     );
   }

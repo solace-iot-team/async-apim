@@ -88,7 +88,6 @@ export enum EUIDeveloperToolsResourcePaths {
   BootstrapUsers = '/devel/bootstrap/users',
   BootstrapConnectors = '/devel/bootstrap/connectors',
   ViewContexts = '/devel/view/contexts',
-  ManageAttributesDevel = '/devel/manage/attributes'
 }
 
 export class Globals {

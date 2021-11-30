@@ -29,8 +29,7 @@ import {
   TAPOrganizationId, 
   TApiEntitySelectItemList, 
   TApiEntitySelectItemIdList, 
-  APComponentsCommon,
-  TApiEntitySelectItem
+  APComponentsCommon
 } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalUserAppSelectApiProducts } from "./DeveloperPortalUserAppSelectApiProducts";
@@ -96,7 +95,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       // attributes: managedObject.apiObject.attributes, // user not allowed to edit attributes
       callbackUrl: managedObject.apiObject.callbackUrl,
       credentials: managedObject.apiObject.credentials,
-      displayName: managedObject.apiObject.displayName
+      displayName: managedObject.apiObject.displayName,
     };
     if(!isApproved) {
       updateApiObject.apiProducts = managedObject.apiObject.apiProducts
@@ -302,8 +301,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'doPopulateManagedObjectFormDataValues';
-    const logName = `${componentName}.${funcName}()`;
     managedObjectUseForm.setValue('apiObject', managedObjectFormData.apiObject);
     managedObjectUseForm.setValue('apiProductSelectItemIdList', managedObjectFormData.apiProductSelectItemIdList);
     setInFormCurrentMultiSelectOptionApiProductSelectItemList(managedObjectFormData.apiProductSelectItemList);
@@ -373,8 +370,8 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
     const isNew: boolean = (props.action === EAction.NEW);
     const isApproved: boolean = (managedObject?.apiObject.status === AppStatus.APPROVED);
     return (
