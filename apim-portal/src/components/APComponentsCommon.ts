@@ -16,6 +16,7 @@ import {
 import { TAPApiEntityRef } from './APApiObjectsCommon';
 import { Globals } from '../utils/Globals';
 import { APRenderUtils } from '../utils/APRenderUtils';
+import { APContextError, APError } from '../utils/APError';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -291,8 +292,7 @@ export class APManagedWebhook {
         const appEnv: AppEnvironment | undefined = appEnvList.find( (appEnv: AppEnvironment) => {
           return (envName === appEnv.name);
         });
-        if(!appEnv) throw new Error(`${logName}: appEnv is undefined`);
-        
+        if(!appEnv) throw new APContextError(logName, 'appEnv is undefined', { apiWebhook: apiWebhook, appResponse: appResponse });        
         apManagedWebhookList.push({
           references: {
             apiAppResponse: appResponse,

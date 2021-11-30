@@ -43,3 +43,13 @@ export class APConnectorApiMismatchError extends APError {
     super(internalLogName, internalMessage);
   }
 }
+
+export class APContextError extends APError {
+  private context: any;
+  
+  constructor(internalLogName: string, internalMessage: string, context: any) {
+    super(internalLogName, internalMessage);
+    this.context = context;
+  }
+
+}

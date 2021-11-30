@@ -36,8 +36,10 @@ export const APDisplayAppClientInformation: React.FC<IAPDisplayAppClientInformat
         header="Guaranteed Messaging"
         value={dataTableList}
       >
-        <Column field="name" header="Queue Name" />
-        <Column field="accessType" header="Access Type" />
+        <Column header="Queue Name" field="name"  />
+        <Column header="Access Type" headerStyle={{ width: '8em' }} field="accessType"  />
+        <Column header="Max TTL (secs)" headerStyle={{ width: '10em' }} field="maxTtl" />
+        <Column header="Max Spool (MB)" headerStyle={{ width: '10em' }} field="maxMsgSpoolUsage" />
       </DataTable>
     );
   }
