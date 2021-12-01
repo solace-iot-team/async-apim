@@ -3,7 +3,8 @@ import {
   Protocol, 
   Endpoint, 
   Service, 
-  EnvironmentResponse  
+  EnvironmentResponse,  
+  CommonEntityNameList
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { Globals } from '../../../utils/Globals';
@@ -24,7 +25,8 @@ export type TViewManagedObject = {
     highAvailability: string
   },
   exposedViewServiceEndpointList: Array<TViewServiceEndpoint>,
-  apiObject: TViewApiObject
+  apiObject: TViewApiObject,
+  apiUsedBy_ApiProductEntityNameList: CommonEntityNameList
 }
 
 export enum E_CALL_STATE_ACTIONS {
@@ -70,7 +72,7 @@ export class ManageEnvironmentsCommon {
     return Globals.generateDeepObjectValuesString(viewManagedObject);
   }
 
-  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject): TViewManagedObject => {
+  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, usedByApiProductEntityNameList: CommonEntityNameList): TViewManagedObject => {
     const funcName = 'transformViewApiObjectToViewManagedObject';
     const logName = `${ManageEnvironmentsCommon.name}.${funcName}()`;
     if(!viewApiObject.exposedProtocols) throw new Error(`${logName}: viewApiObject.exposedProtocols is undefined`);
@@ -85,6 +87,7 @@ export class ManageEnvironmentsCommon {
       },
       exposedViewServiceEndpointList: exposedViewServiceEndpointList,
       apiObject: viewApiObject,
+      apiUsedBy_ApiProductEntityNameList: usedByApiProductEntityNameList,
       globalSearch: ''
     }
     viewManagedObject.globalSearch = ManageEnvironmentsCommon.generateGlobalSearchContent(viewManagedObject);

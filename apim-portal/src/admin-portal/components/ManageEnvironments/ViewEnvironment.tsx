@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 
-import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { CommonEntityNameList, EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -15,6 +15,7 @@ import { ManageEnvironmentsCommon, E_CALL_STATE_ACTIONS, TViewApiObject, TViewMa
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IViewEnvironmentProps {
   organizationName: TAPOrganizationId;
@@ -46,7 +47,11 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
         envName: props.environmentName
       });      
       // throw new Error(`${logName}: testing error`);
-      setManagedObject(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject));
+      const apiApiProductEntityNameList: CommonEntityNameList = await EnvironmentsService.getEnvironmentReferencedByApiProducts({
+        organizationName: props.organizationName,
+        envName: props.environmentName
+      });
+      setManagedObject(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject, apiApiProductEntityNameList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -71,6 +76,15 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  const renderUsedByApiProducts = (usedBy_ApiProductEntityNameList: CommonEntityNameList): JSX.Element => {
+    if(usedBy_ApiProductEntityNameList.length === 0) return (<div>None.</div>);
+    return (
+      <div>
+        {APRenderUtils.getCommonEntityNameListAsStringList(usedBy_ApiProductEntityNameList).join(', ')}
+      </div>
+    );
+  }
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
@@ -99,9 +113,8 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
       );
     }
 
-    return (
-      <div className="card p-mt-4">
-        <DataTable header={'Description: ' + managedObject.apiObject.description} />
+    const renderPubSubService = () => {
+      return (
         <DataTable
           ref={dt}
           header="PubSub+ Service:"
@@ -109,17 +122,39 @@ export const ViewEnvironment: React.FC<IViewEnvironmentProps> = (props: IViewEnv
           expandedRows={expandedRows}
           rowExpansionTemplate={rowExpansionTemplate}
           dataKey="id"
-          >
-            <Column field="apiObject.serviceName" header="Service Name" />
-            <Column field="apiObject.serviceId" header="Service Id" />
-            <Column field="apiObject.msgVpnName" header="Msg Vpn" />
-            <Column field="apiObject.datacenterProvider" header="Datacenter Provider" />
-            <Column field="apiObject.datacenterId" header="Datacenter Id" />
-            <Column field="apiObject.serviceTypeId" header="Service Type" />
-            <Column field="transformedServiceClassDisplayedAttributes.highAvailability" header="Availability" />
+        >
+          <Column field="apiObject.serviceName" header="Service Name" />
+          <Column field="apiObject.serviceId" header="Service Id" />
+          <Column field="apiObject.msgVpnName" header="Msg Vpn" />
+          <Column field="apiObject.datacenterProvider" header="Datacenter Provider" />
+          <Column field="apiObject.datacenterId" header="Datacenter Id" />
+          <Column field="apiObject.serviceTypeId" header="Service Type" />
+          <Column field="transformedServiceClassDisplayedAttributes.highAvailability" header="Availability" />
         </DataTable>
-      </div>
-    )
+      );
+    }
+    return (
+      <React.Fragment>
+        <div className="p-col-12">
+          <div className="view">
+            <div className="view-detail-left">
+              <div className="p-text-bold">Description:</div>
+              <div className="p-ml-2">{managedObject.apiObject.description}</div>
+
+              <div className="p-text-bold">Used by API Products:</div>
+              <div className="p-ml-2">{renderUsedByApiProducts(managedObject.apiUsedBy_ApiProductEntityNameList)}</div>
+
+              <div className="card p-mt-4">
+                {renderPubSubService()}
+              </div>
+            </div>
+            <div className="view-detail-right">
+              <div>Id: {managedObject.id}</div>
+            </div>            
+          </div>
+        </div>  
+      </React.Fragment>
+    ); 
   }
 
   return (

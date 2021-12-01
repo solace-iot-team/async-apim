@@ -8,7 +8,8 @@ import { Button } from 'primereact/button';
 
 import { 
   EnvironmentsService, 
-  EnvironmentListItem 
+  EnvironmentListItem, 
+  CommonEntityNameList
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -28,7 +29,7 @@ export interface IListEnvironmentsProps {
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
   onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
+  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string, viewManagedObject: TViewManagedObject) => void;
 }
  
 export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListEnvironmentsProps) => {
@@ -75,7 +76,11 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
           organizationName: props.organizationName, 
           envName: environment.name
         });
-        _managedObjectList.push(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject));
+        const apiApiProductEntityNameList: CommonEntityNameList = await EnvironmentsService.getEnvironmentReferencedByApiProducts({
+          organizationName: props.organizationName,
+          envName: environment.name
+        });
+        _managedObjectList.push(ManageEnvironmentsCommon.transformViewApiObjectToViewManagedObject(apiObject, apiApiProductEntityNameList));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e) {
@@ -111,8 +116,8 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   }  
 
   const onManagedObjectOpen = (event: any): void => {
-    const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName)
+    const mo: TManagedObject = event.data as TManagedObject;
+    props.onManagedObjectView(mo.id, mo.displayName, mo);
   }
 
   const onExpandAll = () => {
@@ -133,7 +138,6 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
-        {/* <h2 className="p-m-0">{DataTableHeader}</h2> */}
         <div className="table-header-container">
           <Button icon="pi pi-plus" label="Expand All" onClick={onExpandAll} className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" />
           <Button icon="pi pi-minus" label="Collapse All" onClick={onCollapseAll} className="p-button-rounded p-button-outlined p-button-secondary" />
@@ -145,13 +149,17 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
       </div>
     );
   }
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
+  const usedByBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return (<>Not used.</>);
+    return (<>{`API Products: ${mo.apiUsedBy_ApiProductEntityNameList.length}`}</>);
+  }
+  const actionBodyTemplate = (mo: TManagedObject) => {
+    const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
     return (
-        <React.Fragment>
-          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} /> */}
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-        </React.Fragment>
+      <React.Fragment>
+        <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+        <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
+      </React.Fragment>
     );
   }
 
@@ -226,12 +234,13 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
           >
             <Column expander style={{ width: '3em' }} />  
             {/* <Column field="id" header="Id" /> */}
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiObject.serviceName" header="Service Name" sortable />
-            <Column field="apiObject.msgVpnName" header="Msg Vpn Name" sortable />
-            <Column field="apiObject.datacenterProvider" header="Datacenter Provider" sortable />
-            <Column field="apiObject.description" header="Description" />
-            <Column headerStyle={{width: '12em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right' }}/>
+            <Column header="Name" field="displayName" sortable filterField="globalSearch" />
+            <Column header="Service Name" field="apiObject.serviceName" sortable />
+            <Column header="Msg Vpn Name" field="apiObject.msgVpnName" sortable />
+            <Column header="Datacenter Provider" headerStyle={{width: '14em'}} field="apiObject.datacenterProvider" bodyStyle={{textAlign: 'center' }} sortable />
+            <Column header="Used By" body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            {/* <Column field="apiObject.description" header="Description" /> */}
+            <Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
         </DataTable>
       </div>
     );

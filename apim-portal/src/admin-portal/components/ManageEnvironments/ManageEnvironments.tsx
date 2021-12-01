@@ -12,13 +12,13 @@ import { ViewEnvironment } from "./ViewEnvironment";
 import { EditEnvironment } from "./EditEnvironment";
 import { DeleteEnvironment } from "./DeleteEnvironment";
 import { NewEnvironment } from "./NewEnvironment";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
-
-import '../../../components/APComponents.css';
-import "./ManageEnvironments.css";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService, TViewManagedObject } from "./ManageEnvironmentsCommon";
 import { E_MANAGED_OBJECT_CALL_STATE_ACTIONS } from "./ListUnregisteredOrganizationServices";
 import { EnvironmentListItem, EnvironmentsService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+
+import '../../../components/APComponents.css';
+import "./ManageEnvironments.css";
 
 export interface IManageEnvironmentsProps {
   organizationName: TAPOrganizationId;
@@ -70,6 +70,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const [areOrganizationServicesAvailable, setAreOrganizationServicesAvailable] = React.useState<boolean>(false);
   const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
+  const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -152,10 +153,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onViewManagedObject = (id: TManagedObjectId, displayName: string, viewMo: TViewManagedObject): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
+    setViewManagedObject(viewMo);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -195,6 +197,8 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
+    const funcName = 'renderLeftToolbarContent';
+    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) {
       if(areOrganizationServicesAvailable) {
@@ -204,19 +208,21 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       } else return undefined;
     }
     if(showViewComponent) {
+      if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
+      const isDeleteAllowed: boolean = viewManagedObject.apiUsedBy_ApiProductEntityNameList.length === 0;
       if(areOrganizationServicesAvailable) {
         return (
           <React.Fragment>
             <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
             <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isDeleteAllowed}/>        
           </React.Fragment>  
         );
       } else {
         return (
           <React.Fragment>
             <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isDeleteAllowed}/>        
           </React.Fragment> 
         );
       }

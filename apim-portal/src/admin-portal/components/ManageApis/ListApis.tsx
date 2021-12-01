@@ -136,8 +136,8 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }  
 
   const onManagedObjectOpen = (event: any): void => {
-    const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject);
+    const mo: TManagedObject = event.data as TManagedObject;
+    props.onManagedObjectView(mo.id, mo.displayName, mo);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -203,7 +203,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             <Column header="Name" field="displayName" bodyStyle={{verticalAlign: 'top'}} sortable filterField="globalSearch" />
             <Column header="Source" field="apiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
             <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }}/>
+            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
         </DataTable>
       </div>
     );

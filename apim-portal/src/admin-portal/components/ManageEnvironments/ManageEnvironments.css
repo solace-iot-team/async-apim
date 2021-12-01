@@ -36,6 +36,22 @@
     width: 80%;
   }
 }
+.ap-environments .view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-environments .view .view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-environments .view .view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
 /* @media screen and (max-width: 640px) {
   .ap-environments .card {
     width: 100%;

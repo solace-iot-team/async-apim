@@ -15,7 +15,8 @@ import {
   EnvironmentResponse, 
   Protocol, 
   Endpoint, 
-  EnvironmentPatch 
+  EnvironmentPatch, 
+  CommonEntityNameList
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -43,7 +44,9 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
 
   type TUpdateApiObject = EnvironmentPatch;
   type TGetApiObject = EnvironmentResponse;
-  type TManagedObject = TGetApiObject;
+  type TManagedObject = TGetApiObject & {
+    apiUsedBy_ApiProductEntityNameList: CommonEntityNameList
+  }
   type TServiceEndpoint = Endpoint;
   type TServiceEndpointList = Array<TServiceEndpoint>;
   type TManagedObjectFormData = TManagedObject;
@@ -56,8 +59,11 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
   }; 
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>; 
 
-  const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
-    return getApiObject;
+  const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject, usedByApiProductEntityNameList: CommonEntityNameList): TManagedObject => {
+    return {
+      ...getApiObject,
+      apiUsedBy_ApiProductEntityNameList: usedByApiProductEntityNameList
+    }
   }
 
   const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
@@ -146,7 +152,11 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
         organizationName: props.organizationName, 
         envName: props.environmentName
       });
-      setManagedObject(transformGetApiObjectToManagedObject(apiObject));
+      const apiApiProductEntityNameList: CommonEntityNameList = await EnvironmentsService.getEnvironmentReferencedByApiProducts({
+        organizationName: props.organizationName,
+        envName: props.environmentName
+      });
+      setManagedObject(transformGetApiObjectToManagedObject(apiObject, apiApiProductEntityNameList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -397,10 +407,21 @@ export const EditEnvironment: React.FC<IEditEnvironmentProps> = (props: IEditEnv
     );
   }
   
+  const getEditNotes = (mo: TManagedObject): string => {
+    // if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return 'Not used by any API Products.';
+    // return `Used by API Products: ${APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList).join(', ')}.`;
+    return `Used by API Products: ${mo.apiUsedBy_ApiProductEntityNameList.length}.`;
+  }
+
   return (
     <div className="ap-environments">
 
-      <APComponentHeader header={`Edit Environment: ${props.environmentDisplayName} (${props.environmentName})`} />
+      {managedObject && 
+        <APComponentHeader 
+          header={`Edit Environment: ${props.environmentDisplayName}`} 
+          notes={getEditNotes(managedObject)}
+        />
+      }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

@@ -414,7 +414,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     );
   }
   
-  const getNotes = (mo: TManagedObject): string => {
+  const getEditNotes = (mo: TManagedObject): string => {
     if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return 'Not used by any API Products.';
     return `Used by API Products: ${APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList).join(', ')}.`;
   }
@@ -427,7 +427,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
       }
 
       {managedObject && props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit API: ${props.apiDisplayName}`} notes={getNotes(managedObject)}/>
+        <APComponentHeader header={`Edit API: ${props.apiDisplayName}`} notes={getEditNotes(managedObject)}/>
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
