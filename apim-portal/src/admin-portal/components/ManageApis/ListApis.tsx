@@ -20,10 +20,10 @@ import { Globals } from "../../../utils/Globals";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IListApisProps {
   organizationId: TAPOrganizationId,
@@ -100,7 +100,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
           organizationName: props.organizationId,
           apiName: apiInfo.name
-        })
+        });
         _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo, apiApiProductEntityNameList));
       }
       setManagedObjectList(_managedObjectList);

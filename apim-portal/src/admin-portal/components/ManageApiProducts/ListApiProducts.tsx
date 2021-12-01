@@ -138,13 +138,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     );
   }
 
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
+  const actionBodyTemplate = (mo: TManagedObject) => {
+    const isDeleteAllowed: boolean = mo.apiUsedBy_AppEntityNameList.length === 0;
     return (
-        <React.Fragment>
-          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} /> */}
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-        </React.Fragment>
+      <React.Fragment>
+        <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+        <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
+      </React.Fragment>
     );
   }
 
@@ -163,6 +163,11 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return rowData.guaranteedMessagingEnabled.toString();
   }
 
+  const usedByBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apiUsedBy_AppEntityNameList.length === 0) return (<>Not used.</>);
+    return (<>{`Apps: ${mo.apiUsedBy_AppEntityNameList.length}`}</>);
+  }
+
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
@@ -170,10 +175,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <DataTable
             ref={dt}
             className="p-datatable-sm"
-            autoLayout={true}
+            // autoLayout={true}
             resizableColumns 
             columnResizeMode="expand"
-            showGridlines
+            showGridlines={false}
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
@@ -192,11 +197,12 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
             {/* <Column field="apiProduct.description" header="Description" /> */}
             <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
             <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
             <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
             <Column header="Protocols" field="protocolListAsString"  bodyStyle={{ verticalAlign: 'top' }} />
             <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField="guaranteedMessagingEnabled"/>
+            <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
         </DataTable>
       </div>

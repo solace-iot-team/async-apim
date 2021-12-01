@@ -26,7 +26,8 @@ import {
   EnvironmentResponse,
   Protocol,
   APIParameter,
-  ClientOptionsGuaranteedMessaging
+  ClientOptionsGuaranteedMessaging,
+  CommonEntityNameList
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
@@ -81,10 +82,11 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   type TUpdateApiObject = APIProductPatch;
   type TCreateApiObject = APIProduct;
   type TManagedObject = {
-    apiProduct: APIProduct,
-    apiInfoList: APIInfoList,
-    apiEnvironmentList: TApiEnvironmentList,
-    environmentList: TAPEnvironmentViewManagedObjectList,
+    apiProduct: APIProduct;
+    apiInfoList: APIInfoList;
+    apiEnvironmentList: TApiEnvironmentList;
+    environmentList: TAPEnvironmentViewManagedObjectList;
+    apiUsedBy_AppEntityNameList: CommonEntityNameList;
   }
   type TManagedObjectFormData = TManagedObject & {
     apiSelectItemIdList: TApiEntitySelectItemIdList, 
@@ -108,7 +110,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     },
     apiInfoList: [],
     apiEnvironmentList: [],
-    environmentList: []
+    environmentList: [],
+    apiUsedBy_AppEntityNameList: []
   };
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
@@ -136,7 +139,13 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const formId = componentName;
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
-  const transformGetApiObjectsToManagedObject = (apiProduct: APIProduct, apiInfoList: APIInfoList, apiEnvironmentList: TApiEnvironmentList, environmentList: TAPEnvironmentViewManagedObjectList): TManagedObject => {
+  const transformGetApiObjectsToManagedObject = (
+    apiProduct: APIProduct, 
+    apiInfoList: APIInfoList, 
+    apiEnvironmentList: TApiEnvironmentList, 
+    environmentList: TAPEnvironmentViewManagedObjectList,
+    apiUsedBy_AppEntityNameList: CommonEntityNameList
+  ): TManagedObject => {
     return {
       apiProduct: {
         ...apiProduct,
@@ -144,7 +153,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       },
       apiInfoList: apiInfoList,
       apiEnvironmentList: apiEnvironmentList,
-      environmentList: environmentList
+      environmentList: environmentList,
+      apiUsedBy_AppEntityNameList: apiUsedBy_AppEntityNameList
     }
   }
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
@@ -286,7 +296,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       },
       apiInfoList: [],
       apiEnvironmentList: [],
-      environmentList: []
+      environmentList: [],
+      apiUsedBy_AppEntityNameList: []
     };
     return mo;
   }
@@ -300,6 +311,10 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
         organizationName: props.organizationId,
         apiProductName: managedObjectId
+      });
+      const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
+        organizationName: props.organizationId,
+        apiProductName: apiProduct.name
       });
       // get all api infos
       let apiInfoList: APIInfoList = [];
@@ -323,7 +338,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           apiEnvironmentList.push(envResponse);
         }
       }
-      setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, apiEnvironmentList, environmentList));
+      setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, apiEnvironmentList, environmentList, apiAppEntityNameList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -1130,16 +1145,21 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       </div>
     );
   }
+
+  const getEditNotes = (mo: TManagedObject): string => {
+    if(mo.apiUsedBy_AppEntityNameList.length === 0) return 'Not used by any Apps.';
+    return `Used by ${mo.apiUsedBy_AppEntityNameList.length} Apps.`;
+  }
   
   return (
     <div className="manage-api-products">
 
-      {props.action === EAction.NEW && 
+      {managedObject && props.action === EAction.NEW && 
         <APComponentHeader header='Create API Product:' />
       }
 
-      {props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit API Product: ${props.apiProductDisplayName}`} />
+      {managedObject && props.action === EAction.EDIT && 
+        <APComponentHeader header={`Edit API Product: ${props.apiProductDisplayName}`} notes={getEditNotes(managedObject)}/>
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />

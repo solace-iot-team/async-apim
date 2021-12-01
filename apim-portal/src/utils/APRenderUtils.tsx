@@ -14,6 +14,7 @@ export class APRenderUtils {
   public static getApiInfoListAsDisplayStringList = (apiInfoList: APIInfoList ): Array<string> => {
     return apiInfoList.map( (apiInfo: APIInfo) => {
       return `${apiInfo.name} (${apiInfo.source})`;
+      // return `${apiInfo.name}`;
     });  
   }
 

@@ -9,6 +9,7 @@ import {
   APIProduct, 
   ApiProductsService, 
   CommonDisplayName, 
+  CommonEntityNameList, 
   CommonName
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -66,12 +67,17 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
         organizationName: props.organizationId,
         apiProductName: props.apiProductId
       });
+      const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
+        organizationName: props.organizationId,
+        apiProductName: props.apiProductId
+      });
       const getManagedObject: TGetManagedObject = {
         apiProduct: apiProduct,
         apiEnvironmentList: [],
         apiInfoList: [],
         id: apiProduct.name,
-        displayName: apiProduct.displayName
+        displayName: apiProduct.displayName,
+        apiUsedBy_AppEntityNameList: apiAppEntityNameList
       }
       setManagedObjectDisplay(transformGetManagedObjectToManagedObjectDisplay(getManagedObject));
     } catch(e) {
@@ -172,6 +178,15 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     );
   }
 
+  const renderUsedByApps = (usedBy_AppsEntityNameList: CommonEntityNameList): JSX.Element => {
+    if(usedBy_AppsEntityNameList.length === 0) return (<div>None.</div>);
+    return (
+      <div>
+        {APRenderUtils.getCommonEntityNameListAsStringList(usedBy_AppsEntityNameList).join(', ')}
+      </div>
+    );
+  }
+
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${componentName}.${funcName}()`;
@@ -181,8 +196,10 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
         <div className="p-col-12">
           <div className="api-product-view">
             <div className="api-product-view-detail-left">
+              
               <div className="p-text-bold">Description:</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.description}</div>
+
               <div><b>Approval type</b>: {managedObjectDisplay.apiProduct.approvalType}</div>
 
               <div className="p-text-bold">APIs:</div>
@@ -190,19 +207,27 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
               <div className="p-text-bold">Environments:</div>
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div>
+
               <div className="p-text-bold">Protocols:</div>
               <div className="p-ml-2">{managedObjectDisplay.protocolListAsString}</div>
+
               <div className="p-text-bold">Attributes:</div>
               <APDisplayAttributes
                 attributeList={managedObjectDisplay.apiProduct.attributes}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
+
               <div className="p-text-bold">Client Options:</div>
               <APDisplayClientOptions
                 clientOptions={managedObjectDisplay.apiProduct.clientOptions}
                 className="p-ml-4"
               />
+
+              <Divider />
+              <div className="p-text-bold">Used by Apps:</div>
+              <div className="p-ml-2">{renderUsedByApps(managedObjectDisplay.apiUsedBy_AppEntityNameList)}</div>
+
             </div>
             <div className="api-product-view-detail-right">
               <div>Id: {managedObjectDisplay.id}</div>

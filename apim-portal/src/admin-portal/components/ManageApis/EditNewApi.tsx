@@ -19,10 +19,10 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APButtonLoadFileContents } from "../../../components/APButtons/APButtonLoadFileContents";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export enum EAction {
   EDIT = 'EDIT',

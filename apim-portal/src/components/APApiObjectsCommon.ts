@@ -10,6 +10,7 @@ import {
   AppListItem, 
   ClientOptionsGuaranteedMessaging, 
   CommonDisplayName, 
+  CommonEntityNameList, 
   CommonName, 
   EnvironmentResponse, 
   EnvironmentsService, 
@@ -55,11 +56,12 @@ export type TApiEnvironmentNameList = Array<string>;
 export type TApiEnvironmentList = Array<EnvironmentResponse>;
 export type TManagedApiProductId = string;
 export type TViewManagedApiProduct = {
-  id: TManagedApiProductId,
-  displayName: string,
-  apiProduct: APIProduct,
-  apiEnvironmentList: TApiEnvironmentList,
-  apiInfoList: APIInfoList
+  id: TManagedApiProductId;
+  displayName: string;
+  apiProduct: APIProduct;
+  apiEnvironmentList: TApiEnvironmentList;
+  apiInfoList: APIInfoList;
+  apiUsedBy_AppEntityNameList: CommonEntityNameList;
 }
 export type TViewManagedApiProductList = Array<TViewManagedApiProduct>;
 
@@ -161,13 +163,14 @@ export class APApiProductsCommon {
     return Object.keys(e).map(k => e[k]);
   }  
 
-  public static transformApiProductToViewManagedApiProduct = (apiProduct: TApiProduct, apiEnvironmentList: TApiEnvironmentList, apiInfoList: APIInfoList): TViewManagedApiProduct => {
+  public static transformApiProductToViewManagedApiProduct = (apiProduct: TApiProduct, apiEnvironmentList: TApiEnvironmentList, apiInfoList: APIInfoList, apiUsedBy_AppEntityNameList: CommonEntityNameList): TViewManagedApiProduct => {
     return {
       id: apiProduct.name,
       displayName: apiProduct.displayName,
       apiProduct: apiProduct,
       apiEnvironmentList: apiEnvironmentList,
-      apiInfoList: apiInfoList
+      apiInfoList: apiInfoList,
+      apiUsedBy_AppEntityNameList: apiUsedBy_AppEntityNameList
     };
   }
 
@@ -248,7 +251,11 @@ export class APApiObjectsApiCalls {
               });
               apiInfoList.push(apiInfo);
             }
-            viewManagedApiProductList.push(APApiProductsCommon.transformApiProductToViewManagedApiProduct(apiProduct, apiEnvironmentList, apiInfoList));
+            const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
+              organizationName: organizationId,
+              apiProductName: apiProduct.name
+            });
+            viewManagedApiProductList.push(APApiProductsCommon.transformApiProductToViewManagedApiProduct(apiProduct, apiEnvironmentList, apiInfoList, apiAppEntityNameList));
           }  
           result.viewManagedApiProductList = viewManagedApiProductList;
         } catch(e: any) {
