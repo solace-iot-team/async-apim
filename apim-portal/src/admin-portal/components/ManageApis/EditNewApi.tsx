@@ -9,7 +9,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 
-import { ApisService, APIInfo } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApisService, APIInfo, CommonEntityNameList } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { APConnectorApiCalls, APConnectorApiHelper, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
@@ -22,6 +22,7 @@ import { APButtonLoadFileContents } from "../../../components/APButtons/APButton
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -48,7 +49,8 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     id: TManagedObjectId,
     displayName: string,
     asyncApiSpec?: TAPAsyncApiSpec;
-    apiInfo?: APIInfo
+    apiInfo?: APIInfo,
+    apiUsedBy_ApiProductEntityNameList: CommonEntityNameList
   }
   type TManagedObjectFormData = TManagedObject & {
     formAsyncApiSpecString: string | undefined
@@ -60,7 +62,8 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     asyncApiSpec: {
       format: EAPAsyncApiSpecFormat.UNKNOWN,
       spec: ''
-    }
+    },
+    apiUsedBy_ApiProductEntityNameList: []
   }
 
   const ToolbarFormFieldAsyncApiUploadFromFileButtonLabel = 'Upload from File';
@@ -74,12 +77,13 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
 
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
 
-  const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, apiInfo: APIInfo, asyncApiSpec: TAPAsyncApiSpec): TManagedObject => {
+  const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, apiInfo: APIInfo, asyncApiSpec: TAPAsyncApiSpec, apiApiProductEntityNameList: CommonEntityNameList): TManagedObject => {
     return {
       id: id,
       displayName: displayName,
       asyncApiSpec: asyncApiSpec,
-      apiInfo: apiInfo
+      apiInfo: apiInfo,
+      apiUsedBy_ApiProductEntityNameList: apiApiProductEntityNameList
     }
   }
 
@@ -131,8 +135,12 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     // const logName = `${componentName}.${funcName}()`;
     const initialApiCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${managedObjectDisplayName}`);
     const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, managedObjectId, initialApiCallState);
+    const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
+      organizationName: props.organizationId,
+      apiName: managedObjectId
+    });
     if(result.apiCallState.success && result.apiInfo && result.asyncApiSpec) {
-      setManagedObject(transformGetManagedObjectToManagedObject(managedObjectId, managedObjectDisplayName, result.apiInfo, result.asyncApiSpec));
+      setManagedObject(transformGetManagedObjectToManagedObject(managedObjectId, managedObjectDisplayName, result.apiInfo, result.asyncApiSpec, apiApiProductEntityNameList));
     }
     setApiCallStatus(result.apiCallState);
     return result.apiCallState;
@@ -406,15 +414,20 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     );
   }
   
+  const getNotes = (mo: TManagedObject): string => {
+    if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return 'Not used by any API Products.';
+    return `Used by API Products: ${APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList).join(', ')}.`;
+  }
+
   return (
     <div className="manage-apis">
 
-      {props.action === EAction.NEW && 
+      {managedObject && props.action === EAction.NEW && 
         <APComponentHeader header='Create API:' />
       }
 
-      {props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit API: ${props.apiDisplayName}`} />
+      {managedObject && props.action === EAction.EDIT && 
+        <APComponentHeader header={`Edit API: ${props.apiDisplayName}`} notes={getNotes(managedObject)}/>
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />

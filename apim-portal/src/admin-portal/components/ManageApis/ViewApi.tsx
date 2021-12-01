@@ -1,7 +1,7 @@
 
 import React from "react";
 
-import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APIInfo, ApisService, CommonEntityNameList } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -12,6 +12,7 @@ import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IViewApiProps {
   organizationId: TAPOrganizationId,
@@ -29,24 +30,26 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
     id: TManagedObjectId,
     displayName: string,
     asyncApiSpec: TAPAsyncApiSpec;
-    apiInfo: APIInfo
+    apiInfo: APIInfo,
+    apiUsedBy_ApiProductEntityNameList: CommonEntityNameList
   }
   type TManagedObjectDisplay = TManagedObject & {
     anotherField: string
   }
 
-  const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, apiInfo: APIInfo, asyncApiSpec: TAPAsyncApiSpec): TManagedObject => {
+  const transformGetManagedObjectToManagedObject = (id: TManagedObjectId, displayName: string, apiInfo: APIInfo, asyncApiSpec: TAPAsyncApiSpec, apiApiProductEntityNameList: CommonEntityNameList): TManagedObject => {
     return {
       id: id,
       displayName: displayName,
       asyncApiSpec: asyncApiSpec,
-      apiInfo: apiInfo
+      apiInfo: apiInfo,
+      apiUsedBy_ApiProductEntityNameList: apiApiProductEntityNameList
     }
   }
 
-  const transformManagedObjectToDisplay = (managedObject: TManagedObject): TManagedObjectDisplay => {
+  const transformManagedObjectToDisplay = (mo: TManagedObject): TManagedObjectDisplay => {
     return {
-      ...managedObject,
+      ...mo,
       anotherField: 'placeholder'
     }
   }
@@ -61,8 +64,12 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
     const logName = `${componentName}.${funcName}()`;
     const initialApiCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apiDisplayName}`);
     const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, props.apiId, initialApiCallState);
+    const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
+      organizationName: props.organizationId,
+      apiName: props.apiId
+    });
     if(result.apiCallState.success && result.apiInfo && result.asyncApiSpec) {
-      setManagedObject(transformGetManagedObjectToManagedObject(props.apiId, props.apiDisplayName, result.apiInfo, result.asyncApiSpec));
+      setManagedObject(transformGetManagedObjectToManagedObject(props.apiId, props.apiDisplayName, result.apiInfo, result.asyncApiSpec, apiApiProductEntityNameList));
     }
     setApiCallStatus(result.apiCallState);
     return result.apiCallState;
@@ -85,6 +92,14 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const renderUsedByApiProducts = (usedBy_ApiProductEntityNameList: CommonEntityNameList): JSX.Element => {
+    if(usedBy_ApiProductEntityNameList.length === 0) return (<div>None.</div>);
+    return (
+      <div>
+        {APRenderUtils.getCommonEntityNameListAsStringList(usedBy_ApiProductEntityNameList).join(', ')}
+      </div>
+    );
+  }
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -96,6 +111,8 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
         <div className="p-col-12">
           <div className="api-view">
             <div className="api-view-detail-left">
+              <div className="p-text-bold">Used by API Products:</div>
+              <div className="p-ml-2">{renderUsedByApiProducts(managedObjectDisplay.apiUsedBy_ApiProductEntityNameList)}</div>
             </div>
             <div className="api-view-detail-right">
               <div>Id: {managedObjectDisplay.id}</div>

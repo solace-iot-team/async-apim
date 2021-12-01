@@ -2,6 +2,8 @@ import React from "react";
 import { 
   APIInfo, 
   APIInfoList, 
+  CommonEntityNameList, 
+  CommonEntityNames, 
   Endpoint, 
   Protocol 
 } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -54,6 +56,12 @@ export class APRenderUtils {
       return _attributeList.sort();
     }
     else return [];
+  }
+
+  public static getCommonEntityNameListAsStringList = (commonEntityNameList: CommonEntityNameList): Array<string> => {
+    return commonEntityNameList.map( (commonEntityNames: CommonEntityNames) => {
+      return commonEntityNames.displayName ? commonEntityNames.displayName : 'unknown';
+    });    
   }
 
   public static renderStringListAsDivList = (stringList?: Array<string>): JSX.Element => {

@@ -1,4 +1,4 @@
-import { APIInfo } from '@solace-iot-team/apim-connector-openapi-browser';
+import { APIInfo, CommonEntityNameList } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type TManagedObjectId = string;
 export type TViewApiObject = string;
@@ -8,6 +8,7 @@ export type TViewManagedObject = {
   displayName: string,
   apiObject: TViewApiObject,
   apiInfo: APIInfo,
+  apiUsedBy_ApiProductEntityNameList: CommonEntityNameList,
   globalSearch: string
 }
 

@@ -10,6 +10,7 @@ import {
   APIInfo,
   APIInfoList,
   ApisService,
+  CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { Config } from '../../../Config';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -22,6 +23,7 @@ import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObj
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IListApisProps {
   organizationId: TAPOrganizationId,
@@ -37,23 +39,25 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const componentName = 'ListApis';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No APIs found - create a new API.';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search ...';
 
   type TManagedObject = TViewManagedObject;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject;
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo): TViewManagedObject => {
+  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo, usedByApiProductEntityNameList: CommonEntityNameList): TViewManagedObject => {
     const globalSearch = {
       apiObject: viewApiObject,
-      apiInfo: apiInfo
+      apiInfo: apiInfo,
+      usedByApiProductEntityNameList: usedByApiProductEntityNameList
     }
     return {
       id: viewApiObject,
       displayName: viewApiObject,
       apiObject: viewApiObject,
       apiInfo: apiInfo,
+      apiUsedBy_ApiProductEntityNameList: usedByApiProductEntityNameList,
       globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
     }
   }
@@ -87,12 +91,17 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         organizationName: props.organizationId,
         format: "extended"
       });
-      const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;
+      const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;      
       let _managedObjectList: TManagedObjectList = [];
       for(const apiInfo of apiAPIInfoList) {
         // console.log(`${logName}: apiInfo=${JSON.stringify(apiInfo, null, 2)}`);
         if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo));
+        // get the api Products using the api
+        const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
+          organizationName: props.organizationId,
+          apiName: apiInfo.name
+        })
+        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo, apiApiProductEntityNameList));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e: any) {
@@ -147,15 +156,20 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     );
   }
 
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    const showButtonsEditDelete: boolean = (managedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+  const usedByApiProductsBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return (<>None</>);
+    return APRenderUtils.renderStringListAsDivList(APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList));
+  }
+
+  const actionBodyTemplate = (mo: TManagedObject) => {
+    const showButtonsEditDelete: boolean = (mo.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+    const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject)} />
           { showButtonsEditDelete &&
             <>
-              <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-              <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+              <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+              <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed}/>
             </>
           }
         </React.Fragment>
@@ -186,9 +200,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             sortOrder={1}
           >
             {/* <Column field="id" header="Id" sortable /> */}
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiInfo.source" header="Source" sortable />
-            <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column header="Name" field="displayName" bodyStyle={{verticalAlign: 'top'}} sortable filterField="globalSearch" />
+            <Column header="Source" field="apiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
+            <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }}/>
         </DataTable>
       </div>
     );

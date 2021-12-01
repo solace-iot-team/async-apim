@@ -174,13 +174,14 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     if(showViewComponent) {          
       if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
       const showButtonsEditDelete: boolean = (viewManagedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+      const isDeleteAllowed: boolean = viewManagedObject.apiUsedBy_ApiProductEntityNameList.length === 0;
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           { showButtonsEditDelete &&
           <>
             <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isDeleteAllowed} />        
           </>
           }
         </React.Fragment>
