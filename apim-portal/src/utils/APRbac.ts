@@ -82,7 +82,8 @@ const rbacRoleList: TAPRbacRoleList = [
       EUICommonResourcePaths.ManageUserAccount,
       EUIDeveloperPortalResourcePaths.Home,
       EUIDeveloperPortalResourcePaths.UserHome,
-      EUIDeveloperPortalResourcePaths.ViewProductCatalog,
+      EUIDeveloperPortalResourcePaths.ExploreApis,
+      EUIDeveloperPortalResourcePaths.ExploreApiProducts,
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
       EUIDeveloperPortalResourcePaths.ManageTeamApplications,
     ]

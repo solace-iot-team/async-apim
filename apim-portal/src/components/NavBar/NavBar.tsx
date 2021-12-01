@@ -14,7 +14,7 @@ import { SystemHealthDisplay } from "../SystemHealth/SystemHealthDisplay";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
-import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, EUIEmbeddableResourcePaths, Globals } from "../../utils/Globals";
+import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 
 import '../APComponents.css';
@@ -67,32 +67,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
         userMessage: apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error'
       }
     }})
-  }
-
-  const getEmbeddableMenuItem = (): MenuItem => {
-    return {
-      label: 'EMBEDDABLE',
-      items: [
-        {
-          label: 'Developer',
-          items: [
-            {
-              label: 'Configure App',
-              command: () => { navigateTo(EUIEmbeddableResourcePaths.DeveloperAppConfigure); }
-            }
-          ]
-        },
-        {
-          label: 'Admin',
-          items: [
-            {
-              label: 'Environment',
-              command: () => { navigateTo(EUIEmbeddableResourcePaths.AdminEnvironments); }
-            }
-          ]
-        },
-      ]
-    };
   }
 
   const getDevelMenuItem = (): MenuItem => {
@@ -154,7 +128,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       }
     ];
 
-    if(Config.getUseEmbeddablePages()) items.push(getEmbeddableMenuItem());
     if(Config.getUseDevelTools()) items.push(getDevelMenuItem());
     return items;
   }

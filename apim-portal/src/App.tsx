@@ -15,7 +15,6 @@ import { DeveloperPortalAppRoutes } from "./developer-portal/DeveloperPortalAppR
 import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperPortalSideBar/DeveloperPortalSideBar";
 
 import { 
-  EUIEmbeddableResourcePaths, 
   EUIDeveloperToolsResourcePaths, 
   EUICommonResourcePaths, 
   EUIAdminPortalResourcePaths, 
@@ -38,8 +37,6 @@ import { BootstrapConnectorsPage } from "./pages/devel/BootstrapConnectorsPage";
 import { BootstrapOrganizationsPage } from "./pages/devel/BootstrapOrganizationsPage";
 import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
-// * Embedded Components *
-import { EmbeddableDeveloperConfigureAppPortalPage } from "./embeddable/portal-pages/EmbeddableDeveloperConfigureAppPortalPage";
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -62,11 +59,9 @@ const App: React.FC = () => {
   const [showAdminPortal, setShowAdminPortal] = React.useState<boolean>(false);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [showDeveloperTools, setShowDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [showEmbeddablePages, setShowEmbeddablePages] = React.useState<boolean>(Config.getUseEmbeddablePages());
   const appPortalHistory = useHistory<TLocationStateAppState>();
 
-  const navigateTo = (path: string): void => { appPortalHistory.push(path); }
+  // const navigateTo = (path: string): void => { appPortalHistory.push(path); }
 
   const navigateToWithoutStateChange = (path: string): void => { 
     appPortalHistory.push({
@@ -173,13 +168,6 @@ const App: React.FC = () => {
               {/* Developer Portal */}
               { showDeveloperPortal && DeveloperPortalAppRoutes() }
               
-              {/* Embedded Components */}
-              { showEmbeddablePages && 
-                [
-                  <Route path={EUIEmbeddableResourcePaths.DeveloperAppConfigure} key={EUIEmbeddableResourcePaths.DeveloperAppConfigure} component={EmbeddableDeveloperConfigureAppPortalPage} exact/>
-                ]
-              }
-
               {/* Developer Tools */}
               { showDeveloperTools && 
                 [

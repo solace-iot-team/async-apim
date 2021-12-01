@@ -72,14 +72,10 @@ export enum EUIAdminPortalResourcePaths {
 export enum EUIDeveloperPortalResourcePaths {
   Home = '/developer-portal',
   UserHome = '/developer-portal/user/home',
-  ViewProductCatalog = '/developer-portal/view/product-catalog',
+  ExploreApiProducts = '/developer-portal/explore/api-products',
+  ExploreApis = '/developer-portal/explore/apis',
   ManageUserApplications = '/developer-portal/manage/user/applications',
   ManageTeamApplications = '/developer-portal/manage/team/applications'
-}
-
-export enum EUIEmbeddableResourcePaths {
-  DeveloperAppConfigure = '/embedabble/developer/app/configure',
-  AdminEnvironments = '/embedabble/admin/environments'
 }
 
 export enum EUIDeveloperToolsResourcePaths {

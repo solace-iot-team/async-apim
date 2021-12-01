@@ -9,12 +9,12 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
-import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
+// import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
 
 import "../../pages/Pages.css";
 
-export const DeveloperPortalViewProductCatalogPage: React.FC = () => {
-  const componentName="DeveloperPortalViewProductCatalogPage";
+export const DeveloperPortalExploreApisPage: React.FC = () => {
+  const componentName="DeveloperPortalExploreApisPage";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -41,12 +41,12 @@ export const DeveloperPortalViewProductCatalogPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       {
-        label: 'Catalog'
+        label: 'Explore'
       },
       { 
-        label: 'API Products',
+        label: 'APIs',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog) }
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis) }
       }
     ];
     breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
@@ -73,12 +73,19 @@ export const DeveloperPortalViewProductCatalogPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       {organizationName &&
-        <DeveloperPortalProductCatalog
-         organizationName={organizationName}
-          onSuccess={onSuccess} 
-          onError={onError} 
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
-        />
+        <React.Fragment>
+          <h1>TODO</h1>
+          <ul>
+            <li>explore apis</li>
+            <li>view available api products for each api</li>
+          </ul>
+        </React.Fragment>
+        // <DeveloperPortalProductCatalog
+        //  organizationName={organizationName}
+        //   onSuccess={onSuccess} 
+        //   onError={onError} 
+        //   onBreadCrumbLabelList={onBreadcrumbLabelList}
+        // />
       }
     </React.Fragment>
 );

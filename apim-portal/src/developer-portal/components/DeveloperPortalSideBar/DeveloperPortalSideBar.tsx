@@ -52,9 +52,14 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
       },
       {
-        label: 'API Products',
-        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ViewProductCatalog),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ViewProductCatalog); }
+        label: 'Explore APIs',
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ExploreApis),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
+      },
+      {
+        label: 'Explore API Products',
+        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts); }
       },
       // {
       //   label: 'Team Applications',

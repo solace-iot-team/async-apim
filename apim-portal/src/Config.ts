@@ -3,7 +3,6 @@ import { TAPSClientOpenApiConfig } from './utils/APSClientOpenApi';
 
 type TConfig = {
   useDevelTools: boolean,
-  useEmbeddablePages: boolean,
   apsClientOpenApiConfig: TAPSClientOpenApiConfig
 }
 
@@ -57,7 +56,6 @@ export class Config {
     // }
     Config.config = {
       useDevelTools: Config.getOptionalEnvVarValueAsBoolean('REACT_APP_AP_USE_DEVEL_TOOLS', false),
-      useEmbeddablePages: Config.getOptionalEnvVarValueAsBoolean('REACT_APP_AP_USE_EMBEDDEDABLE_PAGES', false),
       apsClientOpenApiConfig: {
         apsServerUrl: Config.getOptionalEnvVarValueAsURL("REACT_APP_AP_SERVER_URL"),
         // protocol: protocol,
@@ -76,9 +74,5 @@ export class Config {
   
   public static getUseDevelTools = (): boolean => {
     return Config.config.useDevelTools;
-  }
-
-  public static getUseEmbeddablePages = (): boolean => {
-    return Config.config.useEmbeddablePages;
   }
 }
