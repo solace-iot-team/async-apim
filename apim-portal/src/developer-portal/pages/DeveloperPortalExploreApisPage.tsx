@@ -12,6 +12,7 @@ import { TAPOrganizationId } from '../../components/APComponentsCommon';
 // import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
 
 import "../../pages/Pages.css";
+import { DeveloperPortalExploreApis } from '../components/DeveloperPortalExploreApis/DeveloperPortalExploreApis';
 
 export const DeveloperPortalExploreApisPage: React.FC = () => {
   const componentName="DeveloperPortalExploreApisPage";
@@ -76,16 +77,15 @@ export const DeveloperPortalExploreApisPage: React.FC = () => {
         <React.Fragment>
           <h1>TODO</h1>
           <ul>
-            <li>explore apis</li>
-            <li>view available api products for each api</li>
+            <li>button for each API Product</li>
           </ul>
+        <DeveloperPortalExploreApis
+          organizationName={organizationName}
+          onSuccess={onSuccess}
+          onError={onError}
+          onBreadCrumbLabelList={onBreadcrumbLabelList}
+        />
         </React.Fragment>
-        // <DeveloperPortalProductCatalog
-        //  organizationName={organizationName}
-        //   onSuccess={onSuccess} 
-        //   onError={onError} 
-        //   onBreadCrumbLabelList={onBreadcrumbLabelList}
-        // />
       }
     </React.Fragment>
 );

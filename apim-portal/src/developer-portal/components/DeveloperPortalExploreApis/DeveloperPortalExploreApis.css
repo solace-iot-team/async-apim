@@ -1,0 +1,89 @@
+.adp-explore-apis .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.adp-explore-apis .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.adp-explore-apis .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.adp-explore-apis .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.adp-explore-apis .ap-api-error {
+  border-color: #df2121;
+}
+.adp-explore-apis .has-badge {
+  background-color: transparent;
+}
+
+.adp-explore-apis .card form {
+  margin-top: 2rem;
+}
+.adp-explore-apis .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .adp-explore-apis .card {
+    width: 80%;
+  }
+}
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}
+
+.adp-explore-apis .view {
+  display: flex;
+  /* align-items: center; */
+  padding: 1rem;
+  width: 100%;
+}
+.adp-explore-apis .view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.adp-explore-apis .view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
+.adp-explore-apis .name {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.adp-explore-apis .description {
+  margin: 0 0 1rem 0;
+}
+.adp-explore-apis .view .action {
+  display: flex;
+  flex-direction: column;
+}
+
+.adp-explore-apis .view .api-products {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  /* align-self: flex-end; */
+}
+.adp-explore-apis
+  .api-product-view
+  .api-product-view-detail
+  .product-api-toolbar {
+  background: none;
+  border: none;
+}

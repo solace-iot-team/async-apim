@@ -1,12 +1,14 @@
 import { DataTableSortOrderType } from 'primereact/datatable';
 import { APSUser, EAPSSortDirection } from '@solace-iot-team/apim-server-openapi-browser';
 import { 
+  APIInfo,
   APIProduct,
   AppEnvironment,
   AppPatch,
   AppResponse,
   ClientInformationGuaranteedMessaging, 
   CommonDisplayName, 
+  CommonEntityNameList, 
   CommonName, 
   Endpoint, 
   EnvironmentResponse, 
@@ -65,11 +67,73 @@ export type TAPAppClientInformationList = Array<TAPAppClientInformation>;
 export type TAPTrustedCN = string;
 export type TAPTrustedCNList = Array<TAPTrustedCN>;
 
-// * API Product *
-export enum EAPManagedApiProductDisplay_Type {
-  TAPDeveloperPortalApiProductDisplay = "TAPDeveloperPortalApiProductDisplay",
-  TAPAdminPortalApiProductDisplay = "TAPAdminPortalApiProductDisplay"
+export enum EAPPortalDisplay_Type {
+  TAPDeveloperPortalDisplay = "TAPDeveloperPortalDisplay",
+  TAPAdminPortalDisplay = "TAPAdminPortalDisplay"
 }
+
+// * Apis *
+type TAPManagedApiDisplay_Base = {
+  apName: CommonName;
+  apDisplayName: CommonDisplayName;
+  apiApiInfo: APIInfo;
+  apiUsedBy_ApiProductEntityNameList: CommonEntityNameList;
+  apAsyncApiSpec?: TAPAsyncApiSpec;
+}
+export type TAPDeveloperPortalApiDisplay = TAPManagedApiDisplay_Base & {
+  apPortalDisplayType: EAPPortalDisplay_Type;
+};
+export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
+  apPortalDisplayType: EAPPortalDisplay_Type;
+}
+export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+
+export class APManagedApiDisplay {
+
+  // public static getApApiDisplayNameListAsString = (apiDisplayNameList: Array<CommonDisplayName> ): string => {
+  //   if(apiDisplayNameList) return apiDisplayNameList.join(', ');
+  //   else return '';
+  // }
+  // public static getApProtocolListAsString = (apiProtocolList?: Array<Protocol> ): string => {
+  //   return APRenderUtils.getProtocolListAsString(apiProtocolList);
+  // }
+  // public static getApAttributeNamesAsString = (apiAttributeList?: TAPAttributeList): string => {
+  //   if(apiAttributeList) {
+  //     const list: Array<string> = apiAttributeList.map( (attribute: TAPAttribute) => {
+  //       return attribute.name;
+  //     });
+  //     return list.join(', ');
+  //   }
+  //   else return '';
+  // }
+  // public static getApEnvironmentsAsDisplayList = (apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
+  //   const funcName = 'getApEnvironmentsAsDisplayList';
+  //   const logName = `${APManagedApiProductDisplay.name}.${funcName}()`;
+  //   return apiEnvironmentList.map( (envResp: EnvironmentResponse) => {
+  //     return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`
+  //   });
+  // }
+  private static createAPManagedApiDisplay_Base_From_ApiEntities = (apiInfo: APIInfo, apiApiProductEntityNameList: CommonEntityNameList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPManagedApiDisplay_Base => {
+      const _base: TAPManagedApiDisplay_Base = {
+        apName: apiInfo.name,
+        apDisplayName: apiInfo.name,
+        apiApiInfo: apiInfo,
+        apiUsedBy_ApiProductEntityNameList: apiApiProductEntityNameList,
+        apAsyncApiSpec: apAsyncApiSpec
+      }
+      return _base;
+  }
+  public static createAPDeveloperPortalApiDisplayFromApiEntities = (apiInfo: APIInfo, apiApiProductEntityNameList: CommonEntityNameList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPDeveloperPortalApiDisplay => {
+    const _base: TAPManagedApiDisplay_Base = APManagedApiDisplay.createAPManagedApiDisplay_Base_From_ApiEntities(apiInfo, apiApiProductEntityNameList, apAsyncApiSpec);
+    return {
+      ..._base,
+      apPortalDisplayType: EAPPortalDisplay_Type.TAPDeveloperPortalDisplay,
+    }
+  }
+
+}
+
+// * API Product *
 type TAPManagedApiProductDisplay_Base = {
   apApiProductName: CommonName;
   apApiProductDisplayName: CommonDisplayName;
@@ -77,10 +141,10 @@ type TAPManagedApiProductDisplay_Base = {
   apiEnvironmentList: Array<EnvironmentResponse>;
 }
 export type TAPDeveloperPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
-  apType: EAPManagedApiProductDisplay_Type;
+  apPortalDisplayType: EAPPortalDisplay_Type;
 };
 export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
-  apType: EAPManagedApiProductDisplay_Type
+  apPortalDisplayType: EAPPortalDisplay_Type;
 }
 export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
 
@@ -127,17 +191,12 @@ export class APManagedApiProductDisplay {
     const _base = APManagedApiProductDisplay.createAPManagedApiProductDisplay_Base_From_ApiEntities(apiApiProduct, apiEnvRespList);
     return {
       ..._base,
-      apType: EAPManagedApiProductDisplay_Type.TAPDeveloperPortalApiProductDisplay,
+      apPortalDisplayType: EAPPortalDisplay_Type.TAPDeveloperPortalDisplay,
     }
   }
-
 }
  
 // * App *
-export enum EAPManagedUserAppDisplay_Type {
-  TAPDeveloperPortalUserAppDisplay = "TAPDeveloperPortalUserAppDisplay",
-  TAPAdminPortalUserAppDisplay = "TAPAdminPortalUserAppDisplay"
-}
 type TAPManagedUserAppDisplay_Base = {
   appName: CommonName;
   appDisplayName: CommonDisplayName;
@@ -149,10 +208,10 @@ type TAPManagedUserAppDisplay_Base = {
   isAppWebhookCapable: boolean;
 }
 export type TAPDeveloperPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
-  type: EAPManagedUserAppDisplay_Type
+  apPortalDisplayType: EAPPortalDisplay_Type;
 };
 export type TAPAdminPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
-  type: EAPManagedUserAppDisplay_Type
+  apPortalDisplayType: EAPPortalDisplay_Type;
   apsUser: APSUser;
 }
 
@@ -235,7 +294,7 @@ export class APManagedUserAppDisplay {
       const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiProductList, apiAppResponse_mqtt);
       return {
         ..._base,
-        type: EAPManagedUserAppDisplay_Type.TAPDeveloperPortalUserAppDisplay
+        apPortalDisplayType: EAPPortalDisplay_Type.TAPDeveloperPortalDisplay
       }
     }
   
@@ -249,7 +308,7 @@ export class APManagedUserAppDisplay {
       const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiProductList, apiAppResponse_mqtt);
       return {
         ..._base,
-        type: EAPManagedUserAppDisplay_Type.TAPAdminPortalUserAppDisplay,
+        apPortalDisplayType: EAPPortalDisplay_Type.TAPAdminPortalDisplay,
         apsUser: apsUser
       }
     }    
