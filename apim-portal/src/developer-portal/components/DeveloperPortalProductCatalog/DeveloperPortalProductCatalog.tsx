@@ -8,7 +8,7 @@ import { Button } from "primereact/button";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { E_COMPONENT_STATE } from "./DeveloperPortalProductCatalogCommon";
+import { E_COMPONENT_STATE, TAPDeveloperPortalApiProductCatalogCompositeId } from "./DeveloperPortalProductCatalogCommon";
 import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
@@ -20,6 +20,7 @@ import "./DeveloperPortalProductCatalog.css";
 
 export interface IDeveloperPortalProductCatalogProps {
   organizationName: TAPOrganizationId;
+  viewApiProductCompositeId?: TAPDeveloperPortalApiProductCatalogCompositeId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
@@ -59,7 +60,13 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW);
+    if(props.viewApiProductCompositeId) {
+      setManagedObjectId(props.viewApiProductCompositeId.apiProductId);
+      setManagedObjectDisplayName(props.viewApiProductCompositeId.apiProductDisplayName);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    } else {
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW);
+    }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
  
   React.useEffect(() => {

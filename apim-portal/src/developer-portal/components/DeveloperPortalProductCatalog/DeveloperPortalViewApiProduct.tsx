@@ -25,7 +25,7 @@ import { APDisplayApiProductAsyncApis } from "../../../components/APDisplay/APDi
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
 
-export interface IDeveloperPortalViewapiProductProps {
+export interface IDeveloperPortalViewApiProductProps {
   organizationId: CommonName;
   apiProductId: CommonName;
   apiProductDisplayName: CommonDisplayName;
@@ -34,7 +34,7 @@ export interface IDeveloperPortalViewapiProductProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewapiProductProps> = (props: IDeveloperPortalViewapiProductProps) => {
+export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProductProps> = (props: IDeveloperPortalViewApiProductProps) => {
   const componentName = 'DeveloperPortalViewApiProduct';
 
   type TManagedObject = TAPDeveloperPortalApiProductDisplay;

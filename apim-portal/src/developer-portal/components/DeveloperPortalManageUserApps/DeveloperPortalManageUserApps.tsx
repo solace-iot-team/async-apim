@@ -3,7 +3,7 @@ import React from "react";
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
-import { MenuItem, MenuItemCommandParams } from "primereact/api";
+import { MenuItem } from "primereact/api";
 
 import {
   ApiError,
@@ -40,7 +40,6 @@ export interface IDeveloperPortalManageUserAppsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  // addBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserAppsProps> = (props: IDeveloperPortalManageUserAppsProps) => {
@@ -52,7 +51,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }
   const initialComponentState: TComponentState = {
     previousState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED,
-    currentState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED
+    currentState: E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW
   }
   const setNewComponentState = (newState: E_MANAGE_USER_APP_COMPONENT_STATE) => {
     setComponentState({

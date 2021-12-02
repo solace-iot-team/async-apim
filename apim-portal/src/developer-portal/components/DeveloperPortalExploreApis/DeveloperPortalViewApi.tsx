@@ -1,36 +1,31 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
-import { TabView, TabPanel } from 'primereact/tabview';
+import { Divider } from "primereact/divider";
+import { Toolbar } from "primereact/toolbar";
+import { Button } from "primereact/button";
 
 import { 
-  ApiProductsService, 
-  APIProduct, 
-  EnvironmentResponse,
-  EnvironmentsService,
   CommonName,
   CommonDisplayName,
-  APIInfo,
   ApisService,
-  CommonEntityNameList
+  CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APManagedApiDisplay, APManagedApiProductDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/APComponentsCommon";
-import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
-import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
-import { APDisplayApiProductAsyncApis } from "../../../components/APDisplay/APDisplayApiProductAsyncApis";
+import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalExploreApisCommon";
+import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
+import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
+import { TAPDeveloperPortalApiProductCatalogCompositeId } from "../DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon";
+import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalExploreApis.css";
-import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
-import { Divider } from "primereact/divider";
 
 export interface IDeveloperPortalViewApiProps {
   organizationId: CommonName;
@@ -53,7 +48,7 @@ export const DeveloperPortalViewApi: React.FC<IDeveloperPortalViewApiProps> = (p
 
   const [managedObject, setManagedObject] = React.useState<TManagedObjectDisplay>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
+  const productCatalogHistory = useHistory<TAPDeveloperPortalApiProductCatalogCompositeId>();
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -95,14 +90,63 @@ export const DeveloperPortalViewApi: React.FC<IDeveloperPortalViewApiProps> = (p
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderApiProducts = (usedBy_ApiProductEntityNameList: CommonEntityNameList): JSX.Element => {
-    const funcName = 'renderApiProducts';
+  const renderApiProductButtons = (usedBy_ApiProductEntityNameList: CommonEntityNameList): JSX.Element => {
+    const funcName = 'renderApiProductButtons';
     const logName = `${componentName}.${funcName}()`;
+
+    const defaultButtonStyle: React.CSSProperties = {
+      whiteSpace: 'nowrap', 
+      // padding: 'unset', 
+      // width: 'unset' 
+    }
+  
+    const onClick = (event: any): void => {
+      const id: CommonName = event.currentTarget.dataset.id;
+      const displayName: CommonDisplayName = event.currentTarget.dataset.display_name;
+      // alert(`show api product: id=${id}, displayName=${displayName}`);
+      productCatalogHistory.push({
+        pathname: EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+        state: {
+          apiProductId: id,
+          apiProductDisplayName: displayName
+        }
+      });
+    }
+
+    const renderButtons = (jsxButtonList: Array<JSX.Element>) => {
+      return (
+        <div className="p-grid">
+          {jsxButtonList}
+        </div>
+      );
+    }
+    
     if(usedBy_ApiProductEntityNameList.length === 0) throw new Error(`${logName}: usedBy_ApiProductEntityNameList.length === 0`);
+
+    let jsxButtonList: Array<JSX.Element> = [];
+    for (const entityName of usedBy_ApiProductEntityNameList) {
+      jsxButtonList.push(
+        <Button 
+          label={entityName.displayName} 
+          key={componentName + entityName.name} 
+          data-id={entityName.name} 
+          data-display_name={entityName.displayName}
+          data-entity_name={entityName}
+          className="p-button-text p-button-plain p-button-outlined" 
+          style={defaultButtonStyle}          
+          onClick={onClick}
+        />        
+      );
+    }
+
     return (
-      <div>
-        {APRenderUtils.getCommonEntityNameListAsStringList(usedBy_ApiProductEntityNameList).join(', ')}
-      </div>
+      <Toolbar         
+        style={{ 
+          background: 'none',
+          border: 'none'
+        }} 
+        left={renderButtons(jsxButtonList)}
+      />
     );
   }
 
@@ -117,8 +161,8 @@ export const DeveloperPortalViewApi: React.FC<IDeveloperPortalViewApiProps> = (p
             <div className="detail-left">
 
               <div className="p-text-bold">API Products:</div>
-              <div className="p-ml-2">{renderApiProducts(mo.apiUsedBy_ApiProductEntityNameList)}</div>
-
+              <div className="p-ml-2">{renderApiProductButtons(mo.apiUsedBy_ApiProductEntityNameList)}</div>
+              
               <Divider />
               <APDisplayAsyncApiSpec 
                 schema={mo.apAsyncApiSpec.spec} 

@@ -9,10 +9,9 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
-// import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
+import { DeveloperPortalExploreApis } from '../components/DeveloperPortalExploreApis/DeveloperPortalExploreApis';
 
 import "../../pages/Pages.css";
-import { DeveloperPortalExploreApis } from '../components/DeveloperPortalExploreApis/DeveloperPortalExploreApis';
 
 export const DeveloperPortalExploreApisPage: React.FC = () => {
   const componentName="DeveloperPortalExploreApisPage";
@@ -74,18 +73,12 @@ export const DeveloperPortalExploreApisPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       {organizationName &&
-        <React.Fragment>
-          <h1>TODO</h1>
-          <ul>
-            <li>button for each API Product</li>
-          </ul>
         <DeveloperPortalExploreApis
           organizationName={organizationName}
           onSuccess={onSuccess}
           onError={onError}
           onBreadCrumbLabelList={onBreadcrumbLabelList}
         />
-        </React.Fragment>
       }
     </React.Fragment>
 );

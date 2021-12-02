@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -10,6 +10,7 @@ import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../util
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
+import { TAPDeveloperPortalApiProductCatalogCompositeId } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon';
 
 import "../../pages/Pages.css";
 
@@ -25,6 +26,14 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [locationState, setLocationState] = React.useState<TAPDeveloperPortalApiProductCatalogCompositeId>();
+  const location = useLocation<TAPDeveloperPortalApiProductCatalogCompositeId>();
+
+  React.useEffect(() => {
+    if(location.state) {
+      setLocationState(location.state);
+    }
+  }, [location.state]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -74,14 +83,15 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
       {renderBreadcrumbs()}
       {organizationName &&
         <DeveloperPortalProductCatalog
-         organizationName={organizationName}
+          organizationName={organizationName}
+          viewApiProductCompositeId={locationState}
           onSuccess={onSuccess} 
           onError={onError} 
           onBreadCrumbLabelList={onBreadcrumbLabelList}
         />
       }
     </React.Fragment>
-);
+  );
 
 }
 

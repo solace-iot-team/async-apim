@@ -1,16 +1,12 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { Toolbar } from 'primereact/toolbar';
-import { Button } from "primereact/button";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
-// import { TAPDeveloperPortalApiProductCompositeId } from "../DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon";
-// import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 import { E_COMPONENT_STATE } from "./DeveloperPortalExploreApisCommon";
 import { DeveloperPortalGridListApis } from "./DeveloperPortalGridListApis";
 import { DeveloperPortalViewApi } from "./DeveloperPortalViewApi";
@@ -88,26 +84,6 @@ export const DeveloperPortalExploreApis: React.FC<IDeveloperPortalExploreApisPro
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-
-  // // * Create App *
-
-  // const manageAppsHistory = useHistory<TAPDeveloperPortalApiProductCompositeId>();
-
-
-  // const onCreateAppWithProduct = () => {
-  //   const funcName = 'onCreateAppWithProduct';
-  //   const logName = `${componentName}.${funcName}()`;
-
-  //   if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined`);
-  //   if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined`);
-  //   manageAppsHistory.push({
-  //     pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
-  //     state: {
-  //       apiProductId: managedObjectId,
-  //       apiProductDisplayName: managedObjectDisplayName
-  //     }
-  //   });
-  // }
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
