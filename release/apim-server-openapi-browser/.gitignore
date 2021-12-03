@@ -1,6 +1,6 @@
-dist
 node_modules
 .package.json
-src
 .cache
-apim-server
+working_dir
+src
+dist

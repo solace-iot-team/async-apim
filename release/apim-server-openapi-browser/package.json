@@ -1,20 +1,16 @@
 {
   "name": "@solace-iot-team/apim-server-openapi-browser",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "Async API Management Server - OpenAPI Client for Browser (Typescript)",
-  "homepage": "https://github.com/solace-iot-team/apim-portal",
+  "homepage": "https://github.com/solace-iot-team/async-apim",
   "repository": {
     "type": "git",
-    "url": "https://github.com/solace-iot-team/apim-portal"
+    "url": "https://github.com/solace-iot-team/async-apim"
   },
   "bugs": {
-    "url": "https://github.com/solace-iot-team/apim-portal/issues"
+    "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "checkVersion": "ts-node checkVersion.ts",
-    "updateVersion": "ts-node updateVersion.ts",
     "build": "ts-node build.ts && tsc"
   },
   "author": "Solace Corporation",
@@ -40,10 +36,8 @@
     "@types/js-yaml": "^4.0.0",
     "@types/shelljs": "^0.8.8",
     "js-yaml": "^4.0.0",
-    "openapi-typescript-codegen": "^0.9.3",
     "shelljs": "^0.8.4",
-    "typescript": "^4.2.3",
-    "ts-node": "^9.1.1"
-  },
-  "dependencies": {}
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
+  }
 }

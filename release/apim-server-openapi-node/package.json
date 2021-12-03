@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server-openapi-node",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Async API Management Server - OpenAPI Client for NodeJS (Typescript)",
   "homepage": "https://github.com/solace-iot-team/async-apim",
   "repository": {
