@@ -230,7 +230,7 @@ export class APManagedUserAppDisplay {
         if(ep.protocol) return (ep.protocol.name === Protocol.name.HTTP || ep.protocol.name === Protocol.name.HTTPS);
         return false;
       });
-      if(foundHttp && appEnv.permissions && appEnv.permissions.subscribe) isCapable = true;
+      if(foundHttp && appEnv.permissions && appEnv.permissions.subscribe && appEnv.permissions.subscribe.length > 0) isCapable = true;
     }
     return isCapable;
   }
