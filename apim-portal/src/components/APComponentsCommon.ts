@@ -194,6 +194,28 @@ export type TAPAdminPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
 
 export class APManagedUserAppDisplay {
 
+  public static getEnvironmentDisplayNameListFromNameList = (envNameList: Array<CommonName>, appEnvList: Array<AppEnvironment>): Array<CommonDisplayName> => {
+    const funcName = 'getEnvironmentDisplayNameListFromNameList';
+    const logName = `${APManagedUserAppDisplay.name}.${funcName}()`;
+    let appEnvDisplayNameList: Array<CommonDisplayName> = [];
+    envNameList.forEach( (envName: CommonName) => {
+      const found = appEnvList.find( (appEnv: AppEnvironment) => {
+        return appEnv.name === envName;
+      });
+      if(!found) throw new Error(`${logName}: found is undefined`);
+      if(!found.displayName) throw new Error(`${logName}: found.displayName is undefined`);
+      appEnvDisplayNameList.push(found.displayName);
+    });
+    return appEnvDisplayNameList;
+  }
+  public static getAppEnvironmentDisplayNameList = (appEnvList: Array<AppEnvironment>): Array<CommonDisplayName> => {
+    const funcName = 'getAppEnvironmentDisplayNameList';
+    const logName = `${APManagedUserAppDisplay.name}.${funcName}()`;
+    return appEnvList.map( (appEnv: AppEnvironment) => {
+      if(!appEnv.displayName) throw new Error(`${logName}: appEnv.displayName is undefined`);
+      return appEnv.displayName;
+    });
+  }
   public static getAppEnvironmentDisplayName = (appEnv: AppEnvironment): CommonDisplayName => {
     const funcName = 'getAppEnvironmentDisplayName';
     const logName = `${APManagedUserAppDisplay.name}.${funcName}()`;

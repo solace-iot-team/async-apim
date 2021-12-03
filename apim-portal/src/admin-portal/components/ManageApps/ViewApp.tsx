@@ -11,6 +11,7 @@ import {
   AppListItem, 
   AppResponse,
   AppsService,
+  AppStatus,
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSUser, ApsUsersService
@@ -159,7 +160,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
+  const renderApiProducts = (mod: TManagedObjectDisplay): JSX.Element => {
+    
     const rowExpansionTemplate = (rowData: TApiProduct) => {
       return (
         <APDisplayAttributes
@@ -169,7 +171,11 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       );
     }
     const environmentsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return APRenderUtils.renderStringListAsDivList(rowData.environments ? rowData.environments : []);
+      const funcName = 'renderApiProducts.environmentsBodyTemplate';
+      const logName = `${componentName}.${funcName}()`;
+      if(!rowData.environments) throw new Error(`${logName}: rowData.environments is undefined`);
+      if(!mod.apiAppResponse_smf.environments) throw new Error(`${logName}: mod.apiAppResponse_smf.environments is undefined`);
+      return APRenderUtils.renderStringListAsDivList(APManagedUserAppDisplay.getEnvironmentDisplayNameListFromNameList(rowData.environments, mod.apiAppResponse_smf.environments));
     }  
     const protocolsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
       return (
@@ -190,7 +196,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       );
     }
 
-    const dataTableList = apiProductList;
+    const dataTableList = mod.apiProductList;
 
     return (
       <div className="card">
@@ -216,6 +222,16 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
           <Column body={protocolsBodyTemplate} header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
         </DataTable>
       </div>
+    );
+  }
+
+  const renderAppEnvironments = (mod: TManagedObjectDisplay): JSX.Element => {
+    const funcName = 'renderAppEnvironments';
+    const logName = `${componentName}.${funcName}()`;
+    if(!mod.apiAppResponse_smf.environments) throw new Error(`${logName}: mod.apiAppResponse_smf.environments is undefined`);
+    const title: string = mod.apiAppResponse_smf.status === AppStatus.APPROVED ? 'Provisioned Environments' : 'Target Environments';
+    return (
+      <div><b>{title}</b>: {APManagedUserAppDisplay.getAppEnvironmentDisplayNameList(mod.apiAppResponse_smf.environments).join(', ')}</div>
     );
   }
 
@@ -320,6 +336,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 className='xx'
               />
               <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div>
+              {renderAppEnvironments(managedObjectDisplay)}
 
               {/* APP Attributes */}
               <Panel 
@@ -401,7 +418,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 collapsed={true}
                 className="p-pt-2"
               >
-                <div>{renderApiProducts(managedObjectDisplay.apiProductList)}</div>
+                <div>{renderApiProducts(managedObjectDisplay)}</div>
               </Panel>
             </div>
             <div className="ap-app-view-detail-right">
