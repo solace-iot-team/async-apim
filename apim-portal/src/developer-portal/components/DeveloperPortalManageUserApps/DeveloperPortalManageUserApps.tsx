@@ -60,9 +60,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     });
   }
   const setPreviousComponentState = () => {
+    const newCurrentState: E_MANAGE_USER_APP_COMPONENT_STATE = (componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED ? E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW : componentState.previousState);
     setComponentState({
       previousState: componentState.currentState,
-      currentState: componentState.previousState
+      currentState: newCurrentState
     });
   }
   
@@ -344,8 +345,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setApiCallStatus(apiCallState);
   }
   const onSubComponentCancel = () => {
-    if(componentState.previousState !== E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED) setPreviousComponentState();
-    else setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setPreviousComponentState();
   }
 
   const calculateShowStates = (componentState: TComponentState) => {
