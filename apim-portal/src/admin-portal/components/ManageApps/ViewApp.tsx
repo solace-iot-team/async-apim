@@ -7,7 +7,6 @@ import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
 
 import { 
   ApiProductsService, 
-  AppEnvironment, 
   AppListItem, 
   AppResponse,
   AppsService,
@@ -16,6 +15,7 @@ import {
 import { 
   APSUser, ApsUsersService
 } from "@solace-iot-team/apim-server-openapi-browser";
+
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { Globals } from "../../../utils/Globals";
