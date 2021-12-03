@@ -51,7 +51,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }
   const initialComponentState: TComponentState = {
     previousState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED,
-    currentState: E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW
+    currentState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED
   }
   const setNewComponentState = (newState: E_MANAGE_USER_APP_COMPONENT_STATE) => {
     setComponentState({
@@ -91,6 +91,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
+  const [isDeveloperCreated, setIsDeveloperCreated] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -105,10 +106,12 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [presetApiProductSelectItemList, setPresetApiProductSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
+
   // * Api Calls *  
   const apiCreateDeveloper = async(): Promise<TApiCallState> => {
     const funcName = 'apiCreateDeveloper';
     const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: starting...`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_DEVELOPER, `create developer: ${props.userId}`);
     let existApiDeveloper: boolean = true;
     let anyError: any = undefined;
@@ -142,12 +145,20 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     return callState;
   }
 
-  const initialize = async() => {
+  const createDeveloper = async() => {
     setIsLoading(true);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.CREATE_API_DEVELOPER);
     const apiCallState: TApiCallState = await apiCreateDeveloper();
-    if(!apiCallState.success) setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.INTERNAL_ERROR);
-    else {
+    setIsDeveloperCreated(apiCallState.success);
+    setIsLoading(false);
+  }
+
+  // * useEffect Hooks *
+  React.useEffect(() => {    
+    createDeveloper();
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(isDeveloperCreated) {
       if(props.createAppWithApiProductCompositeId) {
         setPresetApiProductSelectItemList(transformApiProductCompositeIdToSelectItemIdList(props.createAppWithApiProductCompositeId));
         setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
@@ -155,38 +166,11 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
       }
     }
-    setIsLoading(false);
-  }
-
-
-  // * useEffect Hooks *
-  React.useEffect(() => {    
-    initialize();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [isDeveloperCreated]);
 
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // const testCommandFunc = (e: MenuItemCommandParams): void => {
-  //   const funcName = 'testCommandFunc';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   alert(`${logName}: e.item = ${JSON.stringify(e.item, null, 2)}, managedObjectDisplayName=${managedObjectDisplayName}`);
-  // }
-
-  // React.useEffect(() => {
-  //   if(!managedObjectDisplayName) return;
-  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT_WEBHOOKS
-  //     ) 
-  //     // props.onBreadCrumbLabelList([managedObjectDisplayName]);
-  //     props.onBreadCrumbItemList([{
-  //       label: `App: ${managedObjectDisplayName}`,
-  //       command: testCommandFunc
-  //     }]);
-  //   // else props.onBreadCrumbLabelList([]);
-  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -210,7 +194,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-
   // * New Object *
   const onNewManagedObject = () => {
     setApiCallStatus(null);
@@ -260,9 +243,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderLeftToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
-
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
@@ -327,19 +307,13 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     props.setBreadCrumbItemList(newItemList);
   }
   const onSetManageUserAppComponentState = (manageUserAppComponentState: E_MANAGE_USER_APP_COMPONENT_STATE, appid: CommonName, appDisplayName: CommonDisplayName) => {
-    const funcName = 'onSetManageUserAppComponentState';
-    const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: TODO with componentState: ${componentState}, appdId=${appid}, appDisplayName=${appDisplayName}`);
     setManagedObjectId(appid);
     setManagedObjectDisplayName(appDisplayName);
     setNewComponentState(manageUserAppComponentState);
     setRefreshCounter(refreshCounter + 1);
   }
-  // const onSetManageWebhookComponentState
-
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -366,21 +340,16 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
   }
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
-  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
   const onSubComponentCancel = () => {
-    setPreviousComponentState();
+    if(componentState.previousState !== E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED) setPreviousComponentState();
+    else setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
 
   const calculateShowStates = (componentState: TComponentState) => {
-    if(!componentState.currentState || 
-        componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.INTERNAL_ERROR ||
-        componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.CREATE_API_DEVELOPER ) {
+    if(!componentState.currentState) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);

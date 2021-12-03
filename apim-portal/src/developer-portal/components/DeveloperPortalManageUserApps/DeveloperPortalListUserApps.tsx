@@ -118,8 +118,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: starting: managedObjectList.length=${managedObjectList.length}`);
-
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP_LIST, `retrieve list of apps for ${props.userId}`);
     try { 

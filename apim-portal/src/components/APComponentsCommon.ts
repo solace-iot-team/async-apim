@@ -90,29 +90,6 @@ export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortal
 
 export class APManagedApiDisplay {
 
-  // public static getApApiDisplayNameListAsString = (apiDisplayNameList: Array<CommonDisplayName> ): string => {
-  //   if(apiDisplayNameList) return apiDisplayNameList.join(', ');
-  //   else return '';
-  // }
-  // public static getApProtocolListAsString = (apiProtocolList?: Array<Protocol> ): string => {
-  //   return APRenderUtils.getProtocolListAsString(apiProtocolList);
-  // }
-  // public static getApAttributeNamesAsString = (apiAttributeList?: TAPAttributeList): string => {
-  //   if(apiAttributeList) {
-  //     const list: Array<string> = apiAttributeList.map( (attribute: TAPAttribute) => {
-  //       return attribute.name;
-  //     });
-  //     return list.join(', ');
-  //   }
-  //   else return '';
-  // }
-  // public static getApEnvironmentsAsDisplayList = (apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
-  //   const funcName = 'getApEnvironmentsAsDisplayList';
-  //   const logName = `${APManagedApiProductDisplay.name}.${funcName}()`;
-  //   return apiEnvironmentList.map( (envResp: EnvironmentResponse) => {
-  //     return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`
-  //   });
-  // }
   private static createAPManagedApiDisplay_Base_From_ApiEntities = (apiInfo: APIInfo, apiApiProductEntityNameList: CommonEntityNameList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPManagedApiDisplay_Base => {
       const _base: TAPManagedApiDisplay_Base = {
         apName: apiInfo.name,

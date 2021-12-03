@@ -146,7 +146,6 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   // * prop callbacks *
   const onListViewSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    // setNewComponentState(componentState);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);

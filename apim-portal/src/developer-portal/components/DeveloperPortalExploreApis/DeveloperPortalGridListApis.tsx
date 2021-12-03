@@ -120,7 +120,6 @@ export const DeveloperPortalGridListApis: React.FC<IDeveloperPortalGridListApisP
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: starting: managedObjectList.length=${managedObjectList.length}`);
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_DETAILS_LIST, 'retrieve list of api details');
     try { 
