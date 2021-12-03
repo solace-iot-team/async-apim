@@ -1,0 +1,10 @@
+.gitignore
+.npmignore
+.package.json
+build.ts
+release.sh
+tsconfig.json
+src
+.cache
+node_modules
+working_dir

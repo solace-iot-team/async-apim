@@ -1,0 +1,6 @@
+node_modules
+.package.json
+.cache
+working_dir
+src
+dist
