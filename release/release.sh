@@ -4,8 +4,7 @@ scriptDir=$(cd $(dirname "$0") && pwd);
 scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
 releaseDirs=(
-  "apim-server-openapi-browser"
-  "apim-server-openapi-node"
+  "apim-server-openapi"
 )
 
 for releaseDir in ${releaseDirs[@]}; do
