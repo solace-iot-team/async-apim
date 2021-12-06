@@ -116,8 +116,7 @@ const buildApimAdminPortal = () => {
   if(s.cd(`${WorkingApimPortalDir}`).code !== 0) process.exit(1);
   if(s.exec('npm install').code !== 0) process.exit(1);
   if(s.exec('npm run dev-build').code !== 0) process.exit(1);
-  // if(s.exec('npm run build').code !== 0) process.exit(1);
-  if(s.exec('CI=false npm run build').code !== 0) process.exit(1);
+  if(s.exec('npm run build').code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
