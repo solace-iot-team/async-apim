@@ -11,9 +11,7 @@ on:
 env:
   DEBUG_FLAG: ${{ true }}
   # DEBUG_FLAG: ${{ false }}
-  RELEASE_PLATFORM_DIR: "release"
-  RELEASE_RUNNER_OUTPUT_DIR: "release/tmp"
-  RELEASE_OUTPUT_NAME: "platform-api-release"
+  RELEASE_DIR: "release"
 
 jobs:
   release:
@@ -45,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: env after install
@@ -65,16 +63,8 @@ jobs:
       - name: Release
         run: |
           export NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}
-          export APIM_SOLACE_PLATFORM_API_PROJECT_HOME="$GITHUB_WORKSPACE"
-          cd "$APIM_SOLACE_PLATFORM_API_PROJECT_HOME/${RELEASE_PLATFORM_DIR}"
+          cd "$GITHUB_WORKSPACE/${RELEASE_DIR}"
           ./release.sh
 
-      - name: Archive logs
-        if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.RELEASE_OUTPUT_NAME }}
-          path: ${{ github.workspace }}/${{ env.RELEASE_RUNNER_OUTPUT_DIR }}
-          if-no-files-found: error
 ###
 # The End.

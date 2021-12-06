@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.5
+  version: 0.0.9
 servers:
 - url: /apim-server/v1
 tags:
@@ -26,7 +26,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/APSConnectorCreate'
       responses:
         '201':
@@ -70,7 +70,7 @@ paths:
                 $ref: "#/components/schemas/APSError"
     get:
       operationId: listApsConnectors
-      description: Get a list of APSConnectors. 
+      description: Get a list of APSConnectors.
       tags:
       - APSConfig
       responses:
@@ -110,7 +110,7 @@ paths:
   /apsConfig/apsConnectors/active:
     get:
       operationId: getActiveApsConnector
-      description: Get the currently active APSConnector object. 
+      description: Get the currently active APSConnector object.
       tags:
       - APSConfig
       responses:
@@ -153,13 +153,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
-  
-  /apsConfig/apsConnectors/{connector_id}:        
+
+  /apsConfig/apsConnectors/{connector_id}:
     parameters:
     - $ref: '#/components/parameters/connector_id'
     get:
       operationId: getApsConnector
-      description: Get an APSConnector object by id. 
+      description: Get an APSConnector object by id.
       tags:
       - APSConfig
       responses:
@@ -293,7 +293,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
-  /apsConfig/apsConnectors/{connector_id}/active:        
+  /apsConfig/apsConnectors/{connector_id}/active:
     parameters:
     - $ref: '#/components/parameters/connector_id'
     post:
@@ -341,7 +341,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
-                
+
   /apsUsers:
     post:
       operationId: createApsUser
@@ -353,7 +353,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/APSUser'
       responses:
         '201':
@@ -403,7 +403,7 @@ paths:
                 $ref: "#/components/schemas/APSError"
     get:
       operationId: listApsUsers
-      description: Get a list of APSUsers. 
+      description: Get a list of APSUsers.
       tags:
       - APSUsers
       parameters:
@@ -446,12 +446,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
-  /apsUsers/{user_id}:        
+  /apsUsers/{user_id}:
     parameters:
     - $ref: '#/components/parameters/user_id'
     get:
       operationId: getApsUser
-      description: Get a APSUser object by user id. 
+      description: Get a APSUser object by user id.
       tags:
       - APSUsers
       responses:
@@ -497,7 +497,7 @@ paths:
     patch:
       operationId: updateApsUser
       description: |
-        Update an APSUser object by user id. 
+        Update an APSUser object by user id.
         Operation performs a merge update between the exsting APSUser object and the update request.
         New array values are added to existing arrays.
       tags:
@@ -651,7 +651,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/APSUserLoginCredentials'
       responses:
         '200':
@@ -743,7 +743,7 @@ paths:
             application/json:
               schema:
                 type: array
-                items: 
+                items:
                   $ref: '#/components/schemas/ExampleWebHook'
   /examples/{id}:
     get:
@@ -841,13 +841,13 @@ components:
       minLength: 4
       maxLength: 64
       pattern: ^\S*$
-    APSHost:  
+    APSHost:
       description: Hostname or IP address.
       type: string
       maxLength: 255
       # from: https://regexr.com/3dt4r
       pattern: ^(localhost)|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$
-    APSPort:  
+    APSPort:
       description: Port number.
       type: integer
       minimum: 0
@@ -873,7 +873,7 @@ components:
       properties:
         meta:
           type: object
-          properties: 
+          properties:
             totalCount:
               description: The total count of objects in the collection at time of call.
               type: integer
@@ -943,7 +943,7 @@ components:
       description: Configuration of the client for the connector.
       type: object
       properties:
-        protocol: 
+        protocol:
           $ref: "#/components/schemas/EAPSClientProtocol"
         host:
           $ref: "#/components/schemas/APSHost"
@@ -973,7 +973,7 @@ components:
           $ref: '#/components/schemas/APSConnectorList'
       required:
       - list
-    APSConnectorList:  
+    APSConnectorList:
       description: Array of APSConnector objects.
       type: array
       items:
@@ -1015,7 +1015,7 @@ components:
         - description
         - connectorClientConfig
         - connectorId
-    APSConnectorReplace:  
+    APSConnectorReplace:
       description: Replace an existing APSConnector object.
       type: object
       properties:
@@ -1033,7 +1033,7 @@ components:
       type: object
       description: Login credentials.
       properties:
-        userId: 
+        userId:
           type: string
         userPwd:
           type: string
@@ -1073,7 +1073,7 @@ components:
           $ref: '#/components/schemas/APSUserList'
       required:
       - list
-    APSUserList:      
+    APSUserList:
       description: Array of APSUsers.
       type: array
       items:
@@ -1184,7 +1184,7 @@ components:
       required:
       - authMethod
       - headerName
-      - headerValue     
+      - headerValue
     ExampleWebHookAuth:
       anyOf:
         - $ref: '#/components/schemas/ExampleWebHookBasicAuth'

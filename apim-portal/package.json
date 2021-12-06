@@ -1,7 +1,7 @@
 {
-  "name": "apim-portal",
-  "version": "0.0.16",
-  "description": "Async API Management Portal",
+  "name": "async-apim-portal",
+  "version": "0.0.18",
+  "description": "Solace Async API Management Portal",
   "repository": {
     "type": "git",
     "url": "https://github.com/solace-iot-team/async-apim.git"
@@ -25,7 +25,7 @@
   "dependencies": {
     "@asyncapi/react-component": "^1.0.0-next.18",
     "@solace-iot-team/apim-connector-openapi-browser": "^0.5.7",
-    "@solace-iot-team/apim-server-openapi-browser": "^0.0.5",
+    "@solace-iot-team/apim-server-openapi-browser": "^0.0.8",
     "async-mutex": "^0.3.2",
     "js-yaml": "^4.1.0",
     "primeflex": "^2.0.0",
@@ -45,7 +45,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dev-build": "ts-node --project tsconfig-dev.json dev-build.ts"
   },
   "eslintConfig": {
     "extends": [
