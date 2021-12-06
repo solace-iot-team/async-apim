@@ -64,7 +64,6 @@ jobs:
         run: |
           export NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}
           cd "$GITHUB_WORKSPACE/${RELEASE_DIR}"
-          export CI=false
           ./release.sh
 
 ###
