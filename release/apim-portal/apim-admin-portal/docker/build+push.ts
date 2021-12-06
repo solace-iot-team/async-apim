@@ -8,17 +8,11 @@ const GitRoot = `${scriptDir}/../../../..`;
 const WorkingDir = `${scriptDir}/working_dir`;
 const ApimPortalDir = `${GitRoot}/apim-portal`;
 const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
-// const ApimServerDir = `${scriptDir}/../../../apim-server`;
-// const WorkingApimServerDir = `${WorkingDir}/apim-server`;
-// // const WorkingApimServerDistDir = `${WorkingApimServerDir}/dist`;
-// const OutputApimPortalAboutFile = `${WorkingApimPortalDir}/public/about.json`;
 
 const AssetDir = `${scriptDir}/assets`;
 
 const DockerContextDir = `${WorkingDir}/docker-context`;
-// const DockerContextDistDir = `${dockerContextDir}/dist`;
 const DockerFile = `${scriptDir}/Dockerfile`;
-
 const DockerHubUser = "solaceiotteam";
 
 let DockerImageName: string;
@@ -55,9 +49,6 @@ const DockerContextAssetsInclude = [
     targetDir: `${DockerContextDir}/admin-portal`,
     targetFile: 'manifest.json'
   }
-
-
-  // 'start.sh'
 ]
 
 const prepare = () => {
@@ -185,18 +176,18 @@ const buildDockerImage = () => {
   console.log(`${logName}: success.`);
 }
 
-// const publishDockerImage = () => {
-//   const funcName = 'publishDockerImage';
-//   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-//   console.log(`${logName}: starting ...`);
-//   const publishedImageTag = `${dockerHubUser}/${dockerImageTag}`;
-//   const publishedImageTagLatest = `${dockerHubUser}/${dockerImageTagLatest}`;
-//   if(s.exec(`docker tag ${dockerImageTag} ${publishedImageTag}`).code !== 0) process.exit(1);
-//   if(s.exec(`docker tag ${publishedImageTag} ${publishedImageTagLatest}`).code !== 0) process.exit(1);
-//   if(s.exec(`docker push ${publishedImageTag}`).code !== 0) process.exit(1);
-//   if(s.exec(`docker push ${publishedImageTagLatest}`).code !== 0) process.exit(1);
-//   console.log(`${logName}: success.`);
-// }
+const publishDockerImage = () => {
+  const funcName = 'publishDockerImage';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
+  const publishedImageTag = `${DockerHubUser}/${DockerImageTag}`;
+  const publishedImageTagLatest = `${DockerHubUser}/${DockerImageTagLatest}`;
+  if(s.exec(`docker tag ${DockerImageTag} ${publishedImageTag}`).code !== 0) process.exit(1);
+  if(s.exec(`docker tag ${publishedImageTag} ${publishedImageTagLatest}`).code !== 0) process.exit(1);
+  if(s.exec(`docker push ${publishedImageTag}`).code !== 0) process.exit(1);
+  if(s.exec(`docker push ${publishedImageTagLatest}`).code !== 0) process.exit(1);
+  console.log(`${logName}: success.`);
+}
 
 const main = () => {
   const funcName = 'main';
@@ -205,16 +196,16 @@ const main = () => {
 
   setGlobals();
 
-  // prepare();
-  // copySourcesToWorkingDir();
-  // checkVersion();
-  // buildApimAdminPortal();
+  prepare();
+  copySourcesToWorkingDir();
+  checkVersion();
+  buildApimAdminPortal();
 
-  // buildDockerContext();
-
+  buildDockerContext();
   removeDockerContainersByImageName();
   buildDockerImage();
-  // publishDockerImage();
+  publishDockerImage();
+
   console.log(`${logName}: success.`);
 }
 
