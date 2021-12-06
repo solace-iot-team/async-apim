@@ -10,7 +10,7 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 echo " >>> Starting $scriptName ..."
 
 releaseDirs=(
-  "apim-admin-portal"
+  "apim-admin-portal/docker"
   # "developer-portal"
 )
 

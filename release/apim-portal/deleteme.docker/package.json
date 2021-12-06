@@ -1,0 +1,21 @@
+{
+  "name": "@solace-iot-team/apim-portal-docker-release",
+  "version": "0.0.1",
+  "scripts": {
+    "build+push": "ts-node build+push.ts"
+  },
+  "author": "Solace Corporation",
+  "contributors": [
+    {
+      "name": "Ricardo Gomez-Ulmke",
+      "email": "ricardo.gomez-ulmke@solace.com"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/shelljs": "^0.8.8",
+    "shelljs": "^0.8.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  }
+}
