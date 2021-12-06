@@ -12,8 +12,6 @@ env:
   DEBUG_FLAG: ${{ true }}
   # DEBUG_FLAG: ${{ false }}
   RELEASE_DIR: "release"
-  # RELEASE_RUNNER_OUTPUT_DIR: "release/tmp"
-  # RELEASE_OUTPUT_NAME: "platform-api-release"
 
 jobs:
   release:
@@ -68,17 +66,5 @@ jobs:
           cd "$GITHUB_WORKSPACE/${RELEASE_DIR}"
           ./release.sh
 
-      - name: TEST
-        run: |
-          echo "testing release"
-          exit 1
-
-      # - name: Archive logs
-      #   if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}
-      #   uses: actions/upload-artifact@v2
-      #   with:
-      #     name: ${{ env.RELEASE_OUTPUT_NAME }}
-      #     path: ${{ github.workspace }}/${{ env.RELEASE_RUNNER_OUTPUT_DIR }}
-      #     if-no-files-found: error
 ###
 # The End.
