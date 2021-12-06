@@ -11,9 +11,9 @@ on:
 env:
   DEBUG_FLAG: ${{ true }}
   # DEBUG_FLAG: ${{ false }}
-  RELEASE_PLATFORM_DIR: "release"
-  RELEASE_RUNNER_OUTPUT_DIR: "release/tmp"
-  RELEASE_OUTPUT_NAME: "platform-api-release"
+  RELEASE_DIR: "release"
+  # RELEASE_RUNNER_OUTPUT_DIR: "release/tmp"
+  # RELEASE_OUTPUT_NAME: "platform-api-release"
 
 jobs:
   release:
@@ -34,12 +34,6 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: TEST
-        run: |
-          echo "testing release"
-          exit 1
-
-          
       - name: env before install
         if: env.DEBUG_FLAG == 'true'
         run: |
@@ -51,7 +45,7 @@ jobs:
 
       - uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: env after install
@@ -62,6 +56,11 @@ jobs:
           echo "npm --version: "; npm --version
           echo "docker --version"; docker --version
           echo "docker-compose --version"; docker-compose --version
+
+      - name: TEST
+        run: |
+          echo "testing release"
+          exit 1
 
       - uses: docker/login-action@v1
         with:
