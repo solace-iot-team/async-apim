@@ -194,10 +194,11 @@ const main = () => {
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
 
-  setGlobals();
-
   prepare();
   copySourcesToWorkingDir();
+
+  setGlobals();
+
   checkVersion();
   buildApimAdminPortal();
 
