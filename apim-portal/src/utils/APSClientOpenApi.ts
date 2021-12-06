@@ -33,7 +33,9 @@ export class APSClientOpenApi {
   public static initialize = (config: TAPSClientOpenApiConfig) => {
     // const funcName = 'initialize';
     // const logName = `${APSClientOpenApi.name}.${funcName}()`;
-    APSClientOpenApi.config = (JSON.parse(JSON.stringify(config)));
+    const configStr = JSON.stringify(config);
+    if(configStr === '{}') APSClientOpenApi.config = {};
+    else APSClientOpenApi.config = (JSON.parse(configStr));
     APSClientOpenApi.isInitialized = true;
     APSClientOpenApi.set();
   }

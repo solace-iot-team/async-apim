@@ -11,8 +11,17 @@ import { Config } from './Config';
 import { APSClientOpenApi } from './utils/APSClientOpenApi';
 import './index.css';
 
+const componentName = 'index';
+const logName = `${componentName}`;
+
 Config.initialize();
 APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
+
+throw new Error(`${logName}: continue here with APSHealthCheckContextProvider`);
+
+// test connectivity to AP server,
+// if not there: render a PROBLEM page instead
+
 
 ReactDOM.render(
   <BrowserRouter>
