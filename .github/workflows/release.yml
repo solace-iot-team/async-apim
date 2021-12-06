@@ -34,6 +34,12 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: TEST
+        run: |
+          echo "testing release"
+          exit 1
+
+          
       - name: env before install
         if: env.DEBUG_FLAG == 'true'
         run: |
