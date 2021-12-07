@@ -1,15 +1,8 @@
 import s from 'shelljs';
 import path from 'path';
-import fs from 'fs';
-import yaml from 'js-yaml';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
-const Skipping = '+++ SKIPPING +++';
-
-const WorkingDir = `${scriptDir}/working_dir`;
-const ApimServerDir = `${scriptDir}/../../apim-server`;
-const WorkingApimServerDir = `${WorkingDir}/apim-server`;
 
 const ReleaseDirBrowser = `${scriptDir}/apim-server-openapi-browser`;
 const ReleaseDirNode = `${scriptDir}/apim-server-openapi-node`;
@@ -51,11 +44,6 @@ const main = () => {
   const funcName = 'main';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  // prepare();
-  // copySourcesToWorkingDir();
-  // checkVersions();
-  // devBuildApimServer();
-  // copyAssets();
   compileSrcs();
   publishPackages()
   console.log(`${logName}: success.`);
