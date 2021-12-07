@@ -17,7 +17,7 @@ const logName = `${componentName}`;
 Config.initialize();
 APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 
-throw new Error(`${logName}: continue here with APSHealthCheckContextProvider`);
+console.error(`${logName}: continue here with APSHealthCheckContextProvider`);
 
 // test connectivity to AP server,
 // if not there: render a PROBLEM page instead
