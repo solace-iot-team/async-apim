@@ -10,8 +10,8 @@ const outRoot = `${scriptDir}/dist`;
 const outDir = tsconfig.compilerOptions.outDir;
 const publicDir = `${outRoot}/public`;
 const apiSpecFile = `${scriptDir}/server/common/api.yml`;
-const portalDir = `${scriptDir}/../apim-portal`;
-const portalBuildDir = `${portalDir}/build`;
+// const portalDir = `${scriptDir}/../apim-portal`;
+// const portalBuildDir = `${portalDir}/build`;
 
 const prepare = () => {
   const funcName = 'prepare';
@@ -42,44 +42,12 @@ const copyServerAssets = () => {
   console.log(`${logName}: success.`);
 }
 
-const buildPortal = () => {
-  const funcName = 'buildPortal';
-  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-  console.log(`${logName}: starting ...`);
-  if(s.cd(portalDir).code !== 0) process.exit(1);
-  if(s.exec('npm install').code !== 0) process.exit(1);
-  if(s.exec('npm run build').code !== 0) process.exit(1);
-  if(s.cd(scriptDir).code !== 0) process.exit(1) ;
-  console.log(`${logName}: success.`);
-}
-
-const copyPortalAssets = () => {
-  const funcName = 'copyPortalAssets';
-  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-  console.log(`${logName}: copying portal assets ...`);
-
-  if(s.cp('-rf', `${portalBuildDir}`, `${outRoot}/portal`).code !== 0) process.exit(1);
-
-  console.log(`${logName}: success.`);
-}
-
-// const cleanup = () => {
-//   const funcName = 'cleanup';
-//   const logName = `${scriptName}.${funcName}()`;
-//   console.log(`${logName}: removing obsolete files ...`);
-//   if(s.rm('-rf', `${outDir}/src`).code !== 0) process.exit(1);
-//   console.log(`${logName}: success.`);
-// }
-
 const main = () => {
   const funcName = 'main';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   prepare();
   compileServer();
   copyServerAssets();
-  buildPortal();
-  copyPortalAssets();
-  // cleanup();
 }
 
 main();

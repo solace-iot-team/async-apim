@@ -1,5 +1,5 @@
 {
-  "name": "@solace-iot-team/apim-portal-docker-release",
+  "name": "async-apim-server",
   "version": "0.0.1",
   "scripts": {
     "build+push": "ts-node build+push.ts"

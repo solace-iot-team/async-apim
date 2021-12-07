@@ -5,15 +5,13 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
 SKIPPING="+++ SKIPPING +++";
 
-
 ############################################################################################################################
 # Run
 
 echo " >>> Starting $scriptName ..."
 
 releaseDirs=(
-  "apim-admin-portal/docker"
-  # "developer-portal"
+  "docker"
 )
 
 for releaseDir in ${releaseDirs[@]}; do

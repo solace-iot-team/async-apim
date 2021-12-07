@@ -3,12 +3,14 @@
 scriptDir=$(cd $(dirname "$0") && pwd);
 scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
-apimServerOpenApiBrowserReleaseDir="$scriptDir/../../apim-server-openapi-browser"
+SKIPPING="+++ SKIPPING +++";
 
 ############################################################################################################################
 # Run
 
-echo " >>> Npm install ..."
+echo " >>> Starting $scriptName ..."
+
+echo " >>> Install ..."
   cd $scriptDir
   runScript="npm install"
   $runScript
@@ -16,29 +18,18 @@ echo " >>> Npm install ..."
   if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
 echo " >>> Success."
 
-echo " >>> Release apim-server-openapi-browser ..."
-  cd $apimServerOpenApiBrowserReleaseDir
-  runScript="./release.sh"
-  $runScript
-  code=$?;
-  if [[ $code == 2 ]]; then
-    echo ">>> nothing to do, version already exists - code=$code - $runScript' - $scriptName"; exit 0;
-  elif [[ $code != 0 ]]; then
-    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
-  fi
-echo " >>> Success."
-
-echo " >>> Build & Push Docker Image ..."
+echo " >>> Build+Push..."
   cd $scriptDir
   runScript="npm run build+push"
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then
-    echo ">>> nothing to do, image already exists - code=$code - $runScript' - $scriptName"; exit 0;
+    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
     echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
   fi
 echo " >>> Success."
+
 
 ###
 # The End.
