@@ -1,8 +1,9 @@
 {
   "name": "apim-server-openapi-release",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
-    "build+push": "ts-node build+push.ts"
+    "build": "ts-node build.ts",
+    "compile+publish": "ts-node compile+publish.ts"
   },
   "author": "Solace Corporation",
   "contributors": [

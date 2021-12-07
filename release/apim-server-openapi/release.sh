@@ -18,9 +18,21 @@ echo " >>> Install ..."
   if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
 echo " >>> Success."
 
-echo " >>> Build+Push..."
+echo " >>> Build..."
   cd $scriptDir
-  runScript="npm run build+push"
+  runScript="npm run build"
+  $runScript
+  code=$?;
+  if [[ $code == 2 ]]; then
+    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
+  elif [[ $code != 0 ]]; then
+    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
+  fi
+echo " >>> Success."
+
+echo " >>> Compile+Publish..."
+  cd $scriptDir
+  runScript="npm run compile+publish"
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then

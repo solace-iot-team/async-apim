@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.9
+  version: 0.0.10
 servers:
 - url: /apim-server/v1
 tags:
