@@ -3,6 +3,7 @@
 scriptDir=$(cd $(dirname "$0") && pwd);
 scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 
+SKIPPING="+++ SKIPPING +++";
 
 ############################################################################################################################
 # Run
@@ -23,7 +24,7 @@ echo " >>> Build+Push..."
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then
-    echo ">>> nothing to do, version already exists - code=$code - $runScript' - $scriptName"; exit 0;
+    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
     echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
   fi

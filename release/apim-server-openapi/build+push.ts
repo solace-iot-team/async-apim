@@ -5,6 +5,8 @@ import yaml from 'js-yaml';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
+const Skipping = '+++ SKIPPING +++';
+
 const WorkingDir = `${scriptDir}/working_dir`;
 const ApimServerDir = `${scriptDir}/../../apim-server`;
 const WorkingApimServerDir = `${WorkingDir}/apim-server`;
@@ -68,7 +70,7 @@ const checkVersions = () => {
     const newVersion = getNewVersion();
     console.log(`${PackageJson.name}: npm latest version='${npmLatestVersion}', new version='${newVersion}'`);
     if(newVersion === npmLatestVersion) {
-        console.log('nothing to do, exiting.');
+        console.log(`${logName}: [${Skipping}]: nothing to do.`);
         process.exit(2);
     }
     // write new version into package.json
@@ -93,7 +95,7 @@ const devBuildApimServer = () => {
   s.cd(`${WorkingApimServerDir}`);
   console.log(`${logName}: directory = ${s.exec(`pwd`)}`);
   if(s.exec('npm install').code !== 0) process.exit(1);
-  if(s.exec('npm run dev:build:server').code !== 0) process.exit(1);
+  if(s.exec('npm run dev:build').code !== 0) process.exit(1);
   if(s.cd(`${scriptDir}`).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }

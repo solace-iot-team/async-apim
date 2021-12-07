@@ -4,15 +4,12 @@ import path from 'path';
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
 
-const Skipping = '+++ SKIPPING +++';
-
-const GitRoot = `${scriptDir}/../../../..`;
+const GitRoot = `${scriptDir}/../../..`;
 const WorkingDir = `${scriptDir}/working_dir`;
-const ApimPortalDir = `${GitRoot}/apim-portal`;
-const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
+const ApimServerDir = `${GitRoot}/apim-server`;
+const WorkingApimServerDir = `${WorkingDir}/apim-server`;
 
-const AssetDir = `${scriptDir}/assets`;
-
+const Skipping = '+++ SKIPPING +++';
 const DockerContextDir = `${WorkingDir}/docker-context`;
 const DockerFile = `${scriptDir}/Dockerfile`;
 const DockerHubUser = "solaceiotteam";
@@ -21,35 +18,20 @@ let DockerImageName: string;
 let DockerImageTag: string;
 let DockerImageTagLatest: string;
 
-const DockerContextAssetsInclude = [
+type TDockerContextAssetsInclude =   {
+  sources: string;
+  targetDir: string;
+  targetFile?: string;
+};
+type TDockerContextAssetsIncludeList = Array<TDockerContextAssetsInclude>;
+const DockerContextAssetsIncludeList: TDockerContextAssetsIncludeList = [
   {
-    sources: `${WorkingApimPortalDir}/build/admin-portal/*.json`,
-    targetDir: `${DockerContextDir}/admin-portal`
+    sources: `${WorkingApimServerDir}/dist`,
+    targetDir: `${DockerContextDir}`
   },
   {
-    sources: `${WorkingApimPortalDir}/build/images/*.png`,
-    targetDir: `${DockerContextDir}/admin-portal/images`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/static`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/*.txt`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/asset-manifest.json`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/index.html`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/public/manifest.admin-portal.json`,
-    targetDir: `${DockerContextDir}/admin-portal`,
-    targetFile: 'manifest.json'
+    sources: `${WorkingApimServerDir}/node_modules`,
+    targetDir: `${DockerContextDir}`
   }
 ]
 
@@ -67,15 +49,13 @@ const copySourcesToWorkingDir = () => {
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
 
-  console.log(`${logName}: copying apim-portal sources to working dir ...`);
-  if(s.cp('-rf', ApimPortalDir, WorkingDir).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${WorkingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
-  // remove build
-  if(s.rm('-rf', `${WorkingApimPortalDir}/build`).code !== 0) process.exit(1);
-  // remove .env . it is compiled into the build  
-  if(s.rm('-rf', `${WorkingApimPortalDir}/.env`).code !== 0) process.exit(1);
-  // replace it with the one working with the quickstart docker compose
-  if(s.cp('-rf', `${AssetDir}/.env.apim-portal`, `${WorkingApimPortalDir}/.env`).code !== 0) process.exit(1);
+  console.log(`${logName}: copying apim-server sources to working dir ...`);
+  if(s.cp('-rf', ApimServerDir, WorkingDir).code !== 0) process.exit(1);
+  // remove generated
+  if(s.rm('-rf', `${WorkingApimServerDir}/node_modules`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${WorkingApimServerDir}/dist`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${WorkingApimServerDir}/src/*`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${WorkingApimServerDir}/server/@types`).code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
@@ -84,11 +64,11 @@ const setGlobals = () => {
   const funcName = 'setGlobals';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  const apimPortalPackageJson = require(`${WorkingApimPortalDir}/package.json`);
+  const apimServerPackageJson = require(`${WorkingApimServerDir}/package.json`);
   const releasePackageJson = require(`${scriptDir}/package.json`);
   
   DockerImageName = releasePackageJson.name;
-  DockerImageTag = `${DockerImageName}:${apimPortalPackageJson.version}`;
+  DockerImageTag = `${DockerImageName}:${apimServerPackageJson.version}`;
   DockerImageTagLatest = `${DockerImageName}:latest`; 
   // console.log(`${logName}: Globals = ${JSON.stringify(Globals, null, 2)}`);
   console.log(`${logName}: success.`);
@@ -110,15 +90,22 @@ const checkVersion = () => {
   console.log(`${logName}: success.`);
 }
 
-const buildApimAdminPortal = () => {
-  const funcName = 'buildApimAdminPortal';
+const buildApimServer = () => {
+  const funcName = 'buildApimServer';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
 
-  if(s.cd(`${WorkingApimPortalDir}`).code !== 0) process.exit(1);
+  if(s.cd(`${WorkingApimServerDir}`).code !== 0) process.exit(1);
   if(s.exec('npm install').code !== 0) process.exit(1);
-  if(s.exec('npm run dev-build').code !== 0) process.exit(1);
+
+  if(s.exec('npm run dev:build').code !== 0) process.exit(1);
+
+  // build production
   if(s.exec('npm run build').code !== 0) process.exit(1);
+
+  if(s.rm('-rf', `${WorkingApimServerDir}/node_modules`).code !== 0) process.exit(1);
+  if(s.exec('export NODE_ENV=production; npm ci --only=production').code !== 0) process.exit(1);
+  // if(s.exec('npm prune --production --json').code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
@@ -133,7 +120,7 @@ const buildDockerContext = () => {
   if(s.rm('-rf', `${DockerContextDir}/`).code !== 0) process.exit(1);
 
   // copy files & dirs
-  for (const include of DockerContextAssetsInclude) {
+  for (const include of DockerContextAssetsIncludeList) {
     console.log(`${logName}: include = \n${JSON.stringify(include, null, 2)}`);
     if(s.mkdir('-p', include.targetDir).code !== 0) process.exit(1);
     if(include.targetFile) {
@@ -173,7 +160,7 @@ const buildDockerImage = () => {
   if(s.exec(`docker rmi -f ${DockerImageTag} ${DockerImageTagLatest}`, { silent: true }).code !== 0) process.exit(1);
   console.log(`${logName}]: building new image, tags=${DockerImageTag}, ${DockerImageTagLatest}`);
     // if(s.exec(`docker build --no-cache --build-arg PLATFORM_API_SERVER_NAME=${dockerImageName} --tag ${dockerImageTag} -f ${dockerFile} ${workingApiImplmentationDir}`).code !== 0) process.exit(1);
-  if(s.exec(`docker build --no-cache --tag ${DockerImageTag} -f ${DockerFile} ${DockerContextDir}`).code !== 0) process.exit(1);
+  if(s.exec(`docker build --progress=plain --no-cache --tag ${DockerImageTag} -f ${DockerFile} ${DockerContextDir}`).code !== 0) process.exit(1);
   if(s.exec(`docker tag ${DockerImageTag} ${DockerImageTagLatest}`).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }
@@ -202,7 +189,7 @@ const main = () => {
   setGlobals();
 
   checkVersion();
-  buildApimAdminPortal();
+  buildApimServer();
 
   buildDockerContext();
   removeDockerContainersByImageName();
