@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "scripts": {
     "build": "ts-node build.ts",
-    "compile+publish": "ts-node compile+publish.ts"
+    "publish": "ts-node publish.ts"
   },
   "author": "Solace Corporation",
   "contributors": [

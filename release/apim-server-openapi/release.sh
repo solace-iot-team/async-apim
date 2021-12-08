@@ -30,9 +30,9 @@ echo " >>> Build..."
   fi
 echo " >>> Success."
 
-echo " >>> Compile+Publish..."
+echo " >>> Publish..."
   cd $scriptDir
-  runScript="npm run compile+publish"
+  runScript="npm run publish"
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then
