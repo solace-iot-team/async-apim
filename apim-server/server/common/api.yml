@@ -939,8 +939,8 @@ components:
       enum:
       - http
       - https
-    APSConnectorClientConfig:
-      description: Configuration of the client for the connector.
+    APSLocation:
+      description: URL location information.
       type: object
       properties:
         protocol:
@@ -949,6 +949,27 @@ components:
           $ref: "#/components/schemas/APSHost"
         port:
           $ref: "#/components/schemas/APSPort"
+      required:
+      - protocol
+      - host
+      - port
+    EAPSConnectorClientConfigType:
+      description: Config type
+      type: string
+      enum:
+      - Internal Proxy
+      - External
+    APSConnectorClientConfig:
+      description: Configuration of the client for the connector.
+      type: object
+      properties:
+        configType:
+          $ref: "#/components/schemas/EAPSConnectorClientConfigType"
+        location:
+          $ref: "#/components/schemas/APSLocation"
+        basePath:
+          type: string
+          description: Base path prepended to connector resource path. Useful when using a proxy.
         apiVersion:
           type: string
         serviceUser:
@@ -958,9 +979,7 @@ components:
           description: The password for the serviceUser.
           type: string
       required:
-      - protocol
-      - host
-      - port
+      - configType
       - apiVersion
       - serviceUser
       - serviceUserPwd

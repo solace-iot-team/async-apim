@@ -16,7 +16,8 @@ import {
   ApsConfigService, 
   EAPSClientProtocol, 
   APSId,
-  ListApsConnectorsResponse, 
+  ListApsConnectorsResponse,
+  EAPSConnectorClientConfigType, 
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 
 
@@ -30,9 +31,12 @@ const apsConnectorTemplate: APSConnector = {
   description: 'description',
   isActive: true,
   connectorClientConfig: {
-    protocol: EAPSClientProtocol.HTTP,
-    host: 'host.com',
-    port: 3000,
+    configType: EAPSConnectorClientConfigType.EXTERNAL,
+    location: {
+      protocol: EAPSClientProtocol.HTTP,
+      host: 'host.com',
+      port: 3000  
+    },
     apiVersion: 'apiVersion',
     serviceUser: 'serviceUser',
     serviceUserPwd: 'serviceUserPwd'
@@ -202,12 +206,15 @@ describe(`${scriptName}`, () => {
         displayName: 'replaced',
         description: 'replaced',
         connectorClientConfig: {
+          configType: EAPSConnectorClientConfigType.EXTERNAL,
           serviceUser: 'replaced',
           serviceUserPwd: 'replaced',
           apiVersion: 'replaced',
-          host: 'replaced.host.com',
-          port: 0,
-          protocol: EAPSClientProtocol.HTTPS
+          location: {
+            host: 'replaced.host.com',
+            port: 0,
+            protocol: EAPSClientProtocol.HTTPS
+          }
         }
       }
       const target: APSConnector = {
@@ -280,7 +287,11 @@ describe(`${scriptName}`, () => {
         ...apsConnectorTemplate,
         connectorClientConfig: {
           ...apsConnectorTemplate.connectorClientConfig,
-          host: 'localhost'
+          location: {
+            host: 'localhost',
+            port: 80,
+            protocol: EAPSClientProtocol.HTTP
+          }
         }
       };
       try {
@@ -292,6 +303,58 @@ describe(`${scriptName}`, () => {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }      
+    });
+
+    it(`${scriptName}: should accept minimal config`, async () => {
+      const connectorId: APSId = apsConnectorTemplate.connectorId;
+      const toReplace: APSConnectorReplace = {
+        ...apsConnectorTemplate,
+        connectorClientConfig: {
+          configType: EAPSConnectorClientConfigType.INTERNAL_PROXY,
+          apiVersion: 'v1',
+          serviceUser: 'serviceUser',
+          serviceUserPwd: 'servicePassword'
+        }
+      };
+      try {
+        const result: APSConnector  = await ApsConfigService.replaceApsConnector({
+          connectorId: connectorId, 
+          requestBody: toReplace
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }      
+    });
+
+    it(`${scriptName}: should accept & return basePath`, async () => {
+      const connectorId: APSId = apsConnectorTemplate.connectorId;
+      const toReplace: APSConnectorReplace = {
+        ...apsConnectorTemplate,
+        connectorClientConfig: {
+          configType: EAPSConnectorClientConfigType.INTERNAL_PROXY,
+          apiVersion: 'v1',
+          serviceUser: 'serviceUser',
+          serviceUserPwd: 'servicePassword',
+          basePath: 'basePath'
+        }
+      };
+      let result: APSConnector;
+      try {
+        result = await ApsConfigService.replaceApsConnector({
+          connectorId: connectorId, 
+          requestBody: toReplace
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }      
+      const compare: APSConnector = {
+        ...toReplace,
+        connectorId: connectorId,
+        isActive: false
+      }
+      expect(result, `${TestLogger.createLogMessage('response equals request')}`).to.deep.equal(compare);
     });
 
     // ****************************************************************************************************************
@@ -316,7 +379,7 @@ describe(`${scriptName}`, () => {
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(400);
       expect(res.body, TestLogger.createTestFailMessage('body.errorId')).to.be.an('object').that.has.property('errorId').equal('openApiRequestValidation');
       expect(res.body, TestLogger.createTestFailMessage('body.meta')).to.have.property('meta').to.be.an('object');
-      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(6);
+      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(5);
       expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.description')).contains('description');
       expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.apiUserPwd')).contains('serviceUserPwd');
     });

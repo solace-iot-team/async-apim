@@ -13,7 +13,9 @@ import {
   APSConnectorCreate, 
   ApsConfigService, 
   EAPSClientProtocol, 
-  ApiError
+  ApiError,
+  EAPSConnectorClientConfigType,
+  APSLocation
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
@@ -24,8 +26,6 @@ export class APSConnectorsService {
   private persistenceService: MongoPersistenceService;
   
   constructor() {
-    const funcName = 'constructor';
-    const logName = `${APSConnectorsService.name}.${funcName}()`;
     this.persistenceService = new MongoPersistenceService(APSConnectorsService.collectionName);
   }
 
@@ -33,7 +33,11 @@ export class APSConnectorsService {
     const funcName = 'initialize';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
+
+    // for devel: drops the connector collection
     // await this.persistenceService.dropCollection();
+
+
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
 
@@ -70,12 +74,20 @@ export class APSConnectorsService {
             }
           }
           if(!found) {
+            let location: APSLocation | undefined = undefined;
+            if(bootstrapApsConnector.connectorClientConfig.location) {
+              location = {
+                ...bootstrapApsConnector.connectorClientConfig.location,
+                protocol: bootstrapApsConnector.connectorClientConfig.location.protocol === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP: EAPSClientProtocol.HTTPS
+              }
+            }
             const create: APSConnectorCreate = 
             { 
               ...bootstrapApsConnector,
               connectorClientConfig: {
                 ...bootstrapApsConnector.connectorClientConfig,
-                protocol: bootstrapApsConnector.connectorClientConfig.protocol === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP: EAPSClientProtocol.HTTPS
+                configType: bootstrapApsConnector.connectorClientConfig.configType === EAPSConnectorClientConfigType.INTERNAL_PROXY ? EAPSConnectorClientConfigType.INTERNAL_PROXY : EAPSConnectorClientConfigType.EXTERNAL,
+                location: location
               }
             };
             try {

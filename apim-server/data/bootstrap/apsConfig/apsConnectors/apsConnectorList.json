@@ -5,9 +5,12 @@
     "description": "uses docker/release",
     "isActive": true,
     "connectorClientConfig": {
-      "protocol": "http",
-      "host": "localhost",
-      "port": 9095,
+      "configType": "EXTERNAL",
+      "location": {
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9095
+      },
       "apiVersion": "v1",
       "serviceUser": "apim-portal-service-admin",
       "serviceUserPwd": "Solace123!"
