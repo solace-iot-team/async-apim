@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/server/index.js",
     "build": "ts-node build.ts",
-    "dev:build": "ts-node dev-build.ts",
+    "dev:build": "tsc && ts-node dev-build.ts",
     "dev": "nodemon server/index.ts | pino-pretty",
     "dev:nopretty": "nodemon server/index.ts",
     "dev:debug": "nodemon --exec \"node -r ts-node/register --inspect-brk\" server/index.ts | pino-pretty",

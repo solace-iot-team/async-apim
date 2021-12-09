@@ -1,7 +1,14 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import ServerConfig from '../../../common/ServerConfig';
 import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
-import { ApiInternalServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, ApiObjectNotFoundServerError, ApiServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
+import { 
+  ApiInternalServerError, 
+  ApiInternalServerErrorFromError, 
+  ApiKeyNotFoundServerError, 
+  ApiObjectNotFoundServerError, 
+  BootstrapErrorFromApiError, 
+  BootstrapErrorFromError 
+} from '../../../common/ServerError';
 import { ServerUtils } from '../../../common/ServerUtils';
 import APSConnector = Components.Schemas.APSConnector;
 import APSConnectorCreateRequest = Components.Schemas.APSConnectorCreate;
@@ -12,10 +19,7 @@ import APSConnectorList = Components.Schemas.APSConnectorList;
 import { 
   APSConnectorCreate, 
   ApsConfigService, 
-  EAPSClientProtocol, 
   ApiError,
-  EAPSConnectorClientConfigType,
-  APSLocation
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
@@ -74,22 +78,23 @@ export class APSConnectorsService {
             }
           }
           if(!found) {
-            let location: APSLocation | undefined = undefined;
-            if(bootstrapApsConnector.connectorClientConfig.location) {
-              location = {
-                ...bootstrapApsConnector.connectorClientConfig.location,
-                protocol: bootstrapApsConnector.connectorClientConfig.location.protocol === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP: EAPSClientProtocol.HTTPS
-              }
-            }
-            const create: APSConnectorCreate = 
-            { 
-              ...bootstrapApsConnector,
-              connectorClientConfig: {
-                ...bootstrapApsConnector.connectorClientConfig,
-                configType: bootstrapApsConnector.connectorClientConfig.configType === EAPSConnectorClientConfigType.INTERNAL_PROXY ? EAPSConnectorClientConfigType.INTERNAL_PROXY : EAPSConnectorClientConfigType.EXTERNAL,
-                location: location
-              }
-            };
+            const create: APSConnectorCreate = bootstrapApsConnector as APSConnectorCreate;
+            // let location: APSLocation | undefined = undefined;
+            // if(bootstrapApsConnector.connectorClientConfig.location) {
+            //   location = {
+            //     ...bootstrapApsConnector.connectorClientConfig.location,
+            //     protocol: bootstrapApsConnector.connectorClientConfig.location.protocol === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP: EAPSClientProtocol.HTTPS
+            //   }
+            // }
+            // const create: APSConnectorCreate = 
+            // { 
+            //   ...bootstrapApsConnector,
+            //   connectorClientConfig: {
+            //     ...bootstrapApsConnector.connectorClientConfig,
+            //     configType: bootstrapApsConnector.connectorClientConfig.configType === EAPSConnectorClientConfigType.INTERNAL_PROXY ? EAPSConnectorClientConfigType.INTERNAL_PROXY : EAPSConnectorClientConfigType.EXTERNAL,
+            //     location: location
+            //   }
+            // };
             try {
               await ApsConfigService.createApsConnector({
                 requestBody: create

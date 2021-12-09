@@ -5,8 +5,8 @@
     "description": "uses docker/release",
     "isActive": true,
     "connectorClientConfig": {
-      "configType": "EXTERNAL",
-      "location": {
+      "locationConfig": {
+        "configType": "External",
         "protocol": "http",
         "host": "localhost",
         "port": 9095

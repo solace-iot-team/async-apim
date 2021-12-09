@@ -939,10 +939,14 @@ components:
       enum:
       - http
       - https
-    APSLocation:
-      description: URL location information.
+    APSLocationConfigExternal:
+      description: External URL location information.
       type: object
       properties:
+        configType:
+          type: string
+          enum:
+          - External
         protocol:
           $ref: "#/components/schemas/EAPSClientProtocol"
         host:
@@ -950,26 +954,28 @@ components:
         port:
           $ref: "#/components/schemas/APSPort"
       required:
+      - configType
       - protocol
       - host
       - port
-    EAPSConnectorClientConfigType:
-      description: Config type
-      type: string
-      enum:
-      - Internal Proxy
-      - External
+    APSLocationConfigInternalProxy:
+      description: Internal Proxy URL location information.
+      type: object
+      properties:
+        configType:
+          type: string
+          enum:
+          - Internal Proxy
+      required:
+      - configType
     APSConnectorClientConfig:
       description: Configuration of the client for the connector.
       type: object
       properties:
-        configType:
-          $ref: "#/components/schemas/EAPSConnectorClientConfigType"
-        location:
-          $ref: "#/components/schemas/APSLocation"
-        basePath:
-          type: string
-          description: Base path prepended to connector resource path. Useful when using a proxy.
+        locationConfig:
+          anyOf:
+            - $ref: '#/components/schemas/APSLocationConfigExternal'
+            - $ref: '#/components/schemas/APSLocationConfigInternalProxy'
         apiVersion:
           type: string
         serviceUser:
@@ -978,8 +984,11 @@ components:
         serviceUserPwd:
           description: The password for the serviceUser.
           type: string
+        basePath:
+          type: string
+          description: Base path prepended to connector resource path. Useful when using a proxy.
       required:
-      - configType
+      - locationConfig
       - apiVersion
       - serviceUser
       - serviceUserPwd

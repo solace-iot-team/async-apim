@@ -24,4 +24,11 @@ export class ServerUtils {
       throw e;
     }
   }
+
+  public static assertNever = (extLogName: string, x: never): never => {
+    const funcName = 'assertNever';
+    const logName = `${ServerUtils.name}.${funcName}()`;
+    throw new Error(`${logName}:${extLogName}: unexpected object: ${JSON.stringify(x)}`);
+  }
+
 }

@@ -1,13 +1,13 @@
 [
   {
-    "connectorId": "LocalQuickstartApimConnector",
+    "connectorId": "InternalProxyQuickstartApimConnector",
     "displayName": "Quickstart Connector",
-    "description": "Standard quickstart connector with localhost",
+    "description": "Quickstart connector using internal proxy",
     "isActive": true,
     "connectorClientConfig": {
-      "protocol": "http",
-      "host": "localhost",
-      "port": 5000,
+      "locationConfig": {
+        "configType": "Internal Proxy"
+      },
       "apiVersion": "v1",
       "serviceUser": "apim-portal-service-admin",
       "serviceUserPwd": "Solace123!"

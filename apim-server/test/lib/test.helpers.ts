@@ -11,6 +11,10 @@ import { ApiRequestOptions } from '../../src/@solace-iot-team/apim-server-openap
 import { ApiResult } from "../../src/@solace-iot-team/apim-server-openapi-node/core/ApiResult";
 import { ApiError } from "../../src/@solace-iot-team/apim-server-openapi-node";
 
+export const testHelperSleep = async(millis = 500) => {
+  if(millis > 0) await new Promise(resolve => setTimeout(resolve, millis));
+}
+
 export function getOptionalEnvVarValue(envVar: string): string | undefined {
     return process.env[envVar];
 }

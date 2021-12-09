@@ -4,7 +4,7 @@ import request from 'supertest';
 import Server from '../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, testHelperSleep, TestLogger } from './lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -17,7 +17,8 @@ import {
   EAPSClientProtocol, 
   APSId,
   ListApsConnectorsResponse,
-  EAPSConnectorClientConfigType, 
+  APSLocationConfigExternal,
+  APSLocationConfigInternalProxy
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 
 
@@ -25,14 +26,15 @@ const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
 const numberOfConnectors: number = 10;
+APSLocationConfigExternal
 const apsConnectorTemplate: APSConnector = {
   connectorId: 'connectorId',
   displayName: 'displayName',
   description: 'description',
   isActive: true,
   connectorClientConfig: {
-    configType: EAPSConnectorClientConfigType.EXTERNAL,
-    location: {
+    locationConfig: {
+      configType: APSLocationConfigExternal.configType.EXTERNAL,
       protocol: EAPSClientProtocol.HTTP,
       host: 'host.com',
       port: 3000  
@@ -72,6 +74,10 @@ describe(`${scriptName}`, () => {
       const res = await request(Server).get(apiStartupBase);
       TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
+
+      // TODO: need to wait until initialized & bootstrapping is finished ==> server ready
+      testHelperSleep(2000);
+
     });
 
     // ****************************************************************************************************************
@@ -99,6 +105,7 @@ describe(`${scriptName}`, () => {
         const result: ListApsConnectorsResponse  = await ApsConfigService.listApsConnectors();
         const apsConnectorList: Array<APSConnector> = result.list;
         for (const apsConnector of apsConnectorList) {
+
           await ApsConfigService.deleteApsConnector({
             connectorId: apsConnector.connectorId
           });
@@ -206,11 +213,11 @@ describe(`${scriptName}`, () => {
         displayName: 'replaced',
         description: 'replaced',
         connectorClientConfig: {
-          configType: EAPSConnectorClientConfigType.EXTERNAL,
           serviceUser: 'replaced',
           serviceUserPwd: 'replaced',
           apiVersion: 'replaced',
-          location: {
+          locationConfig: {
+            configType: APSLocationConfigExternal.configType.EXTERNAL,
             host: 'replaced.host.com',
             port: 0,
             protocol: EAPSClientProtocol.HTTPS
@@ -287,7 +294,8 @@ describe(`${scriptName}`, () => {
         ...apsConnectorTemplate,
         connectorClientConfig: {
           ...apsConnectorTemplate.connectorClientConfig,
-          location: {
+          locationConfig: {
+            configType: APSLocationConfigExternal.configType.EXTERNAL,
             host: 'localhost',
             port: 80,
             protocol: EAPSClientProtocol.HTTP
@@ -310,7 +318,9 @@ describe(`${scriptName}`, () => {
       const toReplace: APSConnectorReplace = {
         ...apsConnectorTemplate,
         connectorClientConfig: {
-          configType: EAPSConnectorClientConfigType.INTERNAL_PROXY,
+          locationConfig: {
+            configType: APSLocationConfigInternalProxy.configType.INTERNAL_PROXY
+          },
           apiVersion: 'v1',
           serviceUser: 'serviceUser',
           serviceUserPwd: 'servicePassword'
@@ -332,7 +342,9 @@ describe(`${scriptName}`, () => {
       const toReplace: APSConnectorReplace = {
         ...apsConnectorTemplate,
         connectorClientConfig: {
-          configType: EAPSConnectorClientConfigType.INTERNAL_PROXY,
+          locationConfig: {
+            configType: APSLocationConfigInternalProxy.configType.INTERNAL_PROXY
+          },
           apiVersion: 'v1',
           serviceUser: 'serviceUser',
           serviceUserPwd: 'servicePassword',
@@ -360,6 +372,32 @@ describe(`${scriptName}`, () => {
     // ****************************************************************************************************************
     // * Raw API Tests *
     // ****************************************************************************************************************
+
+    it(`${scriptName}: create connector should return openapi validation error for external location config`, async() => {
+      const toCreate = {
+        connectorId: 'requestValidationError',
+        displayName: 'displayName',
+        connectorClientConfig: {
+          locationConfig: {
+            configType: APSLocationConfigExternal.configType.EXTERNAL,
+            protocol: EAPSClientProtocol.HTTP
+          }
+        }
+      }
+      const res = await request(Server)
+        .post(apiBase)
+        .send(toCreate);
+
+      TestContext.setFromSuperTestRequestResponse(res);
+      // TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
+
+      expect(res.status, TestLogger.createTestFailMessage('status code')).equal(400);
+      expect(res.body, TestLogger.createTestFailMessage('body.errorId')).to.be.an('object').that.has.property('errorId').equal('openApiRequestValidation');
+      expect(res.body, TestLogger.createTestFailMessage('body.meta')).to.have.property('meta').to.be.an('object');
+      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(8);
+      expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.description')).contains('description');
+      expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.apiUserPwd')).contains('connectorClientConfig');
+    });
 
     it(`${scriptName}: create connector should return openapi validation error`, async() => {
       const toCreate = {
