@@ -156,7 +156,7 @@ export const EditUserProfile: React.FC<IEditUserProfileProps> = (props: IEditUse
                 <Controller
                   name="profile.email"
                   control={managedObjectUseForm.control}
-                  rules={APSOpenApiFormValidationRules.APSEmail_ValidationRules()}
+                  rules={APSOpenApiFormValidationRules.APSEmail("Enter E-Mail.", true)}
                   render={( { field, fieldState }) => {
                       return(
                         <InputText

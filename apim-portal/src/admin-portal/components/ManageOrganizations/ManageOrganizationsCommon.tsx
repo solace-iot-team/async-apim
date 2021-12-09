@@ -7,7 +7,6 @@ import {
 
 import { Globals } from '../../../utils/Globals';
 
-// NEW NEW NEW NEW NEW
 export enum EAPReverseProxySempV2AuthType {
   BASIC_AUTH = 'HTTP Basic Auth',
   API_KEY = 'API Key'
@@ -54,44 +53,14 @@ export type TAPOrganizationConfigEventPortal = {
 export enum EAPOrganizationConfigType {
   SIMPLE = 'Simple',
   ADVANCED = 'Advanced'
-
 }
 export type TAPOrganizationConfig = {
   name: CommonName;
-  // displayName: CommonDisplayName;
-  // description: CommonDescription;
   configType: EAPOrganizationConfigType;
   configSimple: TAPOrganizationConfigSimple;
   configAdvancedServiceDiscoveryProvisioning: TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning;
   configAdvancedEventPortal: TAPOrganizationConfigEventPortal;
 }
-
-
-
-
-// NEW NEW NEW NEW NEW
-
-
-// export type TManagedObjectId = string;
-
-// export type TViewApiObject = Organization;
-
-// export type TViewManagedObjectHasInfo = {
-//   hasEnvironments: boolean,
-//   hasApis?: boolean,
-//   hasApiProducts: boolean,
-//   hasDevelopers: boolean,
-//   hasApps: boolean
-// }
-
-// export type TViewManagedObject = {
-//   type: string,
-//   id: string,
-//   displayName: string,
-//   globalSearch: string,
-//   hasInfo?: TViewManagedObjectHasInfo,
-//   apiObject: TViewApiObject
-// }
 
 export enum E_CALL_STATE_ACTIONS {
   API_DELETE_ORGANIZATION = "API_DELETE_ORGANIZATION",
@@ -319,61 +288,4 @@ export class ManageOrganizationsCommon {
     }
     throw new Error(`${logName}: must never get here`);
   }
-
-  // private static generateGlobalSearchContent = (viewApiObject: TViewApiObject): string => {
-  //   const filteredViewApiObject = {
-  //     ...viewApiObject,
-  //     'cloud-token': ''
-  //   }
-  //   return Globals.generateDeepObjectValuesString(filteredViewApiObject);
-  // }
-
-
-  // DELETE DELETE DELETE DELETE DELETE DELETE DELETE DELETE DELETE DELETE
-  // public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, hasInfo?: TViewManagedObjectHasInfo): TViewManagedObject => {
-  //   return {
-  //     type: 'solace-cloud',
-  //     id: viewApiObject.name,
-  //     displayName: viewApiObject.name,
-  //     globalSearch: ManageOrganizationsCommon.generateGlobalSearchContent(viewApiObject),
-  //     apiObject: viewApiObject,
-  //     hasInfo: hasInfo
-  //   }
-  // }
-
-  // private static hasBodyTemplate = (has: boolean | undefined) => {
-  //   if (has === undefined) return (<span>?</span>)
-  //   else if (has === true) return (<span className={`pi pi-check manage-organizations has-badge`} />)
-  //   else return (<span className={`pi pi-minus manage-organizations has-badge`} />)
-  // }
-
-  // public static hasEnvironmentsBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-  //   return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasEnvironments ? true : false);
-  // } 
-
-  // public static hasApisBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-  //   return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasApis);
-  // } 
-
-  // public static hasApiProductsBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-  //   return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasApiProducts ? true : false);
-  // } 
-
-  // public static hasDevelopersBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-  //   return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasDevelopers ? true : false);
-  // } 
-
-  // public static hasAppsBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-  //   return ManageOrganizationsCommon.hasBodyTemplate(viewManagedObject.hasInfo?.hasApps ? true : false);
-  // }
-
-  // public static viewManagedObjectHasContent = (viewManagedObject: TViewManagedObject) => {
-  //   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  //   const { hasInfo, ...rest } = viewManagedObject;
-  //   if( hasInfo ) {
-  //     return (hasInfo.hasEnvironments || hasInfo.hasApis || hasInfo.hasApiProducts || hasInfo.hasDevelopers || hasInfo.hasApps)
-  //   } else return false;
-  // }
-
-
 }

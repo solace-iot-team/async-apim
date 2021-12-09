@@ -1,6 +1,6 @@
 
 import { OpenAPI, ApiError } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { APSConnectorClientConfig, EAPSConnectorClientConfigType } from '@solace-iot-team/apim-server-openapi-browser';
 import { Mutex, MutexInterface } from "async-mutex";
 
 export type APConnectorClientOpenApiInfo = {
@@ -9,6 +9,7 @@ export type APConnectorClientOpenApiInfo = {
 }
 
 export class APClientConnectorOpenApi {
+  private static componentName = 'APClientConnectorOpenApi';
   private static orgSettings?: {
     config: APSConnectorClientConfig
     isInitialized: boolean
@@ -18,15 +19,46 @@ export class APClientConnectorOpenApi {
   private static mutex = new Mutex();
   private static mutexReleaser: MutexInterface.Releaser;
 
+  public static constructBaseUrl = (config: APSConnectorClientConfig): string => {
+    const funcName: string = `constructBaseUrl`;
+    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
+    let url: string = '';
+    if(config.configType === EAPSConnectorClientConfigType.EXTERNAL) {
+      if(!config.location) throw new Error(`${logName}: config.location is undefined`);
+      url = `${config.location.protocol}://${config.location.host}:${config.location.port}`;
+    }
+    return url;
+  }
+  public static constructOpenApiBase = (config: APSConnectorClientConfig): string => {
+    const funcName: string = `constructOpenApiBase`;
+    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
+
+    console.log(`${logName}: config = ${JSON.stringify(config, null, 2)}`);
+
+
+    const url: string = APClientConnectorOpenApi.constructBaseUrl(config);
+    let base: string = config.apiVersion;
+    if(config.basePath) {
+      base = `${url}/${config.basePath}/${config.apiVersion}`;
+    } else {
+      base = `${url}/${config.apiVersion}`;
+    }
+
+    console.log(`${logName}: base = ${JSON.stringify(base, null, 2)}`);
+
+
+    
+    return base;
+  }
   public static initialize = (config: APSConnectorClientConfig) => {
-    // const funcName: string = `initialize`;
-    // const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
+    const funcName: string = `initialize`;
+    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
     APClientConnectorOpenApi.config = (JSON.parse(JSON.stringify(config)));
-    OpenAPI.BASE = `${APClientConnectorOpenApi.config.protocol}://${APClientConnectorOpenApi.config.host}:${APClientConnectorOpenApi.config.port}/${APClientConnectorOpenApi.config.apiVersion}`;
+    OpenAPI.BASE = APClientConnectorOpenApi.constructOpenApiBase(APClientConnectorOpenApi.config);
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
     OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
     APClientConnectorOpenApi.isInitialized = true;
-    // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
+    console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
   } 
 
   public static uninitialize = () => {
@@ -35,7 +67,7 @@ export class APClientConnectorOpenApi {
 
   public static tmpInitialize = async (tmpConfig: APSConnectorClientConfig) => {
     const funcName: string = `tmpInitialize`;
-    const logName: string = `${APClientConnectorOpenApi.name}.${funcName}()`  
+    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
     APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
     if(APClientConnectorOpenApi.isInitialized) {
       APClientConnectorOpenApi.orgSettings = {

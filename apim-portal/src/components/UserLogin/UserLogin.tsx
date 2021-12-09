@@ -9,6 +9,7 @@ import { classNames } from 'primereact/utils';
 import { Loading } from '../Loading/Loading';
 import { Divider } from 'primereact/divider';
 
+import { Config } from '../../Config';
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from '../AuthContextProvider/AuthContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
@@ -36,7 +37,7 @@ const emptyLoginData: APSUserLoginCredentials = {
   userId: '',
   userPwd: ''
 }
-var initialLoginData: APSUserLoginCredentials = emptyLoginData;
+var develLoginData: APSUserLoginCredentials = emptyLoginData;
 // ********************************************************************
 // TODO: for testing only
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -70,13 +71,12 @@ const develTestLoginData2: APSUserLoginCredentials = {
   userPwd: 'org-0.org-4@aps.com'
 }
 
-// initialLoginData = develRootLoginData;
+develLoginData = develRootLoginData;
 // initialLoginData = develCluserAdminLoginData;
 // initialLoginData = develOrganizationAdminLoginData;
 // initialLoginData = develNoOrgLoginData;
-initialLoginData = develMasterUserLoginData;
+// develLoginData = develMasterUserLoginData;
 // initialLoginData = develTestLoginData2;
-
 /* eslint-enable @typescript-eslint/no-unused-vars */
 // TODO: for testing only
 // ********************************************************************
@@ -84,7 +84,7 @@ initialLoginData = develMasterUserLoginData;
 export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => {
   const componentName = 'UserLogin';
 
-  const [loginFormData, setLoginFormData] = React.useState<APSUserLoginCredentials>(initialLoginData);
+  const [loginFormData, setLoginFormData] = React.useState<APSUserLoginCredentials>(emptyLoginData);
   const [isLoginSuccessful, setIsLoginSuccessful] = React.useState<boolean | undefined>(undefined);
   const [isCallingApi, setIsCallingApi] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -137,6 +137,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }
 
   React.useEffect(() => {
+    if(Config.getUseDevelTools()) setLoginFormData(develLoginData);
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     if(props.userCredentials) doAutoLogin(props.userCredentials);

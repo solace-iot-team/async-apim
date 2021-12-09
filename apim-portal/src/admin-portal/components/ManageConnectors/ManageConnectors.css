@@ -35,12 +35,6 @@
     width: 80%;
   }
 }
-/* @media screen and (max-width: 640px) {
-  .ap-environments .card {
-    width: 100%;
-    min-width: 0;
-  }
-} */
 .button-set-footer {
   display: flex;
   flex-wrap: nowrap;
@@ -52,4 +46,20 @@
   display: flex;
   align-items: left;
   justify-content: left;
+}
+
+.manage-connectors .connector-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-connectors .connector-view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.manage-connectors .connector-view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
 }

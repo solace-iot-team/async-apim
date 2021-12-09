@@ -7,6 +7,7 @@ type TConfig = {
 }
 
 export class Config {
+  private static commonName='Config';
   private static config: TConfig; 
 
   private static getMandatoryEnvVarValue = (envVarName: string): string => {
@@ -47,32 +48,28 @@ export class Config {
 
   public static initialize = () => {
     const funcName = 'initialize';
-    const logName = `${Config.name}.${funcName}()`;
+    const logName = `${Config.commonName}.${funcName}()`;
     console.log(`${logName}: process.env = ${JSON.stringify(process.env, null, 2)}`);
-    // const protocolStr: string | undefined = Config.getOptionalEnvVarValue("REACT_APP_AP_SERVER_CLIENT_PROTOCOL");
-    // let protocol: EAPSClientProtocol | undefined = undefined;
-    // if(protocolStr) {
-    //   protocol = (protocolStr === EAPSClientProtocol.HTTP ? EAPSClientProtocol.HTTP : EAPSClientProtocol.HTTPS);
-    // }
     Config.config = {
       useDevelTools: Config.getOptionalEnvVarValueAsBoolean('REACT_APP_AP_USE_DEVEL_TOOLS', false),
       apsClientOpenApiConfig: {
         apsServerUrl: Config.getOptionalEnvVarValueAsURL("REACT_APP_AP_SERVER_URL"),
-        // protocol: protocol,
-        // host: Config.getOptionalEnvVarValue("REACT_APP_AP_SERVER_CLIENT_HOST"),
-        // port: Config.getOptionalEnvVarValueAsNumber("REACT_APP_AP_SERVER_CLIENT_PORT"),
-        // user: Config.getMandatoryEnvVarValue("REACT_APP_AP_SERVER_CLIENT_USER"),
-        // pwd: Config.getMandatoryEnvVarValue("REACT_APP_AP_SERVER_CLIENT_USER_PWD"),
       }
     }
     console.log(`${logName}: config = ${JSON.stringify(Config.config, null, 2)}`);
   }
 
   public static getAPSClientOpenApiConfig = (): TAPSClientOpenApiConfig => {
+    const funcName = 'getAPSClientOpenApiConfig';
+    const logName = `${Config.commonName}.${funcName}()`;
+    if(!Config.config) throw new Error(`${logName}: Config.config is undefined`);
     return Config.config.apsClientOpenApiConfig;
   }
   
   public static getUseDevelTools = (): boolean => {
+    const funcName = 'getUseDevelTools';
+    const logName = `${Config.commonName}.${funcName}()`;
+    if(!Config.config) throw new Error(`${logName}: Config.config is undefined`);
     return Config.config.useDevelTools;
   }
 }

@@ -682,7 +682,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
                 <Controller
                   name="host"
                   control={managedObjectUseForm.control}
-                  rules={APSOpenApiFormValidationRules.APSHost_ValidationRules()}
+                  rules={APSOpenApiFormValidationRules.APSHost('Enter hostname or IP address.', true)}
                   render={( { field, fieldState }) => {
                       return(
                         <InputText
@@ -703,7 +703,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
                 <Controller
                   name="port"
                   control={managedObjectUseForm.control}
-                  rules={APSOpenApiFormValidationRules.APSPort_ValidationRules()}
+                  rules={APSOpenApiFormValidationRules.APSPort("Enter Port Number.", true)}
                   render={( { field, fieldState }) => {
                       return(
                         <InputNumber

@@ -6,13 +6,13 @@ import { Dialog } from 'primereact/dialog';
 import { Divider } from "primereact/divider";
 
 import { 
-  ApsConfigService, APSConnector
+  ApsConfigService, APSConnector, APSId
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewManagedObject } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { THealthCheckResult } from "../../../utils/Globals";
 import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
@@ -22,7 +22,7 @@ import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
 
 export interface ISetConnectorActiveProps {
-  connectorId: TManagedObjectId;
+  connectorId: APSId;
   connectorDisplayName: string;
   healthCheckResult?: boolean;
   onError: (apiCallState: TApiCallState) => void;
@@ -55,7 +55,7 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
       });
       const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
       const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
-      setManagedObject(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
+      setManagedObject(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -141,7 +141,7 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
           renderWarning
         }
         <p>Are you sure you want to set connector to active?</p>
-        <p> <b>{props.connectorDisplayName} ({props.connectorId}) </b></p>
+        <p> <b>{props.connectorDisplayName}</b></p>
         <p><b>Note:</b>You will have to login again.</p>
         {/* {renderHealthCheckInfo()} */}
       </React.Fragment>  

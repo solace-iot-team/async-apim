@@ -72,7 +72,7 @@ const copySourcesToWorkingDir = () => {
   if(s.rm('-rf', `${WorkingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
   // remove build
   if(s.rm('-rf', `${WorkingApimPortalDir}/build`).code !== 0) process.exit(1);
-  // remove .env . it is compiled into the build  
+  // remove .env . it is compiled into the build
   if(s.rm('-rf', `${WorkingApimPortalDir}/.env`).code !== 0) process.exit(1);
   // replace it with the one working with the quickstart docker compose
   if(s.cp('-rf', `${AssetDir}/.env.apim-portal`, `${WorkingApimPortalDir}/.env`).code !== 0) process.exit(1);
@@ -86,10 +86,10 @@ const setGlobals = () => {
   console.log(`${logName}: starting ...`);
   const apimPortalPackageJson = require(`${WorkingApimPortalDir}/package.json`);
   const releasePackageJson = require(`${scriptDir}/package.json`);
-  
+
   DockerImageName = releasePackageJson.name;
   DockerImageTag = `${DockerImageName}:${apimPortalPackageJson.version}`;
-  DockerImageTagLatest = `${DockerImageName}:latest`; 
+  DockerImageTagLatest = `${DockerImageName}:latest`;
   // console.log(`${logName}: Globals = ${JSON.stringify(Globals, null, 2)}`);
   console.log(`${logName}: success.`);
 }
@@ -168,7 +168,7 @@ const buildDockerImage = () => {
   const funcName = 'buildDockerImage';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  
+
   console.log(`${logName}: removing any existing images, tags=${DockerImageTag}, ${DockerImageTagLatest}`);
   if(s.exec(`docker rmi -f ${DockerImageTag} ${DockerImageTagLatest}`, { silent: true }).code !== 0) process.exit(1);
   console.log(`${logName}]: building new image, tags=${DockerImageTag}, ${DockerImageTagLatest}`);

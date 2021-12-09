@@ -336,7 +336,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 <Controller
                   name="profile.email"
                   control={managedObjectUseForm.control}
-                  rules={APSOpenApiFormValidationRules.APSEmail_ValidationRules()}
+                  rules={APSOpenApiFormValidationRules.APSEmail("Enter E-Mail.", true)}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

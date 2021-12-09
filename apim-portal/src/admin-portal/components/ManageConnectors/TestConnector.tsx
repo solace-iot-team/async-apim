@@ -6,7 +6,8 @@ import { Dialog } from 'primereact/dialog';
 
 import { 
   ApsConfigService, 
-  APSConnector
+  APSConnector,
+  APSId
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
@@ -16,13 +17,13 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
 import { APClientConnectorRaw } from "../../../utils/APClientConnectorRaw";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
 
 export interface ITestConnectorProps {
-  connectorId: TManagedObjectId;
+  connectorId: APSId;
   connectorDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -84,9 +85,6 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   }
 
   const onTestConnector = () => {
-    // const funcName = 'onTestConnector';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: apsConnector = ${JSON.stringify(apsConnector, null, 2)}`);
     setHealthCheckResult(undefined);
     setShowTestDialog(true);
     doTestConnector();

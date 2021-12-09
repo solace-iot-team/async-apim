@@ -82,7 +82,6 @@ export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   BootstrapOrganizations = '/devel/bootstrap/organizations',
   BootstrapUsers = '/devel/bootstrap/users',
-  BootstrapConnectors = '/devel/bootstrap/connectors',
   ViewContexts = '/devel/view/contexts',
 }
 

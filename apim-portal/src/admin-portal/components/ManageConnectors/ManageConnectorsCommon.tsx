@@ -5,19 +5,17 @@ import {
 
 import { Globals, THealthCheckResult } from '../../../utils/Globals';
 import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
-
-export type TManagedObjectId = APSId;
-
-export type TViewApiObject = APSConnector;
+import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
 
 export type TViewManagedObject = {
-  id: TManagedObjectId,
-  displayName: string,
-  globalSearch: string,
-  apiObject: TViewApiObject,
-  apConnectorInfo: TAPConnectorInfo | undefined,
-  healthCheckResult: THealthCheckResult
-  healthCheckPassed: string
+  id: APSId;
+  displayName: string;
+  globalSearch: string;
+  apsConnector: APSConnector;
+  apConnectorInfo: TAPConnectorInfo | undefined;
+  healthCheckResult: THealthCheckResult;
+  healthCheckPassed: string;
+  composedConnectorUrl: string;
 }
 
 export enum E_CALL_STATE_ACTIONS {
@@ -31,11 +29,11 @@ export enum E_CALL_STATE_ACTIONS {
 
 export class ManageConnectorsCommon {
 
-  private static generateGlobalSearchContent = (viewApiObject: TViewApiObject): string => {
+  private static generateGlobalSearchContent = (apsConnector: APSConnector): string => {
     const filteredViewApiObject = {
-      ...viewApiObject,
+      ...apsConnector,
       connectorClientConfig: {
-        ...viewApiObject.connectorClientConfig,
+        ...apsConnector.connectorClientConfig,
         adminUserPwd: undefined,
         apiUserPwd: undefined
       }
@@ -43,22 +41,22 @@ export class ManageConnectorsCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
+  public static createViewManagedObject = (apsConnector: APSConnector, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
     return {
-      id: viewApiObject.connectorId,
-      displayName: viewApiObject.displayName,
-      globalSearch: ManageConnectorsCommon.generateGlobalSearchContent(viewApiObject),
-      apiObject: viewApiObject,
+      id: apsConnector.connectorId,
+      displayName: apsConnector.displayName,
+      globalSearch: ManageConnectorsCommon.generateGlobalSearchContent(apsConnector),
+      apsConnector: apsConnector,
       apConnectorInfo: apConnectorInfo,
       healthCheckResult: healthCheckResult,
-      healthCheckPassed: healthCheckResult.summary.success ? 'passed' : 'failed'
+      healthCheckPassed: healthCheckResult.summary.success ? 'passed' : 'failed',
+      composedConnectorUrl: APClientConnectorOpenApi.constructOpenApiBase(apsConnector.connectorClientConfig)
     }
   }
 
-  public static isActiveBodyTemplate = (managedObject: TViewManagedObject) => {
-    if (managedObject.apiObject.isActive) return (<span className="pi pi-check badge-active" />)
+  public static isActiveBodyTemplate = (viewManagedObject: TViewManagedObject) => {
+    if(viewManagedObject.apsConnector.isActive) return (<span className="pi pi-check badge-active" />)
     else return (<span className="pi pi-times badge-active" />)
   }
-
 
 }

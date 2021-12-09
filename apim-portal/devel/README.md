@@ -45,7 +45,7 @@ npm link @solace-iot-team/apim-server-openapi-browser
 ### Re-build APIM Server OpenApi
 e.g. after changes to the OpenAPI Spec.
 ````bash
-cd async-apim/release/apim-server-openapi/apim-server-openapi-browser
+cd async-apim/release/apim-server-openapi
 npm run build
 # NOTE: no need to re-link
 ````

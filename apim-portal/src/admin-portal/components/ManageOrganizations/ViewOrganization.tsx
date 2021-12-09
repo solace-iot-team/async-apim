@@ -169,6 +169,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
       </React.Fragment>
     );
   }
+
   return (
     <div className="manage-organizations">
 

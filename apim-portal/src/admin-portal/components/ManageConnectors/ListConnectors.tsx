@@ -9,6 +9,7 @@ import { Button } from 'primereact/button';
 import { 
   ApsConfigService, 
   APSConnectorList, 
+  APSId, 
   ListApsConnectorsResponse 
 } from "@solace-iot-team/apim-server-openapi-browser";
 
@@ -19,7 +20,7 @@ import { THealthCheckResult } from "../../../utils/Globals";
 import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TManagedObjectId, TViewManagedObject } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 
 import '../../../components/APComponents.css';
@@ -29,11 +30,11 @@ export interface IListConnectorsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string, isActive: boolean) => void;
-  onSetConnectorActive: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onTestConnector: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
+  onManagedObjectEdit: (managedObjectId: APSId, managedObjectDisplayName: string) => void;
+  onManagedObjectDelete: (managedObjectId: APSId, managedObjectDisplayName: string) => void;
+  onManagedObjectView: (managedObjectId: APSId, managedObjectDisplayName: string, isActive: boolean) => void;
+  onSetConnectorActive: (managedObjectId: APSId, managedObjectDisplayName: string) => void;
+  onTestConnector: (managedObjectId: APSId, managedObjectDisplayName: string) => void;
 }
 
 export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConnectorsProps) => {
@@ -69,7 +70,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       for(const apsConnector of apsConnectorList) {
         const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
         const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
-        _managedObjectList.push(ManageConnectorsCommon.transformViewApiObjectToViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
+        _managedObjectList.push(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e: any) {
@@ -106,7 +107,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
 
   const onManagedObjectOpen = (event: any): void => {
     const managedObject: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject.apiObject.isActive);
+    props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject.apsConnector.isActive);
   }
 
   const onExpandAll = () => {
@@ -142,11 +143,10 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   const actionBodyTemplate = (managedObject: TManagedObject) => {
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName, managedObject.apiObject.isActive)} />
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
           <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
-          {!managedObject.apiObject.isActive && 
+          {!managedObject.apsConnector.isActive && 
             <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />
           }
         </React.Fragment>
@@ -174,8 +174,8 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
 
   const renderManagedObjectDataTable = () => {
     
-    const rowExpansionTemplate = (managedObject: TManagedObject) => {
-      const dataTableList = [managedObject.apiObject.connectorClientConfig];
+    const rowExpansionTemplate = (mo: TManagedObject) => {
+      const dataTableList = [mo];
       return (
         <div className="sub-table">
           <DataTable 
@@ -183,12 +183,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             value={dataTableList}
             autoLayout={true}
           >
-            <Column field="protocol" header="Protocol" />
-            <Column field="host" header="Host" />
-            <Column field="port" header='Port' />
-            <Column field="apiVersion" header='API Version' />
-            <Column field="serviceUser" header="Service User" />
-            <Column field="serviceUserPwd" header="Service User Password" />
+            <Column header="URL" headerStyle={{ width: '35%' }} field="composedConnectorUrl"  />
+            <Column header="Service User" field="apsConnector.connectorClientConfig.serviceUser" />
+            <Column header="Service User Password" field="apsConnector.connectorClientConfig.serviceUserPwd" />
           </DataTable>
         </div>
       );
@@ -216,12 +213,12 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             dataKey="id"  
           >
             <Column expander style={{ width: '3em' }} />  
-            <Column field="isActive" header="Active?" headerStyle={{ width: '10em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.isActiveBodyTemplate} sortable />
-            <Column field="healthCheckPassed" header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} sortable />
-            <Column field="id" header="Id" />
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
+            <Column header="Name" field="displayName" sortable filterField="globalSearch" />
             <Column header="Info" body={infoBodyTemplate}/>
-            <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column header="Active?" headerStyle={{ width: '7em', textAlign: 'center' }} field="isActive" bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.isActiveBodyTemplate} />
+            <Column header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} field="healthCheckPassed" bodyStyle={{textAlign: 'center'}} />
+            <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top' }}/>
+            <Column headerStyle={{width: '2em'}} />
         </DataTable>
       </div>
     );
@@ -243,11 +240,11 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       }
       
       {/* ** DEBUG ** */}
-      {managedObjectList.length > 0 && selectedManagedObject && 
+      {/* {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      }
+      } */}
 
     </div>
   );

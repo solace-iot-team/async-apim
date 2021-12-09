@@ -9,10 +9,10 @@ import { TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APCompon
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 
 export interface IViewApiProps {
   organizationId: TAPOrganizationId,

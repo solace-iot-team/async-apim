@@ -5,19 +5,19 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
 import { 
-  ApsConfigService, 
+  ApsConfigService, APSId, 
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
 
 export interface IDeleteConnectorProps {
-  connectorId: TManagedObjectId;
+  connectorId: APSId;
   connectorDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -78,7 +78,7 @@ export const DeleteConnector: React.FC<IDeleteConnectorProps> = (props: IDeleteC
     return (
       <React.Fragment>
         <p>Are you sure you want to delele connector</p>
-        <p> <b>{props.connectorDisplayName} ({props.connectorId}) </b>?</p>
+        <p> <b>{props.connectorDisplayName}</b>?</p>
       </React.Fragment>  
     );
   }

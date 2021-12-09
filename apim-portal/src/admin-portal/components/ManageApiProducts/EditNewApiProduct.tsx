@@ -975,8 +975,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderManagedObjectForm';
+    // const logName = `${componentName}.${funcName}()`;
     const isNewObject: boolean = (props.action === EAction.NEW);
     return (
       <div className="card">

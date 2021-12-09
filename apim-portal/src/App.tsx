@@ -33,7 +33,6 @@ import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
 // * Developer Tools *
 import { BootstrapUsersPage } from "./pages/devel/BootstrapUsersPage";
-import { BootstrapConnectorsPage } from "./pages/devel/BootstrapConnectorsPage";
 import { BootstrapOrganizationsPage } from "./pages/devel/BootstrapOrganizationsPage";
 import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
@@ -174,7 +173,6 @@ const App: React.FC = () => {
                   <ProtectedRouteWithRbac path={EUIDeveloperToolsResourcePaths.TestRoles} key={EUIDeveloperToolsResourcePaths.TestRoles} component={RolesTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} key={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} component={BootstrapOrganizationsPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.BootstrapUsers} key={EUIDeveloperToolsResourcePaths.BootstrapUsers} component={BootstrapUsersPage} exact />,
-                  <Route path={EUIDeveloperToolsResourcePaths.BootstrapConnectors} key={EUIDeveloperToolsResourcePaths.BootstrapConnectors} component={BootstrapConnectorsPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
                 ]
               }

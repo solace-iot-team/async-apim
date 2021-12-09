@@ -84,11 +84,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapUsers); }
         },
         {
-          label: 'Boostrap Connectors',
-          disabled: false,
-          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapConnectors); }
-        },
-        {
           label: 'Test Roles',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestRoles); }

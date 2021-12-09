@@ -12,14 +12,14 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 import { ListConnectors } from "./ListConnectors";
 import { ViewConnector } from "./ViewConnector";
 import { SetConnectorActive } from "./SetConnectorActive";
 import { TestConnector } from "./TestConnector";
-import { EditConnector } from "./EditConnector";
 import { DeleteConnector } from "./DeleteConnector";
-import { NewConnector } from "./NewConnector";
+import { EAction, EditNewConnector } from "./EditNewConnector";
+import { APSId } from "@solace-iot-team/apim-server-openapi-browser";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -73,7 +73,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
+  const [managedObjectId, setManagedObjectId] = React.useState<APSId>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [connectorIsActive, setConnectorIsActive] = React.useState<boolean>(false);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
@@ -138,7 +138,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string, isActive: boolean): void => {
+  const onViewManagedObject = (id: APSId, displayName: string, isActive: boolean): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -159,14 +159,14 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onEditManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onEditManagedObject = (id: APSId, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
   // * Set Connector Active *
-  const onSetConnectorActive = (id: TManagedObjectId, displayName: string): void => {
+  const onSetConnectorActive = (id: APSId, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -180,7 +180,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     onSetConnectorActive(managedObjectId, managedObjectDisplayName);
   }
   // * Test Connector *
-  const onTestConnector = (id: TManagedObjectId, displayName: string): void => {
+  const onTestConnector = (id: APSId, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -201,7 +201,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onDeleteManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onDeleteManagedObject = (id: APSId, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -245,7 +245,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: APSId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(newId);
@@ -429,10 +429,22 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
         />
       }
       {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <EditConnector
+        <EditNewConnector
+          action={EAction.EDIT}
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
-          onSuccess={onSubComponentSuccess} 
+          onEditSuccess={onSubComponentSuccess} 
+          onNewSuccess={onNewManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+        />
+      }
+      {showNewComponent && 
+        <EditNewConnector
+          action={EAction.NEW}
+          onEditSuccess={onSubComponentSuccess} 
+          onNewSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
@@ -443,14 +455,6 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
           onSuccess={onDeleteManagedObjectSuccess} 
-          onError={onSubComponentError}
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
-        />
-      }
-      {showNewComponent && 
-        <NewConnector
-          onSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}

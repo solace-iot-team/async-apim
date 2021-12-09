@@ -10,14 +10,10 @@ import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
 
 import { 
-  $CloudToken,
   AdministrationService, 
-  CloudToken, 
   CommonDisplayName, 
   CommonName, 
-  CustomCloudEndpoint, 
   Organization,
-  SempV2Authentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -33,17 +29,10 @@ import {
   E_CALL_STATE_ACTIONS, 
   ManageOrganizationsCommon, 
   TAPOrganizationConfig,
-  TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning,
-  TAPOrganizationConfigEventPortal,
-  TAPOrganizationConfigSimple,
-  TAPReverseProxySempV2AuthenticationApiKey,
-  TAPReverseProxySempV2AuthenticationBasic, 
 } from "./ManageOrganizationsCommon";
-import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import api from "primereact/api";
 
 
 export enum EAction {
@@ -64,66 +53,11 @@ export interface IEditNewOrganizationProps {
 export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: IEditNewOrganizationProps) => {
   const componentName = 'EditNewOrganziation';
 
-  // Service Discovery & Provisioning:
-  // - Solace Cloud: 
-  //    - <provide cloud token>, 
-  //    - provide baseUrl (default solace cloud standard)
-  // - Custom: provide sempv2Authentication + solace cloud baseUrl
-  // Event Portal Integration:
-  // - optional entry:
-  //   - base Url + token
-  // - if no entry ==> copy Solace Cloud token + eventPortal base Url
-
-
-  // const CDefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0';
-  // const CDefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal';
-
   type TUpdateApiObject = Organization;
   type TCreateApiObject = Organization;
   type TGetApiObject = Organization;
   type TManagedObject = TAPOrganizationConfig;
   type TManagedObjectFormData = TManagedObject;
-  //   // here: all the fields user manages in the Form ...    
-  //   name: CommonName;
-  //   selectedServiceIntegrationType: EAPServiceIntegrationType;
-  //   selectedServiceIntegration_SolaceCloud: CustomCloudEndpoint;
-  //   selectedServiceIntegration_Custom: TAPCustomServiceIntegration;
-  //   selectedEventPortalIntegration: CustomCloudEndpoint;
-  //   // singleSolaceCloudToken: string;
-  //   // compositeCloudTokens: {
-  //   //   solaceCloudServices: CustomCloudEndpoint;
-  //   //   solaceEventPortal: CustomCloudEndpoint;  
-  //   // }
-  // };
-
-  // const emptyManagedObject: TManagedObject = {
-  //   name: '',
-  //   configType: EAPOrganizationConfigType.SIMPLE,
-  //   configSimple: {
-  //     cloudToken: ''
-  //   },
-  //   configAdvancedServiceDiscoveryProvisioning: {
-  //     bsdp_Type: EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD,
-  //     bsdp_SolaceCloud: {
-  //       baseUrl: CDefaultSolaceCloudBaseUrlStr,
-  //       cloudToken: ''
-  //     },
-  //     bsdp_ReverseProxy: {
-  //       baseUrl: '',
-  //       token: '',
-  //       sempV2AuthType: EAPReverseProxySempV2AuthType.BASIC_AUTH,
-  //       sempV2AuthType_Basic: {},
-  //       sempV2AuthType_ApiKey: {
-  //         apiKeyLocation: EAPReverseProxySempV2ApiKeyLocation.HEADER,
-  //         apiKeyName: 'apiKey'
-  //       }
-  //     }
-  //   },
-  //   configAdvancedEventPortal: {
-  //     baseUrl: CDefaultEventPortalBaseUrlStr,
-  //     cloudToken: ''
-  //   }
-  // }
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<CommonName>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
@@ -133,176 +67,9 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
 
-  // const _mapAPReverseProxySempv2AuthTypeToApiAuthType = (apAuthType: EAPReverseProxySempV2AuthType): SempV2Authentication.authType => {
-  //   const funcName = '_mapAPReverseProxySempv2AuthTypeToApiAuthType';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   switch (apAuthType) {
-  //     case EAPReverseProxySempV2AuthType.BASIC_AUTH:
-  //       return SempV2Authentication.authType.BASIC_AUTH;
-  //     case EAPReverseProxySempV2AuthType.API_KEY:
-  //       return SempV2Authentication.authType.APIKEY;
-  //     default:
-  //       Globals.assertNever(logName, apAuthType);
-  //   }
-  //   throw new Error(`${logName}: must never get here`);
-  // }
-  // const _mapApiSempv2AuthTypeToAPReverseProxySempv2AuthType = (apiAuthType: SempV2Authentication.authType): EAPReverseProxySempV2AuthType => {
-  //   const funcName = '_mapApiSempv2AuthTypeToAPReverseProxySempv2AuthType';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   switch (apiAuthType) {
-  //     case SempV2Authentication.authType.BASIC_AUTH:
-  //       return EAPReverseProxySempV2AuthType.BASIC_AUTH;
-  //     case SempV2Authentication.authType.APIKEY:
-  //       return EAPReverseProxySempV2AuthType.API_KEY;
-  //     default:
-  //       Globals.assertNever(logName, apiAuthType);
-  //   }
-  //   throw new Error(`${logName}: must never get here`);
-  // }
-  // const _mapAPReverseProxyApiKeyLocationToApiKeyLocation = (apKeyLocation: EAPReverseProxySempV2ApiKeyLocation): SempV2Authentication.apiKeyLocation  => {
-  //   const funcName = '_mapAPReverseProxyApiKeyLocationToApiKeyLocation';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   switch(apKeyLocation) {
-  //     case EAPReverseProxySempV2ApiKeyLocation.HEADER:
-  //       return SempV2Authentication.apiKeyLocation.HEADER;
-  //     case EAPReverseProxySempV2ApiKeyLocation.QUERY:
-  //       return SempV2Authentication.apiKeyLocation.QUERY;
-  //     default:
-  //       Globals.assertNever(logName, apKeyLocation);
-  //   }
-  //   throw new Error(`${logName}: must never get here`);
-  // }
-  // const _mapApiSempv2KeyLocationToAPReverseProxyApiKeyLocation = (apiKeyLocation: SempV2Authentication.apiKeyLocation): EAPReverseProxySempV2ApiKeyLocation   => {
-  //   const funcName = '_mapApiSempv2KeyLocationToAPReverseProxyApiKeyLocation';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   switch(apiKeyLocation) {
-  //     case SempV2Authentication.apiKeyLocation.HEADER:
-  //       return EAPReverseProxySempV2ApiKeyLocation.HEADER;
-  //     case SempV2Authentication.apiKeyLocation.QUERY:
-  //       return EAPReverseProxySempV2ApiKeyLocation.QUERY;
-  //     default:
-  //       Globals.assertNever(logName, apiKeyLocation);
-  //   }
-  //   throw new Error(`${logName}: must never get here`);
-  // }
-
   const transformGetApiObjectToManagedObject = (apiObject: TGetApiObject): TManagedObject => {
     return ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiObject);
   }
-
-  // const transformGetApiObjectToManagedObject = (apiObject: TGetApiObject): TManagedObject => {
-  //   const funcName = 'transformGetApiObjectToManagedObject';
-  //   const logName = `${componentName}.${funcName}()`;
-
-  //   if(!apiObject["cloud-token"]) throw new Error(`${logName}: apiObject["cloud-token"] is undefined`);
-  //   let mo: TManagedObject = emptyManagedObject;
-  //   mo.name = apiObject.name;
-  //   if( typeof apiObject["cloud-token"] === 'string' ) {
-  //     mo.configType = EAPOrganizationConfigType.SIMPLE;
-  //     mo.configSimple = { 
-  //       cloudToken: apiObject["cloud-token"]
-  //     };
-  //     return mo;
-  //   } else if( typeof apiObject["cloud-token"] === 'object') {
-  //     mo.configType = EAPOrganizationConfigType.ADVANCED;
-  //     if(!apiObject['cloud-token'].cloud.token) throw new Error(`${logName}: apiObject['cloud-token'].cloud.token is undefined`);
-  //     if(!apiObject['cloud-token'].eventPortal.token) throw new Error(`${logName}: apiObject['cloud-token'].eventPortal.token is undefined`);
-  //     if(!apiObject.sempV2Authentication) {
-  //       // Solace cloud
-  //       mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type = EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD;
-  //       mo.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud = {
-  //         baseUrl: apiObject['cloud-token'].cloud.baseUrl,
-  //         cloudToken: apiObject['cloud-token'].cloud.token
-  //       };
-  //       mo.configAdvancedEventPortal = {
-  //         baseUrl: apiObject['cloud-token'].eventPortal.baseUrl,
-  //         cloudToken: apiObject['cloud-token'].eventPortal.token
-  //       };
-  //       return mo;
-  //     } else {        
-  //       // reverse proxy
-  //       mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type = EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY;
-  //       const sempV2AuthType: EAPReverseProxySempV2AuthType = _mapApiSempv2AuthTypeToAPReverseProxySempv2AuthType(apiObject.sempV2Authentication.authType);
-  //       let sempV2AuthType_Basic: TAPReverseProxySempV2AuthenticationBasic = mo.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_Basic;
-  //       let sempV2AuthType_ApiKey: TAPReverseProxySempV2AuthenticationApiKey = mo.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey;
-  //       switch(sempV2AuthType) {
-  //         case EAPReverseProxySempV2AuthType.BASIC_AUTH:
-  //           sempV2AuthType_Basic = {};
-  //           break;
-  //         case EAPReverseProxySempV2AuthType.API_KEY:
-  //           if(!apiObject.sempV2Authentication.apiKeyName) throw new Error(`${logName}: apiObject.sempV2Authentication.apiKeyName is undefined`);
-  //           sempV2AuthType_ApiKey = {
-  //             apiKeyLocation: _mapApiSempv2KeyLocationToAPReverseProxyApiKeyLocation(apiObject.sempV2Authentication.apiKeyLocation),
-  //             apiKeyName: apiObject.sempV2Authentication.apiKeyName
-  //           };
-  //           break;
-  //         default:
-  //           Globals.assertNever(logName, sempV2AuthType);
-  //       }
-  //       mo.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy = {
-  //         baseUrl: apiObject['cloud-token'].cloud.baseUrl,
-  //         token: apiObject['cloud-token'].cloud.token,
-  //         sempV2AuthType: sempV2AuthType,
-  //         sempV2AuthType_Basic: sempV2AuthType_Basic,
-  //         sempV2AuthType_ApiKey: sempV2AuthType_ApiKey
-  //       }
-  //       return mo;
-  //     }
-  //   } else throw new Error(`${logName}: cannot determine type of organization config from apiObject=${JSON.stringify(apiObject, null, 2)}`);
-  // }
-
-  // const _createSimple = (name: CommonName, configSimple: TAPOrganizationConfigSimple): TCreateApiObject => {
-  //   const apiCreate: TCreateApiObject = {
-  //     name: name,
-  //     "cloud-token": configSimple.cloudToken
-  //   }
-  //   return apiCreate;  
-  // }
-
-  // const _createAdvanced = (name: CommonName, configAdvancedServiceDiscoveryProvisioning: TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning, configAdvancedEventPortal: TAPOrganizationConfigEventPortal): TCreateApiObject => {
-  //   const funcName = '_createAdvanced';
-  //   const logName = `${componentName}.${funcName}()`;
-
-  //   if(configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD) {
-  //     const ct: CloudToken = {
-  //       cloud: {
-  //         baseUrl: configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.baseUrl,
-  //         token: configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken
-  //       },
-  //       eventPortal: {
-  //         baseUrl: configAdvancedEventPortal.baseUrl,
-  //         token: configAdvancedEventPortal.cloudToken
-  //       }
-  //     };
-  //     const apiCreate: TCreateApiObject = {
-  //       name: name,
-  //       "cloud-token": ct
-  //     }
-  //     return apiCreate;  
-  //   } else if (configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY) {
-  //     const ct: CloudToken = {
-  //       cloud: {
-  //         baseUrl: configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.baseUrl,
-  //         token: configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token
-  //       },
-  //       eventPortal: {
-  //         baseUrl: configAdvancedEventPortal.baseUrl,
-  //         token: configAdvancedEventPortal.cloudToken
-  //       }
-  //     };
-  //     const sempv2Auth: SempV2Authentication = {
-  //       authType: _mapAPReverseProxySempv2AuthTypeToApiAuthType(configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType),
-  //       apiKeyLocation: _mapAPReverseProxyApiKeyLocationToApiKeyLocation(configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey.apiKeyLocation),
-  //       apiKeyName: configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey.apiKeyName
-  //     }
-  //     const apiCreate: TCreateApiObject = {
-  //       name: name,
-  //       "cloud-token": ct,
-  //       sempV2Authentication: sempv2Auth
-  //     }
-  //     return apiCreate;    
-  //   } else throw new Error(`${logName}: unknown configAdvancedServiceDiscoveryProvisioning.bsdp_Type=${configAdvancedServiceDiscoveryProvisioning.bsdp_Type}`);
-  // }
 
   const transformManagedObjectToCreateApiObject = (mo: TManagedObject): TCreateApiObject => {
     return ManageOrganizationsCommon.transformAPOrganizationConfigToApiOrganization(mo);
@@ -314,65 +81,12 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
 
 
   const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
-    const funcName = 'transformManagedObjectToFormData';
-    const logName = `${componentName}.${funcName}()`;
-    
-    console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
-
     const formData: TManagedObjectFormData = mo;
-
-    // const formData: TManagedObjectFormData = {
-    //   name: mo.apiObject.name,
-    //   selectedServiceIntegrationType: mo.serviceIntegrationType,
-    //   selectedServiceIntegration_SolaceCloud: mo.solaceCloudServiceIntegration,
-    //   selectedServiceIntegration_Custom: mo.customServiceIntegration,
-    //   selectedEventPortalIntegration: mo.eventPortalIntegration
-    // }
     return formData;
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-    const funcName = 'transformFormDataToManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
-
     const mo: TManagedObject = formData;
-
-// continue here
-
-    // const mo: TManagedObject = {
-    //   apiObject: {
-    //     ...formData.managedObject.apiObject,
-    //   },
-    //   organizationType: formData.selectedOrganizationType
-    // }
-    // // now set the correct org config
-    // switch (formData.selectedOrganizationType) {
-    //   case EAPOrganizationType.SELECT:
-    //     throw new Error(`${logName}: formData.selectedOrganizationType === ${EAPOrganizationType.SELECT}`);
-    //     break;
-    //   case EAPOrganizationType.SINGLE_SOLACE_CLOUD_TOKEN:
-    //     mo.apiObject["cloud-token"] = formData.singleSolaceCloudToken;
-    //     break;
-    //   case EAPOrganizationType.COMPOSITE_CLOUD_TOKENS:
-    //     if(!formData.compositeCloudTokens) throw new Error(`${logName}: formData.compositeCloudTokensis undefined`);
-    //     mo.apiObject["cloud-token"] = {
-    //       cloud: formData.compositeCloudTokens.solaceCloudServices,
-    //       eventPortal: formData.compositeCloudTokens.solaceEventPortal
-    //     }
-    //     break;
-    //   default:
-    //     Globals.assertNever(logName, formData.selectedOrganizationType);
-    // }
-    // return mo;
-
-    // return {
-    //   ...formData,
-    //   apiObject: {
-    //     ...formData.apiObject,
-    //     "cloud-token": formData.solaceCloudToken
-    //   }
-    // }
     return mo;
   }
 
@@ -475,10 +189,6 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (mofd: TManagedObjectFormData) => {
-    // const funcName = 'doPopulateManagedObjectFormDataValues';
-    // const logName = `${componentName}.${funcName}()`;
-    // throw new Error(`${logName}: continue here`);
-
     managedObjectUseForm.setValue('name', mofd.name);
     managedObjectUseForm.setValue('configType', mofd.configType);
     managedObjectUseForm.setValue('configSimple', mofd.configSimple);
@@ -509,12 +219,6 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // const funcName = 'onInvalidSubmitManagedObjectForm';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`invalid form ...`);
-    // console.log(`${logName}: managedObjectUseForm.formState.errors.singleSolaceCloudToken = ${JSON.stringify(managedObjectUseForm.formState.errors.singleSolaceCloudToken, null, 2)}`);
-    // managedObjectUseForm.formState.errors.singleSolaceCloudToken
-    // setIsFormSubmitted(true);
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
