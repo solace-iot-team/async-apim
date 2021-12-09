@@ -137,7 +137,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
           Connection Details:
         </div>
         <div className="p-ml-4">
-          <div><b>Type</b>: {mo.apsConnector.connectorClientConfig.configType}</div>
+          <div><b>Type</b>: {mo.apsConnector.connectorClientConfig.locationConfig.configType}</div>
           <div><b>Url</b>: {mo.composedConnectorUrl}</div>
           <div><b>Service User</b>: {mo.apsConnector.connectorClientConfig.serviceUser}</div>
           <div><b>Service Pwd </b>: {mo.apsConnector.connectorClientConfig.serviceUserPwd}</div>

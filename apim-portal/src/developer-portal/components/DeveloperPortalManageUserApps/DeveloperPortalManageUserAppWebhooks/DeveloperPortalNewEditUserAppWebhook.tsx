@@ -158,9 +158,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     else if(mo.webhookWithoutEnvs.authentication.authMethod) selectedWebhookAuthMethodId = mo.webhookWithoutEnvs.authentication.authMethod;
     else throw new Error(`${logName}: mo.webhookWithoutEnvs.authentication.authMethod is undefined`);
     
-    // alert(`${logName}: mo.webhookWithoutEnvs.authentication = ${JSON.stringify(mo.webhookWithoutEnvs.authentication, null, 2)}`);
-    // alert(`${logName}: selectedWebhookAuthMethodId=${selectedWebhookAuthMethodId}`);
-
     switch (selectedWebhookAuthMethodId) {
       case EWebhookAuthMethodSelectIdNone.NONE:
         break;
@@ -176,21 +173,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
         Globals.assertNever(logName, selectedWebhookAuthMethodId);
     }
 
-    // environment
-    // let webhookEnvironmentSelectItemList: TApiEntitySelectItemList;
-    // if(props.presetEnvSelectItem) {
-    //   webhookEnvironmentSelectItemList = [props.presetEnvSelectItem];
-    // } else {
-    //   webhookEnvironmentSelectItemList = createWebhookEnabledEnvironmentList(mo.apiAppResponse.environments, mo.webhookApiEnvironmentResponseList);      
-    // }
-    // let webhookEnvironmentName: CommonName;
-    // if(props.action === EAction.EDIT) {
-    //   if(!mo.apiWebHook.environments) throw new Error(`${logName}: mo.apiWebHook.environments is undefined`);
-    //   if(mo.apiWebHook.environments.length !== 1) throw new Error(`${logName}: mo.apiWebHook.environments.length !== 1`);
-    //   webhookEnvironmentName = mo.apiWebHook.environments[0];
-    // } else {
-    //   webhookEnvironmentName = webhookEnvironmentSelectItemList[0].id;
-    // }
     let apTrustedCNList: TAPTrustedCNList = [];
     if(mo.webhookWithoutEnvs.tlsOptions && mo.webhookWithoutEnvs.tlsOptions.tlsTrustedCommonNames) apTrustedCNList = mo.webhookWithoutEnvs.tlsOptions.tlsTrustedCommonNames;
 
@@ -204,12 +186,8 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
       webhookHeaderAuth: webhookHeaderAuth,
       httpMethod: mo.webhookWithoutEnvs.method,
       deliveryMode: mo.webhookWithoutEnvs.mode,
-      // environmentSelectItemList: [mo.webhookEnvironmentReference].map( (x) => { return { id: x.entityRef.name, displayName: x.entityRef.displayName}}),
-      // selectedEnvironmentName: mo.webhookEnvironmentReference.entityRef.name,
       apTrustedCNList: apTrustedCNList
     }
-    // console.log(`${logName}: mofd=${JSON.stringify(mofd, null, 2)}`);
-    // alert(`${logName}: check mofd in console...`);
     return mofd;
   }
 
@@ -625,33 +603,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
       <div className="card p-mt-6">
         <div className="p-fluid">
           <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
-            {/* environments */}
-            {/* <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  name="selectedEnvironmentName"
-                  control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Choose an Environment."
-                  }}
-                  render={( { field, fieldState }) => {
-                      return(
-                        <Dropdown
-                          id={field.name}
-                          {...field}
-                          options={managedObjectFormData?.environmentSelectItemList} 
-                          optionLabel="displayName"
-                          optionValue="id"
-                          onChange={(e) => field.onChange(e.value)}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}             
-                          // disabled={managedObjectFormData?.environmentSelectItemList.length === 1}      
-                        />                        
-                  )}}
-                />
-                <label htmlFor="selectedEnvironmentName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.selectedEnvironmentName })}>Environment*</label>
-              </span>
-              { displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.selectedEnvironmentName) }
-            </div> */}
             {/* protocol */}
             <div className="p-field">
               <span className="p-float-label">
@@ -820,7 +771,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
             </div>
 
             {/* auth details */}
-            {/* { selectedWebhookAuthMethodId && renderManagedObjectFormWebhookAuthMethodDetails(selectedWebhookAuthMethodId) } */}
             { renderManagedObjectFormWebhookAuthMethodDetails(selectedWebhookAuthMethodId) }
           </form>  
             

@@ -968,14 +968,17 @@ components:
           - Internal Proxy
       required:
       - configType
+    APSLocationConfig:
+      description: Location configuration.
+      anyOf:
+      - $ref: '#/components/schemas/APSLocationConfigExternal'
+      - $ref: '#/components/schemas/APSLocationConfigInternalProxy'
     APSConnectorClientConfig:
       description: Configuration of the client for the connector.
       type: object
       properties:
         locationConfig:
-          anyOf:
-            - $ref: '#/components/schemas/APSLocationConfigExternal'
-            - $ref: '#/components/schemas/APSLocationConfigInternalProxy'
+          $ref: '#/components/schemas/APSLocationConfig'
         apiVersion:
           type: string
         serviceUser:

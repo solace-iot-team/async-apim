@@ -1,6 +1,6 @@
 
 import { OpenAPI, ApiError } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSConnectorClientConfig, EAPSConnectorClientConfigType } from '@solace-iot-team/apim-server-openapi-browser';
+import { APSConnectorClientConfig, APSLocationConfigExternal, APSLocationConfigInternalProxy } from '@solace-iot-team/apim-server-openapi-browser';
 import { Mutex, MutexInterface } from "async-mutex";
 
 export type APConnectorClientOpenApiInfo = {
@@ -23,9 +23,12 @@ export class APClientConnectorOpenApi {
     const funcName: string = `constructBaseUrl`;
     const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
     let url: string = '';
-    if(config.configType === EAPSConnectorClientConfigType.EXTERNAL) {
-      if(!config.location) throw new Error(`${logName}: config.location is undefined`);
-      url = `${config.location.protocol}://${config.location.host}:${config.location.port}`;
+    if(config.locationConfig.configType === APSLocationConfigExternal.configType.EXTERNAL) {
+      url = `${config.locationConfig.protocol}://${config.locationConfig.host}:${config.locationConfig.port}`;
+    } else if(config.locationConfig.configType === APSLocationConfigInternalProxy.configType.INTERNAL_PROXY) {
+      // no url
+    } else {
+      throw new Error(`${logName}: unhandled config.locationConfig.configType in config = ${JSON.stringify(config)}`);
     }
     return url;
   }

@@ -7,7 +7,21 @@ import {
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 export class APSOpenApiFormValidationRules {
-  
+
+  private static getMaxNumberRule = (schema: any): any => {
+    if(schema.maximum) return {
+      value: schema.maximum,
+      message: `Max: ${schema.maximum}.`
+    }
+  }
+
+  private static getMinNumberRule = (schema: any): any => {
+    if(schema.minimum) return {
+      value: schema.minimum,
+      message: `Min: ${schema.minimum}.`
+    }
+  }
+
   private static getMaxLengthRule = (schema: any): any => {
     if(schema.maxLength) return {
       value: schema.maxLength,
@@ -39,7 +53,7 @@ export class APSOpenApiFormValidationRules {
     return rules;
   }
   public static APSHost = (requiredMessage: string, isActive: boolean): any => {
-    const apiSchema = $APSPort;
+    const apiSchema = $APSHost;
     const rules: any = {};
     rules['required'] = (isActive ? requiredMessage : false);
     rules['maxLength'] = (isActive ? APSOpenApiFormValidationRules.getMaxLengthRule(apiSchema) : undefined);
@@ -48,12 +62,11 @@ export class APSOpenApiFormValidationRules {
     return rules;
   }
   public static APSPort = (requiredMessage: string, isActive: boolean): any => {
-    const apiSchema = $APSHost;
+    const apiSchema = $APSPort;
     const rules: any = {};
     rules['required'] = (isActive ? requiredMessage : false);
-    rules['maxLength'] = (isActive ? APSOpenApiFormValidationRules.getMaxLengthRule(apiSchema) : undefined);
-    rules['minLength'] = (isActive ? APSOpenApiFormValidationRules.getMinLengthRule(apiSchema) : undefined);
-    rules['pattern'] = (isActive ? APSOpenApiFormValidationRules.getPatternRule(apiSchema, 'Invalid hostname or IP address') : undefined);
+    rules['max'] = (isActive ? APSOpenApiFormValidationRules.getMaxNumberRule(apiSchema) : undefined);
+    rules['min'] = (isActive ? APSOpenApiFormValidationRules.getMinNumberRule(apiSchema) : undefined);
     return rules;
   }
   public static APSClientProtocol = (requiredMessage: string, isActive: boolean): any => {
