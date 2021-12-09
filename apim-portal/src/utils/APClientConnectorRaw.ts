@@ -94,19 +94,4 @@ export class APClientConnectorRaw {
       throw e;
     }
   }
-
-  // public static getAbout = async(): Promise<any> => {
-  //   const funcName = 'getAbout';
-  //   const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
-  //   let response, responseBody: any;
-  //   try {
-  //     const path: string = APClientConnectorRaw.basePath ? (APClientConnectorRaw.basePath + '/' + APClientConnectorRaw.aboutPath) : APClientConnectorRaw.aboutPath;
-  //     response = await window.fetch(APClientConnectorRaw.getUrl(path));
-  //     responseBody = await APClientConnectorRaw.getResponseJson(response);
-  //     if(!response.ok) APClientConnectorRaw.handleError(logName, response, responseBody);
-  //     return responseBody;
-  //   } catch (e) {
-  //     throw e;
-  //   }
-  // }
 }
