@@ -2,31 +2,9 @@
 // TODO: rework this module
 // ********
 import { APClientConnectorOpenApi } from "./APClientConnectorOpenApi";
-// import { delete_APSApiError } from "./APSClient";
 import { APSClientOpenApi } from "./APSClientOpenApi";
 import { APSError, APSErrorIds } from '@solace-iot-team/apim-server-openapi-browser';
-
-export declare type delete_APSApiResult = {
-  readonly url: string;
-  readonly ok: boolean;
-  readonly status: number;
-  readonly statusText: string;
-  readonly body: any;
-};
-
-export class delete_APSApiError extends Error {
-  readonly url: string;
-  readonly status: number;
-  readonly statusText: string;
-  readonly body: any;
-  constructor(response: delete_APSApiResult, message: string) {
-    super(message);
-    this.url = response.url;
-    this.status = response.status;
-    this.statusText = response.statusText;
-    this.body = response.body;
-  }
-}
+import { APError, APSApiError } from "./APError";
 
 export type TApiCallState = {
   success: boolean;
@@ -55,7 +33,8 @@ export class ApiCallState {
     apiCallState.success = false;
     apiCallState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(err);
     apiCallState.isConnectorApiError = APClientConnectorOpenApi.isInstanceOfApiError(err);
-    if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError ) apiCallState.error = err;
+    if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) apiCallState.error = err;
+    else if(err instanceof APError) apiCallState.error = err.toObject();
     else apiCallState.error = err.toString();
     return apiCallState;
   }
@@ -66,7 +45,7 @@ export class ApiCallState {
     // console.log(`${logName}: apiCallStatus=${JSON.stringify(apiCallStatus, null, 2)}`);
     if(apiCallStatus.success) return '';
     if(apiCallStatus.isAPSApiError && apiCallStatus.error) {
-      const apsApiError: delete_APSApiError = apiCallStatus.error;
+      const apsApiError: APSApiError = apiCallStatus.error;
       // console.log(`${logName}: apsApiError=${JSON.stringify(apsApiError, null, 2)}`);
       // body may not be a json but could be text
       if('body' in apsApiError) {

@@ -11,13 +11,12 @@ import {
 } from '@solace-iot-team/apim-server-openapi-browser';
 
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
-import { THealthCheckResult } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
-import { APClientConnectorRaw } from "../../../utils/APClientConnectorRaw";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
+import { APLogger } from "../../../utils/APLogger";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -41,7 +40,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const [apsConnector, setApsConnector] = React.useState<APSConnector>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showTestDialog, setShowTestDialog] = React.useState<boolean>(true);
-  const [healthCheckResult, setHealthCheckResult] = React.useState<THealthCheckResult>();
+  const [healthCheckResult, setHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>();
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -63,31 +62,28 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   }
 
   // * Test *
-  const doTestConnector = async() => {  
-    const funcName = 'doTestConnector';
+  const apiTestConnector = async() => {  
+    const funcName = 'apiTestConnector';
     const logName = `${componentName}.${funcName}()`;
     if(!apsConnector) throw new Error(`${logName}: apsConnector is undefined`);
     setApiCallStatus(null);
-    props.onLoadingChange(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `test configuration for ${apsConnector.displayName}`);
     try {
-      const _healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
-      callState.success = _healthCheckResult.summary.success;
-      setHealthCheckResult(_healthCheckResult);
+      const result: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      setHealthCheckResult(result);
       // console.log(`${logName}: healthCheckResult=${JSON.stringify(_healthCheckResult, null, 2)}`);
     } catch(e) {
-      APClientConnectorRaw.logError(e);
+      APLogger.error(APLogger.createLogEntry(logName, e));
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    props.onLoadingChange(false);
     return callState;
   }
 
-  const onTestConnector = () => {
-    setHealthCheckResult(undefined);
-    setShowTestDialog(true);
-    doTestConnector();
+  const doTestConnector = async() => {
+    // props.onLoadingChange(true);
+    await apiTestConnector();
+    // props.onLoadingChange(false);
   }
 
   // * useEffect Hooks *
@@ -109,9 +105,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(apsConnector) {
-      onTestConnector();
-    }
+    if(apsConnector) doTestConnector();
   }, [apsConnector]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * UI Controls *
@@ -159,7 +153,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
       <Dialog
         className="p-fluid"
         visible={showTestDialog} 
-        style={{ width: '550px' }} 
+        style={{ width: '60%' }} 
         header={`Testing Connector Configuration`}
         modal
         closable={false}

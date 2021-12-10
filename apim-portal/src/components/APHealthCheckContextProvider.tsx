@@ -1,10 +1,10 @@
 import React from "react";
-import { TAPConfigIssueList, THealthCheckResult } from "../utils/Globals";
+import { TAPConnectorHealthCheckResult } from "../utils/APHealthCheck";
+import { TAPConfigIssueList } from "../utils/Globals";
 
 export type TAPHealthCheckContext = {
-  configIssueList?: TAPConfigIssueList,
-  portalHealthCheckResult?: THealthCheckResult,
-  connectorHealthCheckResult?: THealthCheckResult
+  configIssueList?: TAPConfigIssueList;
+  connectorHealthCheckResult?: TAPConnectorHealthCheckResult;
 }
 
 export interface IAPHealthCheckContextProviderProps {
@@ -12,7 +12,7 @@ export interface IAPHealthCheckContextProviderProps {
 }
 
 type APHealthCheckContextAction = 
-  | { type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: THealthCheckResult }
+  | { type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: TAPConnectorHealthCheckResult }
   | { type: 'SET_CONFIG_ISSUE_LIST', configIssueList: TAPConfigIssueList }
   | { type: 'default'};
 

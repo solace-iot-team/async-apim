@@ -50,6 +50,35 @@ export class APContextError extends APError {
   constructor(internalLogName: string, internalMessage: string, context: any) {
     super(internalLogName, internalMessage);
     this.context = context;
-  }
+  }  
+}
 
+export class APTimeoutError extends APError {
+  private context: any;
+  constructor(internalLogName: string, internalMessage: string, context: any) {
+    super(internalLogName, internalMessage);
+    this.context = context;
+  }  
+}
+
+export declare type APSApiResult = {
+  readonly url: string;
+  readonly ok: boolean;
+  readonly status: number;
+  readonly statusText: string;
+  readonly body: any;
+};
+
+export class APSApiError extends Error {
+  readonly url: string;
+  readonly status: number;
+  readonly statusText: string;
+  readonly body: any;
+  constructor(response: APSApiResult, message: string) {
+    super(message);
+    this.url = response.url;
+    this.status = response.status;
+    this.statusText = response.statusText;
+    this.body = response.body;
+  }
 }

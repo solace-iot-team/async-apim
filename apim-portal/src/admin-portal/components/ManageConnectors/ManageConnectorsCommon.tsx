@@ -3,9 +3,10 @@ import {
   APSId 
 } from '@solace-iot-team/apim-server-openapi-browser';
 
-import { Globals, THealthCheckResult } from '../../../utils/Globals';
+import { Globals } from '../../../utils/Globals';
 import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
+import { TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
 
 export type TViewManagedObject = {
   id: APSId;
@@ -13,8 +14,7 @@ export type TViewManagedObject = {
   globalSearch: string;
   apsConnector: APSConnector;
   apConnectorInfo: TAPConnectorInfo | undefined;
-  healthCheckResult: THealthCheckResult;
-  healthCheckPassed: string;
+  healthCheckResult: TAPConnectorHealthCheckResult;
   composedConnectorUrl: string;
 }
 
@@ -41,7 +41,7 @@ export class ManageConnectorsCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static createViewManagedObject = (apsConnector: APSConnector, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: THealthCheckResult): TViewManagedObject => {
+  public static createViewManagedObject = (apsConnector: APSConnector, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: TAPConnectorHealthCheckResult): TViewManagedObject => {
     return {
       id: apsConnector.connectorId,
       displayName: apsConnector.displayName,
@@ -49,14 +49,27 @@ export class ManageConnectorsCommon {
       apsConnector: apsConnector,
       apConnectorInfo: apConnectorInfo,
       healthCheckResult: healthCheckResult,
-      healthCheckPassed: healthCheckResult.summary.success ? 'passed' : 'failed',
       composedConnectorUrl: APClientConnectorOpenApi.constructOpenApiBase(apsConnector.connectorClientConfig)
     }
   }
 
+  public static healthCheckPassDisplay = (healthCheckResult: TAPConnectorHealthCheckResult) : JSX.Element => {
+    if(healthCheckResult.summary.performed) {
+      if(healthCheckResult.summary.success) {
+        return (<span style={ {color: 'green' }}>pass</span>);
+      } else return (<span style={ {color: 'red' }}>fail</span>);
+    } else {
+      return (
+        <span>not performed</span>
+      );
+    }
+  }
+  public static healthCheckBodyTemplate = (viewManagedObject: TViewManagedObject): JSX.Element => {
+    return ManageConnectorsCommon.healthCheckPassDisplay(viewManagedObject.healthCheckResult);
+  }
   public static isActiveBodyTemplate = (viewManagedObject: TViewManagedObject) => {
-    if(viewManagedObject.apsConnector.isActive) return (<span className="pi pi-check badge-active" />)
-    else return (<span className="pi pi-times badge-active" />)
+    if(viewManagedObject.apsConnector.isActive) return (<span className="pi pi-check badge-active" />);
+    else return (<span className="pi pi-times badge-active" />);
   }
 
 }

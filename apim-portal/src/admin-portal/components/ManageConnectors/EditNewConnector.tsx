@@ -574,7 +574,7 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
             { renderManagedObjectFormConfigDetails(selectedLocationConfigTypeId)}
 
             {/* basePath */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="managedObject.connectorClientConfig.basePath"
@@ -593,7 +593,7 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
                 <label htmlFor="managedObject.connectorClientConfig.basePath" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.basePath })}>Base Path</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.basePath)}
-            </div>
+            </div> */}
 
             {renderManagedObjectFormFooter()}
           </form>  

@@ -9,16 +9,14 @@ import { Divider } from "primereact/divider";
 
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
-import { APConnectorHealthCheck } from "../../utils/APConnectorHealthCheck";
-import { APClientConnectorRaw } from "../../utils/APClientConnectorRaw";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult, TAPHealthCheckSummary } from "../../utils/APHealthCheck";
 import { 
   EUIAdminPortalResourcePaths, 
   Globals, 
   TAPConfigIssueList, 
-  THealthCheckResult, 
-  THealthCheckSummary 
 } from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
+import { APLogger } from "../../utils/APLogger";
 
 import "../APComponents.css";
 import "./SystemHealth.css";
@@ -27,25 +25,11 @@ export interface ISystemHealthProps {
 }
 
 export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystemHealthProps) => {
-  // const componentName = 'SystemHealthDisplay';
+  const componentName = 'SystemHealthDisplay';
 
-  // const healthCheckInterval_ms: number = 30000;
-  // const healthCheckInterval_ms: number = 5000;
-  const healthCheckInterval_ms: number = 300000;
-  
-  const connectorHealthCheckResultNotPerformed: THealthCheckResult = {
-    healthCheckLog: [{action: 'check connector', success: false, details: {} }],
-    summary: { 
-      performed: false, 
-      success: false,
-      timestamp: Date.now()
-    }
-  }
-  const systemHealthCheckSummaryNotPerformed: THealthCheckSummary = {
-    performed: false, 
-    success: false,
-    timestamp: Date.now()
-  }
+  const healthCheckInterval_ms: number = 150000;
+
+  const connectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
@@ -56,8 +40,8 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [delay, setDelay] = React.useState<number>(healthCheckInterval_ms); 
   const [count, setCount] = React.useState<number>(0);
-  const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<THealthCheckResult>(connectorHealthCheckResultNotPerformed);
-  const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<THealthCheckSummary>(systemHealthCheckSummaryNotPerformed);
+  const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>(connectorHealthCheckResultNotPerformed);
+  const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<TAPHealthCheckSummary>(connectorHealthCheckResultNotPerformed.summary);
   const [configIssueList, setConfigIssueList] = React.useState<TAPConfigIssueList>([]);
 
   React.useEffect(() => {
@@ -82,30 +66,23 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   );
 
   const doSystemHealthCheck = async () => {  
-    // const funcName = 'doSystemHealthCheck';
-    // const logName = `${componentName}.${funcName}()`;
-    let _connectorHealthCheckResult: THealthCheckResult = connectorHealthCheckResultNotPerformed;
+    const funcName = 'doSystemHealthCheck';
+    const logName = `${componentName}.${funcName}()`;
+    let _connectorHealthCheckResult: TAPConnectorHealthCheckResult = connectorHealthCheckResultNotPerformed;
     if(configContext.connector) {
       try {
         _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, configContext.connector.connectorClientConfig);
       } catch(e) {
-        APClientConnectorRaw.logError(e);
+        APLogger.error(APLogger.createLogEntry(logName, e));
         throw e;
       }        
     }
     setConnectorHealthCheckResult(_connectorHealthCheckResult);
-    setSystemHealthCheckSummary({
-      performed: _connectorHealthCheckResult.summary.performed,
-      success: _connectorHealthCheckResult.summary.success,
-      timestamp: Date.now()
-    });
+    setSystemHealthCheckSummary(_connectorHealthCheckResult.summary);
     setConfigIssueList(Globals.crossCheckConfiguration(configContext));
   }
 
   const renderConnectorHealthInfo = () => {
-    // const funcName = 'renderConnectorHealthInfo';
-    // const logName = `${componentName}.${funcName}()`;
-
     let connectorName: string = 'unknown';
     let success: boolean | undefined = undefined;
     if(configContext.connector) {
@@ -118,7 +95,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
       <React.Fragment>
         {success !== undefined && 
           <div style={{color: success ? 'green' : 'red' }}>
-            connector: {connectorName}: {success ? 'ok' : 'fail'}
+            connector: {connectorName}: {success ? 'pass' : 'fail'} ({connectorHealthCheckResult.summary.timestampStr})
           </div>
         }
         {success === undefined && 
@@ -130,11 +107,8 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     );
   }
   const renderSystemHealthInfo = () => {
-    // let org = userContext.organizationId?userContext.organizationId:null;
-    // let connnectorInstance = userContext.connectorInstance?userContext.connectorInstance:null;
     return (
       <React.Fragment>
-        <p>count={count}</p>
         {renderConnectorHealthInfo()}
       </React.Fragment>
     );   
@@ -164,7 +138,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
         icon={getSystemHealthIcon()}
         className={getSystemHealthButtonClassName()}
         onClick={(e) => op.current.toggle(e) } />
-      <OverlayPanel className="ap-navbar system-health-overlay-panel" ref={op} id="system_health_overlay_panel" style={{width: '450px'}} >
+      <OverlayPanel className="ap-navbar system-health-overlay-panel" ref={op} id="system_health_overlay_panel" style={{width: '700px'}} >
         {renderSystemHealthInfo()}
         <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.MonitorSystemHealth} >
           <Divider />

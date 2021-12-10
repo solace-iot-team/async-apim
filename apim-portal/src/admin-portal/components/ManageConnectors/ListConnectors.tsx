@@ -16,8 +16,7 @@ import {
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { THealthCheckResult } from "../../../utils/Globals";
-import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
@@ -68,8 +67,11 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
-        const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-        const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+        const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+        let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
+        if(healthCheckResult.summary.success) {
+          apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+        }
         _managedObjectList.push(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
@@ -216,7 +218,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             <Column header="Name" field="displayName" sortable filterField="globalSearch" />
             <Column header="Info" body={infoBodyTemplate}/>
             <Column header="Active?" headerStyle={{ width: '7em', textAlign: 'center' }} field="isActive" bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.isActiveBodyTemplate} />
-            <Column header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} field="healthCheckPassed" bodyStyle={{textAlign: 'center'}} />
+            <Column header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.healthCheckBodyTemplate}/>
             <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top' }}/>
             <Column headerStyle={{width: '2em'}} />
         </DataTable>
@@ -235,7 +237,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
       }
 
-      {managedObjectList && managedObjectList.length > 0 && 
+      {managedObjectList && managedObjectList.length > 0 && !isGetManagedObjectListInProgress &&
         renderManagedObjectDataTable()
       }
       

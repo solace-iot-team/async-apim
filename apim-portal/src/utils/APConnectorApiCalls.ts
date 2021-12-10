@@ -27,8 +27,8 @@ export type TAPConnectorPortalAbout = {
   connectorOpenApiVersionStr?: string
 }
 export type TAPConnectorAbout = {
-  apiAbout: About,
-  portalAbout: TAPConnectorPortalAbout
+  apiAbout: About;
+  portalAbout: TAPConnectorPortalAbout;
 }
 
 export type TAPConnectorInfo = {

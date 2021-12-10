@@ -12,12 +12,11 @@ import {
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
-import { THealthCheckResult } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -51,8 +50,11 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
         connectorId: props.connectorId
       });
-      const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-      const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
+      if(healthCheckResult.summary.success) {
+        apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+      }
       setManagedObject(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -97,7 +99,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     return (
       <React.Fragment>
         <div className="p-mb-2 p-mt-4 ap-display-component-header">
-          Summary: {mo.healthCheckPassed}
+          Summary: {ManageConnectorsCommon.healthCheckPassDisplay(mo.healthCheckResult)}
         </div>
         <div className="p-ml-4">
           {renderHealthCheckInfo(mo)}
@@ -167,7 +169,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
               <div className="p-ml-2">{managedObject.apsConnector.description}</div>
               
               <div><b>Status</b>: {getActiveStr(managedObject)}.</div>
-              <div><b>Health check</b>: {managedObject.healthCheckPassed}.</div>
+              <div><b>Health check</b>: {ManageConnectorsCommon.healthCheckPassDisplay(managedObject.healthCheckResult)}</div>
 
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='General'>

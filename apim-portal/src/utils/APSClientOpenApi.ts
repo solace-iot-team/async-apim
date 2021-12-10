@@ -8,31 +8,14 @@ export type APSClientOpenApiInfo = {
 
 export type TAPSClientOpenApiConfig = {
   apsServerUrl?: URL,
-  // protocol?: EAPSClientProtocol,
-  // host?: string,
-  // port?: number,
-  // user: string,
-  // pwd: string
 }
 
-// exports.OpenAPI = {
-//   BASE: '/apim-server/v1',
-//   VERSION: '0.0.4',
-//   WITH_CREDENTIALS: false,
-//   TOKEN: undefined,
-//   USERNAME: undefined,
-//   PASSWORD: undefined,
-//   HEADERS: undefined,
-// };
-
-
 export class APSClientOpenApi {
+  private static componentName = 'APSClientOpenApi';
   private static isInitialized: boolean = false;
   private static config: TAPSClientOpenApiConfig;
 
   public static initialize = (config: TAPSClientOpenApiConfig) => {
-    // const funcName = 'initialize';
-    // const logName = `${APSClientOpenApi.name}.${funcName}()`;
     const configStr = JSON.stringify(config);
     if(configStr === '{}') APSClientOpenApi.config = {};
     else APSClientOpenApi.config = (JSON.parse(configStr));
@@ -42,20 +25,13 @@ export class APSClientOpenApi {
 
   public static set = (): void => {
     const funcName = 'set';
-    const logName = `${APSClientOpenApi.name}.${funcName}()`;
+    const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
     if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
 
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
     }
-    
-    // APSOpenAPI.USERNAME = APSClientOpenApi.config.user;
-    // APSOpenAPI.PASSWORD = APSClientOpenApi.config.pwd;
-    // VERSION: string;
-    // WITH_CREDENTIALS: boolean;
-    // TOKEN?: string | Resolver<string>;
-    // HEADERS?: Headers | Resolver<Headers>;
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
   }
 

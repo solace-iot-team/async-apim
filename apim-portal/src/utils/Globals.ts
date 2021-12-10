@@ -4,22 +4,6 @@ import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigCont
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
 
-export type THealthCheckLogEntry = {
-  action: string,
-  success: boolean,
-  details: any
-}
-export type THealthCheckLog = Array<THealthCheckLogEntry>;
-export type THealthCheckSummary = {
-  performed: boolean,
-  success: boolean,
-  timestamp: number
-}
-export type THealthCheckResult = {
-  healthCheckLog: THealthCheckLog,
-  summary: THealthCheckSummary
-}
-
 export type TAPPortalInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo
   portalServerClientOpenApiInfo: APSClientOpenApiInfo

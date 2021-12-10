@@ -14,8 +14,7 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
-import { THealthCheckResult } from "../../../utils/Globals";
-import { APConnectorHealthCheck } from "../../../utils/APConnectorHealthCheck";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../components/APComponents.css';
@@ -53,8 +52,11 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
         connectorId: props.connectorId
       });
-      const apConnectorInfo: TAPConnectorInfo | undefined = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-      const healthCheckResult: THealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
+      if(healthCheckResult.summary.success) {
+        apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
+      }
       setManagedObject(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

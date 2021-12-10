@@ -4,15 +4,11 @@ import { APSConnector } from "@solace-iot-team/apim-server-openapi-browser";
 import { TAPRbacRoleList, APRbac } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../utils/APConnectorApiCalls";
-import { TAPConfigIssueList, TAPPortalInfo, THealthCheckResult } from "../../utils/Globals";
+import { TAPPortalInfo } from "../../utils/Globals";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 
 // const componentName: string = "ConfigContextProvider";
 
-export type TAPHealthCheckResult = {
-  portalHealthCheckResult?: THealthCheckResult,
-  connectorHealthCheckResult?: THealthCheckResult
-}
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   rbacRoleList: TAPRbacRoleList,
