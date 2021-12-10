@@ -15,6 +15,7 @@ const AdminPortalDescription = 'Solace Async API Management Admin Portal';
 const DeveloperPortalName = 'async-apim-developer-portal';
 const DeveloperPortalDescription = 'Solace Async API Management Developer Portal';
 const ApimServerOpenApiBrowserPackageName = '@solace-iot-team/apim-server-openapi-browser';
+const ApimConnectorOpenApiBrowserPackageName = '@solace-iot-team/apim-connector-openapi-browser';
 
 type TAbout = {
   name: string;
@@ -31,6 +32,7 @@ type TAbout = {
   license: string;
   version: string;
   'apim-server-openapi-version': string;
+  "apim-connector-open-api-version": string;
 }
 
 const prepare = () => {
@@ -43,12 +45,30 @@ const prepare = () => {
 }
 
 const getApimServerOpenApiVersion = (): string => {
+  const funcName = 'getApimServerOpenApiVersion';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
   const x = s.exec(`npm list ${ApimServerOpenApiBrowserPackageName}`).stdout;
+  const invalidIdx: number = x.search('invalid');
+  if(invalidIdx > -1) throw new Error(`${logName}: invalid version of ${ApimServerOpenApiBrowserPackageName} in package.json`);
   const idx: number = x.lastIndexOf(ApimServerOpenApiBrowserPackageName);
   const y = x.slice(idx).replace(/\s/g, '' );
+  console.log(`${logName}: success.`);
   return y;
 }
 
+const getApimConnectorOpenApiVersion = (): string => {
+  const funcName = 'getApimConnectorOpenApiVersion';
+  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
+  console.log(`${logName}: starting ...`);
+  const x = s.exec(`npm list ${ApimConnectorOpenApiBrowserPackageName}`).stdout;
+  const invalidIdx: number = x.search('invalid');
+  if(invalidIdx > -1) throw new Error(`${logName}: invalid version of ${ApimConnectorOpenApiBrowserPackageName} in package.json`);
+  const idx: number = x.lastIndexOf(ApimConnectorOpenApiBrowserPackageName);
+  const y = x.slice(idx).replace(/\s/g, '' );
+  console.log(`${logName}: success.`);
+  return y;
+}
 const buildAbouts = () => {
   const funcName = 'buildAbouts';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
@@ -60,6 +80,7 @@ const buildAbouts = () => {
       author: packageJson.author,
       license: packageJson.license,
       version: packageJson.version,
+      "apim-connector-open-api-version": getApimConnectorOpenApiVersion(),
       "apim-server-openapi-version": getApimServerOpenApiVersion(),
       repository: {
           type: packageJson.repository.type,
