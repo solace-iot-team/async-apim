@@ -20,19 +20,14 @@
 
 ### Setup
 
-#### Configure Connector
-- contains a sample bootstrap connector config with `localhost`
-- change to `{ip-address}` if required
+* users
+* orgs
+* ...
 
-#### Configure Orgs
-
-#### Configure Users
-
-...
 
 ## Exposed URLs
 
 * **APIM Server**: ``http://{ip-address}:5002``
-* **APIM Connector API** ``http://localhost:5001``
+* **APIM Connector** ``http://localhost:5001``
 
 ---
