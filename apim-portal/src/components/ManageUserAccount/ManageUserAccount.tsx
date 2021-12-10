@@ -109,7 +109,7 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
         <Button label="Info" icon="pi pi-fw pi-info-circle" className="p-button-text p-button-plain p-button-outlined" onClick={onViewUserInfo} />
         <Button label="Profile" icon="pi pi-fw pi-user" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserProfile} />
         <Button label="Credentials" icon="pi pi-fw pi-lock" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserCredentials} />
-        <Button label="Settings" icon="pi pi-fw pi-cog" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserSettings} />
+        {/* <Button label="Settings" icon="pi pi-fw pi-cog" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserSettings} /> */}
       </React.Fragment>
     );
   }
