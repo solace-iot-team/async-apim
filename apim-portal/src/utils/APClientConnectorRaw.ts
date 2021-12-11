@@ -1,8 +1,8 @@
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { Mutex, MutexInterface } from 'async-mutex';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
-import { APTimeoutError } from './APError';
-import { fetchWithTimeout } from './APFetch';
+import { APError, APTimeoutError } from './APError';
+import { fetchWithTimeoutAndRandomBasicAuth } from './APFetch';
 
 export type APClientConnectorRawResult = {
   readonly url: string;
@@ -74,15 +74,19 @@ export class APClientConnectorRaw {
     console.error(`>>>${APClientConnectorRaw.componentName}: ${JSON.stringify(e)}`);
   }
 
-  public static getBasePath = async (): Promise<any> => {    
-    const funcName = 'getBasePath';
+  public static getBasePath = (): string => {
+    return APClientConnectorRaw.basePath;
+  }
+  public static httpGET_BasePath = async (): Promise<any> => {    
+    const funcName = 'httpGET_BasePath';
     const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
     const timeout_ms: number = 2000;
     console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
-    let response, responseBody: any;
+    let response: Response;
+    let responseBody: any;
     try {
       try {
-        response = await fetchWithTimeout(APClientConnectorRaw.basePath, timeout_ms);
+        response = await fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, timeout_ms);
       } catch (e: any) {
         if(e.name === 'AbortError') {
           throw new APTimeoutError(logName, "fetch timeout", { url: APClientConnectorRaw.basePath, timeout_ms: timeout_ms});

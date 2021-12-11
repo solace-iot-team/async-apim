@@ -17,6 +17,7 @@ services:
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
     image : "solaceiotteam/async-apim-admin-portal:latest"
+    # image : "solaceiotteam/async-apim-admin-portal:0.0.21"
     ports:
       - 5080:80
     restart: unless-stopped
@@ -65,7 +66,7 @@ services:
     links:
       - qs-async-apim-connector-mongodb
     image: "solaceiotteam/apim-connector-server:latest"
-    # image: "solaceiotteam/apim-connector-server:0.3.1"
+    # image: "solaceiotteam/apim-connector-server:0.3.2"
     ports:
       - 5001:3000
     volumes:

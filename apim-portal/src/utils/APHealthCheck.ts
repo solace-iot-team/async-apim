@@ -14,6 +14,7 @@ import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigCont
 import { APConnectorApiHelper, TAPConnectorAbout } from './APConnectorApiCalls';
 import { APLogger } from './APLogger';
 import { ApiCallState, TApiCallState } from './ApiCallState';
+import { APError } from './APError';
 
 
 export enum EAPConnectorHealthCheckLogEntryType {
@@ -102,17 +103,24 @@ export class APConnectorHealthCheck {
     let callState: TApiCallState = ApiCallState.getInitialCallState(EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_API_BASE, `get connector api base`);
     let apiBaseResult: any = undefined;
     try {
-      apiBaseResult = await APClientConnectorRaw.getBasePath();
+      apiBaseResult = await APClientConnectorRaw.httpGET_BasePath();
+      // must not return content but always unauthorized
+      throw new APError(logName, `GET ${APClientConnectorRaw.getBasePath()} must not return content but always unauthorized`);
     } catch(e: any) {
       if(e instanceof APClientConnectorRawError) {
         const apiRawError: APClientConnectorRawError = e;
         if(apiRawError.apError.status === 401) {
           // unauthorized = good, url is reachable
+          callState.success = true;
         } else {
           APClientConnectorOpenApi.logError(logName, e);
           callState = ApiCallState.addErrorToApiCallState(e, callState);
         }
-      } else {
+      } else if(e instanceof APError) {
+        APLogger.error(APLogger.createLogEntry(logName, e));
+        callState = ApiCallState.addErrorToApiCallState(e, callState);
+      }
+      else {
         APClientConnectorOpenApi.logError(logName, e);
         callState = ApiCallState.addErrorToApiCallState(e, callState);
       }

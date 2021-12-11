@@ -1,6 +1,6 @@
 {
   "name": "async-apim-portal",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "Solace Async API Management Portal",
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "@solace-iot-team/apim-connector-openapi-browser": "^0.5.7",
     "@solace-iot-team/apim-server-openapi-browser": "^0.0.11",
     "async-mutex": "^0.3.2",
+    "base-64": "^1.0.0",
     "js-yaml": "^4.1.0",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",
@@ -70,6 +71,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^13.1.9",
+    "@types/base-64": "^1.0.0",
     "@types/js-yaml": "^4.0.3",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.3",
