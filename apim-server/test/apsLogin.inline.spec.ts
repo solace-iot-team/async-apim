@@ -1,7 +1,5 @@
 import 'mocha';
 import { expect } from 'chai';
-// import request from 'supertest';
-// import Server from '../server/index';
 import path from 'path';
 import { TestContext, TestLogger } from './lib/test.helpers';
 import { 
@@ -38,10 +36,6 @@ const apsUserLoginTemplate: APSUser = {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    // const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
-    // const apiUsersBase = `${TestContext.getApiBase()}/apsUsers`;
-    // const apiLoginBase = `${TestContext.getApiBase()}/apsLogin`;
-
     beforeEach(() => {
       TestContext.newItId();
     });
@@ -71,12 +65,6 @@ describe(`${scriptName}`, () => {
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
     });
-
-    // it(`${scriptName}: should start server`, async() => {
-    //   const res = await request(Server).get(apiStartupBase);
-    //   TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
-    //   expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
-    // });
 
     // ****************************************************************************************************************
     // * OpenApi API Tests *

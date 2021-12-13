@@ -9,7 +9,7 @@ export enum EServerStatusCodes {
   DB_CONNECTION_ERROR = 'DB_CONNECTION_ERROR',
   DB_CALL_ERROR = 'DB_CALL_ERROR',
   Api_Service_Error = 'Api_Service_Error',
-  // API_SERVICE_ERROR = 'API_SERVICE_ERROR',
+  // API_SERVICE_ERROR = 'API_SERVICE_ERROR', // NOTE: test result parser looks for ERROR, but Api Service Error is standard in tests, so don't trigger on this one
   INTERNAL_ERROR = 'INTERNAL_ERROR',
   INITIALIZING = 'INITIALIZING',
   INITIALIZE_ERROR = 'INITIALIZE_ERROR',
