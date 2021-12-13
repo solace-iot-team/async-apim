@@ -2,8 +2,7 @@
   "name": "async-apim-admin-portal",
   "version": "0.0.2",
   "scripts": {
-    "build": "ts-node build.ts",
-    "publish": "ts-node publish.ts"
+    "build": "ts-node build.ts"
   },
   "author": "Solace Corporation",
   "contributors": [

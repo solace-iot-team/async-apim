@@ -30,17 +30,19 @@ echo " >>> Build..."
   fi
 echo " >>> Success."
 
-echo " >>> Publish ..."
-  cd $scriptDir
-  runScript="npm run publish"
-  $runScript
-  code=$?;
-  if [[ $code == 2 ]]; then
-    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
-  elif [[ $code != 0 ]]; then
-    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
-  fi
-echo " >>> Success."
+
+# TODO: where to publish it ...
+# echo " >>> Publish ..."
+#   cd $scriptDir
+#   runScript="npm run publish"
+#   $runScript
+#   code=$?;
+#   if [[ $code == 2 ]]; then
+#     echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
+#   elif [[ $code != 0 ]]; then
+#     echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
+#   fi
+# echo " >>> Success."
 
 
 ###
