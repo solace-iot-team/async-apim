@@ -4,7 +4,7 @@ import request from 'supertest';
 import Server from '../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, testHelperSleep, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from './lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -48,7 +48,7 @@ const apsConnectorTemplate: APSConnector = {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
+    // const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
     const apiBase = `${TestContext.getApiBase()}/apsConfig/apsConnectors`;
 
     beforeEach(() => {
@@ -68,16 +68,6 @@ describe(`${scriptName}`, () => {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
-    });
-
-    it(`${scriptName}: should start server`, async() => {
-      const res = await request(Server).get(apiStartupBase);
-      TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
-      expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
-
-      // TODO: need to wait until initialized & bootstrapping is finished ==> server ready
-      testHelperSleep(2000);
-
     });
 
     // ****************************************************************************************************************

@@ -21,8 +21,10 @@ env:
   DEBUG_FLAG: ${{ true }}
   # DEBUG_FLAG: ${{ false }}
   APIM_SERVER_DIR: "apim-server"
+  APIM_SERVER_TEST_LOGS_DIR: "apim-server/test/logs"
+  APIM_SERVER_TEST_LOGS_OUTPUT_NAME: "apim-server-test-logs"
 
-  TEST_TEST_RUNNER_OUTPUT_DIR: "api-implementation/test/integration/tmp"
+  # TEST_TEST_RUNNER_OUTPUT_DIR: "api-implementation/test/integration/tmp"
   TEST_OUTPUT_NAME: "api-implementation-test-integration"
 jobs:
   integration_test:
@@ -85,29 +87,34 @@ jobs:
           echo "WARNING: lint is OFF"
           # npm run lint
 
-      - name: continue here
+      - name: "server: test"
         run: |
-          echo "continue here ..."
-          exit 1
+          cd "${APIM_SERVER_DIR}"
+          test/run.sh
 
-      - name: Run Tests
-        run: |
-          export APIM_INTEGRATION_TEST_SOLACE_CLOUD_URL=${{ secrets.SOLACE_CLOUD_URL }}
-          export APIM_INTEGRATION_TEST_SOLACE_CLOUD_TOKEN=${{ secrets.SOLACE_CLOUD_TOKEN }}
-          export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_URL=${{ secrets.SOLACE_EVENT_PORTAL_URL }}
-          export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_TOKEN=${{ secrets.SOLACE_EVENT_PORTAL_TOKEN }}
-          export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_USER=${{ secrets.PLATFORM_ADMIN_USER }}
-          export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_PASSWORD=${{ secrets.PLATFORM_ADMIN_PASSWORD }}
-          export APIM_SOLACE_PLATFORM_API_PROJECT_HOME="$GITHUB_WORKSPACE"
-          cd "$APIM_SOLACE_PLATFORM_API_PROJECT_HOME/${TEST_PLATFORM_DIR}"
-          test/integration/run.sh
+      # - name: continue here
+      #   run: |
+      #     echo "continue here ..."
+      #     exit 1
 
-      - name: Archive logs
+      # - name: Run Tests
+      #   run: |
+      #     export APIM_INTEGRATION_TEST_SOLACE_CLOUD_URL=${{ secrets.SOLACE_CLOUD_URL }}
+      #     export APIM_INTEGRATION_TEST_SOLACE_CLOUD_TOKEN=${{ secrets.SOLACE_CLOUD_TOKEN }}
+      #     export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_URL=${{ secrets.SOLACE_EVENT_PORTAL_URL }}
+      #     export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_TOKEN=${{ secrets.SOLACE_EVENT_PORTAL_TOKEN }}
+      #     export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_USER=${{ secrets.PLATFORM_ADMIN_USER }}
+      #     export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_PASSWORD=${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+      #     export APIM_SOLACE_PLATFORM_API_PROJECT_HOME="$GITHUB_WORKSPACE"
+      #     cd "$APIM_SOLACE_PLATFORM_API_PROJECT_HOME/${TEST_PLATFORM_DIR}"
+      #     test/integration/run.sh
+
+      - name: Archive APIM-Server Test Logs
         if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.TEST_OUTPUT_NAME }}
-          path: ${{ github.workspace }}/${{ env.TEST_TEST_RUNNER_OUTPUT_DIR }}
+          name: ${{ env.APIM_SERVER_TEST_LOGS_OUTPUT_NAME }}
+          path: ${{ github.workspace }}/${{ env.APIM_SERVER_TEST_LOGS_DIR }}
           if-no-files-found: error
 
 ###

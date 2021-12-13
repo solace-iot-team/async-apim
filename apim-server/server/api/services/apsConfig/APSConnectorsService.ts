@@ -185,7 +185,7 @@ export class APSConnectorsService {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'mongoAllReturn', details: mongoAllReturn}));
 
     if (mongoAllReturn.documentList.length > 1) {
-      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.API_SERVICE_ERROR, message: 'expecting 0 or 1 active connectors', details: mongoAllReturn}));
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.Api_Service_Error, message: 'expecting 0 or 1 active connectors', details: mongoAllReturn}));
       throw new ApiInternalServerError(logName, `expecting 0 or 1 active connectors, found=${mongoAllReturn.documentList.length}`);
     }
     const returnList: Array<APSConnector>  = mongoAllReturn.documentList as Array<APSConnector>;

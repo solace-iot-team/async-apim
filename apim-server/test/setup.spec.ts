@@ -7,9 +7,13 @@ import {
   getOptionalEnvVarValueAsBoolean, 
   TestContext, 
   TestLogger, 
-  TTestEnv 
+  TTestEnv,
+  testHelperSleep
 } from './lib/test.helpers';
 import { ApimServerAPIClient } from './lib/api.helpers'
+import request from 'supertest';
+import Server from '../server/index';
+import { expect } from 'chai';
 
 
 const scriptName: string = path.basename(__filename);
@@ -34,4 +38,26 @@ before(async() => {
   ApimServerAPIClient.initialize(base);
 });
 
+describe(`${scriptName}`, () => {
+  context(`${scriptName}`, () => {
+
+    const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`;
+
+    beforeEach(() => {
+      TestContext.newItId();
+    });
+
+    it(`${scriptName}: should start & bootstrap server`, async() => {
+      const res = await request(Server).get(apiStartupBase);
+      TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
+      expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
+
+      // TODO: need to wait until initialized & bootstrapping is finished ==> server ready
+      await testHelperSleep(2000);
+
+    });
+
+
+  });
+});
 

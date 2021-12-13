@@ -52,7 +52,7 @@ const apsUserTemplate2: APSUser = {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
+    // const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
     const apiBase = `${TestContext.getApiBase()}/apsUsers`;
 
     beforeEach(() => {
@@ -85,11 +85,11 @@ describe(`${scriptName}`, () => {
       }
     });
 
-    it(`${scriptName}: should start server`, async() => {
-      const res = await request(Server).get(apiStartupBase);
-      TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
-      expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
-    });
+    // it(`${scriptName}: should start server`, async() => {
+    //   const res = await request(Server).get(apiStartupBase);
+    //   TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
+    //   expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
+    // });
 
 // ****************************************************************************************************************
 // * OpenApi API Tests *

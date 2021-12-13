@@ -27,8 +27,8 @@ unset_source_env() {
     # unset this function
     unset -f unset_source_env
 
-    env | grep APIM_SERVER
-    env | grep APIM_TEST
+    # env | grep APIM_SERVER
+    # env | grep APIM_TEST
 }
 
 # Env vars for server:
