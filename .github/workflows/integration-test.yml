@@ -1,0 +1,99 @@
+# ---------------------------------------------------------------------------------------------
+# MIT License
+# Copyright (c) 2021, Solace Corporation, Ricardo Gomez-Ulmke (ricardo.gomez-ulmke@solace.com)
+# ---------------------------------------------------------------------------------------------
+
+name: integration-test
+on:
+  # for testing
+  workflow_dispatch:
+  # production
+  # schedule:
+  # #   # - cron: '0 7 * * MON'
+  #   - cron: '0 7 * * *'
+  pull_request:
+    branches:
+      - main
+env:
+  DEBUG_FLAG: ${{ true }}
+  # DEBUG_FLAG: ${{ false }}
+  TEST_PLATFORM_DIR: "api-implementation"
+  TEST_TEST_RUNNER_OUTPUT_DIR: "api-implementation/test/integration/tmp"
+  TEST_OUTPUT_NAME: "api-implementation-test-integration"
+jobs:
+  integration_test:
+    runs-on: ubuntu-18.04
+    strategy:
+      max-parallel: 1
+      matrix:
+        node: [ '16' ]
+    steps:
+      - name: Check Auth
+        if: github.event_name == 'workflow_dispatch' && github.actor != 'ricardojosegomezulmke'
+        run: |
+          echo "not authorized"
+          echo '::set-output name=IS_AUTHORIZED::false'
+        id: auth
+      - name: Cancel Workflow
+        if: ${{ always() && steps.auth.outputs.IS_AUTHORIZED == 'false' }}
+        uses: andymckay/cancel-action@0.2
+
+      - name: Checkout Current Branch
+        uses: actions/checkout@master
+        with:
+          ref: ${{ github.ref }}
+
+      - name: env before install
+        if: env.DEBUG_FLAG == 'true'
+        run: |
+          echo "bash --version: "; bash --version
+          echo "node --version: "; node --version
+          echo "npm --version: "; npm --version
+          echo ">>> environment: TEST_* "
+          env | grep TEST
+
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: env after install
+        if: env.DEBUG_FLAG == 'true'
+        run: |
+          echo "bash --version: "; bash --version
+          echo "node --version: "; node --version
+          echo "npm --version: "; npm --version
+          echo "docker --version"; docker --version
+
+      - name: continue here
+        run: |
+          echo "continue here ..."
+          exit 1
+
+      - name: npm install
+        run: |
+          cd "${TEST_PLATFORM_DIR}"
+          npm install
+
+      - name: Run Tests
+        run: |
+          export APIM_INTEGRATION_TEST_SOLACE_CLOUD_URL=${{ secrets.SOLACE_CLOUD_URL }}
+          export APIM_INTEGRATION_TEST_SOLACE_CLOUD_TOKEN=${{ secrets.SOLACE_CLOUD_TOKEN }}
+          export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_URL=${{ secrets.SOLACE_EVENT_PORTAL_URL }}
+          export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_TOKEN=${{ secrets.SOLACE_EVENT_PORTAL_TOKEN }}
+          export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_USER=${{ secrets.PLATFORM_ADMIN_USER }}
+          export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_PASSWORD=${{ secrets.PLATFORM_ADMIN_PASSWORD }}
+          export APIM_SOLACE_PLATFORM_API_PROJECT_HOME="$GITHUB_WORKSPACE"
+          cd "$APIM_SOLACE_PLATFORM_API_PROJECT_HOME/${TEST_PLATFORM_DIR}"
+          test/integration/run.sh
+
+      - name: Archive logs
+        if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.TEST_OUTPUT_NAME }}
+          path: ${{ github.workspace }}/${{ env.TEST_TEST_RUNNER_OUTPUT_DIR }}
+          if-no-files-found: error
+
+###
+# The End.
