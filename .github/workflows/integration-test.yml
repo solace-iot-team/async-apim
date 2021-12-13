@@ -82,7 +82,8 @@ jobs:
       - name: "server: lint"
         run: |
           cd "${APIM_SERVER_DIR}"
-          npm run lint
+          echo "WARNING: lint is OFF"
+          # npm run lint
 
       - name: continue here
         run: |
