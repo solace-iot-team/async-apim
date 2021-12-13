@@ -17,7 +17,8 @@ on:
 env:
   DEBUG_FLAG: ${{ true }}
   # DEBUG_FLAG: ${{ false }}
-  TEST_PLATFORM_DIR: "api-implementation"
+  APIM_SERVER_DIR: "apim-server"
+
   TEST_TEST_RUNNER_OUTPUT_DIR: "api-implementation/test/integration/tmp"
   TEST_OUTPUT_NAME: "api-implementation-test-integration"
 jobs:
@@ -65,15 +66,20 @@ jobs:
           echo "npm --version: "; npm --version
           echo "docker --version"; docker --version
 
+      - name: npm install
+        run: |
+          cd "${APIM_SERVER_DIR}"
+          npm install
+
+      - name: devel build
+        run: |
+          cd "${APIM_SERVER_DIR}"
+          npm run dev:build
+
       - name: continue here
         run: |
           echo "continue here ..."
           exit 1
-
-      - name: npm install
-        run: |
-          cd "${TEST_PLATFORM_DIR}"
-          npm install
 
       - name: Run Tests
         run: |
