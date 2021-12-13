@@ -76,38 +76,26 @@ jobs:
           cd "${APIM_SERVER_DIR}"
           npm install
 
-      - name: "server: devel build"
+      - name: "server:dev:build"
         run: |
           cd "${APIM_SERVER_DIR}"
           npm run dev:build
 
-      - name: "server: lint"
+      - name: "server:lint"
         run: |
           cd "${APIM_SERVER_DIR}"
           echo "WARNING: lint is OFF"
           # npm run lint
 
-      - name: "server: test"
+      - name: "server:build"
+        run: |
+          cd "${APIM_SERVER_DIR}"
+          npm run build
+
+      - name: "server:test"
         run: |
           cd "${APIM_SERVER_DIR}"
           test/run.sh
-
-      # - name: continue here
-      #   run: |
-      #     echo "continue here ..."
-      #     exit 1
-
-      # - name: Run Tests
-      #   run: |
-      #     export APIM_INTEGRATION_TEST_SOLACE_CLOUD_URL=${{ secrets.SOLACE_CLOUD_URL }}
-      #     export APIM_INTEGRATION_TEST_SOLACE_CLOUD_TOKEN=${{ secrets.SOLACE_CLOUD_TOKEN }}
-      #     export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_URL=${{ secrets.SOLACE_EVENT_PORTAL_URL }}
-      #     export APIM_INTEGRATION_TEST_SOLACE_EVENT_PORTAL_TOKEN=${{ secrets.SOLACE_EVENT_PORTAL_TOKEN }}
-      #     export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_USER=${{ secrets.PLATFORM_ADMIN_USER }}
-      #     export APIM_INTEGRATION_TEST_PLATFORM_ADMIN_PASSWORD=${{ secrets.PLATFORM_ADMIN_PASSWORD }}
-      #     export APIM_SOLACE_PLATFORM_API_PROJECT_HOME="$GITHUB_WORKSPACE"
-      #     cd "$APIM_SOLACE_PLATFORM_API_PROJECT_HOME/${TEST_PLATFORM_DIR}"
-      #     test/integration/run.sh
 
       - name: Archive APIM-Server Test Logs
         if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}
