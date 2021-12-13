@@ -7,6 +7,9 @@ name: integration-test
 on:
   # for testing
   workflow_dispatch:
+  push:
+    branches:
+      - main
   # production
   # schedule:
   # #   # - cron: '0 7 * * MON'
@@ -66,15 +69,20 @@ jobs:
           echo "npm --version: "; npm --version
           echo "docker --version"; docker --version
 
-      - name: npm install
+      - name: "server: npm install"
         run: |
           cd "${APIM_SERVER_DIR}"
           npm install
 
-      - name: devel build
+      - name: "server: devel build"
         run: |
           cd "${APIM_SERVER_DIR}"
           npm run dev:build
+
+      - name: "server: lint"
+        run: |
+          cd "${APIM_SERVER_DIR}"
+          npm run lint
 
       - name: continue here
         run: |
