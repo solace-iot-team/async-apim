@@ -12,6 +12,13 @@ Change in [docker.compose.yml](./docker.compose.yml) to choose specific images.
 ./stop.sh
 ````
 
+## Update
+````bash
+./start.sh
+````
+_Note:_ Data is preserved.
+
+
 ## Admin Portal
 
 ### Login
