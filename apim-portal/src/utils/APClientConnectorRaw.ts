@@ -57,9 +57,9 @@ export class APClientConnectorRaw {
 
     APClientConnectorRaw.mutexReleaser = await APClientConnectorRaw.mutex.acquire();
     APClientConnectorRaw.baseUrl = APClientConnectorOpenApi.constructBaseUrl(connectorClientConfig);
-    console.log(`${logName}: APClientConnectorRaw.baseUrl = ${APClientConnectorRaw.baseUrl}`);
+    // console.log(`${logName}: APClientConnectorRaw.baseUrl = ${APClientConnectorRaw.baseUrl}`);
     APClientConnectorRaw.basePath = APClientConnectorOpenApi.constructOpenApiBase(connectorClientConfig);
-    console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
+    // console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
   }
 
   public static unInitialize = async (): Promise<void> => {
@@ -81,7 +81,7 @@ export class APClientConnectorRaw {
     const funcName = 'httpGET_BasePath';
     const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
     const timeout_ms: number = 2000;
-    console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
+    // console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
     let response: Response;
     let responseBody: any;
     try {

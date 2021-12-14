@@ -2,6 +2,28 @@
 
 Solace Async API Management.
 
+## Version 0.0.24
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.24
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.12
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.6
+
+#### API-M Admin & Developer Portal
+**Fixes:**
+- **ManageConnectors/TestConnector**
+  - removed extensive console logging
+
+**Known Issues:**
+- **Manage User**
+  - fails if connector not reachable to load orgs
+
+#### API-M Server OpenAPI
+**No Changes.**
+
+#### API-M Server
+**Release/Test:**
+- **Linter**
+  - fixed linter issues
+
 ## Version 0.0.23
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.23
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.11

@@ -94,6 +94,16 @@ jobs:
           cd "${APIM_SERVER_DIR}"
           test/run.sh
 
+      - name: "portal:npm install"
+        run: |
+          cd "${APIM_PORTAL_DIR}"
+          npm install
+
+      - name: "portal:dev-build"
+        run: |
+          cd "${APIM_PORTAL_DIR}"
+          npm run dev-build
+
       - name: "portal:build"
         run: |
           cd "${APIM_PORTAL_DIR}"
