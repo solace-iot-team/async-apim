@@ -16,7 +16,6 @@ import { ApiPathNotFoundServerError, ApiServerErrorFromOpenApiResponseValidatorE
 // import { Request, Response, NextFunction } from 'express';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
-import { nextTick } from 'process';
 
 const app = express();
 
@@ -32,8 +31,6 @@ export class ExpressServer {
   private routes: (app: Application, apiBase: string) => void;
 
   constructor(config: TExpressServerConfig) {
-    const funcName = 'constructor';
-    const logName = `${ExpressServer.name}.${funcName}()`;
 
     this.config = config;
     this.root = path.normalize(__dirname + '/../..');

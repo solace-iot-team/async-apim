@@ -1,6 +1,4 @@
-import fs from 'fs';
 import { ConfigEnvVarNotANumberServerError, ConfigMissingEnvVarServerError } from './ServerError';
-// import { L } from './ServerLogger';
 
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ServerUtils } from './ServerUtils';
@@ -80,23 +78,19 @@ export class ServerConfig {
   };
 
   private getOptionalEnvVarValueAsPathWithReadPermissions = (envVarName: string): string | undefined => {
-    const funcName = 'getOptionalEnvVarValueAsPathWithReadPermissions';
-    const logName = `${ServerConfig.name}.${funcName}()`;
     const value = this.getOptionalEnvVarValueAsString(envVarName);
     if(!value) return undefined;
     return ServerUtils.validateFilePathWithReadPermission(value);
   }
 
-  constructor() { }
+  // constructor() { }
 
   public initialize = (): void => {
-    // TODO: get the apiBase from the spec
-    const funcName = 'initialize';
-    const logName = `${ServerConfig.name}.${funcName}()`;
     this.config = {
       dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
       expressServer: {
         port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
+        // TODO: get the apiBase from the spec
         apiBase: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_API_BASE),
         requestSizeLimit: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_REQUEST_SIZE_LIMIT),
         serverSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_SECRET),

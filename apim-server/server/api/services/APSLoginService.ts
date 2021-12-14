@@ -1,7 +1,7 @@
 import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
 import APSUser = Components.Schemas.APSUser;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
-import { MongoPersistenceService, TMongoAllReturn } from '../../common/MongoPersistenceService';
+import { MongoPersistenceService } from '../../common/MongoPersistenceService';
 import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError } from '../../common/ServerError';
 import APSUsersService from './APSUsersService';
 
@@ -10,8 +10,6 @@ export class APSLoginService {
   private persistenceService: MongoPersistenceService;
 
   constructor() {
-    const funcName = 'constructor';
-    const logName = `${APSLoginService.name}.${funcName}()`;
     this.persistenceService = new MongoPersistenceService(APSLoginService.collectionName); 
   }
 

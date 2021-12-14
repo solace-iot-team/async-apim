@@ -51,7 +51,7 @@ export class APSConnectorsService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
 
     if(ServerConfig.getConfig().dataPath) {
-      const bootstrapApsConnectorListFileName: string = `${ServerConfig.getConfig().dataPath}/${APSConnectorsService.boostrapApsConnectorListPath}`;
+      const bootstrapApsConnectorListFileName = `${ServerConfig.getConfig().dataPath}/${APSConnectorsService.boostrapApsConnectorListPath}`;
       const bootstrapApsConnectorListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsConnectorListFileName);
       if(bootstrapApsConnectorListFile) {
         ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
@@ -152,8 +152,6 @@ export class APSConnectorsService {
   }
 
   public all = async(): Promise<TAPSListAPSConnectorResponse> => {
-    const funcName = 'all';
-    const logName = `${APSConnectorsService.name}.${funcName}()`;
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all();
     return {
       list: mongoAllReturn.documentList as Array<APSConnector>,
@@ -248,15 +246,15 @@ export class APSConnectorsService {
     return replacedNewActive;
   }
 
-  public delete = async(apsConnectorId: APSConnectorId) => {
+  public delete = async(apsConnectorId: APSConnectorId): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnectorId', details: apsConnectorId }));
 
-    const deletedCount: number = await this.persistenceService.delete(apsConnectorId);
+    const deletedConnector: APSConnector = (await this.persistenceService.delete(apsConnectorId) as unknown) as APSConnector;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedCount', details: deletedCount }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedConnector', details: deletedConnector }));
 
   }
 

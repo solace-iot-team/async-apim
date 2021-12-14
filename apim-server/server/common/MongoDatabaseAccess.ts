@@ -9,7 +9,7 @@ export class MongoDatabaseAccess {
 
   private static validateUrl(url: string): string {
     url = url.trim().replace(/^[\'\"]|[\'\"]$/g, '');
-    const v = new URL(url);
+    new URL(url);
     return url;
   }
 

@@ -10,7 +10,7 @@ import { EServerStatusCodes, ServerLogger, TServerLogEntry } from '../../common/
 import { MongoError } from 'mongodb';
 import { HttpError as OpenApiValidatorHttpError } from 'express-openapi-validator/dist/framework/types';
 
-const componentName: string = "error.handler";
+const componentName = "error.handler";
 
 export default function errorHandler(
   err: any,

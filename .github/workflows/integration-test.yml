@@ -7,25 +7,23 @@ name: integration-test
 on:
   # for testing
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
   # production
-  # schedule:
-  # #   # - cron: '0 7 * * MON'
-  #   - cron: '0 7 * * *'
+  schedule:
+  # #   # - cron: '0 4 * * MON'
+    - cron: '0 4 * * *'
   pull_request:
     branches:
       - main
 env:
-  DEBUG_FLAG: ${{ true }}
-  # DEBUG_FLAG: ${{ false }}
+  # DEBUG_FLAG: ${{ true }}
+  DEBUG_FLAG: ${{ false }}
   APIM_SERVER_DIR: "apim-server"
   APIM_SERVER_TEST_LOGS_DIR: "apim-server/test/logs"
   APIM_SERVER_TEST_LOGS_OUTPUT_NAME: "apim-server-test-logs"
-
-  # TEST_TEST_RUNNER_OUTPUT_DIR: "api-implementation/test/integration/tmp"
-  TEST_OUTPUT_NAME: "api-implementation-test-integration"
+  APIM_PORTAL_DIR: "apim-portal"
 jobs:
   integration_test:
     runs-on: ubuntu-18.04
@@ -84,8 +82,7 @@ jobs:
       - name: "server:lint"
         run: |
           cd "${APIM_SERVER_DIR}"
-          echo "WARNING: lint is OFF"
-          # npm run lint
+          npm run lint
 
       - name: "server:build"
         run: |
@@ -96,6 +93,11 @@ jobs:
         run: |
           cd "${APIM_SERVER_DIR}"
           test/run.sh
+
+      - name: "portal:build"
+        run: |
+          cd "${APIM_PORTAL_DIR}"
+          npm run build
 
       - name: Archive APIM-Server Test Logs
         if: ${{ (failure() && !cancelled()) || (always() && (github.event_name=='workflow_dispatch' || env.DEBUG_FLAG=='true') ) }}

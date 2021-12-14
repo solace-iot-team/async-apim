@@ -32,9 +32,11 @@ npm run lint
 
 ## Adding/Changing an API Resource
 - edit `server/common/api.yml`
-- dev build
+- dev build, compile, lint
   ````bash
   npm run dev:build
+  npm run compile
+  npm run lint
   ````
 - implement a new service in `server/api/services`
 - implement a new controller in `server/api/controllers`

@@ -1,5 +1,5 @@
 
-import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
+// import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
 import ExampleList = Components.Schemas.ExampleList;
 import ExampleWebhook = Components.Schemas.ExampleWebHook;
 
@@ -15,7 +15,7 @@ export type TAPSExampleListResponse = {
 };
 
 export class ExamplesService {
-  private counter: number =0;
+  private counter = 0;
 
   public all = async(): Promise<TAPSExampleListResponse> => {
     return {
@@ -25,7 +25,7 @@ export class ExamplesService {
   }
 
   public getWebhooks = async(): Promise<Array<ExampleWebhook>> => {
-    let baseExampleWebhook: ExampleWebhook = {
+    const baseExampleWebhook: ExampleWebhook = {
       uri: 'http://my.callback.com/my-basic-auth',
       method: 'POST'
     }

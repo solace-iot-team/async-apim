@@ -5,8 +5,7 @@ import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
-import EAPSAuthRole = Components.Schemas.EAPSAuthRole;
-import { MongoPersistenceService, TCreateSearchContentCallback, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../common/MongoPersistenceService';
+import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../common/MongoPersistenceService';
 import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../utils/ApiQueryHelper';
 import { TRootUserConfig } from '../../common/ServerConfig';
 
@@ -19,8 +18,6 @@ export class APSUsersService {
   private persistenceService: MongoPersistenceService;
 
   constructor() {
-    const funcName = 'constructor';
-    const logName = `${APSUsersService.name}.${funcName}()`;
     this.persistenceService = new MongoPersistenceService(APSUsersService.collectionName, true); 
   }
 
@@ -129,15 +126,15 @@ export class APSUsersService {
     return replaced;
   }
 
-  public delete = async(apsUserId: APSUserId) => {
+  public delete = async(apsUserId: APSUserId): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
 
-    const deletedCount: number = await this.persistenceService.delete(apsUserId);
+    const deletedUser: APSUser = (await this.persistenceService.delete(apsUserId) as unknown) as APSUser;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedCount', details: deletedCount }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedUser', details: deletedUser }));
 
   }
 

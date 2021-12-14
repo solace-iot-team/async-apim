@@ -30,7 +30,7 @@ export class ServerError extends Error {
     const logName = `${ServerError.name}.${funcName}()`;
     try {
       return JSON.parse(JSON.stringify(this));
-    } catch (e) {
+    } catch (e: any) {
       ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: `JSON.parse error`, details: { name: e.name, message: e.message } }));    
       return {
         internalLogName: this.internalLogName,
@@ -103,7 +103,7 @@ export class ApiServerError extends ServerError {
   public toAPSError = (): APSError => {
     const funcName = 'toAPSError';
     const logName = `${ServerError.name}.${funcName}()`;
-    let apsError: APSError = {
+    const apsError: APSError = {
       errorId: this.apiErrorId,
       description: this.apiDescription,
     }
@@ -111,7 +111,7 @@ export class ApiServerError extends ServerError {
     try {
       JSON.parse(JSON.stringify(this.apiMeta));
       apsError.meta = this.apiMeta;
-    } catch (e) {
+    } catch (e: any) {
       ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: `JSON.parse error of apiMeta`, details: { name: e.name, message: e.message } }));    
     }
     return apsError;
@@ -122,7 +122,7 @@ export class ApiInternalServerError extends ApiServerError {
   private static internalServerErrorName = 'InternalServerError';
   protected static apiStatusCode = 500;
   protected static apiErrorId: APSErrorIds = 'internalServerError';
-  protected static apiDefaultDescription: string = 'Internal Server Error';
+  protected static apiDefaultDescription = 'Internal Server Error';
 
   constructor(internalLogName: string, internalMessage: string, apiDescription : string = ApiInternalServerError.apiDefaultDescription, apiMeta?: any) {
     super(internalLogName, internalMessage, ApiInternalServerError.apiStatusCode, ApiInternalServerError.apiErrorId, apiDescription, apiMeta);
@@ -147,7 +147,7 @@ export class ApiInternalServerErrorFromError extends ApiInternalServerError {
 }
 
 export class BootstrapErrorFromError extends ServerErrorFromError {
-  protected static apiDefaultDescription: string = 'Bootstrap Server Error';
+  protected static apiDefaultDescription = 'Bootstrap Server Error';
   private error: Error;
   constructor(error: Error, internalLogName: string, internalMessage: string) {
     super(error, internalLogName);
@@ -157,7 +157,7 @@ export class BootstrapErrorFromError extends ServerErrorFromError {
 }
 
 export class BootstrapErrorFromApiError extends ApiInternalServerError {
-  protected static apiDefaultDescription: string = 'Bootstrap Api Server Error';
+  protected static apiDefaultDescription = 'Bootstrap Api Server Error';
   private apiError: ApiError;
   constructor(apiError: ApiError, internalLogName: string, internalMessage: string) {
     super(internalLogName, internalMessage, apiError.message);
@@ -201,7 +201,7 @@ export class ApiServerErrorFromOpenApiRequestValidatorError extends ApiServerErr
       } 
     );
     if(httpError.headers) {
-      for (let [key, value] of Object.entries(httpError.headers)) {
+      for (const [key, value] of Object.entries(httpError.headers)) {
         this.responseHeaders.push({ headerField: key, headerValue: value });
       }
     }
@@ -235,7 +235,7 @@ export type TApiServerErrorMeta = {
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;
 export type TApiKeyNotFoundServerErrorMeta = TApiServerErrorMeta;
 export type TApiObjectNotFoundServerErrorMeta = {
-  filter: object,
+  filter: Record<string, unknown>,
   collectionName: string
 }
 export type TApiNotAuthorizedServerErrorMeta = {
@@ -245,7 +245,7 @@ export type TApiNotAuthorizedServerErrorMeta = {
 export class ApiDuplicateKeyServerError extends ApiServerError {
   private static apiStatusCode = 422;
   private static apiErrorId: APSErrorIds = 'duplicateKey';
-  private static apiDefaultDescription: string = 'document already exists';
+  private static apiDefaultDescription = 'document already exists';
 
   constructor(internalLogName: string, apiDescription: string = ApiDuplicateKeyServerError.apiDefaultDescription, apiMeta: TApiDuplicateKeyServerErrorMeta) {
     super(internalLogName, ApiDuplicateKeyServerError.name, ApiDuplicateKeyServerError.apiStatusCode, ApiDuplicateKeyServerError.apiErrorId, apiDescription, apiMeta);
@@ -255,7 +255,7 @@ export class ApiDuplicateKeyServerError extends ApiServerError {
 export class ApiKeyNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
   private static apiErrorId: APSErrorIds = 'keyNotFound';
-  private static apiDefaultDescription: string = 'document does not exist';
+  private static apiDefaultDescription = 'document does not exist';
 
   constructor(internalLogName: string, apiDescription: string = ApiKeyNotFoundServerError.apiDefaultDescription, apiMeta: TApiKeyNotFoundServerErrorMeta) {
     super(internalLogName, ApiKeyNotFoundServerError.name, ApiKeyNotFoundServerError.apiStatusCode, ApiKeyNotFoundServerError.apiErrorId, apiDescription, apiMeta);
@@ -265,7 +265,7 @@ export class ApiKeyNotFoundServerError extends ApiServerError {
 export class ApiObjectNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
   private static apiErrorId: APSErrorIds = 'objectNotFound';
-  private static apiDefaultDescription: string = 'object not found';
+  private static apiDefaultDescription = 'object not found';
 
   constructor(internalLogName: string, apiDescription: string = ApiObjectNotFoundServerError.apiDefaultDescription, apiMeta: TApiObjectNotFoundServerErrorMeta) {
     super(internalLogName, ApiObjectNotFoundServerError.name, ApiObjectNotFoundServerError.apiStatusCode, ApiObjectNotFoundServerError.apiErrorId, apiDescription, apiMeta);
@@ -279,7 +279,7 @@ export type TApiMissingParameterServerErrorMeta = {
 export class ApiMissingParameterServerError extends ApiServerError {
   private static apiStatusCode = 400;
   private static apiErrorId: APSErrorIds = 'missingParameter';
-  private static apiDefaultDescription: string = 'missing paramter';
+  private static apiDefaultDescription = 'missing paramter';
 
   constructor(internalLogName: string, apiDescription: string = ApiMissingParameterServerError.apiDefaultDescription, apiMeta: TApiMissingParameterServerErrorMeta) {
     super(internalLogName, ApiMissingParameterServerError.name, ApiMissingParameterServerError.apiStatusCode, ApiMissingParameterServerError.apiErrorId, apiDescription, apiMeta);
@@ -294,7 +294,7 @@ export type TApiBadSortFieldNameServerErrorrMeta = {
 export class ApiBadSortFieldNameServerError extends ApiServerError {
   private static apiStatusCode = 400;
   private static apiErrorId: APSErrorIds = 'invalidSortFieldName';
-  private static apiDefaultDescription: string = 'invalid sortFieldName';
+  private static apiDefaultDescription = 'invalid sortFieldName';
 
   constructor(internalLogName: string, apiDescription: string = ApiBadSortFieldNameServerError.apiDefaultDescription, apiMeta: TApiBadSortFieldNameServerErrorrMeta) {
     super(internalLogName, ApiBadSortFieldNameServerError.name, ApiBadSortFieldNameServerError.apiStatusCode, ApiBadSortFieldNameServerError.apiErrorId, apiDescription, apiMeta);
@@ -304,7 +304,7 @@ export class ApiBadSortFieldNameServerError extends ApiServerError {
 export class ApiNotAuthorizedServerError extends ApiServerError {
   private static apiStatusCode = 401;
   private static apiErrorId: APSErrorIds = 'notAuthorized';
-  private static apiDefaultDescription: string = 'not authorized';
+  private static apiDefaultDescription = 'not authorized';
 
   constructor(internalLogName: string, apiDescription: string = ApiNotAuthorizedServerError.apiDefaultDescription, apiMeta: TApiNotAuthorizedServerErrorMeta) {
     super(internalLogName, ApiNotAuthorizedServerError.name, ApiNotAuthorizedServerError.apiStatusCode, ApiNotAuthorizedServerError.apiErrorId, apiDescription, apiMeta);
@@ -318,7 +318,7 @@ export type TApiPathNotFoundServerErrorMeta = {
 export class ApiPathNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
   private static apiErrorId: APSErrorIds = 'pathNotFound';
-  private static apiDefaultDescription: string = 'path does not exist';
+  private static apiDefaultDescription = 'path does not exist';
 
   constructor(internalLogName: string, apiDescription: string = ApiPathNotFoundServerError.apiDefaultDescription, apiMeta: TApiPathNotFoundServerErrorMeta) {
     super(internalLogName, ApiPathNotFoundServerError.name, ApiPathNotFoundServerError.apiStatusCode, ApiPathNotFoundServerError.apiErrorId, apiDescription, apiMeta);

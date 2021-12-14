@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.11
+  version: 0.0.12
 servers:
 - url: /apim-server/v1
 tags:
@@ -496,7 +496,7 @@ paths:
                 $ref: "#/components/schemas/APSError"
     patch:
       operationId: updateApsUser
-      description: |
+      description:
         Update an APSUser object by user id.
         Operation performs a merge update between the exsting APSUser object and the update request.
         New array values are added to existing arrays.
@@ -602,6 +602,7 @@ paths:
                 $ref: "#/components/schemas/APSError"
     delete:
       operationId: deleteApsUser
+      description: Delete an APSUser object by user id.
       tags:
       - APSUsers
       responses:

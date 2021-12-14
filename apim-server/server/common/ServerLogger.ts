@@ -1,5 +1,5 @@
 import pino from 'pino';
-import ServerConfig, { TServerLoggerConfig } from './ServerConfig';
+import { TServerLoggerConfig } from './ServerConfig';
 import { Request } from 'express';
 
 

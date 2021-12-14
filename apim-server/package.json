@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js",
@@ -10,7 +10,7 @@
     "dev": "nodemon server/index.ts | pino-pretty",
     "dev:nopretty": "nodemon server/index.ts",
     "dev:debug": "nodemon --exec \"node -r ts-node/register --inspect-brk\" server/index.ts | pino-pretty",
-    "lint": "eslint -c .eslintrc.js \"{server, test}/**/*.{js,ts,tsx}\" --quiet",
+    "lint": "eslint -c .eslintrc.js \"{server, test}/**/*.{js,ts}\" --quiet",
     "test": ". ./test/source.env.sh && ./test/mongodb/start.mongo.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts && ./test/mongodb/stop.mongo.sh && unset_source_env",
     "test:pretty": ". ./test/source.env.sh && ./test/mongodb/start.mongo.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts | pino-pretty && ./test/mongodb/stop.mongo.sh && unset_source_env",
     "test:pretty:devel": ". ./test/source.env.sh && ./test/mongodb/start.mongo.sh && mocha --config test/.mocharc.yml test/apsConfig.apsConnectors.inline.spec | pino-pretty && ./test/mongodb/stop.mongo.sh && unset_source_env",
@@ -50,7 +50,6 @@
     "print-env": "^0.1.2"
   },
   "devDependencies": {
-    "@types/node-fetch": "^2.5.8",
     "@types/chai": "^4.2.18",
     "@types/cookie-parser": "^1.4.2",
     "@types/cors": "^2.8.12",
@@ -59,6 +58,7 @@
     "@types/lodash": "^4.14.172",
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.6.1",
+    "@types/node-fetch": "^2.5.8",
     "@types/pino": "^6.3.8",
     "@types/shelljs": "^0.8.8",
     "@types/sinon": "^10.0.2",

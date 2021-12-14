@@ -1,7 +1,7 @@
 
 import { EServerStatusCodes, ServerLogger } from './ServerLogger';
 import { MongoDatabaseAccess } from './MongoDatabaseAccess';
-import mongodb, { DeleteResult, InsertOneOptions, InsertOneResult, UpdateOptions, UpdateResult, Document, ReplaceOptions, SortDirection, Filter } from 'mongodb';
+import mongodb, { DeleteResult, InsertOneOptions, UpdateOptions, UpdateResult, Document, ReplaceOptions, SortDirection, Filter } from 'mongodb';
 import { ApiBadSortFieldNameServerError, ApiDuplicateKeyServerError, ApiInternalServerError, ApiKeyNotFoundServerError } from './ServerError';
 import _ from 'lodash';
 
@@ -21,7 +21,7 @@ export type TMongoPagingInfo = {
   pageSize: number
 }
 export type TMongoAllReturn = {
-  documentList: Array<object>,
+  documentList: Array<any>,
   totalDocumentCount: number
 }
 
@@ -31,13 +31,13 @@ export class MongoPersistenceService {
   private collectionName: string;
   private isTextSearchEnabled: boolean;
   private createSearchContentCallback: TCreateSearchContentCallback = undefined;
-  private static searchContentFieldName: string = "_searchContent";
+  private static searchContentFieldName = "_searchContent";
 
   private getCollection = () => {
     return MongoDatabaseAccess.getDb().collection(this.collectionName);
   }
 
-  private generateDeepObjectValuesString = (source: any, result: string = ''): string => {
+  private generateDeepObjectValuesString = (source: any, result = ''): string => {
     const isObject = (obj:any ) => obj && typeof obj === 'object';
 
     Object.keys(source).forEach( key => {
@@ -56,14 +56,14 @@ export class MongoPersistenceService {
   }
 
   private getReturnProjection = (): any => {
-    let projection: any = {
+    const projection: any = {
       _id: 0
     };
     projection[MongoPersistenceService.searchContentFieldName] = 0;
     return projection;
   }
 
-  constructor(collectionName: string, isTextSearchEnabled: boolean = false, createSearchContentCallback?: TCreateSearchContentCallback) {
+  constructor(collectionName: string, isTextSearchEnabled = false, createSearchContentCallback?: TCreateSearchContentCallback) {
     this.collectionName = collectionName;
     this.isTextSearchEnabled = isTextSearchEnabled;
     if(createSearchContentCallback) this.createSearchContentCallback = createSearchContentCallback;
@@ -153,7 +153,7 @@ export class MongoPersistenceService {
     }
   }
 
-  public byId = async(documentId: string): Promise<object> => {
+  public byId = async(documentId: string): Promise<any> => {
     const funcName = 'byId';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const collection: mongodb.Collection = this.getCollection();
@@ -163,7 +163,7 @@ export class MongoPersistenceService {
     return foundDocument;
   }
    
-  public create = async(documentId: string, document: any): Promise<object> => {
+  public create = async(documentId: string, document: any): Promise<any> => {
     const funcName = 'create';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const opts: InsertOneOptions = {
@@ -177,7 +177,7 @@ export class MongoPersistenceService {
     if(this.isTextSearchEnabled) document[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(document);
     document._id = documentId;
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'inserting document', details: document }));
-    const result: InsertOneResult = await collection.insertOne(document, opts);
+    await collection.insertOne(document, opts);
     const insertedDocument = await collection.findOne({ _id: documentId }, { projection: this.getReturnProjection() });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'insertedDocument', details: insertedDocument }));
     if(!insertedDocument) throw new ApiInternalServerError(logName, 'insertedDocument is undefined');
@@ -189,7 +189,7 @@ export class MongoPersistenceService {
     else return undefined;
   }
 
-  public update = async(documentId: string, document: any): Promise<object> => {
+  public update = async(documentId: string, document: any): Promise<any> => {
     const funcName = 'update';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const opts: UpdateOptions = {
@@ -210,7 +210,7 @@ export class MongoPersistenceService {
     return updatedDocument;
   }
 
-  public replace = async(documentId: string, document: any): Promise<object> => {
+  public replace = async(documentId: string, document: any): Promise<any> => {
     const funcName = 'replace';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const opts: ReplaceOptions = {
@@ -232,17 +232,18 @@ export class MongoPersistenceService {
     return replacedDocument;
   }
 
-  public delete = async(documentId: string): Promise<number> => {
+  public delete = async(documentId: string): Promise<Record<string, unknown>> => {
     const funcName = 'delete';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'documentId', details: documentId }));
     const collection: mongodb.Collection = this.getCollection();
+    const deletedDocument = await this.byId(documentId);
     const deleteResult: DeleteResult = await collection.deleteOne({ _id: documentId });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleteResult', details: deleteResult }));
-    let deletedCount: number = 0;
+    let deletedCount = 0;
     if (deleteResult.acknowledged) deletedCount = deleteResult.deletedCount;
     if (deletedCount === 0) throw new ApiKeyNotFoundServerError(logName, undefined, { id: documentId, collectionName: collection.collectionName });
-    return deletedCount;
+    return deletedDocument;
   }
 
  

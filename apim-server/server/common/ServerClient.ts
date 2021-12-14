@@ -6,8 +6,8 @@ import {
 
 
 export class ServerClient {
-  private static protocol: string = 'http';
-  private static host: string = 'localhost';
+  private static protocol = 'http';
+  private static host = 'localhost';
   private static expressServerConfig: TExpressServerConfig;
   private static rootUserConfig: TRootUserConfig;
 

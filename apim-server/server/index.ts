@@ -54,7 +54,7 @@ ServerConfig.initialize();
 ServerLogger.initialize(ServerConfig.getServerLoggerConfig());
 ServerConfig.logConfig();
 ServerClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
-var server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
+const server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
 // server = expressServer.start();
 
 
