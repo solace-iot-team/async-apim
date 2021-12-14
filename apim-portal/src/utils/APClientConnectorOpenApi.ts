@@ -35,10 +35,7 @@ export class APClientConnectorOpenApi {
   public static constructOpenApiBase = (config: APSConnectorClientConfig): string => {
     const funcName: string = `constructOpenApiBase`;
     const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
-
-    console.log(`${logName}: config = ${JSON.stringify(config, null, 2)}`);
-
-
+    // console.log(`${logName}: config = ${JSON.stringify(config, null, 2)}`);
     const url: string = APClientConnectorOpenApi.constructBaseUrl(config);
     let base: string = config.apiVersion;
     if(config.basePath) {
@@ -46,11 +43,7 @@ export class APClientConnectorOpenApi {
     } else {
       base = `${url}/${config.apiVersion}`;
     }
-
-    console.log(`${logName}: base = ${JSON.stringify(base, null, 2)}`);
-
-
-    
+    // console.log(`${logName}: base = ${JSON.stringify(base, null, 2)}`);
     return base;
   }
   public static initialize = (config: APSConnectorClientConfig) => {
@@ -61,7 +54,7 @@ export class APClientConnectorOpenApi {
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
     OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
     APClientConnectorOpenApi.isInitialized = true;
-    console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
+    // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
   } 
 
   public static uninitialize = () => {
