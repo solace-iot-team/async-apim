@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------------------------
+# MIT License
+# Copyright (c) 2021, Solace Corporation, Ricardo Gomez-Ulmke (ricardo.gomez-ulmke@solace.com)
+# ---------------------------------------------------------------------------------------------
+
+name: docs-test
+on:
+  # for testing
+  workflow_dispatch:
+  # testing branches
+  # push:
+  #   branches:
+  #     - feature-refactor
+  # schedule:
+  #   # - cron: '0 1 * * THU'
+  #   - cron: '0 1 * * *'
+  pull_request:
+    branches:
+      - main
+
+env:
+  TEST_ANSIBLE_SOLACE_COLLECTION_DIR: "src/ansible_collections/solace/pubsub_plus"
+  DOCS_MAKE_SCRIPT: "test-runner/run.make.docs.sh"
+  TEST_RUNNER_LOGS_DIR: docs-logs
+
+jobs:
+  docs_test:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [ '3.8' ]
+    steps:
+      - name: Check Auth
+        if: github.event_name == 'workflow_dispatch' && github.actor != 'ricardojosegomezulmke'
+        run: |
+          echo "not authorized"
+          echo '::set-output name=IS_AUTHORIZED::false'
+        id: auth
+      - name: Cancel Workflow
+        if: ${{ always() && steps.auth.outputs.IS_AUTHORIZED == 'false' }}
+        uses: andymckay/cancel-action@0.2
+
+      - name: Checkout Current Branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: setup python matrix version
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install docs make dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/devel/docs.requirements.txt
+
+      - name: Make docs
+        run: |
+          cd docs
+          ./make.sh
+
+###
+# The End.
