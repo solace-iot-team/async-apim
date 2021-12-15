@@ -3,17 +3,10 @@ Solace Async API Management
 ===========================
 
 .. toctree::
-  :maxdepth: 1
-  :caption: Using Solace Async API Management
-
-  quickstart
-
-.. toctree::
   :maxdepth: 2
   :caption: Guides
 
-  basics
-
+  quickstart
 
 Repos & Links
 -------------

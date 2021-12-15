@@ -1,5 +1,5 @@
-Quickstart for Solace Async API Management
-==========================================
+Quickstart
+==========
 
 TODO: describe the quickstart
 
