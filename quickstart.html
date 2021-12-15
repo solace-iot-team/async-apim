@@ -69,11 +69,39 @@
              
   <section id="quickstart">
 <h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h1>
-<p>TODO: describe the quickstart</p>
-<figure class="align-default" id="id1">
+<p>The quickstart starts all required services using this
+<a class="reference download internal" download="" href="_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
+<dl class="field-list simple">
+<dt class="field-odd">qs-async-apim-www</dt>
+<dd class="field-odd"><p>an nginx service as a single point of entry, see <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> for exposed services</p>
+</dd>
+<dt class="field-even">qs-async-apim-admin-portal</dt>
+<dd class="field-even"><p>the admin portal web server</p>
+</dd>
+<dt class="field-odd">qs-async-apim-server</dt>
+<dd class="field-odd"><p>the portal server</p>
+</dd>
+<dt class="field-even">qs-async-apim-server-mongodb</dt>
+<dd class="field-even"><p>the portal database</p>
+</dd>
+<dt class="field-odd">qs-async-apim-connector</dt>
+<dd class="field-odd"><p>the connector</p>
+</dd>
+<dt class="field-even">qs-async-apim-connector-mongodb</dt>
+<dd class="field-even"><p>the connector database</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in Repo.</p></li>
+</ul>
+</div>
+<p>The following figure shows the set-up of the containers:</p>
+<figure class="align-default" id="id2">
 <a class="reference internal image-reference" href="_images/async-apim.quickstart.png"><img alt="_images/async-apim.quickstart.png" src="_images/async-apim.quickstart.png" style="width: 800px;" /></a>
 <figcaption>
-<p><span class="caption-text">Figure 1: Quickstart Docker Compose Setup</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Figure 1: Quickstart Docker Compose Container Setup</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 </section>
@@ -89,7 +117,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 15 Dec 2021 at 09:40.
+      <span class="lastupdated">Last updated on 15 Dec 2021 at 10:53.
       </span></p>
   </div>
 
