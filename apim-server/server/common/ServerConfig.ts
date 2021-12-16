@@ -1,9 +1,11 @@
+import path from 'path';
 import { ConfigEnvVarNotANumberServerError, ConfigMissingEnvVarServerError } from './ServerError';
 
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ServerUtils } from './ServerUtils';
 
 export type TExpressServerConfig = {
+  rootDir: string;
   port: number;
   apiBase: string,
   requestSizeLimit: string,
@@ -24,11 +26,11 @@ export type TRootUserConfig = {
   password: string
 }
 export type TServerConfig = {
-  dataPath?: string,
-  expressServer: TExpressServerConfig,
-  mongoDB: TMongoDBConfig,
-  serverLogger: TServerLoggerConfig,
-  rootUser: TRootUserConfig
+  dataPath?: string;
+  expressServer: TExpressServerConfig;
+  mongoDB: TMongoDBConfig;
+  serverLogger: TServerLoggerConfig;
+  rootUser: TRootUserConfig;
 };
 
 enum EEnvVars {
@@ -89,6 +91,7 @@ export class ServerConfig {
     this.config = {
       dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
       expressServer: {
+        rootDir: path.normalize(__dirname + '/../..'),
         port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
         // TODO: get the apiBase from the spec
         apiBase: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_API_BASE),

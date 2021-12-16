@@ -2,6 +2,7 @@ import './common/env';
 import { ExpressServer } from './common/server';
 import routes from './routes';
 import ServerConfig from './common/ServerConfig';
+import ServerStatus from './common/ServerStatus';
 import { EServerStatusCodes, ServerLogger } from './common/ServerLogger';
 import { MongoDatabaseAccess } from './common/MongoDatabaseAccess';
 import { BootstrapErrorFromApiError, BootstrapErrorFromError, ServerError, ServerErrorFromError } from './common/ServerError';
@@ -9,6 +10,8 @@ import APSConnectorsService from './api/services/apsConfig/APSConnectorsService'
 import APSUsersService from './api/services/APSUsersService';
 import APSLoginService from './api/services/APSLoginService';
 import { ServerClient } from './common/ServerClient';
+import APSAboutService from './api/services/apsConfig/APSAboutService';
+import APSMonitorService from './api/services/APSMonitorService';
 
 const componentName = 'index';
 
@@ -18,6 +21,7 @@ const bootstrapServer = async(): Promise<void> => {
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
   try {
     await APSConnectorsService.bootstrap();
+    ServerStatus.setIsBootstrapped();
   } catch(e: any) {
     if (e instanceof BootstrapErrorFromApiError || e instanceof BootstrapErrorFromError) {
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAP_ERROR, details: { error: e } } ));
@@ -26,6 +30,7 @@ const bootstrapServer = async(): Promise<void> => {
     }
   }
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  ServerStatus.setIsReady();
 }
 
 const initializeComponents = async(): Promise<void> => {
@@ -36,8 +41,11 @@ const initializeComponents = async(): Promise<void> => {
     await MongoDatabaseAccess.initialize();
     // must be first, loads the root user
     await APSUsersService.initialize(ServerConfig.getRootUserConfig());
+    await APSMonitorService.initialize();
     await APSConnectorsService.initialize();
     await APSLoginService.initialize();
+    await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
+    ServerStatus.setIsInitialized();
   } catch (e) {
     let serverError: ServerError;
     if (e instanceof ServerError ) serverError = e;
@@ -49,15 +57,11 @@ const initializeComponents = async(): Promise<void> => {
   await bootstrapServer();
 }
 
-// initialize();
 ServerConfig.initialize();
 ServerLogger.initialize(ServerConfig.getServerLoggerConfig());
 ServerConfig.logConfig();
 ServerClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
 const server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
-// server = expressServer.start();
-
-
 
 // console.log(`not waiting for initialize() - that's an issue for the tests`);
 

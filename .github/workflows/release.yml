@@ -8,8 +8,8 @@ on:
   release:
     types: [created]
 env:
-  DEBUG_FLAG: ${{ true }}
-  # DEBUG_FLAG: ${{ false }}
+  # DEBUG_FLAG: ${{ true }}
+  DEBUG_FLAG: ${{ false }}
   RELEASE_DIR: "release"
 
 jobs:

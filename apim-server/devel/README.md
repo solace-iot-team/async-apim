@@ -95,6 +95,9 @@ npm run test:pretty
 ````bash
 # set the env
 source ./test/source.env.sh
+# start test mongo db
+./test/mongodb/start.mongo.sh
+# run test
 # for example:
 npx mocha --config test/.mocharc.yml test/apsUsers.inline.spec.ts
 # pretty print server output:

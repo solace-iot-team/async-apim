@@ -2,14 +2,18 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.12
+  version: 0.0.13
 servers:
 - url: /apim-server/v1
 tags:
 - name: APSConfig
   description: "Configuration of the system."
+- name: APSMonitor
+  description: "Monitoring of the system."
 - name: APSUsers
   description: "Users of the system."
+- name: APSLogin
+  description: "Login Service."
 - name: Examples
   description: Simple example endpoints
 - name: Specification
@@ -331,6 +335,87 @@ paths:
                 $ref: "#/components/schemas/APSError"
         '404':
           description: "Not Found."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          description: "Internal Server Error."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+  /apsConfig/apsAbout:
+    get:
+      operationId: getApsAbout
+      description: Get the APSAbout object.
+      tags:
+      - APSConfig
+      responses:
+        '200':
+          description: The APSAbout object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSAbout'
+        '400':
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '401':
+          description: "Unauthorized."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '403':
+          description: "Forbidden."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          description: "Internal Server Error."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+
+  /apsMonitor/apsStatus:
+    get:
+      operationId: getApsStatus
+      description: Get the APSStatus object.
+      tags:
+      - APSMonitor
+      responses:
+        '200':
+          description: The APSStatus object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSStatus'
+        '400':
+          description: "Bad Request."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '401':
+          description: "Unauthorized."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '403':
+          description: "Forbidden."
           content:
             application/json:
               schema:
@@ -922,6 +1007,68 @@ components:
       required:
       - description
       - errorId
+    APSStatus:
+      description: Status information about the Server.
+      type: object
+      properties:
+        isReady:
+          description: Overall status if Server is operational and ready.
+          type: boolean
+      required:
+      - isReady
+    APSAbout:
+      description: Information about the Server.
+      type: object
+      properties:
+        name:
+          description: The name of the Server.
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        license:
+          type: string
+        versions:
+          description: The versions of the various components.
+          type: object
+          properties:
+            apim-server-openapi:
+              type: string
+            apim-server:
+              type: string
+          required:
+          - apim-server-openapi
+          - apim-server
+        repository:
+          description: Meta data about the repository.
+          type: object
+          properties:
+            type:
+              type: string
+            url:
+              type: string
+            revision:
+              type: object
+              properties:
+                sha1:
+                  type: string
+              required:
+              - sha1
+          required:
+          - type
+          - url
+          - revision
+        issues_url:
+          type: string
+      required:
+      - name
+      - description
+      - author
+      - license
+      - versions
+      - repository
+      - issues_url
     EAPSAuthRole:
       type: string
       enum:

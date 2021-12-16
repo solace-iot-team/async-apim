@@ -14,6 +14,11 @@ import { ApimServerAPIClient } from './lib/api.helpers'
 import request from 'supertest';
 import Server from '../server/index';
 import { expect } from 'chai';
+import { 
+  ApsMonitorService, 
+  APSStatus
+} from '../src/@solace-iot-team/apim-server-openapi-node';
+
 
 
 const scriptName: string = path.basename(__filename);
@@ -41,20 +46,31 @@ before(async() => {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`;
+    const apiStartupBase = `/index.html`;
 
     beforeEach(() => {
       TestContext.newItId();
     });
 
-    it(`${scriptName}: should start & bootstrap server`, async() => {
+    it(`${scriptName}: should start, initialize & bootstrap server`, async() => {
+      const base: string = getBaseUrl(testEnv.protocol, testEnv.host, testEnv.port, testEnv.apiBase);
+      ApimServerAPIClient.initialize(base);
+  
       const res = await request(Server).get(apiStartupBase);
-      TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}\nbody-json = ${JSON.stringify(JSON.parse(res.text), null, 2)}`);
+      TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}`);
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
+    });
 
-      // TODO: need to wait until initialized & bootstrapping is finished ==> server ready
-      await testHelperSleep(2000);
-
+    it(`${scriptName}: should wait until server ready`, async() => {
+      let apsStatus: APSStatus;
+      let i = 0;
+      do {
+        i = i + 1;
+        apsStatus = await ApsMonitorService.getApsStatus();
+        TestLogger.logMessageWithId(`i=${i}, apsStatus = ${JSON.stringify(apsStatus, null, 2)}`);
+        await testHelperSleep(500);
+      } while (!apsStatus.isReady && i <= 10);
+      expect(apsStatus.isReady, TestLogger.createTestFailMessage(`server not ready after i=${i} tries`)).to.be.true;
     });
 
 

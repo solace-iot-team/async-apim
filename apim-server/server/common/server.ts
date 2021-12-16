@@ -33,7 +33,8 @@ export class ExpressServer {
   constructor(config: TExpressServerConfig) {
 
     this.config = config;
-    this.root = path.normalize(__dirname + '/../..');
+    // this.root = path.normalize(__dirname + '/../..');
+    this.root = config.rootDir;
 
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
@@ -80,7 +81,7 @@ export class ExpressServer {
     routes(app, this.config.apiBase);
     // app.use('/auth', OIDCDIscoveryRouter);
     // app.options('*', cors(corsOptions));
-
+ 
     // send portal if installed
     app.use('/', (req, res, next) => {
       const funcName = 'sendPortal';
@@ -115,6 +116,9 @@ export class ExpressServer {
     return app;
   }
 
+  public getRoot = (): string => {
+    return this.root;
+  }
   // listenWithCallback(port: number, callback: TListenCallback): Application {
 
   //   http.createServer(app).listen(port, callback);

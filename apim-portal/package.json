@@ -1,6 +1,6 @@
 {
   "name": "async-apim-portal",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Solace Async API Management Portal",
   "repository": {
     "type": "git",
