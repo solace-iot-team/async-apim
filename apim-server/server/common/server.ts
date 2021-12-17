@@ -5,18 +5,16 @@ import bodyParser from 'body-parser';
 import http from 'http';
 // import os from 'os';
 import cookieParser from 'cookie-parser';
-import { EServerStatusCodes, ServerLogger } from './ServerLogger';
+import { AuditLoggerInterface, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';
 import * as OpenApiValidator from 'express-openapi-validator';
 import { TExpressServerConfig } from './ServerConfig';
-import { ApiPathNotFoundServerError, ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
-
-
-// import { Request, Response, NextFunction } from 'express';
+import { ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
+import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
-import requestLogger from '../api/middlewares/requestLogger';
+// import requestLogger from '../api/middlewares/requestLogger';
 
 const app = express();
 
@@ -47,15 +45,16 @@ export class ExpressServer {
       })
     );
     app.use(cookieParser(this.config.serverSecret));
-    app.use(requestLogger);
-    // serve the portal/index.html
-    // goes to next one if it doesn't exist
-    app.use(express.static(`${this.root}/portal`));
+    // TODO: remove after audit tested and works
+    // app.use(requestLogger);
+    app.use(audit({
+      logger: AuditLoggerInterface,
+    }));
     // serve public/index.html
     app.use(express.static(`${this.root}/public`));
     // serve server open api spec file
     const apiSpecFile = path.join(__dirname, 'api.yml');
-    app.use(this.config.openApiSpecPath, express.static(apiSpecFile));
+    app.use(`${this.config.apiBase}/spec`, express.static(apiSpecFile));
     // validate responses 
     const validateResponseOpts: ValidateResponseOpts = {      
       onError: ( (err, body, req) => {
@@ -84,24 +83,6 @@ export class ExpressServer {
     // app.use('/auth', OIDCDIscoveryRouter);
     // app.options('*', cors(corsOptions));
  
-    // send portal if installed
-    app.use('/', (req, res, next) => {
-      const funcName = 'sendPortal';
-      const logName = `${ExpressServer.name}.${funcName}()`;
-      const requestInfo = ServerLogger.getRequestInfo(req);
-      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal', details: requestInfo }));
-      const portalIndexFile = `${this.root}/portal/index.html`;
-      res.sendFile(portalIndexFile, {}, (err) => {
-        if(err) {
-          ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sendPortal error, no portal found', details: { 
-            error: err,
-            sendFile: portalIndexFile
-          } }));
-          const apiError =  new ApiPathNotFoundServerError(logName, undefined, { path: req.originalUrl });
-          next(apiError);
-        }
-      });
-    });
     // catch all:
     app.use('*', ApsCatchAllController.all);
     app.use(errorHandler);

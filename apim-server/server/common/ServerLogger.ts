@@ -31,6 +31,31 @@ export type TServerLogEntry = {
   name: string 
 } & TServerStatus;
 
+export class AuditLoggerInterface {
+  private static body2Object = (body: any): any => {
+    if(body && typeof body === 'string') {
+      try {
+        return JSON.parse(body);
+      } catch (e) {
+        return body;
+      }
+    }
+    return body;
+  }
+  public static info = (auditObject: any, message: string) => {
+    const funcName = 'info';
+    const logName = `${AuditLoggerInterface.name}.${funcName}()`;
+    if(auditObject.request.body) auditObject.request.body = AuditLoggerInterface.body2Object(auditObject.request.body);
+    if(auditObject.response.body) auditObject.response.body = AuditLoggerInterface.body2Object(auditObject.response.body);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: message, details: auditObject }));
+  }
+  public static warn = (auditObject: any, message: string) => {
+    const funcName = 'warn';
+    const logName = `${AuditLoggerInterface.name}.${funcName}()`;
+    ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: message, details: auditObject }));
+  }
+}
+
 export class ServerLogger {
 
   private static L = pino({

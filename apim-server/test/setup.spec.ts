@@ -17,26 +17,29 @@ import Server from '../server/index';
 import { expect } from 'chai';
 import { 
   ApsMonitorService, 
-  APSStatus
+  APSStatus,
 } from '../src/@solace-iot-team/apim-server-openapi-node';
-
-
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
 TestLogger.setLogging(true);
 TestLogger.logMessage(scriptName, ">>> initializing ...");
-const testEnv: TTestEnv = {
-  protocol: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_PROTOCOL'),
-  host: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_HOST'),
-  port: getMandatoryEnvVarValueAsNumber(scriptName, 'APIM_TEST_SERVER_PORT'),
-  apiBase: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_API_BASE'),
-  enableLogging: getOptionalEnvVarValueAsBoolean(scriptName, 'APIM_TEST_SERVER_ENABLE_LOGGING', true),
-  rootUsername: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER'),
-  rootUserPassword: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER_PWD'),
+
+const setTestEnv = (): TTestEnv => {
+  const testEnv: TTestEnv = {
+    protocol: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_PROTOCOL'),
+    host: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_HOST'),
+    port: getMandatoryEnvVarValueAsNumber(scriptName, 'APIM_TEST_SERVER_PORT'),  
+    apiBase: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_API_BASE'),
+    enableLogging: getOptionalEnvVarValueAsBoolean(scriptName, 'APIM_TEST_SERVER_ENABLE_LOGGING', true),
+    rootUsername: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER'),
+    rootUserPassword: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER_PWD'),
+  }
+  return testEnv;
 }
+// init testEnv
+const testEnv = setTestEnv();
 TestLogger.logTestEnv(scriptName, testEnv);
-TestLogger.logMessage(scriptName, ">>> success.");
 TestLogger.setLogging(testEnv.enableLogging);
 TestContext.setTestEnv(testEnv);
 
@@ -44,7 +47,7 @@ before(async() => {
   // start mongo
   const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;
   expect(code, TestLogger.createTestFailMessage('standup mongo')).equal(0);
-  // init OpenAPI
+    // init OpenAPI
   const base: string = getBaseUrl(testEnv.protocol, testEnv.host, testEnv.port, testEnv.apiBase);
   ApimServerAPIClient.initialize(base);
 });

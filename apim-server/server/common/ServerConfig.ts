@@ -1,4 +1,5 @@
 import path from 'path';
+import { OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { ConfigEnvVarNotANumberServerError, ConfigMissingEnvVarServerError } from './ServerError';
 
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
@@ -7,10 +8,9 @@ import { ServerUtils } from './ServerUtils';
 export type TExpressServerConfig = {
   rootDir: string;
   port: number;
-  apiBase: string,
-  requestSizeLimit: string,
-  serverSecret: string,
-  openApiSpecPath: string
+  apiBase: string;
+  requestSizeLimit: string;
+  serverSecret: string;
   enableOpenApiResponseValidation: boolean;
 }
 export type TServerLoggerConfig = {
@@ -39,7 +39,6 @@ export type TServerConfig = {
 
 enum EEnvVars {
   APIM_SERVER_PORT = 'APIM_SERVER_PORT',
-  APIM_SERVER_API_BASE = 'APIM_SERVER_API_BASE',
   APIM_SERVER_MONGO_CONNECTION_STRING = 'APIM_SERVER_MONGO_CONNECTION_STRING',
   APIM_SERVER_MONGO_DB = 'APIM_SERVER_MONGO_DB',
   APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION = 'APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION',
@@ -47,7 +46,6 @@ enum EEnvVars {
   APIM_SERVER_LOGGER_APP_ID = 'APIM_SERVER_LOGGER_APP_ID',
   APIM_SERVER_REQUEST_SIZE_LIMIT = 'APIM_SERVER_REQUEST_SIZE_LIMIT',
   APIM_SERVER_SECRET = 'APIM_SERVER_SECRET',
-  APIM_SERVER_OPENAPI_SPEC_PATH = 'APIM_SERVER_OPENAPI_SPEC_PATH',
   APIM_SERVER_ROOT_USER = 'APIM_SERVER_ROOT_USER',
   APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD',
   APIM_SERVER_DATA_PATH = 'APIM_SERVER_DATA_PATH'
@@ -55,6 +53,11 @@ enum EEnvVars {
 
 export class ServerConfig {
   private config: TServerConfig;
+
+  private static DefaultServerLoggerConfig: TServerLoggerConfig = {
+    appId: 'apim-server',
+    level: 'trace'
+  }
 
   private getMandatoryEnvVarValueAsString = (envVarName: string): string => {
     const funcName = 'getMandatoryEnvVarValueAsString';
@@ -97,11 +100,9 @@ export class ServerConfig {
       expressServer: {
         rootDir: path.normalize(__dirname + '/../..'),
         port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
-        // TODO: get the apiBase from the spec
-        apiBase: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_API_BASE),
+        apiBase: OpenAPI.BASE,
         requestSizeLimit: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_REQUEST_SIZE_LIMIT),
         serverSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_SECRET),
-        openApiSpecPath: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_OPENAPI_SPEC_PATH),
         enableOpenApiResponseValidation: this.getOptionalEnvVarValueAsBoolean(EEnvVars.APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION, true),
       },
       mongoDB: {
@@ -140,7 +141,8 @@ export class ServerConfig {
   }
 
   public getServerLoggerConfig = (): TServerLoggerConfig => {
-    return this.config.serverLogger;
+    if(this.config && this.config.serverLogger) return this.config.serverLogger;
+    else return ServerConfig.DefaultServerLoggerConfig;
   }
 
   public getExpressServerConfig = (): TExpressServerConfig => {

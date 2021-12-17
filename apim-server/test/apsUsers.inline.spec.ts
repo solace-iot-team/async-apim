@@ -52,7 +52,6 @@ const apsUserTemplate2: APSUser = {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    // const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
     const apiBase = `${TestContext.getApiBase()}/apsUsers`;
 
     beforeEach(() => {
