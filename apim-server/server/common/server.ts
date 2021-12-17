@@ -16,6 +16,7 @@ import { ApiPathNotFoundServerError, ApiServerErrorFromOpenApiResponseValidatorE
 // import { Request, Response, NextFunction } from 'express';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
+import requestLogger from '../api/middlewares/requestLogger';
 
 const app = express();
 
@@ -46,6 +47,7 @@ export class ExpressServer {
       })
     );
     app.use(cookieParser(this.config.serverSecret));
+    app.use(requestLogger);
     // serve the portal/index.html
     // goes to next one if it doesn't exist
     app.use(express.static(`${this.root}/portal`));

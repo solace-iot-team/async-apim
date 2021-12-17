@@ -1,8 +1,14 @@
 
+export type TConnectionTestDetails = {
+  lastTested: number;
+  success: boolean;
+  error?: any;
+}
 export type TServerStatus = {
   isReady: boolean;
   isInitialized: boolean;
   isBootstrapped: boolean;
+  dbConnectionTestDetails?: TConnectionTestDetails;
 }
 
 export class ServerStatus {
@@ -32,6 +38,14 @@ export class ServerStatus {
     this.serverStatus.isBootstrapped = true;
     this.serverStatus.isReady = true;
   }
+
+  public setDBConnectionTestDetails = (testDetails: TConnectionTestDetails) => {
+    this.serverStatus.dbConnectionTestDetails = testDetails;
+    if(!testDetails.success) {
+      this.serverStatus.isReady = false;
+    }
+  }
+
 }
 
 export default new ServerStatus();

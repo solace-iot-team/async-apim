@@ -17,7 +17,8 @@ export enum EServerStatusCodes {
   BOOTSTRAPPING = 'BOOTSTRAPPING',
   BOOTSTRAPPED = 'BOOTSTRAPPED',
   BOOTSTRAP_ERROR = 'BOOTSTRAP_ERROR',
-  INFO = 'INFO'
+  INFO = 'INFO',
+  MONITOR_DB_CONNECTION = 'MONITOR_DB_CONNECTION'
 }
 
 export type TServerStatus = {
@@ -46,9 +47,10 @@ export class ServerLogger {
 
   public static getRequestInfo = (req: Request): any => {
     const requestInfo = {
-      headers: req.headers,
       method: req.method,
+      hostname: req.hostname,
       originalUrl: req.originalUrl,
+      headers: req.headers,
       params: req.params,
       query: req.query,
       body: req.body

@@ -12,6 +12,7 @@ import APSLoginService from './api/services/APSLoginService';
 import { ServerClient } from './common/ServerClient';
 import APSAboutService from './api/services/apsConfig/APSAboutService';
 import APSMonitorService from './api/services/APSMonitorService';
+import ServerMonitor from './common/ServerMonitor';
 
 const componentName = 'index';
 
@@ -33,7 +34,7 @@ const bootstrapServer = async(): Promise<void> => {
   ServerStatus.setIsReady();
 }
 
-const initializeComponents = async(): Promise<void> => {
+export const initializeComponents = async(): Promise<void> => {
   const funcName = 'initializeComponents';
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
@@ -46,23 +47,25 @@ const initializeComponents = async(): Promise<void> => {
     await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
     ServerStatus.setIsInitialized();
+    // must be the last one
+    await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
   } catch (e) {
     let serverError: ServerError;
     if (e instanceof ServerError ) serverError = e;
     else serverError = new ServerErrorFromError(e, logName);
     ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZE_ERROR, message: undefined , details: serverError }));
+    // crash the server
     throw e;
   }  
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   await bootstrapServer();
 }
 
+// startup
 ServerConfig.initialize();
 ServerLogger.initialize(ServerConfig.getServerLoggerConfig());
 ServerConfig.logConfig();
 ServerClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
 const server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
-
-// console.log(`not waiting for initialize() - that's an issue for the tests`);
 
 export default server;

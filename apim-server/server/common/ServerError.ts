@@ -102,7 +102,7 @@ export class ApiServerError extends ServerError {
 
   public toAPSError = (): APSError => {
     const funcName = 'toAPSError';
-    const logName = `${ServerError.name}.${funcName}()`;
+    const logName = `${ApiServerError.name}.${funcName}()`;
     const apsError: APSError = {
       errorId: this.apiErrorId,
       description: this.apiDescription,
@@ -173,7 +173,9 @@ export class ApiInternalServerErrorFromMongoError extends ApiInternalServerError
   private mongoErrorErrMsg: string;
 
   constructor(mongoError: MongoError, internalLogName: string) {
-    super(internalLogName, mongoError.message);
+    super(internalLogName, mongoError.message, ApiInternalServerError.apiDefaultDescription, {
+      message: 'internal db error'
+    });
     this.mongoErrorCode = mongoError.code;
     this.mongoErrorMessage = mongoError.message;
     this.mongoErrorLabels = mongoError.errorLabels;

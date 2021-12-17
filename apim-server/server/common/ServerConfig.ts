@@ -25,12 +25,16 @@ export type TRootUserConfig = {
   userId: string,
   password: string
 }
+export type TMonitorConfig = {
+  connectionTestInterval_secs: number;
+}
 export type TServerConfig = {
   dataPath?: string;
   expressServer: TExpressServerConfig;
   mongoDB: TMongoDBConfig;
   serverLogger: TServerLoggerConfig;
   rootUser: TRootUserConfig;
+  monitorConfig: TMonitorConfig;
 };
 
 enum EEnvVars {
@@ -111,6 +115,9 @@ export class ServerConfig {
       rootUser: {
         userId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER),
         password: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER_PWD)
+      },
+      monitorConfig: {
+        connectionTestInterval_secs: 60
       }
     };
   }
@@ -144,6 +151,9 @@ export class ServerConfig {
     return this.config.rootUser;
   }
 
+  public getMonitorConfig = (): TMonitorConfig => {
+    return this.config.monitorConfig;
+  }
 }
 
 export default new ServerConfig();

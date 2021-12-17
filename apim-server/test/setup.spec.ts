@@ -1,5 +1,6 @@
 import "mocha";
 import path from 'path';
+import s from 'shelljs';
 import { 
   getBaseUrl, 
   getMandatoryEnvVarValue, 
@@ -22,6 +23,7 @@ import {
 
 
 const scriptName: string = path.basename(__filename);
+const scriptDir: string = path.dirname(__filename);
 TestLogger.setLogging(true);
 TestLogger.logMessage(scriptName, ">>> initializing ...");
 const testEnv: TTestEnv = {
@@ -39,8 +41,18 @@ TestLogger.setLogging(testEnv.enableLogging);
 TestContext.setTestEnv(testEnv);
 
 before(async() => {
+  // start mongo
+  const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;
+  expect(code, TestLogger.createTestFailMessage('standup mongo')).equal(0);
+  // init OpenAPI
   const base: string = getBaseUrl(testEnv.protocol, testEnv.host, testEnv.port, testEnv.apiBase);
   ApimServerAPIClient.initialize(base);
+});
+
+after(async() => {
+  // stop mongo
+  const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
+  expect(code, TestLogger.createTestFailMessage('teardown mongo')).equal(0);
 });
 
 describe(`${scriptName}`, () => {
@@ -53,9 +65,6 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should start, initialize & bootstrap server`, async() => {
-      const base: string = getBaseUrl(testEnv.protocol, testEnv.host, testEnv.port, testEnv.apiBase);
-      ApimServerAPIClient.initialize(base);
-  
       const res = await request(Server).get(apiStartupBase);
       TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}`);
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
@@ -69,7 +78,7 @@ describe(`${scriptName}`, () => {
         apsStatus = await ApsMonitorService.getApsStatus();
         TestLogger.logMessageWithId(`i=${i}, apsStatus = ${JSON.stringify(apsStatus, null, 2)}`);
         await testHelperSleep(500);
-      } while (!apsStatus.isReady && i <= 10);
+      } while (!apsStatus.isReady && i <= 5);
       expect(apsStatus.isReady, TestLogger.createTestFailMessage(`server not ready after i=${i} tries`)).to.be.true;
     });
 
