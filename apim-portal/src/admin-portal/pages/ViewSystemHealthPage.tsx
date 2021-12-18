@@ -19,10 +19,10 @@ export const ViewSystemHealthPage: React.FC = () => {
         {JSON.stringify(healthCheckContext, null, 2)}
       </pre>
       <hr />
-      <h5>configContext:</h5>
+      {/* <h5>configContext:</h5>
       <pre style={ { fontSize: '10px' }} >
         {JSON.stringify(configContext, null, 2)}
-      </pre>
+      </pre> */}
     </React.Fragment>
   );
 }

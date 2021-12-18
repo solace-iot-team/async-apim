@@ -11,11 +11,13 @@ import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { APFetch, APFetchResult, EAPFetchResultBodyType } from "../../utils/APFetch";
 import { APFetchError, APTimeoutError } from "../../utils/APError";
 import { APLogger } from "../../utils/APLogger";
-import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
+// import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { EAppState, Globals, TAPPortalAbout } from "../../utils/Globals";
 import { UserContext } from '../UserContextProvider/UserContextProvider';
+import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 
 import "../APComponents.css";
+import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 
 export interface IAPDisplayAboutProps {
   className?: string;
@@ -29,6 +31,18 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
   const AdminPortalAboutUrl = process.env.PUBLIC_URL + '/admin-portal/about.json';
   const DeveloperPortalAboutUrl = process.env.PUBLIC_URL + '/developer-portal/about.json';
 
+  type TPortalAboutResult = {
+    apPortalAbout?: TAPPortalAbout;
+    callState: TApiCallState;
+  }
+  type TAPSAboutResult = {
+    apsAbout?: APSAbout;
+    callState: TApiCallState;
+  }
+  type TConnectorAboutResult = {
+    connectorAbout?: About;
+    callState: TApiCallState;
+  }
   enum E_CALL_STATE_ACTIONS {
     API_GET_ADMIN_PORTAL_ABOUT = "API_GET_ADMIN_PORTAL_ABOUT",
     API_GET_DEVELOPER_PORTAL_ABOUT = "API_GET_DEVELOPER_PORTAL_ABOUT",
@@ -36,39 +50,40 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     API_GET_APIM_CONNECTOR_ABOUT = "API_GET_APIM_CONNECTOR_ABOUT"
   }
   
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [adminPortalAbout, setAdminPortalAbout] = React.useState<TAPPortalAbout>();
-  const [developerPortalAbout, setDeveloperPortalAbout] = React.useState<TAPPortalAbout>();
-  const [apimServerAbout, setApimServerAbout] = React.useState<APSAbout>();
-  const [apimConnectorAbout, setApimConnectorAbout] = React.useState<About>();
+  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [adminPortalAboutResult, setAdminPortalAboutResult] = React.useState<TPortalAboutResult>();
+  const [developerPortalAboutResult, setDeveloperPortalAboutResult] = React.useState<TPortalAboutResult>();
+  const [apimServerAboutResult, setApimServerAboutResult] = React.useState<TAPSAboutResult>();
+  const [apimConnectorAboutResult, setApimConnectorAboutResult] = React.useState<TConnectorAboutResult>();
 
-  const apiGetPortalAbout = async(action: E_CALL_STATE_ACTIONS): Promise<TApiCallState> => {
+  const apiGetPortalAbout = async(action: E_CALL_STATE_ACTIONS): Promise<TPortalAboutResult> => {
     const funcName = 'apiGetPortalAbout';
     const logName = `${componentName}.${funcName}()`;
     const timeout_ms: number = 2000;
     let aboutUrl: string = '';
     let callStateUserMessage: string = '';
-    let setPortalAboutFunc: React.Dispatch<any> = setAdminPortalAbout;
     switch(action) {
       case E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT:
         callStateUserMessage = 'get admin portal about info';
         aboutUrl = AdminPortalAboutUrl;
-        setPortalAboutFunc = setAdminPortalAbout;
         break;
       case E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT:
         callStateUserMessage = 'get developer portal about info';
         aboutUrl = DeveloperPortalAboutUrl;
-        setPortalAboutFunc = setDeveloperPortalAbout;
         break;
       case E_CALL_STATE_ACTIONS.API_GET_APIM_SERVER_ABOUT:
       case E_CALL_STATE_ACTIONS.API_GET_APIM_CONNECTOR_ABOUT:
-        break;
+        throw new Error(`${logName}: cannot get action=${action}`);
       default: 
         Globals.assertNever(logName, action);
     }
     let callState: TApiCallState = ApiCallState.getInitialCallState(action, callStateUserMessage);
+    let apPortalAbout: TAPPortalAbout | undefined = undefined;
     let response: Response;
     try {
       try {
@@ -80,44 +95,55 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
       }
       const result: APFetchResult = await APFetch.getFetchResult(response);
       if(!result.ok || result.bodyType !== EAPFetchResultBodyType.JSON) throw new APFetchError(logName, callStateUserMessage, result);
-      setPortalAboutFunc(result.body);
+      apPortalAbout = result.body;
     } catch (e: any) {
       APLogger.error(APLogger.createLogEntry(logName, e));
       callState = ApiCallState.addErrorToApiCallState(e, callState);
-      console.log(`${logName}: callState = ${JSON.stringify(callState, null, 2)}`);
     }
-    setApiCallStatus(callState);
-    return callState;
+    return {
+      callState: callState,
+      apPortalAbout: apPortalAbout
+    }
   }
 
-  const apiGetApimServerAbout = async(): Promise<TApiCallState> => {
+  const apiGetApimServerAbout = async(): Promise<TAPSAboutResult> => {
     const funcName = 'apiGetApimServerAbout';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APIM_SERVER_ABOUT, `get apim server about info`);
+    let apsAbout: APSAbout | undefined = undefined;
     try { 
-      const apsAbout: APSAbout = await ApsConfigService.getApsAbout();
-      setApimServerAbout(apsAbout);
+      apsAbout = await ApsConfigService.getApsAbout();
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
-    setApiCallStatus(callState);
-    return callState;
+    return {
+      callState: callState,
+      apsAbout: apsAbout
+    }
   }
 
-  const apiGetApimConnectorAbout = async(): Promise<TApiCallState> => {
+  const apiGetApimConnectorAbout = async(): Promise<TConnectorAboutResult> => {
     const funcName = 'apiGetApimConnectorAbout';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APIM_CONNECTOR_ABOUT, `get apim connector about info`);
+    let connectorAbout: About | undefined = undefined;
+    if(healthCheckContext.connectorHealthCheckResult && healthCheckContext.connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
+      callState.success = false;
+      return {
+        callState: callState
+      }
+    }
     try { 
-      const connectorAbout: About = await AdministrationService.about();
-      setApimConnectorAbout(connectorAbout);
+      connectorAbout = await AdministrationService.about();
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
-    setApiCallStatus(callState);
-    return callState;
+    return {
+      callState: callState,
+      connectorAbout: connectorAbout
+    }
   }
 
   // * useEffect Hooks *
@@ -127,20 +153,20 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     setIsLoading(true);
     switch(userContext.currentAppState) {
       case EAppState.ADMIN_PORTAL:
-        await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT);
+        setAdminPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT));
         break;
       case EAppState.DEVELOPER_PORTAL:
-        await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT);
+        setDeveloperPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT));
         break;
       case EAppState.UNDEFINED:
-        await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT);
-        await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT);
+        setAdminPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT));
+        setDeveloperPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT));
         break;
       default:
         Globals.assertNever(logName, userContext.currentAppState);
     }
-    await apiGetApimServerAbout();
-    await apiGetApimConnectorAbout();
+    setApimServerAboutResult(await apiGetApimServerAbout());
+    setApimConnectorAboutResult(await apiGetApimConnectorAbout());
     setIsLoading(false);
   }
 
@@ -152,38 +178,43 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     props.onClose();
   }
 
+  const renderAboutContent = (about: any) => {
+    if(about) return (<pre style={ { fontSize: '8px' }} > {JSON.stringify(about, null, 2)};</pre>);
+    else return (<pre style={ { fontSize: '8px' }}>Not Available.</pre>);
+  }
+
   const renderAdminPortalAbout = () => {
-    if(adminPortalAbout) return (
+    if(adminPortalAboutResult) return (
       <React.Fragment>
         <div><b>Admin Portal:</b></div>
-        <pre style={ { fontSize: '8px' }} > {JSON.stringify(adminPortalAbout, null, 2)};</pre>
+        {renderAboutContent(adminPortalAboutResult.apPortalAbout)}
       </React.Fragment>
     );
   }
 
   const renderDeveloperPortalAbout = () => {
-    if(developerPortalAbout) return (
+    if(developerPortalAboutResult) return (
       <React.Fragment>
         <div><b>Developer Portal:</b></div>
-        <pre style={ { fontSize: '8px' }} > {JSON.stringify(developerPortalAbout, null, 2)};</pre>
+        {renderAboutContent(developerPortalAboutResult.apPortalAbout)}
       </React.Fragment>
     );
   }
 
   const renderApimServerAbout = () => {
-    if(apimServerAbout) return (
+    if(apimServerAboutResult) return (
       <React.Fragment>
         <div><b>APIM Server:</b></div>
-        <pre style={ { fontSize: '8px' }} > {JSON.stringify(apimServerAbout, null, 2)};</pre>
+        {renderAboutContent(apimServerAboutResult.apsAbout)}
       </React.Fragment>
     );
   }
 
   const renderApimConnectorAbout = () => {
-    if(apimConnectorAbout) return (
+    if(apimConnectorAboutResult) return (
       <React.Fragment>
         <div><b>APIM Connector:</b></div>
-        <pre style={ { fontSize: '8px' }} > {JSON.stringify(apimConnectorAbout, null, 2)};</pre>
+        {renderAboutContent(apimConnectorAboutResult.connectorAbout)}
       </React.Fragment>
     );
   }
@@ -206,7 +237,7 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
           {renderApimServerAbout()}
           {renderApimConnectorAbout()}
         </div>
-        <ApiCallStatusError apiCallStatus={apiCallStatus} />
+        {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
       </Dialog>
     );
   }

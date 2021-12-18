@@ -219,7 +219,9 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
         <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+        {!connectorIsActive &&        
+          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+        }
         <Button label={ToolbarTestConnectorButtonLabel} icon="pi pi-fast-forward" onClick={onTestConnectorFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
         {!connectorIsActive &&        
           <Button label={ToolbarSetConnectorActiveButtonLabel} icon="pi pi-check" onClick={onSetConnectorActiveFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        

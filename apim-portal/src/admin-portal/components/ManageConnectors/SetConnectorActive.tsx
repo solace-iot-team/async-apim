@@ -14,11 +14,12 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
-import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
+import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
+import { SystemHealthCommon } from "../../../components/SystemHealth/SystemHealthCommon";
 
 export interface ISetConnectorActiveProps {
   connectorId: APSId;
@@ -128,20 +129,21 @@ export const SetConnectorActive: React.FC<ISetConnectorActiveProps> = (props: IS
   // }
 
   const renderManagedObjectDialogContent = (): JSX.Element => {
-    const renderWarning: JSX.Element = (
-      <>
-        <Divider />
-        <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} />Connector did not pass the health check!</p>
-        <Divider />
-      </>
-    );
 
+    const renderWarning = (success: EAPHealthCheckSuccess) => {
+      if(success !== EAPHealthCheckSuccess.PASS)
+        return(
+          <>
+            <Divider />
+            <p style={{ color: SystemHealthCommon.getColor(success)}}><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem' }} />Connector health check: {success}.</p>
+            <Divider />
+          </>
+        );
+    }
 
     return (
       <React.Fragment>
-        { managedObject && !managedObject.healthCheckResult.summary.success &&
-          renderWarning
-        }
+        { managedObject && renderWarning(managedObject.healthCheckResult.summary.success) }
         <p>Are you sure you want to set connector to active?</p>
         <p> <b>{props.connectorDisplayName}</b></p>
         <p><b>Note:</b>You will have to login again.</p>

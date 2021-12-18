@@ -14,6 +14,7 @@ import { Globals } from './Globals';
 import yaml from "js-yaml";
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
+import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckLogEntry_ApiBase } from './APHealthCheck';
 
 export type TAPAttribute = {
   name: string,
@@ -168,6 +169,13 @@ export class APConnectorApiCalls {
   public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorInfo | undefined> => {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
+
+    // check first if connector is accessible
+    const apiCheckBaseLogEntry: TAPConnectorHealthCheckLogEntry_ApiBase = await APConnectorHealthCheck.apiCheckBaseAccess();
+    if(apiCheckBaseLogEntry.success === EAPHealthCheckSuccess.FAIL) {
+      return undefined;
+    }
+
     await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;
     try {

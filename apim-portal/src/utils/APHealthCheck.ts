@@ -25,9 +25,17 @@ export enum EAPConnectorHealthCheckLogEntryType {
   GET_CONNECTOR_HEALTH_CHECK_PLATFORM_ADMIN_CREDS = 'GET_CONNECTOR_HEALTH_CHECK_PLATFORM_ADMIN_CREDS', 
   GET_CONNECTOR_HEALTH_CHECK_ORG_ADMIN_CREDS = 'GET_CONNECTOR_HEALTH_CHECK_ORG_ADMIN_CREDS'
 }
+
+export enum EAPHealthCheckSuccess {
+  PASS = "pass",
+  FAIL = "fail",
+  PASS_WITH_ISSUES = "pass (with issues)",
+  UNDEFINED = "N/A"
+}
+
 export type TAPConnectorHealthCheckLogEntry_Base = {
   entryType: EAPConnectorHealthCheckLogEntryType;
-  success: boolean;
+  success: EAPHealthCheckSuccess;
   callState: TApiCallState;
 }
 export type TAPConnectorHealthCheckLogEntry_ApiBase = TAPConnectorHealthCheckLogEntry_Base & {
@@ -59,7 +67,7 @@ export type TAPConnectorHealthCheckLogEntryList = Array<TAPConnectorHealthCheckL
 
 export type TAPHealthCheckSummary = {
   performed: boolean;
-  success: boolean;
+  success: EAPHealthCheckSuccess;
   timestamp: number;
   timestampStr: string;
 }
@@ -78,7 +86,7 @@ export class APConnectorHealthCheck {
       summary: {
         ...initialized.summary,
         performed: false,
-        success: false
+        success: EAPHealthCheckSuccess.UNDEFINED
       }
     };
   }
@@ -90,7 +98,7 @@ export class APConnectorHealthCheck {
       healthCheckLog: [],
       summary: { 
         performed: true, 
-        success: true,
+        success: EAPHealthCheckSuccess.PASS,
         timestamp: ts,
         timestampStr: tsDate.toUTCString() 
       }
@@ -127,13 +135,12 @@ export class APConnectorHealthCheck {
     }
     const logEntry: TAPConnectorHealthCheckLogEntry_ApiBase = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_API_BASE,
-      success: callState.success,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState,
       openApiInfo: APClientConnectorOpenApi.getOpenApiInfo(),
       apiBaseResult: apiBaseResult
     }
     return logEntry;
-
   }
 
   private static apiGetAbout = async(): Promise<TAPConnectorHealthCheckLogEntry_About> => {
@@ -149,7 +156,7 @@ export class APConnectorHealthCheck {
     }
     const logEntry: TAPConnectorHealthCheckLogEntry_About = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_ABOUT,
-      success: callState.success,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState,
       about: apiAbout
     }
@@ -171,7 +178,7 @@ export class APConnectorHealthCheck {
     }
     const logEntry: TAPConnectorHealthCheckLogEntry_HealthCheckEndpoint = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_ENDPOINT,
-      success: callState.success,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState,
       status: connectorStatus
     }
@@ -195,9 +202,14 @@ export class APConnectorHealthCheck {
       };
       issueList = Globals.crossCheckConfiguration(tmpConfigContext);
     }
+    let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
+    if(callState.success) {
+      if(issueList && issueList.length > 0) _success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      else _success = EAPHealthCheckSuccess.PASS;
+    } else _success = EAPHealthCheckSuccess.FAIL;
     const logEntry: TAPConnectorHealthCheckLogEntry_CheckConfiguration = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_CONFIGURATION,
-      success: callState.success,
+      success: _success,
       callState: callState,
       issueList: issueList
     }
@@ -222,7 +234,7 @@ export class APConnectorHealthCheck {
     }
     const logEntry: TAPConnectorHealthCheckLogEntry_CheckPlatformAdminCreds = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_PLATFORM_ADMIN_CREDS,
-      success: callState.success,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState
     }
     return logEntry;
@@ -279,7 +291,7 @@ export class APConnectorHealthCheck {
     };
     const logEntry: TAPConnectorHealthCheckLogEntry_CheckOrgAdminCreds = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_ORG_ADMIN_CREDS,
-      success: callState.success,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState
     }
     return logEntry;
@@ -288,53 +300,51 @@ export class APConnectorHealthCheck {
   public static doHealthCheck = async (configContext: TAPConfigContext, connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorHealthCheckResult> => {
     const funcName = 'doHealthCheck';
     const logName= `${APConnectorHealthCheck.componentName}.${funcName}()`;
-    const ts = Date.now();
-    const tsDate = new Date(ts);
     let healthCheckResult: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult();
     await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     await APClientConnectorRaw.initialize(connectorClientConfig);
-    let success: boolean = false;
     try {
       // call api: GET /v1
       const apiCheckBaseLogEntry: TAPConnectorHealthCheckLogEntry_ApiBase = await APConnectorHealthCheck.apiCheckBaseAccess();
-      success = apiCheckBaseLogEntry.success;
       healthCheckResult.healthCheckLog.push(apiCheckBaseLogEntry);
-      if(!success) {
-        healthCheckResult.summary.success = false;
+      if(apiCheckBaseLogEntry.success !== EAPHealthCheckSuccess.PASS) {
+        healthCheckResult.summary.success = apiCheckBaseLogEntry.success;
         // abort check
-        throw new Error('access url check failed');
+        throw new APError(logName, 'access url check failed');
       }
       // call api: GET /about
       const apiGetAboutLogEntry: TAPConnectorHealthCheckLogEntry_About = await APConnectorHealthCheck.apiGetAbout();
-      success = apiGetAboutLogEntry.success;
       healthCheckResult.healthCheckLog.push(apiGetAboutLogEntry);
-      if(!success) {
-        healthCheckResult.summary.success = false;
+      if(apiGetAboutLogEntry.success !== EAPHealthCheckSuccess.PASS) {
+        healthCheckResult.summary.success = apiGetAboutLogEntry.success;
         // abort check
-        throw new Error('about check failed');
+        throw new APError(logName, 'about check failed');
       }
 
       // healthcheck endpoint
       const apiGetHealthCheckLogEntry = await APConnectorHealthCheck.apiGetHealthCheckEndpoint();
-      success = apiGetHealthCheckLogEntry.success;
       healthCheckResult.healthCheckLog.push(apiGetHealthCheckLogEntry);
-      if(!success) healthCheckResult.summary.success = false;
 
       // configuration check
-      if(!apiGetAboutLogEntry.about) throw new Error(`${logName}: apiGetAboutLogEntry.about is undefined`);
+      if(!apiGetAboutLogEntry.about) throw new APError(logName, 'apiGetAboutLogEntry.about is undefined');
       const checkConfigurationLogEntry: TAPConnectorHealthCheckLogEntry_CheckConfiguration = APConnectorHealthCheck.checkConfiguration(configContext, APConnectorApiHelper.transformApiAboutToAPConnectorAbout(apiGetAboutLogEntry.about).apConnectorAbout);
       healthCheckResult.healthCheckLog.push(checkConfigurationLogEntry);
-      if(!success) healthCheckResult.summary.success = false;
 
       // check platform admin credentials
       const checkPlatformAdminLogEntry: TAPConnectorHealthCheckLogEntry_CheckPlatformAdminCreds = await APConnectorHealthCheck.checkPlatformAdminCredentials();
       healthCheckResult.healthCheckLog.push(checkPlatformAdminLogEntry);
-      if(!success) healthCheckResult.summary.success = false;
 
       // check org admin credentials
       const checkOrgAdminLogEntry: TAPConnectorHealthCheckLogEntry_CheckOrgAdminCreds = await APConnectorHealthCheck.checkOrgAdminCredentials();
       healthCheckResult.healthCheckLog.push(checkOrgAdminLogEntry);
-      if(!success) healthCheckResult.summary.success = false; 
+
+      // set overall summary
+      let _summarySuccess: EAPHealthCheckSuccess = EAPHealthCheckSuccess.PASS;
+      healthCheckResult.healthCheckLog.forEach( (logEntry: TAPConnectorHealthCheckLogEntry) => {
+        if(logEntry.success === EAPHealthCheckSuccess.FAIL) _summarySuccess = EAPHealthCheckSuccess.FAIL;
+        else if(_summarySuccess !== EAPHealthCheckSuccess.FAIL && logEntry.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES ) _summarySuccess = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      });
+      healthCheckResult.summary.success = _summarySuccess;
 
     } catch (e) {
       APLogger.error(APLogger.createLogEntry(logName, e));

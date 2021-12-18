@@ -9,7 +9,7 @@ import { Divider } from "primereact/divider";
 
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
-import { APConnectorHealthCheck, TAPConnectorHealthCheckResult, TAPHealthCheckSummary } from "../../utils/APHealthCheck";
+import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckResult, TAPHealthCheckSummary } from "../../utils/APHealthCheck";
 import { 
   EUIAdminPortalResourcePaths, 
   Globals, 
@@ -17,6 +17,7 @@ import {
 } from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { APLogger } from "../../utils/APLogger";
+import { SystemHealthCommon } from "./SystemHealthCommon";
 
 import "../APComponents.css";
 import "./SystemHealth.css";
@@ -28,6 +29,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
   const componentName = 'SystemHealthDisplay';
 
   const healthCheckInterval_ms: number = 300000;
+  // const healthCheckInterval_ms: number = 5000;
 
   const connectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
 
@@ -84,7 +86,8 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
 
   const renderConnectorHealthInfo = () => {
     let connectorName: string = 'unknown';
-    let success: boolean | undefined = undefined;
+    let success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
+
     if(configContext.connector) {
       connectorName = configContext.connector.displayName;
     }
@@ -93,12 +96,12 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     }
     return (
       <React.Fragment>
-        {success !== undefined && 
-          <div style={{color: success ? 'green' : 'red' }}>
-            connector: {connectorName}: {success ? 'pass' : 'fail'} ({connectorHealthCheckResult.summary.timestampStr})
+        {success !== EAPHealthCheckSuccess.UNDEFINED && 
+          <div style={{color: SystemHealthCommon.getColor(success) }}>
+            connector: {connectorName}: {success} ({connectorHealthCheckResult.summary.timestampStr})
           </div>
         }
-        {success === undefined && 
+        {success === EAPHealthCheckSuccess.UNDEFINED && 
           <div>
             no active connector
           </div>
@@ -121,13 +124,6 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     } else return 'pi pi-question';
   }
 
-  const getSystemHealthButtonClassName = () => {
-    if(systemHealthCheckSummary.performed) {
-      if(systemHealthCheckSummary.success) return "p-button-rounded p-button-success";
-      else return "p-button-rounded p-button-danger";
-    } else return 'p-button-rounded p-button-secondary p-button-outlined';
-  }
-
   const navigateTo = (path: string): void => {
     history.push(path);
   }
@@ -136,7 +132,7 @@ export const SystemHealthDisplay: React.FC<ISystemHealthProps> = (props: ISystem
     <React.Fragment>
       <Button 
         icon={getSystemHealthIcon()}
-        className={getSystemHealthButtonClassName()}
+        className={SystemHealthCommon.getButtonClassName(systemHealthCheckSummary)}
         onClick={(e) => op.current.toggle(e) } />
       <OverlayPanel className="ap-navbar system-health-overlay-panel" ref={op} id="system_health_overlay_panel" style={{width: '700px'}} >
         {renderSystemHealthInfo()}
