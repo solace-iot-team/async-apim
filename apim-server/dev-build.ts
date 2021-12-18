@@ -35,6 +35,7 @@ const buildAbout = (): APSAbout => {
   console.log(`${logName}: generating about.json ...`);
   let apiSpec = loadYamlFileAsJson(inputApiSpecFile);
   let sha1 = s.exec('git rev-parse HEAD').stdout.slice(0, -1);
+  const tsDate = new Date();
 
   const about: APSAbout = {
     name: packageJson.name,
@@ -52,7 +53,8 @@ const buildAbout = (): APSAbout => {
           sha1: sha1
       }
     },
-    issues_url: packageJson.bugs.url
+    issues_url: packageJson.bugs.url,
+    build_date: tsDate.toUTCString()
   }
   console.log(`${logName}: about = \n${JSON.stringify(about, null, 2)}`);
   console.log(`${logName}: success.`);

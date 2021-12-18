@@ -1,6 +1,7 @@
 import s from 'shelljs';
 import fs from 'fs';
 import path from 'path';
+import { TAPPortalAbout } from './src/utils/Globals';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
@@ -16,24 +17,6 @@ const DeveloperPortalName = 'async-apim-developer-portal';
 const DeveloperPortalDescription = 'Solace Async API Management Developer Portal';
 const ApimServerOpenApiBrowserPackageName = '@solace-iot-team/apim-server-openapi-browser';
 const ApimConnectorOpenApiBrowserPackageName = '@solace-iot-team/apim-connector-openapi-browser';
-
-type TAbout = {
-  name: string;
-  description: string;
-  repository: {
-      type: string;
-      url: string;
-      revision: {
-          sha1: string
-      }
-  },
-  issues_url: string;
-  author: string;
-  license: string;
-  version: string;
-  'apim-server-openapi-version': string;
-  "apim-connector-open-api-version": string;
-}
 
 const prepare = () => {
   const funcName = 'prepare';
@@ -73,13 +56,15 @@ const buildAbouts = () => {
   const funcName = 'buildAbouts';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
 
-  const buildAbout = (name: string, description: string, packageJson: any, sha1: string): TAbout => {
-    const about: TAbout = {
+  const buildAbout = (name: string, description: string, packageJson: any, sha1: string): TAPPortalAbout => {
+    const tsDate = new Date();
+    const about: TAPPortalAbout = {
       name: name,
       description: description,
       author: packageJson.author,
       license: packageJson.license,
       version: packageJson.version,
+      build_date: tsDate.toUTCString(),
       "apim-connector-open-api-version": getApimConnectorOpenApiVersion(),
       "apim-server-openapi-version": getApimServerOpenApiVersion(),
       repository: {
@@ -93,7 +78,7 @@ const buildAbouts = () => {
     }
     return  about;
   }
-  const copyAbout = (about: TAbout, outputFile: string) => {
+  const copyAbout = (about: TAPPortalAbout, outputFile: string) => {
     const funcName = 'copyAbout';
     const logName = `${scriptDir}/${scriptName}.${funcName}()`;
     console.log(`${logName}: starting ...`);
@@ -111,10 +96,10 @@ const buildAbouts = () => {
   const packageJsonFile = `${apimPortalDir}/package.json`;
   const packageJson = require(`${packageJsonFile}`);
   const sha1 = s.exec('git rev-parse HEAD').stdout.slice(0, -1);
-  const adminPortalAbout: TAbout = buildAbout(AdminPortalName, AdminPortalDescription, packageJson, sha1);
+  const adminPortalAbout: TAPPortalAbout = buildAbout(AdminPortalName, AdminPortalDescription, packageJson, sha1);
   console.log(`${logName}: adminPortalAbout = ${JSON.stringify(adminPortalAbout, null, 2)}`);
   copyAbout(adminPortalAbout, outputAdminPortalAboutFile);
-  const developerPortalAbout: TAbout = buildAbout(DeveloperPortalName, DeveloperPortalDescription, packageJson, sha1);
+  const developerPortalAbout: TAPPortalAbout = buildAbout(DeveloperPortalName, DeveloperPortalDescription, packageJson, sha1);
   console.log(`${logName}: developerPortalAbout = ${JSON.stringify(developerPortalAbout, null, 2)}`);
   copyAbout(developerPortalAbout, outputDeveloperPortalAboutFile);
   console.log(`${logName}: success.`);

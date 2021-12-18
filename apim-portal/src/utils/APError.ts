@@ -1,3 +1,4 @@
+import { APFetchResult } from "./APFetch";
 import { APLogger } from "./APLogger";
 
 export class APError extends Error {
@@ -18,6 +19,7 @@ export class APError extends Error {
   }
 
   public toString = (): string => {
+    return 'hello world';
     return JSON.stringify(this.toObject(), null, 2);
   }
 
@@ -59,6 +61,14 @@ export class APTimeoutError extends APError {
     super(internalLogName, internalMessage);
     this.context = context;
   }  
+}
+
+export class APFetchError extends APError {
+  private fetchResult: APFetchResult;
+  constructor(internalLogName: string, internalMessage: string, fetchResult: APFetchResult) {
+    super(internalLogName, internalMessage);
+    this.fetchResult = fetchResult;
+  }
 }
 
 export declare type APSApiResult = {

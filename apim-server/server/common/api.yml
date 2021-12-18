@@ -1065,6 +1065,8 @@ components:
           - revision
         issues_url:
           type: string
+        build_date:
+          type: string
       required:
       - name
       - description
@@ -1073,6 +1075,7 @@ components:
       - versions
       - repository
       - issues_url
+      - build_date
     EAPSAuthRole:
       type: string
       enum:

@@ -1,8 +1,8 @@
 import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
 import { Mutex, MutexInterface } from 'async-mutex';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
-import { APError, APTimeoutError } from './APError';
-import { fetchWithTimeoutAndRandomBasicAuth } from './APFetch';
+import { APTimeoutError } from './APError';
+import { APFetch, APFetchResult } from './APFetch';
 
 export type APClientConnectorRawResult = {
   readonly url: string;
@@ -26,17 +26,6 @@ export class APClientConnectorRaw {
   private static basePath: string;
   private static mutex = new Mutex();
   private static mutexReleaser: MutexInterface.Releaser;
-
-  private static getResponseJson = async(response: any): Promise<any> => {
-    let responseText = await response.text();
-    let responseJson: any;
-    try {
-      responseJson = JSON.parse(responseText);
-    } catch(e) {
-      responseJson = {responseText: responseText}
-    }
-    return responseJson;
-  }
 
   private static handleError = (logName: string, response: any, body: any) => {
     let result: APClientConnectorRawResult = {
@@ -86,13 +75,14 @@ export class APClientConnectorRaw {
     let responseBody: any;
     try {
       try {
-        response = await fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, timeout_ms);
+        response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, timeout_ms);
       } catch (e: any) {
         if(e.name === 'AbortError') {
           throw new APTimeoutError(logName, "fetch timeout", { url: APClientConnectorRaw.basePath, timeout_ms: timeout_ms});
         } else throw e;
       }
-      responseBody = await APClientConnectorRaw.getResponseJson(response);
+      const result: APFetchResult = await APFetch.getFetchResult(response);
+      responseBody = result.body;
       if(!response.ok) APClientConnectorRaw.handleError(logName, response, responseBody);
       return responseBody;
     } catch (e) {

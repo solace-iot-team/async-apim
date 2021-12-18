@@ -71,11 +71,11 @@ const develTestLoginData2: APSUserLoginCredentials = {
   userPwd: 'org-0.org-4@aps.com'
 }
 
-develLoginData = develRootLoginData;
+// develLoginData = develRootLoginData;
 // initialLoginData = develCluserAdminLoginData;
 // initialLoginData = develOrganizationAdminLoginData;
 // initialLoginData = develNoOrgLoginData;
-// develLoginData = develMasterUserLoginData;
+develLoginData = develMasterUserLoginData;
 // initialLoginData = develTestLoginData2;
 /* eslint-enable @typescript-eslint/no-unused-vars */
 // TODO: for testing only

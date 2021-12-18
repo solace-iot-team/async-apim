@@ -4,6 +4,25 @@ import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigCont
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
 
+export type TAPPortalAbout = {
+  name: string;
+  description: string;
+  repository: {
+      type: string;
+      url: string;
+      revision: {
+          sha1: string
+      }
+  },
+  issues_url: string;
+  author: string;
+  license: string;
+  version: string;
+  build_date: string;
+  'apim-server-openapi-version': string;
+  "apim-connector-open-api-version": string;
+}
+
 export type TAPPortalInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo
   portalServerClientOpenApiInfo: APSClientOpenApiInfo

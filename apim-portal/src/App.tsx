@@ -4,6 +4,7 @@ import { useHistory, Route, Switch } from 'react-router-dom';
 import { Config } from "./Config";
 import { UserContext } from './components/UserContextProvider/UserContextProvider';
 import { ConfigContext } from "./components/ConfigContextProvider/ConfigContextProvider";
+import { AuthContext } from "./components/AuthContextProvider/AuthContextProvider";
 
 // * Admin Portal *
 import { AdminPortalHomePage } from "./admin-portal/pages/AdminPortalHomePage";
@@ -51,6 +52,7 @@ const App: React.FC = () => {
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [isDebug, setIsDebug] = React.useState<boolean>(IS_DEBUG);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
@@ -60,8 +62,6 @@ const App: React.FC = () => {
   const [showDeveloperTools, setShowDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
   const appPortalHistory = useHistory<TLocationStateAppState>();
 
-  // const navigateTo = (path: string): void => { appPortalHistory.push(path); }
-
   const navigateToWithoutStateChange = (path: string): void => { 
     appPortalHistory.push({
       pathname: path,
@@ -70,23 +70,6 @@ const App: React.FC = () => {
       }
     }); 
   }
-
-  // const doCheckConfig = () => {
-  //   const issueList: TAPConfigIssueList = Globals.checkConfiguration(configContext);
-  //   dispatchConfigContextAction( { type: 'SET_CONFIG_ISSUE_LIST', configIssueList: issueList });
-  //   if (issueList.length > 0) {
-  //     // if logged in: if has access to system health ==> show that
-  //     // otherwise: logout and show error fatal
-  //     navigateTo(EUICommonResourcePaths.ErrorFatalConfiguration);
-  //   }
-  // }
-
-  // React.useEffect( () => {
-
-  //   // in Apps.tsx: listen to that state, don't listen to anything else
-
-  //   doCheckConfig();
-  // }, [configContext.connector, configContext.portalInfo]);
 
   React.useEffect(() => {
     calculateShowStates(userContext.currentAppState);
@@ -98,7 +81,8 @@ const App: React.FC = () => {
     if(userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
     // leave origin, set current
     dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.DEVELOPER_PORTAL});
-    navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.Home);
+    if(authContext.isLoggedIn) navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.UserHome);
+    else navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.Home);
   }
 
   const onSwitchToAdminPortal = () => {
@@ -107,7 +91,8 @@ const App: React.FC = () => {
     if(userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
     // leave origin, set current
     dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.ADMIN_PORTAL});
-    navigateToWithoutStateChange(EUIAdminPortalResourcePaths.Home);
+    if(authContext.isLoggedIn) navigateToWithoutStateChange(EUIAdminPortalResourcePaths.UserHome);
+    else navigateToWithoutStateChange(EUIAdminPortalResourcePaths.Home);
   }
 
   const calculateShowStates = (appState: EAppState) => {

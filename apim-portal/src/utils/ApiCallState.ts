@@ -9,7 +9,8 @@ import { APError, APSApiError } from "./APError";
 export type TApiCallState = {
   success: boolean;
   isAPSApiError?: boolean;
-  isConnectorApiError?: boolean,
+  isConnectorApiError?: boolean;
+  isAPError?: boolean;
   error?: any;
   context: {
     action: string;
@@ -33,6 +34,7 @@ export class ApiCallState {
     apiCallState.success = false;
     apiCallState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(err);
     apiCallState.isConnectorApiError = APClientConnectorOpenApi.isInstanceOfApiError(err);
+    apiCallState.isAPError = (err instanceof APError);
     if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) apiCallState.error = err;
     else if(err instanceof APError) apiCallState.error = err.toObject();
     else apiCallState.error = err.toString();
@@ -40,8 +42,8 @@ export class ApiCallState {
   }
 
   public static getUserErrorMessageFromApiCallState = (apiCallStatus: TApiCallState): string => {
-    // const funcName = 'getUserErrorMessageFromApiCallState';
-    // const logName = `${ApiCallState.name}.${funcName}()`;
+    const funcName = 'getUserErrorMessageFromApiCallState';
+    const logName = `${ApiCallState.name}.${funcName}()`;
     // console.log(`${logName}: apiCallStatus=${JSON.stringify(apiCallStatus, null, 2)}`);
     if(apiCallStatus.success) return '';
     if(apiCallStatus.isAPSApiError && apiCallStatus.error) {
@@ -84,6 +86,15 @@ export class ApiCallState {
         if('body' in apiCallStatus.error) {
           return JSON.stringify(apiCallStatus.error.body);
         }
+    }
+    if(apiCallStatus.isAPError && apiCallStatus.error) {
+      const err = apiCallStatus.error;
+      const details = {
+        name: err.name,
+        result: err.fetchResult
+      }
+      const userMessage = `${apiCallStatus.context.userDetail}. \n${JSON.stringify(details, null, 2)}`;
+      return userMessage;
     }
     if(apiCallStatus.error) {
       return apiCallStatus.error;

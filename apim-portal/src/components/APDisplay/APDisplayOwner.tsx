@@ -51,7 +51,6 @@ export const APDisplayOwner: React.FC<IAPDisplayOwnerProps> = (props: IAPDisplay
 
   React.useEffect(() => {
     doValidateProps();
-    // doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const getOwnerDisplayStr = (): string => {

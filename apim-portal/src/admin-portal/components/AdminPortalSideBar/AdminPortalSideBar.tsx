@@ -91,11 +91,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
                 disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemConfigConnectors),
                 command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemConfigConnectors); }
               },    
-              {
-                label: 'Settings',
-                disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemConfigSettings),
-                command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemConfigSettings); }
-              }        
+              // {
+              //   label: 'Settings',
+              //   disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemConfigSettings),
+              //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemConfigSettings); }
+              // }        
             ]
           },
           {
