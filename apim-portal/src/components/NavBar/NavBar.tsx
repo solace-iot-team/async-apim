@@ -10,7 +10,7 @@ import { Divider } from 'primereact/divider';
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { SystemHealthDisplay } from "../SystemHealth/SystemHealthDisplay";
+import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
@@ -247,7 +247,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
           </React.Fragment>
         }
-        <SystemHealthDisplay />
+        <SystemHealthCheck />
       </React.Fragment>
     );
   }

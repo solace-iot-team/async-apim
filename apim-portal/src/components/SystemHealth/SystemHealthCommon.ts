@@ -42,5 +42,23 @@ export class SystemHealthCommon {
     return 'red';
   }
 
+  public static getSystemHealthIcon = (systemHealthCheckSummary: TAPHealthCheckSummary): string => {
+    const funcName = 'getSystemHealthIcon';
+    const logName = `${SystemHealthCommon.componentName}.${funcName}()`;
+    if(!systemHealthCheckSummary.performed) return 'pi pi-question';
+    switch(systemHealthCheckSummary.success) {
+      case EAPHealthCheckSuccess.PASS:
+      case EAPHealthCheckSuccess.PASS_WITH_ISSUES:
+        return 'pi pi-check';
+      case EAPHealthCheckSuccess.FAIL:
+        return 'pi pi-times';
+      case EAPHealthCheckSuccess.UNDEFINED:
+        return 'pi pi-question';
+      default:
+        Globals.assertNever(logName, systemHealthCheckSummary.success);
+    }
+    return 'pi pi-question';
+  }
+
 }
 

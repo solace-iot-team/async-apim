@@ -149,9 +149,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     return (
         <React.Fragment>
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          {!managedObject.apsConnector.isActive && 
+          {/* {!managedObject.apsConnector.isActive &&  */}
             <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-          }
+          {/* } */}
           <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
           {!managedObject.apsConnector.isActive && 
             <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />

@@ -27,7 +27,6 @@ export class APSClientOpenApi {
     const funcName = 'set';
     const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
     if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
-
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
@@ -36,6 +35,9 @@ export class APSClientOpenApi {
   }
 
   public static getOpenApiInfo = (): APSClientOpenApiInfo => {
+    const funcName = 'getOpenApiInfo';
+    const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
     return {
       base: APSOpenAPI.BASE,
       versionStr: APSOpenAPI.VERSION

@@ -32,6 +32,7 @@ import { NoOrganizationPage } from "./pages/NoOrganizationPage";
 import { NotFoundPage } from './pages/NotFoundPage';
 import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
+import { HealthCheckViewPage } from "./pages/HealthCheckViewPage";
 // * Developer Tools *
 import { BootstrapUsersPage } from "./pages/devel/BootstrapUsersPage";
 import { BootstrapOrganizationsPage } from "./pages/devel/BootstrapOrganizationsPage";
@@ -141,7 +142,8 @@ const App: React.FC = () => {
               <Route path={EUIDeveloperPortalResourcePaths.Home} component={DeveloperPortalHomePage} exact />
               <Route path={EUICommonResourcePaths.Unauthorized} component={UnauthorizedPage} exact />
               <Route path={EUICommonResourcePaths.NoOrganization} component={NoOrganizationPage} exact />
-
+              <Route path={EUICommonResourcePaths.HealthCheckView} component={HealthCheckViewPage} exact />
+              
               {/* User */}
               <Route path={EUICommonResourcePaths.Login} component={UserLoginPage} exact />
               <ProtectedRouteWithRbac path={EUICommonResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />

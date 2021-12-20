@@ -1,3 +1,5 @@
+import yaml from "js-yaml";
+
 import { 
   APIInfo,
   ApisService, 
@@ -10,11 +12,8 @@ import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from '../components/APComponentsCommon';
 import { Globals } from './Globals';
-
-import yaml from "js-yaml";
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
-import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckLogEntry_ApiBase } from './APHealthCheck';
 
 export type TAPAttribute = {
   name: string,
@@ -49,9 +48,6 @@ export type TTransformApiAboutToAPConnectorAboutResult = {
 
 export class APConnectorApiHelper {
 
-  // public static isAPIInfoList = (result: APIList | APISummaryList | APIInfoList): result is APIInfoList => {
-  //   return (<APIInfoList>result)[0].version != undefined;
-  // }    
   public static transformApiAboutToAPConnectorAbout = (apiAbout: About): TTransformApiAboutToAPConnectorAboutResult => {
     const funcName = 'transformApiAboutToAPConnectorAbout';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
@@ -170,11 +166,7 @@ export class APConnectorApiCalls {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
 
-    // check first if connector is accessible
-    const apiCheckBaseLogEntry: TAPConnectorHealthCheckLogEntry_ApiBase = await APConnectorHealthCheck.apiCheckBaseAccess();
-    if(apiCheckBaseLogEntry.success === EAPHealthCheckSuccess.FAIL) {
-      return undefined;
-    }
+    // WARNING: connector must be accessible
 
     await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;

@@ -1,3 +1,4 @@
+import { APSAbout } from "@solace-iot-team/apim-server-openapi-browser";
 import yaml from "js-yaml";
 import { SemVer } from "semver";
 import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
@@ -28,7 +29,8 @@ export type TAPPortalInfo = {
   portalServerClientOpenApiInfo: APSClientOpenApiInfo
 }
 export enum EAPConfigIssueNames {
-  CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH'
+  CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH',
+  APIM_SERVER_OPENAPI_VERSION_MISMATCH = 'APIM_SERVER_OPENAPI_VERSION_MISMATCH'
 }
 export type TAPConfigIssue = {
   issue: EAPConfigIssueNames,
@@ -53,6 +55,7 @@ export enum EUICommonResourcePaths {
   NoOrganization = '/noorganization',
   Login = '/login',
   ManageUserAccount = '/manage/user/account',
+  HealthCheckView = '/healthcheck/view'
 }
 
 export enum EUIAdminPortalResourcePaths {
@@ -159,7 +162,7 @@ export class Globals {
     console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
   }
 
-  public static crossCheckConfiguration = (configContext: TAPConfigContext): TAPConfigIssueList => {
+  public static crossCheckConfiguration_Portal_X_Connector = (configContext: TAPConfigContext): TAPConfigIssueList => {
     let issueList: TAPConfigIssueList = [];
 
     // use SemVer and do the actual comparison 
@@ -181,6 +184,30 @@ export class Globals {
     }    
     return issueList;
   }
+
+  public static crossCheckConfiguration_Portal_X_Server = (apPortalInfo: TAPPortalInfo, apsAbout: APSAbout): TAPConfigIssueList => {
+    let issueList: TAPConfigIssueList = [];
+  
+    // use SemVer and do the actual comparison 
+    const portalServerOpenApiVersionStr = apPortalInfo.portalServerClientOpenApiInfo.versionStr;
+    const apimServerOpenApiVersionStr = apsAbout.versions["apim-server-openapi"];
+    if(portalServerOpenApiVersionStr && apimServerOpenApiVersionStr) {
+      const portalServerOpenApiSemVer: SemVer = new SemVer(portalServerOpenApiVersionStr);
+      const apimServerOpenApiSemVer: SemVer = new SemVer(apimServerOpenApiVersionStr);
+      if(portalServerOpenApiSemVer.compare(apimServerOpenApiSemVer) !== 0) {
+        const i1: TAPConfigIssue = {
+          issue: EAPConfigIssueNames.APIM_SERVER_OPENAPI_VERSION_MISMATCH,
+          details: {
+            portalServerOpenApiVersion: portalServerOpenApiVersionStr,
+            apimServerOpenApiVersion: apimServerOpenApiVersionStr
+          }
+        };
+        issueList.push(i1);  
+      }
+    }    
+    return issueList;
+  }  
+
 }
 
 export class GlobalElementStyles {

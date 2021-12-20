@@ -1,5 +1,5 @@
-import { TAPConfigContext  } from './ConfigContextProvider';
-import { TAPRbacRole, TAPRbacRoleList } from '../../utils/APRbac';
+import { ConfigContextAction, TAPConfigContext  } from './ConfigContextProvider';
+import { APRbac, TAPRbacRole, TAPRbacRoleList } from '../../utils/APRbac';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { 
   ApsConfigService,
@@ -9,6 +9,8 @@ import {
   ApiError as APSApiError
 } from '@solace-iot-team/apim-server-openapi-browser';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
+import { TAPPortalInfo } from '../../utils/Globals';
+import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 
 export class ConfigHelper {
 
@@ -62,6 +64,30 @@ export class ConfigHelper {
       callState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(e);
       callState.error = e;
     }
+  }
+
+  private static getConfigRbacRoleList = async(): Promise<TAPRbacRoleList> => {
+    const configRbacRoleList: TAPRbacRoleList = APRbac.getAPRbacRoleList();
+    return configRbacRoleList;
+  }
+
+  private static getActiveConnectorInstance = async(): Promise<APSConnector | undefined> => {
+    const activeApsConnector: APSConnector | undefined = await ConfigHelper.apiGetActiveConnectorInstance();
+    return activeApsConnector;
+  }
+
+  private static getPortalInfo = (): TAPPortalInfo  => {
+    const portalInfo: TAPPortalInfo = {
+      connectorClientOpenApiInfo: APClientConnectorOpenApi.getOpenApiInfo(),
+      portalServerClientOpenApiInfo: APSClientOpenApi.getOpenApiInfo()
+    };
+    return portalInfo;
+  }
+
+  public static doInitialize = async (dispatchConfigContextAction: React.Dispatch<ConfigContextAction>) => {
+    dispatchConfigContextAction({ type: 'SET_PORTAL_INFO', portalInfo: ConfigHelper.getPortalInfo() });
+    dispatchConfigContextAction( { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: await ConfigHelper.getConfigRbacRoleList() });
+    dispatchConfigContextAction( { type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.getActiveConnectorInstance() });
   }
 
 }
