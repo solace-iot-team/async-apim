@@ -6,10 +6,12 @@ import { PanelMenu } from 'primereact/panelmenu';
 
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { APHealthCheckContext } from "../../../components/APHealthCheckContextProvider";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 
 import '../../../components/APComponents.css';
+import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 
 export interface IAdminPortalSideBarProps {
   onSwitchToDeveloperPortal: () => void;
@@ -22,6 +24,8 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -31,6 +35,15 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     );
   } 
 
+  const isDisabledWithConnectorUnavailable = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
+    if(isDisabled(resourcePath)) return true;
+    if(
+        healthCheckContext.connectorHealthCheckResult?.summary.success === EAPHealthCheckSuccess.FAIL || 
+        healthCheckContext.connectorHealthCheckResult?.summary.success === EAPHealthCheckSuccess.UNDEFINED) {
+      return true;    
+    }
+    return false;
+  }
   const isDisabledWithOrg = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
@@ -73,14 +86,14 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemUsers),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
-          {
-            label: 'Teams',
-            disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemTeams),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemTeams); }
-          },
+          // {
+          //   label: 'Teams',
+          //   disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemTeams),
+          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemTeams); }
+          // },
           {
             label: 'Organizations',
-            disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemOrganizations),
+            disabled: isDisabledWithConnectorUnavailable(EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
           },
           {
