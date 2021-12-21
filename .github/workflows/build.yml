@@ -1,0 +1,72 @@
+
+name: build
+on:
+  # for testing
+  workflow_dispatch:
+
+  # production
+  schedule:
+  # #   # - cron: '0 4 * * MON'
+    - cron: '0 4 * * *'
+  pull_request:
+    branches:
+      - main
+env:
+  DEBUG_FLAG: ${{ true }}
+  # DEBUG_FLAG: ${{ false }}
+  RELEASE_DIR: "release"
+
+jobs:
+  release:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check Auth
+        if: github.event_name == 'workflow_dispatch' && github.actor != 'ricardojosegomezulmke' && github.actor != '195858'
+        run: |
+          echo "not authorized"
+          echo '::set-output name=IS_AUTHORIZED::false'
+        id: auth
+      - name: Cancel Workflow
+        if: ${{ always() && steps.auth.outputs.IS_AUTHORIZED == 'false' }}
+        uses: andymckay/cancel-action@0.2
+
+      - name: Checkout Current Branch
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: env before install
+        if: env.DEBUG_FLAG == 'true'
+        run: |
+          echo "bash --version: "; bash --version
+          echo "node --version: "; node --version
+          echo "npm --version: "; npm --version
+          echo ">>> environment: RELEASE_* "
+          env | grep RELEASE
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: env after install
+        if: env.DEBUG_FLAG == 'true'
+        run: |
+          echo "bash --version: "; bash --version
+          echo "node --version: "; node --version
+          echo "npm --version: "; npm --version
+          echo "docker --version"; docker --version
+          echo "docker-compose --version"; docker-compose --version
+
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build
+        run: |
+          cd "$GITHUB_WORKSPACE/${RELEASE_DIR}"
+          ./build.sh
+
+###
+# The End.
