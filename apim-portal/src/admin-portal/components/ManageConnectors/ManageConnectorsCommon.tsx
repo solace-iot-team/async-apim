@@ -54,7 +54,7 @@ export class ManageConnectorsCommon {
     }
   }
 
-  public static healthCheckPassDisplay = (healthCheckResult: TAPConnectorHealthCheckResult) : JSX.Element => {
+  public static healthCheckSuccessDisplay = (healthCheckResult: TAPConnectorHealthCheckResult) : JSX.Element => {
     if(healthCheckResult.summary.performed) {
       return (<span style={ {color: SystemHealthCommon.getColor(healthCheckResult.summary.success) }}>{healthCheckResult.summary.success}</span>);
       // if(healthCheckResult.summary.success === EAPHealthCheckSuccess.PASS) {
@@ -67,7 +67,7 @@ export class ManageConnectorsCommon {
     }
   }
   public static healthCheckBodyTemplate = (viewManagedObject: TViewManagedObject): JSX.Element => {
-    return ManageConnectorsCommon.healthCheckPassDisplay(viewManagedObject.healthCheckResult);
+    return ManageConnectorsCommon.healthCheckSuccessDisplay(viewManagedObject.healthCheckResult);
   }
   public static isActiveBodyTemplate = (viewManagedObject: TViewManagedObject) => {
     if(viewManagedObject.apsConnector.isActive) return (<span className="pi pi-check badge-active" />);

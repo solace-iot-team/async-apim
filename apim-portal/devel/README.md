@@ -28,7 +28,6 @@ npm install -g serve
 serve -s build
 ````
 
-
 ## Using APIM Server OpenAPI from Local Release
 ````bash
 cd async-apim/release/apim-server-openapi/apim-server-openapi-browser

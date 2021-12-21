@@ -15,11 +15,12 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon } from "./ManageConnectorsCommon";
 import { APLogger } from "../../../utils/APLogger";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
+import { SystemHealthCommon } from "../../../components/SystemHealth/SystemHealthCommon";
 
 export interface ITestConnectorProps {
   connectorId: APSId;
@@ -33,7 +34,7 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const componentName = 'TestConnector';
 
   const TestingDialogHeader = "Performing health check ...";
-  const ResultDialogHeader = "Heath check details:";
+  const ResultDialogHeader = "Details:";
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
@@ -120,14 +121,14 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const renderTestDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <h3>{apsConnector?.displayName}:</h3>
+        <h3><b>Connector: {apsConnector?.displayName}</b></h3>
         {healthCheckResult &&
           <div>
+            <span style={ {color: SystemHealthCommon.getColor(healthCheckResult.summary.success) }}>Summary: {ManageConnectorsCommon.healthCheckSuccessDisplay(healthCheckResult)}</span>
             <p>{ResultDialogHeader}</p>
             <pre style={ { fontSize: '10px' }} >
               {JSON.stringify(healthCheckResult?.healthCheckLog, null, 2)}
-            </pre>  
-            <p style={{color: healthCheckResult?.summary.success ? 'green' : 'red' }}>Summary: {healthCheckResult?.summary.success ? 'ok' : 'fail'}</p>
+            </pre> 
           </div>            
         }
         {!healthCheckResult &&
