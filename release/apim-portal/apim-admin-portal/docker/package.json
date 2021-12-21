@@ -1,6 +1,6 @@
 {
-  "name": "async-apim-admin-portal",
-  "version": "0.0.2",
+  "name": "async-apim-admin-portal-release-docker",
+  "version": "0.0.3",
   "scripts": {
     "build": "ts-node build.ts",
     "publish": "ts-node publish.ts"

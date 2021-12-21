@@ -1,8 +1,9 @@
 {
   "name": "async-apim-server",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
-    "build+push": "ts-node build+push.ts"
+    "build": "ts-node build.ts",
+    "publish": "ts-node publish.ts"
   },
   "author": "Solace Corporation",
   "contributors": [

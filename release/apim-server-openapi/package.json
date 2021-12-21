@@ -1,6 +1,6 @@
 {
   "name": "apim-server-openapi-release",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "scripts": {
     "build": "ts-node build.ts",
     "publish": "ts-node publish.ts"
