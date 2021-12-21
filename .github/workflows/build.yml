@@ -17,7 +17,7 @@ env:
   RELEASE_DIR: "release"
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-18.04
     steps:
       - name: Check Auth
