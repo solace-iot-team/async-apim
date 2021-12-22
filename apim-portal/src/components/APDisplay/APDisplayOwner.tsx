@@ -41,12 +41,12 @@ export const APDisplayOwner: React.FC<IAPDisplayOwnerProps> = (props: IAPDisplay
     const funcName = 'doValidateProps';
     const logName = `${componentName}.${funcName}()`;
     switch (props.ownerType) {
-      case 'apsUser': {
+      case 'apsUser':
         if(!props.apsUser) throw new Error(`${logName}: props.apsUser is undefined for props.ownerType=${props.ownerType}`);
-      } break;
-      case 'apsTeam': {
+        break;
+      case 'apsTeam':
         throw new Error(`${logName}: props.ownerType=${props.ownerType} not supported`);
-      } break;
+        // break;
       default: Globals.assertNever(logName, props.ownerType);
     }
   }

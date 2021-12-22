@@ -1,6 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths } from '../utils/Globals';
 
 export const HomePage: React.FC = () => {
   return (

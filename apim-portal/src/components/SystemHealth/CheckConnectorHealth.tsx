@@ -35,7 +35,7 @@ export const CheckConnectorHealth: React.FC<ICheckConnectorHealthProps> = (props
       if(userContext.currentAppState === EAppState.DEVELOPER_PORTAL) navigateTo(EUIDeveloperPortalResourcePaths.DeveloperPortalConnectorUnavailable);
       else if(userContext.currentAppState === EAppState.ADMIN_PORTAL) navigateTo(EUIAdminPortalResourcePaths.AdminPortalConnectorUnavailable);
     }
-  }, [healthCheckSummaryState]);
+  }, [healthCheckSummaryState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
 
   // const getHeader = (): JSX.Element => {

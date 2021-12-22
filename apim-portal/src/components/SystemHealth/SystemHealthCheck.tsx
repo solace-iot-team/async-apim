@@ -75,22 +75,22 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
     if(serverHealthCheckResult.summary.performed && serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
       navigateTo(EUICommonResourcePaths.HealthCheckView);
     }
-  }, [serverHealthCheckResult]);
+  }, [serverHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
     if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
       dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
     }
-  }, [connectorHealthCheckResult]);
+  }, [connectorHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     dispatchHealthCheckContextAction({ type: 'SET_SYSTEM_HEALTHCHECK_SUMMARY', systemHealthCheckSummary: systemHealthCheckSummary});
-  }, [systemHealthCheckSummary]);
+  }, [systemHealthCheckSummary]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if(reinitializeConfigContextCount > 0) ConfigHelper.doInitialize(dispatchConfigContextAction);
-  }, [reinitializeConfigContextCount]);
+  }, [reinitializeConfigContextCount]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   useInterval( () => 
     {

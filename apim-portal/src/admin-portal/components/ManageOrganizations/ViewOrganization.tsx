@@ -38,7 +38,6 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const dt = React.useRef<any>(null);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {

@@ -19,7 +19,6 @@ export class APError extends Error {
   }
 
   public toString = (): string => {
-    return 'hello world';
     return JSON.stringify(this.toObject(), null, 2);
   }
 
@@ -41,6 +40,9 @@ export class APError extends Error {
 }
 
 export class APConnectorApiMismatchError extends APError {
+
+  // investigate: this needs a className property, correct?
+
   constructor(internalLogName: string, internalMessage?: string) {
     super(internalLogName, internalMessage);
   }

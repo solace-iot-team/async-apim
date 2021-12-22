@@ -231,10 +231,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
-  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }

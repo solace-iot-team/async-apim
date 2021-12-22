@@ -74,7 +74,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       let _apiAppResponse_smf: AppResponse | undefined = undefined;
       let _apiAppResponse_mqtt: AppResponse | undefined = undefined;
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER:
           _apiAppResponse_smf = await AppsService.getDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
@@ -87,9 +87,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
             appName: props.appId,
             topicSyntax: EApiTopicSyntax.MQTT
           });     
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM:
           _apiAppResponse_smf = await AppsService.getTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId,
@@ -102,7 +101,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
             appName: props.appId,
             topicSyntax: EApiTopicSyntax.MQTT
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);

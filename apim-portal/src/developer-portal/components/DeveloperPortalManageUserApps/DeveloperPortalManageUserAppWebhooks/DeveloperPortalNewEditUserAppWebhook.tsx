@@ -14,7 +14,6 @@ import {
   AppsService, 
   AppPatch,
   WebHook,
-  CommonName,
   WebHookAuth,
   WebHookBasicAuth,
   WebHookHeaderAuth,
@@ -310,8 +309,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }, [apiCallStatus, newManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (formData: TManagedObjectFormData) => {
-    const funcName = 'doPopulateManagedObjectFormDataValues';
-    const logName = `${componentName}.${funcName}()`;
     managedObjectUseForm.setValue('protocol', formData.protocol);
     managedObjectUseForm.setValue('host', formData.host);
     managedObjectUseForm.setValue('port', formData.port);
@@ -333,19 +330,12 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: managedObject = ${JSON.stringify(managedObject, null, 2)}`);
     props.onLoadingChange(true);
     await apiUpdateManagedObject(mo);
     props.onLoadingChange(false);
   }
 
   const onSubmitManagedObjectForm = (formData: TManagedObjectFormData) => {
-    // const funcName = 'onSubmitManagedObjectForm';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: formData = ${JSON.stringify(formData, null, 2)}`);
-    // setIsFormSubmitted(true);
     doSubmitManagedObject(transformFormDataToManagedObject(formData));
   }
 
@@ -581,16 +571,11 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
-    // const isNew: boolean = (props.action === EAction.NEW);
     
     const validateResource = (resource: string): any => {
       if(resource === '') return "Enter resource.";
       const dummyBase = "http://wh.acme.com";
       try {
-        // const dummyUrl: URL = new URL(resource, dummyBase);
-        // return `dummyUrl=${dummyUrl.toString()}`;
         new URL(resource, dummyBase);
         return true;
       } catch (e: any) {

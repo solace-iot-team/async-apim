@@ -37,8 +37,8 @@ export class APClientConnectorOpenApi {
     return url;
   }
   public static constructOpenApiBase = (config: APSConnectorClientConfig): string => {
-    const funcName: string = `constructOpenApiBase`;
-    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
+    // const funcName: string = `constructOpenApiBase`;
+    // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`;
     // console.log(`${logName}: config = ${JSON.stringify(config, null, 2)}`);
     const url: string = APClientConnectorOpenApi.constructBaseUrl(config);
     let base: string = config.apiVersion;
@@ -51,8 +51,8 @@ export class APClientConnectorOpenApi {
     return base;
   }
   public static initialize = (config: APSConnectorClientConfig) => {
-    const funcName: string = `initialize`;
-    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
+    // const funcName: string = `initialize`;
+    // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
     APClientConnectorOpenApi.config = (JSON.parse(JSON.stringify(config)));
     OpenAPI.BASE = APClientConnectorOpenApi.constructOpenApiBase(APClientConnectorOpenApi.config);
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
@@ -66,8 +66,8 @@ export class APClientConnectorOpenApi {
   }
 
   public static tmpInitialize = async (tmpConfig: APSConnectorClientConfig) => {
-    const funcName: string = `tmpInitialize`;
-    const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
+    // const funcName: string = `tmpInitialize`;
+    // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
     APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
     if(APClientConnectorOpenApi.isInitialized) {
       APClientConnectorOpenApi.orgSettings = {

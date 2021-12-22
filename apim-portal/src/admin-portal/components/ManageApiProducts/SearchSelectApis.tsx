@@ -18,7 +18,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiEntitySelectItem, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { APApiObjectsCommon, TAPApiViewManagedObject } from "../../../components/APApiObjectsCommon";
+import { TAPApiViewManagedObject } from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 
 import '../../../components/APComponents.css';
@@ -124,7 +124,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedApiItemList));
     // does not work for primereact/DataTable native filter
     // setGlobalFilter(APApiObjectsCommon.transformSelectItemListToTableGlobalFilter(props.currentSelectedApiItemList));
-  }, [managedObjectTableDataList]); 
+  }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
 
   React.useEffect(() => {

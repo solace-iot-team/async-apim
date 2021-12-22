@@ -135,6 +135,8 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   // TODO: use also in Admin Portal: ManageUserApps:ViewApp
   const viewProductsDataTableRef = React.useRef<any>(null);
   const [expandedViewProductsDataTableRows, setExpandedViewProductsDataTableRows] = React.useState<any>(null);
+
+  // investigate - new component works?
   const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
     const rowExpansionTemplate = (rowData: TApiProduct) => {
       return (

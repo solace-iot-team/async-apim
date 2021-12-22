@@ -322,8 +322,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card">

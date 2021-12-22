@@ -47,8 +47,6 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
   const transformAPManagedWebhookListToTableDataList = (apMWHList: TAPManagedWebhookList): TManagedObjectTableDataList => {
-    const funcName = 'transformAPManagedWebhookListToTableDataList';
-    const logName = `${componentName}.${funcName}()`;
     let _moTableDataList: TManagedObjectTableDataList = [];
     apMWHList.forEach( (apMWH: TAPManagedWebhook) => {
       const _globalSearch: any = {
@@ -80,10 +78,6 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
       setShowCreateWebhookDialog(true);
     }
     else props.onViewManagedWebhook(rowData.apManagedWebhook);
-  }
-
-  const onTableDataRowDelete = (rowData: TManagedObjectTableDataRow): void => {
-    props.onDeleteManagedWebhook(rowData.apManagedWebhook);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -257,12 +251,12 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
       </React.Fragment>
     );
   }
-  const rightActionBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-    if(!rowData.apManagedWebhook.webhookWithoutEnvs) return (<></>);
-    return (
-      <Button icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={(e) => onTableDataRowDelete(rowData)} />
-    );
-  }
+  // const rightActionBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
+  //   if(!rowData.apManagedWebhook.webhookWithoutEnvs) return (<></>);
+  //   return (
+  //     <Button icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={(e) => onTableDataRowDelete(rowData)} />
+  //   );
+  // }
   const renderManagedObjectDataTable = (apMWHList: TAPManagedWebhookList) => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformAPManagedWebhookListToTableDataList(apMWHList);    
     return (
@@ -335,38 +329,25 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
     )
   }
 
-  const renderDebug = (): JSX.Element => {
-    if(selectedTableDataRow) {
-      const _d = {
-        ...selectedTableDataRow,
-        globalSearch: 'not shown...'
-      };
-      return(
-        <React.Fragment>
-          <div style={{ width: '50em'}}>
-            <h1>{componentName}: selectedTableDataRow.globalSearch:</h1>
-            <pre style={ { fontSize: '10px' }} >{JSON.stringify(selectedTableDataRow.globalSearch, null, 2)}</pre>
-          </div>
-          <h1>{componentName}: selectedTableDataRow:</h1>
-          <pre style={ { fontSize: '10px' }} >{JSON.stringify(_d, null, 2)}</pre>
-        </React.Fragment>
-      );
-    }
-    return (<></>);
-    // if(!managedObject) return (<></>);
-    // if(managedObject.managedWebhookList.length > 0 && selectedManagedWebhook) {
-    //   const _d = {
-    //     ...selectedManagedWebhook,
-    //     globalSearch: 'not shown...'
-    //   }
-    //   return (
-    //     <React.Fragment>
-    //       <h1>{componentName}: selectedManagedWebhook:</h1>
-    //       <pre style={ { fontSize: '10px' }} >{JSON.stringify(_d, null, 2)}</pre>
-    //     </React.Fragment>
-    //   );
-    // } else return (<></>);
-  }
+  // const renderDebug = (): JSX.Element => {
+  //   if(selectedTableDataRow) {
+  //     const _d = {
+  //       ...selectedTableDataRow,
+  //       globalSearch: 'not shown...'
+  //     };
+  //     return(
+  //       <React.Fragment>
+  //         <div style={{ width: '50em'}}>
+  //           <h1>{componentName}: selectedTableDataRow.globalSearch:</h1>
+  //           <pre style={ { fontSize: '10px' }} >{JSON.stringify(selectedTableDataRow.globalSearch, null, 2)}</pre>
+  //         </div>
+  //         <h1>{componentName}: selectedTableDataRow:</h1>
+  //         <pre style={ { fontSize: '10px' }} >{JSON.stringify(_d, null, 2)}</pre>
+  //       </React.Fragment>
+  //     );
+  //   }
+  //   return (<></>);
+  // }
 
   return (
     <div className="apd-manage-user-apps">

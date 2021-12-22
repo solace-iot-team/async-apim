@@ -25,7 +25,7 @@ export interface IDeveloperPortalUserAppSelectApiProductsProps {
 }
 
 export const DeveloperPortalUserAppSelectApiProducts: React.FC<IDeveloperPortalUserAppSelectApiProductsProps> = (props: IDeveloperPortalUserAppSelectApiProductsProps) => {
-  const componentName = 'DeveloperPortalUserAppSelectApiProducts';
+  // const componentName = 'DeveloperPortalUserAppSelectApiProducts';
 
   const DialogHeader = 'Search & Select API Product(s):';
 

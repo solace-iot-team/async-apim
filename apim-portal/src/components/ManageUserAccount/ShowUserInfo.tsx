@@ -25,12 +25,11 @@ export const ShowUserInfo: React.FC<IShowUserInfoProps> = (props: IShowUserInfoP
     roleDisplayNameListAsString: string
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [userContext] = React.useContext(UserContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const transformManagedObjectToViewManagedObject = (managedObject: TManagedObject): TViewManagedObject => {

@@ -96,9 +96,9 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
     setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_CREDENTIALS);
   }
 
-  const onManageUserSettings = (): void => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_SETTINGS);
-  }
+  // const onManageUserSettings = (): void => {
+  //   setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_SETTINGS);
+  // }
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {

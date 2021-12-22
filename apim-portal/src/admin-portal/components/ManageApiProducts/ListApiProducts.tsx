@@ -6,7 +6,6 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-import { Config } from '../../../Config';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
@@ -35,7 +34,7 @@ export interface IListApiProductsProps {
 }
 
 export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
-  const componentName = 'ListApiProducts';
+  // const componentName = 'ListApiProducts';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
@@ -84,8 +83,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
 
   // * Api Calls *
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObjectList';
-    const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
     const initialCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     const result: TApiGetApiProductListResult = await APApiObjectsApiCalls.apiGetApiProductList(props.organizationId, initialCallState);
@@ -219,19 +216,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     } 
   }
 
-  const renderDebugSelectedManagedObject = (): JSX.Element => {
-    if(managedObjectList.length > 0 && selectedManagedObject) {
-      const _d = {
-        ...selectedManagedObject,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(_d, null, 2)}
-        </pre>
-      );
-    } else return (<></>);
-  }
+  // const renderDebugSelectedManagedObject = (): JSX.Element => {
+  //   if(managedObjectList.length > 0 && selectedManagedObject) {
+  //     const _d = {
+  //       ...selectedManagedObject,
+  //       globalSearch: 'not shown...'
+  //     }
+  //     return (
+  //       <pre style={ { fontSize: '10px' }} >
+  //         {JSON.stringify(_d, null, 2)}
+  //       </pre>
+  //     );
+  //   } else return (<></>);
+  // }
 
   return (
     <div className="manage-api-products">

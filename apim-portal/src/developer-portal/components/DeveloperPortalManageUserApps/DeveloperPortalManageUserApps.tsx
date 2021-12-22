@@ -118,7 +118,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     let existApiDeveloper: boolean = true;
     let anyError: any = undefined;
     try {
-      const apiDeveloper: Developer = await DevelopersService.getDeveloper({
+      await DevelopersService.getDeveloper({
         organizationName: props.organizationName, 
         developerUsername: props.userId
       });
@@ -131,7 +131,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     }
     if(!anyError && !existApiDeveloper) {
       try { 
-        const apiDeveloper: Developer = await DevelopersService.createDeveloper({
+        await DevelopersService.createDeveloper({
           organizationName: props.organizationName, 
           requestBody: transformAPSUserToApiDeveloper(userContext.user)
         });
@@ -168,7 +168,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
       }
     }
-  }, [isDeveloperCreated]);
+  }, [isDeveloperCreated]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);

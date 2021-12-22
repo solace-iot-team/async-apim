@@ -24,8 +24,6 @@ export const APButtonDownloadContentAsFile: React.FC<IAPButtonDownloadContentAsF
   const componentName = 'APButtonDownloadContentAsFile';
 
   const saveToFile = (url: string, fileName: string) => {
-    const funcName = 'saveToFile';
-    const logName = `${componentName}.${funcName}()`;
     const link = document.createElement('a');
     if(typeof(link.download) === 'string') {
       document.body.appendChild(link);

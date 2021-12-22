@@ -87,9 +87,8 @@ export class APClientConnectorRaw {
   private static mutexReleaser: MutexInterface.Releaser;
 
   public static initialize = async (connectorClientConfig: APSConnectorClientConfig) => {
-    const funcName = 'initialize';
-    const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
-
+    // const funcName = 'initialize';
+    // const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
     APClientConnectorRaw.mutexReleaser = await APClientConnectorRaw.mutex.acquire();
     APClientConnectorRaw.baseUrl = APClientConnectorOpenApi.constructBaseUrl(connectorClientConfig);
     // console.log(`${logName}: APClientConnectorRaw.baseUrl = ${APClientConnectorRaw.baseUrl}`);

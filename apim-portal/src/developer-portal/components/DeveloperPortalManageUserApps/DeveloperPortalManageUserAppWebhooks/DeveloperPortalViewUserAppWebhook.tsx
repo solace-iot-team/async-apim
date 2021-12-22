@@ -32,7 +32,7 @@ export const DeveloperPortalViewUserAppWebhook: React.FC<IDeveloperPortalViewUse
 
   type TManagedObjectDisplay = TAPManagedWebhook;
 
-  const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>(props.managedWebhook);
+  const [managedObjectDisplay] = React.useState<TManagedObjectDisplay>(props.managedWebhook);
 
   const renderStatus = (managedWebhook: TAPManagedWebhook): JSX.Element => {
     const funcName = 'renderStatus';

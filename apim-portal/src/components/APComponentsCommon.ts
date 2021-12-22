@@ -21,7 +21,7 @@ import {
 import { TAPApiEntityRef } from './APApiObjectsCommon';
 import { Globals } from '../utils/Globals';
 import { APRenderUtils } from '../utils/APRenderUtils';
-import { APContextError, APError } from '../utils/APError';
+import { APContextError } from '../utils/APError';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -152,8 +152,6 @@ export class APManagedApiProductDisplay {
     else return '';
   }
   public static getApEnvironmentsAsDisplayList = (apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
-    const funcName = 'getApEnvironmentsAsDisplayList';
-    const logName = `${APManagedApiProductDisplay.name}.${funcName}()`;
     return apiEnvironmentList.map( (envResp: EnvironmentResponse) => {
       return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`
     });

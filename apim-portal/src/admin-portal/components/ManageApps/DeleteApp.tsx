@@ -42,21 +42,19 @@ export const DeleteApp: React.FC<IDeleteAppProps> = (props: IDeleteAppProps) => 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_APP, `deleting app: ${props.appDisplayName}`);
     try { 
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER: 
           await AppsService.deleteDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
             appName: props.appId
           });
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM: 
           await AppsService.deleteTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId, 
             appName: props.appId
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);

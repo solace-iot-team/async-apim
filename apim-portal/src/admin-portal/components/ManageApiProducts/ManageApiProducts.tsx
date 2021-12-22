@@ -213,10 +213,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
-  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }

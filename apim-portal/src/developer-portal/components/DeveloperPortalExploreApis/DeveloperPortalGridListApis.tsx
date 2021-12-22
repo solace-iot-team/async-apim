@@ -76,9 +76,6 @@ export const DeveloperPortalGridListApis: React.FC<IDeveloperPortalGridListApisP
     });
   }
   const transformManagedObjectTableDataListToFilteredList = (motdList: TManagedObjectTableDataList, filterStr: string): TManagedObjectTableDataList => {
-    const funcName = 'transformManagedObjectTableDataListToFilteredList';
-    const logName = `${componentName}.${funcName}()`;
-
     if(filterStr === '') return motdList;
     const filterList: Array<string> = filterStr.toLowerCase().split(' ').filter( (s: string) => {
       return (s !== '');

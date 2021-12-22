@@ -7,13 +7,6 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
-// import { 
-//   ApsUsersService, 
-//   APSUserList, 
-//   ListApsUsersResponse,
-//   EAPSSortDirection,
-// } from "@solace-iot-team/apim-server-openapi-browser";
-
 import { 
   APSUserList,
   ApsUsersService, 
@@ -281,13 +274,13 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
             sortField={lazyLoadingTableParams.sortField} 
             sortOrder={lazyLoadingTableParams.sortOrder}
           >
-            <Column field="apiObject.isActivated" header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />
-            <Column field="apiObject.profile.email" header="E-Mail" sortable />
-            <Column field="roleDisplayNameListAsString" header="Roles" />
-            <Column field="memberOfOrganizationNameListAsString" header="Organizations" />
-            <Column field="apiObject.profile.first" header="First Name" sortable />
-            <Column field="apiObject.profile.last" header="Last Name" sortable />
-            <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/>
+            <Column header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field="apiObject.isActivated"  bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />
+            <Column header="E-Mail" field="apiObject.profile.email"  sortable />
+            <Column header="Roles" headerStyle={{width: '12em'}} field="roleDisplayNameListAsString"  />
+            <Column header="Organizations" headerStyle={{width: '12em'}} field="memberOfOrganizationNameListAsString" />
+            <Column header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />
+            <Column header="Last Name" field="apiObject.profile.last"  sortable />
+            <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>
         </DataTable>
       </div>
     );

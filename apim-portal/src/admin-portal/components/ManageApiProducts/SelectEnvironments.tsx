@@ -2,14 +2,13 @@
 import React from "react";
 
 import { Dialog } from 'primereact/dialog';
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { SearchSelectApis } from "./SearchSelectApis";
+import { SearchSelectEnvironments } from "./SearchSelectEnvironments";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { SearchSelectEnvironments } from "./SearchSelectEnvironments";
 
 export interface ISelectEnvironmentsProps {
   organizationId: TAPOrganizationId,  
@@ -21,20 +20,9 @@ export interface ISelectEnvironmentsProps {
 }
 
 export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: ISelectEnvironmentsProps) => {
-  const componentName = 'SelectEnvironments';
-
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
-  // * useEffect Hooks *
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // const componentName = 'SelectEnvironments';
 
   const renderSelectDialogContent = (): JSX.Element => {
-    // const funcName = 'renderDeleteManagedObjectDialogContent';
-    // const logName = `${componentName}.${funcName}()`;
     return (
       <React.Fragment>
         <SearchSelectEnvironments
@@ -62,7 +50,6 @@ export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: IS
         <div className="manage-api-products select-environments-dialog-content">
             {renderSelectDialogContent()}
         </div>
-        <ApiCallStatusError apiCallStatus={apiCallStatus} />
       </Dialog>
     );
   } 

@@ -197,6 +197,7 @@ export class APConnectorFormValidationRules {
     };
   }
   public static AttributeValue = (): any => {
+    // lint: investigate
     const fixPattern = '^[a-zA-Z0-9_,\*\?-]*$';
     // pattern: [a-zA-Z0-9_\-\s,\*]{1,1024}
 

@@ -18,7 +18,7 @@ export interface IAPDisplayEndpointsProps {
 }
 
 export const APDisplayEndpoints: React.FC<IAPDisplayEndpointsProps> = (props: IAPDisplayEndpointsProps) => {
-  const componentName='APDisplayEndpoints';
+  // const componentName='APDisplayEndpoints';
 
   const dataTableRef = React.useRef<any>(null);
 

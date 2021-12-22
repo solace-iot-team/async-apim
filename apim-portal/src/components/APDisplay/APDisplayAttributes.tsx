@@ -15,7 +15,7 @@ export interface IAPDisplayAttributesProps {
 }
 
 export const APDisplayAttributes: React.FC<IAPDisplayAttributesProps> = (props: IAPDisplayAttributesProps) => {
-  const componentName='APDisplayAttributes';
+  // const componentName='APDisplayAttributes';
 
   const dataTableRef = React.useRef<any>(null);
 

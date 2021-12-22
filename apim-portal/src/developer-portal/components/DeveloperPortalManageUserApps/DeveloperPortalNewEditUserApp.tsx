@@ -140,7 +140,11 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApiProducts, setShowSelectApiProducts] = React.useState<boolean>(false);
+
+  // investigate, why is this still here?
   const [selectedApiProductList, setSelectedApiProductList] = React.useState<Array<APIProduct>>([]);
+
+
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
@@ -151,6 +155,8 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
 
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
+
+  // investigate, why is this still here?
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
   // * Api Calls *

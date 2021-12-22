@@ -280,17 +280,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
 
   const renderDebug = (): JSX.Element => {
     return (<></>);
-    if(managedObjectList.length > 0 && selectedManagedObject) {
-      const _d = {
-        ...selectedManagedObject,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(_d, null, 2)}
-        </pre>
-      );
-    } else return (<></>);
+    // if(managedObjectList.length > 0 && selectedManagedObject) {
+    //   const _d = {
+    //     ...selectedManagedObject,
+    //     globalSearch: 'not shown...'
+    //   }
+    //   return (
+    //     <pre style={ { fontSize: '10px' }} >
+    //       {JSON.stringify(_d, null, 2)}
+    //     </pre>
+    //   );
+    // } else return (<></>);
   }
 
   return (

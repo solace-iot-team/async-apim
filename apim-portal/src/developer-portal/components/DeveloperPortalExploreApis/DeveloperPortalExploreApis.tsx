@@ -23,7 +23,7 @@ export interface IDeveloperPortalExploreApisProps {
 }
 
 export const DeveloperPortalExploreApis: React.FC<IDeveloperPortalExploreApisProps> = (props: IDeveloperPortalExploreApisProps) => {
-  const componentName = 'DeveloperPortalExploreApis';
+  // const componentName = 'DeveloperPortalExploreApis';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
