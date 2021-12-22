@@ -21,7 +21,7 @@ export type TAPPortalAbout = {
   version: string;
   build_date: string;
   'apim-server-openapi-version': string;
-  "apim-connector-open-api-version": string;
+  "apim-connector-openapi-version": string;
 }
 
 export type TAPPortalInfo = {

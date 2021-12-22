@@ -31,7 +31,6 @@ const copySourcesToWorkingDir = () => {
   console.log(`${logName}: success.`);
 }
 
-
 const devBuildApimServer = () => {
   const funcName = 'devBuildApimServer';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;

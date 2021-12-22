@@ -16,13 +16,14 @@ apim-connector-system/stop.system.sh
 ## Start Devel Portal
 ````bash
 npm install
+npm run dev-build
 ````
 ````bash
-# react script
+# start portal with react script
 npm start
 ````
 ````bash
-# static server
+# start portal with static server
 npm run build
 npm install -g serve
 serve -s build
