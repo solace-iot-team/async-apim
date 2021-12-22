@@ -57,7 +57,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         }  
       );
     }
-    let _items: Array<MenuItem>= [
+    let _items: Array<MenuItem> = [
       {
         label: 'My Apps',
         // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ManageUserApplications),
