@@ -9,6 +9,7 @@ import {
   AppStatus 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { TViewManagedApp } from '../../../components/APApiObjectsCommon';
@@ -341,6 +342,8 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
 
   return (
     <div className="ap-manage-apps">
+
+      <CheckConnectorHealth />
 
       <Loading show={isLoading} />      
       

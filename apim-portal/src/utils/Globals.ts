@@ -73,6 +73,7 @@ export enum EUIAdminPortalResourcePaths {
   ManageSystemConfigConnectors = '/admin-portal/manage/system/config/connectors',
   ManageSystemConfigSettings = '/admin-portal/manage/system/config/settings',
   MonitorSystemHealth = '/admin-portal/monitor/system/health',
+  AdminPortalConnectorUnavailable = '/admin-portal/healthcheck/view'
 }
 
 export enum EUIDeveloperPortalResourcePaths {
@@ -81,7 +82,8 @@ export enum EUIDeveloperPortalResourcePaths {
   ExploreApiProducts = '/developer-portal/explore/api-products',
   ExploreApis = '/developer-portal/explore/apis',
   ManageUserApplications = '/developer-portal/manage/user/applications',
-  ManageTeamApplications = '/developer-portal/manage/team/applications'
+  ManageTeamApplications = '/developer-portal/manage/team/applications',
+  DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }
 
 export enum EUIDeveloperToolsResourcePaths {

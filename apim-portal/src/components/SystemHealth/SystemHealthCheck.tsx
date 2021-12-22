@@ -9,6 +9,7 @@ import { Divider } from "primereact/divider";
 
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
+import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { 
   APConnectorHealthCheck, 
   APServerHealthCheck, 
@@ -18,24 +19,25 @@ import {
   TAPServerHealthCheckResult 
 } from "../../utils/APHealthCheck";
 import { 
-  EUIAdminPortalResourcePaths, EUICommonResourcePaths, 
+  EUIAdminPortalResourcePaths, 
+  EUICommonResourcePaths, 
 } from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { APLogger } from "../../utils/APLogger";
 import { SystemHealthCommon } from "./SystemHealthCommon";
 import { DisplaySystemHealthInfo } from "./DisplaySystemHealthInfo";
+import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
 
 import "../APComponents.css";
 import "./SystemHealth.css";
-import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
 
 export interface ISystemHealthCheckProps {}
 
 export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISystemHealthCheckProps) => {
   const componentName = 'SystemHealthCheck';
 
-  // const HealthCheckInterval_ms: number = 60000;
-  const HealthCheckInterval_ms: number = 10000;
+  const HealthCheckInterval_ms: number = 60000; // every minute
+  // const HealthCheckInterval_ms: number = 10000;
 
   const connectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
   const serverHealthCheckResultNotPerformed: TAPServerHealthCheckResult = APServerHealthCheck.getInitializedHealthCheckResult_NotPerformed();
@@ -45,19 +47,21 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
     timestamp: Date.now(),
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
+  const [healthCheckSummaryContext, dispatchHealthCheckSummaryContextAction] = React.useContext(APHealthCheckSummaryContext);
   const history = useHistory();
   const op = React.useRef<any>(null);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [delay, setDelay] = React.useState<number>(HealthCheckInterval_ms); 
+  const [delay] = React.useState<number>(HealthCheckInterval_ms); 
   const [count, setCount] = React.useState<number>(0);
   const [serverHealthCheckResult, setServerHealthCheckResult] = React.useState<TAPServerHealthCheckResult>(serverHealthCheckResultNotPerformed);
   const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>(connectorHealthCheckResultNotPerformed);
   const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<TAPHealthCheckSummary>(initialHealthCheckSummary);
   const [reinitializeConfigContextCount, setReinitializeConfigContextCount] = React.useState<number>(0);
+
+  const navigateTo = (path: string): void => {
+    history.push(path);
+  }
 
   React.useEffect(() => {
     doSystemHealthCheck();
@@ -65,6 +69,9 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
 
   React.useEffect(() => {
     dispatchHealthCheckContextAction({ type: 'SET_SERVER_HEALTHCHECK_RESULT', serverHealthCheckResult: serverHealthCheckResult});
+    if(serverHealthCheckResult.summary.success !== healthCheckSummaryContext.serverHealthCheckSuccess) {
+      dispatchHealthCheckSummaryContextAction({ type: 'SET_SERVER_HEALTHCHECK_SUCCESS', serverHealthCheckSuccess: serverHealthCheckResult.summary.success});
+    }
     if(serverHealthCheckResult.summary.performed && serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
       navigateTo(EUICommonResourcePaths.HealthCheckView);
     }
@@ -72,6 +79,9 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
 
   React.useEffect(() => {
     dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
+    if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
+      dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
+    }
   }, [connectorHealthCheckResult]);
 
   React.useEffect(() => {
@@ -152,10 +162,6 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
         <DisplaySystemHealthInfo />
       </React.Fragment>
     );   
-  }
-
-  const navigateTo = (path: string): void => {
-    history.push(path);
   }
 
   return (

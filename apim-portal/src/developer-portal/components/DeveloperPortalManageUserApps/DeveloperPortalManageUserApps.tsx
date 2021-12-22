@@ -20,6 +20,7 @@ import {
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./DeveloperPortalManageUserAppsCommon";
@@ -420,6 +421,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   return (
     <div className="apd-manage-user-apps">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       {!isLoading && renderToolbar() }

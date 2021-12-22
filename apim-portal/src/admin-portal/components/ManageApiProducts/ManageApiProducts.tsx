@@ -5,6 +5,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { TManagedApiProductId, TViewManagedApiProduct } from '../../../components/APApiObjectsCommon';
@@ -285,6 +286,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   return (
     <div className="manage-api-products">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       { !isLoading && renderToolbar() }

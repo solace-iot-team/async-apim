@@ -56,7 +56,7 @@ export class APClientServerRaw {
     const funcName = 'httpGET_BasePath';
     const logName= `${APClientServerRaw.componentName}.${funcName}()`;
     const basePath = APClientServerRaw.getBasePath();
-    console.log(`${logName}: basePath = ${basePath}`);
+    // console.log(`${logName}: basePath = ${basePath}`);
     let response: Response;
     let responseBody: any;
     try {

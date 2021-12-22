@@ -7,6 +7,7 @@ import { Button } from "primereact/button";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_COMPONENT_STATE, TAPDeveloperPortalApiProductCatalogCompositeId } from "./DeveloperPortalProductCatalogCommon";
 import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
@@ -173,6 +174,8 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   return (
     <div className="adp-productcatalog">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       {!isLoading && renderToolbar() }

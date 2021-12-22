@@ -6,80 +6,79 @@ import { PanelMenu } from 'primereact/panelmenu';
 
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
-import { APHealthCheckContext } from "../../../components/APHealthCheckContextProvider";
+import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
+import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 
 import '../../../components/APComponents.css';
-import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 
 export interface IAdminPortalSideBarProps {
   onSwitchToDeveloperPortal: () => void;
 }
 
 export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IAdminPortalSideBarProps) => {
+  // const componentName = 'AdminPortalSideBar';
 
   const history = useHistory();
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
+  const [authContext] = React.useContext(AuthContext);
+  const [userContext] = React.useContext(UserContext);
+  const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
-  const isDisabled = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
+  const isDisabled = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath)
     );
   } 
-
-  const isDisabledWithConnectorUnavailable = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
-    if(isDisabled(resourcePath)) return true;
-    if(
-        healthCheckContext.connectorHealthCheckResult?.summary.success === EAPHealthCheckSuccess.FAIL || 
-        healthCheckContext.connectorHealthCheckResult?.summary.success === EAPHealthCheckSuccess.UNDEFINED) {
-      return true;    
-    }
-    return false;
-  }
-  const isDisabledWithOrg = (resourcePath: EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths): boolean => {
+  const isDisabledWithOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
       !userContext.runtimeSettings.currentOrganizationName
     );
   }
+  const isDisabledWithConnectorUnavailable = (isDisabledFunc: (resourcePath: EUICombinedResourcePaths) => boolean, resourcePath: EUICombinedResourcePaths): boolean => {
+    if(isDisabledFunc(resourcePath)) return true;
+    if( healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ) return true;    
+    return false;
+  }
   
   const getMenuItems = (): Array<MenuItem> => {
     if(!authContext.isLoggedIn) return [];
-    let items: Array<MenuItem>= [
-      { 
-        label: 'Switch to Developer Portal',
-        disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.Home),
-        command: () => { props.onSwitchToDeveloperPortal(); }
-      },
+    let items: Array<MenuItem> = [];
+    if(!isDisabledWithOrg(EUIDeveloperPortalResourcePaths.Home)) {
+      items.push(
+        { 
+          label: 'Switch to Developer Portal',
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg,EUIDeveloperPortalResourcePaths.Home),
+          command: () => { props.onSwitchToDeveloperPortal(); }
+        }  
+      );
+    }
+    let _items: Array<MenuItem> = [
       {
         label: 'APPs',
-        disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationApps),
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
       },
       {
         label: 'API Products',
-        disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
       {
         label: 'APIs',
-        disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationApis),
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
       },
       {
         label: 'Environments',
-        disabled: isDisabledWithOrg(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),         
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
       },
-      { label: "System",
+      { 
+        label: "System",
         items: [
           {
             label: 'Users',
@@ -93,7 +92,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
           // },
           {
             label: 'Organizations',
-            disabled: isDisabledWithConnectorUnavailable(EUIAdminPortalResourcePaths.ManageSystemOrganizations),
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
           },
           {
@@ -124,6 +123,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         ]
       },
     ];
+    items.push(..._items);
     return items;
   }
 

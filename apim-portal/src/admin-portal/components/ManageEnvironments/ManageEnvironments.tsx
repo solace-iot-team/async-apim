@@ -6,6 +6,7 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListEnvironments } from "./ListEnvironments";
 import { ViewEnvironment } from "./ViewEnvironment";
@@ -330,6 +331,8 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
 
   return (
     <div className="ap-environments">
+
+      <CheckConnectorHealth />
 
       <Loading show={isLoading} />      
       

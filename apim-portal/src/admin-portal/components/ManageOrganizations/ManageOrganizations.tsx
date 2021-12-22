@@ -7,6 +7,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
 import { ListOrganizations } from "./ListOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
@@ -254,6 +255,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   return (
     <div className="manage-organizations">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       {!isLoading &&

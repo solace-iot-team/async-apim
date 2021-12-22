@@ -3,7 +3,6 @@ import { useHistory, Route, Switch } from 'react-router-dom';
 
 import { Config } from "./Config";
 import { UserContext } from './components/UserContextProvider/UserContextProvider';
-import { ConfigContext } from "./components/ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from "./components/AuthContextProvider/AuthContextProvider";
 
 // * Admin Portal *
@@ -50,17 +49,12 @@ const App: React.FC = () => {
   
   const IS_DEBUG: boolean = false;
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [isDebug, setIsDebug] = React.useState<boolean>(IS_DEBUG);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [isDebug] = React.useState<boolean>(IS_DEBUG);
+  const [authContext] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [showDeveloperPortal, setShowDeveloperPortal] = React.useState<boolean>(false);
   const [showAdminPortal, setShowAdminPortal] = React.useState<boolean>(false);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [showDeveloperTools, setShowDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
+  const [showDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
   const appPortalHistory = useHistory<TLocationStateAppState>();
 
   const navigateToWithoutStateChange = (path: string): void => { 

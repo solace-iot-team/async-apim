@@ -37,6 +37,7 @@ export class ApiCallState {
     apiCallState.isAPError = (err instanceof APError);
     if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) apiCallState.error = err;
     else if(err instanceof APError) apiCallState.error = err.toObject();
+    else if(err instanceof Error) apiCallState.error = { name: err.name, message: err.message };
     else apiCallState.error = err.toString();
     return apiCallState;
   }
@@ -97,6 +98,20 @@ export class ApiCallState {
       return userMessage;
     }
     if(apiCallStatus.error) {
+      console.log(`${logName}: typeof apiCallStatus.error = ${typeof apiCallStatus.error}`);
+      console.log(`${logName}: apiCallStatus.error instanceof Error = ${apiCallStatus.error instanceof Error}`);
+      // check if it is a Failed to Fetch error
+      if(typeof apiCallStatus.error === 'object') {
+        const err: any = apiCallStatus.error;
+        if(err.name && err.message) {
+          if(err.name === 'TypeError' && err.message === 'Failed to fetch') {
+            const userMessage = `failed to execute api call - server may be unavailable \n${JSON.stringify(err)}`;
+            return userMessage;
+          } 
+        }
+      }
+      if(typeof apiCallStatus.error === 'object') return JSON.stringify(apiCallStatus.error, null, 2);
+      if(apiCallStatus.error instanceof Error) return apiCallStatus.error.toString();
       return apiCallStatus.error;
     }
     return apiCallStatus.context.userDetail ? apiCallStatus.context.userDetail : 'unknown error';
