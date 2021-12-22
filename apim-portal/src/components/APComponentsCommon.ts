@@ -1,5 +1,8 @@
 import { DataTableSortOrderType } from 'primereact/datatable';
-import { APSUser, EAPSSortDirection } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSUser, 
+  EAPSSortDirection 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
   APIInfo,
   APIProduct,

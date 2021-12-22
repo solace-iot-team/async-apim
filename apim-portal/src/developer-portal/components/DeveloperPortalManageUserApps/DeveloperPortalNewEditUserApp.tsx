@@ -19,7 +19,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   APSUserId
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";

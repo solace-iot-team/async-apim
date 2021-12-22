@@ -1,4 +1,6 @@
-import { EAPSAuthRole } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  EAPSAuthRole 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
 export const CAPSAuthRoleNone = '';

@@ -7,7 +7,7 @@ import {
   EAPSAuthRole, 
   EAPSAuthRoleList,
   ApiError as APSApiError
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { TAPPortalInfo } from '../../utils/Globals';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';

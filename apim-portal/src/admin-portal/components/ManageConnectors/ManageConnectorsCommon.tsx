@@ -1,12 +1,12 @@
 import { 
   APSConnector, 
   APSId 
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { Globals } from '../../../utils/Globals';
 import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
-import { EAPHealthCheckSuccess, TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
+import { TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
 import { SystemHealthCommon } from '../../../components/SystemHealth/SystemHealthCommon';
 
 export type TViewManagedObject = {

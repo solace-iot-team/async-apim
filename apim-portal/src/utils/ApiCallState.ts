@@ -3,7 +3,10 @@
 // ********
 import { APClientConnectorOpenApi } from "./APClientConnectorOpenApi";
 import { APSClientOpenApi } from "./APSClientOpenApi";
-import { APSError, APSErrorIds } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSError, 
+  APSErrorIds 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APError, APSApiError } from "./APError";
 
 export type TApiCallState = {

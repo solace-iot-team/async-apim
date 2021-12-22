@@ -6,7 +6,13 @@ import {
   Organization,
   About
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSAbout, ApsConfigService, APSConnectorClientConfig, ApsMonitorService, APSStatus } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSAbout, 
+  ApsConfigService, 
+  APSConnectorClientConfig, 
+  ApsMonitorService, 
+  APSStatus 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APClientConnectorRaw, APClientRawError, APClientServerRaw } from './APClientRaw';
 import { APClientConnectorOpenApi, APConnectorClientOpenApiInfo } from './APClientConnectorOpenApi';
 import { Globals, TAPConfigIssueList } from './Globals';

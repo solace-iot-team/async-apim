@@ -1,4 +1,7 @@
-import { EAPSAuthRole, EAPSAuthRoleList } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  EAPSAuthRole, 
+  EAPSAuthRoleList 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CAPSAuthRoleNone, TAPRbacRole } from '../utils/APRbac';
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../utils/Globals';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';

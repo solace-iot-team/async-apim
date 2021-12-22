@@ -7,6 +7,7 @@ const scriptDir: string = path.dirname(__filename);
 const GitRoot = `${scriptDir}/../../..`;
 const WorkingDir = `${scriptDir}/working_dir`;
 const ApimPortalDir = `${GitRoot}/apim-portal`;
+const ApimServerDir =`${GitRoot}/apim-server`;
 const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
 
 const AssetDir = `${scriptDir}/assets`;
@@ -24,6 +25,9 @@ const copySourcesToWorkingDir = () => {
   const funcName = 'copySourcesToWorkingDir';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
+
+  console.log(`${logName}: copying apim-server sources to working dir ...`);
+  if(s.cp('-rf', ApimServerDir, WorkingDir).code !== 0) process.exit(1);
 
   console.log(`${logName}: copying apim-portal sources to working dir ...`);
   if(s.cp('-rf', ApimPortalDir, WorkingDir).code !== 0) process.exit(1);

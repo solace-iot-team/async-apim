@@ -19,7 +19,9 @@ import { SetConnectorActive } from "./SetConnectorActive";
 import { TestConnector } from "./TestConnector";
 import { DeleteConnector } from "./DeleteConnector";
 import { EAction, EditNewConnector } from "./EditNewConnector";
-import { APSId } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";

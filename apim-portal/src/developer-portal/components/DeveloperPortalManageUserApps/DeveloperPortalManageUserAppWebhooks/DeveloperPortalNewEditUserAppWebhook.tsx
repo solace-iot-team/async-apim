@@ -23,7 +23,7 @@ import {
 
 import { 
   APSUserId
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { Globals } from "../../../../utils/Globals";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";

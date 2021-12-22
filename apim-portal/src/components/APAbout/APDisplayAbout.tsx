@@ -3,7 +3,10 @@ import React from "react";
 
 import { Dialog } from "primereact/dialog";
 
-import { APSAbout, ApsConfigService } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSAbout, 
+  ApsConfigService 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import { About, AdministrationService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";

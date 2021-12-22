@@ -1,5 +1,5 @@
 {
-  "name": "async-apim-admin-portal-release-targz-package",
+  "name": "async-apim-admin-portal",
   "version": "0.0.3",
   "scripts": {
     "build": "ts-node build.ts",

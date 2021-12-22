@@ -1,19 +1,9 @@
 
 import React from "react";
-import { useForm, Controller, FieldError } from 'react-hook-form';
-
-import { InputText } from 'primereact/inputtext';
-import { Password } from "primereact/password";
-import { Button } from 'primereact/button';
-import { Toolbar } from "primereact/toolbar";
-import { Divider } from "primereact/divider";
-import { classNames } from 'primereact/utils';
 
 import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../utils/ApiCallState";
-import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageUserAccountCommon, TApiCallResult, TManagedObject, TUpdateApiObject } from "./ManageUserAccountCommon";
-import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidationRules";
+import { ManageUserAccountCommon, TApiCallResult, TManagedObject } from "./ManageUserAccountCommon";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";

@@ -5,7 +5,9 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 
-import { APSUser } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSUser 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from "../../utils/Globals";
 
 import "../APComponents.css";

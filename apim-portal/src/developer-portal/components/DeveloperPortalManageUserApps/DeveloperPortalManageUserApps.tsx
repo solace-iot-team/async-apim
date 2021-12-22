@@ -15,7 +15,7 @@ import {
 import { 
   APSUser, 
   APSUserId 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";

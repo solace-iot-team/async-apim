@@ -7,7 +7,7 @@ import { Divider } from "primereact/divider";
 
 import { 
   ApsConfigService, APSConnector, APSId
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";

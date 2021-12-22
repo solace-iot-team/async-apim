@@ -7,12 +7,19 @@ import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 
+// import { 
+//   ApsUsersService, 
+//   APSUserList, 
+//   ListApsUsersResponse,
+//   EAPSSortDirection,
+// } from "@solace-iot-team/apim-server-openapi-browser";
+
 import { 
+  APSUserList,
   ApsUsersService, 
-  APSUserList, 
-  ListApsUsersResponse,
-  EAPSSortDirection,
-} from "@solace-iot-team/apim-server-openapi-browser";
+  EAPSSortDirection, 
+  ListApsUsersResponse
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";

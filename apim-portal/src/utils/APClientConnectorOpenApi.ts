@@ -1,6 +1,10 @@
 
 import { OpenAPI, ApiError } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSConnectorClientConfig, APSLocationConfigExternal, APSLocationConfigInternalProxy } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSConnectorClientConfig, 
+  APSLocationConfigExternal, 
+  APSLocationConfigInternalProxy 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Mutex, MutexInterface } from "async-mutex";
 
 export type APConnectorClientOpenApiInfo = {

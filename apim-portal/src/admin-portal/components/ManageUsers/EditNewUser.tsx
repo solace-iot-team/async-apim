@@ -16,7 +16,7 @@ import {
   APSUser,
   APSUserReplace,
   EAPSAuthRole
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';

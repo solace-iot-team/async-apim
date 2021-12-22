@@ -4,8 +4,6 @@ export class Constants {
   private readonly _apimPortalDir: string;
   private readonly _outputAdminPortalAboutFile: string;
   private readonly _outputDeveloperPortalAboutFile: string;
-
-
   private readonly _workingDir: string;
   private readonly _apimServerDir: string;
   private readonly _workingApimServerDir: string;

@@ -1,6 +1,8 @@
 import React from "react";
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
-import { APSConnector } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSConnector 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPRbacRoleList } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
 import { TAPConnectorInfo } from "../../utils/APConnectorApiCalls";

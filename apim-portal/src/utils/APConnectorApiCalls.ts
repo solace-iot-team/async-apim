@@ -6,7 +6,9 @@ import {
   About,
   AdministrationService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSConnectorClientConfig 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPOrganizationId } from '../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';

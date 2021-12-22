@@ -1,5 +1,7 @@
 import React from "react";
-import { APSUser } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSUser 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPOrganizationId, TAPOrganizationIdList, TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
 

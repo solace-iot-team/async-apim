@@ -12,7 +12,7 @@ import {
   EAPSAuthRole,
   ApiError as APSApiError,
   ListApsUsersResponse,
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 
 type TApiObject = APSUser;

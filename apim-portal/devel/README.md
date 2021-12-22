@@ -29,7 +29,7 @@ npm install -g serve
 serve -s build
 ````
 
-## Using APIM Server OpenAPI from Local Release
+<!-- ## Using APIM Server OpenAPI from Local Release
 ````bash
 cd async-apim/release/apim-server-openapi/apim-server-openapi-browser
 # create link in global node_modules
@@ -56,7 +56,7 @@ cd async-apim/apim-portal
 npm unlink --no-save @solace-iot-team/apim-server-openapi-browser
 # NOTE: now install the released package
 npm install
-````
+```` -->
 
 ## Using Connector OpenAPI from Local Release
 

@@ -19,7 +19,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { 
   APSUser, 
   ApsUsersService 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";

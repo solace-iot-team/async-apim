@@ -11,7 +11,7 @@ import {
   APSConnectorList, 
   APSId, 
   ListApsConnectorsResponse 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";

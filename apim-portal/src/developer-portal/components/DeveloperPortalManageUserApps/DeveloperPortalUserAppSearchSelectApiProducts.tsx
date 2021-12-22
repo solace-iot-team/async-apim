@@ -7,7 +7,9 @@ import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 import { InputTextarea } from "primereact/inputtextarea";
 
-import { APSUserId } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSUserId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import { Globals } from "../../../utils/Globals";

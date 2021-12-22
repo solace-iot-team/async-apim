@@ -3,7 +3,7 @@ import {
   APSUser, 
   APSUserId,
   EAPSAuthRoleList
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from '../../../utils/Globals';
 import { ConfigHelper } from '../../../components/ConfigContextProvider/ConfigHelper';
 import { TAPConfigContext } from '../../../components/ConfigContextProvider/ConfigContextProvider';

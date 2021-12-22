@@ -3,7 +3,7 @@ import {
   APSUserId, 
   ApsUsersService,
   APSUserUpdate,
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 

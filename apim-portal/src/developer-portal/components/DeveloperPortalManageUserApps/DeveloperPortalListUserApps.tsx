@@ -16,7 +16,9 @@ import {
   CommonName,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSUserId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
   TApiProduct,
   TApiProductList,

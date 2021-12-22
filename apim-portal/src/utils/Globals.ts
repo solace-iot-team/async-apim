@@ -1,6 +1,10 @@
-import { APSAbout } from "@solace-iot-team/apim-server-openapi-browser";
 import yaml from "js-yaml";
 import { SemVer } from "semver";
+
+import { 
+  APSAbout 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+
 import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";

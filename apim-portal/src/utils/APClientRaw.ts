@@ -1,4 +1,6 @@
-import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSConnectorClientConfig 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Mutex, MutexInterface } from 'async-mutex';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { APTimeoutError } from './APError';

@@ -1,5 +1,8 @@
 
-import { OpenAPI as APSOpenAPI, ApiError as APSApiError } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  OpenAPI as APSOpenAPI, 
+  ApiError as APSApiError 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 export type APSClientOpenApiInfo = {
   base: string,
