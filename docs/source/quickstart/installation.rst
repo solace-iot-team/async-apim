@@ -1,11 +1,11 @@
-Quickstart
-==========
+Installation
+============
 
-The quickstart starts all required services using this
-:download:`docker-compose-file <../../quickstart/docker.compose.yml>`:
+The installation starts all required services using this
+:download:`docker-compose-file <../../../quickstart/docker.compose.yml>`:
 
 :qs-async-apim-www: an nginx service as a single point of entry, see `nginx.conf`_ for exposed services
-:qs-async-apim-admin-portal: the admin portal web server
+:qs-async-apim-admin-portal: the admin and developer portal web server
 :qs-async-apim-server: the portal server
 :qs-async-apim-server-mongodb: the portal database
 :qs-async-apim-connector: the connector
@@ -18,10 +18,19 @@ The quickstart starts all required services using this
 
 The following figure shows the set-up of the containers:
 
-.. figure:: ./images/async-apim.quickstart.png
+.. figure:: ../images/async-apim.quickstart.containers.png
    :width: 800
 
    Figure 1: Quickstart Docker Compose Container Setup
+
+
+Browser connections:
+
+.. figure:: ../images/async-apim.quickstart.connect.png
+   :width: 800
+
+   Figure 2: Quickstart Browser Connections
+
 
 
 .. _Quickstart :

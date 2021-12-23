@@ -3,10 +3,10 @@ Solace Async API Management
 ===========================
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 1
   :caption: Guides
 
-  quickstart
+  quickstart/index.rst
 
 Repos & Links
 -------------
