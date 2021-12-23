@@ -103,8 +103,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
     return updateApiObject;
   }
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    // const funcName = 'transformManagedObjectToCreateApiObject';
-    // const logName = `${componentName}.${funcName}()`;
     const createApiObject: TCreateApiObject = {
       name: managedObject.apiObject.name,
       displayName: managedObject.apiObject.displayName,
@@ -115,8 +113,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
       callbackUrl: managedObject.apiObject.callbackUrl,
       webHooks: managedObject.apiObject.webHooks,
       credentials: managedObject.apiObject.credentials
-    }
-    // console.log(`${logName}: createApiObject=${JSON.stringify(createApiObject, null, 2)}`);
+    };
     return createApiObject;
   }
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
@@ -140,11 +137,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApiProducts, setShowSelectApiProducts] = React.useState<boolean>(false);
-
-  // investigate, why is this still here?
-  const [selectedApiProductList, setSelectedApiProductList] = React.useState<Array<APIProduct>>([]);
-
-
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
@@ -155,9 +147,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
 
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
-
-  // investigate, why is this still here?
-  const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
   // * Api Calls *
   const apiGetManagedObject = async(orgId: TAPOrganizationId, userId: APSUserId, appId: TManagedObjectId, appDisplayName: string): Promise<TApiCallState> => {
@@ -281,11 +270,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Select Api Products *
-  React.useEffect(() => {
-    const funcName = 'useEffect[selectedApiProductList]';
-    const logName = `${componentName}.${funcName}()`;
-    if(selectedApiProductList.length > 0 ) alert(`${logName}: validate selected api product list for not having the same apis ...`);
-  }, [selectedApiProductList]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSearchApiProducts = () => {
     setShowSelectApiProducts(true);
@@ -326,7 +310,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }
 
   const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    setIsFormSubmitted(true);
     doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
   }
 
@@ -335,7 +318,6 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    setIsFormSubmitted(true);
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {

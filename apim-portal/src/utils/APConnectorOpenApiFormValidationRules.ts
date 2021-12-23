@@ -178,45 +178,22 @@ export class APConnectorFormValidationRules {
   }
 
   public static AttributeName = (): any => {
-    const fixPattern = '^[a-zA-Z0-9_-]*$';
-    return {
-      required: "Enter name.",
-      minLength: {
-        value: $attributes.contains.properties.name.minLength,
-        message: `Minimum of ${$attributes.contains.properties.name.minLength} chars.`
-      },
-      maxLength: {
-        value: $attributes.contains.properties.name.maxLength,
-        message: `Maximum of ${$attributes.contains.properties.name.maxLength} chars.`
-      },
-      pattern: {
-        // value: new RegExp($attributes.contains.properties.name.pattern),
-        value: new RegExp(fixPattern),
-        message: `Invalid name. Pattern: ${$attributes.contains.properties.name.pattern}`
-      }
-    };
+    const schema = $attributes.contains.properties.name;
+    const rules: any = {};
+    rules['required'] = schema.isRequired ? `Enter name.` : false;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid name`);
+    return rules;
   }
   public static AttributeValue = (): any => {
-    // lint: investigate
-    const fixPattern = '^[a-zA-Z0-9_,\*\?-]*$';
-    // pattern: [a-zA-Z0-9_\-\s,\*]{1,1024}
-
-    return {
-      required: "Enter value.",
-      minLength: {
-        value: $attributes.contains.properties.value.minLength,
-        message: `Minimum of ${$attributes.contains.properties.value.minLength} chars.`
-      },
-      maxLength: {
-        value: $attributes.contains.properties.value.maxLength,
-        message: `Maximum of ${$attributes.contains.properties.value.maxLength} chars.`
-      },
-      pattern: {
-        // value: new RegExp($attributes.contains.properties.value.pattern),
-        value: new RegExp(fixPattern),
-        message: `Invalid name. Pattern: ${$attributes.contains.properties.value.pattern}`
-      }
-    };
+    const schema = $attributes.contains.properties.value;
+    const rules: any = {};
+    rules['required'] = schema.isRequired ? `Enter a value.` : false;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid value`);
+    return rules;
   }
   public static CommonName = (): any => {
     const schema = $CommonName;

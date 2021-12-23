@@ -2,8 +2,6 @@
 import React from "react";
 
 import { TabView, TabPanel } from 'primereact/tabview';
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
@@ -28,11 +26,9 @@ import {
   TAPDeveloperPortalUserAppDisplay, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
-import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
+import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
-import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayCredentialsPanel } from "../../../components/APDisplay/APDisplayAppCredentialsPanel";
 import { APDisplayClientInformationPanel } from "../../../components/APDisplay/APDisplayAppClientInformationPanel";
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
@@ -129,73 +125,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-
-  // TODO: create a new component: APDisplayAppAPIProductReferences
-  // TODO: use also in Admin Portal: ManageUserApps:ViewApp
-  const viewProductsDataTableRef = React.useRef<any>(null);
-  const [expandedViewProductsDataTableRows, setExpandedViewProductsDataTableRows] = React.useState<any>(null);
-
-  // investigate - new component works?
-  const renderApiProducts = (apiProductList: TApiProductList): JSX.Element => {
-    const rowExpansionTemplate = (rowData: TApiProduct) => {
-      return (
-        <APDisplayAttributes
-          attributeList={rowData.attributes}
-          emptyMessage="No attributes defined."
-        />
-      );
-    }
-    const environmentsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return APRenderUtils.renderStringListAsDivList(rowData.environments ? rowData.environments : []);
-    }  
-    const protocolsBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return (
-        <React.Fragment>
-          {APRenderUtils.getProtocolListAsString(rowData.protocols)}
-        </React.Fragment>
-      );
-    }
-    const attributesBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.attributes));
-    }
-    const apisBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return APRenderUtils.renderStringListAsDivList(rowData.apis);
-    }    
-    const apiProductNameBodyTemplate = (rowData: TApiProduct): JSX.Element => {
-      return (
-        <div className="p-text-bold">{rowData.displayName}</div>
-      );
-    }
-
-    const dataTableList = apiProductList;
-
-    return (
-      <div className="card">
-        <DataTable
-          className="p-datatable-sm"
-          ref={viewProductsDataTableRef}
-          dataKey="name"
-          value={dataTableList}
-          sortMode="single" 
-          sortField="name" 
-          sortOrder={1}
-          scrollable 
-          // scrollHeight="200px" 
-          expandedRows={expandedViewProductsDataTableRows}
-          onRowToggle={(e) => setExpandedViewProductsDataTableRows(e.data)}
-          rowExpansionTemplate={rowExpansionTemplate}
-        >
-          <Column expander style={{ width: '3em' }} />  
-          <Column body={apiProductNameBodyTemplate} header="API Product" bodyStyle={{ verticalAlign: 'top' }} />
-          <Column body={apisBodyTemplate} header="APIs" bodyStyle={{ verticalAlign: 'top' }}/>
-          <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }}/>
-          <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-          <Column body={protocolsBodyTemplate} header="Protocols" bodyStyle={{ verticalAlign: 'top' }} />
-        </DataTable>
-      </div>
-    );
-  }
 
   const getWebhooksTabHeader = (): string => {
     const funcName = 'getWebhooksTabHeader';

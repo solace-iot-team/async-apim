@@ -2,6 +2,7 @@ import { APFetchResult } from "./APFetch";
 import { APLogger } from "./APLogger";
 
 export class APError extends Error {
+  protected static className = 'APError';
   private internalStack: Array<string>;
   private internalLogName: string;
   private internalMessage: string | undefined;
@@ -10,9 +11,9 @@ export class APError extends Error {
     return stack.split('\n');
   }
 
-  constructor(internalLogName: string, internalMessage?: string) {
+  constructor(internalLogName: string, internalMessage?: string, errorName: string = APError.className) {
     super(internalMessage?internalMessage:internalLogName);
-    this.name = this.constructor.name;
+    this.name = errorName;
     this.internalMessage = internalMessage;
     this.internalLogName = internalLogName;
     this.internalStack = this.createArrayFromStack(this.stack);
@@ -40,35 +41,37 @@ export class APError extends Error {
 }
 
 export class APConnectorApiMismatchError extends APError {
-
-  // investigate: this needs a className property, correct?
+  protected static className = 'APConnectorApiMismatchError';
 
   constructor(internalLogName: string, internalMessage?: string) {
-    super(internalLogName, internalMessage);
+    super(internalLogName, internalMessage, APConnectorApiMismatchError.className);
   }
 }
 
 export class APContextError extends APError {
+  protected static className = 'APContextError';
   private context: any;
   
   constructor(internalLogName: string, internalMessage: string, context: any) {
-    super(internalLogName, internalMessage);
+    super(internalLogName, internalMessage, APContextError.className);
     this.context = context;
   }  
 }
 
 export class APTimeoutError extends APError {
+  protected static className = 'APTimeoutError';
   private context: any;
   constructor(internalLogName: string, internalMessage: string, context: any) {
-    super(internalLogName, internalMessage);
+    super(internalLogName, internalMessage, APTimeoutError.className);
     this.context = context;
   }  
 }
 
 export class APFetchError extends APError {
+  protected static className = 'APFetchError';
   private fetchResult: APFetchResult;
   constructor(internalLogName: string, internalMessage: string, fetchResult: APFetchResult) {
-    super(internalLogName, internalMessage);
+    super(internalLogName, internalMessage, APFetchError.className);
     this.fetchResult = fetchResult;
   }
 }
@@ -82,12 +85,14 @@ export declare type APSApiResult = {
 };
 
 export class APSApiError extends Error {
+  protected static className = 'APSApiError';
   readonly url: string;
   readonly status: number;
   readonly statusText: string;
   readonly body: any;
-  constructor(response: APSApiResult, message: string) {
+  constructor(response: APSApiResult, message: string, errorName: string = APSApiError.className) {
     super(message);
+    this.name = errorName;
     this.url = response.url;
     this.status = response.status;
     this.statusText = response.statusText;
