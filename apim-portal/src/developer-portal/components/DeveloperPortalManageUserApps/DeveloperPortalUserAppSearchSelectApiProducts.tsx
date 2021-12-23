@@ -7,7 +7,9 @@ import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 import { InputTextarea } from "primereact/inputtextarea";
 
-import { APSUserId } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSUserId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import { Globals } from "../../../utils/Globals";
@@ -97,8 +99,6 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
     return result;
   }
   const doValidateSelectedApiProducts = () => {
-    const funcName = 'doValidateSelectedApiProducts';
-    const logName = `${componentName}.${funcName}()`;
     const getDupes = (input: Array<CommonName>): Array<CommonName> => {
       return input.reduce( (acc: Array<string>, currentValue: string, currentIndex: number, arr: Array<CommonName>) => {
         if(arr.indexOf(currentValue) !== currentIndex && acc.indexOf(currentValue) < 0) acc.push(currentValue); 
@@ -153,7 +153,7 @@ export const DeveloperPortalUserAppSearchSelectApiProducts: React.FC<IDeveloperP
     setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedApiProductItemList));
     // does not work for primereact/DataTable native filter
     // setGlobalFilter(APApiObjectsCommon.transformSelectItemListToTableGlobalFilter(props.currentSelectedApiItemList));
-  }, [managedObjectTableDataList]); 
+  }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

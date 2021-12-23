@@ -10,12 +10,13 @@ import { Divider } from 'primereact/divider';
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { SystemHealthDisplay } from "../SystemHealth/SystemHealthDisplay";
+import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
+import { APDisplayAbout } from "../APAbout/APDisplayAbout";
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -23,12 +24,19 @@ import './NavBar.css';
 export interface INavBarProps {}
 
 export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
-  // const componentName = 'NavBar';
+  const componentName = 'NavBar';
+
+  const UndefinedPortalLogoUrl = process.env.PUBLIC_URL + '/images/logo.png';
+  const AdminPortalLogoUrl = process.env.PUBLIC_URL + '/admin-portal/images/logo.png';
+  const DeveloperPortalLogoUrl = process.env.PUBLIC_URL + '/developer-portal/images/logo.png';
+
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const history = useHistory();
   const userOverlayPanel = React.useRef<any>(null);
   const organizationOverlayPanel = React.useRef<any>(null);
+
+  const [showAbout, setShowAbout] = React.useState<boolean>(false);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -109,6 +117,12 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
         icon: 'pi pi-fw pi-file',
         items: [
           {
+            label: 'Documentation',
+            icon: 'pi pi-fw pi-file',
+            url: 'https://solace-iot-team.github.io/async-apim',
+            target: '_blank'
+          },
+          {
             label: 'Reference Designs',
             icon: 'pi pi-fw pi-github',
             url: 'https://github.com/solace-iot-team/solace-apim-reference-designs',
@@ -116,21 +130,47 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           }
         ]
       },
-      { 
-        label: 'Notifications',
-        icon: 'pi pi-fw pi-bell',
-        command: () => { navigateTo('/notifications'); }
-      }
+      // { 
+      //   label: 'Notifications',
+      //   icon: 'pi pi-fw pi-bell',
+      //   command: () => { navigateTo('/notifications'); }
+      // }
     ];
 
     if(Config.getUseDevelTools()) items.push(getDevelMenuItem());
     return items;
   }
 
+  const getLogoUrl = (appState: EAppState): string => {
+    const funcName = 'getLogoUrl';
+    const logName = `${componentName}.${funcName}()`;
+    switch(appState) {
+      case EAppState.ADMIN_PORTAL:
+        return AdminPortalLogoUrl;
+      case EAppState.DEVELOPER_PORTAL:
+        return DeveloperPortalLogoUrl;
+      case EAppState.UNDEFINED:
+        if(userContext.originAppState !== EAppState.UNDEFINED) return getLogoUrl(userContext.originAppState);
+        return UndefinedPortalLogoUrl;
+      default:
+        Globals.assertNever(logName, appState);
+    }
+    return 'never gets here';
+  }
   const menubarStartTemplate = () => {
     return (
-      <img alt="logo" src="/images/logo.png" className="p-menubar-logo p-mr-2"></img>
-    )
+      <img alt="logo" src={getLogoUrl(userContext.currentAppState)} className="p-menubar-logo p-mr-2" onClick={(e) => setShowAbout(true)}/>
+    );
+  }
+  const renderAbout = () => {
+    const onClose = () => {
+      setShowAbout(false);
+    }
+    return (
+      <APDisplayAbout
+        onClose={onClose}
+      />
+    );
   }
   const renderUserOpInfo = () => {
     return (
@@ -207,7 +247,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
           </React.Fragment>
         }
-        <SystemHealthDisplay />
+        <SystemHealthCheck />
       </React.Fragment>
     );
   }
@@ -217,6 +257,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       <div className="card" >
         <Menubar model={getMenuItems()} start={menubarStartTemplate} end={menubarEndTemplate} />
       </div>
+      {showAbout && renderAbout()}
     </React.Fragment>
   );
 }

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { EServerStatusCodes, ServerLogger } from '../../../../common/ServerLogger';
 import APSConnectorsService, { TAPSListAPSConnectorResponse } from '../../../services/apsConfig/APSConnectorsService';
 import APSConnector = Components.Schemas.APSConnector;
 import { ApiMissingParameterServerError } from '../../../../common/ServerError';
@@ -7,12 +6,7 @@ import { ApiMissingParameterServerError } from '../../../../common/ServerError';
 export class ApsConnectorsController {
   private static className = 'ApsConnectorsController';
 
-  public static all = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'all';
-    const logName = `${ApsConnectorsController.className}.${funcName}()`;
-
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
-
+  public static all = (_req: Request, res: Response, next: NextFunction): void => {
     APSConnectorsService.all()
     .then( (r: TAPSListAPSConnectorResponse) => {
       res.status(200).json(r);
@@ -25,7 +19,6 @@ export class ApsConnectorsController {
   public static byId = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'byId';
     const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
     const connectorId: string = req.params.connector_id;
     if(!connectorId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'connector_id' });
     APSConnectorsService.byId(connectorId)
@@ -37,10 +30,7 @@ export class ApsConnectorsController {
     });
   }
 
-  public static byActive = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'byActive';
-    const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
+  public static byActive = (_req: Request, res: Response, next: NextFunction): void => {
     APSConnectorsService.byActive()
     .then( (r: APSConnector) => {
       res.status(200).json(r);
@@ -51,9 +41,6 @@ export class ApsConnectorsController {
   }
 
   public static create = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'create';
-    const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
     APSConnectorsService.create(req.body)
     .then((r) => {
       res.status(201).json(r);
@@ -66,7 +53,6 @@ export class ApsConnectorsController {
   public static replace = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'replace';
     const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
     const connectorId: string = req.params.connector_id;
     if(!connectorId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'connector_id' });
     APSConnectorsService.replace(connectorId, req.body)
@@ -81,7 +67,6 @@ export class ApsConnectorsController {
   public static setActive = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'setActive';
     const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
     const connectorId: string = req.params.connector_id;
     if(!connectorId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'connector_id' });
     APSConnectorsService.setActive(connectorId)
@@ -96,7 +81,6 @@ export class ApsConnectorsController {
   public static delete = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'delete';
     const logName = `${ApsConnectorsController.className}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
     const connectorId: string = req.params.connector_id;
     if(!connectorId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'connector_id' });
     APSConnectorsService.delete(connectorId)

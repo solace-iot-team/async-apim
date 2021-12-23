@@ -10,24 +10,12 @@ SKIPPING="+++ SKIPPING +++";
 
 echo " >>> Starting $scriptName ..."
 
-echo " >>> Install ..."
+echo " >>> Build ..."
   cd $scriptDir
-  runScript="npm install"
+  runScript="$scriptDir/build.sh"
   $runScript
   code=$?;
   if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
-echo " >>> Success."
-
-echo " >>> Build..."
-  cd $scriptDir
-  runScript="npm run build"
-  $runScript
-  code=$?;
-  if [[ $code == 2 ]]; then
-    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
-  elif [[ $code != 0 ]]; then
-    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
-  fi
 echo " >>> Success."
 
 echo " >>> Publish ..."

@@ -1,15 +1,40 @@
 import yaml from "js-yaml";
 import { SemVer } from "semver";
+
+import { 
+  APSAbout 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+
 import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
+
+export type TAPPortalAbout = {
+  name: string;
+  description: string;
+  repository: {
+      type: string;
+      url: string;
+      revision: {
+          sha1: string
+      }
+  },
+  issues_url: string;
+  author: string;
+  license: string;
+  version: string;
+  build_date: string;
+  'apim-server-openapi-version': string;
+  "apim-connector-openapi-version": string;
+}
 
 export type TAPPortalInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo
   portalServerClientOpenApiInfo: APSClientOpenApiInfo
 }
 export enum EAPConfigIssueNames {
-  CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH'
+  CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH',
+  APIM_SERVER_OPENAPI_VERSION_MISMATCH = 'APIM_SERVER_OPENAPI_VERSION_MISMATCH'
 }
 export type TAPConfigIssue = {
   issue: EAPConfigIssueNames,
@@ -34,6 +59,7 @@ export enum EUICommonResourcePaths {
   NoOrganization = '/noorganization',
   Login = '/login',
   ManageUserAccount = '/manage/user/account',
+  HealthCheckView = '/healthcheck/view'
 }
 
 export enum EUIAdminPortalResourcePaths {
@@ -51,6 +77,7 @@ export enum EUIAdminPortalResourcePaths {
   ManageSystemConfigConnectors = '/admin-portal/manage/system/config/connectors',
   ManageSystemConfigSettings = '/admin-portal/manage/system/config/settings',
   MonitorSystemHealth = '/admin-portal/monitor/system/health',
+  AdminPortalConnectorUnavailable = '/admin-portal/healthcheck/view'
 }
 
 export enum EUIDeveloperPortalResourcePaths {
@@ -59,7 +86,8 @@ export enum EUIDeveloperPortalResourcePaths {
   ExploreApiProducts = '/developer-portal/explore/api-products',
   ExploreApis = '/developer-portal/explore/apis',
   ManageUserApplications = '/developer-portal/manage/user/applications',
-  ManageTeamApplications = '/developer-portal/manage/team/applications'
+  ManageTeamApplications = '/developer-portal/manage/team/applications',
+  DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }
 
 export enum EUIDeveloperToolsResourcePaths {
@@ -140,7 +168,7 @@ export class Globals {
     console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
   }
 
-  public static crossCheckConfiguration = (configContext: TAPConfigContext): TAPConfigIssueList => {
+  public static crossCheckConfiguration_Portal_X_Connector = (configContext: TAPConfigContext): TAPConfigIssueList => {
     let issueList: TAPConfigIssueList = [];
 
     // use SemVer and do the actual comparison 
@@ -162,6 +190,30 @@ export class Globals {
     }    
     return issueList;
   }
+
+  public static crossCheckConfiguration_Portal_X_Server = (apPortalInfo: TAPPortalInfo, apsAbout: APSAbout): TAPConfigIssueList => {
+    let issueList: TAPConfigIssueList = [];
+  
+    // use SemVer and do the actual comparison 
+    const portalServerOpenApiVersionStr = apPortalInfo.portalServerClientOpenApiInfo.versionStr;
+    const apimServerOpenApiVersionStr = apsAbout.versions["apim-server-openapi"];
+    if(portalServerOpenApiVersionStr && apimServerOpenApiVersionStr) {
+      const portalServerOpenApiSemVer: SemVer = new SemVer(portalServerOpenApiVersionStr);
+      const apimServerOpenApiSemVer: SemVer = new SemVer(apimServerOpenApiVersionStr);
+      if(portalServerOpenApiSemVer.compare(apimServerOpenApiSemVer) !== 0) {
+        const i1: TAPConfigIssue = {
+          issue: EAPConfigIssueNames.APIM_SERVER_OPENAPI_VERSION_MISMATCH,
+          details: {
+            portalServerOpenApiVersion: portalServerOpenApiVersionStr,
+            apimServerOpenApiVersion: apimServerOpenApiVersionStr
+          }
+        };
+        issueList.push(i1);  
+      }
+    }    
+    return issueList;
+  }  
+
 }
 
 export class GlobalElementStyles {

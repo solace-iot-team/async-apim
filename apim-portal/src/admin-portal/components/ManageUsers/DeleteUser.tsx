@@ -6,7 +6,7 @@ import { Dialog } from 'primereact/dialog';
 
 import { 
   ApsUsersService, 
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";

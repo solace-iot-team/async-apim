@@ -5,7 +5,9 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 
-import { APSUser } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSUser 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from "../../utils/Globals";
 
 import "../APComponents.css";
@@ -39,19 +41,18 @@ export const APDisplayOwner: React.FC<IAPDisplayOwnerProps> = (props: IAPDisplay
     const funcName = 'doValidateProps';
     const logName = `${componentName}.${funcName}()`;
     switch (props.ownerType) {
-      case 'apsUser': {
+      case 'apsUser':
         if(!props.apsUser) throw new Error(`${logName}: props.apsUser is undefined for props.ownerType=${props.ownerType}`);
-      } break;
-      case 'apsTeam': {
+        break;
+      case 'apsTeam':
         throw new Error(`${logName}: props.ownerType=${props.ownerType} not supported`);
-      } break;
+        // break;
       default: Globals.assertNever(logName, props.ownerType);
     }
   }
 
   React.useEffect(() => {
     doValidateProps();
-    // doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const getOwnerDisplayStr = (): string => {

@@ -26,6 +26,6 @@
       "./server/@types"
     ]
   },
-  "include": ["server/**/*.ts"],
+  "include": ["server/**/*.ts", "dev-build.ts"],
   "exclude": ["node_modules"]
 }

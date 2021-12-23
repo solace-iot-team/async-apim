@@ -42,7 +42,7 @@ export const ApproveApp: React.FC<IApproveAppProps> = (props: IApproveAppProps) 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_APPROVE_APP, `approve app: ${props.appDisplayName}`);
     try { 
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER: 
           await AppsService.updateDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
@@ -51,9 +51,8 @@ export const ApproveApp: React.FC<IApproveAppProps> = (props: IApproveAppProps) 
               status: AppStatus.APPROVED
             }    
           });
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM: 
           await AppsService.updateTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId, 
@@ -62,7 +61,6 @@ export const ApproveApp: React.FC<IApproveAppProps> = (props: IApproveAppProps) 
               status: AppStatus.APPROVED
             }
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);

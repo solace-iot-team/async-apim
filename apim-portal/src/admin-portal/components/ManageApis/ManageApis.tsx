@@ -7,6 +7,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewManagedObject } from "./ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListApis } from "./ListApis";
@@ -230,10 +231,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
-  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -317,6 +314,8 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
 
   return (
     <div className="manage-apis">
+
+      <CheckConnectorHealth />
 
       <Loading show={isLoading} />      
       

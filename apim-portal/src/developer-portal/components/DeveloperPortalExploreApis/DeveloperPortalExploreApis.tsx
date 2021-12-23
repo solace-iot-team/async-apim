@@ -5,6 +5,7 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { E_COMPONENT_STATE } from "./DeveloperPortalExploreApisCommon";
@@ -22,7 +23,7 @@ export interface IDeveloperPortalExploreApisProps {
 }
 
 export const DeveloperPortalExploreApis: React.FC<IDeveloperPortalExploreApisProps> = (props: IDeveloperPortalExploreApisProps) => {
-  const componentName = 'DeveloperPortalExploreApis';
+  // const componentName = 'DeveloperPortalExploreApis';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -142,6 +143,8 @@ export const DeveloperPortalExploreApis: React.FC<IDeveloperPortalExploreApisPro
   return (
     <div className="adp-explore-apis">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       {!isLoading && renderToolbar() }

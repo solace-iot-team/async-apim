@@ -1,17 +1,19 @@
+import yaml from "js-yaml";
+
 import { 
   APIInfo,
   ApisService, 
   About,
   AdministrationService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APSConnectorClientConfig } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSConnectorClientConfig 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPOrganizationId } from '../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from '../components/APComponentsCommon';
 import { Globals } from './Globals';
-
-import yaml from "js-yaml";
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
 
@@ -48,9 +50,6 @@ export type TTransformApiAboutToAPConnectorAboutResult = {
 
 export class APConnectorApiHelper {
 
-  // public static isAPIInfoList = (result: APIList | APISummaryList | APIInfoList): result is APIInfoList => {
-  //   return (<APIInfoList>result)[0].version != undefined;
-  // }    
   public static transformApiAboutToAPConnectorAbout = (apiAbout: About): TTransformApiAboutToAPConnectorAboutResult => {
     const funcName = 'transformApiAboutToAPConnectorAbout';
     const logName = `${APConnectorApiHelper.name}.${funcName}()`;
@@ -168,6 +167,9 @@ export class APConnectorApiCalls {
   public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorInfo | undefined> => {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
+
+    // WARNING: connector must be accessible
+
     await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;
     try {

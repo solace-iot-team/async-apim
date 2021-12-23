@@ -6,11 +6,13 @@ import { Column } from "primereact/column";
 
 import type { TAPOrganizationId, TAPOrganizationIdList } from "../APComponentsCommon";
 import type { TApiCallState } from '../../utils/ApiCallState';
-import { ApiCallState } from '../../utils/ApiCallState'
+import { ApiCallState } from '../../utils/ApiCallState';
+import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
 import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
+import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 
 import "../APComponents.css";
 import "./SelectOrganization.css";
@@ -18,7 +20,8 @@ import "./SelectOrganization.css";
 export enum CALL_STATE_ACTIONS {
   INITIALIZE_MODULE = "INITIALIZE_MODULE",
   API_GET_SELECT_OBJECT_LIST = "API_GET_SELECT_OBJECT_LIST",
-  NO_CONNECTOR_CONFIG = "NO_CONNECTOR_CONFIG"
+  NO_CONNECTOR_CONFIG = "NO_CONNECTOR_CONFIG",
+  CONNECTOR_UNAVAILABLE = "CONNECTOR_UNAVAILABLE"
 }
 
 export interface ISelectOrganizationProps {
@@ -76,12 +79,11 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-
-  // const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>([]);
   const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>();
   const [selectObjectForSelectList, setSelectObjectForSelectList] = React.useState<TSelectObjectForSelectList>([]);
-  // const [showLoading, setShowLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetSelectObjectListInProgress, setIsGetSelectObjectListInProgress] = React.useState<boolean>(false);
   const [selectedObject, setSelectedObject] = React.useState<TSelectObject>();
@@ -93,9 +95,10 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   const apiGetSelectObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetSelectObjectList';
     const logName = `${componentName}.${funcName}()`;
-    setApiCallStatus(null);
-    setIsGetSelectObjectListInProgress(true);
+
     let callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.API_GET_SELECT_OBJECT_LIST, 'retrieve list of organizations');
+    // setApiCallStatus(null);
+    setIsGetSelectObjectListInProgress(true);
     try { 
       const apiSelectObjectList: TApiObjectList = await AdministrationService.listOrganizations({});
       // console.log(`${logName}: apiSelectObjectList=${JSON.stringify(apiSelectObjectList, null, 2)} `);
@@ -108,35 +111,33 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     return callState;
   }
 
-  // * Custom Logic *
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${componentName}.${funcName}()`;
     if(!configContext.connector) {
       const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.NO_CONNECTOR_CONFIG, 'no connector config found');
       props.onError(callState);
       return;
     }
+    if(healthCheckContext.connectorHealthCheckResult && healthCheckContext.connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
+      const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.CONNECTOR_UNAVAILABLE, 'connector unavailable');
+      props.onError(callState);
+      return;
+    }
+
     if(!userContext.user.memberOfOrganizations || userContext.user.memberOfOrganizations.length === 0) {
       props.onSuccess();
       return;
     }
-    // setShowLoading(true);
     const apiCallState: TApiCallState = await apiGetSelectObjectList();
-    // setShowLoading(false);
     setApiCallStatus(apiCallState);
   }
 
   const doProcessSelectedObject = (selectedObject: TSelectObject) => {
-    // const funcName = 'doProcessSelectedObject';
-    // const logName = `${componentName}.${funcName}()`;
     if(selectObjectList) dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: transformSelectObjectListToUserContextAvailableOrganizationNameList(selectObjectList)})
     dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_NAME', currentOrganizationName: selectedObject.name });
     props.onSuccess();
   }
 
   // * useEffect Hooks *
-
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -148,8 +149,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect';
-    // const logName = `${componentName}.${funcName}()`;
     if(!selectObjectList) return;
     if(selectObjectList.length === 0) {
       dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: transformSelectObjectListToUserContextAvailableOrganizationNameList(selectObjectList)})
@@ -176,8 +175,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }  
 
   const renderSelectObjectList = () => {
-    // const funcName = 'renderSelectObjectList';
-    // const logName = `${componentName}.${funcName}()`;
     return (
       <div className="card">
         <DataTable
@@ -185,7 +182,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
             value={selectObjectForSelectList}
             selectionMode="single"
             onRowClick={onSelectObjectSelect}
-            // onRowDoubleClick={onSelectObjectSelect}
             sortMode="single" 
             sortField="displayName" 
             sortOrder={1}
@@ -206,7 +202,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
           <div>
             {renderSelectObjectList()}
           </div>      
-          {/* <Loading show={showLoading} /> */}
         </div>
       }      
     </React.Fragment>      

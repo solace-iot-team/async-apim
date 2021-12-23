@@ -15,6 +15,6 @@ export class APLogger {
   }
 
   public static error = (logEntry: TAPLogEntry): void => {
-    console.error(`${JSON.stringify(logEntry)}`);
+    console.error(`${JSON.stringify(logEntry, null, 2)}`);
   }
 }

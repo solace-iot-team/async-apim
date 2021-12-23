@@ -140,6 +140,9 @@ const buildDockerImage = () => {
     // if(s.exec(`docker build --no-cache --build-arg PLATFORM_API_SERVER_NAME=${dockerImageName} --tag ${dockerImageTag} -f ${dockerFile} ${workingApiImplmentationDir}`).code !== 0) process.exit(1);
   if(s.exec(`docker build --no-cache --tag ${DockerImageTag} -f ${DockerFile} ${DockerContextDir}`).code !== 0) process.exit(1);
   if(s.exec(`docker tag ${DockerImageTag} ${DockerImageTagLatest}`).code !== 0) process.exit(1);
+  // list them
+  console.log(`${logName}: docker images:`)
+  if(s.exec(`docker images ${DockerImageName}`).code !== 0) process.exit(1);  
   console.log(`${logName}: success.`);
 }
 

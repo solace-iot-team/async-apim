@@ -3,13 +3,17 @@
 // ********
 import { APClientConnectorOpenApi } from "./APClientConnectorOpenApi";
 import { APSClientOpenApi } from "./APSClientOpenApi";
-import { APSError, APSErrorIds } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSError, 
+  APSErrorIds 
+} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APError, APSApiError } from "./APError";
 
 export type TApiCallState = {
   success: boolean;
   isAPSApiError?: boolean;
-  isConnectorApiError?: boolean,
+  isConnectorApiError?: boolean;
+  isAPError?: boolean;
   error?: any;
   context: {
     action: string;
@@ -33,15 +37,17 @@ export class ApiCallState {
     apiCallState.success = false;
     apiCallState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(err);
     apiCallState.isConnectorApiError = APClientConnectorOpenApi.isInstanceOfApiError(err);
+    apiCallState.isAPError = (err instanceof APError);
     if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) apiCallState.error = err;
     else if(err instanceof APError) apiCallState.error = err.toObject();
+    else if(err instanceof Error) apiCallState.error = { name: err.name, message: err.message };
     else apiCallState.error = err.toString();
     return apiCallState;
   }
 
   public static getUserErrorMessageFromApiCallState = (apiCallStatus: TApiCallState): string => {
-    // const funcName = 'getUserErrorMessageFromApiCallState';
-    // const logName = `${ApiCallState.name}.${funcName}()`;
+    const funcName = 'getUserErrorMessageFromApiCallState';
+    const logName = `${ApiCallState.name}.${funcName}()`;
     // console.log(`${logName}: apiCallStatus=${JSON.stringify(apiCallStatus, null, 2)}`);
     if(apiCallStatus.success) return '';
     if(apiCallStatus.isAPSApiError && apiCallStatus.error) {
@@ -85,7 +91,30 @@ export class ApiCallState {
           return JSON.stringify(apiCallStatus.error.body);
         }
     }
+    if(apiCallStatus.isAPError && apiCallStatus.error) {
+      const err = apiCallStatus.error;
+      const details = {
+        name: err.name,
+        result: err.fetchResult
+      }
+      const userMessage = `${apiCallStatus.context.userDetail}. \n${JSON.stringify(details, null, 2)}`;
+      return userMessage;
+    }
     if(apiCallStatus.error) {
+      console.log(`${logName}: typeof apiCallStatus.error = ${typeof apiCallStatus.error}`);
+      console.log(`${logName}: apiCallStatus.error instanceof Error = ${apiCallStatus.error instanceof Error}`);
+      // check if it is a Failed to Fetch error
+      if(typeof apiCallStatus.error === 'object') {
+        const err: any = apiCallStatus.error;
+        if(err.name && err.message) {
+          if(err.name === 'TypeError' && err.message === 'Failed to fetch') {
+            const userMessage = `failed to execute api call - server may be unavailable \n${JSON.stringify(err)}`;
+            return userMessage;
+          } 
+        }
+      }
+      if(typeof apiCallStatus.error === 'object') return JSON.stringify(apiCallStatus.error, null, 2);
+      if(apiCallStatus.error instanceof Error) return apiCallStatus.error.toString();
       return apiCallStatus.error;
     }
     return apiCallStatus.context.userDetail ? apiCallStatus.context.userDetail : 'unknown error';

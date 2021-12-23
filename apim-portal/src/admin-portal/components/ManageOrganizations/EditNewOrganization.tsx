@@ -304,7 +304,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const renderManagedObjectFormConfigAdvancedDetails_ReverseProxy_AuthDetails_Basic = (reverseProxyAuthType: EAPReverseProxySempV2AuthType) => {
-    const isActive: boolean = (reverseProxyAuthType === EAPReverseProxySempV2AuthType.BASIC_AUTH);
+    // const isActive: boolean = (reverseProxyAuthType === EAPReverseProxySempV2AuthType.BASIC_AUTH);
     return ( <></> );
   }
 

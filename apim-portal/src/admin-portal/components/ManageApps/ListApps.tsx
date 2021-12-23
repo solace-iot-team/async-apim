@@ -251,19 +251,19 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     } 
   }
 
-  const renderDebugSelectedManagedObject = (): JSX.Element => {
-    if(managedObjectList.length > 0 && selectedManagedObject) {
-      const _d = {
-        ...selectedManagedObject,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(_d, null, 2)}
-        </pre>
-      );
-    } else return (<></>);
-  }
+  // const renderDebugSelectedManagedObject = (): JSX.Element => {
+  //   if(managedObjectList.length > 0 && selectedManagedObject) {
+  //     const _d = {
+  //       ...selectedManagedObject,
+  //       globalSearch: 'not shown...'
+  //     }
+  //     return (
+  //       <pre style={ { fontSize: '10px' }} >
+  //         {JSON.stringify(_d, null, 2)}
+  //       </pre>
+  //     );
+  //   } else return (<></>);
+  // }
 
   return (
     <div className="ap-manage-apps">

@@ -10,8 +10,6 @@ const outRoot = `${scriptDir}/dist`;
 const outDir = tsconfig.compilerOptions.outDir;
 const publicDir = `${outRoot}/public`;
 const apiSpecFile = `${scriptDir}/server/common/api.yml`;
-// const portalDir = `${scriptDir}/../apim-portal`;
-// const portalBuildDir = `${portalDir}/build`;
 
 const prepare = () => {
   const funcName = 'prepare';

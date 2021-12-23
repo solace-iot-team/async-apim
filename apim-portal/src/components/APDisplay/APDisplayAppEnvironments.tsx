@@ -101,13 +101,11 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
 
     let appEnvironmentList: Array<AppEnvironment> = appEnvironmentList_smf;
     switch(selectedTopicSyntax) {
-      case EApiTopicSyntax.SMF: {
+      case EApiTopicSyntax.SMF:
         appEnvironmentList = appEnvironmentList_smf;
-      }
       break;
-      case EApiTopicSyntax.MQTT: {
+      case EApiTopicSyntax.MQTT:
         appEnvironmentList = appEnvironmentList_mqtt;
-      }
       break;
       default:
         Globals.assertNever(logName, selectedTopicSyntax);

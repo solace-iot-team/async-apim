@@ -13,7 +13,9 @@ import {
   TAPManagedWebhookList, 
   TAPOrganizationId 
 } from "../../../../components/APComponentsCommon";
-import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSUserId 
+} from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 

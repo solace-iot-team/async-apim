@@ -2,3 +2,4 @@ node_modules
 _todo*
 build
 public/*about.json
+working_dir

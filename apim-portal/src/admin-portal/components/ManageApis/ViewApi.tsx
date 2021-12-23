@@ -56,12 +56,9 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const dt = React.useRef<any>(null);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObject';
-    const logName = `${componentName}.${funcName}()`;
     const initialApiCallState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apiDisplayName}`);
     const result: TGetAsyncApiSpecResult = await APConnectorApiCalls.getAsyncApiSpec(props.organizationId, props.apiId, initialApiCallState);
     const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({

@@ -9,7 +9,6 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import { APConnectorFormValidationRules } from "../../utils/APConnectorOpenApiFormValidationRules";
-import { WebHook, WebHookTLSOptions } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPTrustedCN, TAPTrustedCNList } from "../APComponentsCommon";
 
 import "../APComponents.css";
@@ -113,8 +112,6 @@ export const APManageTrustedCNs: React.FC<IAPManageTrustedCNsProps> = (props: IA
     setIsManaged_TrustedCNListChanged(true);
   }
   const onSubmitManaged_TrustedCNForm_APManageTrustedCNs = (formData: TManaged_TrustedCNFormData) => {
-    const funcName = 'onSubmitManaged_TrustedCNForm_APManageTrustedCNs';
-    const logName = `${componentName}.${funcName}()`;
     doAddManaged_TrustedCN(transformFormDataToManaged_TrustedCN(formData));
   }
   const onInvalidSubmitManaged_TrustedCNForm_APManageTrustedCNs = () => {

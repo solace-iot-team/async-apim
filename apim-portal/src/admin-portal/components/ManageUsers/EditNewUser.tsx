@@ -16,7 +16,7 @@ import {
   APSUser,
   APSUserReplace,
   EAPSAuthRole
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -322,8 +322,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card">

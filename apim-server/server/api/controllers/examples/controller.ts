@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import ExamplesService from '../../services/examples.service';
 import { TAPSExampleListResponse } from '../../services/examples.service';
 
@@ -8,12 +7,7 @@ import ListExamplesWebhooksResponses = Paths.ListExamplesWebhooks.Responses;
 
 export class ExamplesController {
 
-  public static all = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'all';
-    const logName = `${ExamplesController.name}.${funcName}()`;
-
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
-
+  public static all = (_req: Request, res: Response, next: NextFunction): void => {
     ExamplesService.all()
     .then( (r: TAPSExampleListResponse) => {
       res.set({
@@ -30,12 +24,7 @@ export class ExamplesController {
     });
   }
 
-  public static totalCount = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'totalCount';
-    const logName = `${ExamplesController.name}.${funcName}()`;
-
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
-
+  public static totalCount = (_req: Request, res: Response, next: NextFunction): void => {
     ExamplesService.all()
     .then( (_r: TAPSExampleListResponse) => {
       res.set({
@@ -50,12 +39,7 @@ export class ExamplesController {
   }
 
   
-  public static getWebhooks = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'getWebhooks';
-    const logName = `${ExamplesController.name}.${funcName}()`;
-
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'requestInfo', details: ServerLogger.getRequestInfo(req) }));
-
+  public static getWebhooks = (_req: Request, res: Response, next: NextFunction): void => {
     ExamplesService.getWebhooks()
     .then( (r: Array<Components.Schemas.ExampleWebHook> ) => {
       const listExamples200: ListExamplesWebhooksResponses.$200 = r;

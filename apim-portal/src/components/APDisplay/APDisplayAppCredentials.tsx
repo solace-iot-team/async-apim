@@ -18,7 +18,7 @@ export interface IAPDisplayAppCredentialsProps {
 }
 
 export const APDisplayAppCredentials: React.FC<IAPDisplayAppCredentialsProps> = (props: IAPDisplayAppCredentialsProps) => {
-  const componentName='APDisplayAppCredentials';
+  // const componentName='APDisplayAppCredentials';
 
   const componentDataTableRef = React.useRef<any>(null);
 

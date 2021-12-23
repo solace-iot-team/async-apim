@@ -4,7 +4,7 @@ services:
     container_name: apim-devel-connector-mongodb
     image : mongo:5.0.2
     volumes:
-      - mongodbdata:/data/db
+      - ./docker-volumes/apim-connector-mongodb-data:/data/db
     restart: unless-stopped
   apim-devel-connector:
     container_name: ${APIM_PORTAL_CONNECTOR_CONTAINER_NAME}
@@ -30,32 +30,6 @@ services:
       - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
-  apim-devel-demo-portal:
-    container_name: apim-devel-demo-portal
-    links:
-      - apim-devel-connector
-    image: "solaceiotteam/apim-demo-portal:latest"
-    ports:
-      - 9096:8090
-    volumes:
-      - ./docker-volumes/demo-portal:/data/apim-demo-portal
-    restart: unless-stopped
-    environment:
-      #sammode=dev disables login screen
-      - sammode=prod
-      #url of apim-connector
-      - solace_spa_url=http://apim-devel-connector:3000/v1
-      #user-name of platform api (as defined in organization_users.json)
-      - solace_spa_user=apim-portal-service-admin
-      #user-password of platform api (as defined in organization_users.json)
-      - solace_spa_password=Solace123!
-      #admin-name of platform api
-      - solace_spa_adminuser=apim-portal-service-admin
-      #admin-password of platform api
-      - solace_spa_adminpassword=Solace123!
-      #login name of portal
-      - solace_portal_login_user=portal_user
-      #password of portal
-      - solace_portal_login_password=portal_user_123!
-volumes:
-  mongodbdata:
+
+##
+# The End.

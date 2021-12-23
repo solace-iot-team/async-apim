@@ -10,17 +10,17 @@ import { EServerStatusCodes, ServerLogger, TServerLogEntry } from '../../common/
 import { MongoError } from 'mongodb';
 import { HttpError as OpenApiValidatorHttpError } from 'express-openapi-validator/dist/framework/types';
 
-const componentName = "error.handler";
+const componentName = "middleware";
 
 export default function errorHandler(
   err: any,
   req: Request,
   res: Response,
-  _next: NextFunction
+  next: NextFunction
 ): void {
   const funcName = 'errorHandler';
   const logName = `${componentName}.${funcName}()`;
-  if(err instanceof ApiServerError) serverErrorHandler(err, req, res, _next);
+  if(err instanceof ApiServerError) serverErrorHandler(err, req, res, next);
   else {
     let internalServerError: ApiServerError;
     if(err instanceof MongoError) internalServerError = new ApiInternalServerErrorFromMongoError(err, logName);
@@ -28,21 +28,8 @@ export default function errorHandler(
       internalServerError = new ApiServerErrorFromOpenApiRequestValidatorError(logName, err, req.body, ServerLogger.getRequestInfo(req));
     }
     else internalServerError = new ApiInternalServerErrorFromError(err, logName);
-    serverErrorHandler(internalServerError, req, res, _next);
+    serverErrorHandler(internalServerError, req, res, next);
   } 
-
-  //   const logEntry: TServerLogEntry = ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.API_SERVICE_ERROR, message: internalServerError.message, details: internalServerError.toObject() });
-
-  //   if(internalServerError instanceof ApiInternalServerError) 
-  //     ServerLogger.error(logEntry);  
-  //   else 
-  //     ServerLogger.debug(logEntry);
-
-  //   for (const responseHeader of internalServerError.getAPSErrorHeaders()) {
-  //     res.header(responseHeader.headerField, responseHeader.headerValue);
-  //   }
-  //   res.status(internalServerError.apiStatusCode).json(internalServerError.toAPSError());  
-  // }
 }
 
 const serverErrorHandler = (apiServerError: ApiServerError, _req: Request, res: Response, _next: NextFunction) => {

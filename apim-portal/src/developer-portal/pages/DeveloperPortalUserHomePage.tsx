@@ -8,9 +8,9 @@ export const DeveloperPortalUserHomePage: React.FC = () => {
 
   return (
     <React.Fragment>
-      <h1>Welcome to DeveloperPortalUserHomePage</h1>
+      <h1 style={{fontSize: 'xx-large'}}>Welcome to the Async API Developer Portal</h1>
       <hr />
-      <h3>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</h3>
+      <div className='p-mt-4'>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</div>
     </React.Fragment>
   );
 }

@@ -1,6 +1,8 @@
 import mongodb, { MongoClient } from 'mongodb';
 import { EServerStatusCodes, ServerLogger } from './ServerLogger';
 import ServerConfig from './ServerConfig';
+import { ServerErrorFromError } from './ServerError';
+import { TConnectionTestDetails } from './ServerStatus';
 
 
 export class MongoDatabaseAccess {
@@ -45,6 +47,27 @@ export class MongoDatabaseAccess {
 
   public static getDb = (): mongodb.Db => {
     return MongoDatabaseAccess.mongoDatabase;
+  }
+
+  public static isConnected = async(): Promise<TConnectionTestDetails> => {
+    const funcName = 'isConnected';
+    const logName = `${MongoDatabaseAccess.name}.${funcName}()`;
+
+    const testDetails: TConnectionTestDetails = {
+      lastTested: Date.now(),
+      success: true
+    }
+    try {
+      const res = await MongoDatabaseAccess.mongoDatabase.command( { connectionStatus: 1, showPrivileges: true});
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MONITOR_DB_CONNECTION, message: 'result', details: { result: res } } ));
+      return testDetails;
+    } catch (e: any) {
+      testDetails.success = false;
+      testDetails.error = new ServerErrorFromError(e, logName);
+      ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MONITOR_DB_CONNECTION, message: 'connection test failed', details: testDetails } ));
+      return testDetails;
+    }
+
   }
 
 }

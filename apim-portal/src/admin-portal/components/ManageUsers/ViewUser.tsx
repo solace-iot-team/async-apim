@@ -7,7 +7,7 @@ import { Column } from "primereact/column";
 import { 
   ApsUsersService, 
   APSUser
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";

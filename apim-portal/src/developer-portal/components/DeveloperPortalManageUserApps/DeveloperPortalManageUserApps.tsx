@@ -15,11 +15,12 @@ import {
 import { 
   APSUser, 
   APSUserId 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./DeveloperPortalManageUserAppsCommon";
@@ -117,7 +118,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     let existApiDeveloper: boolean = true;
     let anyError: any = undefined;
     try {
-      const apiDeveloper: Developer = await DevelopersService.getDeveloper({
+      await DevelopersService.getDeveloper({
         organizationName: props.organizationName, 
         developerUsername: props.userId
       });
@@ -130,7 +131,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     }
     if(!anyError && !existApiDeveloper) {
       try { 
-        const apiDeveloper: Developer = await DevelopersService.createDeveloper({
+        await DevelopersService.createDeveloper({
           organizationName: props.organizationName, 
           requestBody: transformAPSUserToApiDeveloper(userContext.user)
         });
@@ -167,7 +168,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
       }
     }
-  }, [isDeveloperCreated]);
+  }, [isDeveloperCreated]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
@@ -420,6 +421,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   return (
     <div className="apd-manage-user-apps">
 
+      <CheckConnectorHealth />
+      
       <Loading show={isLoading} />      
       
       {!isLoading && renderToolbar() }

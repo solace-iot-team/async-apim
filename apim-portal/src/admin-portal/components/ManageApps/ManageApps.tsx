@@ -9,6 +9,7 @@ import {
   AppStatus 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Loading } from "../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { TViewManagedApp } from '../../../components/APApiObjectsCommon';
@@ -157,20 +158,20 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_APPROVE);
   }
 
-  // * Revoke  
-  const onRevokeFromToolbar = () => {
-    const funcName = 'onRevokeFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
-    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
-    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
-    onRevokeManagedObject(managedObjectId, managedObjectDisplayName);
-  }
-  const onRevokeManagedObject = (id: TManagedObjectId, displayName: string): void => {
-    setApiCallStatus(null);
-    setManagedObjectId(id);
-    setManagedObjectDisplayName(displayName);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_REVOKE);
-  }
+  // // * Revoke  
+  // const onRevokeFromToolbar = () => {
+  //   const funcName = 'onRevokeFromToolbar';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
+  //   if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
+  //   onRevokeManagedObject(managedObjectId, managedObjectDisplayName);
+  // }
+  // const onRevokeManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  //   setApiCallStatus(null);
+  //   setManagedObjectId(id);
+  //   setManagedObjectDisplayName(displayName);
+  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_REVOKE);
+  // }
 
   // * Delete
   const onDeleteFromToolbar = () => {
@@ -189,8 +190,6 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderLeftToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {          
       if(viewAppApiAppResponse && viewAppApiAppResponse.status !== AppStatus.APPROVED) {
@@ -341,6 +340,8 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
 
   return (
     <div className="ap-manage-apps">
+
+      <CheckConnectorHealth />
 
       <Loading show={isLoading} />      
       

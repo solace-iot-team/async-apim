@@ -19,7 +19,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { 
   APSUser, 
   ApsUsersService 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -97,9 +97,6 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     }
   }
   const createConsolidatedApiProductAttributeList = (apiProductList: TApiProductList): TAPApiProductAttributeValueListList => {
-    const funcName = 'createConsolidatedApiProductAttributeList';
-    const logName = `${componentName}.${funcName}()`;
-
     const mergeValueLists = (one: Array<string>, two: Array<string>): Array<string> => {
       let mergedList: Array<string> = [];
       if(one.length > 0) mergedList = one.concat(two);
@@ -205,21 +202,19 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     try {
       let _apiAppResponse: AppResponse | undefined = undefined;
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER:
           _apiAppResponse = await AppsService.getDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
             appName: props.appId
           });    
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM:
           _apiAppResponse = await AppsService.getTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId,
             appName: props.appId
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);
@@ -259,23 +254,21 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP, `update app: ${props.appDisplayName}`);
     try { 
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER:
           await AppsService.updateDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
             appName: props.appId,
             requestBody: transformManagedObjectToUpdateApiObject(managedObject)    
           });
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM:
           await AppsService.updateTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId, 
             appName: props.appId,
             requestBody: transformManagedObjectToUpdateApiObject(managedObject)    
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);

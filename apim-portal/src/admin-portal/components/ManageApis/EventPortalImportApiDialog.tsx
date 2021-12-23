@@ -105,7 +105,7 @@ export const EventPortalImportApiDialog: React.FC<IEventPortalImportApiDialogPro
 
   React.useEffect( () => {
     doInitialize()
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

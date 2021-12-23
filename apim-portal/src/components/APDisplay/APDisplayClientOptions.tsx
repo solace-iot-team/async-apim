@@ -11,7 +11,7 @@ export interface IAPDisplayClientOptionsProps {
 }
 
 export const APDisplayClientOptions: React.FC<IAPDisplayClientOptionsProps> = (props: IAPDisplayClientOptionsProps) => {
-  const componentName='APDisplayClientOptions';
+  // const componentName='APDisplayClientOptions';
 
   const NoClientOptionsMessage = 'Not defined';
   const [jsxElement, setJsxElement] = React.useState<JSX.Element>();

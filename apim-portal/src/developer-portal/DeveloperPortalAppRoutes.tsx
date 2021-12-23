@@ -1,4 +1,4 @@
-import React from "react";
+import { Route } from "react-router-dom";
 
 import { ProtectedRouteWithRbacAndOrgAccess } from "../auth/ProtectedRouteWithRbacAndOrgAccess";
 import { ProtectedRoute } from "../auth/ProtectedRoute";
@@ -9,11 +9,13 @@ import { DeveloperPortalManageUserAppsPage } from "./pages/DeveloperPortalManage
 import { ManageTeamApplicationsPage } from "./pages/ManageTeamApplicationsPage";
 import { DeveloperPortalExploreApiProductsPage } from "./pages/DeveloperPortalExploreApiProductsPage";
 import { DeveloperPortalExploreApisPage } from "./pages/DeveloperPortalExploreApisPage";
+import { DeveloperPortalHealthCheckViewPage } from "./pages/DeveloperPortalHealthCheckViewPage";
 
 export const DeveloperPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'DeveloperPortalAppRoutes';
   return (
     [
+      <Route path={EUIDeveloperPortalResourcePaths.DeveloperPortalConnectorUnavailable} component={DeveloperPortalHealthCheckViewPage} exact key={EUIDeveloperPortalResourcePaths.DeveloperPortalConnectorUnavailable}/>,
       <ProtectedRoute path={EUIDeveloperPortalResourcePaths.UserHome} component={DeveloperPortalUserHomePage} exact key={EUIDeveloperPortalResourcePaths.UserHome}/>,
       <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ExploreApiProducts} component={DeveloperPortalExploreApiProductsPage} exact key={EUIDeveloperPortalResourcePaths.ExploreApiProducts} />,
       <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ExploreApis} component={DeveloperPortalExploreApisPage} exact key={EUIDeveloperPortalResourcePaths.ExploreApis} />,

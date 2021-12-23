@@ -237,9 +237,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
-    // const funcName = 'doPopulateManagedObjectFormDataValues';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
     managedObjectUseForm.setValue('id', managedObjectFormData.id);
     managedObjectUseForm.setValue('displayName', managedObjectFormData.displayName);
     if(managedObjectFormData.asyncApiSpec) {
@@ -265,8 +262,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
 
   // * Form *
   const doSubmitManagedObject = async (managedObject: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     if(props.action === EAction.NEW) await apiCreateManagedObject(managedObject);
     else await apiUpdateManagedObject(managedObject);
@@ -289,10 +284,10 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
     return fieldError && <small className="p-error">{fieldError.message}</small>    
   }
 
-  const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
-    let _fieldError: any = fieldErrorList;
-    return _fieldError && <small className="p-error">{_fieldError.message}</small>;
-  }
+  // const displayManagedObjectFormFieldErrorMessage4Array = (fieldErrorList: Array<FieldError | undefined> | undefined) => {
+  //   let _fieldError: any = fieldErrorList;
+  //   return _fieldError && <small className="p-error">{_fieldError.message}</small>;
+  // }
 
   const managedObjectFormFooterRightToolbarTemplate = () => {
     const getSubmitButtonLabel = (): string => {
@@ -332,8 +327,6 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
   }
 
   const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${componentName}.${funcName}()`;
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card">

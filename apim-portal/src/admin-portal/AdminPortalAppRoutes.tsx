@@ -1,4 +1,4 @@
-import React from "react";
+import { Route } from "react-router-dom";
 
 import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { ProtectedRouteWithRbac } from "../auth/ProtectedRouteWithRbac";
@@ -14,11 +14,14 @@ import { ManageEnvironmentsPage } from "./pages/ManageEnvironmentsPage";
 import { ManageApisPage } from "./pages/ManageApisPage";
 import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 import { ManageAppsPage } from './pages/ManageAppsPage';
+import { AdminPortalHealthCheckViewPage } from "./pages/AdminPortalHealthCheckViewPage";
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
   return (
     [
+        <Route path={EUIAdminPortalResourcePaths.AdminPortalConnectorUnavailable} component={AdminPortalHealthCheckViewPage} exact key={EUIAdminPortalResourcePaths.AdminPortalConnectorUnavailable}/>,
+
         <ProtectedRoute path={EUIAdminPortalResourcePaths.UserHome} component={AdminPortalUserHomePage} exact key={EUIAdminPortalResourcePaths.UserHome}/>,
         /* System */
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} component={ManageConnectorsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} />,

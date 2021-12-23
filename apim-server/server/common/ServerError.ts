@@ -4,11 +4,13 @@ import APSErrorIds = Components.Schemas.APSErrorIds;
 import APSError = Components.Schemas.APSError;
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ApiError } from "../../src/@solace-iot-team/apim-server-openapi-node";
+import ServerConfig from "./ServerConfig";
 
 export class ServerError extends Error {
   private internalStack: Array<string>;
   private internalLogName: string;
   private internalMessage: string;
+  protected appId: string;
 
   private createArrayFromStack = (stack: any): Array<string> => {
     return stack.split('\n');
@@ -19,6 +21,7 @@ export class ServerError extends Error {
     this.name = this.constructor.name;
     this.internalLogName = internalLogName;
     this.internalStack = this.createArrayFromStack(this.stack);
+    this.appId = ServerConfig.getServerLoggerConfig().appId;
   }
 
   public toString = (): string => {
@@ -60,7 +63,7 @@ export class ServerErrorFromError extends ServerError {
 export class ConfigMissingEnvVarServerError extends ServerError {
   private envVarName: string;
   constructor(internalLogName: string, internalMessage: string, envVarName: string) {
-    super(internalLogName, internalMessage);
+    super(internalLogName, `${internalMessage}: ${envVarName}`);
     this.envVarName = envVarName;
   }
 }
@@ -102,8 +105,9 @@ export class ApiServerError extends ServerError {
 
   public toAPSError = (): APSError => {
     const funcName = 'toAPSError';
-    const logName = `${ServerError.name}.${funcName}()`;
+    const logName = `${ApiServerError.name}.${funcName}()`;
     const apsError: APSError = {
+      appId: this.appId,
       errorId: this.apiErrorId,
       description: this.apiDescription,
     }
@@ -173,7 +177,9 @@ export class ApiInternalServerErrorFromMongoError extends ApiInternalServerError
   private mongoErrorErrMsg: string;
 
   constructor(mongoError: MongoError, internalLogName: string) {
-    super(internalLogName, mongoError.message);
+    super(internalLogName, mongoError.message, ApiInternalServerError.apiDefaultDescription, {
+      message: 'internal db error'
+    });
     this.mongoErrorCode = mongoError.code;
     this.mongoErrorMessage = mongoError.message;
     this.mongoErrorLabels = mongoError.errorLabels;

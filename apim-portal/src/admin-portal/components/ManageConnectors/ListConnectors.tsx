@@ -11,12 +11,12 @@ import {
   APSConnectorList, 
   APSId, 
   ListApsConnectorsResponse 
-} from "@solace-iot-team/apim-server-openapi-browser";
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
+import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
@@ -60,6 +60,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
+
+    console.log(`${logName}: getting connector list & info ...`);
+
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR_LIST, 'retrieve list of connectors');
     try { 
@@ -69,7 +72,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       for(const apsConnector of apsConnectorList) {
         const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
         let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
-        if(healthCheckResult.summary.success) {
+        if(healthCheckResult.summary.success !== EAPHealthCheckSuccess.FAIL) {
           apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
         }
         _managedObjectList.push(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
@@ -146,7 +149,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     return (
         <React.Fragment>
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+          {/* {!managedObject.apsConnector.isActive &&  */}
+            <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+          {/* } */}
           <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
           {!managedObject.apsConnector.isActive && 
             <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />
@@ -237,7 +242,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
         <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
       }
 
-      {managedObjectList && managedObjectList.length > 0 && !isGetManagedObjectListInProgress &&
+      {managedObjectList.length > 0 && !isGetManagedObjectListInProgress &&
         renderManagedObjectDataTable()
       }
       

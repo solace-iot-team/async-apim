@@ -12,16 +12,16 @@ on:
     branches:
       - main
 env:
-  DEBUG_FLAG: ${{ true }}
-  # DEBUG_FLAG: ${{ false }}
+  # DEBUG_FLAG: ${{ true }}
+  DEBUG_FLAG: ${{ false }}
   RELEASE_DIR: "release"
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-18.04
     steps:
       - name: Check Auth
-        if: github.event_name == 'workflow_dispatch' && github.actor != 'ricardojosegomezulmke' && github.actor != '195858'
+        if: github.event_name == 'workflow_dispatch' && github.actor != 'ricardojosegomezulmke'
         run: |
           echo "not authorized"
           echo '::set-output name=IS_AUTHORIZED::false'

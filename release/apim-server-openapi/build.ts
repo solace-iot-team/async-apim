@@ -1,25 +1,18 @@
 import s from 'shelljs';
 import path from 'path';
-import fs from 'fs';
-import yaml from 'js-yaml';
+import { Constants } from './lib/Constants';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
-const Skipping = '+++ SKIPPING +++';
 
-const WorkingDir = `${scriptDir}/working_dir`;
-const ApimServerDir = `${scriptDir}/../../apim-server`;
-const WorkingApimServerDir = `${WorkingDir}/apim-server`;
-
-const ReleaseDirBrowser = `${scriptDir}/apim-server-openapi-browser`;
-const ReleaseDirNode = `${scriptDir}/apim-server-openapi-node`;
+const CONSTANTS = new Constants(scriptDir);
 
 const prepare = () => {
   const funcName = 'prepare';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  if(s.rm('-rf', WorkingDir).code !== 0) process.exit(1);
-  if(s.mkdir('-p', WorkingDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', CONSTANTS.WorkingDir).code !== 0) process.exit(1);
+  if(s.mkdir('-p', CONSTANTS.WorkingDir).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }
 
@@ -29,62 +22,12 @@ const copySourcesToWorkingDir = () => {
   console.log(`${logName}: starting ...`);
 
   console.log(`${logName}: copying apim-server sources to working dir ...`);
-  if(s.cp('-rf', ApimServerDir, WorkingDir).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${WorkingApimServerDir}/dist`).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${WorkingApimServerDir}/node_modules`).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${WorkingApimServerDir}/src/*`).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${WorkingApimServerDir}/server/@types`).code !== 0) process.exit(1);
+  if(s.cp('-rf', CONSTANTS.ApimServerDir, CONSTANTS.WorkingDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${CONSTANTS.WorkingApimServerDir}/dist`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${CONSTANTS.WorkingApimServerDir}/node_modules`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${CONSTANTS.WorkingApimServerDir}/src/*`).code !== 0) process.exit(1);
+  if(s.rm('-rf', `${CONSTANTS.WorkingApimServerDir}/server/@types`).code !== 0) process.exit(1);
   
-  console.log(`${logName}: success.`);
-}
-
-const checkVersions = () => {
-  const funcName = 'checkVersions';
-  const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-
-  const InputApiSpecFile = `${WorkingApimServerDir}/server/common/api.yml`;
-
-  const getNpmLatestVersion = (packageName: string): string => {
-    const latestVersion = s.exec(`npm view ${packageName} version`).stdout.slice(0, -1);
-    return latestVersion;
-  }
-  const loadYamlFileAsJson = (apiSpecPath: string): any => {
-    const b: Buffer = fs.readFileSync(apiSpecPath);
-    return yaml.load(b.toString());
-  }
-  const getNewVersion = (): string => {
-      let apiSpec = loadYamlFileAsJson(InputApiSpecFile);
-      let version = apiSpec.info.version;
-      return version;
-  }
-
-  const checkVersion = (releaseDir: string) => {
-    const funcName = 'checkVersions.checkVersion';
-    const logName = `${scriptDir}/${scriptName}.${funcName}()`;
-    console.log(`${logName}: starting ...`);
-  
-    const PackageJsonFile = `${releaseDir}/package.json`;
-    const PackageJson = require(`${PackageJsonFile}`);
-  
-    const npmLatestVersion = getNpmLatestVersion(PackageJson.name);
-    const newVersion = getNewVersion();
-    console.log(`${PackageJson.name}: npm latest version='${npmLatestVersion}', new version='${newVersion}'`);
-    if(newVersion === npmLatestVersion) {
-        console.log(`${logName}: [${Skipping}]: nothing to do.`);
-        process.exit(2);
-    }
-    // write new version into package.json
-    PackageJson.version = newVersion;
-    let newPackageJsonString = JSON.stringify(PackageJson, null, 2);
-    s.cp(`${PackageJsonFile}`, `${releaseDir}/.package.json`);
-    fs.writeFileSync(PackageJsonFile, newPackageJsonString);  
-    console.log(`${logName}: success.`);
-  }
-  
-  // func main
-  console.log(`${logName}: starting ...`);
-  checkVersion(ReleaseDirBrowser);
-  checkVersion(ReleaseDirNode);
   console.log(`${logName}: success.`);
 }
 
@@ -92,7 +35,7 @@ const devBuildApimServer = () => {
   const funcName = 'devBuildApimServer';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  s.cd(`${WorkingApimServerDir}`);
+  s.cd(`${CONSTANTS.WorkingApimServerDir}`);
   console.log(`${logName}: directory = ${s.exec(`pwd`)}`);
   if(s.exec('npm install').code !== 0) process.exit(1);
   if(s.exec('npm run dev:build').code !== 0) process.exit(1);
@@ -111,10 +54,10 @@ const copyAssets = () => {
     if(s.cp('-r', `${srcDir}/*`, `${outDir}`).code !== 0) process.exit(1);  
   }
 
-  const SrcDirBrowser: string = `${WorkingApimServerDir}/src/@solace-iot-team/apim-server-openapi-browser`;
-  const OutDirBrowser: string = `${ReleaseDirBrowser}/src`;
-  const SrcDirNode: string = `${WorkingApimServerDir}/src/@solace-iot-team/apim-server-openapi-node`;
-  const OutDirNode: string = `${ReleaseDirNode}/src`;
+  const SrcDirBrowser: string = `${CONSTANTS.WorkingApimServerDir}/src/@solace-iot-team/apim-server-openapi-browser`;
+  const OutDirBrowser: string = `${CONSTANTS.ReleaseDirBrowser}/src`;
+  const SrcDirNode: string = `${CONSTANTS.WorkingApimServerDir}/src/@solace-iot-team/apim-server-openapi-node`;
+  const OutDirNode: string = `${CONSTANTS.ReleaseDirNode}/src`;
 
   console.log(`${logName}: starting ...`);
 
@@ -128,11 +71,11 @@ const compileSrcs = () => {
   const funcName = 'compileSrcs';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
 
-  s.cd(`${ReleaseDirBrowser}`);
+  s.cd(`${CONSTANTS.ReleaseDirBrowser}`);
   if(s.rm('-rf', `./dist`).code !== 0) process.exit(1);
   if(s.exec('npx tsc').code !== 0) process.exit(1);
 
-  s.cd(`${ReleaseDirNode}`);
+  s.cd(`${CONSTANTS.ReleaseDirNode}`);
   if(s.rm('-rf', `./dist`).code !== 0) process.exit(1);
   if(s.exec('npm install').code !== 0) process.exit(1);
   if(s.exec('npx tsc').code !== 0) process.exit(1);
@@ -144,12 +87,14 @@ const main = () => {
   const funcName = 'main';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
+  CONSTANTS.log();
+  
   prepare();
   copySourcesToWorkingDir();
-  checkVersions();
   devBuildApimServer();
   copyAssets();
   compileSrcs();
+
   console.log(`${logName}: success.`);
 }
 

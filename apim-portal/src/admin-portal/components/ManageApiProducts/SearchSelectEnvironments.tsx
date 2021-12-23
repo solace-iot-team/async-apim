@@ -114,7 +114,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   React.useEffect(() => {
     if(!managedObjectTableDataList) return;
     setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedEnvironmetItemList));
-  }, [managedObjectTableDataList]); 
+  }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if (apiCallStatus !== null) {

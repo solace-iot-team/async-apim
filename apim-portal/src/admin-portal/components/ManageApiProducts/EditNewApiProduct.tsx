@@ -125,7 +125,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
   const [selectedEnvironmentList, setSelectedEnvironmentList] = React.useState<TApiEnvironmentList>([]);
   const [selectedProtocolList, setSelectedProtocolList] = React.useState<TViewProtocolList>([]);
-  const [selectedApiParameterList, setSelectedApiParameterList] = React.useState<Array<APIParameter>>([]);
   // manage ApiParameterAttribute
   const [manageApiParameterAttributesDataTableGlobalFilter, setManageApiParameterAttributesDataTableGlobalFilter] = React.useState<string>();
   const manageApiParameterAttributesDataTableRef = React.useRef<any>(null);
@@ -238,6 +237,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               }
               return true;
             }  
+            return false;
           });
           if(found) {
             // merge the two enums if they have them
@@ -564,8 +564,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
   // * Form *
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
-    const funcName = 'doPopulateManagedObjectFormDataValues';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'doPopulateManagedObjectFormDataValues';
+    // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
     managedObjectUseForm.setValue('apiProduct.name', managedObjectFormData.apiProduct.name);
     managedObjectUseForm.setValue('apiProduct.displayName', managedObjectFormData.apiProduct.displayName);

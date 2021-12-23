@@ -48,7 +48,6 @@ const apsConnectorTemplate: APSConnector = {
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
-    // const apiStartupBase = `${TestContext.getApiBase()}/apsUsers`; 
     const apiBase = `${TestContext.getApiBase()}/apsConfig/apsConnectors`;
 
     beforeEach(() => {

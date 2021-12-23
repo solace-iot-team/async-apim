@@ -42,7 +42,7 @@ export const RevokeApp: React.FC<IRevokeAppProps> = (props: IRevokeAppProps) => 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REVOKE_APP, `revoke approval for app: ${props.appDisplayName}`);
     try { 
       switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: {
+        case AppListItem.appType.DEVELOPER:
           await AppsService.updateDeveloperApp({
             organizationName: props.organizationId, 
             developerUsername: props.appOwnerId, 
@@ -51,9 +51,8 @@ export const RevokeApp: React.FC<IRevokeAppProps> = (props: IRevokeAppProps) => 
               status: AppStatus.PENDING
             }    
           });
-        }
         break;
-        case AppListItem.appType.TEAM: {
+        case AppListItem.appType.TEAM: 
           await AppsService.updateTeamApp({
             organizationName: props.organizationId, 
             teamName: props.appOwnerId, 
@@ -62,7 +61,6 @@ export const RevokeApp: React.FC<IRevokeAppProps> = (props: IRevokeAppProps) => 
               status: AppStatus.PENDING
             }
           });
-        }
         break;
         default:
           Globals.assertNever(logName, props.appType);

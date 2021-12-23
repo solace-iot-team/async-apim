@@ -10,7 +10,7 @@ import {
 
 import { 
   APSUserId, 
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";

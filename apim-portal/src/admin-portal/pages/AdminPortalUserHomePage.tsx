@@ -8,9 +8,9 @@ export const AdminPortalUserHomePage: React.FC = () => {
 
   return (
     <React.Fragment>
-      <h1>Welcome to AdminPortalUserHomePage</h1>
+        <h1 style={{fontSize: 'xx-large'}}>Welcome to the Async API Admin Portal</h1>
       <hr />
-      <h3>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</h3>
+      <div className='p-mt-4'>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</div>
     </React.Fragment>
   );
 }

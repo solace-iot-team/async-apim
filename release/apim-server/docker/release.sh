@@ -10,17 +10,17 @@ SKIPPING="+++ SKIPPING +++";
 
 echo " >>> Starting $scriptName ..."
 
-echo " >>> Install ..."
+echo " >>> Build ..."
   cd $scriptDir
-  runScript="npm install"
+  runScript="$scriptDir/build.sh"
   $runScript
   code=$?;
   if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
 echo " >>> Success."
 
-echo " >>> Build+Push..."
+echo " >>> Publish ..."
   cd $scriptDir
-  runScript="npm run build+push"
+  runScript="npm run publish"
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then

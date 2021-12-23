@@ -7,7 +7,7 @@ import {
   ApsConfigService, 
   APSConnector,
   APSId
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -99,7 +99,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     return (
       <React.Fragment>
         <div className="p-mb-2 p-mt-4 ap-display-component-header">
-          Summary: {ManageConnectorsCommon.healthCheckPassDisplay(mo.healthCheckResult)}
+          Summary: {ManageConnectorsCommon.healthCheckSuccessDisplay(mo.healthCheckResult)}
         </div>
         <div className="p-ml-4">
           {renderHealthCheckInfo(mo)}
@@ -169,7 +169,7 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
               <div className="p-ml-2">{managedObject.apsConnector.description}</div>
               
               <div><b>Status</b>: {getActiveStr(managedObject)}.</div>
-              <div><b>Health check</b>: {ManageConnectorsCommon.healthCheckPassDisplay(managedObject.healthCheckResult)}</div>
+              <div><b>Health check</b>: {ManageConnectorsCommon.healthCheckSuccessDisplay(managedObject.healthCheckResult)}</div>
 
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='General'>

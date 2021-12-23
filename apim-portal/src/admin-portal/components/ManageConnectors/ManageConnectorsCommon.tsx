@@ -1,12 +1,13 @@
 import { 
   APSConnector, 
   APSId 
-} from '@solace-iot-team/apim-server-openapi-browser';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { Globals } from '../../../utils/Globals';
 import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
 import { TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
+import { SystemHealthCommon } from '../../../components/SystemHealth/SystemHealthCommon';
 
 export type TViewManagedObject = {
   id: APSId;
@@ -53,11 +54,12 @@ export class ManageConnectorsCommon {
     }
   }
 
-  public static healthCheckPassDisplay = (healthCheckResult: TAPConnectorHealthCheckResult) : JSX.Element => {
+  public static healthCheckSuccessDisplay = (healthCheckResult: TAPConnectorHealthCheckResult) : JSX.Element => {
     if(healthCheckResult.summary.performed) {
-      if(healthCheckResult.summary.success) {
-        return (<span style={ {color: 'green' }}>pass</span>);
-      } else return (<span style={ {color: 'red' }}>fail</span>);
+      return (<span style={ {color: SystemHealthCommon.getColor(healthCheckResult.summary.success) }}>{healthCheckResult.summary.success}</span>);
+      // if(healthCheckResult.summary.success === EAPHealthCheckSuccess.PASS) {
+      //   return (<span style={ {color: 'green' }}>pass</span>);
+      // } else return (<span style={ {color: 'red' }}>fail</span>);
     } else {
       return (
         <span>not performed</span>
@@ -65,7 +67,7 @@ export class ManageConnectorsCommon {
     }
   }
   public static healthCheckBodyTemplate = (viewManagedObject: TViewManagedObject): JSX.Element => {
-    return ManageConnectorsCommon.healthCheckPassDisplay(viewManagedObject.healthCheckResult);
+    return ManageConnectorsCommon.healthCheckSuccessDisplay(viewManagedObject.healthCheckResult);
   }
   public static isActiveBodyTemplate = (viewManagedObject: TViewManagedObject) => {
     if(viewManagedObject.apsConnector.isActive) return (<span className="pi pi-check badge-active" />);

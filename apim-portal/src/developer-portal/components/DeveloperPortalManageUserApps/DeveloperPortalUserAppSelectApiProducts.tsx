@@ -3,7 +3,9 @@ import React from "react";
 
 import { Dialog } from 'primereact/dialog';
 
-import { APSUserId } from '@solace-iot-team/apim-server-openapi-browser';
+import { 
+  APSUserId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
@@ -23,7 +25,7 @@ export interface IDeveloperPortalUserAppSelectApiProductsProps {
 }
 
 export const DeveloperPortalUserAppSelectApiProducts: React.FC<IDeveloperPortalUserAppSelectApiProductsProps> = (props: IDeveloperPortalUserAppSelectApiProductsProps) => {
-  const componentName = 'DeveloperPortalUserAppSelectApiProducts';
+  // const componentName = 'DeveloperPortalUserAppSelectApiProducts';
 
   const DialogHeader = 'Search & Select API Product(s):';
 

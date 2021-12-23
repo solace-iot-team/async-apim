@@ -16,7 +16,9 @@ import {
   CommonName,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { APSUserId } from "@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSUserId 
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
   TApiProduct,
   TApiProductList,
@@ -278,17 +280,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
 
   const renderDebug = (): JSX.Element => {
     return (<></>);
-    if(managedObjectList.length > 0 && selectedManagedObject) {
-      const _d = {
-        ...selectedManagedObject,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(_d, null, 2)}
-        </pre>
-      );
-    } else return (<></>);
+    // if(managedObjectList.length > 0 && selectedManagedObject) {
+    //   const _d = {
+    //     ...selectedManagedObject,
+    //     globalSearch: 'not shown...'
+    //   }
+    //   return (
+    //     <pre style={ { fontSize: '10px' }} >
+    //       {JSON.stringify(_d, null, 2)}
+    //     </pre>
+    //   );
+    // } else return (<></>);
   }
 
   return (

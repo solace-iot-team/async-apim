@@ -20,8 +20,9 @@ export const DeveloperPortalHomePage: React.FC = () => {
 
   return (
     <React.Fragment>
-        <h1>Welcome to the AsyncAPI Developer Portal</h1>
+        <h1 style={{fontSize: 'xx-large'}}>Welcome to the Async API Developer Portal</h1>
         <hr />
+        <div className='p-mt-4'>Start by logging in.</div>
     </React.Fragment>
 );
 

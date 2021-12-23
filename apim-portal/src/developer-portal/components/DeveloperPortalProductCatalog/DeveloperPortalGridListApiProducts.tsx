@@ -39,7 +39,6 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
   const DefaultApiProductCategory = 'Solace AsyncAPI';
-  const PlaceholderImageUrl = 'https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png';
   const DefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
   type TManagedObject = TAPDeveloperPortalApiProductDisplay;
@@ -78,9 +77,6 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     });
   }
   const transformManagedObjectTableDataListToFilteredList = (motdList: TManagedObjectTableDataList, filterStr: string): TManagedObjectTableDataList => {
-    const funcName = 'transformManagedObjectTableDataListToFilteredList';
-    const logName = `${componentName}.${funcName}()`;
-
     if(filterStr === '') return motdList;
     const filterList: Array<string> = filterStr.toLowerCase().split(' ').filter( (s: string) => {
       return (s !== '');
