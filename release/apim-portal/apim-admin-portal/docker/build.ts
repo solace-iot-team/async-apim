@@ -1,75 +1,35 @@
 import s from 'shelljs';
 import path from 'path';
+import { Constants } from '../lib/Constants';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
 
-const WorkingDir = `${scriptDir}/working_dir`;
-const ApimAdminPortalBuildArtefactsDir = '../working_dir/apim-portal';
-const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
-
-const DockerContextDir = `${WorkingDir}/docker-context`;
-const DockerFile = `${scriptDir}/Dockerfile`;
+const CONSTANTS = new Constants(scriptDir);
 
 let DockerImageName: string;
 let DockerImageTag: string;
 let DockerImageTagLatest: string;
 
-type TDockerContextAssetsInclude =   {
-  sources: string;
-  targetDir: string;
-  targetFile?: string;
-};
-type TDockerContextAssetsIncludeList = Array<TDockerContextAssetsInclude>;
-const DockerContextAssetsIncludeList: TDockerContextAssetsIncludeList = [
-  {
-    sources: `${WorkingApimPortalDir}/build/admin-portal/*.json`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/images/*.png`,
-    targetDir: `${DockerContextDir}/admin-portal/images`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/static`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/*.txt`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/asset-manifest.json`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/index.html`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  },
-  {
-    sources: `${WorkingApimPortalDir}/build/manifest.json`,
-    targetDir: `${DockerContextDir}/admin-portal`
-  }
-]
-
 const prepare = () => {
   const funcName = 'prepare';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  if(s.rm('-rf', WorkingDir).code !== 0) process.exit(1);
-  if(s.mkdir('-p', WorkingDir).code !== 0) process.exit(1);
-  if(s.mkdir('-p', WorkingApimPortalDir).code !== 0) process.exit(1);
+  if(s.rm('-rf', CONSTANTS.WorkingDir).code !== 0) process.exit(1);
+  if(s.mkdir('-p', CONSTANTS.WorkingDir).code !== 0) process.exit(1);
+  if(s.mkdir('-p', CONSTANTS.WorkingApimPortalDir).code !== 0) process.exit(1);
+  if(s.mkdir('-p', CONSTANTS.ContextDir).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }
 
-const copyBuildArtefactsToWorkingDir = () => {
-  const funcName = 'copyBuildArtefactsToWorkingDir';
+const copyBuiltArtefactsToWorkingDir = () => {
+  const funcName = 'copyBuiltArtefactsToWorkingDir';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
 
   console.log(`${logName}: copying built apim-portal artefacts to working dir ...`);
-  if(s.cp('-rf', `${ApimAdminPortalBuildArtefactsDir}/build`, `${WorkingApimPortalDir}/build`).code !== 0) process.exit(1);
-  if(s.cp('-rf', `${ApimAdminPortalBuildArtefactsDir}/node_modules`, `${WorkingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
+  if(s.cp('-rf', `${CONSTANTS.ApimAdminPortalBuildArtefactsDir}/build`, `${CONSTANTS.WorkingApimPortalDir}/build`).code !== 0) process.exit(1);
+  // if(s.cp('-rf', `${CONSTANTS.ApimAdminPortalBuildArtefactsDir}/node_modules`, `${CONSTANTS.WorkingApimPortalDir}/node_modules`).code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
@@ -78,7 +38,7 @@ const setGlobals = () => {
   const funcName = 'setGlobals';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  const apimPortalPackageJson = require(`${ApimAdminPortalBuildArtefactsDir}/package.json`);
+  const apimPortalPackageJson = require(`${CONSTANTS.ApimAdminPortalBuildArtefactsDir}/package.json`);
   const releasePackageJson = require(`${scriptDir}/package.json`);
 
   DockerImageName = releasePackageJson.name;
@@ -93,12 +53,8 @@ const buildDockerContext = () => {
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
 
-  // create dir & ensure it is empty
-  if(s.mkdir('-p', DockerContextDir).code !== 0) process.exit(1);
-  if(s.rm('-rf', `${DockerContextDir}/`).code !== 0) process.exit(1);
-
   // copy files & dirs
-  for (const include of DockerContextAssetsIncludeList) {
+  for (const include of CONSTANTS.AssetsIncludeList) {
     console.log(`${logName}: include = \n${JSON.stringify(include, null, 2)}`);
     if(s.mkdir('-p', include.targetDir).code !== 0) process.exit(1);
     if(include.targetFile) {
@@ -137,8 +93,7 @@ const buildDockerImage = () => {
   console.log(`${logName}: removing any existing images, tags=${DockerImageTag}, ${DockerImageTagLatest}`);
   if(s.exec(`docker rmi -f ${DockerImageTag} ${DockerImageTagLatest}`, { silent: true }).code !== 0) process.exit(1);
   console.log(`${logName}]: building new image, tags=${DockerImageTag}, ${DockerImageTagLatest}`);
-    // if(s.exec(`docker build --no-cache --build-arg PLATFORM_API_SERVER_NAME=${dockerImageName} --tag ${dockerImageTag} -f ${dockerFile} ${workingApiImplmentationDir}`).code !== 0) process.exit(1);
-  if(s.exec(`docker build --no-cache --tag ${DockerImageTag} -f ${DockerFile} ${DockerContextDir}`).code !== 0) process.exit(1);
+  if(s.exec(`docker build --no-cache --tag ${DockerImageTag} -f ${CONSTANTS.DockerFile} ${CONSTANTS.ContextDir}`).code !== 0) process.exit(1);
   if(s.exec(`docker tag ${DockerImageTag} ${DockerImageTagLatest}`).code !== 0) process.exit(1);
   // list them
   console.log(`${logName}: docker images:`)
@@ -152,7 +107,7 @@ const main = () => {
   console.log(`${logName}: starting ...`);
 
   prepare();
-  copyBuildArtefactsToWorkingDir();
+  copyBuiltArtefactsToWorkingDir();
   setGlobals();
   buildDockerContext();
   removeDockerContainersByImageName();

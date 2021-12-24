@@ -90,10 +90,8 @@ vi test/source.env.sh
 # adjust the settings for openapi & inline tests
 ````
 ### Run All Tests
-- starts server
-- runs all tests
-
 ````bash
+npm run dev:build
 npm test
 # with pretty print server output:
 npm run test:pretty

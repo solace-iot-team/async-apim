@@ -4,7 +4,7 @@
 
 FROM nginx:1.21.4-alpine
 
-COPY admin-portal /usr/share/nginx/html
+COPY apim-portal /usr/share/nginx/html
 
 CMD ["nginx", "-g", "daemon off;"]
 
