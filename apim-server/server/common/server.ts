@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 import http from 'http';
 // import os from 'os';
 import cookieParser from 'cookie-parser';
-import { AuditLoggerInterface, EServerStatusCodes, ServerLogger } from './ServerLogger';
+import { AuditLogger, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';
 import * as OpenApiValidator from 'express-openapi-validator';
@@ -14,7 +14,6 @@ import { ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
 import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
-// import requestLogger from '../api/middlewares/requestLogger';
 
 const app = express();
 
@@ -35,9 +34,9 @@ export class ExpressServer {
     // this.root = path.normalize(__dirname + '/../..');
     this.root = config.rootDir;
 
+    app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
-    app.use(cors(corsOptions));
     app.use(
       bodyParser.urlencoded({
         extended: true,
@@ -45,11 +44,6 @@ export class ExpressServer {
       })
     );
     app.use(cookieParser(this.config.serverSecret));
-    // TODO: remove after audit tested and works
-    // app.use(requestLogger);
-    app.use(audit({
-      logger: AuditLoggerInterface,
-    }));
     // serve public/index.html
     app.use(express.static(`${this.root}/public`));
     // serve server open api spec file
@@ -75,6 +69,21 @@ export class ExpressServer {
         ignorePaths: /.*\/spec(\/|$)/,
       })
     );
+
+    // TODO: issue with content-type header and status code
+    app.use(audit({
+      logger: AuditLogger
+    }));
+
+    // same issue
+    // app.use(audit({
+    //   logger: ServerLogger.L
+    // }));
+
+    // same issue
+    // app.use(audit({
+    // }));
+
   }
 
   router(routes: (app: Application, apiBase: string) => void): ExpressServer {
@@ -102,12 +111,5 @@ export class ExpressServer {
   public getRoot = (): string => {
     return this.root;
   }
-  // listenWithCallback(port: number, callback: TListenCallback): Application {
-
-  //   http.createServer(app).listen(port, callback);
-
-  //   return app;
-  // }
-
 
 }

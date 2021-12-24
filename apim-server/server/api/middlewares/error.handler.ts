@@ -26,8 +26,7 @@ export default function errorHandler(
     if(err instanceof MongoError) internalServerError = new ApiInternalServerErrorFromMongoError(err, logName);
     else if(err instanceof OpenApiValidatorHttpError) {
       internalServerError = new ApiServerErrorFromOpenApiRequestValidatorError(logName, err, req.body, ServerLogger.getRequestInfo(req));
-    }
-    else internalServerError = new ApiInternalServerErrorFromError(err, logName);
+    } else internalServerError = new ApiInternalServerErrorFromError(err, logName);
     serverErrorHandler(internalServerError, req, res, next);
   } 
 }
@@ -38,13 +37,13 @@ const serverErrorHandler = (apiServerError: ApiServerError, _req: Request, res: 
   const logEntry: TServerLogEntry = ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.Api_Service_Error, message: apiServerError.message, details: apiServerError.toObject() });
 
   if(apiServerError instanceof ApiInternalServerError) 
-    ServerLogger.error(logEntry);  
+    ServerLogger.warn(logEntry);  
   else 
     ServerLogger.debug(logEntry);
   
   for (const responseHeader of apiServerError.getAPSErrorHeaders()) {
     res.header(responseHeader.headerField, responseHeader.headerValue);
   }
-  res.status(apiServerError.apiStatusCode).json(apiServerError.toAPSError());
+  res.status(apiServerError.apiStatusCode).json(apiServerError.toAPSError()); 
 }
 

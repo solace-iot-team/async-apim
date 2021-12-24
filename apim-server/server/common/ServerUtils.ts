@@ -3,6 +3,10 @@ import path from 'path';
 
 export class ServerUtils {
 
+  public static sleep = async(millis = 500) => {
+    if(millis > 0) await new Promise(resolve => setTimeout(resolve, millis));
+  }
+  
   public static validateFilePathWithReadPermission = (filePath: string): string | undefined => {
     try {
       const absoluteFilePath = path.resolve(filePath);

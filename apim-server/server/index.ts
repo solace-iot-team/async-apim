@@ -39,21 +39,22 @@ export const initializeComponents = async(): Promise<void> => {
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
   try {
-    await MongoDatabaseAccess.initialize();
+    await MongoDatabaseAccess.initializeWithRetry(-1, 30000);
     // must be first, loads the root user
     await APSUsersService.initialize(ServerConfig.getRootUserConfig());
     await APSMonitorService.initialize();
     await APSConnectorsService.initialize();
     await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
-    ServerStatus.setIsInitialized();
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
+    // set the server to initialized
+    ServerStatus.setIsInitialized();
   } catch (e) {
     let serverError: ServerError;
     if (e instanceof ServerError ) serverError = e;
     else serverError = new ServerErrorFromError(e, logName);
-    ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZE_ERROR, message: undefined , details: serverError }));
+    ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZE_ERROR, message: 'unrecoverable error, crashing ...' , details: serverError }));
     // crash the server
     throw e;
   }  

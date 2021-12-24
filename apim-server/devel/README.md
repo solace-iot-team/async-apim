@@ -12,6 +12,14 @@ brew install node@16
 brew unlink node
 brew link node@14
 ````
+## Build & Run
+````bash
+npm install
+npm run build
+npm start
+# or
+npm run start:pretty
+````
 
 ## Development Build & Run
 ### Devel Build
