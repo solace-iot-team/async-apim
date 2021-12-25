@@ -7,3 +7,4 @@ Quickstart
   :maxdepth: 1
 
   installation
+  setup

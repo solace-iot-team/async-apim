@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; Solace Async API Management r0.0.2 documentation</title>
+  <title>Setup &mdash; Solace Async API Management r0.0.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
@@ -20,8 +20,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Setup" href="setup.html" />
-    <link rel="prev" title="Quickstart" href="index.html" /> 
+    <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,8 +41,12 @@
               <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quickstart</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#login">Login</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-organization">Create Organization</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -63,9 +66,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="index.html">Quickstart</a> &raquo;</li>
-      <li>Installation</li>
+      <li>Setup</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/quickstart/installation.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/quickstart/setup.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -73,58 +76,43 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
-<p>The installation starts all required services using this
-<a class="reference download internal" download="" href="../_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
+  <section id="setup">
+<h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h1>
+<p>The quickstart contains a master user which is automatically bootstrapped at start-up time. The full user details are in <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json">bootstrap user list</a>.</p>
+<section id="login">
+<h2>Login<a class="headerlink" href="#login" title="Permalink to this headline"></a></h2>
 <dl class="field-list simple">
-<dt class="field-odd">qs-async-apim-www</dt>
-<dd class="field-odd"><p>an nginx service as a single point of entry, see <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> for exposed services</p>
+<dt class="field-odd">user id</dt>
+<dd class="field-odd"><p><cite>master.user&#64;aps.com</cite></p>
 </dd>
-<dt class="field-even">qs-async-apim-admin-portal</dt>
-<dd class="field-even"><p>the admin and developer portal web server</p>
-</dd>
-<dt class="field-odd">qs-async-apim-server</dt>
-<dd class="field-odd"><p>the portal server</p>
-</dd>
-<dt class="field-even">qs-async-apim-server-mongodb</dt>
-<dd class="field-even"><p>the portal database</p>
-</dd>
-<dt class="field-odd">qs-async-apim-connector</dt>
-<dd class="field-odd"><p>the connector</p>
-</dd>
-<dt class="field-even">qs-async-apim-connector-mongodb</dt>
-<dd class="field-even"><p>the connector database</p>
+<dt class="field-even">password</dt>
+<dd class="field-even"><p><cite>master.user&#64;aps.com</cite></p>
 </dd>
 </dl>
+<p>Login with the above credentails.</p>
+</section>
+<section id="create-organization">
+<h2>Create Organization<a class="headerlink" href="#create-organization" title="Permalink to this headline"></a></h2>
+<p>The bootstrapped user is member of the organization <cite>apim-quickstart</cite>.</p>
+<ul class="simple">
+<li><p>Create an Organization with the Name <cite>apim-quickstart</cite>.</p></li>
+<li><p>Logout and Login again</p></li>
+<li><p>Start creating entities …</p></li>
+</ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in Repo.</p></li>
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json">bootstrap user list</a> - details of the bootstrapped users.</p></li>
 </ul>
 </div>
-<p>The following figure shows the set-up of the containers:</p>
-<figure class="align-default" id="id1">
-<a class="reference internal image-reference" href="../_images/async-apim.quickstart.containers.png"><img alt="../_images/async-apim.quickstart.containers.png" src="../_images/async-apim.quickstart.containers.png" style="width: 800px;" /></a>
-<figcaption>
-<p><span class="caption-text">Figure 1: Quickstart Docker Compose Container Setup</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
-<p>Browser connections:</p>
-<figure class="align-default" id="id2">
-<a class="reference internal image-reference" href="../_images/async-apim.quickstart.connect.png"><img alt="../_images/async-apim.quickstart.connect.png" src="../_images/async-apim.quickstart.connect.png" style="width: 800px;" /></a>
-<figcaption>
-<p><span class="caption-text">Figure 2: Quickstart Browser Connections</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Quickstart" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="setup.html" class="btn btn-neutral float-right" title="Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
