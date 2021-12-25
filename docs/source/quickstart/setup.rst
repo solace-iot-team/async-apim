@@ -11,6 +11,14 @@ Login
 
 Login with the above credentails.
 
+Create Organization
++++++++++++++++++++
+
+The bootstrapped user is member of the organization `apim-quickstart`.
+
+- Create an Organization with the Name `apim-quickstart`.
+- Logout and Login again
+- Start creating entities ...
 
 
 
