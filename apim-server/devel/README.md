@@ -12,6 +12,14 @@ brew install node@16
 brew unlink node
 brew link node@14
 ````
+## Build & Run
+````bash
+npm install
+npm run build
+npm start
+# or
+npm run start:pretty
+````
 
 ## Development Build & Run
 ### Devel Build
@@ -82,10 +90,8 @@ vi test/source.env.sh
 # adjust the settings for openapi & inline tests
 ````
 ### Run All Tests
-- starts server
-- runs all tests
-
 ````bash
+npm run dev:build
 npm test
 # with pretty print server output:
 npm run test:pretty

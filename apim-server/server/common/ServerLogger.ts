@@ -6,10 +6,10 @@ import { Request } from 'express';
 // level: 'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'
 
 export enum EServerStatusCodes {
+  DB_INFO = "DB_INFO",
   DB_CONNECTION_ERROR = 'DB_CONNECTION_ERROR',
   DB_CALL_ERROR = 'DB_CALL_ERROR',
-  Api_Service_Error = 'Api_Service_Error',
-  // API_SERVICE_ERROR = 'API_SERVICE_ERROR', // NOTE: test result parser looks for ERROR, but Api Service Error is standard in tests, so don't trigger on this one
+  API_SERVICE_ERROR = 'API_SERVICE_ERROR',
   INTERNAL_ERROR = 'INTERNAL_ERROR',
   INITIALIZING = 'INITIALIZING',
   INITIALIZE_ERROR = 'INITIALIZE_ERROR',
@@ -18,6 +18,7 @@ export enum EServerStatusCodes {
   BOOTSTRAPPED = 'BOOTSTRAPPED',
   BOOTSTRAP_ERROR = 'BOOTSTRAP_ERROR',
   INFO = 'INFO',
+  INBOUND_TRANSACTION_LOG = 'INBOUND_TRANSACTION_LOG',
   MONITOR_DB_CONNECTION = 'MONITOR_DB_CONNECTION'
 }
 
@@ -31,7 +32,7 @@ export type TServerLogEntry = {
   name: string 
 } & TServerStatus;
 
-export class AuditLoggerInterface {
+export class AuditLogger {
   private static body2Object = (body: any): any => {
     if(body && typeof body === 'string') {
       try {
@@ -44,21 +45,21 @@ export class AuditLoggerInterface {
   }
   public static info = (auditObject: any, message: string) => {
     const funcName = 'info';
-    const logName = `${AuditLoggerInterface.name}.${funcName}()`;
-    if(auditObject.request.body) auditObject.request.body = AuditLoggerInterface.body2Object(auditObject.request.body);
-    if(auditObject.response.body) auditObject.response.body = AuditLoggerInterface.body2Object(auditObject.response.body);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: message, details: auditObject }));
+    const logName = `${AuditLogger.name}.${funcName}()`;
+    if(auditObject.request.body) auditObject.request.body = AuditLogger.body2Object(auditObject.request.body);
+    if(auditObject.response.body) auditObject.response.body = AuditLogger.body2Object(auditObject.response.body);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INBOUND_TRANSACTION_LOG, message: message, details: auditObject }));
   }
   public static warn = (auditObject: any, message: string) => {
     const funcName = 'warn';
-    const logName = `${AuditLoggerInterface.name}.${funcName}()`;
+    const logName = `${AuditLogger.name}.${funcName}()`;
     ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: message, details: auditObject }));
   }
 }
 
 export class ServerLogger {
 
-  private static L = pino({
+  public static L = pino({
     name: process.env.APIM_SERVER_LOGGER_APP_ID || 'apim-server',
     level: process.env.APIM_SERVER_LOGGER_LOG_LEVEL || 'trace'
   });

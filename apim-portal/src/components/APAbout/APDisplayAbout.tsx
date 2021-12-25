@@ -222,6 +222,13 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     );
   }
 
+  const renderDescription = () => {
+    return (
+      <div className="p-mb-4">
+        Concept Portal for Solace Async API Management.
+      </div>
+    );
+  }
   const renderComponent = (): JSX.Element => {
     return(
       <Dialog 
@@ -235,6 +242,7 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
         // resizable={true}
       >
         <div className="p-m-0">
+          {renderDescription()}
           {renderAdminPortalAbout()}
           {renderDeveloperPortalAbout()}
           {renderApimServerAbout()}

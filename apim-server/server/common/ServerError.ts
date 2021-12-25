@@ -3,9 +3,18 @@ import { HttpError as OpenApiValidatorHttpError } from 'express-openapi-validato
 import APSErrorIds = Components.Schemas.APSErrorIds;
 import APSError = Components.Schemas.APSError;
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
-import { ApiError } from "../../src/@solace-iot-team/apim-server-openapi-node";
+import { ApiError, APSStatus } from "../../src/@solace-iot-team/apim-server-openapi-node";
 import ServerConfig from "./ServerConfig";
+import ServerStatus from "./ServerStatus";
 
+export class ServerErrorFactory {
+  public static createServerError = (e: any, logName: string): ServerError => {
+    let serverError: ServerError;
+    if (e instanceof ServerError ) serverError = e;
+    else serverError = new ServerErrorFromError(e, logName);
+    return serverError;
+  }
+}
 export class ServerError extends Error {
   private internalStack: Array<string>;
   private internalLogName: string;
@@ -44,6 +53,21 @@ export class ServerError extends Error {
   }
 }
 
+export class ServerFatalError extends ServerError {
+  private originalError: {
+    name: string,
+    errors: any,
+    status: number
+  }
+  constructor(originalError: any, internalLogName: string) {
+    super(internalLogName, originalError.message);
+    this.originalError = {
+      name: originalError.name,
+      errors: originalError.errors || [{ message: originalError.message }],
+      status: originalError.status
+    }
+  }
+}
 export class ServerErrorFromError extends ServerError {
   private originalError: {
     name: string,
@@ -130,6 +154,26 @@ export class ApiInternalServerError extends ApiServerError {
 
   constructor(internalLogName: string, internalMessage: string, apiDescription : string = ApiInternalServerError.apiDefaultDescription, apiMeta?: any) {
     super(internalLogName, internalMessage, ApiInternalServerError.apiStatusCode, ApiInternalServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+
+
+export class ApiInternalServerErrorNotOperational extends ApiServerError {
+  private static internalServerErrorName = 'ApiInternalServerErrorNotOperational';
+  protected static apiStatusCode = 500;
+  protected static apiErrorId: APSErrorIds = 'serverNotOperational';
+  protected static apiDefaultDescription = 'Server Not Operational';
+  private static apiMessage = 'server not operational';
+
+  constructor(internalLogName: string) {
+    const apsStatus: APSStatus = {
+      isReady: ServerStatus.getStatus().isReady
+    }
+    const meta = {
+      status: apsStatus,
+      // message: ApiInternalServerErrorNotOperational.apiMessage
+    }
+    super(internalLogName, ApiInternalServerErrorNotOperational.apiMessage, ApiInternalServerErrorNotOperational.apiStatusCode, ApiInternalServerErrorNotOperational.apiErrorId, ApiInternalServerErrorNotOperational.apiDefaultDescription, meta);
   }
 }
 

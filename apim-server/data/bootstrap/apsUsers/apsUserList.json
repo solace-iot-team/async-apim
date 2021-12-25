@@ -1,0 +1,62 @@
+[
+  {
+    "userId": "master.user@aps.com",
+    "password": "master.user@aps.com",
+    "roles": ["apiConsumer", "apiTeam", "loginAs", "organizationAdmin", "systemAdmin"],
+    "isActivated": true,
+    "profile": {
+      "first": "Master",
+      "last": "User",
+      "email": "master.user@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  },
+  {
+    "userId": "api.consumer@aps.com",
+    "password": "api.consumer@aps.com",
+    "roles": ["apiConsumer"],
+    "isActivated": true,
+    "profile": {
+      "first": "Api",
+      "last": "Consumer",
+      "email": "api.consumer@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  },
+  {
+    "userId": "api.team@aps.com",
+    "password": "api.team@aps.com",
+    "roles": ["apiTeam"],
+    "isActivated": true,
+    "profile": {
+      "first": "Api",
+      "last": "Team",
+      "email": "api.team@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  },
+  {
+    "userId": "org.admin@aps.com",
+    "password": "org.admin@aps.com",
+    "roles": ["organizationAdmin"],
+    "isActivated": true,
+    "profile": {
+      "first": "Org",
+      "last": "Admin",
+      "email": "org.admin@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  },
+  {
+    "userId": "system.admin@aps.com",
+    "password": "system.admin@aps.com",
+    "roles": ["systemAdmin", "loginAs"],
+    "isActivated": true,
+    "profile": {
+      "first": "System",
+      "last": "Admin",
+      "email": "system.admin@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  }
+]
