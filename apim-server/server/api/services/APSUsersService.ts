@@ -7,12 +7,20 @@ import APSUserId = Components.Schemas.APSId;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
 import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../common/MongoPersistenceService';
 import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../utils/ApiQueryHelper';
-import { TRootUserConfig } from '../../common/ServerConfig';
+import ServerConfig, { TRootUserConfig } from '../../common/ServerConfig';
+import { ServerUtils } from '../../common/ServerUtils';
+import { 
+  ApiError,
+  APSUserList,
+  ApsUsersService
+ } from '../../../src/@solace-iot-team/apim-server-openapi-node';
+import { ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../common/ServerError';
 
 export type TAPSListUserResponse = APSListResponseMeta & { list: Array<APSUser> };
 
 export class APSUsersService {
   private static collectionName = "apsUsers";
+  private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
   private static rootApsUser: APSUser;
   private persistenceService: MongoPersistenceService;
@@ -25,7 +33,10 @@ export class APSUsersService {
     const funcName = 'initialize';
     const logName = `${APSUsersService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
+    
+    // for devel: drop the user collection
     // await this.persistenceService.dropCollection();
+    
     await this.persistenceService.initialize();
     APSUsersService.rootApsUser = {
       isActivated: true,
@@ -39,6 +50,63 @@ export class APSUsersService {
       roles: [ 'root' ]
     }
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  }
+
+  public bootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+
+    if(ServerConfig.getConfig().dataPath) {
+      const bootstrapApsUserListFileName = `${ServerConfig.getConfig().dataPath}/${APSUsersService.boostrapApsUserListPath}`;
+      const bootstrapApsUserListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsUserListFileName);
+      if(bootstrapApsUserListFile) {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap user list file', details: { file: bootstrapApsUserListFile } }));  
+        // read file
+        const bootstrapApsUserListData = ServerUtils.readFileContentsAsJson(bootstrapApsUserListFile);
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user list', details: { bootstrapUserList: bootstrapApsUserListData } }));  
+
+        const bootstrapApsUserList: APSUserList = bootstrapApsUserListData;
+        for(const bootstrapApsUser of bootstrapApsUserList) {
+          let found = false;
+          try {
+            await this.byId(bootstrapApsUser.userId);
+            found = true;
+          } catch(e) {
+            if(e instanceof ApiKeyNotFoundServerError) {
+              found = false;
+            } else {
+              throw new ApiInternalServerErrorFromError(e, logName);
+            }
+          }
+          if(found) {
+            ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user already exists', details: { bootstrapApsUser: bootstrapApsUser } }));  
+          } else {
+            try {
+              await ApsUsersService.createApsUser({
+                requestBody: bootstrapApsUser
+              });
+            } catch (e: any) {
+              ServerLogger.debug(ServerLogger.createLogEntry(logName, { 
+                  code: EServerStatusCodes.BOOTSTRAP_ERROR, 
+                  message: 'creating user', 
+                  details: { 
+                    bootstrapUser: bootstrapApsUser,
+                    error: e
+                   } 
+                }));  
+              if(e instanceof ApiError) throw new BootstrapErrorFromApiError(e, logName, 'creating user');
+              else throw new BootstrapErrorFromError(e, logName, 'creating user');
+            }
+          }
+        }
+      } else {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user list file not found, skipping', details: { file: bootstrapApsUserListFileName } }));  
+      }
+    } else {
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping user list bootstrap, no data path' }));  
+    }
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
   public getRootApsUserLoginCredentials = (): APSUserLoginCredentials => {

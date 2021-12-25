@@ -16,12 +16,13 @@ import ServerMonitor from './common/ServerMonitor';
 
 const componentName = 'index';
 
-const bootstrapServer = async(): Promise<void> => {
-  const funcName = 'bootstrapServer';
+const bootstrapComponents = async(): Promise<void> => {
+  const funcName = 'bootstrapComponents';
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
   try {
     await APSConnectorsService.bootstrap();
+    await APSUsersService.bootstrap();
     ServerStatus.setIsBootstrapped();
   } catch(e: any) {
     if (e instanceof BootstrapErrorFromApiError || e instanceof BootstrapErrorFromError) {
@@ -31,7 +32,6 @@ const bootstrapServer = async(): Promise<void> => {
     }
   }
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
-  ServerStatus.setIsReady();
 }
 
 export const initializeComponents = async(): Promise<void> => {
@@ -39,7 +39,8 @@ export const initializeComponents = async(): Promise<void> => {
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
   try {
-    await MongoDatabaseAccess.initializeWithRetry(-1, 30000);
+    if(ServerStatus.getStatus().isInitialized) await MongoDatabaseAccess.initializeWithRetry(-1, 30000);
+    else await MongoDatabaseAccess.initialize();
     // must be first, loads the root user
     await APSUsersService.initialize(ServerConfig.getRootUserConfig());
     await APSMonitorService.initialize();
@@ -48,8 +49,9 @@ export const initializeComponents = async(): Promise<void> => {
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
-    // set the server to initialized
+    // finally: set the server to initialized & ready
     ServerStatus.setIsInitialized();
+    ServerStatus.setIsReady();
   } catch (e) {
     let serverError: ServerError;
     if (e instanceof ServerError ) serverError = e;
@@ -59,7 +61,7 @@ export const initializeComponents = async(): Promise<void> => {
     throw e;
   }  
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
-  await bootstrapServer();
+  await bootstrapComponents();
 }
 
 // startup

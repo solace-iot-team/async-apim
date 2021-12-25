@@ -1,0 +1,14 @@
+[
+  {
+    "userId": "master.user@aps.com",
+    "password": "master.user@aps.com",
+    "roles": ["apiConsumer", "apiTeam", "loginAs", "organizationAdmin", "systemAdmin"],
+    "isActivated": true,
+    "profile": {
+      "first": "Master",
+      "last": "User",
+      "email": "master.user@aps.com"
+    },
+    "memberOfOrganizations": ["apim-quickstart"]
+  }
+]

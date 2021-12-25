@@ -78,6 +78,7 @@ export class ServerMonitor {
     }
     if(!exists) await this.persistenceService.create(ServerMonitor.name, { created: Date.now()});
     else await this.persistenceService.update(ServerMonitor.name, { created: Date.now()});
+
     this.setupConnectionMonitors(config.connectionTestInterval_secs * 1000);
     this.isInitialized = true;
   }

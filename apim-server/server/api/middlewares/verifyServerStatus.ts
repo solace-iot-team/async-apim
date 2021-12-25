@@ -13,10 +13,8 @@ export default function verifyServerStatus(
   const funcName = 'verifyServerStatus';
   const logName = `${componentName}.${funcName}()`;
   if(!ServerStatus.getStatus().isReady) {
-    ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.Api_Service_Error, message: 'server status', details: ServerStatus.getStatus() }));
+    ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.API_SERVICE_ERROR, message: 'server status', details: ServerStatus.getStatus() }));
     throw new ApiInternalServerErrorNotOperational(logName);
   }
   next();
 }
-
-// res.status(apiServerError.apiStatusCode).json(apiServerError.toAPSError()); 

@@ -34,7 +34,7 @@ export default function errorHandler(
 const serverErrorHandler = (apiServerError: ApiServerError, _req: Request, res: Response, _next: NextFunction) => {
   const funcName = 'serverErrorHandler';
   const logName = `${componentName}.${funcName}()`;
-  const logEntry: TServerLogEntry = ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.Api_Service_Error, message: apiServerError.message, details: apiServerError.toObject() });
+  const logEntry: TServerLogEntry = ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.API_SERVICE_ERROR, message: apiServerError.message, details: apiServerError.toObject() });
 
   if(apiServerError instanceof ApiInternalServerError) 
     ServerLogger.warn(logEntry);  
