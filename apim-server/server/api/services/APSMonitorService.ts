@@ -19,7 +19,8 @@ export class APSMonitorService {
     const logName = `${APSMonitorService.name}.${funcName}()`;
 
     const apsStatus: APSStatus = {
-      isReady: ServerStatus.getStatus().isReady
+      isReady: ServerStatus.getStatus().isReady,
+      timestamp: ServerStatus.getStatus().lastModifiedTimestamp
     }
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'status', details: { status: apsStatus } })); 

@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js",
@@ -47,6 +47,7 @@
     "express-requests-logger": "^3.0.3",
     "form-data": "^4.0.0",
     "mongodb": "^4.1.0",
+    "nocache": "^3.0.1",
     "node-fetch": "^2.6.1",
     "pino": "^6.11.3",
     "print-env": "^0.1.2"

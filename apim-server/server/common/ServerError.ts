@@ -167,7 +167,8 @@ export class ApiInternalServerErrorNotOperational extends ApiServerError {
 
   constructor(internalLogName: string) {
     const apsStatus: APSStatus = {
-      isReady: ServerStatus.getStatus().isReady
+      isReady: ServerStatus.getStatus().isReady,
+      timestamp: ServerStatus.getStatus().lastModifiedTimestamp
     }
     const meta = {
       status: apsStatus,

@@ -8,6 +8,7 @@ export type TServerStatus = {
   isReady: boolean;
   isInitialized: boolean;
   isBootstrapped: boolean;
+  lastModifiedTimestamp: number;
   dbConnectionTestDetails?: TConnectionTestDetails;
 }
 
@@ -18,7 +19,8 @@ export class ServerStatus {
     this.serverStatus = {
       isReady: false,
       isInitialized: false,
-      isBootstrapped: false
+      isBootstrapped: false,
+      lastModifiedTimestamp: Date.now()
     }
   }
 
@@ -26,23 +28,26 @@ export class ServerStatus {
     return this.serverStatus;
   };
 
-  public setIsReady = () => {
-    this.serverStatus.isReady = true;
+  public setIsReady = (isReady: boolean) => {
+    this.serverStatus.isReady = isReady;
+    this.serverStatus.lastModifiedTimestamp = Date.now();
   }
   
   public setIsInitialized = () => {
     this.serverStatus.isInitialized = true;
+    this.serverStatus.lastModifiedTimestamp = Date.now();
   }
 
   public setIsBootstrapped = () => {
     this.serverStatus.isBootstrapped = true;
-    this.serverStatus.isReady = true;
+    // this.serverStatus.isReady = true;
+    this.serverStatus.lastModifiedTimestamp = Date.now();
   }
 
   public setDBConnectionTestDetails = (testDetails: TConnectionTestDetails) => {
     this.serverStatus.dbConnectionTestDetails = testDetails;
     if(!testDetails.success) {
-      this.serverStatus.isReady = false;
+      this.setIsReady(false);
     }
   }
 
