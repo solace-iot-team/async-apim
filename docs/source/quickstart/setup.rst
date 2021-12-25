@@ -29,4 +29,6 @@ The bootstrapped user is member of the organization `apim-quickstart`.
 
 
 .. _bootstrap user list :
-  https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json
+  https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap
+
+  .. https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json

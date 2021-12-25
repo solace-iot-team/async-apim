@@ -6,8 +6,6 @@ import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsCon
 import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter';
 import apsMonitorRouter from './api/controllers/apsMonitor/ApsMonitorRouter';
 import verifyServerStatus from './api/middlewares/verifyServerStatus';
-import audit from 'express-requests-logger';
-import { AuditLogger } from './common/ServerLogger';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
