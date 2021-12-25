@@ -2,10 +2,35 @@
 
 Solace Async API Management.
 
+## Version 0.0.28
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.28
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.14
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.8
+
+#### API-M Admin & Developer Portal
+**No Changes.**
+
+#### API-M Server OpenAPI
+
+**New:**
+- **error-id**
+  - `serverNotOperational`: returned for api calls when server is not ready
+
+#### API-M Server
+**New:**
+- **monitor**
+  - re-initializes server after failed healthcheck
+- **startup/initialization**
+  - exits server for unrecoverable errors, e.g.:
+    - mal-formed DB connection string
+    - DB authentication error
+  - log of DB server and client info
+  - bootstrap users
+
 ## Version 0.0.27
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.27
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.13
-  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.8
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.7
 
 #### API-M Admin & Developer Portal
 **New:**

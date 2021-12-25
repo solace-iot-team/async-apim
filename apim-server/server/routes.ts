@@ -1,6 +1,5 @@
 import { Application } from 'express';
 import Router from 'express';
-import examplesRouter from './api/controllers/examples/router';
 import apsUsersRouter from './api/controllers/apsUsers/ApsUsersRouter';
 import apsLoginRouter from './api/controllers/apsLogin/ApsLoginRouter';
 import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsConnectorsRouter';
@@ -17,7 +16,6 @@ export default function routes(app: Application, apiBase: string): void {
   router.use('/apsMonitor', apsMonitorRouter);
   // check that server is ready
   router.use(verifyServerStatus);
-  router.use('/examples', examplesRouter);
   router.use('/apsUsers', apsUsersRouter);
   router.use('/apsLogin', apsLoginRouter);
   router.use('/apsConfig/apsConnectors', apsConnectorRouter);
