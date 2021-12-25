@@ -94,7 +94,7 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
         />
       }
     </React.Fragment>
-);
+  );
 
 }
 

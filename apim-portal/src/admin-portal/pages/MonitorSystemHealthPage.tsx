@@ -1,51 +1,52 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
+import { MenuItem } from 'primereact/api';
 import { Toast } from 'primereact/toast';
-import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { MonitorSystemHealth } from '../components/MonitorSystemHealth/MonitorSystemHealth';
 
 import "../../pages/Pages.css";
 
-export const ManageOrganizationsPage: React.FC = () => {
-  // const componentName = 'ManageOrganizationsPage';
+export const MonitorSystemHealthPage: React.FC = () => {
 
   const toast = React.useRef<any>(null);
-  const toastLifeSuccess: number = 1000;
+  const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
+
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
-
+  
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
   }
-
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
-
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
-
+  
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
         label: 'System'
       },
       { 
-        label: 'Organizations',
+        label: 'Monitor'
+      },
+      { 
+        label: 'Health',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorSystemHealth) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
     })
     return (
       <React.Fragment>
@@ -58,11 +59,13 @@ export const ManageOrganizationsPage: React.FC = () => {
     <React.Fragment>
       <Toast ref={toast} />
       {renderBreadcrumbs()}
-      <ManageOrganizations 
+
+      <MonitorSystemHealth 
         onSuccess={onSuccess} 
-        onError={onError}
-        onBreadCrumbLabelList={onBreadcrumbLabelList}
+        onError={onError} 
+        setBreadCrumbItemList={setBreadCrumbItemList}      
       />
     </React.Fragment>
   );
 }
+ 

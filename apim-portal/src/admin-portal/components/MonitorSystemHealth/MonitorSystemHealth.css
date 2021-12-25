@@ -1,0 +1,37 @@
+.ap-monitor-system-health .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ap-monitor-system-health .ap-system-health-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-monitor-system-health
+  .ap-system-health-view
+  .ap-system-health-view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-monitor-system-health
+  .ap-system-health-view
+  .ap-system-health-view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+.ap-monitor-system-health .card .p-field {
+  margin-bottom: 2.5rem;
+}
+
+.ap-monitor-system-health-info-header {
+  border: 1px;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  color: #495057;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+  font-weight: 600;
+}
