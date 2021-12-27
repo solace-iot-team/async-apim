@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, Send } from "express";
+import { Request, Response, NextFunction } from "express";
 
 import { EServerStatusCodes, ServerLogger } from "../../common/ServerLogger";
 
@@ -70,8 +70,8 @@ export class AuditLogger {
     const funcName = 'requestResponseLogger';
     const logName = `${AuditLogger.name}.${funcName}()`;
 
-    var orgJsonFunc = res.json;
-    var orgEndFunc = res.end;
+    const orgJsonFunc = res.json;
+    const orgEndFunc = res.end;
 
     const anyReq = req as any;
     anyReq._auditTimestamp = Date.now();
