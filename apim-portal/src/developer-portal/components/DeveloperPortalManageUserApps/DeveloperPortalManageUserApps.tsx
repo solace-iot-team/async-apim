@@ -320,6 +320,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -429,7 +430,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       
       {showListComponent && 
         <DeveloperPortalListUserApps
-          key={componentState.previousState}
+          key={refreshCounter}
           organizationId={props.organizationName}
           userId={props.userId}
           onSuccess={onListManagedObjectsSuccess} 

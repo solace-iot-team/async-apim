@@ -185,7 +185,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
     const funcName = 'transformFormDataToManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: formData=${JSON.stringify(formData, null, 2)}`);
+    // console.log(`${logName}: formData=${JSON.stringify(formData, null, 2)}`);
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
     const mo: TManagedObject = {
       ...managedObject,

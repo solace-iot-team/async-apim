@@ -29,10 +29,10 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
+import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
-import { Globals } from "../../../utils/Globals";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -187,12 +187,8 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
   const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${componentName}.${funcName}()`;
-
-    console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
-    console.log(`${logName}: transformManagedObjectToCreateApiObject(mo) = ${JSON.stringify(transformManagedObjectToCreateApiObject(mo), null, 2)}`);
-
-    // throw new Error(`${logName}: continue here`);
-
+    // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+    // console.log(`${logName}: transformManagedObjectToCreateApiObject(mo) = ${JSON.stringify(transformManagedObjectToCreateApiObject(mo), null, 2)}`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_CONNECTOR, `create connector: ${mo.displayName}`);
     try { 
       const createdApiObject: APSConnector = await ApsConfigService.createApsConnector({

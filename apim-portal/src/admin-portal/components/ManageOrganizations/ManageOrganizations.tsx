@@ -69,7 +69,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
-  // const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -172,11 +172,11 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * prop callbacks *
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: CommonName, newDisplayName: CommonDisplayName) => {
     setApiCallStatus(apiCallState);
@@ -264,7 +264,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       }
       {showListComponent && 
         <ListOrganizations
-          key={componentState.previousState}
+          key={refreshCounter}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
@@ -277,8 +277,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         <ViewOrganization
           organizationId={managedObjectId}
           organizationDisplayName={managedObjectDisplayName}
-          // reInitializeTrigger={reInitializeTrigger}
-          reInitializeTrigger={0}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

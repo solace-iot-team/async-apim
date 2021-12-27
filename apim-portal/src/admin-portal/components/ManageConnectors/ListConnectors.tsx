@@ -60,9 +60,6 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
-
-    console.log(`${logName}: getting connector list & info ...`);
-
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_CONNECTOR_LIST, 'retrieve list of connectors');
     try { 
@@ -95,6 +92,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   }
 
   React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

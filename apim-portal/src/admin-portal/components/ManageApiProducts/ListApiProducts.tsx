@@ -34,7 +34,7 @@ export interface IListApiProductsProps {
 }
 
 export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
-  // const componentName = 'ListApiProducts';
+  const componentName = 'ListApiProducts';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
@@ -99,6 +99,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

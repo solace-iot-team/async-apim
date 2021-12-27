@@ -51,6 +51,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       previousState: componentState.currentState,
       currentState: componentState.previousState
     });
+
   }
   
   const ToolbarNewManagedObjectButtonLabel = 'New';
@@ -67,6 +68,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -169,11 +171,11 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   // * prop callbacks *
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -234,7 +236,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowNewComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
-      componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
@@ -262,12 +264,11 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
 
       <Loading show={isLoading} />      
       
-      {!isLoading &&
-        renderToolbar()
-      }
+      {!isLoading && renderToolbar() }
+
       {showListComponent && 
         <ListUsers
-          key={componentState.previousState}
+          key={refreshCounter}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 

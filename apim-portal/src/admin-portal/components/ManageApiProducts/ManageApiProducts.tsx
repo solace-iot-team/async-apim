@@ -77,6 +77,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -192,6 +193,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -290,7 +292,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
       {showListComponent && 
         <ListApiProducts
-          key={componentState.previousState}
+          key={refreshCounter}
           organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
