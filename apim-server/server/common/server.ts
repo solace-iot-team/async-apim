@@ -3,9 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
-// import os from 'os';
 import cookieParser from 'cookie-parser';
-import nocache from 'nocache';
 import { AuditLogger4Audit, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';
@@ -15,7 +13,6 @@ import { ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
 import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
-import { AuditLogger } from '../api/middlewares/AuditLogger';
 
 const app = express();
 
@@ -33,8 +30,8 @@ export class ExpressServer {
     this.config = config;
     this.root = config.rootDir;
 
-    app.set("etag", false);
-    app.use(nocache());
+    // app.set("etag", false);
+    // app.use(nocache());
     app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));

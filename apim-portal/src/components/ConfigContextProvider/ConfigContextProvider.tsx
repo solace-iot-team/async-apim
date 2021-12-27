@@ -6,14 +6,14 @@ import {
 import { TAPRbacRoleList } from '../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
 import { TAPConnectorInfo } from "../../utils/APConnectorApiCalls";
-import { TAPPortalInfo } from "../../utils/Globals";
+import { TAPPortalAppInfo } from "../../utils/Globals";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   rbacRoleList: TAPRbacRoleList,
   connector?: APSConnector,
   connectorInfo?: TAPConnectorInfo,
-  portalInfo?: TAPPortalInfo
+  portalAppInfo?: TAPPortalAppInfo
 }
 
 export interface IConfigContextProviderProps {
@@ -23,7 +23,7 @@ export interface IConfigContextProviderProps {
 export type ConfigContextAction = 
   | { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: TAPRbacRoleList }
   | { type: 'SET_CONFIG_CONNECTOR', connector: APSConnector | undefined }
-  | { type: 'SET_PORTAL_INFO', portalInfo: TAPPortalInfo | undefined }
+  | { type: 'SET_PORTAL_APP_INFO', portalAppInfo: TAPPortalAppInfo | undefined }
   | { type: 'default'};
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
@@ -43,10 +43,10 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
           ...state,
           connector: action.connector
         }
-      case 'SET_PORTAL_INFO':
+      case 'SET_PORTAL_APP_INFO':
         return { 
           ...state,
-          portalInfo: action.portalInfo
+          portalAppInfo: action.portalAppInfo
         }
       default: 
         return state;  

@@ -4,11 +4,14 @@ import React from "react";
 import { TabView, TabPanel } from 'primereact/tabview';
 
 import { APHealthCheckContext } from '../../../components/APHealthCheckContextProvider';
-import { TAPHealthCheckSummary } from "../../../utils/APHealthCheck";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { Config } from '../../../Config';
+import { DisplaySystemHealthInfo, EAPSystemHealthInfoPart } from "../../../components/SystemHealth/DisplaySystemHealthInfo";
+import { DisplayServerHealthCheckLog } from "../../../components/SystemHealth/DisplayServerHealthCheckLog";
+import { DisplayConnectorHealthCheckLog } from "../../../components/SystemHealth/DisplayConnectorHealthCheckLog";
+import { DisplayPortalAppHealthCheckLog } from "../../../components/SystemHealth/DisplayPortalAppHealthCheckLog";
 
 import '../../../components/APComponents.css';
 import "./MonitorSystemHealth.css";
@@ -32,44 +35,28 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-
-  const renderSummary = (healthCheckSummary?: TAPHealthCheckSummary) => {
-    if(healthCheckSummary && healthCheckSummary.performed) {
-      const timestampStr = (new Date(healthCheckSummary.timestamp)).toUTCString();
-      const successStr = String(healthCheckSummary.success);
-      return (
-        <React.Fragment>
-          <div><b>Status</b>: {successStr}</div>
-          <div><b>Last performed</b>: {timestampStr}</div>
-        </React.Fragment>     
-      );
-    }
-    return (
-      <React.Fragment>
-        <div><b>Status</b>: Not performed.</div>
-      </React.Fragment>     
-    );
-  }
-
   const renderDetailTabs = () => {
     if(!healthCheckContext.systemHealthCheckSummary || !healthCheckContext.systemHealthCheckSummary.performed) return (<></>);
     return (
       <React.Fragment>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
-          {/* <TabPanel header='APIM Portal'>
-            <p>implement me</p>
-          </TabPanel> */}
+          <TabPanel header='Portal App'>
+            <DisplaySystemHealthInfo
+                systemHealthInfoPart={EAPSystemHealthInfoPart.PORTAL_APP}
+              />
+              <DisplayPortalAppHealthCheckLog />
+          </TabPanel>
           <TabPanel header='APIM Server'>
-            {renderSummary(healthCheckContext.serverHealthCheckResult?.summary)}
-            <pre style={ { fontSize: '12px' }} >
-              {JSON.stringify(healthCheckContext.serverHealthCheckResult?.healthCheckLog, null, 2)}
-            </pre>
+            <DisplaySystemHealthInfo
+              systemHealthInfoPart={EAPSystemHealthInfoPart.SERVER}
+            />
+            <DisplayServerHealthCheckLog />
           </TabPanel>
           <TabPanel header='APIM Connector'>
-            {renderSummary(healthCheckContext.connectorHealthCheckResult?.summary)}
-            <pre style={ { fontSize: '12px' }} >
-              {JSON.stringify(healthCheckContext.connectorHealthCheckResult?.healthCheckLog, null, 2)}
-            </pre>
+            <DisplaySystemHealthInfo
+              systemHealthInfoPart={EAPSystemHealthInfoPart.CONNECTOR}
+            />
+            <DisplayConnectorHealthCheckLog />
           </TabPanel>
           {Config.getUseDevelTools() &&
             <TabPanel header='All'>
@@ -85,15 +72,14 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
   }
 
   const renderSystemHealthOverview = () => {
-    // const funcName = 'renderSystemHealthOverview';
-    // const logName = `${componentName}.${funcName}()`;
-    
     return (
       <React.Fragment>
         <div className="p-col-12">
           <div className="ap-system-health-view">
             <div className="ap-system-health-view-detail-left">
-              {renderSummary(healthCheckContext.systemHealthCheckSummary)}
+              <DisplaySystemHealthInfo
+                systemHealthInfoPart={EAPSystemHealthInfoPart.ALL}
+              />
               {renderDetailTabs()}
             </div>
             <div className="ap-system-health-view-detail-right">

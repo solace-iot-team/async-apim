@@ -9,8 +9,9 @@ import {
   ApiError as APSApiError
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-import { TAPPortalInfo } from '../../utils/Globals';
+import { TAPPortalAppInfo } from '../../utils/Globals';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
+import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../utils/APortalApiCalls';
 
 export class ConfigHelper {
 
@@ -76,16 +77,18 @@ export class ConfigHelper {
     return activeApsConnector;
   }
 
-  private static getPortalInfo = (): TAPPortalInfo  => {
-    const portalInfo: TAPPortalInfo = {
+  private static getPortalAppInfo = async(): Promise<TAPPortalAppInfo>  => {
+    const adminPortalAppResult = await APortalAppApiCalls.apiGetPortalAppAbout(E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT);
+    const portalInfo: TAPPortalAppInfo = {
       connectorClientOpenApiInfo: APClientConnectorOpenApi.getOpenApiInfo(),
-      portalServerClientOpenApiInfo: APSClientOpenApi.getOpenApiInfo()
+      portalAppServerClientOpenApiInfo: APSClientOpenApi.getOpenApiInfo(),
+      adminPortalAppAbout: adminPortalAppResult.apPortalAppAbout
     };
     return portalInfo;
   }
 
   public static doInitialize = async (dispatchConfigContextAction: React.Dispatch<ConfigContextAction>) => {
-    dispatchConfigContextAction({ type: 'SET_PORTAL_INFO', portalInfo: ConfigHelper.getPortalInfo() });
+    dispatchConfigContextAction({ type: 'SET_PORTAL_APP_INFO', portalAppInfo: await ConfigHelper.getPortalAppInfo() });
     dispatchConfigContextAction( { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: await ConfigHelper.getConfigRbacRoleList() });
     dispatchConfigContextAction( { type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.getActiveConnectorInstance() });
   }
