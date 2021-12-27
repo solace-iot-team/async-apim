@@ -8,10 +8,13 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Divider } from "primereact/divider";
 
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { 
   APConnectorHealthCheck, 
+  APPortalAppHealthCheck, 
+  TAPPortalAppHealthCheckResult, 
   APServerHealthCheck, 
   EAPHealthCheckSuccess, 
   TAPConnectorHealthCheckResult, 
@@ -20,7 +23,8 @@ import {
 } from "../../utils/APHealthCheck";
 import { 
   EUIAdminPortalResourcePaths, 
-  EUICommonResourcePaths, 
+  EUICommonResourcePaths,
+  Globals, 
 } from "../../utils/Globals";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { APLogger } from "../../utils/APLogger";
@@ -41,6 +45,7 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
 
   const connectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
   const serverHealthCheckResultNotPerformed: TAPServerHealthCheckResult = APServerHealthCheck.getInitializedHealthCheckResult_NotPerformed();
+  const portalAppHealthCheckResultNotPerformed: TAPPortalAppHealthCheckResult = APPortalAppHealthCheck.getInitializedHealthCheckResult_NotPerformed();
   const initialHealthCheckSummary: TAPHealthCheckSummary = {
     performed: false,
     success: EAPHealthCheckSuccess.UNDEFINED,
@@ -48,6 +53,7 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
   }
 
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [userContext] = React.useContext(UserContext);
   const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const [healthCheckSummaryContext, dispatchHealthCheckSummaryContextAction] = React.useContext(APHealthCheckSummaryContext);
   const history = useHistory();
@@ -56,6 +62,7 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
   const [count, setCount] = React.useState<number>(0);
   const [serverHealthCheckResult, setServerHealthCheckResult] = React.useState<TAPServerHealthCheckResult>(serverHealthCheckResultNotPerformed);
   const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>(connectorHealthCheckResultNotPerformed);
+  const [portalAppHealthCheckResult, setPortalAppHealthCheckResult] = React.useState<TAPPortalAppHealthCheckResult>(portalAppHealthCheckResultNotPerformed);
   const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<TAPHealthCheckSummary>(initialHealthCheckSummary);
   const [reinitializeConfigContextCount, setReinitializeConfigContextCount] = React.useState<number>(0);
 
@@ -68,21 +75,31 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
   }, [configContext]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    dispatchHealthCheckContextAction({ type: 'SET_SERVER_HEALTHCHECK_RESULT', serverHealthCheckResult: serverHealthCheckResult});
-    if(serverHealthCheckResult.summary.success !== healthCheckSummaryContext.serverHealthCheckSuccess) {
-      dispatchHealthCheckSummaryContextAction({ type: 'SET_SERVER_HEALTHCHECK_SUCCESS', serverHealthCheckSuccess: serverHealthCheckResult.summary.success});
-    }
-    if(serverHealthCheckResult.summary.performed && serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
-      navigateTo(EUICommonResourcePaths.HealthCheckView);
+    if(serverHealthCheckResult.summary.performed) {
+      dispatchHealthCheckContextAction({ type: 'SET_SERVER_HEALTHCHECK_RESULT', serverHealthCheckResult: serverHealthCheckResult});
+      if(serverHealthCheckResult.summary.success !== healthCheckSummaryContext.serverHealthCheckSuccess) {
+        dispatchHealthCheckSummaryContextAction({ type: 'SET_SERVER_HEALTHCHECK_SUCCESS', serverHealthCheckSuccess: serverHealthCheckResult.summary.success});
+      }
+      if(serverHealthCheckResult.summary.performed && serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
+        navigateTo(EUICommonResourcePaths.HealthCheckView);
+      }
     }
   }, [serverHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
-    if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
-      dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
+    if(connectorHealthCheckResult.summary.performed) {
+      dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
+      if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
+        dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
+      }
     }
   }, [connectorHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(portalAppHealthCheckResult.summary.performed) {
+      dispatchHealthCheckContextAction({ type: 'SET_PORTAL_APP_HEALTHCHECK_RESULT', portalAppHealthCheckResult: portalAppHealthCheckResult});
+    }
+  }, [portalAppHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     dispatchHealthCheckContextAction({ type: 'SET_SYSTEM_HEALTHCHECK_SUMMARY', systemHealthCheckSummary: systemHealthCheckSummary});
@@ -98,6 +115,20 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
     },
     delay
   );
+
+  const doPortalAppHealthCheck = async (): Promise<TAPPortalAppHealthCheckResult> => {
+    const funcName = 'doPortalAppHealthCheck';
+    const logName = `${componentName}.${funcName}()`;
+    let _portalAppHealthCheckResult: TAPPortalAppHealthCheckResult = APPortalAppHealthCheck.getInitializedHealthCheckResult_NotPerformed();
+    try {
+      _portalAppHealthCheckResult = await APPortalAppHealthCheck.doHealthCheck(configContext, userContext);
+    } catch(e) {
+      // should never get here
+      APLogger.error(APLogger.createLogEntry(logName, e));
+      throw e;
+    }        
+    return _portalAppHealthCheckResult;
+  }
 
   const doServerHealthCheck = async (): Promise<TAPServerHealthCheckResult> => {
     const funcName = 'doServerHealthCheck';
@@ -134,6 +165,12 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
 
     setCount(count + 1);
 
+    const portalAppHealthCheckResult: TAPPortalAppHealthCheckResult = await doPortalAppHealthCheck();
+    // if portal healthcheck fail, reload app
+    if(portalAppHealthCheckResult.summary.success !== EAPHealthCheckSuccess.PASS) {
+      Globals.reloadApp();
+    } 
+
     const serverHealthCheckResult: TAPServerHealthCheckResult = await doServerHealthCheck();
     const connectorHealthCheckResult: TAPConnectorHealthCheckResult = await doConnectorHealthCheck(serverHealthCheckResult);
 
@@ -150,6 +187,7 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
     setSystemHealthCheckSummary(summary);
     setServerHealthCheckResult(serverHealthCheckResult);
     setConnectorHealthCheckResult(connectorHealthCheckResult);
+    setPortalAppHealthCheckResult(portalAppHealthCheckResult);
 
     // re-initialize config context if server status has changed 
     if(serverHealthCheckResult.summary.success !== healthCheckContext.serverHealthCheckResult?.summary.success) setReinitializeConfigContextCount(reinitializeConfigContextCount + 1);

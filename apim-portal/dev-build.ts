@@ -1,7 +1,7 @@
 import s from 'shelljs';
 import fs from 'fs';
 import path from 'path';
-import { TAPPortalAbout } from './src/utils/Globals';
+import { TAPPortalAppAbout } from './src/utils/Globals';
 import { OpenAPI as ApimConnectorOpenApi } from '@solace-iot-team/apim-connector-openapi-browser';
 import { Constants } from './devel/lib/Constants';
 
@@ -103,9 +103,9 @@ const buildAbouts = () => {
   const funcName = 'buildAbouts';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
 
-  const buildAbout = (name: string, description: string, packageJson: any, sha1: string): TAPPortalAbout => {
+  const buildAbout = (name: string, description: string, packageJson: any, sha1: string): TAPPortalAppAbout => {
     const tsDate = new Date();
-    const about: TAPPortalAbout = {
+    const about: TAPPortalAppAbout = {
       name: name,
       description: description,
       author: packageJson.author,
@@ -125,7 +125,7 @@ const buildAbouts = () => {
     }
     return  about;
   }
-  const copyAbout = (about: TAPPortalAbout, outputFile: string) => {
+  const copyAbout = (about: TAPPortalAppAbout, outputFile: string) => {
     const funcName = 'copyAbout';
     const logName = `${scriptDir}/${scriptName}.${funcName}()`;
     console.log(`${logName}: starting ...`);
@@ -143,10 +143,10 @@ const buildAbouts = () => {
   const packageJsonFile = `${CONSTANTS.ApimPortalDir}/package.json`;
   const packageJson = require(`${packageJsonFile}`);
   const sha1 = s.exec('git rev-parse HEAD').stdout.slice(0, -1);
-  const adminPortalAbout: TAPPortalAbout = buildAbout(AdminPortalName, AdminPortalDescription, packageJson, sha1);
+  const adminPortalAbout: TAPPortalAppAbout = buildAbout(AdminPortalName, AdminPortalDescription, packageJson, sha1);
   console.log(`${logName}: adminPortalAbout = ${JSON.stringify(adminPortalAbout, null, 2)}`);
   copyAbout(adminPortalAbout, CONSTANTS.OutputAdminPortalAboutFile);
-  const developerPortalAbout: TAPPortalAbout = buildAbout(DeveloperPortalName, DeveloperPortalDescription, packageJson, sha1);
+  const developerPortalAbout: TAPPortalAppAbout = buildAbout(DeveloperPortalName, DeveloperPortalDescription, packageJson, sha1);
   console.log(`${logName}: developerPortalAbout = ${JSON.stringify(developerPortalAbout, null, 2)}`);
   copyAbout(developerPortalAbout, CONSTANTS.OutputDeveloperPortalAboutFile);
   console.log(`${logName}: success.`);

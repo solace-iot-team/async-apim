@@ -77,6 +77,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   // * Api Calls *
   type TOrganizationServiceList = Array<TOrganizationService>;
@@ -88,7 +89,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       const _entireServiceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
         organizationName: props.organizationName
       });
-      console.log(`${logName}: _entireServiceList.name[] = ${JSON.stringify(_entireServiceList.map( (x) => { return x.name}))}`);
+      // console.log(`${logName}: _entireServiceList.name[] = ${JSON.stringify(_entireServiceList.map( (x) => { return x.name}))}`);
 
       const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
         organizationName: props.organizationName
@@ -246,6 +247,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
   const onDeleteEnvironmentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewEnvironmentSuccess = (apiCallState: TApiCallState, newEnvironmentName: TManagedObjectId, newEnvironmentDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -336,12 +338,11 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
 
       <Loading show={isLoading} />      
       
-      {!isLoading &&
-        renderToolbar()
-      }
+      {!isLoading && renderToolbar() }
+
       {showListComponent && 
         <ListEnvironments
-          key={componentState.previousState}
+          key={refreshCounter}
           organizationName={props.organizationName}
           onSuccess={onListEnvironmentsSuccess} 
           onError={onSubComponentError} 

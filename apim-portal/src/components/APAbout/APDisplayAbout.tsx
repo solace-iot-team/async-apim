@@ -11,16 +11,14 @@ import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import { About, AdministrationService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { APFetch, APFetchResult, EAPFetchResultBodyType } from "../../utils/APFetch";
-import { APFetchError, APTimeoutError } from "../../utils/APError";
 import { APLogger } from "../../utils/APLogger";
-// import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
-import { EAppState, Globals, TAPPortalAbout } from "../../utils/Globals";
+import { EAppState, Globals, TAPPortalAppAbout } from "../../utils/Globals";
 import { UserContext } from '../UserContextProvider/UserContextProvider';
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
+import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
+import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from "../../utils/APortalApiCalls";
 
 import "../APComponents.css";
-import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 
 export interface IAPDisplayAboutProps {
   className?: string;
@@ -31,11 +29,9 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
   const componentName='APDisplayAbout';
 
   const DialogHeader='About ...';
-  const AdminPortalAboutUrl = process.env.PUBLIC_URL + '/admin-portal/about.json';
-  const DeveloperPortalAboutUrl = process.env.PUBLIC_URL + '/developer-portal/about.json';
 
-  type TPortalAboutResult = {
-    apPortalAbout?: TAPPortalAbout;
+  type TPortalAppAboutResult = {
+    apPortalAppAbout?: TAPPortalAppAbout;
     callState: TApiCallState;
   }
   type TAPSAboutResult = {
@@ -47,8 +43,8 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     callState: TApiCallState;
   }
   enum E_CALL_STATE_ACTIONS {
-    API_GET_ADMIN_PORTAL_ABOUT = "API_GET_ADMIN_PORTAL_ABOUT",
-    API_GET_DEVELOPER_PORTAL_ABOUT = "API_GET_DEVELOPER_PORTAL_ABOUT",
+    API_GET_ADMIN_PORTAL_APP_ABOUT = "API_GET_ADMIN_PORTAL_APP_ABOUT",
+    API_GET_DEVELOPER_PORTAL_APP_ABOUT = "API_GET_DEVELOPER_PORTAL_APP_ABOUT",
     API_GET_APIM_SERVER_ABOUT = "API_GET_APIM_SERVER_ABOUT",
     API_GET_APIM_CONNECTOR_ABOUT = "API_GET_APIM_CONNECTOR_ABOUT"
   }
@@ -59,53 +55,42 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
   // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [adminPortalAboutResult, setAdminPortalAboutResult] = React.useState<TPortalAboutResult>();
-  const [developerPortalAboutResult, setDeveloperPortalAboutResult] = React.useState<TPortalAboutResult>();
+  const [adminPortalAppAboutResult, setAdminPortalAppAboutResult] = React.useState<TPortalAppAboutResult>();
+  const [developerPortalAppAboutResult, setDeveloperPortalAppAboutResult] = React.useState<TPortalAppAboutResult>();
   const [apimServerAboutResult, setApimServerAboutResult] = React.useState<TAPSAboutResult>();
   const [apimConnectorAboutResult, setApimConnectorAboutResult] = React.useState<TConnectorAboutResult>();
 
-  const apiGetPortalAbout = async(action: E_CALL_STATE_ACTIONS): Promise<TPortalAboutResult> => {
-    const funcName = 'apiGetPortalAbout';
+  const apiGetPortalAppAbout = async(action: E_CALL_STATE_ACTIONS): Promise<TPortalAppAboutResult> => {
+    const funcName = 'apiGetPortalAppAbout';
     const logName = `${componentName}.${funcName}()`;
-    const timeout_ms: number = 2000;
-    let aboutUrl: string = '';
-    let callStateUserMessage: string = '';
+    let getAction: E_APORTAL_APP_CALL_STATE_ACTIONS = E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT;
     switch(action) {
-      case E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT:
-        callStateUserMessage = 'get admin portal about info';
-        aboutUrl = AdminPortalAboutUrl;
+      case E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT:
+        getAction = E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT;
         break;
-      case E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT:
-        callStateUserMessage = 'get developer portal about info';
-        aboutUrl = DeveloperPortalAboutUrl;
+      case E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT:
+        getAction = E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT;
         break;
       case E_CALL_STATE_ACTIONS.API_GET_APIM_SERVER_ABOUT:
       case E_CALL_STATE_ACTIONS.API_GET_APIM_CONNECTOR_ABOUT:
-        throw new Error(`${logName}: cannot get action=${action}`);
+        throw new Error(`${logName}: invalid action=${action}`);
       default: 
         Globals.assertNever(logName, action);
     }
-    let callState: TApiCallState = ApiCallState.getInitialCallState(action, callStateUserMessage);
-    let apPortalAbout: TAPPortalAbout | undefined = undefined;
-    let response: Response;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(action, 'get portal app about');
+    let apPortalAppAbout: TAPPortalAppAbout | undefined = undefined;
     try {
-      try {
-        response = await APFetch.fetchWithTimeout(aboutUrl, timeout_ms);
-      } catch (e: any) {
-        if(e.name === 'AbortError') {
-          throw new APTimeoutError(logName, "fetch timeout", { url: aboutUrl, timeout_ms: timeout_ms});
-        } else throw e;
-      }
-      const result: APFetchResult = await APFetch.getFetchResult(response);
-      if(!result.ok || result.bodyType !== EAPFetchResultBodyType.JSON) throw new APFetchError(logName, callStateUserMessage, result);
-      apPortalAbout = result.body;
+      const result = await APortalAppApiCalls.apiGetPortalAppAbout(getAction);
+      apPortalAppAbout = result.apPortalAppAbout;
+      callState = result.callState;
+
     } catch (e: any) {
       APLogger.error(APLogger.createLogEntry(logName, e));
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     return {
       callState: callState,
-      apPortalAbout: apPortalAbout
+      apPortalAppAbout: apPortalAppAbout
     }
   }
 
@@ -156,14 +141,14 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     setIsLoading(true);
     switch(userContext.currentAppState) {
       case EAppState.ADMIN_PORTAL:
-        setAdminPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT));
+        setAdminPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT));
         break;
       case EAppState.DEVELOPER_PORTAL:
-        setDeveloperPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT));
+        setDeveloperPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT));
         break;
       case EAppState.UNDEFINED:
-        setAdminPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_ABOUT));
-        setDeveloperPortalAboutResult(await apiGetPortalAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_ABOUT));
+        setAdminPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT));
+        setDeveloperPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT));
         break;
       default:
         Globals.assertNever(logName, userContext.currentAppState);
@@ -186,20 +171,20 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
     else return (<pre style={ { fontSize: '8px' }}>Not Available.</pre>);
   }
 
-  const renderAdminPortalAbout = () => {
-    if(adminPortalAboutResult) return (
+  const renderAdminPortalAppAbout = () => {
+    if(adminPortalAppAboutResult) return (
       <React.Fragment>
-        <div><b>Admin Portal:</b></div>
-        {renderAboutContent(adminPortalAboutResult.apPortalAbout)}
+        <div><b>Admin Portal App:</b></div>
+        {renderAboutContent(adminPortalAppAboutResult.apPortalAppAbout)}
       </React.Fragment>
     );
   }
 
-  const renderDeveloperPortalAbout = () => {
-    if(developerPortalAboutResult) return (
+  const renderDeveloperPortalAppAbout = () => {
+    if(developerPortalAppAboutResult) return (
       <React.Fragment>
-        <div><b>Developer Portal:</b></div>
-        {renderAboutContent(developerPortalAboutResult.apPortalAbout)}
+        <div><b>Developer Portal App:</b></div>
+        {renderAboutContent(developerPortalAppAboutResult.apPortalAppAbout)}
       </React.Fragment>
     );
   }
@@ -243,8 +228,8 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
       >
         <div className="p-m-0">
           {renderDescription()}
-          {renderAdminPortalAbout()}
-          {renderDeveloperPortalAbout()}
+          {renderAdminPortalAppAbout()}
+          {renderDeveloperPortalAppAbout()}
           {renderApimServerAbout()}
           {renderApimConnectorAbout()}
         </div>

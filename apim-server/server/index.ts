@@ -51,7 +51,7 @@ export const initializeComponents = async(): Promise<void> => {
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
     // finally: set the server to initialized & ready
     ServerStatus.setIsInitialized();
-    ServerStatus.setIsReady();
+    ServerStatus.setIsReady(true);
   } catch (e) {
     let serverError: ServerError;
     if (e instanceof ServerError ) serverError = e;

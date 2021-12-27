@@ -1,11 +1,17 @@
 import React from "react";
-import { TAPConnectorHealthCheckResult, TAPHealthCheckSummary, TAPServerHealthCheckResult } from "../utils/APHealthCheck";
+import { 
+  TAPConnectorHealthCheckResult, 
+  TAPHealthCheckSummary, 
+  TAPPortalAppHealthCheckResult, 
+  TAPServerHealthCheckResult 
+} from "../utils/APHealthCheck";
 import { TAPConfigIssueList } from "../utils/Globals";
 
 export type TAPHealthCheckContext = {
   configIssueList?: TAPConfigIssueList;
   connectorHealthCheckResult?: TAPConnectorHealthCheckResult;
   serverHealthCheckResult?: TAPServerHealthCheckResult;
+  portalAppHealthCheckResult?: TAPPortalAppHealthCheckResult;
   systemHealthCheckSummary?: TAPHealthCheckSummary;
 }
 
@@ -16,12 +22,18 @@ export interface IAPHealthCheckContextProviderProps {
 type APHealthCheckContextAction = 
   | { type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: TAPConnectorHealthCheckResult }
   | { type: 'SET_SERVER_HEALTHCHECK_RESULT', serverHealthCheckResult: TAPServerHealthCheckResult }
+  | { type: 'SET_PORTAL_APP_HEALTHCHECK_RESULT', portalAppHealthCheckResult: TAPPortalAppHealthCheckResult }
   | { type: 'SET_SYSTEM_HEALTHCHECK_SUMMARY', systemHealthCheckSummary: TAPHealthCheckSummary }
   | { type: 'SET_CONFIG_ISSUE_LIST', configIssueList: TAPConfigIssueList }
   | { type: 'default'};
 
 const apHealthCheckContextReducer = (state: TAPHealthCheckContext, action: APHealthCheckContextAction): TAPHealthCheckContext => {
   switch (action.type) {
+    case 'SET_PORTAL_APP_HEALTHCHECK_RESULT':
+      return { 
+        ...state,
+        portalAppHealthCheckResult: action.portalAppHealthCheckResult
+      };
     case 'SET_SERVER_HEALTHCHECK_RESULT':
       return { 
         ...state,

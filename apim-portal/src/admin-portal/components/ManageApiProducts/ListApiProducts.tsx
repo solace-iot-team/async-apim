@@ -99,6 +99,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

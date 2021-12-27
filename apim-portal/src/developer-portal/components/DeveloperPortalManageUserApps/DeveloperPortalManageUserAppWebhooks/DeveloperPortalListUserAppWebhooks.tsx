@@ -315,6 +315,11 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
     const funcName = 'renderContent';
     const logName = `${componentName}.${funcName}()`;
 
+    // // even if webhooks are empty, this one should always have the empty webhooks 
+    // console.log(`${logName}: mAppWebhooks.apManagedWebhookList=${JSON.stringify(mAppWebhooks.apManagedWebhookList, null, 2)}`);
+
+
+    // causes the Errror
     if(mAppWebhooks.apManagedWebhookList.length === 0) throw new Error(`${logName}: mAppWebhooks.apManagedWebhookList.length === 0`);
 
     return (

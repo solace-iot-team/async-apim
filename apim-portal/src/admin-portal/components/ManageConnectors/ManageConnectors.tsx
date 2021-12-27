@@ -85,8 +85,8 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showSetConnectorActive, setShowSetConnectorActive] = React.useState<boolean>(false);
   const [showTestConnector, setShowTestConnector] = React.useState<boolean>(false);
-  // const [reInitializeTrigger, setReInitializeTrigger] = React.useState<number>(0);
-  
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+
   // * Logout *
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
@@ -249,6 +249,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     setConfigContextActiveConnector();
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: APSId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -392,7 +393,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
       }
       {showListComponent && 
         <ListConnectors
-          key={componentState.previousState}
+          key={refreshCounter}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
@@ -407,8 +408,6 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
         <ViewConnector
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
-          // reInitializeTrigger={reInitializeTrigger}
-          reInitializeTrigger={0}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

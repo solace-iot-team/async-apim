@@ -25,7 +25,6 @@ import "./ManageOrganizations.css";
 export interface IViewOrganizationProps {
   organizationId: CommonName;
   organizationDisplayName: CommonDisplayName;
-  reInitializeTrigger: number,
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -67,10 +66,6 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    doInitialize();
-  }, [props.reInitializeTrigger]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

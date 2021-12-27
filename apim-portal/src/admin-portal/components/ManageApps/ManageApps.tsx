@@ -72,8 +72,6 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   // const ToolbarRevokeManagedObjectButtonLabel = 'Revoke';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
-  // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  // const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -82,12 +80,14 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
   const [viewAppApiAppResponse, setViewAppApiAppResponse] = React.useState<AppResponse>();
   const [showApproveComponent, setShowApproveComponent] = React.useState<boolean>(false);
   const [showRevokeComponent, setShowRevokeComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showEditAttributesComponent, setShowEditAttributesComponent] = React.useState<boolean>(false);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+
+  // const [refreshViewComponentKey, setRefreshViewComponentKey] = React.useState<number>(0);
 
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -249,16 +249,19 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const onApproveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    setRefreshViewComponentKey(refreshViewComponentKey + 1);
+    setRefreshCounter(refreshCounter + 1);
+    // setRefreshViewComponentKey(refreshViewComponentKey + 1);
   }
   const onRevokeManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    setRefreshViewComponentKey(refreshViewComponentKey + 1);
+    setRefreshCounter(refreshCounter + 1);
+    // setRefreshViewComponentKey(refreshViewComponentKey + 1);
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -349,7 +352,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
 
       {showListComponent && 
         <ListApps
-          key={componentState.previousState}
+          key={refreshCounter}
           organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
@@ -362,7 +365,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
       {showViewComponent && managedObjectId && managedObjectDisplayName && 
         viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
         <ViewApp
-          key={refreshViewComponentKey}
+          key={refreshCounter}
           organizationId={props.organizationId}
           appId={managedObjectId}
           appDisplayName={managedObjectDisplayName}

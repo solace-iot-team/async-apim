@@ -79,7 +79,8 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showImportEventPortalComponent, setShowImportEventPortalComponent] = React.useState<boolean>(false);
-  
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -206,6 +207,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
@@ -239,8 +241,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
 
   const calculateShowStates = (componentState: TComponentState) => {
-    const funcName = 'calculateShowStates';
-    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);
@@ -307,9 +307,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowNewComponent(false);
       setShowImportEventPortalComponent(true);
     } 
-    else {
-      throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
-    }
   }
 
   return (
@@ -323,7 +320,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
 
       {showListComponent && 
         <ListApis
-          key={componentState.previousState}
+          key={refreshCounter}
           organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 

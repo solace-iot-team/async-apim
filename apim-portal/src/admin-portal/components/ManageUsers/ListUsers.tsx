@@ -136,7 +136,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const doLoadPage = async () => {
     // const funcName = 'doLoadPage';
     // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: lazyLoadingTableParams = ${JSON.stringify(lazyLoadingTableParams, null, 2)}`);
+    // console.log(`${logName}: loading ...`);
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
@@ -147,13 +147,16 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     setLazyLoadingTableIsLoading(false);
   }
 
-  React.useEffect(() => {
-    doLoadPage();
-  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // React.useEffect(() => {
+  //   const funcName = 'useEffect([])';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   console.log(`${logName}: mounting ...`);
+  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
 
   React.useEffect(() => {
     doLoadPage();
-  }, [globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [lazyLoadingTableParams, globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

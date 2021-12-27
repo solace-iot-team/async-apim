@@ -163,6 +163,9 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   }
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */

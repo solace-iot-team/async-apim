@@ -32,7 +32,7 @@ export type TServerLogEntry = {
   name: string 
 } & TServerStatus;
 
-export class AuditLogger {
+export class AuditLogger4Audit {
   private static body2Object = (body: any): any => {
     if(body && typeof body === 'string') {
       try {
@@ -45,14 +45,14 @@ export class AuditLogger {
   }
   public static info = (auditObject: any, message: string) => {
     const funcName = 'info';
-    const logName = `${AuditLogger.name}.${funcName}()`;
-    if(auditObject.request.body) auditObject.request.body = AuditLogger.body2Object(auditObject.request.body);
-    if(auditObject.response.body) auditObject.response.body = AuditLogger.body2Object(auditObject.response.body);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INBOUND_TRANSACTION_LOG, message: message, details: auditObject }));
+    const logName = `${AuditLogger4Audit.name}.${funcName}()`;
+    if(auditObject.request.body) auditObject.request.body = AuditLogger4Audit.body2Object(auditObject.request.body);
+    if(auditObject.response.body) auditObject.response.body = AuditLogger4Audit.body2Object(auditObject.response.body);
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INBOUND_TRANSACTION_LOG, message: message, details: auditObject }));
   }
   public static warn = (auditObject: any, message: string) => {
     const funcName = 'warn';
-    const logName = `${AuditLogger.name}.${funcName}()`;
+    const logName = `${AuditLogger4Audit.name}.${funcName}()`;
     ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: message, details: auditObject }));
   }
 }
@@ -92,7 +92,6 @@ export class ServerLogger {
   }
 
   public static fatal = (logEntry: TServerLogEntry): void => {
-    // ServerLogger.L.fatal(JSON.stringify(logEntry, null, 2));
     ServerLogger.L.fatal(logEntry);
   }
 

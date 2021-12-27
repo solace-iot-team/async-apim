@@ -15,13 +15,15 @@ import {
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APClientConnectorRaw, APClientRawError, APClientServerRaw } from './APClientRaw';
 import { APClientConnectorOpenApi, APConnectorClientOpenApiInfo } from './APClientConnectorOpenApi';
-import { Globals, TAPConfigIssueList } from './Globals';
+import { EAppState, Globals, TAPConfigIssueList, TAPPortalAppAbout } from './Globals';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
+import { TUserContext } from '../components/UserContextProvider/UserContextProvider';
 import { APConnectorApiHelper, TAPConnectorAbout } from './APConnectorApiCalls';
 import { APLogger } from './APLogger';
 import { ApiCallState, TApiCallState } from './ApiCallState';
 import { APError } from './APError';
 import { APSClientOpenApi, APSClientOpenApiInfo } from './APSClientOpenApi';
+import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from './APortalApiCalls';
 
 
 // ******************************************************
@@ -84,6 +86,158 @@ export type TAPConnectorHealthCheckResult = {
   summary: TAPHealthCheckSummary;
   healthCheckLog: TAPConnectorHealthCheckLogEntryList;
 }
+// ******************************************************
+// * APPortal App
+// ******************************************************
+export enum EAPPortalAppHealthCheckLogEntryType {
+  GET_PORTAL_APP_ABOUT = 'GET_PORTAL_APP_ABOUT',
+  GET_PORTAL_APP_HEALTH_CHECK_CONFIGURATION = 'GET_PORTAL_APP_HEALTH_CHECK_CONFIGURATION'
+}
+export type TAPPortalAppHealthCheckLogEntry_Base = {
+  entryType: EAPPortalAppHealthCheckLogEntryType;
+  success: EAPHealthCheckSuccess;
+  callState: TApiCallState;
+}
+export type TAPPortalAppHealthCheckLogEntry_About = TAPPortalAppHealthCheckLogEntry_Base & {
+  apPortalAppAbout?: TAPPortalAppAbout;
+}
+export type TAPPortalAppHealthCheckLogEntry_CheckConfiguration = TAPPortalAppHealthCheckLogEntry_Base & {
+  issueList?: TAPConfigIssueList;
+}
+export type TAPPortalAppHealthCheckLogEntry = 
+  TAPPortalAppHealthCheckLogEntry_About
+  | TAPPortalAppHealthCheckLogEntry_CheckConfiguration;
+export type TAPPortalAppHealthCheckLogEntryList = Array<TAPPortalAppHealthCheckLogEntry>;
+export type TAPPortalAppHealthCheckResult = {
+  summary: TAPHealthCheckSummary;
+  healthCheckLog: TAPPortalAppHealthCheckLogEntryList;
+}
+
+export class APPortalAppHealthCheck {
+  private static componentName = 'APPortalAppHealthCheck';
+
+  public static getInitializedHealthCheckResult = (): TAPPortalAppHealthCheckResult => {
+    return {
+      healthCheckLog: [],
+      summary: { 
+        performed: true, 
+        success: EAPHealthCheckSuccess.PASS,
+        timestamp: Date.now(),
+      }
+    };
+  }
+
+  public static getInitializedHealthCheckResult_NotPerformed = (): TAPPortalAppHealthCheckResult => {
+    const initialized = APPortalAppHealthCheck.getInitializedHealthCheckResult();
+    return {
+      ...initialized,
+      summary: {
+        ...initialized.summary,
+        performed: false,
+        success: EAPHealthCheckSuccess.UNDEFINED
+      }
+    };
+  }
+
+  private static apiGetAbout = async(currentAppState: EAppState): Promise<TAPPortalAppHealthCheckLogEntry_About> => {
+    const funcName = 'apiGetAbout';
+    const logName= `${APPortalAppHealthCheck.componentName}.${funcName}()`;
+
+    const getAction = (currentAppState: EAppState): E_APORTAL_APP_CALL_STATE_ACTIONS => {
+      switch(currentAppState) {
+        case EAppState.ADMIN_PORTAL:
+        case EAppState.UNDEFINED:
+          return E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT;
+        case EAppState.DEVELOPER_PORTAL:
+          return E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT;
+        default:
+          Globals.assertNever(logName, currentAppState);
+      }
+      return E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT;
+    }
+
+    let apiAbout: TAPPortalAppAbout | undefined = undefined;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(EAPPortalAppHealthCheckLogEntryType.GET_PORTAL_APP_ABOUT, `get portal app about`);
+    try {
+      const result = await APortalAppApiCalls.apiGetPortalAppAbout(getAction(currentAppState));
+      apiAbout = result.apPortalAppAbout;
+      callState = result.callState;
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    const logEntry: TAPPortalAppHealthCheckLogEntry_About = {
+      entryType: EAPPortalAppHealthCheckLogEntryType.GET_PORTAL_APP_ABOUT,
+      success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
+      callState: callState,
+      apPortalAppAbout: apiAbout
+    }
+    return logEntry;
+  }
+
+  private static checkConfiguration = (configContext: TAPConfigContext, apPortalAbout: TAPPortalAppAbout | undefined): TAPPortalAppHealthCheckLogEntry_CheckConfiguration => {
+    let issueList: TAPConfigIssueList | undefined = undefined;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(EAPPortalAppHealthCheckLogEntryType.GET_PORTAL_APP_HEALTH_CHECK_CONFIGURATION, `check portal app configuration`);
+    // check first if configContext is fully initialized
+    if(!configContext.portalAppInfo || !configContext.portalAppInfo.adminPortalAppAbout) {
+      callState.success = true;
+    }
+    else if(!apPortalAbout) {
+      callState.success = false;
+      callState.error = { reason: 'apPortalAbout is undefined'}
+    } 
+    else {
+      issueList = Globals.crossCheckConfiguration_PortalAppLoaded_X_PortalAppOnServer(configContext.portalAppInfo.adminPortalAppAbout, apPortalAbout);
+    }
+    let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
+    if(callState.success) {
+      if(issueList && issueList.length > 0) _success = EAPHealthCheckSuccess.FAIL;
+      else _success = EAPHealthCheckSuccess.PASS;
+    } else _success = EAPHealthCheckSuccess.FAIL;
+    const logEntry: TAPPortalAppHealthCheckLogEntry_CheckConfiguration = {
+      entryType: EAPPortalAppHealthCheckLogEntryType.GET_PORTAL_APP_HEALTH_CHECK_CONFIGURATION,
+      success: _success,
+      callState: callState,
+      issueList: issueList
+    }
+    return logEntry;
+  }
+
+  public static doHealthCheck = async (configContext: TAPConfigContext, userContext: TUserContext): Promise<TAPPortalAppHealthCheckResult> => {
+    const funcName = 'doHealthCheck';
+    const logName= `${APPortalAppHealthCheck.componentName}.${funcName}()`;
+    let healthCheckResult: TAPPortalAppHealthCheckResult = APPortalAppHealthCheck.getInitializedHealthCheckResult();
+    try {
+      // call api: GET about
+      const apiGetAboutLogEntry: TAPPortalAppHealthCheckLogEntry_About = await APPortalAppHealthCheck.apiGetAbout(userContext.currentAppState);
+      healthCheckResult.healthCheckLog.push(apiGetAboutLogEntry);
+      if(apiGetAboutLogEntry.success !== EAPHealthCheckSuccess.PASS) {
+        healthCheckResult.summary.success = apiGetAboutLogEntry.success;
+        // abort check
+        throw new APError(logName, 'about check failed');
+      }
+
+      // configuration check
+      const checkConfigurationLogEntry: TAPPortalAppHealthCheckLogEntry_CheckConfiguration = APPortalAppHealthCheck.checkConfiguration(configContext, apiGetAboutLogEntry.apPortalAppAbout);
+      healthCheckResult.healthCheckLog.push(checkConfigurationLogEntry);
+      
+      // set overall summary
+      let _summarySuccess: EAPHealthCheckSuccess = EAPHealthCheckSuccess.PASS;
+      healthCheckResult.healthCheckLog.forEach( (logEntry: TAPPortalAppHealthCheckLogEntry) => {
+        if(logEntry.success === EAPHealthCheckSuccess.FAIL) _summarySuccess = EAPHealthCheckSuccess.FAIL;
+        else if(_summarySuccess !== EAPHealthCheckSuccess.FAIL && logEntry.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES ) _summarySuccess = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      });
+      healthCheckResult.summary.success = _summarySuccess;
+
+    } catch (e) {
+      APLogger.error(APLogger.createLogEntry(logName, e));
+      throw e;
+    } finally {
+      return healthCheckResult;
+    }
+  }  
+}
+
 // ******************************************************
 // * APServer
 // ******************************************************
@@ -234,11 +388,11 @@ export class APServerHealthCheck {
     if(!apsAbout) {
       callState.success = false;
       callState.error = { reason: 'apsAbout is undefined'}
-    } else if(!configContext.portalInfo) {
+    } else if(!configContext.portalAppInfo) {
       callState.success = false;
       callState.error = { reason: 'portalInfo is undefined'}
     } else {
-      issueList = Globals.crossCheckConfiguration_Portal_X_Server(configContext.portalInfo, apsAbout);
+      issueList = Globals.crossCheckConfiguration_PortalApp_X_Server(configContext.portalAppInfo, apsAbout);
     }
     let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     if(callState.success) {
@@ -420,7 +574,7 @@ export class APConnectorHealthCheck {
           connectorAbout: connectorAbout
         }
       };
-      issueList = Globals.crossCheckConfiguration_Portal_X_Connector(tmpConfigContext);
+      issueList = Globals.crossCheckConfiguration_PortalApp_X_Connector(tmpConfigContext);
     }
     let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     if(callState.success) {

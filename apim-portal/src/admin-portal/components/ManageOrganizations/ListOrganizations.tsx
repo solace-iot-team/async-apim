@@ -61,7 +61,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
       const apiOrganizationList = await AdministrationService.listOrganizations({});
       for(const apiOrganization of apiOrganizationList) {
         const mo: TManagedObject = ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization);
-        console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+        // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
         _managedObjectList.push({...mo});
       }
       setManagedObjectList(_managedObjectList);
@@ -82,6 +82,9 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
   }
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

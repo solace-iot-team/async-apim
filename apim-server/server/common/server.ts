@@ -3,9 +3,8 @@ import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
-// import os from 'os';
 import cookieParser from 'cookie-parser';
-import { AuditLogger, EServerStatusCodes, ServerLogger } from './ServerLogger';
+import { AuditLogger4Audit, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';
 import * as OpenApiValidator from 'express-openapi-validator';
@@ -21,8 +20,6 @@ const corsOptions: cors.CorsOptions = {
   origin: true
 };
 
-// export type TListenCallback = () => void;
-
 export class ExpressServer {
   private config: TExpressServerConfig;
   private root: string;
@@ -31,9 +28,10 @@ export class ExpressServer {
   constructor(config: TExpressServerConfig) {
 
     this.config = config;
-    // this.root = path.normalize(__dirname + '/../..');
     this.root = config.rootDir;
 
+    // app.set("etag", false);
+    // app.use(nocache());
     app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
@@ -70,19 +68,10 @@ export class ExpressServer {
       })
     );
 
-    // TODO: issue with content-type header and status code
     app.use(audit({
-      logger: AuditLogger
+      logger: AuditLogger4Audit
     }));
-
-    // same issue
-    // app.use(audit({
-    //   logger: ServerLogger.L
-    // }));
-
-    // same issue
-    // app.use(audit({
-    // }));
+    // app.use(AuditLogger.requestResponseLogger);
 
   }
 
