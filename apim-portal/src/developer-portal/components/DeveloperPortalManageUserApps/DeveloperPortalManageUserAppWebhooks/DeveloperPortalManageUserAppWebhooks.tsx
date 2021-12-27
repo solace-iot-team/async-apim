@@ -125,8 +125,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
       // get the status for each webhook
       for( const _apManagedWebhook of _mo.apManagedWebhookList) {
         _apManagedWebhook.webhookStatus = await apiGetWebhookStatus(_apManagedWebhook);
-      }
-      setManagedObject(transformGetApiObjectToManagedObject(_apiAppResponse));
+      }      
+      setManagedObject(_mo);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -141,9 +141,7 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
 
   // * useEffect Hooks *
   const doInitialize = async () => {
-    props.onLoadingChange(true);
-    await apiGetManagedObject();
-    props.onLoadingChange(false);
+    await doRefreshComponentData();
     setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
 
@@ -255,6 +253,8 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
     setPreviousComponentState();
   }
   const onDeleteManagedWebhookSuccess = (apiCallState: TApiCallState) => {
+    // managedObject is now defunct
+    setManagedObject(undefined);
     setApiCallStatus(apiCallState);
     setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshComponentCounter(refreshComponentCounter + 1);

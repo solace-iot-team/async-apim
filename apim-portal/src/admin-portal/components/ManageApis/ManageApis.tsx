@@ -241,8 +241,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
 
   const calculateShowStates = (componentState: TComponentState) => {
-    const funcName = 'calculateShowStates';
-    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);

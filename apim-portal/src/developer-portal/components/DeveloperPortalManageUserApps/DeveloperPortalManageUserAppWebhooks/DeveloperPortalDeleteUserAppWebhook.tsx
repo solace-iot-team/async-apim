@@ -82,11 +82,12 @@ export const DeveloperPortalDeleteUserAppWebhook: React.FC<IDeveloperPortalDelet
     });
     if(webhookIndexToDelete === -1) throw new Error(`${logName}: webhookIndexToDelete === -1`);
     const newManagedWebhookList = existigManagedWebhookList;
+    // NOTE: this modifies the props.managedAppWebhooks.apManagedWebhookList
     newManagedWebhookList.splice(webhookIndexToDelete,1);
     // console.log(`${logName}: newManagedWebhookList = ${JSON.stringify(newManagedWebhookList, null, 2)}`);
 
     const apiAppPatch: AppPatch = APManagedWebhook.createApiAppUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
-    console.log(`${logName}: apiAppPatch = ${JSON.stringify(apiAppPatch, null, 2)}`);
+    // console.log(`${logName}: apiAppPatch = ${JSON.stringify(apiAppPatch, null, 2)}`);
 
     // throw new Error(`${logName}: continue here`);
 

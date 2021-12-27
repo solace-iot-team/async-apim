@@ -34,7 +34,7 @@ export interface IListApiProductsProps {
 }
 
 export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
-  const componentName = 'ListApiProducts';
+  // const componentName = 'ListApiProducts';
 
   const MessageNoManagedObjectsFoundCreateNew = 'No API Products found - create a new API Product.';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
