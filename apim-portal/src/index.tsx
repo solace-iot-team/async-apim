@@ -9,6 +9,7 @@ import App from './App';
 // import reportWebVitals from './reportWebVitals';
 import { Config } from './Config';
 import { APSClientOpenApi } from './utils/APSClientOpenApi';
+import { APCatchAll } from './components/APErrorBoundaries/APCatchAll';
 import './index.css';
 
 // const componentName = 'index';
@@ -19,17 +20,19 @@ APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 
 ReactDOM.render(
   <BrowserRouter>
-    <APHealthCheckContextProvider>
-      <APHealthCheckSummaryContextProvider>
-        <ConfigContextProvider>
-          <AuthContextProvider>
-            <UserContextProvider>
-              <App />
-            </UserContextProvider>
-          </AuthContextProvider>      
-        </ConfigContextProvider>
-      </APHealthCheckSummaryContextProvider>      
-    </APHealthCheckContextProvider>            
+    <APCatchAll>
+      <APHealthCheckContextProvider>
+        <APHealthCheckSummaryContextProvider>
+          <ConfigContextProvider>
+            <AuthContextProvider>
+              <UserContextProvider>
+                <App />
+              </UserContextProvider>
+            </AuthContextProvider>      
+          </ConfigContextProvider>
+        </APHealthCheckSummaryContextProvider>      
+      </APHealthCheckContextProvider>            
+    </APCatchAll>
   </BrowserRouter>,
   document.getElementById('root')
 );

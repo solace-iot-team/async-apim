@@ -92,9 +92,9 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   }
 
   React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: mounting ...`);
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

@@ -94,13 +94,15 @@ export enum EUIDeveloperPortalResourcePaths {
 
 export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
+  TestErrors = '/devel/test/errors',
   BootstrapOrganizations = '/devel/bootstrap/organizations',
   BootstrapUsers = '/devel/bootstrap/users',
   ViewContexts = '/devel/view/contexts',
 }
 
 export class Globals {
-  private static AppUrl = process.env.PUBLIC_URL;
+  private static AppUrl = process.env.PUBLIC_URL + '/';
+  public static IssuesUrl = "https://github.com/solace-iot-team/async-apim/issues";
 
   public static reloadApp = () => {
     window.location.href = Globals.AppUrl;

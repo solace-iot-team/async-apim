@@ -37,6 +37,7 @@ import { BootstrapUsersPage } from "./pages/devel/BootstrapUsersPage";
 import { BootstrapOrganizationsPage } from "./pages/devel/BootstrapOrganizationsPage";
 import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
+import { ErrorTestPage } from "./pages/devel/ErrorTestPage";
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -155,6 +156,7 @@ const App: React.FC = () => {
                   <Route path={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} key={EUIDeveloperToolsResourcePaths.BootstrapOrganizations} component={BootstrapOrganizationsPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.BootstrapUsers} key={EUIDeveloperToolsResourcePaths.BootstrapUsers} component={BootstrapUsersPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.TestErrors} key={EUIDeveloperToolsResourcePaths.TestErrors} component={ErrorTestPage} exact />,
                 ]
               }
 

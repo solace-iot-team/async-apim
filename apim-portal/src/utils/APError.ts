@@ -37,7 +37,6 @@ export class APError extends Error {
       }
     }
   }
-
 }
 
 export class APConnectorApiMismatchError extends APError {
