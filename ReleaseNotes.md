@@ -2,6 +2,31 @@
 
 Solace Async API Management.
 
+## Version 0.0.30
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.30
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.15
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.9
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.5.7
+
+#### API-M Admin & Developer Portal
+
+**New:**
+- **Global Error Handling**
+  - 'catch-all' component added
+
+**Update:**
+- **index.html**
+  - added cache-control no-cache
+
+**Fix:**
+- **System/Monitor/Health** - fixed minor bug
+
+#### API-M Server OpenAPI
+**No Changes.**
+
+#### API-M Server
+**No Changes.**
+
 ## Version 0.0.29
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.29
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.15
