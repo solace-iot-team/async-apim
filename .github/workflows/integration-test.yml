@@ -99,10 +99,10 @@ jobs:
           cd "${APIM_PORTAL_DIR}"
           npm install
 
-      - name: "portal:dev-build"
+      - name: "portal:dev:build"
         run: |
           cd "${APIM_PORTAL_DIR}"
-          npm run dev-build
+          npm run dev:build
 
       - name: "portal:build"
         run: |

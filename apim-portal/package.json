@@ -1,6 +1,6 @@
 {
   "name": "async-apim-portal",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "Solace Async API Management Portal",
   "repository": {
     "type": "git",
@@ -46,7 +46,7 @@
     "build": "export CI=true && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev-build": "ts-node --project tsconfig-dev.json dev-build.ts"
+    "dev:build": "ts-node --project tsconfig-dev.json dev-build.ts"
   },
   "eslintConfig": {
     "extends": [

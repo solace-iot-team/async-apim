@@ -82,6 +82,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       label: 'DEVEL',
       items: [
         {
+          label: 'Test Errors',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestErrors); }
+        },
+        {
           label: 'Boostrap Organizations',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.BootstrapOrganizations); }

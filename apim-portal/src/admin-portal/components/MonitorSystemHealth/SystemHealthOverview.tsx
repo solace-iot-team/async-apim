@@ -7,7 +7,6 @@ import { APHealthCheckContext } from '../../../components/APHealthCheckContextPr
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { Config } from '../../../Config';
 import { DisplaySystemHealthInfo, EAPSystemHealthInfoPart } from "../../../components/SystemHealth/DisplaySystemHealthInfo";
 import { DisplayServerHealthCheckLog } from "../../../components/SystemHealth/DisplayServerHealthCheckLog";
 import { DisplayConnectorHealthCheckLog } from "../../../components/SystemHealth/DisplayConnectorHealthCheckLog";
@@ -58,13 +57,11 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
             />
             <DisplayConnectorHealthCheckLog />
           </TabPanel>
-          {Config.getUseDevelTools() &&
-            <TabPanel header='All'>
-              <pre style={ { fontSize: '12px' }} >
-                {JSON.stringify(healthCheckContext, null, 2)}
-              </pre>
-            </TabPanel>
-          }
+          {/* <TabPanel header='Devel'>
+            <pre style={ { fontSize: '12px' }} >
+              {JSON.stringify(healthCheckContext, null, 2)}
+            </pre>
+          </TabPanel> */}
         </TabView>
       </React.Fragment>     
     );
