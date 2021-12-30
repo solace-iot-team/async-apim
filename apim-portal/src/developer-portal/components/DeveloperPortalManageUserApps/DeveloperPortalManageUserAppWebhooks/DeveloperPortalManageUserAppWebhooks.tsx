@@ -22,7 +22,6 @@ import {
   TAPManagedAppWebhooks, 
   TAPManagedWebhook, 
   TAPOrganizationId, 
-  TAPWebhookStatus
 } from "../../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppWebhooksCommon";
 import { DeveloperPortalListUserAppWebhooks } from "./DeveloperPortalListUserAppWebhooks";

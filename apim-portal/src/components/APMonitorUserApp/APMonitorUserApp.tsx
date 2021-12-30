@@ -24,7 +24,6 @@ import {
   TAPOrganizationId, 
 } from "../APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./APMonitorUserAppCommon";
-import { Loading } from "../Loading/Loading";
 import { APMonitorUserAppViewStats } from "./APMonitorUserAppViewStats";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 
@@ -42,7 +41,6 @@ export interface IAPMonitorUserAppProps {
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  // onNavigateHere: (manageUserAppComponentState: E_MANAGE_USER_APP_COMPONENT_STATE, appId: CommonName, appDisplayName: CommonDisplayName) => void;
 }
 
 export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMonitorUserAppProps) => {
@@ -79,12 +77,10 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
   const ToolbarRefreshManagedObjectButtonLabel = 'Refresh Stats';
   const RefreshInterval_ms: number = 30000;
 
-  // const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
-  const [refreshComponentCounter, setRefreshComponentCounter] = React.useState<number>(0);
 
   // * transformations *
   const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse, apiAppConnectionStatus: AppConnectionStatus): TManagedObject => {
@@ -165,14 +161,12 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
 
   const doRefreshComponentData = async () => {
     props.onLoadingChange(true);
-    // setIsLoading(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
-    // setIsLoading(false);
   }
-  React.useEffect(() => {
-    if(refreshComponentCounter > 0) doRefreshComponentData();
-  }, [refreshComponentCounter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // React.useEffect(() => {
+  //   if(refreshComponentCounter > 0) doRefreshComponentData();
+  // }, [refreshComponentCounter]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -228,8 +222,6 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
   return (
     <div className={props.className ? props.className : 'card'}>
 
-      {/* <Loading show={isLoading} /> */}
-      
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { renderToolbar() }

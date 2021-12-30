@@ -165,8 +165,6 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
   }
 
   const renderAppStats = (managedAppWebhooks: TAPManagedAppWebhooks): JSX.Element | Array<JSX.Element> => {
-    const funcName = 'renderAppStats';
-    const logName = `${componentName}.${funcName}()`;
 
     if(!managedAppWebhooks.apiAppConnectionStatus) return (<></>);
 
