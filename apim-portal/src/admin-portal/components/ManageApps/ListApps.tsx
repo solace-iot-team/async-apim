@@ -5,6 +5,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
+import { MenuItem } from "primereact/api";
 
 import { 
   ApiProductsService, 
@@ -39,6 +40,7 @@ export interface IListAppsProps {
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName) => void;
   onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: TManagedObjectDisplayName, viewManagedObject: TViewManagedApp) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
@@ -146,6 +148,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     // const funcName = 'useEffect([])';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: mounting ...`);    
+    props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

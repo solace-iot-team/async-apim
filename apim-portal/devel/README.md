@@ -87,6 +87,7 @@ cd aysnc-apim/apim-portal
 ````
 ````bash
 npm link @solace-iot-team/apim-connector-openapi-browser
+npm list # update package.json with new version number if needed
 ````
 ### UnLink Connector OpenAPI from Global
 ````bash

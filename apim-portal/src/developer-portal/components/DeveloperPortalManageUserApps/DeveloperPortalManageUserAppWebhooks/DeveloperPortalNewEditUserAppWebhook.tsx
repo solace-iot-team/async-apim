@@ -144,7 +144,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     let resource: string = '';
     if(mo.webhookWithoutEnvs.uri !== '') {
       const url: URL = new URL(mo.webhookWithoutEnvs.uri);
-      protocol = url.protocol === 'http' ? EProtocolSelect.HTTP : EProtocolSelect.HTTPS;
+      protocol = url.protocol === 'http:' ? EProtocolSelect.HTTP : EProtocolSelect.HTTPS;
       host = url.hostname;
       if(url.port) port = parseInt(url.port);  
       resource = `${url.pathname}${url.search}`; 

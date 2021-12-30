@@ -87,9 +87,11 @@ export class ApiCallState {
       }  
     }
     if(apiCallStatus.isConnectorApiError && apiCallStatus.error) {
-        if('body' in apiCallStatus.error) {
-          return JSON.stringify(apiCallStatus.error.body);
-        }
+      const userMessage = {
+        errorSource: 'Connector',
+        error: apiCallStatus.error
+      };
+      return JSON.stringify(userMessage, null, 2);
     }
     if(apiCallStatus.isAPError && apiCallStatus.error) {
       const err = apiCallStatus.error;

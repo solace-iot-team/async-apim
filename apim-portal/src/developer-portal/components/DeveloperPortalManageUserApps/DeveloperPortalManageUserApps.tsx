@@ -7,6 +7,7 @@ import { MenuItem } from "primereact/api";
 
 import {
   ApiError,
+  AppListItem,
   CommonDisplayName,
   CommonName,
   Developer, 
@@ -21,7 +22,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./DeveloperPortalManageUserAppsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -30,6 +31,7 @@ import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEdit
 import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 import { TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { DeveloperPortalManageUserAppWebhooks } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooks";
+import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
@@ -89,7 +91,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const ToolbarEditManagedObjectButtonLabel = 'Edit App';
   const ToolbarManageWebhooksManagedObjectButtonLabel = 'Manage Webhooks';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete App';
-
+  const ToolbarMonitorManagedObjectButtonLabel = 'Monitor Stats';
+  
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
@@ -104,6 +107,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [viewComponentManagedObjectDisplay, setViewComponentManagedObjectDisplay] = React.useState<TAPDeveloperPortalUserAppDisplay>();
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showManageWebhooksComponent, setShowManageWebhooksComponent] = React.useState<boolean>(false);
+  const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
@@ -243,6 +247,21 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
+  // * Monitor *
+  const onMonitorManagedObjectFromToolbar = () => {
+    const funcName = 'onMonitorManagedObjectFromToolbar';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
+    onMonitorManagedObject(managedObjectId, managedObjectDisplayName);
+  }
+  const onMonitorManagedObject = (id: TManagedObjectId, displayName: string): void => {
+    setApiCallStatus(null);
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
+    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
+  }
+
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
@@ -262,8 +281,16 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           icon="pi pi-trash" 
           onClick={onDeleteManagedObjectFromToolbar} 
           className="p-button-text p-button-plain p-button-outlined"
-        />        
-      ];
+        />,
+        <Button 
+        key={componentName+ToolbarManageWebhooksManagedObjectButtonLabel}
+        label={ToolbarManageWebhooksManagedObjectButtonLabel} 
+        // icon="pi pi-pencil" 
+        onClick={onManageWebhooksManagedObjectFromToolbar} 
+        className="p-button-text p-button-plain p-button-outlined"
+        disabled={!viewComponentManagedObjectDisplay.isAppWebhookCapable}
+      />
+  ];
       return (
         <div className="p-grid">
           {jsxButtonList}
@@ -281,12 +308,12 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       return (
         <React.Fragment>
           <Button 
-            key={componentName+ToolbarManageWebhooksManagedObjectButtonLabel}
-            label={ToolbarManageWebhooksManagedObjectButtonLabel} 
+            key={componentName+ToolbarMonitorManagedObjectButtonLabel}
+            label={ToolbarMonitorManagedObjectButtonLabel} 
             // icon="pi pi-pencil" 
-            onClick={onManageWebhooksManagedObjectFromToolbar} 
+            onClick={onMonitorManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
-            disabled={!viewComponentManagedObjectDisplay.isAppWebhookCapable}
+            disabled={!APManagedUserAppDisplay.isAppLive(viewComponentManagedObjectDisplay.apiAppResponse_smf)}
           />
         </React.Fragment>
       );
@@ -308,10 +335,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
     props.setBreadCrumbItemList(newItemList);
   }
-  const onSetManageUserAppComponentState = (manageUserAppComponentState: E_MANAGE_USER_APP_COMPONENT_STATE, appid: CommonName, appDisplayName: CommonDisplayName) => {
+  const onSetManageUserAppComponentState = (managedUserAppComponentState: E_MANAGE_USER_APP_COMPONENT_STATE, appid: CommonName, appDisplayName: CommonDisplayName) => {
     setManagedObjectId(appid);
     setManagedObjectDisplayName(appDisplayName);
-    setNewComponentState(manageUserAppComponentState);
+    setNewComponentState(managedUserAppComponentState);
     setRefreshCounter(refreshCounter + 1);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
@@ -356,6 +383,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -364,6 +392,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -373,6 +402,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
@@ -381,6 +411,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
     }
@@ -390,6 +421,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
@@ -398,6 +430,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(true);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -406,6 +439,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(true);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
@@ -414,8 +448,18 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+    }
+    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowManageWebhooksComponent(false);
+      setShowMonitorComponent(true);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
     }
   }
 
@@ -509,6 +553,20 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
           onNavigateHere={onSetManageUserAppComponentState}
+        />
+      }
+      {showMonitorComponent && managedObjectId && managedObjectDisplayName &&
+        <APMonitorUserApp
+          key={refreshCounter}
+          organizationId={props.organizationName}
+          appId={managedObjectId}
+          appDisplayName={managedObjectDisplayName}
+          appType={AppListItem.appType.DEVELOPER}
+          appOwnerId={props.userId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
       }
     </div>

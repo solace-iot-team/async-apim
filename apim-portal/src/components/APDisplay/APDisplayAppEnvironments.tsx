@@ -64,7 +64,7 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
         >
           <Column expander style={{ width: '3em' }} />  
           <Column field="name" header="Environment" bodyStyle={{ verticalAlign: 'top' }} />
-      </DataTable>
+        </DataTable>
       </div>
     );
   }
@@ -145,7 +145,6 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
     const funcName = 'renderComponent';
     const logName = `${componentName}.${funcName}()`;
 
-    // const renderComponent = (appEnvironmentList_smf: Array<AppEnvironment>, appEnvironmentList_mqtt: Array<AppEnvironment>): JSX.Element => {
     const panelHeaderTemplateEndpoints = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
