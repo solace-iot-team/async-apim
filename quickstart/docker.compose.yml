@@ -41,17 +41,15 @@ services:
     environment:
       # apim server
       - APIM_SERVER_PORT=3000
-      - APIM_SERVER_API_BASE=/apim-server/v1
       - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-server-mongodb:27017/?retryWrites=true&w=majority
       - APIM_SERVER_MONGO_DB=solace-apim-server
       - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
-      - APIM_SERVER_LOGGER_APP_ID=apim-server
+      - APIM_SERVER_LOGGER_APP_ID=qs-async-apim-server
       - APIM_SERVER_LOGGER_LOG_LEVEL=trace
       - APIM_SERVER_REQUEST_SIZE_LIMIT=100kb
       - APIM_SERVER_SECRET=mySecret
-      - APIM_SERVER_OPENAPI_SPEC_PATH=/apim-server/v1/spec
-      - APIM_SERVER_ROOT_USER=root.admin@aps.com
-      - APIM_SERVER_ROOT_USER_PWD=admin123!
+      - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
+      - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
       - APIM_SERVER_DATA_PATH=/data
 
   # apim connector

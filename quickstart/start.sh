@@ -8,6 +8,10 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
   dockerProjectName="qs-async-apim"
   dockerComposeFile="$scriptDir/docker.compose.yml"
 
+# Note: change these
+  export APIM_SERVER_ROOT_USER="root.admin@async-apim-quickstart.com"
+  export APIM_SERVER_ROOT_USER_PWD="admin123!"
+
 ############################################################################################################################
 # Run
 

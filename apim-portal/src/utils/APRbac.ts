@@ -25,6 +25,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
+      EUIAdminPortalResourcePaths.MonitorSystemHealth,
     ]
   },
   {
@@ -59,7 +60,8 @@ const rbacRoleList: TAPRbacRoleList = [
       EUICommonResourcePaths.ManageUserAccount,
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
-      EUIAdminPortalResourcePaths.ManageOrganizationUsers,
+      EUIAdminPortalResourcePaths.ManageSystemUsers,
+      EUIAdminPortalResourcePaths.ManageSystemOrganizations,
       EUIAdminPortalResourcePaths.ManageOrganizationEnvironments,
     ]
   },

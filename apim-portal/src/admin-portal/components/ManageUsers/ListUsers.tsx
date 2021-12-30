@@ -209,7 +209,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     // const logName = `${componentName}.${funcName}()`;
     return (
         <React.Fragment>
-          <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} />
+          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} /> */}
           <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
           {managedObject.apiObject.isActivated &&
@@ -283,7 +283,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
             <Column header="Organizations" headerStyle={{width: '12em'}} field="memberOfOrganizationNameListAsString" />
             <Column header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />
             <Column header="Last Name" field="apiObject.profile.last"  sortable />
-            <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>
+            <Column headerStyle={{width: '11em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>
         </DataTable>
       </div>
     );

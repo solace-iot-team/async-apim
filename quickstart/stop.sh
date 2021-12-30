@@ -8,8 +8,6 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
   dockerProjectName="qs-async-apim"
   dockerComposeFile="$scriptDir/docker.compose.yml"
 
-  export QS_ASYNC_APIM_CONNECTOR_CONTAINER_NAME="qs-async-apim-connector"
-
 ############################################################################################################################
 # Run
 

@@ -9,7 +9,6 @@ import { classNames } from 'primereact/utils';
 import { Loading } from '../Loading/Loading';
 import { Divider } from 'primereact/divider';
 
-import { Config } from '../../Config';
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from '../AuthContextProvider/AuthContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
@@ -37,49 +36,6 @@ const emptyLoginData: APSUserLoginCredentials = {
   userId: '',
   userPwd: ''
 }
-var develLoginData: APSUserLoginCredentials = emptyLoginData;
-// ********************************************************************
-// TODO: for testing only
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const develRootLoginData: APSUserLoginCredentials = {
-  userId: 'root.admin@aps.com',
-  userPwd: 'admin123!'
-}
-const develMasterUserLoginData: APSUserLoginCredentials = {
-  userId: 'master.user@aps.com',
-  userPwd: 'master.user@aps.com'
-}
-const develCluserAdminLoginData: APSUserLoginCredentials = {
-  userId: 'cluster.admin@aps.com',
-  userPwd: 'cluster.admin@aps.com'
-}
-const develOrganizationAdminLoginData: APSUserLoginCredentials = {
-  userId: 'organization.admin@aps.com',
-  userPwd: 'organization.admin@aps.com'
-}
-const develNoOrgLoginData: APSUserLoginCredentials = {
-  userId: 'no.org@aps.com',
-  userPwd: 'no.org@aps.com'
-}
-
-const develTestLoginData1: APSUserLoginCredentials = {
-  userId: 'org-0.org-0@aps.com',
-  userPwd: 'org-0.org-0@aps.com'
-}
-const develTestLoginData2: APSUserLoginCredentials = {
-  userId: 'org-0.org-4@aps.com',
-  userPwd: 'org-0.org-4@aps.com'
-}
-
-// develLoginData = develRootLoginData;
-// initialLoginData = develCluserAdminLoginData;
-// initialLoginData = develOrganizationAdminLoginData;
-// initialLoginData = develNoOrgLoginData;
-develLoginData = develMasterUserLoginData;
-// initialLoginData = develTestLoginData2;
-/* eslint-enable @typescript-eslint/no-unused-vars */
-// TODO: for testing only
-// ********************************************************************
 
 export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => {
   const componentName = 'UserLogin';
@@ -137,7 +93,6 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }
 
   React.useEffect(() => {
-    if(Config.getUseDevelTools()) setLoginFormData(develLoginData);
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     if(props.userCredentials) doAutoLogin(props.userCredentials);

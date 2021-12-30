@@ -1,15 +1,22 @@
 Setup
 =====
 
-The quickstart contains a master user which is automatically bootstrapped at start-up time. The full user details are in `bootstrap user list`_.
-
 Login
 +++++
 
-:user id: `master.user@aps.com`
-:password: `master.user@aps.com`
+Login with the bootstrapped master user.
 
-Login with the above credentails.
+
+
+Defaults:
+
+:user id: `master.user@async-apim-quickstart.com`
+:password: `master.user@async-apim-quickstart.com`
+
+.. seealso::
+
+  - `bootstrap user list`_ - default details of the bootstrapped users.
+
 
 Create Organization
 +++++++++++++++++++
@@ -21,10 +28,6 @@ The bootstrapped user is member of the organization `apim-quickstart`.
 - Start creating entities ...
 
 
-
-.. seealso::
-
-  - `bootstrap user list`_ - details of the bootstrapped users.
 
 
 

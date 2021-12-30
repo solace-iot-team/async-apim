@@ -1,62 +1,62 @@
 [
   {
-    "userId": "master.user@aps.com",
-    "password": "master.user@aps.com",
+    "userId": "master.user@async-apim-devel.com",
+    "password": "master.user@async-apim-devel.com",
     "roles": ["apiConsumer", "apiTeam", "loginAs", "organizationAdmin", "systemAdmin"],
     "isActivated": true,
     "profile": {
       "first": "Master",
       "last": "User",
-      "email": "master.user@aps.com"
+      "email": "master.user@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "memberOfOrganizations": ["apim-devel"]
   },
   {
-    "userId": "api.consumer@aps.com",
-    "password": "api.consumer@aps.com",
+    "userId": "api.consumer@async-apim-devel.com",
+    "password": "api.consumer@async-apim-devel.com",
     "roles": ["apiConsumer"],
     "isActivated": true,
     "profile": {
       "first": "Api",
       "last": "Consumer",
-      "email": "api.consumer@aps.com"
+      "email": "api.consumer@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "memberOfOrganizations": ["apim-devel"]
   },
   {
-    "userId": "api.team@aps.com",
-    "password": "api.team@aps.com",
+    "userId": "api.team@async-apim-devel.com",
+    "password": "api.team@async-apim-devel.com",
     "roles": ["apiTeam"],
     "isActivated": true,
     "profile": {
       "first": "Api",
       "last": "Team",
-      "email": "api.team@aps.com"
+      "email": "api.team@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "memberOfOrganizations": ["apim-devel"]
   },
   {
-    "userId": "org.admin@aps.com",
-    "password": "org.admin@aps.com",
+    "userId": "org.admin@async-apim-devel.com",
+    "password": "org.admin@async-apim-devel.com",
     "roles": ["organizationAdmin"],
     "isActivated": true,
     "profile": {
       "first": "Org",
       "last": "Admin",
-      "email": "org.admin@aps.com"
+      "email": "org.admin@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "memberOfOrganizations": ["apim-devel"]
   },
   {
-    "userId": "system.admin@aps.com",
-    "password": "system.admin@aps.com",
+    "userId": "system.admin@async-apim-devel.com",
+    "password": "system.admin@async-apim-devel.com",
     "roles": ["systemAdmin", "loginAs"],
     "isActivated": true,
     "profile": {
       "first": "System",
       "last": "Admin",
-      "email": "system.admin@aps.com"
+      "email": "system.admin@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "memberOfOrganizations": ["apim-devel"]
   }
 ]
