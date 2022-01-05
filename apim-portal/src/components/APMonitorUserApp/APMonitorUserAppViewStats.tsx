@@ -23,14 +23,32 @@ import '../APComponents.css';
 
 export interface IAPMonitorUserAppViewStatsProps {
   managedAppWebhooks: TAPManagedAppWebhooks;
+  state?: any;
+  onStateChange: (newState: any) => void;
 }
 
 export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps> = (props: IAPMonitorUserAppViewStatsProps) => {
   const componentName = 'APMonitorUserAppViewStats';
 
+  type TPanelState = {
+    isCollapsed: boolean;
+  }
+  type TPanelStateMap = Map<string, TPanelState>;
+
   type TManagedObjectDisplay = TAPManagedAppWebhooks;
 
   const [managedObjectDisplay] = React.useState<TManagedObjectDisplay>(props.managedAppWebhooks);
+  const [externalState, setExternalState] = React.useState<TPanelStateMap>(props.state ? props.state : new Map<string, TPanelState>());
+
+  React.useEffect(() => {
+    // const funcName = 'useEffect([externalState])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: triggered ...`);
+    // for(const [key, value] of externalState) {
+    //   console.log(`${logName}: externalState: key=${key}, value=${JSON.stringify(value, null, 2)}`);
+    // }
+    props.onStateChange(externalState);
+  }, [externalState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderSectionTitle = (text: string): JSX.Element => {
     return (<DataTable header={text} />);
@@ -102,11 +120,12 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
   }
 
   const renderQueues = (appQueueStatusList: Array<QueueStatus> | undefined): JSX.Element => {
-    if(!appQueueStatusList) return renderSectionTitle('Queues: No Queues.');
 
     const messagesQueuedMBBodyTemplate = (queueStatus: QueueStatus) => {
       return APRenderUtils.getFormattedMessagesQueuedMBs(queueStatus.messagesQueuedMB);
     }
+
+    if(appQueueStatusList === undefined || appQueueStatusList.length === 0) return renderSectionTitle('Queues: No Queues.');
 
     return (
       <React.Fragment>
@@ -136,14 +155,27 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
   }
 
   const renderEnvStats = (appEnvStatus: AppEnvironmentStatus): JSX.Element => {
+    const funcName = 'renderEnvStats';
+    const logName = `${componentName}.${funcName}()`;
 
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const onTogglerClick = (event: React.MouseEvent<HTMLElement, MouseEvent>): void => {
+        const funcName = 'onTogglerClick';
+        const logName = `${componentName}.${funcName}()`;
+        if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
+        const isCollapsed = options.collapsed ? false : true;
+        const clone = new Map(externalState);
+        clone.set(appEnvStatus.name, { isCollapsed: isCollapsed });
+        setExternalState(clone);
+        options.onTogglerClick(event);
+      }
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
       const titleClassName = `${options.titleClassName} p-pl-1`;
       return (
         <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+          {/* <button className={options.togglerClassName} onClick={options.onTogglerClick}> */}
+          <button className={options.togglerClassName} onClick={onTogglerClick}>
             <span className={toggleIcon}></span>
           </button>
           <span className={titleClassName}>
@@ -153,11 +185,13 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
       );
     }
     
+    if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
+
     return (
       <Panel 
         headerTemplate={panelHeaderTemplate} 
         toggleable
-        // collapsed={false}
+        collapsed={externalState.get(appEnvStatus.name)?.isCollapsed}
         className="p-pt-2"
       >
         <div className="p-ml-2">
@@ -174,6 +208,8 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
   }
 
   const renderAppStats = (managedAppWebhooks: TAPManagedAppWebhooks): JSX.Element | Array<JSX.Element> => {
+    const funcName = 'renderAppStats';
+    const logName = `${componentName}.${funcName}()`;
 
     if(!managedAppWebhooks.apiAppConnectionStatus) return (<></>);
 
@@ -182,6 +218,14 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
     );
     const renderedEnvStats: Array<JSX.Element> = [];
     for(const appEnvStatus of managedAppWebhooks.apiAppConnectionStatus.environments) {
+      // initialize the state map
+      if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
+
+      if(!externalState.has(appEnvStatus.name)) {
+        const clone = new Map(externalState);
+        clone.set(appEnvStatus.name, { isCollapsed: false });
+        setExternalState(clone);
+      }
       renderedEnvStats.push(renderEnvStats(appEnvStatus))
     }
     return renderedEnvStats;
@@ -222,7 +266,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
       </div>
 
       {/* DEBUG */}
-      {managedObjectDisplay &&
+      {/* {managedObjectDisplay &&
         <div>
           <hr/> 
           <h1>{componentName}.managedObjectDisplay.apiAppConnectionStatus:</h1>
@@ -230,7 +274,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
               {JSON.stringify(managedObjectDisplay.apiAppConnectionStatus, null, 2)}
           </pre>
         </div>
-      }
+      } */}
     </React.Fragment>
   );
 }

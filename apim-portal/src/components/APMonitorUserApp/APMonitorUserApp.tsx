@@ -81,6 +81,7 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
+  const [viewComponentState, setViewComponentState] = React.useState<any>();
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   // * transformations *
@@ -232,6 +233,8 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
         <APMonitorUserAppViewStats
           key={refreshCounter}
           managedAppWebhooks={managedObject}
+          state={viewComponentState}
+          onStateChange={setViewComponentState}
         />
       }
     </div>
