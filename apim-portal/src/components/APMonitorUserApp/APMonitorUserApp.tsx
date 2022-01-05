@@ -81,6 +81,7 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   // * transformations *
   const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse, apiAppConnectionStatus: AppConnectionStatus): TManagedObject => {
@@ -162,6 +163,7 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
   const doRefreshComponentData = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
+    setRefreshCounter(refreshCounter + 1);
     props.onLoadingChange(false);
   }
   // React.useEffect(() => {
@@ -228,6 +230,7 @@ export const APMonitorUserApp: React.FC<IAPMonitorUserAppProps> = (props: IAPMon
 
       {showViewComponent && managedObject && 
         <APMonitorUserAppViewStats
+          key={refreshCounter}
           managedAppWebhooks={managedObject}
         />
       }

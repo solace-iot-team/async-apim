@@ -5,6 +5,7 @@ import { TAPWebhookStatus } from "../APComponentsCommon";
 
 import "../APComponents.css";
 import { Globals } from "../../utils/Globals";
+import { APRenderUtils } from "../../utils/APRenderUtils";
 
 export enum EAPDisplayAppWebhookStatus_Content {
   ALL = "ALL",
@@ -22,29 +23,31 @@ export interface IAPDisplayAppWebhookStatusProps {
 export const APDisplayAppWebhookStatus: React.FC<IAPDisplayAppWebhookStatusProps> = (props: IAPDisplayAppWebhookStatusProps) => {
   const componentName='APDisplayAppWebhookStatus';
 
-  const getLastFailureTimeStr = (ts: number): string => {
+  const getLastFailureTimeStr = (ts: number | undefined): string => {
+    if(ts === undefined) return 'not available';
     return new Date(ts * 1000).toUTCString();
   }
+  const getUri = (uri: string | undefined): string => {
+    if(uri === '' || uri === undefined) return 'not available';
+    return uri;
+  }
+  const getFailureReason = (reason: string | undefined): string => {
+    if(reason === '' || reason === undefined) return 'not available';
+    return reason;
+  }
+
 
   const renderAll = (): JSX.Element => {
     const { apiWebhookStatus } = props.apWebhookStatus;
     return (
       <div>
-        <div><b>URI</b>: {apiWebhookStatus.uri}</div>
+        <div><b>URI</b>: {getUri(apiWebhookStatus.uri)}</div>
         <div className="p-ml-2">
           <div>Status: {renderStatus()}</div>
-          {apiWebhookStatus.failureReason !== undefined &&
-            <div>Failure Reason: {apiWebhookStatus.failureReason}</div>
-          }
-          {apiWebhookStatus.lastFailureTime !== undefined &&
-            <div>Last Failure Time: {getLastFailureTimeStr(apiWebhookStatus.lastFailureTime)}</div>
-          }
-          {apiWebhookStatus.messagesQueued !== undefined &&
-            <div>Msgs queued: {apiWebhookStatus.messagesQueued}</div>
-          }
-          {apiWebhookStatus.messagesQueuedMB !== undefined &&
-            <div>MBs queued: {apiWebhookStatus.messagesQueuedMB}</div>
-          }
+          <div>Failure Reason: {getFailureReason(apiWebhookStatus.failureReason)}</div>
+          <div>Last Failure Time: {getLastFailureTimeStr(apiWebhookStatus.lastFailureTime)}</div>
+          <div>Msgs queued: {apiWebhookStatus.messagesQueued}</div>
+          <div>MBs queued: {APRenderUtils.getFormattedMessagesQueuedMBs(apiWebhookStatus.messagesQueuedMB)}</div>
         </div>
       </div>
     );

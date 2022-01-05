@@ -62,6 +62,10 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
 
   const renderConnections = (appConnectionStatusList: Array<AppConnection> | undefined): JSX.Element => {
 
+    const roundTripTimeBodyTemplate = (appConnection: AppConnection) => {
+      if(appConnection.roundtripTime === undefined) return ('not available');
+      return ( Math.round((appConnection.roundtripTime/1000000 + Number.EPSILON) * 1000) / 1000 );
+    }
     const uptimeBodyTemplate = (appConnection: AppConnection) => {
       if(appConnection.uptime === undefined) return ('not available');
       // return new Date(appConnection.uptime * 1000).toISOString().substring(11, 8);
@@ -90,7 +94,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
             <Column header="Protocol" headerStyle={{width: '10em', textAlign: 'center'}} body={protocolBodyTemplate} bodyStyle={{ textAlign: 'center' }} />
             <Column header="State" headerStyle={{width: '10em', textAlign: 'center'}} field="state" bodyStyle={{ textAlign: 'center' }} />
             <Column header="Uptime (HH:MM:SS)" headerStyle={{width: '10em', textAlign: 'center'}} body={uptimeBodyTemplate} bodyStyle={{ textAlign: 'center' }} />
-            <Column header="Roundtrip Time (ns)" headerStyle={{width: '10em', textAlign: 'center'}} field="roundtripTime" bodyStyle={{ textAlign: 'center' }} />
+            <Column header="Roundtrip Time (ms)" headerStyle={{width: '10em', textAlign: 'center'}} body={roundTripTimeBodyTemplate} bodyStyle={{ textAlign: 'center' }} />
           </DataTable>
         </div>
       </React.Fragment>
@@ -99,6 +103,11 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
 
   const renderQueues = (appQueueStatusList: Array<QueueStatus> | undefined): JSX.Element => {
     if(!appQueueStatusList) return renderSectionTitle('Queues: No Queues.');
+
+    const messagesQueuedMBBodyTemplate = (queueStatus: QueueStatus) => {
+      return APRenderUtils.getFormattedMessagesQueuedMBs(queueStatus.messagesQueuedMB);
+    }
+
     return (
       <React.Fragment>
         {/* {renderSectionTitle('Queues')} */}
@@ -114,7 +123,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
           >
             <Column header="Queue" field="name" />
             <Column header="Msgs" headerStyle={{width: '10em', textAlign: 'center'}} field="messagesQueued" bodyStyle={{ textAlign: 'center' }} />
-            <Column header="MBs" headerStyle={{width: '10em', textAlign: 'center'}} field="messagesQueuedMB" bodyStyle={{ textAlign: 'center' }} />
+            <Column header="MBs" headerStyle={{width: '10em', textAlign: 'center'}} body={messagesQueuedMBBodyTemplate} field="messagesQueuedMB" bodyStyle={{ textAlign: 'center' }} />
             <Column header="Consumers" headerStyle={{width: '10em', textAlign: 'center'}} field="consumerCount" bodyStyle={{ textAlign: 'center' }} />
           </DataTable>
           {/* DEBUG */}
@@ -138,7 +147,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
             <span className={toggleIcon}></span>
           </button>
           <span className={titleClassName}>
-            Environment: {appEnvStatus.name} (TODO: get the display name)
+            Environment: {appEnvStatus.displayName}
           </span>
         </div>
       );
@@ -148,7 +157,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
       <Panel 
         headerTemplate={panelHeaderTemplate} 
         toggleable
-        collapsed={false}
+        // collapsed={false}
         className="p-pt-2"
       >
         <div className="p-ml-2">
@@ -160,7 +169,7 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
             {JSON.stringify(appEnvStatus, null, 2)}
           </pre> */}
         </div>
-    </Panel>
+      </Panel>
     );
   }
 

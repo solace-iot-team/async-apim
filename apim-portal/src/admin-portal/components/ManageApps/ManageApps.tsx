@@ -200,7 +200,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {          
-      if(viewAppApiAppResponse && APManagedUserAppDisplay.isAppLive(viewAppApiAppResponse)) {
+      if(viewAppApiAppResponse && !APManagedUserAppDisplay.isAppLive(viewAppApiAppResponse)) {
         return (
           <React.Fragment>
             <Button 

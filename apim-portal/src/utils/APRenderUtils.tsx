@@ -11,6 +11,10 @@ import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
 
 export class APRenderUtils {
 
+  public static getFormattedMessagesQueuedMBs = (messagesQueuedMB: number | undefined) => {
+    if(messagesQueuedMB === undefined) return ('not available');
+    return ( Math.round((messagesQueuedMB + Number.EPSILON) * 1000) / 1000 );
+  }
   public static getApiInfoListAsDisplayStringList = (apiInfoList: APIInfoList ): Array<string> => {
     return apiInfoList.map( (apiInfo: APIInfo) => {
       return `${apiInfo.name} (${apiInfo.source})`;

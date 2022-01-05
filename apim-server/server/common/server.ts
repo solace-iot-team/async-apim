@@ -42,10 +42,14 @@ export class ExpressServer {
       })
     );
     app.use(cookieParser(this.config.serverSecret));
-    // serve public/index.html
+    // serve public
+    // TODO:TEST max age
+    // app.use(express.static(path.join(this.root, "public"), { maxAge: 31557600000 }));
     app.use(express.static(`${this.root}/public`));
+
     // serve server open api spec file
     const apiSpecFile = path.join(__dirname, 'api.yml');
+    // TODO: max age as well?
     app.use(`${this.config.apiBase}/spec`, express.static(apiSpecFile));
     // validate responses 
     const validateResponseOpts: ValidateResponseOpts = {      

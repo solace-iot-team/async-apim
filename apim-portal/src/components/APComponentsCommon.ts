@@ -481,18 +481,24 @@ export class APManagedWebhook {
     });
     return apiWebhookList;
   }
-  public static createApiAppUpdateRequestBodyFromAPManagedAppWebhooks = (apManagedAppWebhooks: TAPManagedAppWebhooks, newManagedWebhookList: TAPManagedWebhookList): AppPatch => {
-    const appResponse = apManagedAppWebhooks.apiAppResponse;
+  public static createApiAppWebhookUpdateRequestBodyFromAPManagedAppWebhooks = (_apManagedAppWebhooks: TAPManagedAppWebhooks, newManagedWebhookList: TAPManagedWebhookList): AppPatch => {
     const appPatch: AppPatch = {
-        apiProducts: appResponse.apiProducts,
-        attributes: appResponse.attributes,
-        callbackUrl: appResponse.callbackUrl,
-        credentials: appResponse.credentials,
-        displayName: appResponse.displayName,
         webHooks: APManagedWebhook.createApiWebHookListFromAPManagedWebhookList(newManagedWebhookList)
       };
     return appPatch;
   }
+  // public static createApiAppUpdateRequestBodyFromAPManagedAppWebhooks = (apManagedAppWebhooks: TAPManagedAppWebhooks, newManagedWebhookList: TAPManagedWebhookList): AppPatch => {
+  //   const appResponse = apManagedAppWebhooks.apiAppResponse;
+  //   const appPatch: AppPatch = {
+  //       apiProducts: appResponse.apiProducts,
+  //       attributes: appResponse.attributes,
+  //       callbackUrl: appResponse.callbackUrl,
+  //       credentials: appResponse.credentials,
+  //       displayName: appResponse.displayName,
+  //       webHooks: APManagedWebhook.createApiWebHookListFromAPManagedWebhookList(newManagedWebhookList)
+  //     };
+  //   return appPatch;
+  // }
   public static createNewManagedWebhookList = (apManagedAppWebhooks: TAPManagedAppWebhooks, newManagedWebhook: TAPManagedWebhook): TAPManagedWebhookList => {
     // creates a new array
     const _newMWHList: TAPManagedWebhookList = apManagedAppWebhooks.apManagedWebhookList.concat([]);
