@@ -137,15 +137,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           appName: apiApp.name,
           topicSyntax: 'smf'
         });
-        let _apiAppConnectionStatus: AppConnectionStatus = {};
-        try {
-          _apiAppConnectionStatus = await AppsService.getAppStatus({
-            organizationName: props.organizationId,
-            appName: apiApp.name
-          });  
-        } catch (e:any) {
-          APClientConnectorOpenApi.logError(logName, e);
-        }
+        // not required for list
+        const _apiAppConnectionStatus: AppConnectionStatus = {};
+        // let _apiAppConnectionStatus: AppConnectionStatus = {};
+        // try {
+        //   _apiAppConnectionStatus = await AppsService.getAppStatus({
+        //     organizationName: props.organizationId,
+        //     appName: apiApp.name
+        //   });  
+        // } catch (e:any) {
+        //   APClientConnectorOpenApi.logError(logName, e);
+        // }
         let _apiAppProductList: TApiProductList = [];
         for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
           const apiApiProduct = await ApiProductsService.getApiProduct({
