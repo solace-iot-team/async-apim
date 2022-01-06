@@ -83,10 +83,10 @@ export const MonitorSystemHealth: React.FC<IMonitorSystemHealthProps> = (props: 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showSystemHealthOverviewComponent) return (
-      <React.Fragment>
-      </React.Fragment>
-    );
+    // if(showSystemHealthOverviewComponent) return (
+    //   <React.Fragment>
+    //   </React.Fragment>
+    // );
     return undefined;
   }
   

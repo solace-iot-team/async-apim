@@ -3,10 +3,10 @@ import React from "react";
 
 import { Panel } from "primereact/panel";
 
-import { APHealthCheckContext } from "../APHealthCheckContextProvider";
 import { 
   TAPConnectorHealthCheckLogEntry, 
-  TAPConnectorHealthCheckLogEntryList
+  TAPConnectorHealthCheckLogEntryList,
+  TAPConnectorHealthCheckResult
 } from "../../utils/APHealthCheck";
 import { SystemHealthCommon } from "./SystemHealthCommon";
 
@@ -14,13 +14,11 @@ import "../APComponents.css";
 
 export interface IDisplayConnectorHealthCheckLogProps {
   className?: string;
+  connectorHealthCheckResult?: TAPConnectorHealthCheckResult
 }
 
 export const DisplayConnectorHealthCheckLog: React.FC<IDisplayConnectorHealthCheckLogProps> = (props: IDisplayConnectorHealthCheckLogProps) => {
   // const componentName='DisplayConnectorHealthCheckLog';
-
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
 
   const renderLogEntry = (logEntry: TAPConnectorHealthCheckLogEntry): JSX.Element => {
     const getHeader = (): JSX.Element => {
@@ -45,8 +43,8 @@ export const DisplayConnectorHealthCheckLog: React.FC<IDisplayConnectorHealthChe
   }
 
   const renderConnectorHealthCheckLog = (): Array<JSX.Element> => {
-    if(!healthCheckContext.connectorHealthCheckResult) return ([<></>]);
-    const log: TAPConnectorHealthCheckLogEntryList = healthCheckContext.connectorHealthCheckResult.healthCheckLog;
+    if(!props.connectorHealthCheckResult) return ([<></>]);
+    const log: TAPConnectorHealthCheckLogEntryList = props.connectorHealthCheckResult.healthCheckLog;
     const displayList: Array<JSX.Element> = [];
     for(const logEntry of log) {
       displayList.push(renderLogEntry(logEntry));

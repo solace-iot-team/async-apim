@@ -17,6 +17,8 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { DisplaySystemHealthInfo, EAPSystemHealthInfoPart } from "../../../components/SystemHealth/DisplaySystemHealthInfo";
+import { DisplayConnectorHealthCheckLog } from "../../../components/SystemHealth/DisplayConnectorHealthCheckLog";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -80,25 +82,19 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderHealthCheckInfo = (mo: TManagedObject) => {
-    return(
-      <>
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(mo.healthCheckResult, null, 2)};
-        </pre>
-      </>
-    );
-  }
-
   const renderHealthCheckDetails = (mo: TManagedObject) => {
     return (
       <React.Fragment>
-        <div className="p-mb-2 p-mt-4 ap-display-component-header">
-          Summary: {ManageConnectorsCommon.healthCheckSuccessDisplay(mo.healthCheckResult)}
-        </div>
-        <div className="p-ml-4">
-          {renderHealthCheckInfo(mo)}
-        </div>
+        <DisplaySystemHealthInfo
+          systemHealthInfoPart={EAPSystemHealthInfoPart.CONNECTOR}
+          healthCheckContext={{
+            connectorHealthCheckResult: mo.healthCheckResult,
+          }}
+          connectorDisplayName={mo.apsConnector.displayName}
+        />
+        <DisplayConnectorHealthCheckLog 
+          connectorHealthCheckResult={mo.healthCheckResult}
+        />
       </React.Fragment>
     )
   }

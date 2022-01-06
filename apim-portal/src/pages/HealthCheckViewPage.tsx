@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 
 import { APHealthCheckContext } from '../components/APHealthCheckContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { DisplaySystemHealthInfo } from '../components/SystemHealth/DisplaySystemHealthInfo';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../utils/APHealthCheck';
@@ -14,6 +15,7 @@ export const HealthCheckViewPage: React.FC = () => {
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [originAppState, setOriginAppState] = React.useState<EAppState>(userContext.originAppState);
   /* eslint-eanble @typescript-eslint/no-unused-vars */
@@ -67,7 +69,10 @@ export const HealthCheckViewPage: React.FC = () => {
         <hr />
         <h1 style={{fontSize: 'xx-large'}}>{getHeader()}</h1>
         <hr />
-        <DisplaySystemHealthInfo />
+        <DisplaySystemHealthInfo 
+          healthCheckContext={healthCheckContext}
+          connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+        />
         {/* <hr />
         <h1>Health Check:</h1>
         <pre style={ { fontSize: '12px' }} >

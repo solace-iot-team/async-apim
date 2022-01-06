@@ -5,6 +5,7 @@ import { Divider } from 'primereact/divider';
 
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
+import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { DisplaySystemHealthInfo } from '../../components/SystemHealth/DisplaySystemHealthInfo';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../../utils/APHealthCheck';
 import { EUIDeveloperPortalResourcePaths, Globals } from '../../utils/Globals';
@@ -14,6 +15,8 @@ export const DeveloperPortalHealthCheckViewPage: React.FC = () => {
 
   const [healthCheckContext] = React.useContext(APHealthCheckContext);
   const [authContext] = React.useContext(AuthContext);
+  const [configContext] = React.useContext(ConfigContext);
+
 
   const history = useHistory();
 
@@ -72,7 +75,10 @@ export const DeveloperPortalHealthCheckViewPage: React.FC = () => {
       <React.Fragment>
         <div className='p-my-4'>{getHeader()}</div>
         <Divider className='p-mb-4'/>
-        <DisplaySystemHealthInfo />
+        <DisplaySystemHealthInfo 
+          healthCheckContext={healthCheckContext}
+          connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+        />
         {/* <hr />
         <h1>Health Check:</h1>
         <pre style={ { fontSize: '12px' }} >
