@@ -42,7 +42,14 @@
               <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Quickstart</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-stop-update">Start, Stop, Update</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connect">Connect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#details">Details</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup</a></li>
 </ul>
 </li>
@@ -75,6 +82,7 @@
              
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<p>This guide describes the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> which is part of the project repo.</p>
 <p>The installation starts all required services using this
 <a class="reference download internal" download="" href="../_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
 <dl class="field-list simple">
@@ -103,6 +111,66 @@
 <li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in Repo.</p></li>
 </ul>
 </div>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline"></a></h2>
+<p>The quickstart requires the following components:</p>
+<ul class="simple">
+<li><p>nodejs, version 16.x</p></li>
+<li><p>docker</p></li>
+<li><p>docker-compose</p></li>
+</ul>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h2>
+<p>At start-up, the APIM Server creates a <cite>root</cite> user based on these environment variables, which can be found in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/start.sh">start.sh</a>.
+All other variables are set directly in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Change the default root user &amp; password in <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/start.sh">start.sh</a>.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Note: change these</span>
+<span class="nb">export</span> <span class="nv">APIM_SERVER_ROOT_USER</span><span class="o">=</span><span class="s2">&quot;root.admin@async-apim-quickstart.com&quot;</span>
+<span class="nb">export</span> <span class="nv">APIM_SERVER_ROOT_USER_PWD</span><span class="o">=</span><span class="s2">&quot;admin123!&quot;</span>
+</pre></div>
+</div>
+<p>The quickstart also contains a master user which is automatically bootstrapped at start-up time.
+The full user details are in <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json">bootstrap user list</a>.</p>
+<p>Change the user name / pwd if required.</p>
+</section>
+<section id="start-stop-update">
+<h2>Start, Stop, Update<a class="headerlink" href="#start-stop-update" title="Permalink to this headline"></a></h2>
+<p>Change to the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> directory.</p>
+<p>Start:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start.sh
+</pre></div>
+</div>
+<p>Stop:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./stop.sh
+</pre></div>
+</div>
+<p>Update:</p>
+<p>If you want to start with clean APIM Server &amp; Connector databases, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./stop.sh
+./clean.sh
+</pre></div>
+</div>
+<p>Now start the system again:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start.sh
+</pre></div>
+</div>
+</section>
+<section id="connect">
+<h2>Connect<a class="headerlink" href="#connect" title="Permalink to this headline"></a></h2>
+<p>By default, the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> creates an NGINX container serving as a reverse proxy on port <cite>5000</cite>.</p>
+<p>Use the following URL in your browser: <cite>http://{ip-address}:5000</cite>.</p>
+<p>Additional exposed ports are:</p>
+<ul class="simple">
+<li><p><cite>5001</cite> - APIM Connector</p></li>
+<li><p><cite>5002</cite> - APIM Server</p></li>
+</ul>
+</section>
+<section id="details">
+<h2>Details<a class="headerlink" href="#details" title="Permalink to this headline"></a></h2>
 <p>The following figure shows the set-up of the containers:</p>
 <figure class="align-default" id="id1">
 <a class="reference internal image-reference" href="../_images/async-apim.quickstart.containers.png"><img alt="../_images/async-apim.quickstart.containers.png" src="../_images/async-apim.quickstart.containers.png" style="width: 800px;" /></a>
@@ -118,6 +186,7 @@
 </figcaption>
 </figure>
 </section>
+</section>
 
 
            </div>
@@ -131,7 +200,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 28 Dec 2021 at 16:04.
+      <span class="lastupdated">Last updated on 06 Jan 2022 at 13:02.
       </span></p>
   </div>
 
