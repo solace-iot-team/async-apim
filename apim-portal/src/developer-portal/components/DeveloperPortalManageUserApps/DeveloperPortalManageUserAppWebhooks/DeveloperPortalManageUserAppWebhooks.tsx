@@ -6,6 +6,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
+  AppConnectionStatus,
   AppResponse,
   AppsService,
   CommonDisplayName, 
@@ -21,7 +22,6 @@ import {
   TAPManagedAppWebhooks, 
   TAPManagedWebhook, 
   TAPOrganizationId, 
-  TAPWebhookStatus
 } from "../../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppWebhooksCommon";
 import { DeveloperPortalListUserAppWebhooks } from "./DeveloperPortalListUserAppWebhooks";
@@ -91,26 +91,27 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
 
   // * transformations *
-  const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse): TManagedObject => {
+  const transformGetApiObjectToManagedObject = (apiAppResponse: AppResponse, apiAppConnectionStatus: AppConnectionStatus): TManagedObject => {
     return {
       appId: apiAppResponse.name,
       appDisplayName: apiAppResponse.displayName ? apiAppResponse.displayName : apiAppResponse.name,
       apiAppResponse: apiAppResponse,
-      apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse)
+      apManagedWebhookList: APManagedWebhook.createAPManagedWebhookListFromApiEntities(apiAppResponse, apiAppConnectionStatus),
+      apiAppConnectionStatus: apiAppConnectionStatus
     };
   }
 
   // * Api Calls *
-  const apiGetWebhookStatus = async(apMWH: TAPManagedWebhook): Promise<TAPWebhookStatus> => {
-    // TODO actually get the status
-    return {
-      summaryStatus: true,
-      details: {
-        hello: 'world',
-        envName: apMWH.webhookEnvironmentReference.entityRef.name
-      }
-    }
-  }
+  // const apiGetWebhookStatus = async(apMWH: TAPManagedWebhook): Promise<TAPWebhookStatus> => {
+  //   // TODO actually get the status
+  //   return {
+  //     summaryStatus: true,
+  //     details: {
+  //       hello: 'world',
+  //       envName: apMWH.webhookEnvironmentReference.entityRef.name
+  //     }
+  //   }
+  // }
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -121,11 +122,16 @@ export const DeveloperPortalManageUserAppWebhooks: React.FC<IDeveloperPortalMana
         developerUsername: props.userId,
         appName: props.appId
       });
-      let _mo: TManagedObject = transformGetApiObjectToManagedObject(_apiAppResponse);
-      // get the status for each webhook
-      for( const _apManagedWebhook of _mo.apManagedWebhookList) {
-        _apManagedWebhook.webhookStatus = await apiGetWebhookStatus(_apManagedWebhook);
-      }      
+      const _apiAppConnectionStatus: AppConnectionStatus = await AppsService.getAppStatus({
+        organizationName: props.organizationId,
+        appName: props.appId
+      });
+      let _mo: TManagedObject = transformGetApiObjectToManagedObject(_apiAppResponse, _apiAppConnectionStatus);
+      // // get the status for each webhook
+      // for( const _apManagedWebhook of _mo.apManagedWebhookList) {
+      //   _apManagedWebhook.webhookStatus = 
+      //   _apManagedWebhook.webhookStatus = await apiGetWebhookStatus(_apManagedWebhook);
+      // }      
       setManagedObject(_mo);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);

@@ -92,7 +92,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
           // },
           {
             label: 'Organizations',
-            disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
+            disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
           },
           {

@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { MenuItem } from "primereact/api";
 
 import { 
   ApiProductsService,
@@ -45,6 +46,7 @@ export interface IEditAppAttributesProps {
   onEditSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEditAppAttributesProps) => {
@@ -289,6 +291,9 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
   }
 
   React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: `Attributes`
+    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

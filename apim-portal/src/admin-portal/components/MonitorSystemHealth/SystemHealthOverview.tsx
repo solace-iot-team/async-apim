@@ -4,6 +4,7 @@ import React from "react";
 import { TabView, TabPanel } from 'primereact/tabview';
 
 import { APHealthCheckContext } from '../../../components/APHealthCheckContextProvider';
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -24,6 +25,7 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
   // const componentName = 'SystemHealthOverview';
 
   const [healthCheckContext] = React.useContext(APHealthCheckContext);
+  const [configContext] = React.useContext(ConfigContext);
 
   const [apiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
@@ -42,20 +44,28 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
           <TabPanel header='Portal App'>
             <DisplaySystemHealthInfo
                 systemHealthInfoPart={EAPSystemHealthInfoPart.PORTAL_APP}
-              />
-              <DisplayPortalAppHealthCheckLog />
+                healthCheckContext={healthCheckContext}
+                connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+            />
+            <DisplayPortalAppHealthCheckLog />
           </TabPanel>
           <TabPanel header='APIM Server'>
             <DisplaySystemHealthInfo
               systemHealthInfoPart={EAPSystemHealthInfoPart.SERVER}
-            />
+              healthCheckContext={healthCheckContext}
+              connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+              />
             <DisplayServerHealthCheckLog />
           </TabPanel>
           <TabPanel header='APIM Connector'>
             <DisplaySystemHealthInfo
               systemHealthInfoPart={EAPSystemHealthInfoPart.CONNECTOR}
+              healthCheckContext={healthCheckContext}
+              connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+              />
+            <DisplayConnectorHealthCheckLog 
+              connectorHealthCheckResult={healthCheckContext.connectorHealthCheckResult}
             />
-            <DisplayConnectorHealthCheckLog />
           </TabPanel>
           {/* <TabPanel header='Devel'>
             <pre style={ { fontSize: '12px' }} >
@@ -76,6 +86,8 @@ export const SystemHealthOverview: React.FC<ISystemHealthOverviewProps> = (props
             <div className="ap-system-health-view-detail-left">
               <DisplaySystemHealthInfo
                 systemHealthInfoPart={EAPSystemHealthInfoPart.ALL}
+                healthCheckContext={healthCheckContext}
+                connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
               />
               {renderDetailTabs()}
             </div>

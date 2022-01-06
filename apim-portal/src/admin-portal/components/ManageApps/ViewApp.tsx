@@ -4,6 +4,7 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Panel, PanelHeaderTemplateOptions } from 'primereact/panel';
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   ApiProductsService, 
@@ -11,6 +12,8 @@ import {
   AppResponse,
   AppsService,
   AppStatus,
+  CommonDisplayName,
+  CommonName,
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSUser, ApsUsersService
@@ -19,7 +22,7 @@ import {
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { Globals } from "../../../utils/Globals";
-import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageAppsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -44,14 +47,16 @@ import "./ManageApps.css";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
-  appId: string;
-  appDisplayName: string;
+  appId: CommonName;
+  appDisplayName: CommonDisplayName;
   appType: AppListItem.appType;
-  appOwnerId: string;  
+  appOwnerId: CommonName;  
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onLoadingFinished: (apiAppResponse: AppResponse) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHere: (componentState: E_COMPONENT_STATE, appId: CommonName, appDisplayName: CommonDisplayName) => void;
 }
 
 export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
@@ -126,13 +131,17 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         throw(e);
       }
       if(!_apsUser) throw new Error(`${logName}: _apsUser is undefined`);
-      setManagedObjectDisplay(APManagedUserAppDisplay.createAPAdminPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, _apsUser));
+      setManagedObjectDisplay(APManagedUserAppDisplay.createAPAdminPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppResponse_mqtt, _apiProductList, {}, _apsUser));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
     return callState;
+  }
+
+  const AdminPortal_ViewApp_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.appId, props.appDisplayName);
   }
 
   // * useEffect Hooks *
@@ -143,6 +152,10 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   }
 
   React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: `App: ${props.appDisplayName}`,
+      command: AdminPortal_ViewApp_onNavigateHereCommand
+    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

@@ -15,12 +15,13 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon } from "./ManageConnectorsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 import { APLogger } from "../../../utils/APLogger";
+import { DisplayConnectorHealthCheckLog } from "../../../components/SystemHealth/DisplayConnectorHealthCheckLog";
+import { DisplaySystemHealthInfo, EAPSystemHealthInfoPart } from "../../../components/SystemHealth/DisplaySystemHealthInfo";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
-import { SystemHealthCommon } from "../../../components/SystemHealth/SystemHealthCommon";
 
 export interface ITestConnectorProps {
   connectorId: APSId;
@@ -34,10 +35,8 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const componentName = 'TestConnector';
 
   const TestingDialogHeader = "Performing health check ...";
-  const ResultDialogHeader = "Details:";
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [apsConnector, setApsConnector] = React.useState<APSConnector>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showTestDialog, setShowTestDialog] = React.useState<boolean>(true);
@@ -121,16 +120,16 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
   const renderTestDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <h3><b>Connector: {apsConnector?.displayName}</b></h3>
-        {healthCheckResult &&
-          <div>
-            <span style={ {color: SystemHealthCommon.getColor(healthCheckResult.summary.success) }}>Summary: {ManageConnectorsCommon.healthCheckSuccessDisplay(healthCheckResult)}</span>
-            <p>{ResultDialogHeader}</p>
-            <pre style={ { fontSize: '10px' }} >
-              {JSON.stringify(healthCheckResult?.healthCheckLog, null, 2)}
-            </pre> 
-          </div>            
-        }
+        <DisplaySystemHealthInfo
+          systemHealthInfoPart={EAPSystemHealthInfoPart.CONNECTOR}
+          healthCheckContext={{
+            connectorHealthCheckResult: healthCheckResult,
+          }}
+          connectorDisplayName={apsConnector ? apsConnector.displayName : 'unknown'}
+        />
+        <DisplayConnectorHealthCheckLog 
+          connectorHealthCheckResult={healthCheckResult}
+        />
         {!healthCheckResult &&
           <div>
             <p>{TestingDialogHeader}</p>

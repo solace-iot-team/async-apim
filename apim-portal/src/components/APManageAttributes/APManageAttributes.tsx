@@ -212,6 +212,4 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
       </div>
     </div>
   );
-
-
 }

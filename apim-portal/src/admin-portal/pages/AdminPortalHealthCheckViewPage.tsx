@@ -8,10 +8,12 @@ import { AuthContext } from '../../components/AuthContextProvider/AuthContextPro
 import { DisplaySystemHealthInfo } from '../../components/SystemHealth/DisplaySystemHealthInfo';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../../utils/APHealthCheck';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
+import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 
 export const AdminPortalHealthCheckViewPage: React.FC = () => {
   const componentName = 'AdminPortalHealthCheckViewPage';
 
+  const [configContext] = React.useContext(ConfigContext);
   const [healthCheckContext] = React.useContext(APHealthCheckContext);
   const [authContext] = React.useContext(AuthContext);
 
@@ -72,7 +74,10 @@ export const AdminPortalHealthCheckViewPage: React.FC = () => {
       <React.Fragment>
         <div className='p-my-4'>{getHeader()}</div>
         <Divider className='p-mb-4'/>
-        <DisplaySystemHealthInfo />
+        <DisplaySystemHealthInfo 
+          healthCheckContext={healthCheckContext}
+          connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+        />
         {/* <hr />
         <h1>Health Check:</h1>
         <pre style={ { fontSize: '12px' }} >

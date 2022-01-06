@@ -1,8 +1,7 @@
 
 import React from "react";
 
-import { APHealthCheckContext } from "../APHealthCheckContextProvider";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { TAPHealthCheckContext } from "../APHealthCheckContextProvider";
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from "../../utils/APHealthCheck";
 import { SystemHealthCommon } from "./SystemHealthCommon";
 
@@ -18,15 +17,13 @@ export enum EAPSystemHealthInfoPart {
 export interface IDisplaySystemHealthInfoProps {
   className?: string;
   systemHealthInfoPart?: EAPSystemHealthInfoPart;
+  healthCheckContext: TAPHealthCheckContext;
+  connectorDisplayName: string
 }
 
 export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = (props: IDisplaySystemHealthInfoProps) => {
   // const componentName='DisplaySystemHealthInfo';
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const [systemHealthInfoPart, setSystemHealthInfoPart] = React.useState<EAPSystemHealthInfoPart>(EAPSystemHealthInfoPart.ALL);
 
   React.useEffect(() => {
@@ -60,20 +57,19 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
 
   const renderPortalAppHealthInfo = (): JSX.Element => {
     if(systemHealthInfoPart === EAPSystemHealthInfoPart.PORTAL_APP || systemHealthInfoPart === EAPSystemHealthInfoPart.ALL) {
-      return renderHealthInfo('Portal App', healthCheckContext.portalAppHealthCheckResult?.summary);
+      return renderHealthInfo('Portal App', props.healthCheckContext.portalAppHealthCheckResult?.summary);
     } else return (<></>);
   }
 
   const renderServerHealthInfo = (): JSX.Element => {
     if(systemHealthInfoPart === EAPSystemHealthInfoPart.SERVER || systemHealthInfoPart === EAPSystemHealthInfoPart.ALL) {
-      return renderHealthInfo('Server', healthCheckContext.serverHealthCheckResult?.summary);
+      return renderHealthInfo('Server', props.healthCheckContext.serverHealthCheckResult?.summary);
     } else return (<></>);
   }
 
   const renderConnectorHealthInfo = (): JSX.Element => {
     if(systemHealthInfoPart === EAPSystemHealthInfoPart.CONNECTOR || systemHealthInfoPart === EAPSystemHealthInfoPart.ALL) {
-      const connectorName = configContext.connector ? configContext.connector.displayName : 'unknown';
-      return renderHealthInfo(`Connector: ${connectorName}`, healthCheckContext.connectorHealthCheckResult?.summary, 'Connector: no active connector');
+      return renderHealthInfo(`Connector: ${props.connectorDisplayName}`, props.healthCheckContext.connectorHealthCheckResult?.summary, 'Connector: no active connector');
     } else return (<></>);
   }
 

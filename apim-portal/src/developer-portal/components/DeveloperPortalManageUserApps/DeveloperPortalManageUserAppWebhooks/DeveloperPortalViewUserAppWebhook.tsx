@@ -18,6 +18,7 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { APRenderUtils } from "../../../../utils/APRenderUtils";
 import { Globals } from "../../../../utils/Globals";
 import { EWebhookAuthMethodSelectIdNone } from "./DeveloperPortalManageUserAppWebhooksCommon";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
@@ -47,17 +48,22 @@ export const DeveloperPortalViewUserAppWebhook: React.FC<IDeveloperPortalViewUse
     else {
       if(webhookStatus.summaryStatus) jsxSummaryStatus = (<span style={{ color: 'green'}}>Up</span>);
       else jsxSummaryStatus = (<span style={{ color: 'red'}}>Down</span>);
-
-      if(webhookStatus.details) {
-        jsxDetails = (<div>{JSON.stringify(webhookStatus.details)}</div>);
+      if(!webhookStatus.summaryStatus) {
+        jsxDetails = (
+          <div className="p-ml-2">
+            <div><b>Details</b>:</div>
+            <APDisplayAppWebhookStatus
+              apWebhookStatus={webhookStatus}
+              displayContent={EAPDisplayAppWebhookStatus_Content.FAILURE_DETAILS_ONLY_IF_DOWN}
+            />
+          </div>
+        );
       }
     }
     return (
       <React.Fragment>
-        <div><b>Status</b>: {jsxSummaryStatus}</div>
-        { jsxDetails && 
-          <div className="p-ml-2">{jsxDetails}</div>
-        }
+        <div><b>Webhook Status</b>: {jsxSummaryStatus}</div>
+        {jsxDetails}
       </React.Fragment>
     );
   }
@@ -163,8 +169,8 @@ export const DeveloperPortalViewUserAppWebhook: React.FC<IDeveloperPortalViewUse
             </div>
             <div className="apd-app-view-detail-right">
               <div>App Status: {managedObjectDisplay.references.apiAppResponse.status}</div>
-              <div>Internal Name: </div>
-              <div className="p-ml-2">{managedObjectDisplay.references.apiAppResponse.internalName}</div>
+              {/* <div>Internal Name: </div>
+              <div className="p-ml-2">{managedObjectDisplay.references.apiAppResponse.internalName}</div> */}
             </div>            
           </div>
         </div>  

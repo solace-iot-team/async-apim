@@ -59,7 +59,7 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
         ...item,
         style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
       });
-    })
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />

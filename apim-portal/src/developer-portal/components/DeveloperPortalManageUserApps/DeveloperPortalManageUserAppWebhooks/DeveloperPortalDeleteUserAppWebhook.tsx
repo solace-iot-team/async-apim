@@ -85,11 +85,8 @@ export const DeveloperPortalDeleteUserAppWebhook: React.FC<IDeveloperPortalDelet
     // NOTE: this modifies the props.managedAppWebhooks.apManagedWebhookList
     newManagedWebhookList.splice(webhookIndexToDelete,1);
     // console.log(`${logName}: newManagedWebhookList = ${JSON.stringify(newManagedWebhookList, null, 2)}`);
-
-    const apiAppPatch: AppPatch = APManagedWebhook.createApiAppUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
+    const apiAppPatch: AppPatch = APManagedWebhook.createApiAppWebhookUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
     // console.log(`${logName}: apiAppPatch = ${JSON.stringify(apiAppPatch, null, 2)}`);
-
-    // throw new Error(`${logName}: continue here`);
 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP, `update webhooks for app: ${props.managedAppWebhooks.appDisplayName}`);
     try { 

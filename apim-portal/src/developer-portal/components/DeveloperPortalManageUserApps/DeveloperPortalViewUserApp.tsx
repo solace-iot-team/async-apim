@@ -6,6 +6,7 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   ApiProductsService,
+  AppConnectionStatus,
   AppResponse,
   AppsService,
   CommonDisplayName,
@@ -76,6 +77,10 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         appName: props.appId, 
         topicSyntax: EApiTopicSyntax.MQTT
       });
+      const _apiAppConnectionStatus: AppConnectionStatus = await AppsService.getAppStatus({
+        organizationName: props.organizationId,
+        appName: props.appId
+      });
       let _apiProductList: TApiProductList = [];
       for(const apiApiProductId of _apiAppResponse_smf.apiProducts) {
         const apiApiProduct = await ApiProductsService.getApiProduct({
@@ -84,7 +89,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         });
         _apiProductList.push(apiApiProduct);
       }
-      setManagedObjectDisplay(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiProductList, _apiAppResponse_mqtt));
+      setManagedObjectDisplay(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiProductList, _apiAppConnectionStatus, _apiAppResponse_mqtt));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -104,6 +109,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   const doInitializeStart = async () => {
     props.onLoadingStart();
     await apiGetManagedObject();
+    props.onLoadingChange(false);
   }
 
   // * useEffect Hooks *

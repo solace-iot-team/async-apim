@@ -6,12 +6,14 @@ import { Column } from "primereact/column";
 
 import { 
   TAPManagedWebhook, 
-  TAPManagedWebhookList, 
+  TAPManagedWebhookList,
 } from "../APComponentsCommon";
 
-import "../APComponents.css";
 import { WebHookAuth, WebHookBasicAuth, WebHookHeaderAuth } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Globals } from "../../utils/Globals";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../APDisplayAppStatus/APDisplayAppWebhookStatus";
+
+import "../APComponents.css";
 
 export interface IAPDisplayAppWebhooksProps {
   managedWebhookList: TAPManagedWebhookList; 
@@ -84,8 +86,12 @@ export const APDisplayAppWebhooks: React.FC<IAPDisplayAppWebhooksProps> = (props
   const statusBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow) => {
     if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
     if(rowData.webhookStatus) {
-      if(rowData.webhookStatus.summaryStatus) return (<span className="pi pi-check" style={{ color: 'green'}}/>);
-      else return (<span className="pi pi-times" style={{ color: 'red'}}/>);
+      return (
+        <APDisplayAppWebhookStatus
+          apWebhookStatus={rowData.webhookStatus}
+          displayContent={EAPDisplayAppWebhookStatus_Content.STATUS_ONLY}
+        />
+      );
     } else {
       return (<span className="pi pi-question" style={{ color: 'gray'}}/>);
     }

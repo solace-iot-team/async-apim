@@ -24,7 +24,8 @@ export const ManageAppsPage: React.FC = () => {
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -32,10 +33,6 @@ export const ManageAppsPage: React.FC = () => {
 
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
-  }
-
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
   }
 
   const renderBreadcrumbs = () => {
@@ -46,17 +43,18 @@ export const ManageAppsPage: React.FC = () => {
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
       </React.Fragment>
     )
   }
-
-  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
@@ -74,7 +72,7 @@ export const ManageAppsPage: React.FC = () => {
           organizationId={organizationId}
           onSuccess={onSuccess} 
           onError={onError} 
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
+          setBreadCrumbItemList={setBreadCrumbItemList}
         />
       }
     </React.Fragment>

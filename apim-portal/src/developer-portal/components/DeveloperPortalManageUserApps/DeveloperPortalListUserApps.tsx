@@ -10,6 +10,7 @@ import { MenuItem } from "primereact/api";
 import { 
   ApiProductsService,
   App,
+  AppConnectionStatus,
   AppResponse,
   AppsService,
   CommonDisplayName,
@@ -136,6 +137,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           appName: apiApp.name,
           topicSyntax: 'smf'
         });
+        // not required for list
+        const _apiAppConnectionStatus: AppConnectionStatus = {};
+        // let _apiAppConnectionStatus: AppConnectionStatus = {};
+        // try {
+        //   _apiAppConnectionStatus = await AppsService.getAppStatus({
+        //     organizationName: props.organizationId,
+        //     appName: apiApp.name
+        //   });  
+        // } catch (e:any) {
+        //   APClientConnectorOpenApi.logError(logName, e);
+        // }
         let _apiAppProductList: TApiProductList = [];
         for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
           const apiApiProduct = await ApiProductsService.getApiProduct({
@@ -144,7 +156,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           });
           _apiAppProductList.push(apiApiProduct);
         }
-        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppProductList, undefined))
+        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppProductList, _apiAppConnectionStatus, undefined))
       }
       setManagedObjectList(_appDisplayList);
     } catch(e: any) {

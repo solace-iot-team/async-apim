@@ -27,6 +27,7 @@ import { Globals } from "../../../../utils/Globals";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
 
 export interface IDeveloperPortalListUserAppWebhooksProps {
   managedAppWebhooks: TAPManagedAppWebhooks;
@@ -242,8 +243,12 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
     if(appStatus === AppStatus.PENDING) jsxSummaryStatus = (<span style={{ color: 'gray'}}>N/A</span>);
     else if(!webhookStatus) jsxSummaryStatus = (<span className="pi pi-question" style={{ color: 'gray'}} />);
     else {
-      if(webhookStatus.summaryStatus) jsxSummaryStatus = (<span className="pi pi-check" style={{ color: 'green'}}/>);
-      else jsxSummaryStatus = (<span className="pi pi-times" style={{ color: 'red'}}/>);
+      jsxSummaryStatus = (
+        <APDisplayAppWebhookStatus
+          apWebhookStatus={webhookStatus}
+          displayContent={EAPDisplayAppWebhookStatus_Content.STATUS_ONLY}
+        />
+      );
     }
     return (
       <React.Fragment>

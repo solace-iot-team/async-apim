@@ -75,11 +75,6 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     HTTP = "http",
     HTTPS = 'https'
   }
-  // enum EAuthMethodSelectId {
-  //   NONE = 'None',
-  //   BASIC = WebHookBasicAuth.authMethod.BASIC,
-  //   HEADER = 'Header'
-  // }
   type TWebhookAuthMethodSelectId = 
     EWebhookAuthMethodSelectIdNone 
     | WebHookBasicAuth.authMethod.BASIC 
@@ -129,7 +124,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     // const funcName = 'transformManagedObjectToUpdateApiObject';
     // const logName = `${componentName}.${funcName}()`;
     const newManagedWebhookList: TAPManagedWebhookList = APManagedWebhook.createNewManagedWebhookList(props.managedAppWebhooks, mo);
-    const _appPatch: AppPatch = APManagedWebhook.createApiAppUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
+    const _appPatch: AppPatch = APManagedWebhook.createApiAppWebhookUpdateRequestBodyFromAPManagedAppWebhooks(props.managedAppWebhooks, newManagedWebhookList);
     // console.log(`${logName}: _appPatch=${JSON.stringify(_appPatch, null, 2)}`);
     return _appPatch;
   }
@@ -144,7 +139,7 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
     let resource: string = '';
     if(mo.webhookWithoutEnvs.uri !== '') {
       const url: URL = new URL(mo.webhookWithoutEnvs.uri);
-      protocol = url.protocol === 'http' ? EProtocolSelect.HTTP : EProtocolSelect.HTTPS;
+      protocol = url.protocol === 'http:' ? EProtocolSelect.HTTP : EProtocolSelect.HTTPS;
       host = url.hostname;
       if(url.port) port = parseInt(url.port);  
       resource = `${url.pathname}${url.search}`; 

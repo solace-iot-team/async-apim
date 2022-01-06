@@ -21,15 +21,14 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
           <div className="card p-fluid">
             {/* <Divider /> */}
             <div className="p-field">
-              {/* <label htmlFor="apiError" style={{color: 'red'}}>Error</label> */}
               <InputTextarea 
                 id="apiError" 
                 value={ApiCallState.getUserErrorMessageFromApiCallState(props.apiCallStatus)} 
+                // value={ApiCallState.getUserErrorMessageFromApiCallState(props.apiCallStatus) + ' ' +JSON.stringify(props.apiCallStatus, null, 2)} 
                 className='p-invalid'
                 style={{color: 'red', resize: 'none'}}
                 rows={3}
-                contentEditable={false}
-                // cols={200} 
+                contentEditable={false}     
               />
             </div>
           </div>  

@@ -197,7 +197,10 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
     return (
       <React.Fragment>
         {/* <p>count={count}, reinitializeConfigContextCount={reinitializeConfigContextCount}</p> */}
-        <DisplaySystemHealthInfo />
+        <DisplaySystemHealthInfo 
+          healthCheckContext={healthCheckContext}
+          connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+        />
       </React.Fragment>
     );   
   }
