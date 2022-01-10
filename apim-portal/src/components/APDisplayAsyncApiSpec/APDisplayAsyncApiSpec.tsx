@@ -33,18 +33,23 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
 
   const config: ConfigInterface = {
     schemaID: props.schemaId,
-    show: {
-      sidebar: false,
-      info: true,
-      servers: true,
-      operations: true,
-      messages: false,
-      schemas: true,
-      errors: false,
-    },
-    sidebar: {
-      showOperations: 'byOperationsTags'
-    }
+    // expand: {
+    //   cha
+    // }
+    // show: {
+    //   sidebar: true,
+    //   // sidebar: false,
+    //   info: true,
+    //   servers: true,
+    //   operations: true,
+    //   messages: false,
+    //   // messages: true,
+    //   schemas: true,
+    //   errors: false,
+    // },
+    // sidebar: {
+    //   showOperations: 'byOperationsTags'
+    // }
   };
 
   const onDownloadError = (callState: TApiCallState) => {
