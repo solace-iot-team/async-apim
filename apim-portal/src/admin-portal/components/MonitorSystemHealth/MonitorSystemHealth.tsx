@@ -39,13 +39,7 @@ export const MonitorSystemHealth: React.FC<IMonitorSystemHealthProps> = (props: 
       currentState: newState
     });
   }
-  // const setPreviousComponentState = () => {
-  //   setComponentState({
-  //     previousState: componentState.currentState,
-  //     currentState: componentState.previousState
-  //   });
-  // }
-  
+
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -63,30 +57,13 @@ export const MonitorSystemHealth: React.FC<IMonitorSystemHealthProps> = (props: 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
-        // switch (apiCallStatus.context.action) {
-        //   case E_CALL_STATE_ACTIONS.API_DELETE_CONNECTOR:
-        //   case E_CALL_STATE_ACTIONS.API_CREATE_CONNECTOR:
-        //   case E_CALL_STATE_ACTIONS.API_REPLACE_CONNECTOR:
-        //       props.onSuccess(apiCallStatus);
-        //     break;
-        //   default:
-        // }
       } else props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  //  * Overview  *
-  // const onSystemHealthOverview = (): void => {
-  //   setNewComponentState(E_COMPONENT_STATE.SYSTEM_HEALTH_OVERVIEW);
-  // }  
-
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    // if(showSystemHealthOverviewComponent) return (
-    //   <React.Fragment>
-    //   </React.Fragment>
-    // );
     return undefined;
   }
   
@@ -96,11 +73,6 @@ export const MonitorSystemHealth: React.FC<IMonitorSystemHealthProps> = (props: 
     else return (<React.Fragment></React.Fragment>);
   }
 
-  // * prop callbacks *
-  // const onSystemHealthOverviewSuccess = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  //   setNewComponentState(E_COMPONENT_STATE.SYSTEM_HEALTH_OVERVIEW);
-  // }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
