@@ -87,12 +87,18 @@ export const SystemHealthCheck: React.FC<ISystemHealthCheckProps> = (props: ISys
   }, [serverHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(connectorHealthCheckResult.summary.performed) {
+    // if(connectorHealthCheckResult.summary.performed) {
       dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
       if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
         dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
       }
-    }
+    // }
+    // if(connectorHealthCheckResult.summary.performed) {
+    //   dispatchHealthCheckContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_RESULT', connectorHealthCheckResult: connectorHealthCheckResult});
+    //   if(connectorHealthCheckResult.summary.success !== healthCheckSummaryContext.connectorHealthCheckSuccess) {
+    //     dispatchHealthCheckSummaryContextAction({ type: 'SET_CONNECTOR_HEALTHCHECK_SUCCESS', connectorHealthCheckSuccess: connectorHealthCheckResult.summary.success});
+    //   }
+    // }
   }, [connectorHealthCheckResult]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
