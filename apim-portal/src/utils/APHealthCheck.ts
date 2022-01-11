@@ -383,7 +383,7 @@ export class APServerHealthCheck {
   }
 
   private static checkConfiguration = (configContext: TAPConfigContext, apsAbout: APSAbout | undefined): TAPServerHealthCheckLogEntry_CheckConfiguration => {
-    let issueList: TAPConfigIssueList | undefined = undefined;
+    let configIssueList: TAPConfigIssueList | undefined = undefined;
     let callState: TApiCallState = ApiCallState.getInitialCallState(EAPServerHealthCheckLogEntryType.GET_SERVER_HEALTH_CHECK_CONFIGURATION, `check server configuration`);
     if(!apsAbout) {
       callState.success = false;
@@ -392,18 +392,20 @@ export class APServerHealthCheck {
       callState.success = false;
       callState.error = { reason: 'portalInfo is undefined'}
     } else {
-      issueList = Globals.crossCheckConfiguration_PortalApp_X_Server(configContext.portalAppInfo, apsAbout);
+      const {success, issueList } = Globals.crossCheckConfiguration_PortalApp_X_Server(configContext.portalAppInfo, apsAbout);
+      configIssueList = issueList;
+      callState.success = success;
     }
     let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     if(callState.success) {
-      if(issueList && issueList.length > 0) _success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      if(configIssueList && configIssueList.length > 0) _success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
       else _success = EAPHealthCheckSuccess.PASS;
     } else _success = EAPHealthCheckSuccess.FAIL;
     const logEntry: TAPServerHealthCheckLogEntry_CheckConfiguration = {
       entryType: EAPServerHealthCheckLogEntryType.GET_SERVER_HEALTH_CHECK_CONFIGURATION,
       success: _success,
       callState: callState,
-      issueList: issueList
+      issueList: configIssueList
     }
     return logEntry;
   }
@@ -562,7 +564,7 @@ export class APConnectorHealthCheck {
   }
 
   private static checkConfiguration = (configContext: TAPConfigContext, connectorAbout: TAPConnectorAbout | undefined): TAPConnectorHealthCheckLogEntry_CheckConfiguration => {
-    let issueList: TAPConfigIssueList | undefined = undefined;
+    let configIssueList: TAPConfigIssueList | undefined = undefined;
     let callState: TApiCallState = ApiCallState.getInitialCallState(EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_CONFIGURATION, `check connector configuration`);
     if(!connectorAbout) {
       callState.success = false;
@@ -574,18 +576,20 @@ export class APConnectorHealthCheck {
           connectorAbout: connectorAbout
         }
       };
-      issueList = Globals.crossCheckConfiguration_PortalApp_X_Connector(tmpConfigContext);
+      const {success, issueList } = Globals.crossCheckConfiguration_PortalApp_X_Connector(tmpConfigContext);
+      configIssueList = issueList;
+      callState.success = success;
     }
     let _success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     if(callState.success) {
-      if(issueList && issueList.length > 0) _success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      if(configIssueList && configIssueList.length > 0) _success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
       else _success = EAPHealthCheckSuccess.PASS;
     } else _success = EAPHealthCheckSuccess.FAIL;
     const logEntry: TAPConnectorHealthCheckLogEntry_CheckConfiguration = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_CONFIGURATION,
       success: _success,
       callState: callState,
-      issueList: issueList
+      issueList: configIssueList
     }
     return logEntry;
   }

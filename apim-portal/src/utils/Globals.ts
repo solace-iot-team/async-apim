@@ -177,8 +177,9 @@ export class Globals {
     console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
   }
 
-  public static crossCheckConfiguration_PortalApp_X_Connector = (configContext: TAPConfigContext): TAPConfigIssueList => {
+  public static crossCheckConfiguration_PortalApp_X_Connector = (configContext: TAPConfigContext): { success: boolean, issueList: TAPConfigIssueList } => {
     let issueList: TAPConfigIssueList = [];
+    let success: boolean = true;
 
     // use SemVer and do the actual comparison 
     const connectorServerOpenApiVersionStr = configContext.connectorInfo?.connectorAbout.portalAbout.connectorOpenApiVersionStr;
@@ -186,7 +187,9 @@ export class Globals {
     if(connectorServerOpenApiVersionStr && portalAppConnectorClientOpenApiVersionStr) {
       const connectorServerOpenApiSemVer: SemVer = new SemVer(connectorServerOpenApiVersionStr);
       const portalAppConnectorClientOpenApiSemVer: SemVer = new SemVer(portalAppConnectorClientOpenApiVersionStr);
-      if(portalAppConnectorClientOpenApiSemVer.compare(connectorServerOpenApiSemVer) !== 0) {
+      const versionCompare = portalAppConnectorClientOpenApiSemVer.compare(connectorServerOpenApiSemVer);
+      if(versionCompare === 1) success = false;
+      if(versionCompare !== 0) {
         const i1: TAPConfigIssue = {
           issue: EAPConfigIssueNames.CONNECTOR_OPENAPI_VERSION_MISMATCH,
           details: {
@@ -197,11 +200,15 @@ export class Globals {
         issueList.push(i1);  
       }
     }    
-    return issueList;
+    return {
+      success: success,
+      issueList: issueList
+    }
   }
 
-  public static crossCheckConfiguration_PortalApp_X_Server = (apPortalAppInfo: TAPPortalAppInfo, apsAbout: APSAbout): TAPConfigIssueList => {
+  public static crossCheckConfiguration_PortalApp_X_Server = (apPortalAppInfo: TAPPortalAppInfo, apsAbout: APSAbout): { success: boolean, issueList: TAPConfigIssueList } => {
     let issueList: TAPConfigIssueList = [];
+    let success: boolean = true;
   
     // use SemVer and do the actual comparison 
     const portalAppServerOpenApiVersionStr = apPortalAppInfo.portalAppServerClientOpenApiInfo.versionStr;
@@ -209,7 +216,9 @@ export class Globals {
     if(portalAppServerOpenApiVersionStr && apimServerOpenApiVersionStr) {
       const portalAppServerOpenApiSemVer: SemVer = new SemVer(portalAppServerOpenApiVersionStr);
       const apimServerOpenApiSemVer: SemVer = new SemVer(apimServerOpenApiVersionStr);
-      if(portalAppServerOpenApiSemVer.compare(apimServerOpenApiSemVer) !== 0) {
+      const versionCompare = portalAppServerOpenApiSemVer.compare(apimServerOpenApiSemVer);
+      if(versionCompare === 1) success = false;
+      if(versionCompare !== 0) {
         const i1: TAPConfigIssue = {
           issue: EAPConfigIssueNames.APIM_SERVER_OPENAPI_VERSION_MISMATCH,
           details: {
@@ -220,7 +229,10 @@ export class Globals {
         issueList.push(i1);  
       }
     }    
-    return issueList;
+    return {
+      success: success,
+      issueList: issueList
+    }
   }  
 
   public static crossCheckConfiguration_PortalAppLoaded_X_PortalAppOnServer = (apPortalAppLoadedAbout: TAPPortalAppAbout, apPortalAppOnServerAbout: TAPPortalAppAbout): TAPConfigIssueList => {
