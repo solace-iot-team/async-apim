@@ -13,8 +13,8 @@ import { ManageEnvironments } from '../components/ManageEnvironments/ManageEnvir
 
 import "../../pages/Pages.css";
 
-export const ManageEnvironmentsPage: React.FC = () => {
-  const componentName="ManageEnvironmentsPage";
+export const ManageOrgEnvironmentsPage: React.FC = () => {
+  const componentName="ManageOrgEnvironmentsPage";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -41,6 +41,9 @@ export const ManageEnvironmentsPage: React.FC = () => {
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
+      { 
+        label: 'Organization'
+      },
       { 
         label: 'Environments',
         style: GlobalElementStyles.breadcrumbLink(),

@@ -17,7 +17,12 @@ import { DeleteOrganization } from "./DeleteOrganization";
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
+export enum E_ManageOrganizations_Scope {
+  ALL = "ALL",
+  SETTINGS = "SETTINGS"
+}
 export interface IManageOrganizationsProps {
+  scope: E_ManageOrganizations_Scope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;

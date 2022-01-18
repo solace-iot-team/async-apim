@@ -32,7 +32,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath)
     );
   } 
-  const isDisabledWithOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
+  const isDisabledWithoutOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
       !userContext.runtimeSettings.currentOrganizationName
@@ -44,39 +44,37 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     return false;
   }
   
-  const getMenuItems = (): Array<MenuItem> => {
-    if(!authContext.isLoggedIn) return [];
-    let items: Array<MenuItem> = [];
-    if(!isDisabledWithOrg(EUIDeveloperPortalResourcePaths.Home)) {
-      items.push(
-        { 
-          label: 'Switch to Developer Portal',
-          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg,EUIDeveloperPortalResourcePaths.Home),
-          command: () => { props.onSwitchToDeveloperPortal(); }
-        }  
-      );
-    }
+  const getOrganizationMenuItems = (): Array<MenuItem> => {
+    if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
     let _items: Array<MenuItem> = [
       {
-        label: 'APPs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
+        label: 'Organization',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganization),        
+        items: [
+          {
+            label: 'Environments',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),         
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
+          },
+          {
+            label: 'Users',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationUsers),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationUsers); }
+          },
+          {
+            label: 'Settings',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
+          },
+        ] 
       },
-      {
-        label: 'API Products',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
-      },
-      {
-        label: 'APIs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
-      },
-      {
-        label: 'Environments',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),         
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
-      },
+    ];
+    return _items;
+  }
+
+  const getSystemMenuItems = (): Array<MenuItem> => {
+    if(isDisabled(EUIAdminPortalResourcePaths.ManageSystem)) return [];
+    let _items: Array<MenuItem> = [
       { 
         label: "System",
         items: [
@@ -123,7 +121,41 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         ]
       },
     ];
+    return _items;
+  }
+
+  const getMenuItems = (): Array<MenuItem> => {
+    if(!authContext.isLoggedIn) return [];
+    let items: Array<MenuItem> = [];
+    if(!isDisabledWithoutOrg(EUIDeveloperPortalResourcePaths.Home)) {
+      items.push(
+        { 
+          label: 'Switch to Developer Portal',
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg,EUIDeveloperPortalResourcePaths.Home),
+          command: () => { props.onSwitchToDeveloperPortal(); }
+        }  
+      );
+    }
+    let _items: Array<MenuItem> = [
+      {
+        label: 'APPs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
+      },
+      {
+        label: 'API Products',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
+      },
+      {
+        label: 'APIs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+      },
+    ];
     items.push(..._items);
+    items.push(...getOrganizationMenuItems());
+    items.push(...getSystemMenuItems());
     return items;
   }
 

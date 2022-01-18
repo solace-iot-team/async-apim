@@ -71,8 +71,13 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationApps = '/admin-portal/manage/organization/apps',
   ManageOrganizationApiProducts = '/admin-portal/manage/organization/apiproducts',
   ManageOrganizationApis = '/admin-portal/manage/organization/apis',
+
+  ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
+  ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
+
+  ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
   ManageSystemTeams = '/admin-portal/manage/system/teams',
   ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
