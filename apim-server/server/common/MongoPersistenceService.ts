@@ -185,8 +185,12 @@ export class MongoPersistenceService {
   }
 
   private updateMergeCustomizer = (originalValue: any, updateValue: any): any => {
-    if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+    // replace arrays
+    if(_.isArray(originalValue)) return updateValue;
     else return undefined;
+    // // update arrays
+    // if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+    // else return undefined;
   }
 
   public update = async(documentId: string, document: any): Promise<any> => {

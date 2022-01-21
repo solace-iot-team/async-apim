@@ -124,9 +124,11 @@ export class APSUsersService {
     const funcName = 'all';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'pagingInfo', details: pagingInfo }));
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'sortInfo', details: sortInfo }));
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'searchInfo', details: searchInfo }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'parameters', details: {
+      pagingInfo: pagingInfo,
+      sortInfo: sortInfo,
+      searchInfo: searchInfo
+     }}));
 
     const apsUserSortFieldNameValidationSchema: Partial<APSUser> = {
       isActivated: false,
@@ -138,9 +140,27 @@ export class APSUsersService {
         last: 'string'
       }
     };
+
     const mongoPagingInfo: TMongoPagingInfo = { pageNumber: pagingInfo.pageNumber, pageSize: pagingInfo.pageSize };
     const mongoSortInfo: TMongoSortInfo = { sortFieldName: sortInfo.sortFieldName, sortDirection: sortInfo.sortDirection, apsObjectSortFieldNameValidationSchema: apsUserSortFieldNameValidationSchema, apsObjectName: APSUsersService.apiObjectName };
-    const mongoSearchInfo: TMongoSearchInfo = { searchWordList: searchInfo.searchWordList };
+    const mongoSearchInfo: TMongoSearchInfo = { 
+      searchWordList: searchInfo.searchWordList
+    };
+    mongoSearchInfo.filter = {};
+    if(searchInfo.searchOrganizationId !== undefined) {
+      // mongoSearchInfo.filter.memberOfOrganizations = { $in: [searchInfo.searchOrganizationId] };
+      mongoSearchInfo.filter.memberOfOrganizations = searchInfo.searchOrganizationId  ;
+    } else if(searchInfo.excludeSearchOrganizationId !== undefined) {
+      mongoSearchInfo.filter.memberOfOrganizations = { $ne: searchInfo.excludeSearchOrganizationId };
+    }
+    if(searchInfo.searchIsActivated !== undefined) {
+      mongoSearchInfo.filter.isActivated = searchInfo.searchIsActivated;
+    }
+    // userId
+    if(searchInfo.searchUserId !== undefined) {
+      mongoSearchInfo.filter.userId = new RegExp('.*' + searchInfo.searchUserId + '.*');
+    }
+
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(mongoPagingInfo, mongoSortInfo, mongoSearchInfo);
 
     return {

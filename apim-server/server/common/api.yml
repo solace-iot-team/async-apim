@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.15
+  version: 0.0.16
 servers:
 - url: /apim-server/v1
 tags:
@@ -495,6 +495,10 @@ paths:
       - $ref: '#/components/parameters/sort_field_name'
       - $ref: '#/components/parameters/sort_direction'
       - $ref: '#/components/parameters/search_word_list'
+      - $ref: '#/components/parameters/search_organization_id'
+      - $ref: '#/components/parameters/exclude_search_organization_id'
+      - $ref: '#/components/parameters/search_is_activated'
+      - $ref: '#/components/parameters/search_user_id'
       responses:
         '200':
           description: Array of APSUsers and total count of APSUsers. Returns empty array if none found.
@@ -582,7 +586,7 @@ paths:
       description:
         Update an APSUser object by user id.
         Operation performs a merge update between the exsting APSUser object and the update request.
-        New array values are added to existing arrays.
+        Arrays are not merged but replaced in their entirety.
       tags:
       - APSUsers
       requestBody:
@@ -816,6 +820,34 @@ components:
       in: query
       description: The list of words separated by &lt;space> to search in the APSObject.
       example: 'first-name last-name'
+      required: false
+      schema:
+        type: string
+    search_organization_id:
+      name: searchOrganizationId
+      in: query
+      description: Search for API Objects in a specific organization.
+      required: false
+      schema:
+        type: string
+    exclude_search_organization_id:
+      name: excludeSearchOrganizationId
+      in: query
+      description: Exclude results from a specific organization from the search for API Objects.
+      required: false
+      schema:
+        type: string
+    search_is_activated:
+      name: searchIsActivated
+      in: query
+      description: Filter search results for APSUser by field isActivated.
+      required: false
+      schema:
+        type: boolean
+    search_user_id:
+      name: searchUserId
+      in: query
+      description: Search for APSUsers where userId contains search string.
       required: false
       schema:
         type: string

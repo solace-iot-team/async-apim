@@ -324,8 +324,11 @@ describe(`${scriptName}`, () => {
         }
       }
       const updateCustomizer = (originalValue: any, updateValue: any): any => {
-        if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+        // replace arrays
+        if(_.isArray(originalValue)) return updateValue;
         else return undefined;
+        // if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+        // else return undefined;
       }
       const targetApsUser = _.mergeWith(apsUserTemplate, updateRequest, updateCustomizer);
       try {
