@@ -42,3 +42,19 @@
 .button-set-footer .p-button-label {
   display: flex;
 }
+
+.manage-users .user-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-users .user-view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.manage-users .user-view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}

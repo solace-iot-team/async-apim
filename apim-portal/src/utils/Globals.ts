@@ -261,7 +261,6 @@ export class Globals {
       }
     }    
     return issueList;
-
   }
 }
 

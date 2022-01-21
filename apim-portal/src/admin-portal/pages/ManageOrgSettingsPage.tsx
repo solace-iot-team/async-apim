@@ -9,7 +9,7 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
-import { TAPOrganizationId } from '../../components/APComponentsCommon';
+import { CommonDisplayName, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import "../../pages/Pages.css";
 
@@ -25,6 +25,14 @@ export const ManageOrgSettingsPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [organizationName, setOrganizationName] = React.useState<CommonName>();
+
+  React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
+    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
+  }, [userContext]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -38,10 +46,10 @@ export const ManageOrgSettingsPage: React.FC = () => {
     setBreadCrumbLabelList(newBreadCrumbLableList);
   }
 
-  const renderBreadcrumbs = () => {
+  const renderBreadcrumbs = (orgDisplayName: CommonDisplayName) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'Organization'
+        label: `Organization: ${orgDisplayName}`
       },
       { 
         label: 'Settings',
@@ -59,37 +67,17 @@ export const ManageOrgSettingsPage: React.FC = () => {
     )
   }
 
-  const [organizationName, setOrganizationName] = React.useState<TAPOrganizationId>();
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
-  }, [userContext]);
-
   return (
     <div className="ap-pages">
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
+      {organizationName && renderBreadcrumbs(organizationName)}
       {organizationName &&
-        <div>
-          <p>TODO: ManageOrgSettings with organizationName={organizationName}</p>
-          <pre>
-            - View Organization
-            - Edit Organization
-
-
-          </pre>
-
         <ManageOrganizations 
-          scope={E_ManageOrganizations_Scope.SETTINGS}
+          scope={{ type: E_ManageOrganizations_Scope.ORG_SETTINGS, organizationId: organizationName, organizationDisplayName: organizationName }}
           onSuccess={onSuccess} 
           onError={onError}
           onBreadCrumbLabelList={onBreadcrumbLabelList}
         />
-
-        </div>
       }
     </div>
   );

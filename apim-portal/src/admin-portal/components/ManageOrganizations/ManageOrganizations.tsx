@@ -13,16 +13,30 @@ import { ListOrganizations } from "./ListOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { EAction, EditNewOrganziation } from "./EditNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
+import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export enum E_ManageOrganizations_Scope {
-  ALL = "ALL",
-  SETTINGS = "SETTINGS"
+  ALL_ORGS = "ALL_ORGS",
+  ORG_SETTINGS = "ORG_SETTINGS"
 }
+
+export type TManageOrganizationSettingsScope = {
+  type: E_ManageOrganizations_Scope.ORG_SETTINGS;
+  organizationId: CommonName;
+  organizationDisplayName: CommonDisplayName;
+}
+export type TManageAllOrganizationsScope = {
+  type: E_ManageOrganizations_Scope.ALL_ORGS;
+}
+export type TManageOrganizationsScope = 
+  TManageOrganizationSettingsScope
+  | TManageAllOrganizationsScope;
+
 export interface IManageOrganizationsProps {
-  scope: E_ManageOrganizations_Scope;
+  scope: TManageOrganizationsScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
@@ -78,7 +92,22 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
+    const _type = props.scope.type;
+    switch(_type) {
+      case E_ManageOrganizations_Scope.ALL_ORGS:
+        setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+        break;
+      case E_ManageOrganizations_Scope.ORG_SETTINGS:
+        const orgSettingsScope = props.scope as TManageOrganizationSettingsScope;
+        onViewManagedObject(orgSettingsScope.organizationId, orgSettingsScope.organizationDisplayName);
+        // setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+        break;
+      default:
+        Globals.assertNever(logName, _type);
+    }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -86,12 +115,19 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(!managedObjectId) return;
-    if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-        componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-      ) props.onBreadCrumbLabelList([managedObjectId]);
-    else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+    const funcName = 'useEffect([componentState, managedObjectDisplayName])';
+    const logName = `${componentName}.${funcName}()`;
+    console.log(`${logName}: componentState.currentState=${componentState.currentState}, managedObjectDisplayName=${managedObjectDisplayName}`);
+
+    if(!managedObjectDisplayName) return;
+    if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
+      if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
+          componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
+        ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
+      else props.onBreadCrumbLabelList([]);
+    }
+  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -151,19 +187,35 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
+    const funcName = 'renderLeftToolbarContent';
+    const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
       </React.Fragment>
     );
-    if(showViewComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-      </React.Fragment>
-    );
+    if(showViewComponent) {
+      const _type = props.scope.type;
+      switch(_type) {
+        case E_ManageOrganizations_Scope.ALL_ORGS:
+          return (
+            <React.Fragment>
+              <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+              <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+              <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            </React.Fragment>
+          );    
+        case E_ManageOrganizations_Scope.ORG_SETTINGS:
+          return (
+            <React.Fragment>
+              <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+            </React.Fragment>
+          );
+        default:
+          Globals.assertNever(logName, _type);
+      }
+    }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
@@ -264,9 +316,13 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       
       <Loading show={isLoading} />      
       
-      {!isLoading &&
-        renderToolbar()
-      }
+      {/* DEBUG */}
+      {/* <React.Fragment>
+        <pre>componentState={JSON.stringify(componentState)}</pre>
+      </React.Fragment> */}
+
+      {!isLoading && renderToolbar() }
+
       {showListComponent && 
         <ListOrganizations
           key={refreshCounter}

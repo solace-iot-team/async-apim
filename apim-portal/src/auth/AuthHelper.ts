@@ -26,7 +26,7 @@ export class AuthHelper {
     authorizedRoles.forEach((authorizedRole: EAPSAuthRole) => {
       let rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
         // console.log(`${logName}: find authorizedRole=${authorizedRole} in configRole = ${JSON.stringify(configRole)}`);
-        return (rbacRole.role === authorizedRole)  
+        return (rbacRole.id === authorizedRole)  
       });
       if(rbacRole === undefined) throw new Error(`${logName}: cannot find authorizedRole=${authorizedRole} in rbac roles`);
       combinedUiResourcePathList.push(...rbacRole.uiResourcePaths);

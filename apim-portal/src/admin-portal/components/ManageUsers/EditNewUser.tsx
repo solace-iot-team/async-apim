@@ -10,6 +10,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
+import { MenuItem } from "primereact/api";
 
 import { 
   ApsUsersService, 
@@ -19,11 +20,11 @@ import {
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { Organization, AdministrationService, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
-import { TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
+import { EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
@@ -42,11 +43,13 @@ export interface IEditNewUserProps {
   action: EAction,
   userId?: TManagedObjectId;
   userDisplayName?: string;
+  organizationId?: CommonName;
   onError: (apiCallState: TApiCallState) => void;
   onNewSuccess: (apiCallState: TApiCallState, newUserId: TManagedObjectId, newDisplayName: string) => void;
   onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProps) => {
@@ -82,8 +85,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [configContext] = React.useContext(ConfigContext);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
 
 
@@ -100,12 +102,18 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const createManagedObjectFormDataRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
-    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedRbacRoleList(configContext);
+    let rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.NEVER];
+
+    if(props.organizationId !== undefined) rbacScopeList = [EAPRbacRoleScope.ORG];
+    else rbacScopeList = [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG];
+
+    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
+
     let selectItems: TManagedObjectFormDataRoleSelectItems = [];
     rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
       selectItems.push({
         label: rbacRole.displayName,
-        value: rbacRole.role
+        value: rbacRole.id
       });
     });
     return selectItems; 
@@ -132,10 +140,15 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-    return {
+    const mo: TManagedObject = {
       ...formData,
       userId: formData.profile.email
     }
+    if(props.action === EAction.NEW && props.organizationId !== undefined) {
+      mo.isActivated = true;
+      mo.memberOfOrganizations = [props.organizationId];
+    }
+    return mo;
   }
 
   // * Api Calls *
@@ -224,11 +237,20 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     } else {
       setManagedObject(emptyManagedObject);
     }
-    await apiGetAvailableOrganizations();
+    if(!props.organizationId) await apiGetAvailableOrganizations();
+    else {
+      const org: Organization = {
+        name: props.organizationId
+      }
+      setAvailableOrganizationList([org]);
+    }
     props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: (props.action === EAction.EDIT ? 'Edit' : 'Create New User')
+    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -324,7 +346,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   const renderManagedObjectForm = () => {
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
-      <div className="card">
+      <div className="card p-mt-4">
         <div className="p-fluid">
           <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
             {/* E-mail */}
@@ -461,66 +483,70 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
               {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.roles)}
             </div>
             {/* MemberOf Organizations */}
-            <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  name="memberOfOrganizations"
-                  control={managedObjectUseForm.control}
-                  render={( { field, fieldState }) => {
-                      // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                      // console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
-                      // console.log(`${logName}: availableOrganizationList=${JSON.stringify(availableOrganizationList)}`);
-                      // console.log(`${logName}: selectItems = ${JSON.stringify(createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList))}`);
-                      if(availableOrganizationList && availableOrganizationList.length > 0) {
+            {props.organizationId === undefined &&
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    name="memberOfOrganizations"
+                    control={managedObjectUseForm.control}
+                    render={( { field, fieldState }) => {
+                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                        // console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
+                        // console.log(`${logName}: availableOrganizationList=${JSON.stringify(availableOrganizationList)}`);
+                        // console.log(`${logName}: selectItems = ${JSON.stringify(createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList))}`);
+                        if(availableOrganizationList && availableOrganizationList.length > 0) {
+                          return(
+                            <MultiSelect
+                              display="chip"
+                              value={field.value ? field.value : []} 
+                              options={createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList)} 
+                              onChange={(e) => field.onChange(e.value)}
+                              optionLabel="label"
+                              optionValue="value"
+                              // style={{width: '500px'}} 
+                              className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                            />
+                          );
+                        } else {
+                          return(
+                            <InputText
+                              id={field.name}
+                              {...field}
+                              value='no organizations configured'
+                              disabled={true}
+                            />
+                          );
+                        }
+                      }}
+                  />
+                  <label htmlFor="memberOfOrganizations" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.memberOfOrganizations })}>Member of Organizations</label>
+                </span>
+                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.memberOfOrganizations)}
+              </div>
+            }
+            {/* isActivated */}
+            {props.organizationId === undefined &&
+              <div className="p-field-checkbox">
+                <span>
+                  <Controller
+                    name="isActivated"
+                    control={managedObjectUseForm.control}
+                    render={( { field, fieldState }) => {
+                        // console.log(`field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                         return(
-                          <MultiSelect
-                            display="chip"
-                            value={field.value ? field.value : []} 
-                            options={createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList)} 
-                            onChange={(e) => field.onChange(e.value)}
-                            optionLabel="label"
-                            optionValue="value"
-                            // style={{width: '500px'}} 
+                          <Checkbox
+                            inputId={field.name}
+                            checked={field.value}
+                            onChange={(e) => field.onChange(e.checked)}                                  
                             className={classNames({ 'p-invalid': fieldState.invalid })}                       
                           />
-                        );
-                      } else {
-                        return(
-                          <InputText
-                            id={field.name}
-                            {...field}
-                            value='no organizations configured'
-                            disabled={true}
-                          />
-                        );
-                      }
-                    }}
-                />
-                <label htmlFor="memberOfOrganizations" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.memberOfOrganizations })}>Member of Organizations</label>
-              </span>
-              {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.memberOfOrganizations)}
-            </div>
-            {/* isActivated */}
-            <div className="p-field-checkbox">
-              <span>
-                <Controller
-                  name="isActivated"
-                  control={managedObjectUseForm.control}
-                  render={( { field, fieldState }) => {
-                      // console.log(`field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                      return(
-                        <Checkbox
-                          inputId={field.name}
-                          checked={field.value}
-                          onChange={(e) => field.onChange(e.checked)}                                  
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
-                />
-                <label htmlFor="isActivated" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.isActivated })}> Activate User</label>
-              </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.isActivated)}
-            </div>
+                    )}}
+                  />
+                  <label htmlFor="isActivated" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.isActivated })}> Activate User</label>
+                </span>
+                {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.isActivated)}
+              </div>
+            }
             <Divider />
             {renderManagedObjectFormFooter()}
           </form>  

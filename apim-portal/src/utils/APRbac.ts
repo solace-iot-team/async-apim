@@ -5,18 +5,25 @@ import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommon
 
 export const CAPSAuthRoleNone = '';
 
+export enum  EAPRbacRoleScope {
+  NEVER = "NEVER",
+  SYSTEM = "SYSTEM",
+  ORG = "ORG",
+}
 export type TAPRbacRole = {
-  role: EAPSAuthRole,
-  displayName: string,
-  description: string,
-  uiResourcePaths: Array<EUICommonResourcePaths | EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths>
+  id: EAPSAuthRole;
+  displayName: string;
+  description: string;
+  uiResourcePaths: Array<EUICommonResourcePaths | EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths>;
+  scopeList: Array<EAPRbacRoleScope>;
 }
 
 export type TAPRbacRoleList = Array<TAPRbacRole>;
 
 const rbacRoleList: TAPRbacRoleList = [
   {
-    role: EAPSAuthRole.ROOT,
+    id: EAPSAuthRole.ROOT,
+    scopeList: [EAPRbacRoleScope.NEVER],
     displayName: 'Root',
     description: 'Root priviliges.',
     uiResourcePaths: [
@@ -29,7 +36,8 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    role: EAPSAuthRole.LOGIN_AS,
+    id: EAPSAuthRole.LOGIN_AS,
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'Login As',
     description: 'Login as any User.',
     uiResourcePaths: [
@@ -37,7 +45,8 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    role: EAPSAuthRole.SYSTEM_ADMIN,
+    id: EAPSAuthRole.SYSTEM_ADMIN,
+    scopeList: [EAPRbacRoleScope.SYSTEM],
     displayName: 'System Admin',
     description: 'Administrate the System.',
     uiResourcePaths: [
@@ -53,7 +62,8 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    role: EAPSAuthRole.ORGANIZATION_ADMIN,
+    id: EAPSAuthRole.ORGANIZATION_ADMIN,
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
     uiResourcePaths: [
@@ -66,7 +76,8 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    role: EAPSAuthRole.API_TEAM,
+    id: EAPSAuthRole.API_TEAM,
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
@@ -79,7 +90,8 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    role: EAPSAuthRole.API_CONSUMER,
+    id: EAPSAuthRole.API_CONSUMER,
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
     uiResourcePaths: [
@@ -105,7 +117,7 @@ export class APRbac {
       // console.log(`${logName}: apsRole=${apsRole}`);
       const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
         // console.log(`${logName}: apsRole=${apsRole}, apRbacRole.role=${apRbacRole.role}`);
-        return (apsRole === apRbacRole.role);
+        return (apsRole === apRbacRole.id);
       });
       if (!found) throw new Error(`${logName}: EAPAuthRole in OpenApi spec not found in rbacRoleList: ${apsRole}`);
     });
@@ -120,7 +132,7 @@ export class APRbac {
     const funcName: string = `getByRole`;
     const logName: string = `${APRbac.name}.${funcName}()`;
     const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
-      return (apRbacRole.role === apsRole);
+      return (apRbacRole.id === apsRole);
     });
     if (!found) throw new Error(`${logName}: EAPAuthRole in OpenApi spec not found in rbacRoleList: ${apsRole}`);
     return found;

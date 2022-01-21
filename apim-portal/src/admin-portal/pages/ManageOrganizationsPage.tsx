@@ -59,7 +59,7 @@ export const ManageOrganizationsPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       <ManageOrganizations 
-        scope={E_ManageOrganizations_Scope.ALL}
+        scope={{ type: E_ManageOrganizations_Scope.ALL_ORGS }}
         onSuccess={onSuccess} 
         onError={onError}
         onBreadCrumbLabelList={onBreadcrumbLabelList}

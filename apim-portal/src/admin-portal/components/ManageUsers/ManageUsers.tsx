@@ -3,35 +3,32 @@ import React from "react";
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
+import { MenuItem } from "primereact/api";
 
+import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
+import { E_COMPONENT_STATE, E_CALL_STATE_ACTIONS, E_ManageUsers_Scope, TManagedObjectId, TManageOrganizationUsersScope, TManageUsersScope } from "./ManageUsersCommon";
 import { ListUsers } from "./ListUsers";
 import { ViewUser } from "./ViewUser";
 import { DeleteUser } from "./DeleteUser";
+import { AddUser } from "./AddUser";
 import { EAction, EditNewUser } from "./EditNewUser";
+import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
 
 export interface IManageUsersProps {
+  scope: TManageUsersScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProps) => {
   const componentName = 'ManageUsers';
 
-  enum E_COMPONENT_STATE {
-    UNDEFINED = "UNDEFINED",
-    MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
-    MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
-    MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
-    MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
-  }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
     currentState: E_COMPONENT_STATE
@@ -55,10 +52,12 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   }
   
   const ToolbarNewManagedObjectButtonLabel = 'New';
+  const ToolbarAddManagedObjectButtonLabel = 'Add';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
@@ -68,10 +67,26 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [showAddComponent, setShowAddComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  
+  const [organizationId, setOrganizationId] = React.useState<CommonName>();
+
   // * useEffect Hooks *
   React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
+    const _type = props.scope.type;
+    switch(_type) {
+      case E_ManageUsers_Scope.ALL_USERS:
+        break;
+      case E_ManageUsers_Scope.ORG_USERS:
+        const orgUsersScope = props.scope as TManageOrganizationUsersScope;
+        setOrganizationId(orgUsersScope.organizationId);
+        break;
+      default:
+        Globals.assertNever(logName, _type);
+    }
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -79,13 +94,13 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    if(!managedObjectDisplayName) return;
-    if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-        componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-      ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-    else props.onBreadCrumbLabelList([]);
-  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // React.useEffect(() => {
+  //   if(!managedObjectDisplayName) return;
+  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
+  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
+  //     ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
+  //   else props.onBreadCrumbLabelList([]);
+  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -94,7 +109,9 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
           case E_CALL_STATE_ACTIONS.API_DELETE_USER:
           case E_CALL_STATE_ACTIONS.API_CREATE_USER:
           case E_CALL_STATE_ACTIONS.API_REPLACE_USER:
-              props.onSuccess(apiCallStatus);
+          case E_CALL_STATE_ACTIONS.API_ADD_USER_TO_ORG:
+          case E_CALL_STATE_ACTIONS.API_REMOVE_ORG:
+            props.onSuccess(apiCallStatus);
             break;
           default:
         }
@@ -114,6 +131,10 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const onNewManagedObject = () => {
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+  }
+  const onAddManagedObject = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_ADD);
   }
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
@@ -144,31 +165,62 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
   // * Toolbar *
-  const renderLeftToolbarContent = (): JSX.Element | undefined => {
+  const renderLeftToolbarContent = (): Array<JSX.Element> | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-      </React.Fragment>
-    );
-    if(showViewComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-        <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-      </React.Fragment>
-    );
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
+    if(showAddComponent) return undefined;
+
+    const jsxButtonList: Array<JSX.Element> = [];
+    if(showListComponent || showViewComponent) {
+      jsxButtonList.push(<Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);
+      if(props.scope.type === E_ManageUsers_Scope.ORG_USERS) {
+        jsxButtonList.push(<Button label={ToolbarAddManagedObjectButtonLabel} icon="pi pi-arrow-down" onClick={onAddManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);        
+      }
+    }
+    if(showViewComponent) {
+      jsxButtonList.push(<Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
+      jsxButtonList.push(<Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
+    }
+    return jsxButtonList;
+
+    // OLD
+    // if(showListComponent) return (
+    //   <React.Fragment>
+    //     <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+    //   </React.Fragment>
+    // );
+    // if(showViewComponent) return (
+    //   <React.Fragment>
+    //     <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+    //     <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+    //     <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+    //   </React.Fragment>
+    // );
+
   }
   const renderToolbar = (): JSX.Element => {
-    const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
+    const leftToolbarTemplate: Array<JSX.Element> | undefined = renderLeftToolbarContent();
     if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
     else return (<React.Fragment></React.Fragment>);
   }
   
   // * prop callbacks *
+  const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+    setBreadCrumbItemList(itemList);
+    props.setBreadCrumbItemList(itemList);
+  }
+  const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+    const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
+    props.setBreadCrumbItemList(newItemList);
+  }
+  const onSetManageUserComponentState = (componentState: E_COMPONENT_STATE, userId: TManagedObjectId, userDisplayName: string) => {
+    setManagedObjectId(userId);
+    setManagedObjectDisplayName(userDisplayName);
+    setNewComponentState(componentState);
+    setRefreshCounter(refreshCounter + 1);
+  }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -182,6 +234,15 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(newId);
       setManagedObjectDisplayName(newDisplayName);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    }
+    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+  }
+  const onAddManagedObjectSuccess = (apiCallState: TApiCallState, addedId: TManagedObjectId, addedDisplayName: string) => {
+    setApiCallStatus(apiCallState);
+    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+      setManagedObjectId(addedId);
+      setManagedObjectDisplayName(addedDisplayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -212,6 +273,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -219,6 +281,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -227,6 +290,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -234,6 +298,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -242,6 +307,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -249,6 +315,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowAddComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -256,6 +323,15 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+      setShowAddComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_ADD) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowAddComponent(true);
     }
   }
 
@@ -269,27 +345,34 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       {showListComponent && 
         <ListUsers
           key={refreshCounter}
+          organizationId={organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
           onManagedObjectEdit={onEditManagedObject}
           onManagedObjectDelete={onDeleteManagedObject}
           onManagedObjectView={onViewManagedObject}
+          setBreadCrumbItemList={props.setBreadCrumbItemList}
         />
       }
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <ViewUser
+          key={refreshCounter}
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
+          organizationId={organizationId}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageUserComponentState}
         />      
       }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteUser
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
+          scope={props.scope}
           onSuccess={onDeleteManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
@@ -299,11 +382,23 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       { showNewComponent &&
         <EditNewUser
           action={EAction.NEW}
+          organizationId={organizationId}
           onNewSuccess={onNewManagedObjectSuccess} 
           onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        />
+      }
+      { showAddComponent && organizationId &&
+        <AddUser
+          organizationId={organizationId}
+          onSuccess={onAddManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
       }
       {showEditComponent && managedObjectId && managedObjectDisplayName &&
@@ -311,11 +406,13 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
           action={EAction.EDIT}
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
+          organizationId={organizationId}
           onNewSuccess={onNewManagedObjectSuccess} 
           onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
       }
     </div>

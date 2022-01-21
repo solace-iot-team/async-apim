@@ -8,16 +8,16 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
-import { TAPOrganizationId } from '../../components/APComponentsCommon';
-import { ManageEnvironments } from '../components/ManageEnvironments/ManageEnvironments';
+import { CommonDisplayName, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ManageUsers } from '../components/ManageUsers/ManageUsers';
+import { E_ManageUsers_Scope } from '../components/ManageUsers/ManageUsersCommon';
 
 import "../../pages/Pages.css";
 
 export const ManageOrgUsersPage: React.FC = () => {
   const componentName="ManageOrgUsersPage";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
   
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
@@ -25,7 +25,16 @@ export const ManageOrgUsersPage: React.FC = () => {
 
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [organizationName, setOrganizationName] = React.useState<CommonName>();
+
+  React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
+    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
+  }, [userContext]);
+
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -35,14 +44,10 @@ export const ManageOrgUsersPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
-
-  const renderBreadcrumbs = () => {
+  const renderBreadcrumbs = (orgDisplayName: CommonDisplayName) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'Organization'
+        label: `Organization: ${orgDisplayName}`
       },
       { 
         label: 'Users',
@@ -50,9 +55,12 @@ export const ManageOrgUsersPage: React.FC = () => {
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationUsers)}
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -60,35 +68,17 @@ export const ManageOrgUsersPage: React.FC = () => {
     )
   }
 
-  const [organizationName, setOrganizationName] = React.useState<TAPOrganizationId>();
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
-  }, [userContext]);
-
   return (
     <div className="ap-pages">
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
+      {organizationName && renderBreadcrumbs(organizationName)}
       {organizationName &&
-        <p>TODO: ManageUsers with scope=organization & organizationName={organizationName}</p>
-        // <ManageUsers 
-        //   scope={ManageUsersScope.Organization}
-        //   organizationName={organizationName}
-        //   onSuccess={onSuccess} 
-        //   onError={onError} 
-        //   onBreadCrumbLabelList={onBreadcrumbLabelList}
-        // />
-    
-        // <ManageOrgUsers
-        //   organizationName={organizationName}
-        //   onSuccess={onSuccess} 
-        //   onError={onError} 
-        //   onBreadCrumbLabelList={onBreadcrumbLabelList}
-        // />
+        <ManageUsers 
+          scope={ { type: E_ManageUsers_Scope.ORG_USERS, organizationId: organizationName, organizationDisplayName: organizationName }}
+          onSuccess={onSuccess} 
+          onError={onError} 
+          setBreadCrumbItemList={setBreadCrumbItemList}
+        />
       }
     </div>
 );

@@ -1,5 +1,5 @@
 import { ConfigContextAction, TAPConfigContext  } from './ConfigContextProvider';
-import { APRbac, TAPRbacRole, TAPRbacRoleList } from '../../utils/APRbac';
+import { APRbac, EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from '../../utils/APRbac';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { 
   ApsConfigService,
@@ -15,10 +15,29 @@ import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../util
 
 export class ConfigHelper {
 
+  public static getSortedAndScopedRbacRoleList = (configContext: TAPConfigContext, rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
+    let rbacRoleList: TAPRbacRoleList = [];
+    for(const rbacRole of configContext.rbacRoleList) {
+      if(!rbacRole.scopeList.includes(EAPRbacRoleScope.NEVER)) {
+        for(const scope of rbacScopeList) {
+          const exists = rbacRoleList.find( (role: TAPRbacRole) => {
+            return role.id === rbacRole.id;
+          });
+          if(!exists && rbacRole.scopeList.includes(scope)) rbacRoleList.push(rbacRole);
+        }
+      } 
+    }
+    return rbacRoleList.sort( (e1: TAPRbacRole, e2: TAPRbacRole) => {
+      if(e1.displayName < e2.displayName) return -1;
+      if(e1.displayName > e2.displayName) return 1;
+      return 0;
+    });
+  }
+
   public static getSortedRbacRoleList = (configContext: TAPConfigContext): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     configContext.rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      if(rbacRole.role !== EAPSAuthRole.ROOT) rbacRoleList.push(rbacRole);
+      if(rbacRole.id !== EAPSAuthRole.ROOT) rbacRoleList.push(rbacRole);
     });
     return rbacRoleList.sort( (e1: TAPRbacRole, e2: TAPRbacRole) => {
       if(e1.displayName < e2.displayName) return -1;
@@ -34,7 +53,7 @@ export class ConfigHelper {
     let authorizedRolesDisplayNameList: Array<string> = [];
     authorizedRoleList.forEach( (authorizedRole: EAPSAuthRole) => {
       let rbacRole: TAPRbacRole | undefined = rbacRoleList.find((rbacRole: TAPRbacRole) => {
-        return (rbacRole.role === authorizedRole)
+        return (rbacRole.id === authorizedRole)
       });
       if(rbacRole) authorizedRolesDisplayNameList.push(rbacRole.displayName);
       else throw new Error(`${logName}: cannot find configured role for authorized role=${authorizedRole}`);
