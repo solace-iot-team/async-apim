@@ -100,8 +100,6 @@ export enum EUIDeveloperPortalResourcePaths {
 export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
-  BootstrapOrganizations = '/devel/bootstrap/organizations',
-  BootstrapUsers = '/devel/bootstrap/users',
   ViewContexts = '/devel/view/contexts',
 }
 

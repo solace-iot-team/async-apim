@@ -7,6 +7,7 @@ export type TConnectionTestDetails = {
 export type TServerStatus = {
   isReady: boolean;
   isInitialized: boolean;
+  isMigrated: boolean;
   isBootstrapped: boolean;
   lastModifiedTimestamp: number;
   dbConnectionTestDetails?: TConnectionTestDetails;
@@ -19,6 +20,7 @@ export class ServerStatus {
     this.serverStatus = {
       isReady: false,
       isInitialized: false,
+      isMigrated: false,
       isBootstrapped: false,
       lastModifiedTimestamp: Date.now()
     }
@@ -35,6 +37,11 @@ export class ServerStatus {
   
   public setIsInitialized = () => {
     this.serverStatus.isInitialized = true;
+    this.serverStatus.lastModifiedTimestamp = Date.now();
+  }
+
+  public setIsMigrated = () => {
+    this.serverStatus.isMigrated = true;
     this.serverStatus.lastModifiedTimestamp = Date.now();
   }
 

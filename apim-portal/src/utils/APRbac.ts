@@ -1,5 +1,5 @@
 import { 
-  EAPSAuthRole 
+  EAPSAuthRole,
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
@@ -113,10 +113,10 @@ export class APRbac {
     const funcName: string = `checkRoleDefinitions`;
     const logName: string = `${APRbac.name}.${funcName}()`;
 
-    Object.values(EAPSAuthRole).forEach( (apsRole: EAPSAuthRole) => {
+    Object.values(EAPSAuthRole).forEach( (apsRole: string) => {
       // console.log(`${logName}: apsRole=${apsRole}`);
       const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
-        // console.log(`${logName}: apsRole=${apsRole}, apRbacRole.role=${apRbacRole.role}`);
+        // console.log(`${logName}: apsRole=${apsRole}, apRbacRole.role=${apRbacRole.id}`);
         return (apsRole === apRbacRole.id);
       });
       if (!found) throw new Error(`${logName}: EAPAuthRole in OpenApi spec not found in rbacRoleList: ${apsRole}`);

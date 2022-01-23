@@ -101,6 +101,17 @@ export class ConfigEnvVarNotANumberServerError extends ServerError {
     this.envVarValue = envVarValue;
   }
 }
+export class MigrateServerError extends ServerError {
+  private collectionName: string;
+  private fromVersion: number;
+  private toVersion: number;
+  constructor(internalLogName: string, internalMessage: string, collectionName: string, fromVersion: number, toVersion: number) {
+    super(internalLogName, internalMessage);
+    this.collectionName = collectionName;
+    this.fromVersion = fromVersion;
+    this.toVersion = toVersion;
+  }
+}
 
 type ApiServerErrorResponseHeaders = {
   headerField: string,

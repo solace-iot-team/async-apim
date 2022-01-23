@@ -1,10 +1,10 @@
 import 'mocha';
 import { expect } from 'chai';
 import request from 'supertest';
-import Server from '../server/index';
+import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -14,10 +14,11 @@ import {
   APSUserReplace, 
   ApsUsersService, 
   APSUserUpdate, 
-  EAPSAuthRole, 
+  EAPSOrganizationAuthRole, 
   EAPSSortDirection,
+  EAPSSystemAuthRole,
   ListApsUsersResponse
-} from '../src/@solace-iot-team/apim-server-openapi-node';
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
 
 
 const scriptName: string = path.basename(__filename);
@@ -33,8 +34,13 @@ const apsUserTemplate: APSUser = {
     first: 'first',
     last: 'last'
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ 'org' ]
+  systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+  memberOfOrganizations: [
+    { 
+      organizationId: 'org',
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 const apsUserTemplate2: APSUser = {
   isActivated: true,
@@ -45,8 +51,12 @@ const apsUserTemplate2: APSUser = {
     first: 'first2',
     last: 'last2'
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ 'org2' ]
+  memberOfOrganizations: [
+    { 
+      organizationId: 'org2',
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 
 describe(`${scriptName}`, () => {
@@ -59,6 +69,7 @@ describe(`${scriptName}`, () => {
     });
 
     after(async() => {
+      TestContext.newItId();
       let apsUserList: Array<APSUser> = [];
       try {
         const pageSize = 100;
@@ -146,7 +157,7 @@ describe(`${scriptName}`, () => {
       }
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('type of array')}`).to.be.an('array');
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('empty array')}`).to.be.empty;
-      expect(finalMeta.meta.totalCount, `${TestLogger.createTestFailMessage('totalCount not zero')}`).equal(0);
+      expect(finalMeta.meta.totalCount, TestLogger.createTestFailMessage('totalCount not zero')).equal(0);
     });
 
     it(`${scriptName}: should create a number of users from templates`, async () => {
@@ -305,9 +316,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(404);
+        expect(apiError.status, `${TestLogger.createTestFailMessage('status code')}`).equal(404);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.KEY_NOT_FOUND);
+        expect(apsError.errorId, `${TestLogger.createTestFailMessage('incorrect errorId')}`).equal(APSErrorIds.KEY_NOT_FOUND);
       }
     });
 
@@ -316,9 +327,13 @@ describe(`${scriptName}`, () => {
       const userId = apsUserTemplate.userId;
       const updateRequest: APSUserUpdate = {
         isActivated: false,
-        password: 'updated',
-        memberOfOrganizations: [ 'updated' ],
-        roles: [ EAPSAuthRole.API_CONSUMER ],
+        password: 'updated',        
+        memberOfOrganizations: [ 
+          {
+            organizationId: 'updated',
+            roles: [ EAPSOrganizationAuthRole.API_CONSUMER]
+          }
+        ],
         profile: {
           email: 'updated@aps.com'
         }
@@ -386,8 +401,12 @@ describe(`${scriptName}`, () => {
       const replaceRequest: APSUserReplace = {
         isActivated: true,
         password: 'replaced',
-        memberOfOrganizations: [ 'replaced' ],
-        roles: [ EAPSAuthRole.API_TEAM ],
+        memberOfOrganizations: [ 
+          {
+            organizationId: 'replaced',
+            roles: [EAPSOrganizationAuthRole.API_TEAM]
+          }
+        ],
         profile: {
           email: 'replaced@aps.com',
           first: 'replaced',
@@ -459,8 +478,12 @@ describe(`${scriptName}`, () => {
       const replaceRequest: APSUserReplace = {
         isActivated: true,
         password: 'replaced',
-        memberOfOrganizations: [ 'replaced' ],
-        roles: [ EAPSAuthRole.API_TEAM ],
+        memberOfOrganizations: [ 
+          {
+            organizationId: 'replaced',
+            roles: [EAPSOrganizationAuthRole.API_TEAM]
+          }
+        ],
         profile: {
           email: 'not-an-email',
           first: 'replaced',
@@ -497,8 +520,13 @@ describe(`${scriptName}`, () => {
         first: 'first',
         last: 'last'
       },
-      roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-      memberOfOrganizations: [ 'org2' ]
+      systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+      memberOfOrganizations: [ 
+        {
+          organizationId: 'org2',
+          roles: [ EAPSOrganizationAuthRole.LOGIN_AS]
+         }
+      ]
     }
     
     it(`${scriptName}: should delete all users`, async () => {

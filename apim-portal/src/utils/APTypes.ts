@@ -1,3 +1,4 @@
+
 export enum EAPAssetType {
   DEVELOPER_APP = "DEVELOPER_APP"
 }
@@ -21,3 +22,4 @@ export type TAPOrgAsset = {
   assetInfoList: TAPAssetInfoList;
 }
 export type TAPOrgAssetList = Array<TAPOrgAsset>;
+

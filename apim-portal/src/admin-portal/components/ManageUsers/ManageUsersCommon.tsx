@@ -1,8 +1,8 @@
 import { 
+  APSAuthRoleList,
   APSOrganizationIdList,
   APSUser, 
   APSUserId,
-  EAPSAuthRoleList
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from '../../../utils/Globals';
 import { ConfigHelper } from '../../../components/ConfigContextProvider/ConfigHelper';
@@ -83,7 +83,7 @@ export class ManageUsersCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: EAPSAuthRoleList): string => {
+  public static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: APSAuthRoleList): string => {
     return ConfigHelper.getAuthorizedRolesDisplayNameList(roles ? roles : [], configContext).join(', ');
   }
 

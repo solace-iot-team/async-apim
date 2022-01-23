@@ -23,7 +23,6 @@ import { ConfigContext } from '../../../components/ConfigContextProvider/ConfigC
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageUsersCommon, TManagedObjectId, TViewManagedObject } from "./ManageUsersCommon";
 import { APComponentsCommon, TAPLazyLoadingTableParameters } from "../../../components/APComponentsCommon";
-import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";

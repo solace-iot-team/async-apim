@@ -1,20 +1,21 @@
-import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
+import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import APSUser = Components.Schemas.APSUser;
 import APSUserUpdateRequest = Components.Schemas.APSUserUpdate;
 import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
-import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../common/MongoPersistenceService';
-import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../utils/ApiQueryHelper';
-import ServerConfig, { TRootUserConfig } from '../../common/ServerConfig';
-import { ServerUtils } from '../../common/ServerUtils';
+import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../../common/MongoPersistenceService';
+import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../../utils/ApiQueryHelper';
+import ServerConfig, { TRootUserConfig } from '../../../common/ServerConfig';
+import { ServerUtils } from '../../../common/ServerUtils';
 import { 
   ApiError,
   APSUserList,
-  ApsUsersService
- } from '../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../common/ServerError';
+  ApsUsersService,
+ } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
+import { APSUsersDBMigrate } from './APSUsersDBMigrate';
 
 export type TAPSListUserResponse = APSListResponseMeta & { list: Array<APSUser> };
 
@@ -22,6 +23,7 @@ export class APSUsersService {
   private static collectionName = "apsUsers";
   private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
+  private static dbObjectSchemaVersion = 1;
   private static rootApsUser: APSUser;
   private persistenceService: MongoPersistenceService;
 
@@ -29,6 +31,15 @@ export class APSUsersService {
     this.persistenceService = new MongoPersistenceService(APSUsersService.collectionName, true); 
   }
 
+  public getPersistenceService = (): MongoPersistenceService => {
+    return this.persistenceService;
+  }
+  public getCollectionName = (): string => {
+    return APSUsersService.collectionName;
+  }
+  public getDBObjectSchemaVersion = (): number => {
+    return APSUsersService.dbObjectSchemaVersion;
+  }
   public initialize = async(rootUserConfig: TRootUserConfig) => {
     const funcName = 'initialize';
     const logName = `${APSUsersService.name}.${funcName}()`;
@@ -47,9 +58,17 @@ export class APSUsersService {
         last: 'admin',
         email: rootUserConfig.userId
       },
-      roles: [ 'root' ]
+      systemRoles: ['root']
     }
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  }
+
+  public migrate = async(): Promise<void> => {
+    const funcName = 'migrate';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING }));
+    await APSUsersDBMigrate.migrate(this);
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
   public bootstrap = async(): Promise<void> => {
@@ -187,7 +206,11 @@ export class APSUsersService {
   public create = async(apsUser: APSUser): Promise<APSUser> => {
     const funcName = 'create';
     const logName = `${APSUsersService.name}.${funcName}()`;
-    const created: APSUser = await this.persistenceService.create(apsUser.userId, apsUser) as APSUser;
+    const created: APSUser = await this.persistenceService.create({
+      documentId: apsUser.userId,
+      document: apsUser,
+      schemaVersion: APSUsersService.dbObjectSchemaVersion
+    });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created }));
 
@@ -197,7 +220,11 @@ export class APSUsersService {
   public update = async(apsUserId: APSUserId, apsUserUpdateRequest: APSUserUpdateRequest): Promise<APSUser> => {
     const funcName = 'update';
     const logName = `${APSUsersService.name}.${funcName}()`;
-    const updated: APSUser = await this.persistenceService.update(apsUserId, apsUserUpdateRequest) as APSUser;
+    const updated: APSUser = await this.persistenceService.update({
+      documentId: apsUserId,
+      document: apsUserUpdateRequest,
+      schemaVersion: APSUsersService.dbObjectSchemaVersion
+    });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
 
@@ -207,7 +234,12 @@ export class APSUsersService {
   public replace = async(apsUserId: APSUserId, apsUserReplaceRequest: APSUserReplaceRequest): Promise<APSUser> => {
     const funcName = 'replace';
     const logName = `${APSUsersService.name}.${funcName}()`;
-    const replaced: APSUser = await this.persistenceService.replace(apsUserId, { ...apsUserReplaceRequest, userId: apsUserId }) as APSUser;
+
+    const replaced: APSUser = await this.persistenceService.replace({
+      documentId: apsUserId, 
+      document: { ...apsUserReplaceRequest, userId: apsUserId }, 
+      schemaVersion: APSUsersService.dbObjectSchemaVersion  
+    });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced }));
 

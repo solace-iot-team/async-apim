@@ -892,10 +892,24 @@ components:
       # from: https://regexr.com/3e48o
       pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
     APSOrganizationIdList:
-      description: List of Organization Ids.
       type: array
       items:
         type: string
+    APSOrganizationRoles:
+      type: object
+      properties:
+        organizationId:
+          type: string
+        roles:
+          $ref: "#/components/schemas/APSOrganizationAuthRoleList"
+      required:
+      - organizationId
+      - roles
+    APSOrganizationRolesList:
+      description: List of Organization Roles.
+      type: array
+      items:
+        $ref: "#/components/schemas/APSOrganizationRoles"
     EAPSSortDirection:
       description: sort direction for query
       type: string
@@ -1029,19 +1043,46 @@ components:
       - repository
       - issues_url
       - build_date
-    EAPSAuthRole:
+    EAPSOrganizationAuthRole:
       type: string
       enum:
-      - root
       - loginAs
-      - systemAdmin
       - organizationAdmin
       - apiTeam
       - apiConsumer
-    EAPSAuthRoleList:
+    EAPSSystemAuthRole:
+      type: string
+      enum:
+      - root
+      - systemAdmin
+      - loginAs
+    APSOrganizationAuthRoleList:
       type: array
       items:
-        $ref: "#/components/schemas/EAPSAuthRole"
+        $ref: "#/components/schemas/EAPSOrganizationAuthRole"
+      minItems: 1
+    APSSystemAuthRoleList:
+      type: array
+      items:
+        $ref: "#/components/schemas/EAPSSystemAuthRole"
+
+    # EAPSAuthRole:
+    #   type: string
+    #   enum:
+    #   - loginAs
+    #   - organizationAdmin
+    #   - apiTeam
+    #   - apiConsumer
+    #   - root
+    #   - systemAdmin
+    #   # does not work with openapi-validator nor code generators
+    #   # allOf:
+    #   #   - $ref: "#/components/schemas/EAPSSystemAuthRole"
+    #   #   - $ref: "#/components/schemas/EAPSOrganizationAuthRole"
+    # APSAuthRoleList:
+    #   type: array
+    #   items:
+    #     $ref: "#/components/schemas/EAPSAuthRole"
     EAPSClientProtocol:
       type: string
       enum:
@@ -1220,6 +1261,7 @@ components:
     APSUser:
       description: "A user."
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1229,19 +1271,23 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfile"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          $ref: '#/components/schemas/APSOrganizationIdList'
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of including organization roles.
       required:
         - isActivated
         - userId
         - password
         - profile
-        - roles
     APSUserUpdate:
       description: Update for an APSUser object.
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1249,15 +1295,18 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfileUpdate"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          type: array
-          items:
-            type: string
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of include organization roles.
     APSUserReplace:
       description: Replace an existing APSUser object.
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1265,16 +1314,17 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfile"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          type: array
-          items:
-            type: string
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of include organization roles.
       required:
         - isActivated
         - password
         - profile
-        - roles
 ###
 # The End.

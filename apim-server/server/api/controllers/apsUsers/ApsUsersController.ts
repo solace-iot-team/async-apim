@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
-import APSUsersService, { TAPSListUserResponse } from '../../services/APSUsersService';
+import APSUsersService, { TAPSListUserResponse } from '../../services/APSUsersService/APSUsersService';
 import { ApiMissingParameterServerError } from '../../../common/ServerError';
 import APSUser = Components.Schemas.APSUser;
 

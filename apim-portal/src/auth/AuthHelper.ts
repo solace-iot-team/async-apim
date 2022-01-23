@@ -1,6 +1,6 @@
 import { 
   EAPSAuthRole, 
-  EAPSAuthRoleList 
+  APSAuthRoleList 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CAPSAuthRoleNone, TAPRbacRole } from '../utils/APRbac';
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../utils/Globals';
@@ -16,15 +16,15 @@ export class AuthHelper {
     }
   }
 
-  public static getAuthorizedResourcePathListAsString = (configContext: TAPConfigContext, authorizedRoles: EAPSAuthRoleList | undefined): string => {
+  public static getAuthorizedResourcePathListAsString = (configContext: TAPConfigContext, authorizedRoles: APSAuthRoleList | undefined): string => {
     const funcName = 'getAuthorizedResourcePathListAsString';
     const logName = `${AuthHelper.name}.${funcName}()`;
 
     if(configContext.rbacRoleList === undefined) return CAPSAuthRoleNone;
     if(authorizedRoles === undefined) return CAPSAuthRoleNone;
-    let combinedUiResourcePathList: Array<EUICombinedResourcePaths> = [];
+    const combinedUiResourcePathList: Array<EUICombinedResourcePaths> = [];
     authorizedRoles.forEach((authorizedRole: EAPSAuthRole) => {
-      let rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
+      const rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
         // console.log(`${logName}: find authorizedRole=${authorizedRole} in configRole = ${JSON.stringify(configRole)}`);
         return (rbacRole.id === authorizedRole)  
       });

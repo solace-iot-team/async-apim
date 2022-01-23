@@ -4,9 +4,9 @@ import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import { 
   ApsConfigService,
   APSConnector, 
-  EAPSAuthRole, 
-  EAPSAuthRoleList,
-  ApiError as APSApiError
+  ApiError as APSApiError,
+  EAPSAuthRole,
+  APSAuthRoleList,
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { TAPPortalAppInfo } from '../../utils/Globals';
@@ -46,7 +46,7 @@ export class ConfigHelper {
     });
   }
 
-  public static getAuthorizedRolesDisplayNameList = (authorizedRoleList: EAPSAuthRoleList, configContext: TAPConfigContext): Array<string> => {
+  public static getAuthorizedRolesDisplayNameList = (authorizedRoleList: APSAuthRoleList, configContext: TAPConfigContext): Array<string> => {
     const funcName = 'getAuthorizedRolesDisplayNameList';
     const logName = `${ConfigHelper.name}.${funcName}()`;
     let rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedRbacRoleList(configContext);

@@ -44,6 +44,7 @@ TestLogger.setLogging(testEnv.enableLogging);
 TestContext.setTestEnv(testEnv);
 
 before(async() => {
+  TestContext.newItId();
   // start mongo
   const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;
   expect(code, TestLogger.createTestFailMessage('standup mongo')).equal(0);
@@ -53,6 +54,7 @@ before(async() => {
 });
 
 after(async() => {
+  TestContext.newItId();
   // stop mongo
   const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
   expect(code, TestLogger.createTestFailMessage('teardown mongo')).equal(0);

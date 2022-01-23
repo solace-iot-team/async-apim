@@ -12,7 +12,8 @@ import {
   APSUserLoginCredentials, 
   APSUserReplace, 
   ApsUsersService, 
-  EAPSAuthRole, 
+  EAPSOrganizationAuthRole, 
+  EAPSSystemAuthRole, 
   ListApsUsersResponse
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 
@@ -29,8 +30,13 @@ const apsUserLoginTemplate: APSUser = {
     first: `${scriptName}-first`,
     last: `${scriptName}-last`
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ `${scriptName}-org` ]
+  systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+  memberOfOrganizations: [ 
+    {
+      organizationId: `${scriptName}-org`,
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 
 describe(`${scriptName}`, () => {
@@ -41,6 +47,7 @@ describe(`${scriptName}`, () => {
     });
 
     after(async() => {
+      TestContext.newItId();
       let apsUserList: Array<APSUser> = [];
       try {
         const pageSize = 100;

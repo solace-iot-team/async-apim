@@ -58,5 +58,22 @@
       "email": "system.admin@async-apim-devel.com"
     },
     "memberOfOrganizations": ["apim-devel"]
+  },
+  {
+    "userId": "system.admin4@async-apim-devel.com",
+    "password": "system.admin3@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "System",
+      "last": "Admin",
+      "email": "system.admin3@async-apim-devel.com"
+    },
+    "systemRoles": ["systemAdmin", "loginAs"],
+    "memberOfOrganizations": [
+      {
+        "organizationId": "apim-devel",
+        "roles": ["apiTeam"]
+      }
+    ]
   }
 ]

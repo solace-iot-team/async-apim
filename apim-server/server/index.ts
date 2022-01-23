@@ -5,9 +5,9 @@ import ServerConfig from './common/ServerConfig';
 import ServerStatus from './common/ServerStatus';
 import { EServerStatusCodes, ServerLogger } from './common/ServerLogger';
 import { MongoDatabaseAccess } from './common/MongoDatabaseAccess';
-import { BootstrapErrorFromApiError, BootstrapErrorFromError, ServerError, ServerErrorFromError } from './common/ServerError';
+import { BootstrapErrorFromApiError, BootstrapErrorFromError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
 import APSConnectorsService from './api/services/apsConfig/APSConnectorsService';
-import APSUsersService from './api/services/APSUsersService';
+import APSUsersService from './api/services/APSUsersService/APSUsersService';
 import APSLoginService from './api/services/APSLoginService';
 import { ServerClient } from './common/ServerClient';
 import APSAboutService from './api/services/apsConfig/APSAboutService';
@@ -15,6 +15,25 @@ import APSMonitorService from './api/services/APSMonitorService';
 import ServerMonitor from './common/ServerMonitor';
 
 const componentName = 'index';
+
+const migrateComponents = async(): Promise<void> => {
+  const funcName = 'migrateComponents';
+  const logName = `${componentName}.${funcName}()`;
+  ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING }));
+  try {
+    await APSUsersService.migrate();
+    ServerStatus.setIsMigrated();
+  } catch(e: any) {
+    if (e instanceof MigrateServerError) {
+      ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATE_ERROR, details: { error: e } } ));
+    } else {
+      ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATE_ERROR, details: { error: e.toString() } } ));
+    }
+    // crash the server
+    throw e;
+  }
+  ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
+}
 
 const bootstrapComponents = async(): Promise<void> => {
   const funcName = 'bootstrapComponents';
@@ -61,6 +80,7 @@ export const initializeComponents = async(): Promise<void> => {
     throw e;
   }  
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  await migrateComponents();
   await bootstrapComponents();
 }
 

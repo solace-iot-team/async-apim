@@ -16,7 +16,8 @@ import {
   ApsUsersService, 
   APSUser,
   APSUserReplace,
-  EAPSAuthRole
+  EAPSAuthRole,
+  APSOrganizationAuthRoleList,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -59,7 +60,9 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   type TCreateApiObject = APSUser;
   type TGetApiObject = APSUser;
   type TManagedObject = APSUser;
-  type TManagedObjectFormData = APSUser;
+  type TManagedObjectFormData = APSUser & {
+    currentOrganizationRoles: APSOrganizationAuthRoleList;
+  }
   type TOrganizationSelectItem = { label: string, value: TAPOrganizationId };
   type TManagedObjectFormDataOrganizationSelectItems = Array<TOrganizationSelectItem>;
   type TRoleSelectItem = { label: string, value: EAPSAuthRole };
@@ -75,7 +78,8 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       email: ''
     },
     roles: [],
-    memberOfOrganizations: []
+    memberOfOrganizations: [],
+    rolesByOrganization: []
   }
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
@@ -455,33 +459,65 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.profile?.last)}
             </div>
             {/* Roles */}
-            <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  name="roles"
-                  control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Choose at least 1 role."
-                  }}
-                  render={( { field, fieldState }) => {
-                      // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                      return(
-                        <MultiSelect
-                          display="chip"
-                          value={field.value ? [...field.value] : []} 
-                          options={createManagedObjectFormDataRoleSelectItems()} 
-                          onChange={(e) => field.onChange(e.value)}
-                          optionLabel="label"
-                          optionValue="value"
-                          // style={{width: '500px'}} 
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
-                />
-                <label htmlFor="roles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.roles })}>Roles*</label>
-              </span>
-              {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.roles)}
-            </div>
+            {props.organizationId === undefined &&
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    name="roles"
+                    control={managedObjectUseForm.control}
+                    rules={{
+                      required: "Choose at least 1 role."
+                    }}
+                    render={( { field, fieldState }) => {
+                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                        return(
+                          <MultiSelect
+                            display="chip"
+                            value={field.value ? [...field.value] : []} 
+                            options={createManagedObjectFormDataRoleSelectItems()} 
+                            onChange={(e) => field.onChange(e.value)}
+                            optionLabel="label"
+                            optionValue="value"
+                            // style={{width: '500px'}} 
+                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                          />
+                    )}}
+                  />
+                  <label htmlFor="roles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.roles })}>Roles*</label>
+                </span>
+                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.roles)}
+              </div>
+            }
+            {/* Organization Roles */}
+            {props.organizationId !== undefined &&
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    name="organizationRoles"
+                    control={managedObjectUseForm.control}
+                    rules={{
+                      required: "Choose at least 1 role."
+                    }}
+                    render={( { field, fieldState }) => {
+                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                        return(
+                          <MultiSelect
+                            display="chip"
+                            value={field.value ? [...field.value] : []} 
+                            options={createManagedObjectFormDataOrganizationRoleSelectItems()} 
+                            onChange={(e) => field.onChange(e.value)}
+                            optionLabel="label"
+                            optionValue="value"
+                            // style={{width: '500px'}} 
+                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                          />
+                    )}}
+                  />
+                  <label htmlFor="organizationRoles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.organizationRoles })}>Organization Roles*</label>
+                </span>
+                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.organizationRoles)}
+              </div>
+            }
             {/* MemberOf Organizations */}
             {props.organizationId === undefined &&
               <div className="p-field">
