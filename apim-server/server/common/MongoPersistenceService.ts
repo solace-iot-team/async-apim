@@ -28,19 +28,19 @@ export type TMongoAllReturn = {
 export type TCreateSearchContentCallback = ((document:any) => string) | undefined;
 
 export type TMongoCreateOptions = {
-  documentId: string;
-  document: any;
-  schemaVersion: number;
+  collectionDocumentId: string;
+  collectionDocument: any;
+  collectionSchemaVersion: number;
 }
 export type TMongoUpdateOptions = {
-  documentId: string;
-  document: any;
-  schemaVersion: number;
+  collectionDocumentId: string;
+  collectionDocument: any;
+  collectionSchemaVersion: number;
 }
 export type TMongoReplaceOptions = {
-  documentId: string;
-  document: any;
-  schemaVersion: number;
+  collectionDocumentId: string;
+  collectionDocument: any;
+  collectionSchemaVersion: number;
 }
 
 export class MongoPersistenceService {
@@ -216,15 +216,15 @@ export class MongoPersistenceService {
       writeConcern: { w: 1, j: true }
     }
     const collection: mongodb.Collection = this.getCollection();
-    const existingDocument = await collection.findOne({ _id: options.documentId }, { projection: { _id: 1 } });
+    const existingDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: { _id: 1 } });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument ? existingDocument : { exists: false }}));
-    if(existingDocument) throw new ApiDuplicateKeyServerError(logName, undefined, { id: options.documentId, collectionName: collection.collectionName});
-    if(this.isTextSearchEnabled) options.document[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.document);
-    options.document._id = options.documentId;
-    options.document._schemaVersion = options.schemaVersion;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'inserting document', details: options.document }));
-    await collection.insertOne(options.document, opts);
-    const insertedDocument = await collection.findOne({ _id: options.documentId }, { projection: this.getReturnProjection() });
+    if(existingDocument) throw new ApiDuplicateKeyServerError(logName, undefined, { id: options.collectionDocumentId, collectionName: collection.collectionName});
+    if(this.isTextSearchEnabled) options.collectionDocument[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.collectionDocument);
+    options.collectionDocument._id = options.collectionDocumentId;
+    options.collectionDocument._schemaVersion = options.collectionSchemaVersion;
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'inserting document', details: options.collectionDocument }));
+    await collection.insertOne(options.collectionDocument, opts);
+    const insertedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'insertedDocument', details: insertedDocument }));
     if(!insertedDocument) throw new ApiInternalServerError(logName, 'insertedDocument is undefined');
     return insertedDocument;
@@ -247,15 +247,15 @@ export class MongoPersistenceService {
       writeConcern: { w: 1, j: true }
     }  
     const collection: mongodb.Collection = this.getCollection();
-    const existingDocument = await collection.findOne({ _id: options.documentId }, { projection: { _id: 0 } });
+    const existingDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: { _id: 0 } });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument }));
-    if(!existingDocument) throw new ApiKeyNotFoundServerError(logName, undefined, { id: options.documentId, collectionName: collection.collectionName});
-    options.document._schemaVersion = options.schemaVersion;
-    const mergedDocument = _.mergeWith(existingDocument, options.document, this.updateMergeCustomizer);
-    if(this.isTextSearchEnabled) mergedDocument[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.document);
-    const result: UpdateResult | Document = await collection.updateOne({ _id: options.documentId }, { $set: mergedDocument } , opts);
+    if(!existingDocument) throw new ApiKeyNotFoundServerError(logName, undefined, { id: options.collectionDocumentId, collectionName: collection.collectionName});
+    options.collectionDocument._schemaVersion = options.collectionSchemaVersion;
+    const mergedDocument = _.mergeWith(existingDocument, options.collectionDocument, this.updateMergeCustomizer);
+    if(this.isTextSearchEnabled) mergedDocument[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.collectionDocument);
+    const result: UpdateResult | Document = await collection.updateOne({ _id: options.collectionDocumentId }, { $set: mergedDocument } , opts);
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'result', details: result }));
-    const updatedDocument = await collection.findOne({ _id: options.documentId }, { projection: this.getReturnProjection() });
+    const updatedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updatedDocument', details: updatedDocument }));
     if(!updatedDocument) throw new ApiInternalServerError(logName, 'updatedDocument is undefined');
     return updatedDocument;
@@ -271,31 +271,31 @@ export class MongoPersistenceService {
       upsert: false
     }  
     const collection: mongodb.Collection = this.getCollection();
-    const existingDocument = await collection.findOne({ _id: options.documentId }, { projection: { _id: 0 } });
+    const existingDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: { _id: 0 } });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument }));
-    if(!existingDocument) throw new ApiKeyNotFoundServerError(logName, undefined, { id: options.documentId, collectionName: collection.collectionName});
-    if(this.isTextSearchEnabled) options.document[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.document);
-    options.document._id = options.documentId;
-    options.document._schemaVersion = options.schemaVersion;
-    const result: UpdateResult | Document = await collection.replaceOne({ _id: options.documentId }, options.document, opts);
+    if(!existingDocument) throw new ApiKeyNotFoundServerError(logName, undefined, { id: options.collectionDocumentId, collectionName: collection.collectionName});
+    if(this.isTextSearchEnabled) options.collectionDocument[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.collectionDocument);
+    options.collectionDocument._id = options.collectionDocumentId;
+    options.collectionDocument._schemaVersion = options.collectionSchemaVersion;
+    const result: UpdateResult | Document = await collection.replaceOne({ _id: options.collectionDocumentId }, options.collectionDocument, opts);
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'result', details: result }));
-    const replacedDocument = await collection.findOne({ _id: options.documentId }, { projection: this.getReturnProjection() });
+    const replacedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedDocument', details: replacedDocument }));
     if(!replacedDocument) throw new ApiInternalServerError(logName, 'replacedDocument is undefined');
     return replacedDocument;
   }
 
-  public delete = async(documentId: string): Promise<Record<string, unknown>> => {
+  public delete = async(collectionDocumentId: string): Promise<Record<string, unknown>> => {
     const funcName = 'delete';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'documentId', details: documentId }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'collectionDocumentId', details: collectionDocumentId }));
     const collection: mongodb.Collection = this.getCollection();
-    const deletedDocument = await this.byId(documentId);
-    const deleteResult: DeleteResult = await collection.deleteOne({ _id: documentId });
+    const deletedDocument = await this.byId(collectionDocumentId);
+    const deleteResult: DeleteResult = await collection.deleteOne({ _id: collectionDocumentId });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleteResult', details: deleteResult }));
     let deletedCount = 0;
     if (deleteResult.acknowledged) deletedCount = deleteResult.deletedCount;
-    if (deletedCount === 0) throw new ApiKeyNotFoundServerError(logName, undefined, { id: documentId, collectionName: collection.collectionName });
+    if (deletedCount === 0) throw new ApiKeyNotFoundServerError(logName, undefined, { id: collectionDocumentId, collectionName: collection.collectionName });
     return deletedDocument;
   }
 

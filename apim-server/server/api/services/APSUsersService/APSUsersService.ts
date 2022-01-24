@@ -14,7 +14,7 @@ import {
   APSUserList,
   ApsUsersService,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
+import { ApiBadQueryParameterCombinationServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
 import { APSUsersDBMigrate } from './APSUsersDBMigrate';
 
 export type TAPSListUserResponse = APSListResponseMeta & { list: Array<APSUser> };
@@ -23,7 +23,7 @@ export class APSUsersService {
   private static collectionName = "apsUsers";
   private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
-  private static dbObjectSchemaVersion = 1;
+  private static collectionSchemaVersion = 1;
   private static rootApsUser: APSUser;
   private persistenceService: MongoPersistenceService;
 
@@ -38,7 +38,7 @@ export class APSUsersService {
     return APSUsersService.collectionName;
   }
   public getDBObjectSchemaVersion = (): number => {
-    return APSUsersService.dbObjectSchemaVersion;
+    return APSUsersService.collectionSchemaVersion;
   }
   public initialize = async(rootUserConfig: TRootUserConfig) => {
     const funcName = 'initialize';
@@ -166,13 +166,29 @@ export class APSUsersService {
       searchWordList: searchInfo.searchWordList
     };
     mongoSearchInfo.filter = {};
+    // cannot use both together, etiher or
+    if(searchInfo.searchOrganizationId !== undefined && searchInfo.excludeSearchOrganizationId !== undefined) {
+      throw new ApiBadQueryParameterCombinationServerError(logName, undefined, {
+        apsObjectName: APSUsersService.apiObjectName,
+        invalidQueryParameterCombinationList: [
+          ServerUtils.getPropertyNameString(searchInfo, (x) => x.searchOrganizationId),
+          ServerUtils.getPropertyNameString(searchInfo, (x) => x.excludeSearchOrganizationId),
+        ]
+      });
+    }
     if(searchInfo.searchOrganizationId !== undefined) {
-      // mongoSearchInfo.filter.memberOfOrganizations = { $in: [searchInfo.searchOrganizationId] };
-      mongoSearchInfo.filter.memberOfOrganizations = searchInfo.searchOrganizationId  ;
+      mongoSearchInfo.filter.memberOfOrganizations = {
+        $elemMatch: { organizationId: searchInfo.searchOrganizationId }
+      }
     } else if(searchInfo.excludeSearchOrganizationId !== undefined) {
-      mongoSearchInfo.filter.memberOfOrganizations = { $ne: searchInfo.excludeSearchOrganizationId };
+      mongoSearchInfo.filter.memberOfOrganizations = {
+        $not: {
+          $elemMatch: { organizationId: searchInfo.excludeSearchOrganizationId }
+        }
+      }
     }
     if(searchInfo.searchIsActivated !== undefined) {
+      // mongoSearchInfo.filter.isActivated = { $eq: searchInfo.searchIsActivated };
       mongoSearchInfo.filter.isActivated = searchInfo.searchIsActivated;
     }
     // userId
@@ -207,9 +223,9 @@ export class APSUsersService {
     const funcName = 'create';
     const logName = `${APSUsersService.name}.${funcName}()`;
     const created: APSUser = await this.persistenceService.create({
-      documentId: apsUser.userId,
-      document: apsUser,
-      schemaVersion: APSUsersService.dbObjectSchemaVersion
+      collectionDocumentId: apsUser.userId,
+      collectionDocument: apsUser,
+      collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created }));
@@ -221,9 +237,9 @@ export class APSUsersService {
     const funcName = 'update';
     const logName = `${APSUsersService.name}.${funcName}()`;
     const updated: APSUser = await this.persistenceService.update({
-      documentId: apsUserId,
-      document: apsUserUpdateRequest,
-      schemaVersion: APSUsersService.dbObjectSchemaVersion
+      collectionDocumentId: apsUserId,
+      collectionDocument: apsUserUpdateRequest,
+      collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
@@ -236,9 +252,9 @@ export class APSUsersService {
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     const replaced: APSUser = await this.persistenceService.replace({
-      documentId: apsUserId, 
-      document: { ...apsUserReplaceRequest, userId: apsUserId }, 
-      schemaVersion: APSUsersService.dbObjectSchemaVersion  
+      collectionDocumentId: apsUserId, 
+      collectionDocument: { ...apsUserReplaceRequest, userId: apsUserId }, 
+      collectionSchemaVersion: APSUsersService.collectionSchemaVersion  
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced }));

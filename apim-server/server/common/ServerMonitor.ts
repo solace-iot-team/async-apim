@@ -9,7 +9,7 @@ import { initializeComponents } from "..";
 
 export class ServerMonitor {
   private collectionName = "apsMonitor";
-  private static dbObjectSchemaVersion = 0;
+  private static collectionSchemaVersion = 0;
   private persistenceService: MongoPersistenceService;
   private connectionTestTimeoutId: NodeJS.Timeout;
   private config: TMonitorConfig;
@@ -82,14 +82,14 @@ export class ServerMonitor {
       else throw e;
     }
     if(!exists) await this.persistenceService.create({
-      documentId: ServerMonitor.name,
-      document: { created: Date.now() },
-      schemaVersion: ServerMonitor.dbObjectSchemaVersion
+      collectionDocumentId: ServerMonitor.name,
+      collectionDocument: { created: Date.now() },
+      collectionSchemaVersion: ServerMonitor.collectionSchemaVersion
     });
     else await this.persistenceService.update({
-      documentId: ServerMonitor.name,
-      document: { created: Date.now() },
-      schemaVersion: ServerMonitor.dbObjectSchemaVersion
+      collectionDocumentId: ServerMonitor.name,
+      collectionDocument: { created: Date.now() },
+      collectionSchemaVersion: ServerMonitor.collectionSchemaVersion
     });
 
     this.setupConnectionMonitors(config.connectionTestInterval_secs * 1000);

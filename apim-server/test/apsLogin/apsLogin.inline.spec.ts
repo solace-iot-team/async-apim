@@ -1,7 +1,7 @@
 import 'mocha';
 import { expect } from 'chai';
 import path from 'path';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -15,7 +15,7 @@ import {
   EAPSOrganizationAuthRole, 
   EAPSSystemAuthRole, 
   ListApsUsersResponse
-} from '../src/@solace-iot-team/apim-server-openapi-node';
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
 
 
 const scriptName: string = path.basename(__filename);
@@ -135,8 +135,10 @@ describe(`${scriptName}`, () => {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
-      expect(loggedIn.roles).to.be.an('array');
-      expect(loggedIn.roles).to.eql(apsUserLoginTemplate.roles);
+      expect(loggedIn.systemRoles).to.be.an('array');
+      expect(loggedIn.systemRoles).to.eql(apsUserLoginTemplate.systemRoles);
+      expect(loggedIn.memberOfOrganizations).to.be.an('array');
+      expect(loggedIn.memberOfOrganizations).to.deep.equal(apsUserLoginTemplate.memberOfOrganizations);
     });
 
     it(`${scriptName}: should fail to login as user`, async() => {
@@ -184,12 +186,12 @@ describe(`${scriptName}`, () => {
         const loggedIn: APSUser = await ApsLoginService.login({
           requestBody: loginCredentials
         });
-        expect(loggedIn.roles, 'roles not an array').to.be.an('array');
-        expect(loggedIn.roles, 'more than 1 role').length(1);
-        expect(loggedIn.roles[0], 'role is not root').equal(EAPSAuthRole.ROOT);
+        expect(loggedIn.systemRoles, TestLogger.createTestFailMessage('roles not an array')).to.be.an('array');
+        expect(loggedIn.systemRoles, TestLogger.createTestFailMessage('more than 1 role')).length(1);
+        expect(loggedIn.systemRoles[0], TestLogger.createTestFailMessage('role is not root')).equal(EAPSSystemAuthRole.ROOT);
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
       }
     });
 
@@ -207,9 +209,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(401);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.NOT_AUTHORIZED);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.NOT_AUTHORIZED);
       }
     });
 
@@ -227,9 +229,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(401);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.NOT_AUTHORIZED);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.NOT_AUTHORIZED);
       }
     });
 
@@ -239,6 +241,8 @@ describe(`${scriptName}`, () => {
         ...apsUserLoginTemplate,
         isActivated: false,
       }
+      const anyReplaceRequest: any = replaceRequest;
+      anyReplaceRequest.userId = undefined;
       try {
         replaced = await ApsUsersService.replaceApsUser({
           userId: apsUserLoginTemplate.userId, 
@@ -246,9 +250,9 @@ describe(`${scriptName}`, () => {
         });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-        expect(false).to.be.true;
+        expect(false, TestLogger.createTestFailMessage('error')).to.be.true;
       }
-      expect(replaced).to.deep.equal({ ...replaceRequest, userId: apsUserLoginTemplate.userId });
+      expect(replaced, TestLogger.createTestFailMessage('replaced object is not equal to expected object')).to.deep.equal({ ...replaceRequest, userId: apsUserLoginTemplate.userId });
     });
 
     it(`${scriptName}: should fail to login as inactive user`, async() => {
@@ -259,13 +263,13 @@ describe(`${scriptName}`, () => {
         loggedIn = await ApsLoginService.login({
           requestBody: { userId: loginUserId, userPwd: loginPwd }
         });
-        expect(false, 'should not have logged in successfully, user is not active').to.be.true;
+        expect(false, TestLogger.createTestFailMessage('should not have logged in successfully, user is not active')).to.be.true;
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(401);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId).equal(APSErrorIds.NOT_AUTHORIZED);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('errorId mismatch')).equal(APSErrorIds.NOT_AUTHORIZED);
       }
     });
 

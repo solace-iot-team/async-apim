@@ -1,10 +1,10 @@
 import 'mocha';
 import { expect } from 'chai';
 import request from 'supertest';
-import Server from '../server/index';
+import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -19,7 +19,7 @@ import {
   ListApsConnectorsResponse,
   APSLocationConfigExternal,
   APSLocationConfigInternalProxy
-} from '../src/@solace-iot-team/apim-server-openapi-node';
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
 
 
 const scriptName: string = path.basename(__filename);

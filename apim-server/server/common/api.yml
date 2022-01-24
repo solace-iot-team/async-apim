@@ -826,14 +826,14 @@ components:
     search_organization_id:
       name: searchOrganizationId
       in: query
-      description: Search for API Objects in a specific organization.
+      description: Search for API Objects in a specific organization. Cannot be used with excludeSearchOrganizationId.
       required: false
       schema:
         type: string
     exclude_search_organization_id:
       name: excludeSearchOrganizationId
       in: query
-      description: Exclude results from a specific organization from the search for API Objects.
+      description: Exclude results from a specific organization from the search for API Objects. Cannot be used with searchOrganizationId.
       required: false
       schema:
         type: string
@@ -945,6 +945,7 @@ components:
       - notAuthorized
       - pathNotFound
       - invalidSortFieldName
+      - invalidQueryParameterCombination
     APSErrorMeta:
       type: object
       description: Additional details about the error.

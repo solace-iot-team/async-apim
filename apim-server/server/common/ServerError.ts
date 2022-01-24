@@ -363,6 +363,20 @@ export class ApiBadSortFieldNameServerError extends ApiServerError {
   }
 }
 
+export type ApiBadQueryParameterCombinationServerErrorMeta = {
+  invalidQueryParameterCombinationList: Array<string>,
+  apsObjectName: string
+}
+export class ApiBadQueryParameterCombinationServerError extends ApiServerError {
+  private static apiStatusCode = 400;
+  private static apiErrorId: APSErrorIds = 'invalidQueryParameterCombination';
+  private static apiDefaultDescription = 'invalid query parameter combination';
+
+  constructor(internalLogName: string, apiDescription: string = ApiBadQueryParameterCombinationServerError.apiDefaultDescription, apiMeta: ApiBadQueryParameterCombinationServerErrorMeta) {
+    super(internalLogName, ApiBadQueryParameterCombinationServerError.name, ApiBadQueryParameterCombinationServerError.apiStatusCode, ApiBadQueryParameterCombinationServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+
 export class ApiNotAuthorizedServerError extends ApiServerError {
   private static apiStatusCode = 401;
   private static apiErrorId: APSErrorIds = 'notAuthorized';

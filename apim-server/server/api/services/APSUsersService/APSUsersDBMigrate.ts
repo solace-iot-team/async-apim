@@ -1,30 +1,23 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../../common/MongoPersistenceService';
-import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../../utils/ApiQueryHelper';
-import ServerConfig, { TRootUserConfig } from '../../../common/ServerConfig';
-import { ServerUtils } from '../../../common/ServerUtils';
+import { MongoPersistenceService } from '../../../common/MongoPersistenceService';
 import { 
-  ApiError,
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
   APSSystemAuthRoleList,
-  APSUserList,
-  APSUserProfile,
-  ApsUsersService,
   EAPSOrganizationAuthRole,
   EAPSSystemAuthRole,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError, MigrateServerError } from '../../../common/ServerError';
+import { MigrateServerError } from '../../../common/ServerError';
 import { APSUsersService } from './APSUsersService';
 
 // capture all the schema versions over time here
 // Version: 0
-type APSUserProfile_DB_0 = {
+export type APSUserProfile_DB_0 = {
   first: string;
   last: string;
   email: string;
 }
-type APSUser_DB_0 = {
+export type APSUser_DB_0 = {
   _id: string;
   isActivated: boolean;
   userId: string;
@@ -34,11 +27,11 @@ type APSUser_DB_0 = {
   memberOfOrganizations?: Array<string>;
 }
 // Version: 1
-type APSOrganizationRoles_DB_1 = {
+export type APSOrganizationRoles_DB_1 = {
   organizationId: string;
   roles: Array<string>;
 }
-type APSUser_DB_1 = {
+export type APSUser_DB_1 = {
   _id: string;
   _schemaVersion: number;
   isActivated: boolean;
@@ -51,7 +44,7 @@ type APSUser_DB_1 = {
 
 export class APSUsersDBMigrate {
 
-  public static migrate = async(apsUsersService: APSUsersService): Promise<void> => {
+  public static migrate = async(apsUsersService: APSUsersService): Promise<number> => {
     const funcName = 'migrate';
     const logName = `${APSUsersDBMigrate.name}.${funcName}()`;
     const targetDBSchemaVersion = apsUsersService.getDBObjectSchemaVersion();
@@ -67,7 +60,8 @@ export class APSUsersDBMigrate {
         if(currentDBSchemaVersion === 0) await APSUsersDBMigrate.migrate_0_to_1(apsUsersService.getPersistenceService(), currentDBRawUser);
         else throw new MigrateServerError(logName, 'no migration path for schema versions found', apsUsersService.getCollectionName(), currentDBSchemaVersion, targetDBSchemaVersion);
       }
-    }    
+    }
+    return currentDBRawUserListToMigrate.length;
   }
 
   private static migrate_0_to_1 = async(persistenceService: MongoPersistenceService, dbUser_0: APSUser_DB_0): Promise<void> => {
@@ -111,9 +105,9 @@ export class APSUsersDBMigrate {
     } }));
 
     await persistenceService.replace({
-      documentId: dbUser_1.userId, 
-      document: dbUser_1, 
-      schemaVersion: 1
+      collectionDocumentId: dbUser_1.userId, 
+      collectionDocument: dbUser_1, 
+      collectionSchemaVersion: 1
     });
     const newRawDBDocument = await persistenceService.byIdRaw(dbUser_1.userId);
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, details: {

@@ -10,7 +10,6 @@ export class ApsUsersController {
   public static all = (req: Request, res: Response, next: NextFunction): void => {
 
     APSUsersService.all(ApiQueryHelper.getPagingInfoFromQuery(req.query), ApiQueryHelper.getSortInfoFromQuery(req.query), ApiQueryHelper.getSearchInfoFromQuery(req.query))
-    // APSUsersService.all(ApiQueryHelper.getSearchOrgIdFromQuery(req.query), ApiQueryHelper.getExcludeSearchOrgIdFromQuery(req.query), ApiQueryHelper.getPagingInfoFromQuery(req.query), ApiQueryHelper.getSortInfoFromQuery(req.query), ApiQueryHelper.getSearchInfoFromQuery(req.query))
     .then( (r: TAPSListUserResponse) => {
       // res.status(200).type('application/json').json(r);
       res.status(200).json(r);

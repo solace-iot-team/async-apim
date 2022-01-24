@@ -1,28 +1,30 @@
 import 'mocha';
 import { expect } from 'chai';
 import path from 'path';
+import fs from 'fs';
 import s from 'shelljs';
 import _ from 'lodash';
-import { TestContext, testHelperSleep, TestLogger } from './lib/test.helpers';
+import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSStatus,
   ApsMonitorService,
   APSUser,
-  EAPSAuthRole,
   ApsUsersService,
   APSError,
   APSErrorIds,
-} from '../src/@solace-iot-team/apim-server-openapi-node';
-import ServerMonitor from '../server/common/ServerMonitor';
-import { MongoDatabaseAccess } from '../server/common/MongoDatabaseAccess';
-import ServerConfig from '../server/common/ServerConfig';
-import { ServerErrorFactory } from '../server/common/ServerError';
+  EAPSSystemAuthRole,
+  EAPSOrganizationAuthRole,
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
+import ServerMonitor from '../../server/common/ServerMonitor';
+import { MongoDatabaseAccess } from '../../server/common/MongoDatabaseAccess';
+import ServerConfig from '../../server/common/ServerConfig';
+import { ServerErrorFactory } from '../../server/common/ServerError';
 import { MongoClientOptions } from 'mongodb';
+import { TestEnv } from '../setup.spec';
 
 
 const scriptName: string = path.basename(__filename);
-const scriptDir: string = path.dirname(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
 const apsUserTemplate: APSUser = {
@@ -34,12 +36,24 @@ const apsUserTemplate: APSUser = {
     first: 'first',
     last: 'last'
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ 'org' ]
+  systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+  memberOfOrganizations: [
+    { 
+      organizationId: 'org',
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
+
+    // before(() => {
+    //   TestContext.newItId();
+    //   expect(fs.existsSync(testRootDir), TestLogger.createTestFailMessage(`testRootDir does not exist = ${testRootDir}`)).to.be.true;
+    //   expect(fs.existsSync(startMongoScript), TestLogger.createTestFailMessage(`startMongoScript does not exist = ${startMongoScript}`)).to.be.true;
+    //   expect(fs.existsSync(stopMongoScript), TestLogger.createTestFailMessage(`stopMongoScript does not exist = ${stopMongoScript}`)).to.be.true;
+    // });
 
     beforeEach(() => {
       TestContext.newItId();
@@ -123,7 +137,7 @@ describe(`${scriptName}`, () => {
 
     it(`${scriptName}: should stop mongo db`, async () => {
       TestLogger.logMessageWithId(`stop mongo`);
-      let code = s.exec(`${scriptDir}/mongodb/stop.mongo.sh `).code;
+      let code = s.exec(TestEnv.stopMongoScript).code;
       expect(code, TestLogger.createTestFailMessage('stop mongo')).equal(0);
     });
 
@@ -198,7 +212,7 @@ describe(`${scriptName}`, () => {
     // ****************************************************************************************************************
     it(`${scriptName}: should start mongo and re-initialize server`, async () => {
       TestLogger.logMessageWithId(`start mongo`);
-      const code = s.exec(`${scriptDir}/mongodb/start.mongo.sh `).code;
+      const code = s.exec(TestEnv.startMongoScript).code;
       expect(code, TestLogger.createTestFailMessage('start mongo')).equal(0);
 
       // test and initializes server if failed

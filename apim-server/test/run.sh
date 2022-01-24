@@ -15,6 +15,7 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 # Run
 
   runScript="npm run test:pretty"
+  # runScript="npm run test:devel:pretty"
   echo "starting: $runScript ..."
   logFile="$LOG_DIR/npm.run.test.out"; mkdir -p "$(dirname "$logFile")";
   # $runScript

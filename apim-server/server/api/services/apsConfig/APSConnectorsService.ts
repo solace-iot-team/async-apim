@@ -26,7 +26,7 @@ export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConn
 
 export class APSConnectorsService {
   private static collectionName = "apsConnectors";
-  private static dbObjectSchemaVersion = 0;
+  private static collectionSchemaVersion = 0;
   private static boostrapApsConnectorListPath = 'bootstrap/apsConfig/apsConnectors/apsConnectorList.json';
   private persistenceService: MongoPersistenceService;
   
@@ -203,9 +203,9 @@ export class APSConnectorsService {
       isActive: false
     }
     const created: APSConnector = await this.persistenceService.create({
-      documentId: apsConnectorCreateRequest.connectorId,
-      document: create,
-      schemaVersion: APSConnectorsService.dbObjectSchemaVersion
+      collectionDocumentId: apsConnectorCreateRequest.connectorId,
+      collectionDocument: create,
+      collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created}));
@@ -223,9 +223,9 @@ export class APSConnectorsService {
       isActive: current.isActive
     }
     const replaced: APSConnector = await this.persistenceService.replace({
-      documentId: apsConnectorId,
-      document: replace,
-      schemaVersion: APSConnectorsService.dbObjectSchemaVersion
+      collectionDocumentId: apsConnectorId,
+      collectionDocument: replace,
+      collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced}));
@@ -246,17 +246,17 @@ export class APSConnectorsService {
     if(oldActive) {
       oldActive.isActive = false;
       const replacedOldActive: APSConnector = await this.persistenceService.replace({
-        documentId: oldActive.connectorId,
-        document: oldActive,
-        schemaVersion: APSConnectorsService.dbObjectSchemaVersion
+        collectionDocumentId: oldActive.connectorId,
+        collectionDocument: oldActive,
+        collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
       });
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedOldActive', details: replacedOldActive }));
     }
     newActive.isActive = true;
     const replacedNewActive: APSConnector = await this.persistenceService.replace({
-      documentId: apsConnectorId,
-      document: newActive,
-      schemaVersion: APSConnectorsService.dbObjectSchemaVersion
+      collectionDocumentId: apsConnectorId,
+      collectionDocument: newActive,
+      collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedNewActive', details: replacedNewActive }));

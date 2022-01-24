@@ -43,11 +43,11 @@ export class ApiQueryHelper {
 
   public static getSearchInfoFromQuery = (query: ParsedQs): TApiSearchInfo => {
     return {
-      searchWordList: query.searchWordList ? ApiQueryHelper.decodeQueryParam(query.searchWordList as string) : undefined,
-      searchOrganizationId: query.searchOrganizationId ? (query.searchOrganizationId as string) : undefined,
-      excludeSearchOrganizationId: query.excludeSearchOrganizationId ? (query.excludeSearchOrganizationId as string) : undefined,
-      searchIsActivated: query.searchIsActivated ? (Boolean(JSON.parse(query.searchIsActivated as string))) : undefined,
-      searchUserId: query.searchUserId ? (query.searchUserId as string) : undefined,
+      searchWordList: query.searchWordList !== undefined ? ApiQueryHelper.decodeQueryParam(query.searchWordList as string) : undefined,
+      searchOrganizationId: query.searchOrganizationId !== undefined ? (query.searchOrganizationId as string) : undefined,
+      excludeSearchOrganizationId: query.excludeSearchOrganizationId !== undefined ? (query.excludeSearchOrganizationId as string) : undefined,
+      searchIsActivated: query.searchIsActivated !== undefined ? (Boolean(JSON.parse(query.searchIsActivated as string))) : undefined,
+      searchUserId: query.searchUserId !== undefined ? (query.searchUserId as string) : undefined,
     }
   }
 

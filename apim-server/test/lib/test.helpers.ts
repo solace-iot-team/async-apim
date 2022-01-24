@@ -245,7 +245,16 @@ export type TTestEnv = {
   apiBase: string,
   enableLogging: boolean,
   rootUsername: string,
-  rootUserPassword: string
+  rootUserPassword: string;
+  testRootDir: string;
+  standupMongoScript: string;
+  teardownMongoScript: string;
+  startMongoScript: string;
+  stopMongoScript: string;
+  bootstrapFiles: {
+    apsUserListFile: string;
+    apsConnectorListFile: string;
+  }
 }
 
 export class TestContext {

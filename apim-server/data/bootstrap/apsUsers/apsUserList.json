@@ -2,78 +2,77 @@
   {
     "userId": "master.user@async-apim-devel.com",
     "password": "master.user@async-apim-devel.com",
-    "roles": ["apiConsumer", "apiTeam", "loginAs", "organizationAdmin", "systemAdmin"],
     "isActivated": true,
     "profile": {
       "first": "Master",
       "last": "User",
       "email": "master.user@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-devel"]
+    "systemRoles": ["systemAdmin", "loginAs"],
+    "memberOfOrganizations": [
+      {
+        "organizationId": "apim-devel",
+        "roles": ["apiTeam", "organizationAdmin", "apiConsumer", "loginAs"]
+      }
+    ]
   },
   {
     "userId": "api.consumer@async-apim-devel.com",
     "password": "api.consumer@async-apim-devel.com",
-    "roles": ["apiConsumer"],
     "isActivated": true,
     "profile": {
       "first": "Api",
       "last": "Consumer",
       "email": "api.consumer@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-devel"]
+    "memberOfOrganizations": [
+      {
+        "organizationId": "apim-devel",
+        "roles": ["apiConsumer"]
+      }
+    ]
   },
   {
     "userId": "api.team@async-apim-devel.com",
     "password": "api.team@async-apim-devel.com",
-    "roles": ["apiTeam"],
     "isActivated": true,
     "profile": {
       "first": "Api",
       "last": "Team",
       "email": "api.team@async-apim-devel.com"
     },
-    "memberOfOrganizations": ["apim-devel"]
-  },
-  {
-    "userId": "org.admin@async-apim-devel.com",
-    "password": "org.admin@async-apim-devel.com",
-    "roles": ["organizationAdmin"],
-    "isActivated": true,
-    "profile": {
-      "first": "Org",
-      "last": "Admin",
-      "email": "org.admin@async-apim-devel.com"
-    },
-    "memberOfOrganizations": ["apim-devel"]
-  },
-  {
-    "userId": "system.admin@async-apim-devel.com",
-    "password": "system.admin@async-apim-devel.com",
-    "roles": ["systemAdmin", "loginAs"],
-    "isActivated": true,
-    "profile": {
-      "first": "System",
-      "last": "Admin",
-      "email": "system.admin@async-apim-devel.com"
-    },
-    "memberOfOrganizations": ["apim-devel"]
-  },
-  {
-    "userId": "system.admin4@async-apim-devel.com",
-    "password": "system.admin3@async-apim-devel.com",
-    "isActivated": true,
-    "profile": {
-      "first": "System",
-      "last": "Admin",
-      "email": "system.admin3@async-apim-devel.com"
-    },
-    "systemRoles": ["systemAdmin", "loginAs"],
     "memberOfOrganizations": [
       {
         "organizationId": "apim-devel",
         "roles": ["apiTeam"]
       }
     ]
+  },
+  {
+    "userId": "org.admin@async-apim-devel.com",
+    "password": "org.admin@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "Org",
+      "last": "Admin",
+      "email": "org.admin@async-apim-devel.com"
+    },
+    "memberOfOrganizations": [
+      {
+        "organizationId": "apim-devel",
+        "roles": ["organizationAdmin"]
+      }
+    ]
+  },
+  {
+    "userId": "system.admin@async-apim-devel.com",
+    "password": "system.admin@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "System",
+      "last": "Admin",
+      "email": "system.admin@async-apim-devel.com"
+    },
+    "systemRoles": ["systemAdmin", "loginAs"]
   }
 ]
