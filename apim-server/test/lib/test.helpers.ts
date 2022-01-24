@@ -239,6 +239,7 @@ export function getExpectContainedDiff(containedObject: any, object: any): Expec
 }
 
 export type TTestEnv = {
+  projectRootDir: string;
   protocol: string,
   host: string,
   port: number,
@@ -254,6 +255,10 @@ export type TTestEnv = {
   bootstrapFiles: {
     apsUserListFile: string;
     apsConnectorListFile: string;
+    quickstart: {
+      apsUserListFile: string;
+      apsConnectorListFile: string;  
+    }
   }
 }
 

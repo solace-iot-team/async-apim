@@ -2,13 +2,18 @@
   {
     "userId": "master.user@async-apim-quickstart.com",
     "password": "master.user@async-apim-quickstart.com",
-    "roles": ["apiConsumer", "apiTeam", "loginAs", "organizationAdmin", "systemAdmin"],
     "isActivated": true,
     "profile": {
       "first": "Master",
       "last": "User",
       "email": "master.user@async-apim-quickstart.com"
     },
-    "memberOfOrganizations": ["apim-quickstart"]
+    "systemRoles": ["systemAdmin", "loginAs"],
+    "memberOfOrganizations": [
+      {
+        "organizationId": "apim-quickstart",
+        "roles": ["apiTeam", "organizationAdmin", "apiConsumer", "loginAs"]
+      }
+    ]
   }
 ]

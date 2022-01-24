@@ -27,12 +27,13 @@ const scriptDir: string = path.dirname(__filename);
 TestLogger.setLogging(true);
 TestLogger.logMessage(scriptName, ">>> initializing ...");
 
-const setTestEnv = (scriptDir: string): TTestEnv => {  
+const setTestEnv = (scriptDir: string): TTestEnv => { 
   let testRootDir = scriptDir;
   if(!scriptDir.includes('test')) testRootDir = path.join(scriptDir, 'test');
-
+  const projectRootDir = path.join(testRootDir, '../..');
   const bootstrapDataDir = path.join(testRootDir, '../data/bootstrap');
   const testEnv: TTestEnv = {
+    projectRootDir: projectRootDir,
     protocol: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_PROTOCOL'),
     host: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_HOST'),
     port: getMandatoryEnvVarValueAsNumber(scriptName, 'APIM_TEST_SERVER_PORT'),  
@@ -47,8 +48,12 @@ const setTestEnv = (scriptDir: string): TTestEnv => {
     stopMongoScript: path.join(testRootDir, 'mongodb/stop.mongo.sh'),
     bootstrapFiles: {
       apsUserListFile: path.join(bootstrapDataDir, 'apsUsers/apsUserList.json'),
-      apsConnectorListFile: path.join(bootstrapDataDir, 'apsConfig/apsConnectors/apsConnectorList.json')
-    }
+      apsConnectorListFile: path.join(bootstrapDataDir, 'apsConfig/apsConnectors/apsConnectorList.json'),
+      quickstart: {
+        apsUserListFile: path.join(projectRootDir, 'quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json'),
+        apsConnectorListFile: path.join(projectRootDir, 'quickstart/docker-volumes/apim-server/bootstrap/apsConfig/apsConnectors/apsConnectorList.json'),  
+      }
+    },
   }
   return testEnv;
 }
@@ -69,6 +74,10 @@ before(async() => {
   expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsConnectorListFile
   }`)).to.be.true;
+  expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsUserListFile}`)).to.be.true;
+  expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile
+  }`)).to.be.true;
+  
   // start mongo
   const code = s.exec(TestEnv.standupMongoScript).code;
   // const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;

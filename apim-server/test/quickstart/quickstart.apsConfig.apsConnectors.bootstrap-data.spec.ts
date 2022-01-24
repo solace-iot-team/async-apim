@@ -44,9 +44,9 @@ describe(`${scriptName}`, () => {
 // * OpenApi API Tests *
 // ****************************************************************************************************************
 
-  it(`${scriptName}: should read bootstrap connector list`, async () => {
+  it(`${scriptName}: should read quickstart bootstrap connector list`, async () => {
     try {
-      bootstrapConnectorList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.apsConnectorListFile);
+      bootstrapConnectorList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile);
       // TestLogger.logMessageWithId(`bootstrapUserList = \n${JSON.stringify(bootstrapUserList, null, 2)}`);
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -54,7 +54,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should delete bootstrap connector list`, async () => {
+  it(`${scriptName}: should delete quickstart bootstrap connector list`, async () => {
     try {
       for(const connector of bootstrapConnectorList) {
         try {
@@ -73,7 +73,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should create connector`, async () => {
+  it(`${scriptName}: should create quickstart connector`, async () => {
     try {
       for(const connector of bootstrapConnectorList) {
         await ApsConfigService.createApsConnector({

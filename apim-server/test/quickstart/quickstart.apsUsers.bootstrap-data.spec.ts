@@ -7,8 +7,9 @@ import _ from 'lodash';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
-  ApsConfigService, 
-  ListApsConnectorsResponse, 
+  APSUser, 
+  ApsUsersService, 
+  ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { TestEnv } from '../setup.spec';
 import { ServerUtils } from '../../server/common/ServerUtils';
@@ -19,7 +20,7 @@ TestLogger.logMessage(scriptName, ">>> starting ...");
 
 describe(`${scriptName}`, () => {
 
-  let bootstrapConnectorList = [];
+  let bootstrapUserList = [];
 
   beforeEach(() => {
     TestContext.newItId();
@@ -27,11 +28,23 @@ describe(`${scriptName}`, () => {
 
   after(async() => {
     TestContext.newItId();
+    let apsUserList: Array<APSUser> = [];
     try {
-      const result: ListApsConnectorsResponse  = await ApsConfigService.listApsConnectors();
-      for (const connector of result.list) {
-        await ApsConfigService.deleteApsConnector({
-          connectorId: connector.connectorId
+      const pageSize = 100;
+      let pageNumber = 1;
+      let hasNextPage = true;
+      while (hasNextPage) {
+        const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+          pageSize: pageSize, 
+          pageNumber: pageNumber
+        });
+        if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
+        pageNumber++;
+        apsUserList.push(...resultListApsUsers.list);
+      }
+      for (const apsUser of apsUserList) {
+        await ApsUsersService.deleteApsUser({
+          userId: apsUser.userId
         });
       }
     } catch (e) {
@@ -44,9 +57,9 @@ describe(`${scriptName}`, () => {
 // * OpenApi API Tests *
 // ****************************************************************************************************************
 
-  it(`${scriptName}: should read bootstrap connector list`, async () => {
+  it(`${scriptName}: should read quickstart bootstrap user list`, async () => {
     try {
-      bootstrapConnectorList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.apsConnectorListFile);
+      bootstrapUserList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.quickstart.apsUserListFile);
       // TestLogger.logMessageWithId(`bootstrapUserList = \n${JSON.stringify(bootstrapUserList, null, 2)}`);
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -54,13 +67,13 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should delete bootstrap connector list`, async () => {
+  it(`${scriptName}: should delete quickstart bootstrap user list`, async () => {
     try {
-      for(const connector of bootstrapConnectorList) {
+      for(const user of bootstrapUserList) {
         try {
           // TestLogger.logMessageWithId(`userId = ${user.userId}`);
-          await ApsConfigService.deleteApsConnector({
-            connectorId: connector.connectorId
+          await ApsUsersService.deleteApsUser({
+            userId: user.userId
           });
         } catch (e) {
           expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -73,11 +86,11 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should create connector`, async () => {
+  it(`${scriptName}: should create quickstart users`, async () => {
     try {
-      for(const connector of bootstrapConnectorList) {
-        await ApsConfigService.createApsConnector({
-          requestBody: { ...connector }
+      for(const user of bootstrapUserList) {
+        await ApsUsersService.createApsUser({
+          requestBody: { ...user }
         });
       }
     } catch (e) {
