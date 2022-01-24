@@ -17,6 +17,7 @@
     "test:pretty": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts | pino-pretty && unset_source_env",
     "test:devel": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/quickstart/quickstart.apsConfig.apsConnectors.bootstrap-data.spec && unset_source_env",
     "test:devel:pretty": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/apsUsers/apsUsers.bootstrap-data.spec.ts | pino-pretty && unset_source_env",
+    "test:devel:t": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/testFramework/framework.inline.spec && unset_source_env",
     "test:debug": "mocha -r ts-node/register --inspect-brk test/**/*.ts --exit"
   },
   "repository": {

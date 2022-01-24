@@ -21,6 +21,13 @@ import {
   APSStatus,
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 
+// ensure any unhandled exception cause exit = 1
+function onUncaught(err: any){
+  console.log(err);
+  process.exit(1);
+}
+process.on('unhandledRejection', onUncaught);
+
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
 

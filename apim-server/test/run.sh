@@ -20,9 +20,7 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
   logFile="$LOG_DIR/npm.run.test.out"; mkdir -p "$(dirname "$logFile")";
   # $runScript
   $runScript > $logFile 2>&1
-  code=$?; if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - runScript='$runScript' - $scriptName"; FAILED=1; fi
-  # code is always = 0, even if tests fail
-  echo "code=$code"
+  code=$?; echo "code=$code"; if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - runScript='$runScript' - $scriptName"; FAILED=1; fi
 
 ##############################################################################################################################
 # Check for errors
