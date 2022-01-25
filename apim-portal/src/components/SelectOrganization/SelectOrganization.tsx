@@ -4,6 +4,7 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 
+import { APSOrganizationRoles } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import type { TAPOrganizationId, TAPOrganizationIdList } from "../APComponentsCommon";
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { ApiCallState } from '../../utils/ApiCallState';
@@ -63,7 +64,9 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     const funcName = 'transformApiObjectListToSelectObjectList';
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.user.memberOfOrganizations) throw new Error(`${logName}: user is not a member of any organization`);
-    const userMemberOfOrganizationNameList: TAPOrganizationIdList = userContext.user.memberOfOrganizations;
+    const userMemberOfOrganizationNameList: TAPOrganizationIdList = userContext.user.memberOfOrganizations.map( (apsOrganizationRoles: APSOrganizationRoles) => {
+      return apsOrganizationRoles.organizationId;
+    });
     let selectObjectList: TSelectObjectList = [];
     apiObjectList.forEach((apiObject: TApiObject) => {
       const organizationName: TAPOrganizationId | undefined = userMemberOfOrganizationNameList.find((userMemberOfOrganizationName: TAPOrganizationId) => {
@@ -122,7 +125,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       props.onError(callState);
       return;
     }
-
     if(!userContext.user.memberOfOrganizations || userContext.user.memberOfOrganizations.length === 0) {
       props.onSuccess();
       return;
@@ -134,13 +136,16 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   const doProcessSelectedObject = (selectedObject: TSelectObject) => {
     if(selectObjectList) dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: transformSelectObjectListToUserContextAvailableOrganizationNameList(selectObjectList)})
     dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_NAME', currentOrganizationName: selectedObject.name });
-    props.onSuccess();
   }
 
   // * useEffect Hooks *
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(userContext.runtimeSettings.currentOrganizationName) props.onSuccess();
+  }, [userContext.runtimeSettings.currentOrganizationName]);
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

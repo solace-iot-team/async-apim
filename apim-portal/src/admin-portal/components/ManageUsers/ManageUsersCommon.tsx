@@ -1,6 +1,8 @@
 import { 
-  APSAuthRoleList,
   APSOrganizationIdList,
+  APSOrganizationRoles,
+  APSOrganizationRolesList,
+  APSSystemAuthRoleList,
   APSUser, 
   APSUserId,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
@@ -20,7 +22,8 @@ export type TViewManagedObject = {
   displayName: string;
   globalSearch: string;
   apiObject: TViewApiObject;
-  roleDisplayNameListAsString: string;
+  systemRoleDisplayNameListAsString: string;
+  // roleDisplayNameListAsString: string;
   memberOfOrganizationNameListAsString: string;
   userAssetInfoList: TAPAssetInfoWithOrgList;
 }
@@ -65,6 +68,30 @@ export type TManageUsersScope =
 
 export class ManageUsersCommon {
 
+  public static addMemberOfOrganizationRoles = (currentMemberOfOrganizationRoles: APSOrganizationRolesList | undefined, newMemberOfOrganizationRoles: APSOrganizationRoles): APSOrganizationRolesList => {
+    const newMemberOfOrganizationRolesList: APSOrganizationRolesList = currentMemberOfOrganizationRoles ? JSON.parse(JSON.stringify(currentMemberOfOrganizationRoles)) : [];
+    const foundIndex = newMemberOfOrganizationRolesList.findIndex((apsOrganizationRoles: APSOrganizationRoles) => {
+      return apsOrganizationRoles.organizationId === newMemberOfOrganizationRoles.organizationId;
+    });
+    if(foundIndex > -1) {
+      newMemberOfOrganizationRolesList[foundIndex] = newMemberOfOrganizationRoles;
+    } else {
+      newMemberOfOrganizationRolesList.concat(newMemberOfOrganizationRoles);
+    }
+    return newMemberOfOrganizationRolesList;
+  }
+
+  public static removeMemberOfOrganizationRoles = (currentMemberOfOrganizationRoles: APSOrganizationRolesList | undefined, removeOrgId: CommonName): APSOrganizationRolesList => {
+    const newMemberOfOrganizationRolesList: APSOrganizationRolesList = currentMemberOfOrganizationRoles ? JSON.parse(JSON.stringify(currentMemberOfOrganizationRoles)) : [];
+    const foundIndex = newMemberOfOrganizationRolesList.findIndex((apsOrganizationRoles: APSOrganizationRoles) => {
+      return apsOrganizationRoles.organizationId === removeOrgId;
+    });
+    if(foundIndex > -1) {
+      newMemberOfOrganizationRolesList.splice(foundIndex, 1);
+    }
+    return newMemberOfOrganizationRolesList;
+  }
+
   public static transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
     // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
     // const logName = `${componentName}.${funcName}()`;
@@ -83,9 +110,9 @@ export class ManageUsersCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  public static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: APSAuthRoleList): string => {
-    return ConfigHelper.getAuthorizedRolesDisplayNameList(roles ? roles : [], configContext).join(', ');
-  }
+  // private static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: APSAuthRoleList): string => {
+  //   return ConfigHelper.getAuthorizedRolesDisplayNameList(roles ? roles : [], configContext).join(', ');
+  // }
 
   public static getOrganizationListAsString = (organizationList?: APSOrganizationIdList): string => {
     if (organizationList) return organizationList.join(', ');
@@ -93,15 +120,16 @@ export class ManageUsersCommon {
   }
 
   public static transformViewApiObjectToViewManagedObject = (configContext: TAPConfigContext, viewApiObject: TViewApiObject, userAssetInfoList: TAPAssetInfoWithOrgList): TViewManagedObject => {
-    // const funcName = 'transformViewApiObjectToViewManagedObject';
-    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    const funcName = 'transformViewApiObjectToViewManagedObject';
+    const logName = `${ManageUsersCommon.name}.${funcName}()`;
     return {
       id: viewApiObject.userId,
       displayName: `${viewApiObject.profile.first} ${viewApiObject.profile.last}`,
       globalSearch: ManageUsersCommon.generateGlobalSearchContent(viewApiObject),
       apiObject: viewApiObject,
-      roleDisplayNameListAsString: ManageUsersCommon.getRoleDisplayNameListAsString(configContext, viewApiObject.roles),
-      memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(viewApiObject.memberOfOrganizations),
+      systemRoleDisplayNameListAsString: ConfigHelper.getAuthorizedSystemRolesDisplayNameList(configContext, viewApiObject.systemRoles).join(', '), 
+      memberOfOrganizationNameListAsString: `${logName}: what goes in here now?`,
+      // memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(viewApiObject.memberOfOrganizations),
       userAssetInfoList: userAssetInfoList
     }
   }
@@ -113,9 +141,11 @@ export class ManageUsersCommon {
 
   public static getUserAssetList = async (apsUser: APSUser, organizationId?: CommonName): Promise<TAPAssetInfoWithOrgList> => {
     let userAssetInfoList: TAPAssetInfoWithOrgList = [];
-    const _orgList = organizationId !== undefined ? [organizationId] : apsUser.memberOfOrganizations; 
-    if(_orgList) {
-      for(const _orgId of _orgList) {
+    const _orgIdList = organizationId !== undefined ? [organizationId] : apsUser.memberOfOrganizations?.map((apsOrganizationRoles: APSOrganizationRoles) => {
+      return apsOrganizationRoles.organizationId;
+    }); 
+    if(_orgIdList) {
+      for(const _orgId of _orgIdList) {
         let _userExistsInConnector = false;
         try {
           await DevelopersService.getDeveloper({
@@ -154,4 +184,5 @@ export class ManageUsersCommon {
     }
     return userAssetInfoList;
   } 
+  static ManageUsersCommon: APSOrganizationRolesList | undefined;
 }

@@ -92,7 +92,8 @@ const emptyUser: APSUser = {
     last: '',
     email: ''
   },
-  roles: []
+  systemRoles: [],
+  memberOfOrganizations: []
 };
 const initialUserContext: TUserContext = {
   user: emptyUser,

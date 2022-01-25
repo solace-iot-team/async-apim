@@ -8,9 +8,11 @@ import { TApiCallState } from "../utils/ApiCallState";
 import { EAppState, Globals } from '../utils/Globals';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
+import { CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export const UserLoginPage: React.FC = () => {
   const componentName = 'UserLoginPage';
@@ -23,6 +25,7 @@ export const UserLoginPage: React.FC = () => {
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
   /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [configContext] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
@@ -49,7 +52,7 @@ export const UserLoginPage: React.FC = () => {
         originAppState = EAppState.DEVELOPER_PORTAL; 
         newCurrentAppState = EAppState.DEVELOPER_PORTAL;
       } else {
-        throw new Error(`${logName}: user not authorized to access developer portal nor admin portal. userContext=${JSON.stringify(userContext, null, 2)}`);
+        throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
       }
     }
     dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
@@ -83,6 +86,14 @@ export const UserLoginPage: React.FC = () => {
   }
   
   const onSelectOrganizationSuccess = () => {
+    // const funcName = 'onSelectOrganizationSuccess';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: userContext.user.memberOfOrganizations=${JSON.stringify(userContext.user.memberOfOrganizations, null, 2)}`);
+    // alert(`${logName}: userContext.runtimeSettings=${JSON.stringify(userContext.runtimeSettings, null, 2)}`);
+    dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
+      isLoggedIn: true, 
+      authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
+    }});
     setIsOrganizationSelectFinished(true);
     setIsFinished(true);
   }

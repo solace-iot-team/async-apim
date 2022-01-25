@@ -16,8 +16,8 @@ import {
   ApsUsersService, 
   APSUser,
   APSUserReplace,
-  EAPSAuthRole,
   APSOrganizationAuthRoleList,
+  EAPSSystemAuthRole,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -25,7 +25,7 @@ import { Organization, AdministrationService, CommonName } from '@solace-iot-tea
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
-import { EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
+import { EAPRbacRoleScope, EAPSCombinedAuthRole, TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
@@ -60,12 +60,10 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   type TCreateApiObject = APSUser;
   type TGetApiObject = APSUser;
   type TManagedObject = APSUser;
-  type TManagedObjectFormData = APSUser & {
-    currentOrganizationRoles: APSOrganizationAuthRoleList;
-  }
+  type TManagedObjectFormData = APSUser;
   type TOrganizationSelectItem = { label: string, value: TAPOrganizationId };
   type TManagedObjectFormDataOrganizationSelectItems = Array<TOrganizationSelectItem>;
-  type TRoleSelectItem = { label: string, value: EAPSAuthRole };
+  type TRoleSelectItem = { label: string, value: EAPSCombinedAuthRole };
   type TManagedObjectFormDataRoleSelectItems = Array<TRoleSelectItem>;
 
   const emptyManagedObject: TManagedObject = {
@@ -77,9 +75,8 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       last: '',
       email: ''
     },
-    roles: [],
+    systemRoles: [],
     memberOfOrganizations: [],
-    rolesByOrganization: []
   }
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
@@ -105,15 +102,23 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     return managedObject;
   }
 
-  const createManagedObjectFormDataRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
-    let rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.NEVER];
-
-    if(props.organizationId !== undefined) rbacScopeList = [EAPRbacRoleScope.ORG];
-    else rbacScopeList = [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG];
-
+  const createManagedObjectFormDataSystemRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
+    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.SYSTEM];
     const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
+    const selectItems: TManagedObjectFormDataRoleSelectItems = [];
+    rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
+      selectItems.push({
+        label: rbacRole.displayName,
+        value: rbacRole.id
+      });
+    });
+    return selectItems; 
+  }
 
-    let selectItems: TManagedObjectFormDataRoleSelectItems = [];
+  const createManagedObjectFormDataOrgRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
+    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
+    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
+    const selectItems: TManagedObjectFormDataRoleSelectItems = [];
     rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
       selectItems.push({
         label: rbacRole.displayName,
@@ -150,7 +155,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
     if(props.action === EAction.NEW && props.organizationId !== undefined) {
       mo.isActivated = true;
-      mo.memberOfOrganizations = [props.organizationId];
+      // mo.memberOfOrganizations = [props.organizationId];
     }
     return mo;
   }
@@ -288,7 +293,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     managedObjectUseForm.setValue('userId', managedObjectFormData.userId);
     managedObjectUseForm.setValue('password', managedObjectFormData.password);
     managedObjectUseForm.setValue('isActivated', managedObjectFormData.isActivated);
-    managedObjectUseForm.setValue('roles', managedObjectFormData.roles);
+    managedObjectUseForm.setValue('systemRoles', managedObjectFormData.systemRoles);
     managedObjectUseForm.setValue('memberOfOrganizations', managedObjectFormData.memberOfOrganizations);
     managedObjectUseForm.setValue('profile.first', managedObjectFormData.profile.first);
     managedObjectUseForm.setValue('profile.last', managedObjectFormData.profile.last);
@@ -458,12 +463,12 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.profile?.last)}
             </div>
-            {/* Roles */}
+            {/* System Roles */}
             {props.organizationId === undefined &&
               <div className="p-field">
                 <span className="p-float-label">
                   <Controller
-                    name="roles"
+                    name="systemRoles"
                     control={managedObjectUseForm.control}
                     rules={{
                       required: "Choose at least 1 role."
@@ -474,7 +479,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                           <MultiSelect
                             display="chip"
                             value={field.value ? [...field.value] : []} 
-                            options={createManagedObjectFormDataRoleSelectItems()} 
+                            options={createManagedObjectFormDataSystemRoleSelectItems()} 
                             onChange={(e) => field.onChange(e.value)}
                             optionLabel="label"
                             optionValue="value"
@@ -483,13 +488,13 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                           />
                     )}}
                   />
-                  <label htmlFor="roles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.roles })}>Roles*</label>
+                  <label htmlFor="systemRoles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.systemRoles })}>System Roles*</label>
                 </span>
-                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.roles)}
+                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.systemRoles)}
               </div>
             }
             {/* Organization Roles */}
-            {props.organizationId !== undefined &&
+            {/* {props.organizationId !== undefined &&
               <div className="p-field">
                 <span className="p-float-label">
                   <Controller
@@ -517,9 +522,9 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 </span>
                 {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.organizationRoles)}
               </div>
-            }
+            } */}
             {/* MemberOf Organizations */}
-            {props.organizationId === undefined &&
+            {/* {props.organizationId === undefined &&
               <div className="p-field">
                 <span className="p-float-label">
                   <Controller
@@ -559,7 +564,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 </span>
                 {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.memberOfOrganizations)}
               </div>
-            }
+            } */}
             {/* isActivated */}
             {props.organizationId === undefined &&
               <div className="p-field-checkbox">

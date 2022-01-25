@@ -111,23 +111,32 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
 
   React.useEffect(() => {
     if(isLoginSuccessful === undefined) return;
-    if(apiCallStatus === null) throw new Error('apiCallStatus must not be null');
+    if(apiCallStatus === null) throw new Error('apiCallStatus is null');
     if(isLoginSuccessful) {
       if(loggedInUser) {
         dispatchUserContextAction({ type: 'SET_USER', user: loggedInUser});
-        dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
-          isLoggedIn: true, 
-          authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, loggedInUser.roles),
-          // roles: loggedInUser?.roles, 
-          // objectAccess: loggedInUser?.objectAccess 
-        }});
       }
-      props.onSuccess(apiCallStatus);
     } else {
       dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: AuthHelper.getEmptyAuthContext() });
       props.onError(apiCallStatus);
     }
   }, [isLoginSuccessful]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  React.useEffect(() => {
+    if(isLoginSuccessful === undefined || !isLoginSuccessful) return;
+    if(apiCallStatus === null) throw new Error('apiCallStatus is null');
+    // set the auth context with only the system roles as user hasn't selected the org yet
+    if(loggedInUser) {
+      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
+        isLoggedIn: true, 
+        authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
+      }});
+      props.onSuccess(apiCallStatus);
+    } else {
+      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: AuthHelper.getEmptyAuthContext() });
+      props.onError(apiCallStatus);
+    }
+  }, [userContext]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = (apsUserLoginCredentials: APSUserLoginCredentials) => {
     setLoginFormData(apsUserLoginCredentials);

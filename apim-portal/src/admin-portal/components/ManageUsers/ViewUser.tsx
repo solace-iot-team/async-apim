@@ -18,6 +18,10 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE, ManageUsersCommon, TManagedObjectId, TViewManagedObject } from "./ManageUsersCommon";
 import { TAPAssetInfoWithOrgList, TAPOrgAsset, TAPOrgAssetList } from "../../../utils/APTypes";
 import { APDisplayOrgAssetList } from "../../../components/APDisplay/APDisplayOrgAssetList";
+import { AuthHelper } from "../../../auth/AuthHelper";
+import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
+import { APDisplayUserOrganizationRoles } from "../../../components/APDisplay/APDisplayUserOrganizationRoles";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
@@ -39,6 +43,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   type TManagedObject = TViewManagedObject;
 
   const [configContext] = React.useContext(ConfigContext); 
+  const [authContext] = React.useContext(AuthContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
@@ -131,6 +136,22 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
       </React.Fragment>
     );
   }
+  const renderOrganizations = () => {
+    const funcName = 'renderOrganizations';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    return (
+      <React.Fragment>
+        <APDisplayUserOrganizationRoles
+          organizationId={props.organizationId}
+          apsUser={managedObject.apiObject}
+          className="p-pt-2"
+        />
+      </React.Fragment>
+    );
+
+  }
+
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -154,12 +175,11 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
 
               <Divider />
 
-              <div><b>Roles</b>: {managedObject.roleDisplayNameListAsString}</div>
+              { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
+                <div><b>System Roles</b>: {managedObject.systemRoleDisplayNameListAsString ? managedObject.systemRoleDisplayNameListAsString : 'None'}</div>
+              }
 
-              {props.organizationId === undefined &&
-                <div><b>Organizations</b>: {managedObject.memberOfOrganizationNameListAsString}</div>
-              } 
-              <Divider />
+              <div className="p-mt-2">{renderOrganizations()}</div>
 
               <div className="p-mt-2">{renderAssets()}</div>
               

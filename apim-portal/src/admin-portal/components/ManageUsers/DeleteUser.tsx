@@ -16,10 +16,10 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { E_CALL_STATE_ACTIONS, E_ManageUsers_Scope, ManageUsersCommon, TManagedObjectId, TManageOrganizationUsersScope, TManageUsersScope, TViewManagedObject } from "./ManageUsersCommon";
 import { TAPAssetInfoWithOrgList } from "../../../utils/APTypes";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
-import { Globals } from "../../../utils/Globals";
 
 export interface IDeleteUserProps {
   userId: TManagedObjectId;
@@ -88,11 +88,10 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
     if(!managedObject.apiObject.memberOfOrganizations) throw new Error(`${logName}: managedObject.apiObject.memberOfOrganizations is undefined`);
     try { 
-      const newMemberOfOrgList: APSOrganizationIdList = managedObject.apiObject.memberOfOrganizations.filter((org: string) => { return org !== orgId});
       await ApsUsersService.updateApsUser({
         userId: props.userId,
         requestBody: {
-          memberOfOrganizations: newMemberOfOrgList
+          memberOfOrganizations: ManageUsersCommon.removeMemberOfOrganizationRoles(managedObject.apiObject.memberOfOrganizations, orgId)
         }
       });
     } catch(e: any) {

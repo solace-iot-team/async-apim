@@ -5,8 +5,12 @@ import {
   ApsConfigService,
   APSConnector, 
   ApiError as APSApiError,
-  EAPSAuthRole,
-  APSAuthRoleList,
+  EAPSSystemAuthRole,
+  APSUser,
+  APSSystemAuthRoleList,
+  APSOrganizationAuthRoleList,
+  APSOrganizationRoles,
+  EAPSOrganizationAuthRole,
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { TAPPortalAppInfo } from '../../utils/Globals';
@@ -37,7 +41,7 @@ export class ConfigHelper {
   public static getSortedRbacRoleList = (configContext: TAPConfigContext): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     configContext.rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      if(rbacRole.id !== EAPSAuthRole.ROOT) rbacRoleList.push(rbacRole);
+      if(rbacRole.id !== EAPSSystemAuthRole.ROOT) rbacRoleList.push(rbacRole);
     });
     return rbacRoleList.sort( (e1: TAPRbacRole, e2: TAPRbacRole) => {
       if(e1.displayName < e2.displayName) return -1;
@@ -46,12 +50,57 @@ export class ConfigHelper {
     });
   }
 
-  public static getAuthorizedRolesDisplayNameList = (authorizedRoleList: APSAuthRoleList, configContext: TAPConfigContext): Array<string> => {
+  public static getAuthorizedSystemRolesDisplayNameList = (configContext: TAPConfigContext, systemRoles?: APSSystemAuthRoleList): Array<string> => {
+    const funcName = 'getAuthorizedSystemRolesDisplayNameList';
+    const logName = `${ConfigHelper.name}.${funcName}()`;
+
+    const systemRolesDisplayNameList: Array<string> = [];
+    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedRbacRoleList(configContext);
+    systemRoles?.forEach((apsSystemAuthRole: EAPSSystemAuthRole) => {
+      const rbacRole: TAPRbacRole | undefined = rbacRoleList.find((rbacRole: TAPRbacRole) => {
+        return (rbacRole.id === apsSystemAuthRole)
+      });
+      if(rbacRole) systemRolesDisplayNameList.push(rbacRole.displayName);
+      else throw new Error(`${logName}: cannot find configured role for authorized role=${apsSystemAuthRole}`);
+    });
+    return systemRolesDisplayNameList;
+  }
+
+  public static getAuthorizedOrgRolesDisplayNameList = (configContext: TAPConfigContext, orgRoles?: APSOrganizationAuthRoleList): Array<string> => {
+    const funcName = 'getAuthorizedOrgRolesDisplayNameList';
+    const logName = `${ConfigHelper.name}.${funcName}()`;
+
+    const orgRolesDisplayNameList: Array<string> = [];
+    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedRbacRoleList(configContext);
+    orgRoles?.forEach((apsOrgAuthRole: EAPSOrganizationAuthRole) => {
+      const rbacRole: TAPRbacRole | undefined = rbacRoleList.find((rbacRole: TAPRbacRole) => {
+        return (rbacRole.id === apsOrgAuthRole)
+      });
+      if(rbacRole) orgRolesDisplayNameList.push(rbacRole.displayName);
+      else throw new Error(`${logName}: cannot find configured role for authorized role=${apsOrgAuthRole}`);
+    });
+    return orgRolesDisplayNameList;
+  }
+
+  public static getAuthorizedRolesDisplayNameList = (configContext: TAPConfigContext, apsUser: APSUser, orgId: string | undefined): Array<string> => {
     const funcName = 'getAuthorizedRolesDisplayNameList';
     const logName = `${ConfigHelper.name}.${funcName}()`;
+    
     let rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedRbacRoleList(configContext);
     let authorizedRolesDisplayNameList: Array<string> = [];
-    authorizedRoleList.forEach( (authorizedRole: EAPSAuthRole) => {
+
+    const systemRoles: APSSystemAuthRoleList = apsUser.systemRoles ? apsUser.systemRoles : [];
+    let organizationRoles: APSOrganizationAuthRoleList = [];
+    if(orgId) {
+      const found = apsUser.memberOfOrganizations?.find((memberOfOrganization: APSOrganizationRoles) => {
+        return (memberOfOrganization.organizationId === orgId)
+      });
+      if(!found) throw new Error(`${logName}: cannot find orgId=${orgId} in apsUser.memberOfOrganizations=${JSON.stringify(apsUser.memberOfOrganizations, null, 2)}`);
+      organizationRoles = found.roles;
+    }
+    const authorizedRoleList: Array<string> = (systemRoles as Array<string>).concat(organizationRoles);
+
+    authorizedRoleList.forEach( (authorizedRole: string) => {
       let rbacRole: TAPRbacRole | undefined = rbacRoleList.find((rbacRole: TAPRbacRole) => {
         return (rbacRole.id === authorizedRole)
       });

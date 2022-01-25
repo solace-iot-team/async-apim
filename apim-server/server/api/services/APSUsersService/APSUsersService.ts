@@ -60,6 +60,10 @@ export class APSUsersService {
       },
       systemRoles: ['root']
     }
+
+    // custom, one time maintenance
+    // await this.persistenceService.delete("master.user@aps.com");
+
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
 

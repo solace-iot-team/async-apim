@@ -1,9 +1,12 @@
 import { 
-  EAPSAuthRole,
+  EAPSSystemAuthRole,
+  EAPSOrganizationAuthRole,
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
 export const CAPSAuthRoleNone = '';
+
+export type EAPSCombinedAuthRole = EAPSSystemAuthRole | EAPSOrganizationAuthRole;
 
 export enum  EAPRbacRoleScope {
   NEVER = "NEVER",
@@ -11,7 +14,7 @@ export enum  EAPRbacRoleScope {
   ORG = "ORG",
 }
 export type TAPRbacRole = {
-  id: EAPSAuthRole;
+  id: EAPSCombinedAuthRole;
   displayName: string;
   description: string;
   uiResourcePaths: Array<EUICommonResourcePaths | EUIAdminPortalResourcePaths | EUIDeveloperPortalResourcePaths>;
@@ -22,7 +25,7 @@ export type TAPRbacRoleList = Array<TAPRbacRole>;
 
 const rbacRoleList: TAPRbacRoleList = [
   {
-    id: EAPSAuthRole.ROOT,
+    id: EAPSSystemAuthRole.ROOT,
     scopeList: [EAPRbacRoleScope.NEVER],
     displayName: 'Root',
     description: 'Root priviliges.',
@@ -36,7 +39,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    id: EAPSAuthRole.LOGIN_AS,
+    id: EAPSSystemAuthRole.LOGIN_AS,
     scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'Login As',
     description: 'Login as any User.',
@@ -45,7 +48,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    id: EAPSAuthRole.SYSTEM_ADMIN,
+    id: EAPSSystemAuthRole.SYSTEM_ADMIN,
     scopeList: [EAPRbacRoleScope.SYSTEM],
     displayName: 'System Admin',
     description: 'Administrate the System.',
@@ -62,7 +65,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    id: EAPSAuthRole.ORGANIZATION_ADMIN,
+    id: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN,
     scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
@@ -76,7 +79,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    id: EAPSAuthRole.API_TEAM,
+    id: EAPSOrganizationAuthRole.API_TEAM,
     scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
@@ -90,7 +93,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    id: EAPSAuthRole.API_CONSUMER,
+    id: EAPSOrganizationAuthRole.API_CONSUMER,
     scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
@@ -113,14 +116,23 @@ export class APRbac {
     const funcName: string = `checkRoleDefinitions`;
     const logName: string = `${APRbac.name}.${funcName}()`;
 
-    Object.values(EAPSAuthRole).forEach( (apsRole: string) => {
+    Object.values(EAPSSystemAuthRole).forEach( (apsRole: string) => {
       // console.log(`${logName}: apsRole=${apsRole}`);
       const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
         // console.log(`${logName}: apsRole=${apsRole}, apRbacRole.role=${apRbacRole.id}`);
         return (apsRole === apRbacRole.id);
       });
-      if (!found) throw new Error(`${logName}: EAPAuthRole in OpenApi spec not found in rbacRoleList: ${apsRole}`);
+      if (!found) throw new Error(`${logName}: EAPSSystemAuthRole=${apsRole} in OpenApi spec not found in rbacRoleList=${JSON.stringify(rbacRoleList, null, 2)}`);
     });
+    Object.values(EAPSOrganizationAuthRole).forEach( (apsRole: string) => {
+      // console.log(`${logName}: apsRole=${apsRole}`);
+      const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
+        // console.log(`${logName}: apsRole=${apsRole}, apRbacRole.role=${apRbacRole.id}`);
+        return (apsRole === apRbacRole.id);
+      });
+      if (!found) throw new Error(`${logName}: EAPSOrganizationAuthRole=${apsRole} in OpenApi spec not found in rbacRoleList=${JSON.stringify(rbacRoleList, null, 2)}`);
+    });
+
   }
 
   public static getAPRbacRoleList = (): TAPRbacRoleList => {
@@ -128,13 +140,13 @@ export class APRbac {
     return rbacRoleList;
   }
 
-  public static getByRole = (apsRole: EAPSAuthRole): TAPRbacRole => {
+  public static getByRole = (apsRole: EAPSCombinedAuthRole): TAPRbacRole => {
     const funcName: string = `getByRole`;
     const logName: string = `${APRbac.name}.${funcName}()`;
     const found: TAPRbacRole | undefined = rbacRoleList.find( (apRbacRole: TAPRbacRole) => {
       return (apRbacRole.id === apsRole);
     });
-    if (!found) throw new Error(`${logName}: EAPAuthRole in OpenApi spec not found in rbacRoleList: ${apsRole}`);
+    if (!found) throw new Error(`${logName}: apsRoles=${apsRole} in OpenApi spec not found in rbacRoleList=${JSON.stringify(rbacRoleList, null, 2)}`);
     return found;
   }
 

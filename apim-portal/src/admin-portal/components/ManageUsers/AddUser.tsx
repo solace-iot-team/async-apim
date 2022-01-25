@@ -12,7 +12,10 @@ import {
   EAPSSortDirection,
   ListApsUsersResponse,
   APSUserList,
-  APSOrganizationIdList
+  APSOrganizationIdList,
+  APSOrganizationRoles,
+  APSOrganizationRolesList,
+  EAPSOrganizationAuthRole
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
@@ -101,18 +104,17 @@ export const AddUser: React.FC<IAddUserProps> = (props: IAddUserProps) => {
     if(!selectedManagedObject) throw new Error(`${logName}: selectedManagedObject is undefined`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_ADD_USER_TO_ORG, `add user ${selectedManagedObject.apiObject.userId} to org ${props.organizationId}`);
     try {
-      const currentOrgList: APSOrganizationIdList = selectedManagedObject.apiObject.memberOfOrganizations ? selectedManagedObject.apiObject.memberOfOrganizations : [];
-      const found = currentOrgList.find( (orgId: string) => {
-        return orgId === props.organizationId;
-      });
-      if(!found) { 
-        await ApsUsersService.updateApsUser({
-          userId: selectedManagedObject.apiObject.userId,
-          requestBody: {
-            memberOfOrganizations: currentOrgList.concat([props.organizationId])
-          }
-        });
+      // TODO: must come from form ...
+      const newMemberOfOrganizationRoles: APSOrganizationRoles = {
+        organizationId: props.organizationId,
+        roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.LOGIN_AS, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
       }
+      await ApsUsersService.updateApsUser({
+        userId: selectedManagedObject.apiObject.userId,
+        requestBody: {
+          memberOfOrganizations: ManageUsersCommon.addMemberOfOrganizationRoles(selectedManagedObject.apiObject.memberOfOrganizations, newMemberOfOrganizationRoles)
+        }
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

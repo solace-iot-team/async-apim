@@ -260,6 +260,18 @@ export class Globals {
     }    
     return issueList;
   }
+
+  public static deDuplicateStringList = (stringList: Array<string>): Array<string> => {
+    const unique = new Map<string, number>();
+    let distinct = [];
+    for(let i=0; i < stringList.length; i++) {
+      if(!unique.has(stringList[i])) {
+        distinct.push(stringList[i]);
+        unique.set(stringList[i], 1);
+      }
+    }
+    return distinct;
+  }
 }
 
 export class GlobalElementStyles {
