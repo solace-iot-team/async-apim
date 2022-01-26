@@ -66,7 +66,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.ORG],
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
     uiResourcePaths: [
@@ -80,7 +80,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_TEAM,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.ORG],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
@@ -94,7 +94,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_CONSUMER,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.ORG],
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
     uiResourcePaths: [

@@ -11,13 +11,13 @@ import { Toolbar } from 'primereact/toolbar';
 import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 import { MenuItem } from "primereact/api";
+import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 
 import { 
   ApsUsersService, 
   APSUser,
   APSUserReplace,
-  APSOrganizationAuthRoleList,
-  EAPSSystemAuthRole,
+  APSOrganizationRolesList,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -28,10 +28,10 @@ import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormVali
 import { EAPRbacRoleScope, EAPSCombinedAuthRole, TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
+import { APManageUserOrganizations } from "../../../components/APManageUserOrganizations/APManageUserOrganizations";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
@@ -61,41 +61,23 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   type TGetApiObject = APSUser;
   type TManagedObject = APSUser;
   type TManagedObjectFormData = APSUser;
-  type TOrganizationSelectItem = { label: string, value: TAPOrganizationId };
-  type TManagedObjectFormDataOrganizationSelectItems = Array<TOrganizationSelectItem>;
   type TRoleSelectItem = { label: string, value: EAPSCombinedAuthRole };
   type TManagedObjectFormDataRoleSelectItems = Array<TRoleSelectItem>;
 
-  const emptyManagedObject: TManagedObject = {
-    userId: '',
-    isActivated: false,
-    password: '',
-    profile: {
-      first: '',
-      last: '',
-      email: ''
-    },
-    systemRoles: [],
-    memberOfOrganizations: [],
-  }
-
-  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
-  const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
-  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
-  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
-  const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [configContext] = React.useContext(ConfigContext);
-  const managedObjectUseForm = useForm<TManagedObjectFormData>();
-
 
   const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
     return getApiObject;
   }
 
-  const transformManagedObjectToReplaceApiObject = (managedObject: TManagedObject): TReplaceApiObject => {
-    return managedObject;
+  const transformManagedObjectToReplaceApiObject = (mo: TManagedObject): TReplaceApiObject => {
+    return {
+      isActivated: mo.isActivated,
+      password: mo.password,
+      profile: mo.profile,
+      memberOfOrganizations: mo.memberOfOrganizations,
+      systemRoles: mo.systemRoles,
+    }
   }
 
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
@@ -115,43 +97,17 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     return selectItems; 
   }
 
-  const createManagedObjectFormDataOrgRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
-    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
-    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
-    const selectItems: TManagedObjectFormDataRoleSelectItems = [];
-    rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      selectItems.push({
-        label: rbacRole.displayName,
-        value: rbacRole.id
-      });
-    });
-    return selectItems; 
-  }
-
-  const createManagedObjectFormDataOrganizationSelectItems = (availableOrganizationList?: Array<Organization>): TManagedObjectFormDataOrganizationSelectItems => {
-    let selectItems: TManagedObjectFormDataOrganizationSelectItems = [];
-    if(!availableOrganizationList) return selectItems;
-    availableOrganizationList.forEach( (availableOrganization: Organization) => {
-      selectItems.push({
-        label: availableOrganization.name,
-        value: availableOrganization.name
-      })
-    });
-    return selectItems.sort( (e1: TOrganizationSelectItem, e2: TOrganizationSelectItem) => {
-      if(e1.label.toLowerCase() < e2.label.toLowerCase()) return -1;
-      if(e1.label.toLowerCase() > e2.label.toLowerCase()) return 1;
-      return 0;
-    });
-  }
-
-  const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
-    return managedObject;
+  const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
+    const fd: TManagedObjectFormData = {
+      ...mo,
+    }
+    return fd;
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
     const mo: TManagedObject = {
       ...formData,
-      userId: formData.profile.email
+      userId: formData.profile.email,
     }
     if(props.action === EAction.NEW && props.organizationId !== undefined) {
       mo.isActivated = true;
@@ -159,6 +115,32 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
     return mo;
   }
+
+  const emptyManagedObject: TManagedObject = {
+    userId: '',
+    isActivated: false,
+    password: '',
+    profile: {
+      first: '',
+      last: '',
+      email: ''
+    },
+    systemRoles: [],
+    memberOfOrganizations: [],
+  }
+  
+  const systemRolesSelectItemList = createManagedObjectFormDataSystemRoleSelectItems();
+
+  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
+  const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
+  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
+  const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const managedObjectUseForm = useForm<TManagedObjectFormData>();
+  const formId = componentName;
+
 
   // * Api Calls *
   const apiGetManagedObject = async(managedObjectId: TManagedObjectId): Promise<TApiCallState> => {
@@ -289,12 +271,35 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const onOrganizationRolesListUpdate = (updatedMemberOfOrganizations: APSOrganizationRolesList) => {
+    const funcName = 'onOrganizationRolesListUpdate';
+    const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: updatedMemberOfOrganizations=${JSON.stringify(updatedMemberOfOrganizations, null, 2)}`);
+
+    // TODO:
+    // in case of NEW: managedObjectFormData is empty
+    // but form could have values
+    // setting managedObjectFormData anew ==> form values are set again ==> cleared out
+    // solution:
+    // use externalManagedFormData with updatedMemberOfOrganizations 
+    // in transform: set and get the externalManagedFormData
+
+
+    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    const _mofd = { 
+      ...managedObjectFormData,
+      memberOfOrganizations: updatedMemberOfOrganizations
+    };
+    setManagedObjectFormData(_mofd);
+  }
+
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('userId', managedObjectFormData.userId);
     managedObjectUseForm.setValue('password', managedObjectFormData.password);
     managedObjectUseForm.setValue('isActivated', managedObjectFormData.isActivated);
     managedObjectUseForm.setValue('systemRoles', managedObjectFormData.systemRoles);
-    managedObjectUseForm.setValue('memberOfOrganizations', managedObjectFormData.memberOfOrganizations);
+    // uncontrolled, managed outside form in separate component
+    // managedObjectUseForm.setValue('memberOfOrganizations', managedObjectFormData.memberOfOrganizations);
     managedObjectUseForm.setValue('profile.first', managedObjectFormData.profile.first);
     managedObjectUseForm.setValue('profile.last', managedObjectFormData.profile.last);
     managedObjectUseForm.setValue('profile.email', managedObjectFormData.profile.email);
@@ -312,8 +317,24 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     props.onLoadingChange(false);
   }
 
-  const onSubmitManagedObjectForm = (managedObjectFormData: TManagedObjectFormData) => {
-    doSubmitManagedObject(transformFormDataToManagedObject(managedObjectFormData));
+  const isMemberOfOrganizationsValid = (memberOfOrganizations: APSOrganizationRolesList | undefined): boolean => {
+    if(!memberOfOrganizations) return false;
+    for(const apsOrganizationRoles of memberOfOrganizations) {
+      if(apsOrganizationRoles.roles.length === 0) return false;
+    }
+    return true;
+  }
+  const onSubmitManagedObjectForm = (newFormData: TManagedObjectFormData) => {
+    const funcName = 'onSubmitManagedObjectForm';
+    const logName = `${componentName}.${funcName}()`;
+    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    // validate externally controlled memberOfOrganizations
+    if(!isMemberOfOrganizationsValid(managedObjectFormData.memberOfOrganizations)) return false;
+    const _mofd: TManagedObjectFormData = {
+      ...newFormData,
+      memberOfOrganizations: managedObjectFormData.memberOfOrganizations
+    }
+    doSubmitManagedObject(transformFormDataToManagedObject(_mofd));
   }
 
   const onCancelManagedObjectForm = () => {
@@ -341,7 +362,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     return (
       <React.Fragment>
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+        <Button key={componentName+getSubmitButtonLabel()} form={formId} type="submit" label={getSubmitButtonLabel()} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
       </React.Fragment>
     );
   }
@@ -352,12 +373,65 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     )
   }
 
+  const renderManageOrganzationsRoles = (): JSX.Element => {
+    const funcName = 'renderManageOrganzationsRoles';
+    const logName = `${componentName}.${funcName}()`;
+
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Organizations
+          </span>
+        </div>
+      );
+    }
+
+    const renderContent = () => {
+      if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+      if(!availableOrganizationList) throw new Error(`${logName}: availableOrganizationList is undefined`);
+      return (
+        <APManageUserOrganizations
+          formId={componentName+'_APManageUserOrganizations'}
+          availableOrganizationList={availableOrganizationList}
+          organizationRolesList={managedObjectFormData.memberOfOrganizations ? managedObjectFormData.memberOfOrganizations : []}
+          organizationId={props.organizationId}
+          onChange={onOrganizationRolesListUpdate}
+        />
+      );
+    }
+    // main
+    if(props.organizationId !== undefined) return renderContent();
+
+    return (  
+      <React.Fragment>
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable={true}
+          // collapsed={memberOfOrganizations.length === 0}
+          collapsed={false}
+        >
+          <React.Fragment>
+            <div className='p-mb-6'/>
+            {renderContent()}
+          </React.Fragment>
+        </Panel>
+      </React.Fragment>
+    );
+  }
+
   const renderManagedObjectForm = () => {
     const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <form onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+          <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
             {/* E-mail */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
@@ -470,16 +544,13 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                   <Controller
                     name="systemRoles"
                     control={managedObjectUseForm.control}
-                    rules={{
-                      required: "Choose at least 1 role."
-                    }}
                     render={( { field, fieldState }) => {
                         // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                         return(
                           <MultiSelect
                             display="chip"
                             value={field.value ? [...field.value] : []} 
-                            options={createManagedObjectFormDataSystemRoleSelectItems()} 
+                            options={systemRolesSelectItemList} 
                             onChange={(e) => field.onChange(e.value)}
                             optionLabel="label"
                             optionValue="value"
@@ -488,83 +559,11 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                           />
                     )}}
                   />
-                  <label htmlFor="systemRoles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.systemRoles })}>System Roles*</label>
+                  <label htmlFor="systemRoles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.systemRoles })}>System Role(s)</label>
                 </span>
                 {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.systemRoles)}
               </div>
             }
-            {/* Organization Roles */}
-            {/* {props.organizationId !== undefined &&
-              <div className="p-field">
-                <span className="p-float-label">
-                  <Controller
-                    name="organizationRoles"
-                    control={managedObjectUseForm.control}
-                    rules={{
-                      required: "Choose at least 1 role."
-                    }}
-                    render={( { field, fieldState }) => {
-                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                        return(
-                          <MultiSelect
-                            display="chip"
-                            value={field.value ? [...field.value] : []} 
-                            options={createManagedObjectFormDataOrganizationRoleSelectItems()} 
-                            onChange={(e) => field.onChange(e.value)}
-                            optionLabel="label"
-                            optionValue="value"
-                            // style={{width: '500px'}} 
-                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                          />
-                    )}}
-                  />
-                  <label htmlFor="organizationRoles" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.organizationRoles })}>Organization Roles*</label>
-                </span>
-                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.organizationRoles)}
-              </div>
-            } */}
-            {/* MemberOf Organizations */}
-            {/* {props.organizationId === undefined &&
-              <div className="p-field">
-                <span className="p-float-label">
-                  <Controller
-                    name="memberOfOrganizations"
-                    control={managedObjectUseForm.control}
-                    render={( { field, fieldState }) => {
-                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
-                        // console.log(`${logName}: field.value=${JSON.stringify(field.value)}`);
-                        // console.log(`${logName}: availableOrganizationList=${JSON.stringify(availableOrganizationList)}`);
-                        // console.log(`${logName}: selectItems = ${JSON.stringify(createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList))}`);
-                        if(availableOrganizationList && availableOrganizationList.length > 0) {
-                          return(
-                            <MultiSelect
-                              display="chip"
-                              value={field.value ? field.value : []} 
-                              options={createManagedObjectFormDataOrganizationSelectItems(availableOrganizationList)} 
-                              onChange={(e) => field.onChange(e.value)}
-                              optionLabel="label"
-                              optionValue="value"
-                              // style={{width: '500px'}} 
-                              className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                            />
-                          );
-                        } else {
-                          return(
-                            <InputText
-                              id={field.name}
-                              {...field}
-                              value='no organizations configured'
-                              disabled={true}
-                            />
-                          );
-                        }
-                      }}
-                  />
-                  <label htmlFor="memberOfOrganizations" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.memberOfOrganizations })}>Member of Organizations</label>
-                </span>
-                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.memberOfOrganizations)}
-              </div>
-            } */}
             {/* isActivated */}
             {props.organizationId === undefined &&
               <div className="p-field-checkbox">
@@ -588,9 +587,14 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.isActivated)}
               </div>
             }
-            <Divider />
-            {renderManagedObjectFormFooter()}
           </form>  
+          {/* Organizations & Roles */}
+          <div className="p-field">
+            { renderManageOrganzationsRoles() }
+          </div>
+          {/* footer */}
+          <Divider />
+          { renderManagedObjectFormFooter() }
         </div>
       </div>
     );

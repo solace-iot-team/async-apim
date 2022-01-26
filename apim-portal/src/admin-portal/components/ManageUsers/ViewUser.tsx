@@ -6,7 +6,8 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   ApsUsersService, 
-  APSUser
+  APSUser,
+  APSOrganizationRoles
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
@@ -25,6 +26,7 @@ import { APDisplayUserOrganizationRoles } from "../../../components/APDisplay/AP
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
+import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IViewUserProps {
   userId: TManagedObjectId;
@@ -140,6 +142,16 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     const funcName = 'renderOrganizations';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    if(props.organizationId) {
+      if(!managedObject.apiObject.memberOfOrganizations) throw new Error(`${logName}: managedObject.apiObject.memberOfOrganizations is undefined`);
+      const apsOrganizationRoles = managedObject.apiObject.memberOfOrganizations.find((apsOrganizationRoles: APSOrganizationRoles) => {
+        return props.organizationId === apsOrganizationRoles.organizationId;
+      });
+      if(!apsOrganizationRoles) throw new Error(`${logName}: apsOrganizationRoles is undefined`);
+      return (
+        <div><b>Roles</b>: {ConfigHelper.getAuthorizedOrgRolesDisplayNameList(configContext, apsOrganizationRoles.roles).join(', ')}</div>
+      );
+    }
     return (
       <React.Fragment>
         <APDisplayUserOrganizationRoles
