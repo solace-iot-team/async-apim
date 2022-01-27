@@ -24,6 +24,7 @@ import {
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { APConnectorApiCalls } from "../../../utils/APConnectorApiCalls";
 
 export interface IListOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -58,7 +59,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_LIST, 'retrieve list of organizations');
     try { 
       let _managedObjectList: TManagedObjectList = [];
-      const apiOrganizationList = await AdministrationService.listOrganizations({});
+      const apiOrganizationList = await APConnectorApiCalls.AdministrationService_listOrganizations({});
       for(const apiOrganization of apiOrganizationList) {
         const mo: TManagedObject = ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization);
         // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);

@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
 import { SemVer } from "semver";
+import { v4 as uuidv4 } from 'uuid';
 
 import { 
   APSAbout 
@@ -107,6 +108,12 @@ export class Globals {
   private static AppUrl = process.env.PUBLIC_URL + '/';
   public static IssuesUrl = "https://github.com/solace-iot-team/async-apim/issues";
 
+  public static getUUID = (): string => {
+    return uuidv4();
+  }
+  public static getHealthCheckOrgName = (): string => {
+    return '__HEALTH_CHECK_ORG__';
+  }
   public static reloadApp = () => {
     window.location.href = Globals.AppUrl;
   }

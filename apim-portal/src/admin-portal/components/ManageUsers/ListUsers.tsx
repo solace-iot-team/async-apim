@@ -127,9 +127,9 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: mounting ...`);
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     props.setBreadCrumbItemList([]);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -211,6 +211,17 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     }
   }
 
+  const organizationRolesBodyTemplate = (mo: TManagedObject) => {
+    const funcName = 'rolesBodyTemplate';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.organizationId === undefined) throw new Error(`${logName}: props.organizationId is undefined`);
+    const found = mo.viewMemberOfOrganizations.find( (x) => {
+      return x.organizationId === props.organizationId;
+    });
+    if(!found) throw new Error(`${logName}: found is undefined`);
+    return found.rolesDisplayNameListAsString;
+  }
+
   const onPageSelect = (event: any) => {
     const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
     setLazyLoadingTableParams(_lazyParams);
@@ -231,19 +242,21 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
 
   const renderColumns = (): Array<JSX.Element> => {
     const cols: Array<JSX.Element> = [];
-    cols.push(<Column header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field="apiObject.isActivated"  bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />);
-    cols.push(<Column header="E-Mail" field="apiObject.profile.email"  sortable />);
-    let rolesWidth = '12em';
-    if(props.organizationId !== undefined) rolesWidth = '20em';
-    cols.push(<Column header="Roles" headerStyle={{width: rolesWidth}} field="roleDisplayNameListAsString"  />);
+    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field="apiObject.isActivated"  bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="E-Mail" field="apiObject.profile.email"  sortable />);
+    if(props.organizationId !== undefined) {
+      cols.push(<Column key={Globals.getUUID()} header="Roles" headerStyle={{width: '20em'}} body={organizationRolesBodyTemplate} />);  
+    } else {
+      cols.push(<Column key={Globals.getUUID()} header="System Roles" headerStyle={{width: '12em'}} field="systemRoleDisplayNameListAsString" />);        
+    }
+    if(props.organizationId === undefined) {
+      cols.push(<Column key={Globals.getUUID()} header="Organizations" headerStyle={{width: '20em'}} field="memberOfOrganizationNameListAsString" />);
+    }
 
-    if(props.organizationId === undefined)
-      cols.push(<Column header="Organizations" headerStyle={{width: '12em'}} field="memberOfOrganizationNameListAsString" />);
-
-    cols.push(<Column header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />);
-    cols.push(<Column header="Last Name" headerStyle={{width: '12em'}} field="apiObject.profile.last"  sortable />);
-    cols.push(<Column header="Assets" headerStyle={{width: '5em'}} body={assetsBodyTemplate} bodyStyle={{textAlign: 'center', verticalAling: 'top'}} />);
-    cols.push(<Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
+    cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Last Name" headerStyle={{width: '12em'}} field="apiObject.profile.last"  sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Assets" headerStyle={{width: '5em'}} body={assetsBodyTemplate} bodyStyle={{textAlign: 'center', verticalAling: 'top'}} />);
+    cols.push(<Column key={Globals.getUUID()} headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
     return cols;
   }
   const renderManagedObjectDataTable = () => {

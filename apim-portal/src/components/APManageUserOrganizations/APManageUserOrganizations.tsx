@@ -11,8 +11,8 @@ import { MultiSelect } from "primereact/multiselect";
 
 import { CommonName, Organization } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APSOrganizationAuthRoleList, APSOrganizationRoles, APSOrganizationRolesList, EAPSOrganizationAuthRole } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigHelper, TRoleSelectItemList } from "../ConfigContextProvider/ConfigHelper";
+import { ConfigContext, TAPConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from "../../utils/APRbac";
 
 import "../APComponents.css";
@@ -24,6 +24,7 @@ export interface IAPManageUserOrganizationsProps {
   organizationRolesList: APSOrganizationRolesList;
   organizationId?: CommonName;
   onChange: (organizationRolesList: APSOrganizationRolesList) => void;
+  registerTriggerFormValidationFunc: (formValidationFunc: () => void) => void;
 }
 
 export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps> = (props: IAPManageUserOrganizationsProps) => {
@@ -36,9 +37,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   }
   type TOrganizationSelectItem = { label: string, value: string };
   type TOrganizationSelectItemList = Array<TOrganizationSelectItem>;
-  type TRoleSelectItem = { label: string, value: EAPSOrganizationAuthRole };
-  type TRoleSelectItemList = Array<TRoleSelectItem>;
-
+  
   const [configContext] = React.useContext(ConfigContext); 
 
   const transformManagedOrganinzationRolesToFormData = (mor: APSOrganizationRoles): TOrganizationRolesFormData => {
@@ -79,20 +78,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     });
   }
 
-  const createOrganizationRolesSelectItems = (): TRoleSelectItemList => {
-    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
-    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
-    const selectItems: TRoleSelectItemList = [];
-    rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      selectItems.push({
-        label: rbacRole.displayName,
-        value: rbacRole.id as EAPSOrganizationAuthRole
-      });
-    });
-    return selectItems; 
-  }
-
-  const organizationRolesSelectItemList: TRoleSelectItemList = createOrganizationRolesSelectItems();
+  const organizationRolesSelectItemList: TRoleSelectItemList = ConfigHelper.createOrganizationRolesSelectItems(configContext);
   const organizationRolesUseForm = useForm<TOrganizationRolesFormData>();
   const [managedOrganizationRoles, setManagedOrganizationRoles] = React.useState<APSOrganizationRoles>(emptyManagedOrganizationRoles);
   const [selectedOrganizationRolesList, setSelectedOrganizationRolesList] = React.useState<APSOrganizationRolesList>(props.organizationRolesList);
@@ -100,18 +86,32 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   const [organizationRolesFormData, setOrganizationRolesFormData] = React.useState<TOrganizationRolesFormData>();
   const organizationRolesListDataTableRef = React.useRef<any>(null);
 
+  const APManageUserOrganizations_triggerFormValidation = (): void => {
+    // alert('APManageUserOrganizations_triggerFormValidation: do the form validation');
+    organizationRolesUseForm.trigger();
+  }
+
   React.useEffect(() => {
     const funcName = 'useEffect[]';
     const logName = `${componentName}.${funcName}()`;
-    // alert(`${componentName}: mounting ... ${JSON.stringify(props.organizationRolesList, null, 2)}`);
+    // alert(`${componentName}: mounting: props.organizationRolesList=${JSON.stringify(props.organizationRolesList, null, 2)}`);
     // alert(`${componentName}: mounting:  props.availableOrganizationList=${JSON.stringify(props.availableOrganizationList, null, 2)}`);
     if(props.organizationId !== undefined) {
-      const initialOrganizationRoles = props.organizationRolesList.find( (apsOrganizationRoles: APSOrganizationRoles) => {
-        return apsOrganizationRoles.organizationId === props.organizationId;
-      });
-      if(!initialOrganizationRoles) throw new Error(`${logName}: initialOrganizationRoles is undefined`);
+      let initialOrganizationRoles: APSOrganizationRoles = {
+        organizationId: props.organizationId,
+        roles: []
+      }
+      if(props.organizationRolesList.length > 0) {
+        const roles = props.organizationRolesList.find( (apsOrganizationRoles: APSOrganizationRoles) => {
+          return apsOrganizationRoles.organizationId === props.organizationId;
+        });
+        if(!roles) throw new Error(`${logName}: roles is undefined`);
+        initialOrganizationRoles = roles
+      }
       setManagedOrganizationRoles(initialOrganizationRoles);
     }
+    // register with caller
+    props.registerTriggerFormValidationFunc(APManageUserOrganizations_triggerFormValidation);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

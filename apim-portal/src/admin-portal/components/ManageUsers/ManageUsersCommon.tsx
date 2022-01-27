@@ -1,4 +1,5 @@
 import { 
+  APSOrganizationAuthRoleList,
   APSOrganizationIdList,
   APSOrganizationRoles,
   APSOrganizationRolesList,
@@ -17,15 +18,19 @@ export type TManagedObjectId = APSUserId;
 
 export type TViewApiObject = APSUser;
 
+export type TViewAPSOrganizationRoles = APSOrganizationRoles & {
+  rolesDisplayNameListAsString: string;
+}
+export type TViewAPSOrganizationRolesList = Array<TViewAPSOrganizationRoles>;
 export type TViewManagedObject = {
   id: TManagedObjectId;
   displayName: string;
   globalSearch: string;
   apiObject: TViewApiObject;
   systemRoleDisplayNameListAsString: string;
-  // roleDisplayNameListAsString: string;
   memberOfOrganizationNameListAsString: string;
   userAssetInfoList: TAPAssetInfoWithOrgList;
+  viewMemberOfOrganizations: TViewAPSOrganizationRolesList;
 }
 
 export enum E_CALL_STATE_ACTIONS {
@@ -47,6 +52,12 @@ export enum E_COMPONENT_STATE {
   MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
   MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
   MANAGED_OBJECT_ADD = "MANAGED_OBJECT_ADD"
+}
+
+export enum E_COMPONENT_STATE_ADD_USER {
+  UNDEFINED = "UNDEFINED",
+  MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
+  MANAGED_OBJECT_EDIT_ROLES = "MANAGED_OBJECT_EDIT_ROLES",
 }
 
 export enum E_ManageUsers_Scope {
@@ -76,7 +87,7 @@ export class ManageUsersCommon {
     if(foundIndex > -1) {
       newMemberOfOrganizationRolesList[foundIndex] = newMemberOfOrganizationRoles;
     } else {
-      newMemberOfOrganizationRolesList.concat(newMemberOfOrganizationRoles);
+      return newMemberOfOrganizationRolesList.concat(newMemberOfOrganizationRoles);
     }
     return newMemberOfOrganizationRolesList;
   }
@@ -110,27 +121,42 @@ export class ManageUsersCommon {
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
   }
 
-  // private static getRoleDisplayNameListAsString = (configContext: TAPConfigContext, roles?: APSAuthRoleList): string => {
-  //   return ConfigHelper.getAuthorizedRolesDisplayNameList(roles ? roles : [], configContext).join(', ');
-  // }
+  public static getOrganizationListAsString = (memberOfOrganizations: APSOrganizationRolesList | undefined): string => {
+    if(memberOfOrganizations === undefined) return 'None';
+    const orgList: Array<string> = memberOfOrganizations.map( (x) => {
+      return x.organizationId;
+    });
+    if(orgList.length > 0) return orgList.join(', ');
+    else return 'None';
+  }
 
-  public static getOrganizationListAsString = (organizationList?: APSOrganizationIdList): string => {
-    if (organizationList) return organizationList.join(', ');
-    else return '';
+  private static getViewMemberOfOrganizations = (configContext: TAPConfigContext, memberOfOrganizations: APSOrganizationRolesList | undefined): TViewAPSOrganizationRolesList => {
+    const list: TViewAPSOrganizationRolesList = [];
+    if(memberOfOrganizations === undefined) return list;
+    memberOfOrganizations.forEach((apsOrganizationRoles: APSOrganizationRoles) => {
+      const rolesDisplayNameList: Array<string> = ConfigHelper.getAuthorizedOrgRolesDisplayNameList(configContext, apsOrganizationRoles.roles);
+      const viewRoles: TViewAPSOrganizationRoles = {
+        ...apsOrganizationRoles,
+        rolesDisplayNameListAsString: rolesDisplayNameList.length > 0 ? rolesDisplayNameList.join(', ') : 'None',
+      }
+      list.push(viewRoles);
+    });
+    return list;
   }
 
   public static transformViewApiObjectToViewManagedObject = (configContext: TAPConfigContext, viewApiObject: TViewApiObject, userAssetInfoList: TAPAssetInfoWithOrgList): TViewManagedObject => {
-    const funcName = 'transformViewApiObjectToViewManagedObject';
-    const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    // const funcName = 'transformViewApiObjectToViewManagedObject';
+    // const logName = `${ManageUsersCommon.name}.${funcName}()`;
+    const systemRoleDisplayNameList: Array<string> = ConfigHelper.getAuthorizedSystemRolesDisplayNameList(configContext, viewApiObject.systemRoles);
     return {
       id: viewApiObject.userId,
       displayName: `${viewApiObject.profile.first} ${viewApiObject.profile.last}`,
       globalSearch: ManageUsersCommon.generateGlobalSearchContent(viewApiObject),
       apiObject: viewApiObject,
-      systemRoleDisplayNameListAsString: ConfigHelper.getAuthorizedSystemRolesDisplayNameList(configContext, viewApiObject.systemRoles).join(', '), 
-      memberOfOrganizationNameListAsString: `${logName}: what goes in here now?`,
-      // memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(viewApiObject.memberOfOrganizations),
-      userAssetInfoList: userAssetInfoList
+      systemRoleDisplayNameListAsString: systemRoleDisplayNameList.length > 0 ? systemRoleDisplayNameList.join(', ') : 'None',
+      memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(viewApiObject.memberOfOrganizations),
+      userAssetInfoList: userAssetInfoList,
+      viewMemberOfOrganizations: ManageUsersCommon.getViewMemberOfOrganizations(configContext, viewApiObject.memberOfOrganizations)      
     }
   }
 

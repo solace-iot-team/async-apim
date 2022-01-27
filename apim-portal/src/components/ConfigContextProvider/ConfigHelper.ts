@@ -17,7 +17,23 @@ import { TAPPortalAppInfo } from '../../utils/Globals';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../utils/APortalApiCalls';
 
+export type TRoleSelectItem = { label: string, value: EAPSOrganizationAuthRole };
+export type TRoleSelectItemList = Array<TRoleSelectItem>;
+
 export class ConfigHelper {
+
+  public static createOrganizationRolesSelectItems = (configContext: TAPConfigContext): TRoleSelectItemList => {
+    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
+    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
+    const selectItems: TRoleSelectItemList = [];
+    rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
+      selectItems.push({
+        label: rbacRole.displayName,
+        value: rbacRole.id as EAPSOrganizationAuthRole
+      });
+    });
+    return selectItems; 
+  }
 
   public static getSortedAndScopedRbacRoleList = (configContext: TAPConfigContext, rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];

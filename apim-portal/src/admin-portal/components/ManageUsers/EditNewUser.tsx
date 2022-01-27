@@ -32,6 +32,8 @@ import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHe
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
 import { APManageUserOrganizations } from "../../../components/APManageUserOrganizations/APManageUserOrganizations";
+import { Globals } from "../../../utils/Globals";
+import { APConnectorApiCalls } from "../../../utils/APConnectorApiCalls";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
@@ -61,6 +63,10 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   type TGetApiObject = APSUser;
   type TManagedObject = APSUser;
   type TManagedObjectFormData = APSUser;
+  type TExternalManagedObjectFormData = {
+    memberOfOrganizations: APSOrganizationRolesList | undefined;
+  }
+  type TExternalManagedObjectTriggerFormValidationFunc = () => void;
   type TRoleSelectItem = { label: string, value: EAPSCombinedAuthRole };
   type TManagedObjectFormDataRoleSelectItems = Array<TRoleSelectItem>;
 
@@ -103,39 +109,62 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
     return fd;
   }
-
-  const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
+  const transformManagedObjectToExternalFormData = (mo: TManagedObject): TExternalManagedObjectFormData => {
+    const efd: TExternalManagedObjectFormData = {
+      memberOfOrganizations: mo.memberOfOrganizations
+    }
+    return efd;
+  }
+  const transformFormDataToManagedObject = (formData: TManagedObjectFormData, externalFormData: TExternalManagedObjectFormData): TManagedObject => {
     const mo: TManagedObject = {
       ...formData,
       userId: formData.profile.email,
+      memberOfOrganizations: externalFormData.memberOfOrganizations
     }
     if(props.action === EAction.NEW && props.organizationId !== undefined) {
       mo.isActivated = true;
-      // mo.memberOfOrganizations = [props.organizationId];
     }
     return mo;
   }
 
-  const emptyManagedObject: TManagedObject = {
-    userId: '',
-    isActivated: false,
-    password: '',
-    profile: {
-      first: '',
-      last: '',
-      email: ''
-    },
-    systemRoles: [],
-    memberOfOrganizations: [],
+  const createEmptyManagedObject = (): TManagedObject => {
+    const funcName = 'createEmptyManagedObject';
+    const logName = `${componentName}.${funcName}()`;
+    const emptyManagedObject: TManagedObject = {
+      userId: '',
+      isActivated: false,
+      password: '',
+      profile: {
+        first: '',
+        last: '',
+        email: ''
+      },
+      systemRoles: [],
+      memberOfOrganizations: []
+    }
+    if(props.action === EAction.NEW) {
+      if(props.organizationId !== undefined) {
+        emptyManagedObject.memberOfOrganizations = [
+          {
+            organizationId: props.organizationId,
+            roles: []
+          }
+        ];
+      }
+    }
+    return emptyManagedObject;
   }
   
+  let exterrnalManagedObjectTriggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc = () => void {};
   const systemRolesSelectItemList = createManagedObjectFormDataSystemRoleSelectItems();
+  
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
+  const [externalManagedObjectFormData, setExternalManagedObjectFormData] = React.useState<TExternalManagedObjectFormData>();
   const [availableOrganizationList, setAvailableOrganizationList] = React.useState<Array<Organization>>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
@@ -206,7 +235,8 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         // TODO: create user message or warning to pop up and render in page
         throw new Error('cannot get list of organizations (no active connector config)');
       } else {
-        const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations({});
+        // const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations({});
+        const apiOrganizationList: Array<Organization> = await APConnectorApiCalls.AdministrationService_listOrganizations({});
         setAvailableOrganizationList(apiOrganizationList);
       }
     } catch(e: any) {
@@ -218,6 +248,11 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   // * useEffect Hooks *
+  const setAvailableOrganizationListAsync = async(orgList: Array<Organization>) => {
+    // strange behaviour in React, without this, does not register the change in managedObject
+    await Globals.sleep(10);
+    setAvailableOrganizationList(orgList);
+  }
   const doInitialize = async () => {
     const funcName = 'doInitialize';
     const logName = `${componentName}.${funcName}()`;
@@ -226,14 +261,14 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       if(!props.userId) throw new Error(`${logName}: props.userId is undefined`);
       await apiGetManagedObject(props.userId);
     } else {
-      setManagedObject(emptyManagedObject);
+      setManagedObject(createEmptyManagedObject());
     }
     if(!props.organizationId) await apiGetAvailableOrganizations();
     else {
       const org: Organization = {
         name: props.organizationId
       }
-      setAvailableOrganizationList([org]);
+      setAvailableOrganizationListAsync([org]);
     }
     props.onLoadingChange(false);
   }
@@ -248,6 +283,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   React.useEffect(() => {
     if(managedObject) {
       setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
+      setExternalManagedObjectFormData(transformManagedObjectToExternalFormData(managedObject));
     }
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -275,22 +311,15 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const funcName = 'onOrganizationRolesListUpdate';
     const logName = `${componentName}.${funcName}()`;
     // alert(`${logName}: updatedMemberOfOrganizations=${JSON.stringify(updatedMemberOfOrganizations, null, 2)}`);
-
-    // TODO:
-    // in case of NEW: managedObjectFormData is empty
-    // but form could have values
-    // setting managedObjectFormData anew ==> form values are set again ==> cleared out
-    // solution:
-    // use externalManagedFormData with updatedMemberOfOrganizations 
-    // in transform: set and get the externalManagedFormData
-
-
-    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    const _mofd = { 
-      ...managedObjectFormData,
+    if(!externalManagedObjectFormData) throw new Error(`${logName}: externalManagedObjectFormData is undefined`);
+    const _efd: TExternalManagedObjectFormData = {
       memberOfOrganizations: updatedMemberOfOrganizations
-    };
-    setManagedObjectFormData(_mofd);
+    }
+    setExternalManagedObjectFormData(_efd);
+  }
+
+  const register_APManageUserOrganizations_FormValidation_Func = (triggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc) => {
+    exterrnalManagedObjectTriggerFormValidationFunc = triggerFormValidationFunc;
   }
 
   const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
@@ -318,23 +347,23 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const isMemberOfOrganizationsValid = (memberOfOrganizations: APSOrganizationRolesList | undefined): boolean => {
+    // alert(`isMemberOfOrganizationsValid: validating ...`)
+    exterrnalManagedObjectTriggerFormValidationFunc();
     if(!memberOfOrganizations) return false;
     for(const apsOrganizationRoles of memberOfOrganizations) {
       if(apsOrganizationRoles.roles.length === 0) return false;
     }
+    // alert(`isMemberOfOrganizationsValid: it is valid`)
     return true;
   }
   const onSubmitManagedObjectForm = (newFormData: TManagedObjectFormData) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    if(!externalManagedObjectFormData) throw new Error(`${logName}: externalManagedObjectFormData is undefined`);
     // validate externally controlled memberOfOrganizations
-    if(!isMemberOfOrganizationsValid(managedObjectFormData.memberOfOrganizations)) return false;
-    const _mofd: TManagedObjectFormData = {
-      ...newFormData,
-      memberOfOrganizations: managedObjectFormData.memberOfOrganizations
-    }
-    doSubmitManagedObject(transformFormDataToManagedObject(_mofd));
+    if(!isMemberOfOrganizationsValid(externalManagedObjectFormData.memberOfOrganizations)) return false;
+    doSubmitManagedObject(transformFormDataToManagedObject(newFormData, externalManagedObjectFormData));
   }
 
   const onCancelManagedObjectForm = () => {
@@ -342,7 +371,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // setIsFormSubmitted(true);
+    exterrnalManagedObjectTriggerFormValidationFunc();
   }
 
   const displayManagedObjectFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
@@ -394,15 +423,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
 
     const renderContent = () => {
-      if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+      if(!externalManagedObjectFormData) throw new Error(`${logName}: externalManagedObjectFormData is undefined`);
       if(!availableOrganizationList) throw new Error(`${logName}: availableOrganizationList is undefined`);
       return (
         <APManageUserOrganizations
           formId={componentName+'_APManageUserOrganizations'}
           availableOrganizationList={availableOrganizationList}
-          organizationRolesList={managedObjectFormData.memberOfOrganizations ? managedObjectFormData.memberOfOrganizations : []}
+          organizationRolesList={externalManagedObjectFormData.memberOfOrganizations ? externalManagedObjectFormData.memberOfOrganizations : []}
           organizationId={props.organizationId}
           onChange={onOrganizationRolesListUpdate}
+          registerTriggerFormValidationFunc={register_APManageUserOrganizations_FormValidation_Func}
         />
       );
     }

@@ -48,7 +48,6 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       previousState: componentState.currentState,
       currentState: componentState.previousState
     });
-
   }
   
   const ToolbarNewManagedObjectButtonLabel = 'New';
@@ -174,31 +173,16 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
 
     const jsxButtonList: Array<JSX.Element> = [];
     if(showListComponent || showViewComponent) {
-      jsxButtonList.push(<Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);
+      jsxButtonList.push(<Button key={ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);
       if(props.scope.type === E_ManageUsers_Scope.ORG_USERS) {
-        jsxButtonList.push(<Button label={ToolbarAddManagedObjectButtonLabel} icon="pi pi-arrow-down" onClick={onAddManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);        
+        jsxButtonList.push(<Button key={ToolbarAddManagedObjectButtonLabel} label={ToolbarAddManagedObjectButtonLabel} icon="pi pi-arrow-down" onClick={onAddManagedObject} className="p-button-text p-button-plain p-button-outlined"/>);        
       }
     }
     if(showViewComponent) {
-      jsxButtonList.push(<Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
-      jsxButtonList.push(<Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
+      jsxButtonList.push(<Button key={ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
+      jsxButtonList.push(<Button key={ToolbarDeleteManagedObjectButtonLabel} label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>);
     }
     return jsxButtonList;
-
-    // OLD
-    // if(showListComponent) return (
-    //   <React.Fragment>
-    //     <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-    //   </React.Fragment>
-    // );
-    // if(showViewComponent) return (
-    //   <React.Fragment>
-    //     <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-    //     <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-    //     <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-    //   </React.Fragment>
-    // );
-
   }
   const renderToolbar = (): JSX.Element => {
     const leftToolbarTemplate: Array<JSX.Element> | undefined = renderLeftToolbarContent();

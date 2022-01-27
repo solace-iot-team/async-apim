@@ -623,7 +623,7 @@ export class APConnectorHealthCheck {
     const logName= `${APConnectorHealthCheck.componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_ORG_ADMIN_CREDS, `check connector organization admin creds`);
     const testOrg: Organization = {
-      name: '__HEALTH_CHECK_ORG__'
+      name: Globals.getHealthCheckOrgName()
     }
     let apiError: APConnectorApiError | undefined = undefined;
     try {
