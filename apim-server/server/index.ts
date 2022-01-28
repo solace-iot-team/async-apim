@@ -13,6 +13,7 @@ import { ServerClient } from './common/ServerClient';
 import APSAboutService from './api/services/apsConfig/APSAboutService';
 import APSMonitorService from './api/services/APSMonitorService';
 import ServerMonitor from './common/ServerMonitor';
+import APSOrganizationsService from './api/services/apsAdministration/APSOrganizationsService';
 
 const componentName = 'index';
 
@@ -66,6 +67,7 @@ export const initializeComponents = async(): Promise<void> => {
     await APSConnectorsService.initialize();
     await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
+    await APSOrganizationsService.initialize();
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
     // finally: set the server to initialized & ready

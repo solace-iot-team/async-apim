@@ -16,7 +16,29 @@ tags:
   description: "Login Service."
 - name: Specification
   description: The swagger API specification
+- name: APSAdministration
+  description: Manage system settings and organizations/tenants.
 paths:
+  /apsAdministration/apsOrganizations/{organization_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    delete:
+      operationId: deleteApsOrganization
+      tags:
+      - APSAdministration
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsConfig/apsConnectors:
     post:
       operationId: createApsConnector
@@ -778,6 +800,40 @@ paths:
           description: Return the API specification
           content: {}
 components:
+  responses:
+    BadRequest:
+      description: "Bad Request."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APSError"
+    Unauthorized:
+      description: "Unauthorized."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    Forbidden:
+      description: "Forbidden."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    NotFound:
+      description: "Not Found."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    InternalServerError:
+      description: "Internal Server Error."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
   parameters:
     page_size:
       name: pageSize
@@ -859,6 +915,12 @@ components:
         $ref: "#/components/schemas/APSUserId"
     connector_id:
       name: connector_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
+    organization_id:
+      name: organization_id
       in: path
       required: true
       schema:
