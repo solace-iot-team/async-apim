@@ -155,10 +155,27 @@ export class MongoPersistenceService {
     let filter: Filter<any> = {};
     if(searchInfo) {
       if(searchInfo.searchWordList) {
-        filter['$text'] = {
-          // $search: `\"${searchInfo.searchPhrase}\"`
-          $search: `${searchInfo.searchWordList}`
+        // NOTE: cannot make this text search work
+        // Behaviour:
+        // in: string with search words, separated by <space>
+        // - searches in searchContentField for all occurrences of search words (contains)
+        // - ORs all search words
+        // 
+        // filter['$text'] = {
+        //   // logical OR of search terms
+        //   // $search: `\"${searchInfo.searchPhrase}\"`
+        //   $search: `${searchInfo.searchWordList}`,
+        //   // $search: new RegExp('.*' + searchInfo.searchWordList + '.*')
+        //   $caseSensitive: false 
+        // },
+        const searchWordArray: Array<string> = searchInfo.searchWordList.split(' ');
+        const regExStrList: Array<string> = [];
+        for(const searchWord of searchWordArray) {
+          if(searchWord !== '') regExStrList.push(`.*${searchWord}.*`);
         }
+        const regExStr: string = regExStrList.join('|');
+        // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'regExStr', details: regExStr}));
+        filter[MongoPersistenceService.searchContentFieldName] = new RegExp(regExStr, 'gi');        
       }
       if(searchInfo.filter) {
         filter = {
