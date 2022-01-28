@@ -54,7 +54,6 @@ describe(`${scriptName}`, () => {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
       expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
     }
-    expect(false, `${TestLogger.createTestFailMessage('continue here')}`).to.be.true;
   });
 
 
