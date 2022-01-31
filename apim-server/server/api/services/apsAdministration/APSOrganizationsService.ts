@@ -1,6 +1,14 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-import { MongoPersistenceService } from '../../../common/MongoPersistenceService';
+import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
 import APSOrganizationId = Components.Schemas.APSId;
+import { 
+  APSId, 
+  APSOrganization, 
+  APSOrganizationCreate, 
+  APSOrganizationList, 
+  APSOrganizationUpdate, 
+  ListAPSOrganizationResponse 
+} from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export class APSOrganizationssService {
   private static collectionName = "apsOrganizations";
@@ -24,97 +32,56 @@ export class APSOrganizationssService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
 
-  // public all = async(): Promise<TAPSListAPSConnectorResponse> => {
-  //   const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all();
-  //   return {
-  //     list: mongoAllReturn.documentList as Array<APSConnector>,
-  //     meta: {
-  //       totalCount: mongoAllReturn.totalDocumentCount
-  //     }
-  //   }
-  // }
+  public all = async(): Promise<ListAPSOrganizationResponse> => {
+    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all();
+    return {
+      list: mongoAllReturn.documentList as APSOrganizationList,
+      meta: {
+        totalCount: mongoAllReturn.totalDocumentCount
+      }
+    }
+  }
 
-  // public byId = async(apsConnectorId: APSConnectorId): Promise<APSConnector> => {
-  //   const funcName = 'byId';
-  //   const logName = `${APSConnectorsService.name}.${funcName}()`;
+  public byId = async(apsOrganizationId: APSId): Promise<APSOrganization> => {
+    const funcName = 'byId';
+    const logName = `${APSOrganizationssService.name}.${funcName}()`;
 
-  //   ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnectorId', details: apsConnectorId}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId}));
 
-  //   const apsConnector: APSConnector = await this.persistenceService.byId(apsConnectorId) as APSConnector;
+    const apsOrganization: APSOrganization = await this.persistenceService.byId(apsOrganizationId) as APSOrganization;
 
-  //   ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnector', details: apsConnector}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganization', details: apsOrganization}));
 
-  //   return apsConnector;
-  // }
+    return apsOrganization;
+  }
 
-  // public create = async(apsConnectorCreateRequest: APSConnectorCreateRequest): Promise<APSConnector> => {
-  //   const funcName = 'create';
-  //   const logName = `${APSConnectorsService.name}.${funcName}()`;
-  //   const create: APSConnector = {
-  //     ...apsConnectorCreateRequest,
-  //     isActive: false
-  //   }
-  //   const created: APSConnector = await this.persistenceService.create({
-  //     collectionDocumentId: apsConnectorCreateRequest.connectorId,
-  //     collectionDocument: create,
-  //     collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
-  //   });
+  public create = async(apsOrganizationCreateRequest: APSOrganizationCreate): Promise<APSOrganization> => {
+    const funcName = 'create';
+    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const created: APSOrganization = await this.persistenceService.create({
+      collectionDocumentId: apsOrganizationCreateRequest.organizationId,
+      collectionDocument: apsOrganizationCreateRequest,
+      collectionSchemaVersion: APSOrganizationssService.collectionSchemaVersion
+    });
 
-  //   ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created}));
 
-  //   return created;
-  // }
+    return created;
+  }
 
-  // public replace = async(apsConnectorId: APSConnectorId, apsConnectorReplaceRequest: APSConnectorReplaceRequest): Promise<APSConnector> => {
-  //   const funcName = 'replace';
-  //   const logName = `${APSConnectorsService.name}.${funcName}()`;
-  //   const current: APSConnector = await this.persistenceService.byId(apsConnectorId) as APSConnector;
-  //   const replace: APSConnector = {
-  //     ...apsConnectorReplaceRequest,
-  //     connectorId: apsConnectorId,
-  //     isActive: current.isActive
-  //   }
-  //   const replaced: APSConnector = await this.persistenceService.replace({
-  //     collectionDocumentId: apsConnectorId,
-  //     collectionDocument: replace,
-  //     collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
-  //   });
+  public update = async(apsOrganizationId: APSId, apsOrganizationUpdateRequest: APSOrganizationUpdate): Promise<APSOrganization> => {
+    const funcName = 'update';
+    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const updated: APSOrganization = await this.persistenceService.update({
+      collectionDocumentId: apsOrganizationId,
+      collectionDocument: apsOrganizationUpdateRequest,
+      collectionSchemaVersion: APSOrganizationssService.collectionSchemaVersion
+    });
 
-  //   ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
 
-  //   return replaced;
-  // }
-
-  // public setActive = async(apsConnectorId: APSConnectorId): Promise<APSConnector> => {
-  //   const funcName = 'setActive';
-  //   const logName = `${APSConnectorsService.name}.${funcName}()`;
-  //   const newActive: APSConnector = await this.persistenceService.byId(apsConnectorId) as APSConnector;
-  //   let oldActive: APSConnector | undefined = undefined;
-  //   try {
-  //     oldActive = await this.byActive();
-  //   } catch (e) {
-  //     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'no active connector found', details: undefined }));
-  //   }
-  //   if(oldActive) {
-  //     oldActive.isActive = false;
-  //     const replacedOldActive: APSConnector = await this.persistenceService.replace({
-  //       collectionDocumentId: oldActive.connectorId,
-  //       collectionDocument: oldActive,
-  //       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
-  //     });
-  //     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedOldActive', details: replacedOldActive }));
-  //   }
-  //   newActive.isActive = true;
-  //   const replacedNewActive: APSConnector = await this.persistenceService.replace({
-  //     collectionDocumentId: apsConnectorId,
-  //     collectionDocument: newActive,
-  //     collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
-  //   });
-
-  //   ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedNewActive', details: replacedNewActive }));
-
-  //   return replacedNewActive;
-  // }
+    return updated;
+  }
 
   public delete = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
     const funcName = 'delete';
@@ -122,12 +89,12 @@ export class APSOrganizationssService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId }));
 
-    // const deletedOrganization = (await this.persistenceService.delete(apsOrganizationId) as unknown) as APSConnector;
+    const deleted = (await this.persistenceService.delete(apsOrganizationId) as unknown) as APSOrganization;
     
     // call APSUsersService to notify of organization deletion?
-    ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'implement delete organization', details: apsOrganizationId }));
+    // ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'implement delete organization', details: apsOrganizationId }));
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedOrganization', details: apsOrganizationId }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleted', details: deleted }));
 
   }
 

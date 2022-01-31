@@ -19,9 +19,116 @@ tags:
 - name: APSAdministration
   description: Manage system settings and organizations/tenants.
 paths:
+  /apsAdministration/apsOrganizations:
+    post:
+      operationId: createApsOrganization
+      description: Create an APSOrganization object.
+      tags:
+      - APSAdministration
+      requestBody:
+        description: The APSOrganization object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSOrganizationCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/DuplicateKey'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      operationId: listApsOrganizations
+      description: Get a list of APSOrganizations.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: Array of APSOrganizations and total count of APSOrganizations. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSOrganizationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsAdministration/apsOrganizations/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
+    get:
+      operationId: getApsOrganization
+      description: Get an APSOrganization object by id.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: The APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: updateApsOrganization
+      description:
+        Update an APSOrganization object by id.
+        Operation performs a merge update between the exsting object and the update request.
+        Arrays are not merged but replaced in their entirety.
+      tags:
+      - APSAdministration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/APSOrganizationUpdate"
+      responses:
+        '200':
+          description: The updated APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     delete:
       operationId: deleteApsOrganization
       tags:
@@ -834,6 +941,12 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/APSError"
+    DuplicateKey:
+      description: "Object with id already exists."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
   parameters:
     page_size:
       name: pageSize
@@ -932,6 +1045,12 @@ components:
       minLength: 4
       maxLength: 255
       pattern: ^[A-Za-z0-9_-]*$
+    APSDisplayName:
+      description: Friendly name of an object for display in UIs. Can be changed after object creation.
+      type: string
+      minLength: 1
+      maxLength: 256
+      pattern: "[\\/\\sa-z.A-z0-9_-]*"
     APSUserId:
       type: string
       minLength: 4
@@ -1272,6 +1391,42 @@ components:
         - displayName
         - description
         - connectorClientConfig
+    ListAPSOrganizationResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSOrganizationList'
+      required:
+      - list
+    APSOrganizationList:
+      description: Array of APSOrganizations.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSOrganization'
+    APSOrganization:
+      type: object
+      additionalProperties: false
+      properties:
+        organizationId:
+          $ref: "#/components/schemas/APSId"
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+      required:
+        - organizationId
+        - displayName
+    APSOrganizationCreate:
+      allOf:
+      - description: Create request for an APSOrganization object.
+      - $ref: "#/components/schemas/APSOrganization"
+    APSOrganizationUpdate:
+      description: Update request for an APSOrganization object.
+      type: object
+      additionalProperties: false
+      properties:
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
     APSUserLoginCredentials:
       type: object
       description: Login credentials.
