@@ -228,14 +228,4 @@ export class APConnectorApiCalls {
     }
   }
 
-  public static AdministrationService_listOrganizations = async(options: any): Promise<Array<Organization>> => {
-    const _orgList: Array<Organization> = await AdministrationService.listOrganizations(options);
-    // filter out the health check or if exists
-    const idx = _orgList.findIndex((org: Organization) => {
-      return org.name === Globals.getHealthCheckOrgName()
-    });
-    if(idx > -1) _orgList.splice(idx, 1);
-    return _orgList;
-  }
-
 }

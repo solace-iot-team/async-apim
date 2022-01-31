@@ -33,6 +33,8 @@ import {
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
+import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 
 
 export enum EAction {
@@ -53,9 +55,9 @@ export interface IEditNewOrganizationProps {
 export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: IEditNewOrganizationProps) => {
   const componentName = 'EditNewOrganziation';
 
-  type TUpdateApiObject = Organization;
-  type TCreateApiObject = Organization;
-  type TGetApiObject = Organization;
+  type TUpdateApiObject = TAPOrganization;
+  type TCreateApiObject = TAPOrganization;
+  type TGetApiObject = TAPOrganization;
   type TManagedObject = TAPOrganizationConfig;
   type TManagedObjectFormData = TManagedObject;
 
@@ -67,12 +69,12 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
 
-  const transformGetApiObjectToManagedObject = (apiObject: TGetApiObject): TManagedObject => {
-    return ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiObject);
+  const transformGetAPObjectToManagedObject = (apObject: TGetApiObject): TManagedObject => {
+    return ManageOrganizationsCommon.transformAPOrganizationToAPOrganizationConfig(apObject);
   }
 
   const transformManagedObjectToCreateApiObject = (mo: TManagedObject): TCreateApiObject => {
-    return ManageOrganizationsCommon.transformAPOrganizationConfigToApiOrganization(mo);
+    return ManageOrganizationsCommon.transformAPOrganizationConfigToAPOrganization(mo);
   }
 
   const transformManagedObjectToUpdateApiObject = (mo: TManagedObject): TUpdateApiObject => {
@@ -96,10 +98,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${managedObjectDisplayName}`);
     try { 
-      const apiOrganization: Organization = await AdministrationService.getOrganization({
-        organizationName: managedObjectId
-      });      
-      setManagedObject(transformGetApiObjectToManagedObject(apiOrganization));
+      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(managedObjectId, '');
+      setManagedObject(transformGetAPObjectToManagedObject(apOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -113,10 +113,14 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `update organization: ${mo.name}`);
     try { 
-      await AdministrationService.updateOrganization({
-        organizationName: managedObjectId, 
+      await APOrganizationsService.updateOrganization({
+        organizationId: managedObjectId,
         requestBody: transformManagedObjectToUpdateApiObject(mo)
       });
+      // await AdministrationService.updateOrganization({
+      //   organizationName: managedObjectId, 
+      //   requestBody: transformManagedObjectToUpdateApiObject(mo)
+      // });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -190,6 +194,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
 
   const doPopulateManagedObjectFormDataValues = (mofd: TManagedObjectFormData) => {
     managedObjectUseForm.setValue('name', mofd.name);
+    managedObjectUseForm.setValue('displayName', mofd.displayName);
     managedObjectUseForm.setValue('configType', mofd.configType);
     managedObjectUseForm.setValue('configSimple', mofd.configSimple);
     managedObjectUseForm.setValue('configAdvancedServiceDiscoveryProvisioning', mofd.configAdvancedServiceDiscoveryProvisioning);
@@ -641,6 +646,28 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 <label htmlFor="name" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.name })}>Name*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.name)}
+            </div>
+            {/* Display Name */}
+            <div className="p-field">
+              <span className="p-float-label">
+                <Controller
+                  name="displayName"
+                  control={managedObjectUseForm.control}
+                  rules={APSOpenApiFormValidationRules.APSDisplayName('Enter display name.', true)}
+                  render={( { field, fieldState }) => {
+                      // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+                      return(
+                        <InputText
+                          id={field.name}
+                          {...field}
+                          autoFocus={!isNew}
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />
+                  )}}
+                />
+                <label htmlFor="displayName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.displayName })}>Display Name*</label>
+              </span>
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.displayName)}
             </div>
             {/* config Type */}
             <div className="p-field">

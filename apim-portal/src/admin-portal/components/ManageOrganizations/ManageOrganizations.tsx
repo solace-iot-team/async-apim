@@ -115,10 +115,9 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-
-    const funcName = 'useEffect([componentState, managedObjectDisplayName])';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: componentState.currentState=${componentState.currentState}, managedObjectDisplayName=${managedObjectDisplayName}`);
+    // const funcName = 'useEffect([componentState, managedObjectDisplayName])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: componentState.currentState=${componentState.currentState}, managedObjectDisplayName=${managedObjectDisplayName}`);
 
     if(!managedObjectDisplayName) return;
     if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {

@@ -3,7 +3,8 @@ import {
   $APSId,
   $APSHost,
   $APSPort,
-  $APSEmail
+  $APSEmail,
+  $APSDisplayName
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 export class APSOpenApiFormValidationRules {
@@ -42,6 +43,17 @@ export class APSOpenApiFormValidationRules {
       message: `${message}. Pattern: ${schema.pattern}`
     }
   }
+
+  private static createFormPattern = (apiPattern: string) => {
+    return `^${apiPattern}$`;
+  }
+  private static getFormPatternRule = (schema: any, message: string): any => {
+    if(schema.pattern) return {
+      value: new RegExp(APSOpenApiFormValidationRules.createFormPattern(schema.pattern)),
+      message: `${message}. Pattern: ${schema.pattern}`
+    }
+  }
+
 
   public static APSId = (requiredMessage: string, isActive: boolean): any => {
     const apiSchema = $APSId;
@@ -82,6 +94,15 @@ export class APSOpenApiFormValidationRules {
     rules['minLength'] = (isActive ? APSOpenApiFormValidationRules.getMinLengthRule(apiSchema) : undefined);
     rules['pattern'] = (isActive ? APSOpenApiFormValidationRules.getPatternRule(apiSchema, 'Invalid E-Mail address') : undefined);
     return rules;
-
   }
+  public static APSDisplayName = (requiredMessage: string, isActive: boolean): any => {
+    const apiSchema = $APSDisplayName;
+    const rules: any = {};
+    rules['required'] = (isActive ? requiredMessage : false);
+    rules['maxLength'] = (isActive ? APSOpenApiFormValidationRules.getMaxLengthRule(apiSchema) : undefined);
+    rules['minLength'] = (isActive ? APSOpenApiFormValidationRules.getMinLengthRule(apiSchema) : undefined);
+    rules['pattern'] = (isActive ? APSOpenApiFormValidationRules.getFormPatternRule(apiSchema, 'Invalid Display Name') : undefined);
+    return rules;
+  }
+
 }

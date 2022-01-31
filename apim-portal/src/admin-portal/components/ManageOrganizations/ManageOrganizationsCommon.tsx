@@ -1,9 +1,11 @@
 import { 
   CloudToken,
+  CommonDisplayName,
   CommonName,
   Organization,
   SempV2Authentication, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { TAPOrganization } from '../../../utils/APOrganizationsService';
 
 import { Globals } from '../../../utils/Globals';
 
@@ -56,6 +58,7 @@ export enum EAPOrganizationConfigType {
 }
 export type TAPOrganizationConfig = {
   name: CommonName;
+  displayName: CommonDisplayName;
   configType: EAPOrganizationConfigType;
   configSimple: TAPOrganizationConfigSimple;
   configAdvancedServiceDiscoveryProvisioning: TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning;
@@ -77,6 +80,7 @@ export class ManageOrganizationsCommon {
 
   private static CEmptyOrganizationConfig: TAPOrganizationConfig = {
     name: '',
+    displayName: '',
     configType: EAPOrganizationConfigType.SIMPLE,
     configSimple: {
       cloudToken: ''
@@ -161,39 +165,40 @@ export class ManageOrganizationsCommon {
     throw new Error(`${logName}: must never get here`);
   }
 
-  public static transformApiOrganizationToAPOrganizationConfig = (apiObject: Organization): TAPOrganizationConfig => {
-    const funcName = 'transformApiOrganizationToAPOrganizationConfig';
+  public static transformAPOrganizationToAPOrganizationConfig = (apObject: TAPOrganization): TAPOrganizationConfig => {
+    const funcName = 'transformAPOrganizationToAPOrganizationConfig';
     const logName = `${ManageOrganizationsCommon.name}.${funcName}()`;
 
-    if(!apiObject["cloud-token"]) throw new Error(`${logName}: apiObject["cloud-token"] is undefined`);
+    if(apObject["cloud-token"] === undefined) throw new Error(`${logName}: apObject["cloud-token"] is undefined`);
     let oc: TAPOrganizationConfig = ManageOrganizationsCommon.createEmptyOrganizationConfig();
-    oc.name = apiObject.name;
-    if( typeof apiObject["cloud-token"] === 'string' ) {
+    oc.name = apObject.name;
+    oc.displayName = apObject.displayName;
+    if( typeof apObject["cloud-token"] === 'string' ) {
       oc.configType = EAPOrganizationConfigType.SIMPLE;
       oc.configSimple = { 
-        cloudToken: apiObject["cloud-token"]
+        cloudToken: apObject["cloud-token"]
       };
       return oc;
-    } else if( typeof apiObject["cloud-token"] === 'object') {
+    } else if( typeof apObject["cloud-token"] === 'object') {
       oc.configType = EAPOrganizationConfigType.ADVANCED;
-      if(!apiObject['cloud-token'].cloud.token) throw new Error(`${logName}: apiObject['cloud-token'].cloud.token is undefined`);
-      if(!apiObject['cloud-token'].eventPortal.token) throw new Error(`${logName}: apiObject['cloud-token'].eventPortal.token is undefined`);
-      if(!apiObject.sempV2Authentication) {
+      if(apObject['cloud-token'].cloud.token === undefined) throw new Error(`${logName}: apObject['cloud-token'].cloud.token is undefined`);
+      if(apObject['cloud-token'].eventPortal.token === undefined) throw new Error(`${logName}: apObject['cloud-token'].eventPortal.token is undefined`);
+      if(!apObject.sempV2Authentication) {
         // Solace cloud
         oc.configAdvancedServiceDiscoveryProvisioning.bsdp_Type = EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD;
         oc.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud = {
-          baseUrl: apiObject['cloud-token'].cloud.baseUrl,
-          cloudToken: apiObject['cloud-token'].cloud.token
+          baseUrl: apObject['cloud-token'].cloud.baseUrl,
+          cloudToken: apObject['cloud-token'].cloud.token
         };
         oc.configAdvancedEventPortal = {
-          baseUrl: apiObject['cloud-token'].eventPortal.baseUrl,
-          cloudToken: apiObject['cloud-token'].eventPortal.token
+          baseUrl: apObject['cloud-token'].eventPortal.baseUrl,
+          cloudToken: apObject['cloud-token'].eventPortal.token
         };
         return oc;
       } else {        
         // reverse proxy
         oc.configAdvancedServiceDiscoveryProvisioning.bsdp_Type = EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY;
-        const sempV2AuthType: EAPReverseProxySempV2AuthType = ManageOrganizationsCommon.mapApiSempv2AuthTypeToAPReverseProxySempv2AuthType(apiObject.sempV2Authentication.authType);
+        const sempV2AuthType: EAPReverseProxySempV2AuthType = ManageOrganizationsCommon.mapApiSempv2AuthTypeToAPReverseProxySempv2AuthType(apObject.sempV2Authentication.authType);
         let sempV2AuthType_Basic: TAPReverseProxySempV2AuthenticationBasic = oc.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_Basic;
         let sempV2AuthType_ApiKey: TAPReverseProxySempV2AuthenticationApiKey = oc.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey;
         switch(sempV2AuthType) {
@@ -201,36 +206,37 @@ export class ManageOrganizationsCommon {
             sempV2AuthType_Basic = {};
             break;
           case EAPReverseProxySempV2AuthType.API_KEY:
-            if(!apiObject.sempV2Authentication.apiKeyName) throw new Error(`${logName}: apiObject.sempV2Authentication.apiKeyName is undefined`);
+            if(!apObject.sempV2Authentication.apiKeyName) throw new Error(`${logName}: apObject.sempV2Authentication.apiKeyName is undefined`);
             sempV2AuthType_ApiKey = {
-              apiKeyLocation: ManageOrganizationsCommon.mapApiSempv2KeyLocationToAPReverseProxyApiKeyLocation(apiObject.sempV2Authentication.apiKeyLocation),
-              apiKeyName: apiObject.sempV2Authentication.apiKeyName
+              apiKeyLocation: ManageOrganizationsCommon.mapApiSempv2KeyLocationToAPReverseProxyApiKeyLocation(apObject.sempV2Authentication.apiKeyLocation),
+              apiKeyName: apObject.sempV2Authentication.apiKeyName
             };
             break;
           default:
             Globals.assertNever(logName, sempV2AuthType);
         }
         oc.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy = {
-          baseUrl: apiObject['cloud-token'].cloud.baseUrl,
-          token: apiObject['cloud-token'].cloud.token,
+          baseUrl: apObject['cloud-token'].cloud.baseUrl,
+          token: apObject['cloud-token'].cloud.token,
           sempV2AuthType: sempV2AuthType,
           sempV2AuthType_Basic: sempV2AuthType_Basic,
           sempV2AuthType_ApiKey: sempV2AuthType_ApiKey
         }
         return oc;
       }
-    } else throw new Error(`${logName}: cannot determine type of organization config from apiObject=${JSON.stringify(apiObject, null, 2)}`);
+    } else throw new Error(`${logName}: cannot determine type of organization config from apiObject=${JSON.stringify(apObject, null, 2)}`);
   }
 
-  private static createSimple = (name: CommonName, configSimple: TAPOrganizationConfigSimple): Organization => {
-    const apiOrganization: Organization = {
+  private static createSimple = (name: CommonName, displayName: CommonDisplayName, configSimple: TAPOrganizationConfigSimple): TAPOrganization => {
+    const apOrganization: TAPOrganization = {
       name: name,
+      displayName: displayName,
       "cloud-token": configSimple.cloudToken
     }
-    return apiOrganization;  
+    return apOrganization;  
   }
 
-  private static createAdvanced = (name: CommonName, configAdvancedServiceDiscoveryProvisioning: TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning, configAdvancedEventPortal: TAPOrganizationConfigEventPortal): Organization => {
+  private static createAdvanced = (name: CommonName, displayName: CommonDisplayName, configAdvancedServiceDiscoveryProvisioning: TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning, configAdvancedEventPortal: TAPOrganizationConfigEventPortal): TAPOrganization => {
     const funcName = 'createAdvanced';
     const logName = `${ManageOrganizationsCommon.name}.${funcName}()`;
 
@@ -245,11 +251,12 @@ export class ManageOrganizationsCommon {
           token: configAdvancedEventPortal.cloudToken
         }
       };
-      const apiOrganization: Organization = {
+      const apOrganization: TAPOrganization = {
         name: name,
+        displayName: displayName,
         "cloud-token": ct
       }
-      return apiOrganization;  
+      return apOrganization;  
     } else if (configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY) {
       const ct: CloudToken = {
         cloud: {
@@ -266,23 +273,24 @@ export class ManageOrganizationsCommon {
         apiKeyLocation: ManageOrganizationsCommon.mapAPReverseProxyApiKeyLocationToApiKeyLocation(configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey.apiKeyLocation),
         apiKeyName: configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.sempV2AuthType_ApiKey.apiKeyName
       }
-      const apiOrganization: Organization = {
+      const apOrganization: TAPOrganization = {
         name: name,
+        displayName: displayName,
         "cloud-token": ct,
         sempV2Authentication: sempv2Auth
       }
-      return apiOrganization;    
+      return apOrganization;    
     } else throw new Error(`${logName}: unknown configAdvancedServiceDiscoveryProvisioning.bsdp_Type=${configAdvancedServiceDiscoveryProvisioning.bsdp_Type}`);
   }
 
-  public static transformAPOrganizationConfigToApiOrganization = (oc: TAPOrganizationConfig): Organization => {
-    const funcName = 'transformAPOrganizationConfigToApiOrganization';
+  public static transformAPOrganizationConfigToAPOrganization = (oc: TAPOrganizationConfig): TAPOrganization => {
+    const funcName = 'transformAPOrganizationConfigToAPOrganization';
     const logName = `${ManageOrganizationsCommon.name}.${funcName}()`;
     switch(oc.configType) {
       case EAPOrganizationConfigType.SIMPLE:
-        return ManageOrganizationsCommon.createSimple(oc.name, oc.configSimple);
+        return ManageOrganizationsCommon.createSimple(oc.name, oc.displayName, oc.configSimple);
       case EAPOrganizationConfigType.ADVANCED:
-        return ManageOrganizationsCommon.createAdvanced(oc.name, oc.configAdvancedServiceDiscoveryProvisioning, oc.configAdvancedEventPortal);
+        return ManageOrganizationsCommon.createAdvanced(oc.name, oc.displayName, oc.configAdvancedServiceDiscoveryProvisioning, oc.configAdvancedEventPortal);
       default:
         Globals.assertNever(logName, oc.configType);
     }

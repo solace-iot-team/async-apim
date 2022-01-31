@@ -18,6 +18,7 @@ import {
   ManageOrganizationsCommon, 
   TAPOrganizationConfig 
 } from "./ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -43,11 +44,9 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationDisplayName}`);
-    try { 
-      const apiOrganization = await AdministrationService.getOrganization({
-        organizationName: props.organizationId
-      });
-      setManagedObject(ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization));
+    try {
+      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(props.organizationId);
+      setManagedObject(ManageOrganizationsCommon.transformAPOrganizationToAPOrganizationConfig(apOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

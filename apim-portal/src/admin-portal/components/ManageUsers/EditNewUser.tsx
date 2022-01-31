@@ -37,6 +37,7 @@ import { APConnectorApiCalls } from "../../../utils/APConnectorApiCalls";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
+import { APOrganizationsService } from "../../../utils/APOrganizationsService";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -235,8 +236,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
         // TODO: create user message or warning to pop up and render in page
         throw new Error('cannot get list of organizations (no active connector config)');
       } else {
-        // const apiOrganizationList: Array<Organization> = await AdministrationService.listOrganizations({});
-        const apiOrganizationList: Array<Organization> = await APConnectorApiCalls.AdministrationService_listOrganizations({});
+        const apiOrganizationList: Array<Organization> = await APOrganizationsService.listOrganizations({});
         setAvailableOrganizationList(apiOrganizationList);
       }
     } catch(e: any) {
