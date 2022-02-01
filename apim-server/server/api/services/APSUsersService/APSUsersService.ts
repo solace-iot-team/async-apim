@@ -1,9 +1,9 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-import APSUser = Components.Schemas.APSUser;
 import APSUserUpdateRequest = Components.Schemas.APSUserUpdate;
 import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
+import APSId = Components.Schemas.APSId;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
 import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../../common/MongoPersistenceService';
 import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../../utils/ApiQueryHelper';
@@ -11,11 +11,17 @@ import ServerConfig, { TRootUserConfig } from '../../../common/ServerConfig';
 import { ServerUtils } from '../../../common/ServerUtils';
 import { 
   ApiError,
-  APSUserList,
   ApsUsersService,
+  APSUser,
+  APSUserList,
+  APSOrganizationRolesList,
+  APSOrganizationRoles,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiBadQueryParameterCombinationServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError } from '../../../common/ServerError';
+import { ApiBadQueryParameterCombinationServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError, ServerErrorFromError } from '../../../common/ServerError';
 import { APSUsersDBMigrate } from './APSUsersDBMigrate';
+import APSOrganizationsServiceEventEmitter from '../apsAdministration/APSOrganizationsServiceEvent';
+import { Mutex, MutexInterface } from "async-mutex";
+import _ = require('lodash');
 
 export type TAPSListUserResponse = APSListResponseMeta & { list: Array<APSUser> };
 
@@ -24,11 +30,73 @@ export class APSUsersService {
   private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
   private static collectionSchemaVersion = 1;
-  private static rootApsUser: APSUser;
+  private static rootApsUser: Components.Schemas.APSUser;
   private persistenceService: MongoPersistenceService;
+  private collectionMutex = new Mutex();
 
   constructor() {
-    this.persistenceService = new MongoPersistenceService(APSUsersService.collectionName, true); 
+    this.persistenceService = new MongoPersistenceService(APSUsersService.collectionName, true);
+    APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
+  }
+
+  private wait4CollectionUnlock = async() => {
+    const funcName = 'wait4CollectionUnlock';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+    
+    // doesn't seem to work 
+    // await this.collectionMutex.waitForUnlock();
+
+    const releaser = await this.collectionMutex.acquire();
+    releaser();
+    if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
+
+  }
+  private onOrganizationDeleted = async(apsOrganizationId: APSId): Promise<void> => {
+    await this.collectionMutex.runExclusive(async () => {
+      await this._onOrganizationDeleted(apsOrganizationId);
+    });
+  }
+
+  private _onOrganizationDeleted = async(apsOrganizationId: APSId): Promise<void> => {
+    const funcName = '_onOrganizationDeleted';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'organizationId', details: {
+        organizationId: apsOrganizationId
+      }}));
+
+      const mongoSearchInfo: TMongoSearchInfo = { 
+        filter: {
+          memberOfOrganizations: {
+            $elemMatch: { organizationId: apsOrganizationId }
+          }
+        }
+      };
+  
+      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(undefined, undefined, mongoSearchInfo);
+  
+      const apsUserList: APSUserList = mongoAllReturn.documentList as APSUserList;
+      for(const apsUser of apsUserList) {
+        const memberOfOrganizationRolesList: APSOrganizationRolesList = apsUser.memberOfOrganizations ? apsUser.memberOfOrganizations : [];
+        const idx = memberOfOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRoles) => {
+          return organizationRoles.organizationId === apsOrganizationId;
+        });
+        if(idx > -1) memberOfOrganizationRolesList.splice(idx, 1);  
+        const update: APSUser = {
+          ...apsUser,
+          memberOfOrganizations: memberOfOrganizationRolesList
+        }
+        await this.persistenceService.update({
+          collectionDocumentId: apsUser.userId,
+          collectionDocument: update,
+          collectionSchemaVersion: APSUsersService.collectionSchemaVersion
+        })
+      }
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: ex.message , details: ex.toObject() }));
+    } 
   }
 
   public getPersistenceService = (): MongoPersistenceService => {
@@ -139,13 +207,15 @@ export class APSUsersService {
     }
   }
 
-  public getRootApsUser = (): APSUser => {
+  public getRootApsUser = (): Components.Schemas.APSUser => {
     return APSUsersService.rootApsUser;
   }
 
   public all = async(pagingInfo: TApiPagingInfo, sortInfo: TApiSortInfo, searchInfo: TApiSearchInfo): Promise<TAPSListUserResponse> => {
     const funcName = 'all';
     const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'parameters', details: {
       pagingInfo: pagingInfo,
@@ -214,6 +284,8 @@ export class APSUsersService {
     const funcName = 'byId';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
+    await this.wait4CollectionUnlock();
+
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
 
     const apsUser: APSUser = await this.persistenceService.byId(apsUserId) as APSUser;
@@ -226,6 +298,11 @@ export class APSUsersService {
   public create = async(apsUser: APSUser): Promise<APSUser> => {
     const funcName = 'create';
     const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    await validateReference()
+
     const created: APSUser = await this.persistenceService.create({
       collectionDocumentId: apsUser.userId,
       collectionDocument: apsUser,
@@ -240,6 +317,11 @@ export class APSUsersService {
   public update = async(apsUserId: APSUserId, apsUserUpdateRequest: APSUserUpdateRequest): Promise<APSUser> => {
     const funcName = 'update';
     const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    await validateReference()
+
     const updated: APSUser = await this.persistenceService.update({
       collectionDocumentId: apsUserId,
       collectionDocument: apsUserUpdateRequest,
@@ -255,6 +337,10 @@ export class APSUsersService {
     const funcName = 'replace';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
+    await this.wait4CollectionUnlock();
+
+    await validateReference()
+
     const replaced: APSUser = await this.persistenceService.replace({
       collectionDocumentId: apsUserId, 
       collectionDocument: { ...apsUserReplaceRequest, userId: apsUserId }, 
@@ -269,6 +355,8 @@ export class APSUsersService {
   public delete = async(apsUserId: APSUserId): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
 

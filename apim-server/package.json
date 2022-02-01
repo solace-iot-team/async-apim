@@ -41,6 +41,7 @@
     "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
   "dependencies": {
+    "async-mutex": "^0.3.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
@@ -53,7 +54,8 @@
     "nocache": "^3.0.1",
     "node-fetch": "^2.6.1",
     "pino": "^6.11.3",
-    "print-env": "^0.1.2"
+    "print-env": "^0.1.2",
+    "tiny-typed-emitter": "^2.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",

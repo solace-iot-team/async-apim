@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
 import APSUsersService, { TAPSListUserResponse } from '../../services/APSUsersService/APSUsersService';
 import { ApiMissingParameterServerError } from '../../../common/ServerError';
-import APSUser = Components.Schemas.APSUser;
+import { APSUser } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export class ApsUsersController {
   private static className = 'ApsUsersController';

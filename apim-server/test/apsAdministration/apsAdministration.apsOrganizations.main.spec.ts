@@ -154,16 +154,17 @@ describe(`${scriptName}`, () => {
       const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
       const orgList: APSOrganizationList = listOrgResponse.list;
       const totalCount: number = listOrgResponse.meta.totalCount;
-      expect(totalCount, `${TestLogger.createTestFailMessage('totalCount not as expected')}`).to.equal(NumberOfOrganizations-1);
-      expect(orgList.length, `${TestLogger.createTestFailMessage('orgList.length not as expected')}`).to.equal(NumberOfOrganizations-1);
+      expect(totalCount, TestLogger.createTestFailMessage('totalCount not as expected')).to.equal(NumberOfOrganizations-1);
+      expect(orgList.length, TestLogger.createTestFailMessage('orgList.length not as expected')).to.equal(NumberOfOrganizations-1);
       const found = orgList.find( (org: APSOrganization) => {
         org.organizationId === deleteOrgId;
       });
-      expect(found, `${TestLogger.createTestFailMessage('found the orgId that was deleted in response list')}`).to.be.undefined;
+      expect(found, TestLogger.createTestFailMessage('found the orgId that was deleted in response list')).to.be.undefined;
     } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
+    expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
   });
 
   it(`${scriptName}: should return duplicate key error`, async() => {

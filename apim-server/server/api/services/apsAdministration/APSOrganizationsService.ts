@@ -9,19 +9,20 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse 
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import APSOrganizationsServiceEventEmitter from './APSOrganizationsServiceEvent';
 
-export class APSOrganizationssService {
+export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
   private static collectionSchemaVersion = 0;
   private persistenceService: MongoPersistenceService;
   
   constructor() {
-    this.persistenceService = new MongoPersistenceService(APSOrganizationssService.collectionName);
+    this.persistenceService = new MongoPersistenceService(APSOrganizationsService.collectionName);
   }
 
   public initialize = async() => {
     const funcName = 'initialize';
-    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
 
     // for devel: drops the connector collection
@@ -44,7 +45,7 @@ export class APSOrganizationssService {
 
   public byId = async(apsOrganizationId: APSId): Promise<APSOrganization> => {
     const funcName = 'byId';
-    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId}));
 
@@ -57,11 +58,11 @@ export class APSOrganizationssService {
 
   public create = async(apsOrganizationCreateRequest: APSOrganizationCreate): Promise<APSOrganization> => {
     const funcName = 'create';
-    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
     const created: APSOrganization = await this.persistenceService.create({
       collectionDocumentId: apsOrganizationCreateRequest.organizationId,
       collectionDocument: apsOrganizationCreateRequest,
-      collectionSchemaVersion: APSOrganizationssService.collectionSchemaVersion
+      collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created}));
@@ -71,11 +72,11 @@ export class APSOrganizationssService {
 
   public update = async(apsOrganizationId: APSId, apsOrganizationUpdateRequest: APSOrganizationUpdate): Promise<APSOrganization> => {
     const funcName = 'update';
-    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
     const updated: APSOrganization = await this.persistenceService.update({
       collectionDocumentId: apsOrganizationId,
       collectionDocument: apsOrganizationUpdateRequest,
-      collectionSchemaVersion: APSOrganizationssService.collectionSchemaVersion
+      collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
@@ -85,14 +86,13 @@ export class APSOrganizationssService {
 
   public delete = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
     const funcName = 'delete';
-    const logName = `${APSOrganizationssService.name}.${funcName}()`;
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId }));
 
     const deleted = (await this.persistenceService.delete(apsOrganizationId) as unknown) as APSOrganization;
     
-    // call APSUsersService to notify of organization deletion?
-    // ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'implement delete organization', details: apsOrganizationId }));
+    APSOrganizationsServiceEventEmitter.emit('deleted', apsOrganizationId);
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleted', details: deleted }));
 
@@ -100,4 +100,4 @@ export class APSOrganizationssService {
 
 }
 
-export default new APSOrganizationssService();
+export default new APSOrganizationsService();

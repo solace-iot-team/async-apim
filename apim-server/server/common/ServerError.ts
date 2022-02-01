@@ -146,12 +146,17 @@ export class ApiServerError extends ServerError {
       errorId: this.apiErrorId,
       description: this.apiDescription,
     }
-    // check if apiMeta is a json serializable object
-    try {
-      JSON.parse(JSON.stringify(this.apiMeta));
-      apsError.meta = this.apiMeta;
-    } catch (e: any) {
-      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: `JSON.parse error of apiMeta`, details: { name: e.name, message: e.message } }));    
+    if(this.apiMeta !== undefined) {
+      // check if apiMeta is a json serializable object
+      try {
+        JSON.parse(JSON.stringify(this.apiMeta));
+        apsError.meta = this.apiMeta;
+      } catch (e: any) {
+      }
+    } else {
+      apsError.meta = {
+        message: this.message
+      }
     }
     return apsError;
   }
