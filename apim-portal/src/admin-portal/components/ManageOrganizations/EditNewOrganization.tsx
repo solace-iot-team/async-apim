@@ -47,7 +47,7 @@ export interface IEditNewOrganizationProps {
   organizationDisplayName?: CommonDisplayName;
   onError: (apiCallState: TApiCallState) => void;
   onNewSuccess: (apiCallState: TApiCallState, newId: CommonName, newDisplayName: CommonDisplayName) => void;
-  onEditSuccess: (apiCallState: TApiCallState) => void;
+  onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName: CommonDisplayName) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -63,6 +63,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<CommonName>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
+  const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -113,14 +114,11 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `update organization: ${mo.name}`);
     try { 
-      await APOrganizationsService.updateOrganization({
+      const apOrganization: TAPOrganization = await APOrganizationsService.updateOrganization({
         organizationId: managedObjectId,
         requestBody: transformManagedObjectToUpdateApiObject(mo)
       });
-      // await AdministrationService.updateOrganization({
-      //   organizationName: managedObjectId, 
-      //   requestBody: transformManagedObjectToUpdateApiObject(mo)
-      // });
+      setUpdatedManagedObjectDisplayName(apOrganization.displayName);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -134,11 +132,11 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_ORGANIZATION, `create organization: ${mo.name}`);
     try { 
-      const createdApiObject: Organization = await AdministrationService.createOrganization({
+      const createdApOrganization: TAPOrganization = await APOrganizationsService.createOrganization({
         requestBody: transformManagedObjectToCreateApiObject(mo)
       });
-      setCreatedManagedObjectId(createdApiObject.name);
-      setCreatedManagedObjectDisplayName(createdApiObject.name);      
+      setCreatedManagedObjectId(createdApOrganization.name);
+      setCreatedManagedObjectDisplayName(createdApOrganization.displayName);      
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -187,7 +185,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
         props.onNewSuccess(apiCallStatus, createdManagedObjectId, createdManagedObjectDisplayName);
       }  
       else if(props.action === EAction.EDIT && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION) {
-        props.onEditSuccess(apiCallStatus);
+        if(!updatedManagedObjectDisplayName) throw new Error(`${logName}: updatedManagedObjectDisplayName is undefined`);
+        props.onEditSuccess(apiCallStatus, updatedManagedObjectDisplayName);
       }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */

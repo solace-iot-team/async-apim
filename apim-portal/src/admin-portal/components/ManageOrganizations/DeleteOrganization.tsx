@@ -5,12 +5,13 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
 import { 
-  AdministrationService, CommonDisplayName, CommonName, 
+  CommonDisplayName, CommonName, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
+import { APOrganizationsService } from "../../../utils/APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -33,13 +34,28 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
+  // const apiGetManagedObjectAssets = async(): Promise<TApiCallState> => {
+  //   const funcName = 'apiGetManagedObjectAssets';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_ASSETS, `get assets for organization: ${props.organizationDisplayName}`);
+  //   try { 
+  //     const apOrganizationAssets: TAPOrganizationAssets = await APOrganizationsService.getOrganizationAssets({
+  //       organizationId: props.organizationId
+  //     });
+  //   } catch(e) {
+  //     APClientConnectorOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete organization: ${props.organizationDisplayName}`);
     try { 
-      await AdministrationService.deleteOrganization({
-        organizationName: props.organizationId
+      await APOrganizationsService.deleteOrganization({
+        organizationId: props.organizationId
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -73,11 +89,16 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
     props.onCancel();
   }
 
+  const renderDeleteManagedObjectConfirmDialogHeader = () => {
+    return (<span style={{ color: 'red' }}>{DeleteManagedObjectConfirmDialogHeader}</span>);
+  }
+
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
         <p>Deleting organization <b>{props.organizationDisplayName}</b> will also delete all it's content!</p>
         <p>Are you sure you want to delete it?</p>
+        <p><b>This action is irreversible!</b></p>
       </React.Fragment>  
     );
   }
@@ -86,7 +107,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
     return (
       <React.Fragment>
           <Button label="Cancel" className="p-button-text p-button-plain" onClick={onDeleteManagedObjectCancel} />
-          <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
+          <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject} style={{ color: "red", borderColor: 'red'}} />
       </React.Fragment>
     );
   } 
@@ -97,15 +118,16 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
         className="p-fluid"
         visible={showManagedObjectDeleteDialog} 
         style={{ width: '450px' }} 
-        header={DeleteManagedObjectConfirmDialogHeader}
+        header={renderDeleteManagedObjectConfirmDialogHeader()}
         modal
         closable={false}
         footer={renderDeleteManagedObjectDialogFooter()}
         onHide={()=> {}}
+        contentClassName="manage-organizations-delete-confirmation-content"
       >
-        <div className="confirmation-content">
-            <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
-            {renderDeleteManagedObjectDialogContent()}
+        <div>
+          <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
+          {renderDeleteManagedObjectDialogContent()}
         </div>
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
       </Dialog>
@@ -113,7 +135,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   } 
   
   return (
-    <div className="manage-users">
+    <div className="manage-organizations">
       {renderManagedObjectDeleteDialog()}
     </div>
   );

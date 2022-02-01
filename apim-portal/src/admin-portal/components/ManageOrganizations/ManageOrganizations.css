@@ -13,10 +13,11 @@
   padding-top: 0rem;
   padding-bottom: 0rem;
 }
-.manage-organizations .confirmation-content {
+.manage-organizations-delete-confirmation-content {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: red !important;
 }
 .manage-organizations .ap-api-error {
   border-color: #df2121;

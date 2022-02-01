@@ -13,28 +13,52 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { TAPEntityId } from './APTypes';
 import { Globals } from './Globals';
 
 export type TAPOrganization = Organization & {
   displayName: APSDisplayName;
 }
 export type TAPOrganizationList = Array<TAPOrganization>;
+export type TAPOrganizationCreateRequest = TAPOrganization;
 export type TAPOrganizationUpdateRequest = TAPOrganization;
+export type TAPOrganizationAssets = {
+  userList: Array<TAPEntityId>;
+  environmentList: Array<TAPEntityId>;
+  apiList: Array<TAPEntityId>;
+  apiProductList: Array<TAPEntityId>;
+  appList: Array<TAPEntityId>;
+}
 
 export class APOrganizationsService {
-  
+  private static componentName = "APOrganizationsService";
+
   public static C_SECRET_MASK = '***';
 
-  private static maskSecrets = (connectorOrg: Organization, secretMask: string = APOrganizationsService.C_SECRET_MASK): Organization => {
-    if(connectorOrg['cloud-token']) {
-      if(typeof connectorOrg['cloud-token'] === 'string') connectorOrg['cloud-token'] = secretMask;
-      else {
-        const ct: CloudToken = connectorOrg['cloud-token'];
-        if(ct.cloud.token) ct.cloud.token = secretMask;
-        if(ct.eventPortal.token) ct.eventPortal.token = secretMask;
+  private static _maskSecrets = (obj: any, mask: string): any => {
+    const funcName = '_maskSecrets';
+    const logName = `${APOrganizationsService.componentName}.${funcName}()`;
+    // TODO: implement array traversal if required
+    if(Array.isArray(obj)) throw new Error(`${logName}: arrays are not supported`);
+    const isObject = (obj:any ) => obj && typeof obj === 'object';
+    Object.keys(obj).forEach( key => {
+      const value = obj[key];
+      const k = key.toLowerCase();
+      if( k.includes('token') && typeof value === 'string') {
+        obj[key] = mask;
       }
-    }
-    return connectorOrg; 
+      if(Array.isArray(value) || isObject(value)) APOrganizationsService._maskSecrets(value, mask);
+    });
+    return obj;
+  }
+
+  private static maskSecrets = (connectorOrg: Organization, secretMask: string = APOrganizationsService.C_SECRET_MASK): Organization => {
+    // const funcName = 'maskSecrets';
+    // const logName = `${APOrganizationsService.componentName}.${funcName}()`;
+    // console.log(`${logName}: connectorOrg=${JSON.stringify(connectorOrg, null, 2)}`);
+    const maskedConnectorOrg = APOrganizationsService._maskSecrets(connectorOrg, secretMask);
+    // console.log(`${logName}: maskedConnectorOrg=${JSON.stringify(maskedConnectorOrg, null, 2)}`);
+    return maskedConnectorOrg;
   }
   public static listOrganizations = async(options: any): Promise<TAPOrganizationList> => {
     const _connectorOrgList: Array<Organization> = await AdministrationService.listOrganizations(options);
@@ -79,21 +103,56 @@ export class APOrganizationsService {
     return apOrganization;
   }
 
-  public static updateOrganization = async({ organizationId, requestBody, }: { organizationId: APSId, requestBody: TAPOrganizationUpdateRequest}): Promise<void> => {
+  public static getOrganizationAssets = async({ organizationId }: { organizationId: APSId }): Promise<TAPOrganizationAssets> => {
+
+    // TODO: return at least id and displayName
+    return {
+      userList: [ { id: 'userId', displayName: 'displayName-userId'} ],
+      environmentList: [ { id: 'envId', displayName: 'displayName-envId'} ],
+      apiList: [ { id: 'apiId', displayName: 'displayName-apiId' } ],
+      apiProductList: [ { id: 'apiProductId', displayName: 'displayName-apiProductId'} ],
+      appList: [ { id: 'appId', displayName: 'displayName-appId'}]
+    };
+  }
+
+  public static createOrganization = async({ requestBody, }: { requestBody: TAPOrganizationCreateRequest}): Promise<TAPOrganization> => {
     const connectorRequestBody: Organization = {
       name: requestBody.name,
       "cloud-token": requestBody['cloud-token'],
       sempV2Authentication: requestBody.sempV2Authentication
     }
-    await AdministrationService.updateOrganization({
+    const createdConnectorOrg = await AdministrationService.createOrganization({
+      requestBody: connectorRequestBody
+    });
+    const apsRequestBody: APSOrganizationCreate = {
+      organizationId: requestBody.name,
+      displayName: requestBody.displayName
+    }
+    const createdApsOrg = await ApsAdministrationService.createApsOrganization({
+      requestBody: apsRequestBody
+    });
+    return {
+      ...createdConnectorOrg,
+      displayName: createdApsOrg.displayName
+    }
+  }
+
+  public static updateOrganization = async({ organizationId, requestBody, }: { organizationId: APSId, requestBody: TAPOrganizationUpdateRequest}): Promise<TAPOrganization> => {
+    const connectorRequestBody: Organization = {
+      name: requestBody.name,
+      "cloud-token": requestBody['cloud-token'],
+      sempV2Authentication: requestBody.sempV2Authentication
+    }
+    const updatedConnectorOrganization = await AdministrationService.updateOrganization({
       organizationName: organizationId, 
       requestBody: connectorRequestBody
     });
+    let updatedApsOrg: APSOrganization;
     try {
       const apsRequestBody: APSOrganizationUpdate = {
         displayName: requestBody.displayName
       }
-      await ApsAdministrationService.updateApsOrganization({
+      updatedApsOrg = await ApsAdministrationService.updateApsOrganization({
         organizationId: organizationId,
         requestBody: apsRequestBody
       });
@@ -103,10 +162,25 @@ export class APOrganizationsService {
         organizationId: organizationId,
         displayName: requestBody.displayName
       }
-      await ApsAdministrationService.createApsOrganization({
+      updatedApsOrg = await ApsAdministrationService.createApsOrganization({
         requestBody: apsRequestBody
       });
     }
+    return {
+      ...updatedConnectorOrganization,
+      displayName: updatedApsOrg.displayName
+    }
   }
 
+  public static deleteOrganization = async({ organizationId }: { organizationId: APSId }): Promise<void> => {
+    
+    await AdministrationService.deleteOrganization({
+      organizationName: organizationId
+    });
+
+    await ApsAdministrationService.deleteApsOrganization({
+      organizationId: organizationId
+    });
+
+  }
 }
