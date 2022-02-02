@@ -9,6 +9,8 @@ import { Divider } from 'primereact/divider';
 
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
+import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
 import { TAPOrganizationIdList } from "../APComponentsCommon";
@@ -32,6 +34,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
   const history = useHistory();
   const userOverlayPanel = React.useRef<any>(null);
   const organizationOverlayPanel = React.useRef<any>(null);
@@ -48,6 +51,14 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const navigateToOriginHome = (): void => {
     if(userContext.originAppState !== EAppState.UNDEFINED) navigateTo(Globals.getOriginHomePath(userContext.originAppState));
     else navigateTo(EUICommonResourcePaths.Home);
+  }
+
+  const isSystemAvailable = (): boolean => {
+    if( 
+      healthCheckSummaryContext.serverHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ||
+      healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL
+      ) return false;    
+    return true;
   }
 
   const onLogout = () => {
@@ -198,9 +209,14 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const menubarEndTemplate = () => {
+    if(!isSystemAvailable()) return (
+      <React.Fragment>
+        <SystemHealthCheck />
+      </React.Fragment>
+    );
     return (
       <React.Fragment>
-        {!authContext.isLoggedIn &&
+        {!authContext.isLoggedIn && 
           <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo('/login')} />
         }
         {authContext.isLoggedIn &&
