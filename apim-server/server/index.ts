@@ -23,6 +23,7 @@ const migrateComponents = async(): Promise<void> => {
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING }));
   try {
     await APSUsersService.migrate();
+    await APSOrganizationsService.migrate();
     ServerStatus.setIsMigrated();
   } catch(e: any) {
     if (e instanceof MigrateServerError) {

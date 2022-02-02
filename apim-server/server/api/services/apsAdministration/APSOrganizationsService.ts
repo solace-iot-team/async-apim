@@ -10,6 +10,7 @@ import {
   ListAPSOrganizationResponse 
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsServiceEventEmitter from './APSOrganizationsServiceEvent';
+import { APSOrganizationsDBMigrate } from './APSOrganizationsDBMigrate';
 
 export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
@@ -18,6 +19,16 @@ export class APSOrganizationsService {
   
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSOrganizationsService.collectionName);
+  }
+
+  public getPersistenceService = (): MongoPersistenceService => {
+    return this.persistenceService;
+  }
+  public getCollectionName = (): string => {
+    return APSOrganizationsService.collectionName;
+  }
+  public getDBObjectSchemaVersion = (): number => {
+    return APSOrganizationsService.collectionSchemaVersion;
   }
 
   public initialize = async() => {
@@ -31,6 +42,14 @@ export class APSOrganizationsService {
     await this.persistenceService.initialize();
     
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  }
+
+  public migrate = async(): Promise<void> => {
+    const funcName = 'migrate';
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING }));
+    await APSOrganizationsDBMigrate.migrate(this);
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
   public all = async(): Promise<ListAPSOrganizationResponse> => {

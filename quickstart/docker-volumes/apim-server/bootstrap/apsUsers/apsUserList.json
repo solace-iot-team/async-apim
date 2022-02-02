@@ -8,12 +8,6 @@
       "last": "User",
       "email": "master.user@async-apim-quickstart.com"
     },
-    "systemRoles": ["systemAdmin", "loginAs"],
-    "memberOfOrganizations": [
-      {
-        "organizationId": "apim-quickstart",
-        "roles": ["apiTeam", "organizationAdmin", "apiConsumer", "loginAs"]
-      }
-    ]
+    "systemRoles": ["systemAdmin", "loginAs"]
   }
 ]

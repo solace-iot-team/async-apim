@@ -1,6 +1,4 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-// import APSUserUpdateRequest = Components.Schemas.APSUserUpdate;
-// import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
 import APSId = Components.Schemas.APSId;
@@ -18,7 +16,6 @@ import {
   APSUserList,
   APSOrganizationRolesList,
   APSOrganizationRoles,
-  APSOrganization,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { 
   ApiBadQueryParameterCombinationServerError, 
