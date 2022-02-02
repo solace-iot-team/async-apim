@@ -52,7 +52,7 @@ export class APOrganizationsService {
     return obj;
   }
 
-  private static maskSecrets = (connectorOrg: Organization, secretMask: string = APOrganizationsService.C_SECRET_MASK): Organization => {
+  public static maskSecrets = (connectorOrg: Organization, secretMask: string = APOrganizationsService.C_SECRET_MASK): Organization => {
     // const funcName = 'maskSecrets';
     // const logName = `${APOrganizationsService.componentName}.${funcName}()`;
     // console.log(`${logName}: connectorOrg=${JSON.stringify(connectorOrg, null, 2)}`);

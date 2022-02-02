@@ -35,6 +35,7 @@ import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
+import { Globals } from "../../../utils/Globals";
 
 
 export enum EAction {
@@ -64,6 +65,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<CommonName>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
+  const [originalMaskedManagedObject, setOriginalMaskedManagedObject] = React.useState<TManagedObject>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -79,9 +81,16 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   }
 
   const transformManagedObjectToUpdateApiObject = (mo: TManagedObject): TUpdateApiObject => {
-    return transformManagedObjectToCreateApiObject(mo);
+    const apOrganization: TAPOrganization = ManageOrganizationsCommon.transformAPOrganizationConfigToAPOrganization(mo);
+    if(apOrganization["cloud-token"] !== undefined) {
+      if(apOrganization["cloud-token"] === '') delete apOrganization["cloud-token"];
+      else if(typeof apOrganization["cloud-token"] !== 'string') {
+        if(apOrganization["cloud-token"].cloud.token === '') delete apOrganization["cloud-token"].cloud.token;
+        if(apOrganization["cloud-token"].eventPortal.token === '') delete apOrganization["cloud-token"].eventPortal.token;
+      }
+    }
+    return apOrganization;
   }
-
 
   const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
     const formData: TManagedObjectFormData = mo;
@@ -93,13 +102,54 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     return mo;
   }
 
+  const is_bspType_TokenRequired = (bspType: EAPBrokerServiceDiscoveryProvisioningType): boolean => {
+    const funcName = 'is_bspType_TokenRequired';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.action === EAction.NEW) return true;
+    if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
+    switch(bspType) {
+      case EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY:
+        return originalMaskedManagedObject.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token === undefined || originalMaskedManagedObject.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token === '';
+      case EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD:
+        return originalMaskedManagedObject.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken === undefined || originalMaskedManagedObject.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken === '';
+      default:
+        Globals.assertNever(logName, bspType);
+    }
+    return true;
+  }
+
+  const is_advanced_EventPortal_TokenRequired = (): boolean => {
+    const funcName = 'is_advanced_EventPortal_TokenRequired';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.action === EAction.NEW) return true;
+    if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
+    return originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === undefined || originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === '';
+  }
+
+  const is_simple_solace_cloud_TokenRequired = (): boolean => {
+    const funcName = 'is_simple_solace_cloud_TokenRequired';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.action === EAction.NEW) return true;
+    if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
+    return originalMaskedManagedObject.configSimple.cloudToken === undefined || originalMaskedManagedObject.configSimple.cloudToken === '';
+  }
+  const isRequiredLabel = (isRequired: boolean, label: string): string => {
+    if(isRequired) return `${label}*`;
+    return label;
+  }
+
   // * Api Calls *
   const apiGetManagedObject = async(managedObjectId: CommonName, managedObjectDisplayName: CommonDisplayName): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${managedObjectDisplayName}`);
     try { 
-      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(managedObjectId, '');
+      const maskedApOrganization: TAPOrganization = await APOrganizationsService.getOrganization(managedObjectId);
+      setOriginalMaskedManagedObject(transformGetAPObjectToManagedObject(maskedApOrganization));
+      const apOrganization: TAPOrganization = {
+        ...APOrganizationsService.maskSecrets(maskedApOrganization, ''),
+        displayName: maskedApOrganization.displayName
+      }
       setManagedObject(transformGetAPObjectToManagedObject(apOrganization));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -358,7 +408,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
             <Controller
               name="configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.Organization_Token('Enter Reverse Proxy Token.', isActive)}
+              // rules={APConnectorFormValidationRules.Organization_Token(props.action === EAction.NEW, 'Enter Reverse Proxy Token.', isActive)}
+              rules={APConnectorFormValidationRules.Organization_Token(is_bspType_TokenRequired(EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY), 'Enter Reverse Proxy Token.', isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -370,7 +421,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 );
               }}
             />
-            <label htmlFor="configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_ReverseProxy?.token })}>Reverse Proxy Token*</label>
+            <label htmlFor="configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy.token" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_ReverseProxy?.token })}>{isRequiredLabel(is_bspType_TokenRequired(EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY), 'Reverse Proxy Token')}</label>
           </span>
           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_ReverseProxy?.token)}
         </div>
@@ -447,7 +498,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
             <Controller
               name="configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token.', isActive)}
+              // rules={APConnectorFormValidationRules.Organization_Token(props.action === EAction.NEW, 'Enter Solace Cloud Token.', isActive)}
+              rules={APConnectorFormValidationRules.Organization_Token(is_bspType_TokenRequired(EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD), 'Enter Solace Cloud Token.', isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -459,7 +511,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 );
               }}
             />
-            <label htmlFor="configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_SolaceCloud?.cloudToken })}>Solace Cloud Token*</label>
+            <label htmlFor="configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_SolaceCloud?.cloudToken })}>{isRequiredLabel(is_bspType_TokenRequired(EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD), 'Solace Cloud Token')}</label>
           </span>
           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configAdvancedServiceDiscoveryProvisioning?.bsdp_SolaceCloud?.cloudToken)}
         </div>
@@ -501,7 +553,9 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
             <Controller
               name="configAdvancedEventPortal.cloudToken"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.Organization_Token('Enter Event Portal Token.', isActive)}
+              // rules={APConnectorFormValidationRules.Organization_Token(props.action === EAction.NEW, 'Enter Event Portal Token.', isActive)}
+              rules={APConnectorFormValidationRules.Organization_Token(is_advanced_EventPortal_TokenRequired(), 'Enter Event Portal Token.', isActive)}
+              
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -513,7 +567,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 );
               }}
             />
-            <label htmlFor="configAdvancedEventPortal.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken })}>Event Portal Token*</label>
+            <label htmlFor="configAdvancedEventPortal.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken })}>{isRequiredLabel(is_advanced_EventPortal_TokenRequired(), 'Event Portal Token')}</label>
           </span>
           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken)}
         </div>
@@ -587,7 +641,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
             <Controller
               name="configSimple.cloudToken"
               control={managedObjectUseForm.control}
-              rules={APConnectorFormValidationRules.Organization_Token('Enter Solace Cloud Token.', isActive)}
+              // rules={APConnectorFormValidationRules.Organization_Token(props.action === EAction.NEW, 'Enter Solace Cloud Token.', isActive)}
+              rules={APConnectorFormValidationRules.Organization_Token(is_simple_solace_cloud_TokenRequired(), 'Enter Solace Cloud Token.', isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -599,7 +654,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 );
               }}
             />
-            <label htmlFor="configSimple.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configSimple?.cloudToken })}>Solace Cloud Token*</label>
+            <label htmlFor="configSimple.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configSimple?.cloudToken })}>{isRequiredLabel(is_simple_solace_cloud_TokenRequired(), 'Solace Cloud Token')}</label>
           </span>
           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configSimple?.cloudToken)}
         </div>
