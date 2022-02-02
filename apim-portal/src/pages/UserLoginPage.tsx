@@ -44,7 +44,7 @@ export const UserLoginPage: React.FC = () => {
       if(originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: orginAppState is undefined, currentAppState=${newCurrentAppState}`);
     } else {
       // came directly to /login url
-      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> Error
+      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> developer portal
       if(AuthHelper.isAuthorizedToAccessAdminPortal(authContext.authorizedResourcePathsAsString)) {
         originAppState = EAppState.ADMIN_PORTAL; 
         newCurrentAppState = EAppState.ADMIN_PORTAL;
@@ -52,7 +52,9 @@ export const UserLoginPage: React.FC = () => {
         originAppState = EAppState.DEVELOPER_PORTAL; 
         newCurrentAppState = EAppState.DEVELOPER_PORTAL;
       } else {
-        throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
+        originAppState = EAppState.DEVELOPER_PORTAL; 
+        newCurrentAppState = EAppState.DEVELOPER_PORTAL;
+        // throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
       }
     }
     dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });

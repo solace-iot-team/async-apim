@@ -128,8 +128,8 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
         <div>
           <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
           {renderDeleteManagedObjectDialogContent()}
+          <ApiCallStatusError apiCallStatus={apiCallStatus} />
         </div>
-        <ApiCallStatusError apiCallStatus={apiCallStatus} />
       </Dialog>
     );
   } 

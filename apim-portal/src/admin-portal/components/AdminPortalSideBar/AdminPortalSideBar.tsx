@@ -44,6 +44,33 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     return false;
   }
   
+  const getApimMenuItems = (): Array<MenuItem> => {
+    if(
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
+      ) return [];
+
+    let _items: Array<MenuItem> = [
+      {
+        label: 'APPs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
+      },
+      {
+        label: 'API Products',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
+      },
+      {
+        label: 'APIs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+      },
+    ];
+    return _items;
+  }
+
   const getOrganizationMenuItems = (): Array<MenuItem> => {
     if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
     let _items: Array<MenuItem> = [
@@ -136,24 +163,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         }  
       );
     }
-    let _items: Array<MenuItem> = [
-      {
-        label: 'APPs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
-      },
-      {
-        label: 'API Products',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
-      },
-      {
-        label: 'APIs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
-      },
-    ];
-    items.push(..._items);
+    items.push(...getApimMenuItems())
     items.push(...getOrganizationMenuItems());
     items.push(...getSystemMenuItems());
     return items;

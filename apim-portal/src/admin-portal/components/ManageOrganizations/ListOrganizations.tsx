@@ -19,11 +19,10 @@ import {
   ManageOrganizationsCommon, 
   TAPOrganizationConfig, 
 } from "./ManageOrganizationsCommon";
-import { APConnectorApiCalls } from "../../../utils/APConnectorApiCalls";
+import { APOrganizationsService, TAPOrganizationList } from "../../../utils/APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { APOrganizationsService, TAPOrganizationList } from "../../../utils/APOrganizationsService";
 
 export interface IListOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;

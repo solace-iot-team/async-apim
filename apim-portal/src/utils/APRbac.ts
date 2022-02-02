@@ -6,7 +6,10 @@ import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommon
 
 export const CAPSAuthRoleNone = '';
 
-export type EAPSCombinedAuthRole = EAPSSystemAuthRole | EAPSOrganizationAuthRole;
+export enum EAPSDefaultAuthRole {
+  DEFAULT = 'default',
+}
+export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EAPSOrganizationAuthRole;
 
 export enum  EAPRbacRoleScope {
   NEVER = "NEVER",
@@ -36,6 +39,16 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
+    ]
+  },
+  {
+    // every user will get access to the default resources
+    id: EAPSDefaultAuthRole.DEFAULT,
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    displayName: 'default',
+    description: 'default',
+    uiResourcePaths: [
+      EUICommonResourcePaths.ManageUserAccount,
     ]
   },
   {

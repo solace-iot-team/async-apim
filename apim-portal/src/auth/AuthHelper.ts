@@ -1,12 +1,11 @@
 import { 
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
-  APSOrganizationRolesList,
   APSSystemAuthRoleList,
   APSUser,
   EAPSSystemAuthRole
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { CAPSAuthRoleNone, TAPRbacRole } from '../utils/APRbac';
+import { CAPSAuthRoleNone, EAPSDefaultAuthRole, TAPRbacRole } from '../utils/APRbac';
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths, Globals } from '../utils/Globals';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { TAPAuthContext } from '../components/AuthContextProvider/AuthContextProvider';
@@ -28,6 +27,17 @@ export class AuthHelper {
     if(configContext.rbacRoleList === undefined) return CAPSAuthRoleNone;
     const apsUser: APSUser = userContext.user;
 
+    const combinedUiResourcePathList: Array<EUICombinedResourcePaths> = [];
+
+    const defaultRoles: Array<EAPSDefaultAuthRole> = [EAPSDefaultAuthRole.DEFAULT];
+    for(const defaultRole of defaultRoles) {
+      const rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
+        return (rbacRole.id === defaultRole)
+      });
+      if(rbacRole === undefined) throw new Error(`${logName}: cannot find defaultRole=${defaultRole} in rbac roles=${JSON.stringify(configContext.rbacRoleList, null, 2)}`);
+      combinedUiResourcePathList.push(...rbacRole.uiResourcePaths);
+    }
+
     const systemRoles: APSSystemAuthRoleList = apsUser.systemRoles ? apsUser.systemRoles : [];
     let organizationRoles: APSOrganizationAuthRoleList = [];
     if(userContext.runtimeSettings.currentOrganizationName) {
@@ -37,9 +47,8 @@ export class AuthHelper {
       if(!found) throw new Error(`${logName}: cannot find userContext.runtimeSettings.currentOrganizationName=${userContext.runtimeSettings.currentOrganizationName} in apsUser.memberOfOrganizations=${JSON.stringify(apsUser.memberOfOrganizations, null, 2)}`);
       organizationRoles = found.roles;
     }
-    if(systemRoles.length === 0 && organizationRoles.length ===0) return CAPSAuthRoleNone;
-    const combinedUiResourcePathList: Array<EUICombinedResourcePaths> = [];
-
+    // if(systemRoles.length === 0 && organizationRoles.length ===0) return CAPSAuthRoleNone;
+    
     systemRoles.forEach((systemRole: EAPSSystemAuthRole) => {
       const rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
         return (rbacRole.id === systemRole)  

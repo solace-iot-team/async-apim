@@ -123,6 +123,7 @@ export class ConfigHelper {
       if(rbacRole) authorizedRolesDisplayNameList.push(rbacRole.displayName);
       else throw new Error(`${logName}: cannot find configured role for authorized role=${authorizedRole}`);
     });
+    if(authorizedRolesDisplayNameList.length === 0) return ['None'];
     return authorizedRolesDisplayNameList;
   }
 

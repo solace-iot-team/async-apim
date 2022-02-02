@@ -45,6 +45,41 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
     return false;
   }
 
+  const getApimMenuItems = (): Array<MenuItem> => {
+    if(
+      isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
+      isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
+      isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts)
+      ) return [];
+
+      let _items: Array<MenuItem> = [
+        {
+          label: 'My Apps',
+          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ManageUserApplications),
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
+          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
+        },
+        {
+          label: 'Explore APIs',
+          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApis),
+          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
+        },
+        {
+          label: 'Explore API Products',
+          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApiProducts),
+          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts); }
+        },
+        // {
+        //   label: 'Team Applications',
+        //   disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
+        // },
+      ];
+      return _items;
+  }
+
   const getMenuItems = (): Array<MenuItem> => {
     if(!authContext.isLoggedIn) return [];
     let items: Array<MenuItem> = [];
@@ -57,32 +92,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         }  
       );
     }
-    let _items: Array<MenuItem> = [
-      {
-        label: 'My Apps',
-        // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ManageUserApplications),
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
-      },
-      {
-        label: 'Explore APIs',
-        // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApis),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
-      },
-      {
-        label: 'Explore API Products',
-        // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApiProducts),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts); }
-      },
-      // {
-      //   label: 'Team Applications',
-      //   disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
-      //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
-      // },
-    ];
-    items.push(..._items);
+    items.push(...getApimMenuItems())
     return items;
   }
 

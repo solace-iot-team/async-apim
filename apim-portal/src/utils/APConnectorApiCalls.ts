@@ -5,7 +5,6 @@ import {
   ApisService, 
   About,
   AdministrationService,
-  Organization,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   APSConnectorClientConfig 
