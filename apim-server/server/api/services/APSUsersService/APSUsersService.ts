@@ -1,6 +1,6 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-import APSUserUpdateRequest = Components.Schemas.APSUserUpdate;
-import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
+// import APSUserUpdateRequest = Components.Schemas.APSUserUpdate;
+// import APSUserReplaceRequest = Components.Schemas.APSUserReplace;
 import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
 import APSUserId = Components.Schemas.APSId;
 import APSId = Components.Schemas.APSId;
@@ -13,15 +13,28 @@ import {
   ApiError,
   ApsUsersService,
   APSUser,
+  APSUserReplace,
+  APSUserUpdate,
   APSUserList,
   APSOrganizationRolesList,
   APSOrganizationRoles,
+  APSOrganization,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiBadQueryParameterCombinationServerError, ApiInternalServerErrorFromError, ApiKeyNotFoundServerError, BootstrapErrorFromApiError, BootstrapErrorFromError, ServerErrorFromError } from '../../../common/ServerError';
+import { 
+  ApiBadQueryParameterCombinationServerError, 
+  ApiInternalServerError, 
+  ApiInternalServerErrorFromError, 
+  ApiInvalidObjectReferencesServerError, 
+  ApiKeyNotFoundServerError, 
+  BootstrapErrorFromApiError, 
+  BootstrapErrorFromError, 
+  ServerErrorFromError, 
+  TApiInvalidObjectReferenceError
+} from '../../../common/ServerError';
 import { APSUsersDBMigrate } from './APSUsersDBMigrate';
 import APSOrganizationsServiceEventEmitter from '../apsAdministration/APSOrganizationsServiceEvent';
-import { Mutex, MutexInterface } from "async-mutex";
-import _ = require('lodash');
+import { Mutex } from "async-mutex";
+import APSOrganizationsService from '../apsAdministration/APSOrganizationsService';
 
 export type TAPSListUserResponse = APSListResponseMeta & { list: Array<APSUser> };
 
@@ -301,7 +314,7 @@ export class APSUsersService {
 
     await this.wait4CollectionUnlock();
 
-    await validateReference()
+    await this.validateReferences(apsUser);
 
     const created: APSUser = await this.persistenceService.create({
       collectionDocumentId: apsUser.userId,
@@ -314,17 +327,23 @@ export class APSUsersService {
     return created;
   }
 
-  public update = async(apsUserId: APSUserId, apsUserUpdateRequest: APSUserUpdateRequest): Promise<APSUser> => {
+  public update = async(apsUserId: APSUserId, apsUserUpdate: APSUserUpdate): Promise<APSUser> => {
     const funcName = 'update';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    await validateReference()
+    const apsDocument: Partial<APSUser> = {
+      ...apsUserUpdate,
+      profile: undefined,
+      userId: apsUserId
+    }
+
+    await this.validateReferences(apsDocument);
 
     const updated: APSUser = await this.persistenceService.update({
       collectionDocumentId: apsUserId,
-      collectionDocument: apsUserUpdateRequest,
+      collectionDocument: apsUserUpdate,
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
 
@@ -333,17 +352,21 @@ export class APSUsersService {
     return updated;
   }
 
-  public replace = async(apsUserId: APSUserId, apsUserReplaceRequest: APSUserReplaceRequest): Promise<APSUser> => {
+  public replace = async(apsUserId: APSUserId, apsUserReplace: APSUserReplace): Promise<APSUser> => {
     const funcName = 'replace';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    await validateReference()
+    const apsDocument: Partial<APSUser> = {
+      ...apsUserReplace,
+      userId: apsUserId
+    }
+    await this.validateReferences(apsDocument);
 
     const replaced: APSUser = await this.persistenceService.replace({
       collectionDocumentId: apsUserId, 
-      collectionDocument: { ...apsUserReplaceRequest, userId: apsUserId }, 
+      collectionDocument: apsDocument, 
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion  
     });
 
@@ -366,6 +389,37 @@ export class APSUsersService {
 
   }
 
+  private validateReferences = async(apsUserPartial: Partial<APSUser>): Promise<void> => {
+    const funcName = 'validateReferences';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    if(apsUserPartial.userId === undefined) throw new ApiInternalServerError(logName, 'userId not found');
+
+    const invalidReferencesList: Array<TApiInvalidObjectReferenceError> = [];
+    // check memberOfOrganizations
+    if(apsUserPartial.memberOfOrganizations !== undefined) {
+      for(const apsOrganizationRoles of apsUserPartial.memberOfOrganizations) {
+        try {
+          await APSOrganizationsService.byId(apsOrganizationRoles.organizationId);
+        } catch(e) {
+          invalidReferencesList.push({
+            referenceId: apsOrganizationRoles.organizationId,
+            referenceType: 'APSOrganization'
+          });
+        }
+      }
+    }
+
+    // create error 
+    if(invalidReferencesList.length > 0) {
+      throw new ApiInvalidObjectReferencesServerError(logName, 'invalid user references', { 
+        id: apsUserPartial.userId,
+        collectionName: APSUsersService.collectionName,
+        invalidReferenceList: invalidReferencesList
+      });      
+    }
+
+  }
 }
 
 export default new APSUsersService();

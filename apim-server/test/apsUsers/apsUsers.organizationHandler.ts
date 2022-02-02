@@ -68,45 +68,44 @@ describe(`${scriptName}`, () => {
 
     after(async() => {
       TestContext.newItId();
-      // // delete all users
-      // let apsUserList: Array<APSUser> = [];
-      // try {
-      //   const pageSize = 100;
-      //   let pageNumber = 1;
-      //   let hasNextPage = true;
-      //   while (hasNextPage) {
-      //     const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
-      //       pageSize: pageSize, 
-      //       pageNumber: pageNumber
-      //     });
-      //     if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
-      //     pageNumber++;
-      //     apsUserList.push(...resultListApsUsers.list);
-      //   }
-      //   for (const apsUser of apsUserList) {
-      //     await ApsUsersService.deleteApsUser({
-      //       userId: apsUser.userId
-      //     });
-      //   }
-      // } catch (e) {
-      //   expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      //   expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-      // }
-      // // delete all orgs
-      // try {
-      //   const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      //   const orgList: APSOrganizationList = listOrgResponse.list;
-      //   const totalCount: number = listOrgResponse.meta.totalCount;
-      //   for(const org of orgList) {
-      //     await ApsAdministrationService.deleteApsOrganization({
-      //       organizationId: org.organizationId
-      //     });
-      //   }
-      // } catch (e) {
-      //   expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      //   expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-      // }
-
+      // delete all users
+      let apsUserList: Array<APSUser> = [];
+      try {
+        const pageSize = 100;
+        let pageNumber = 1;
+        let hasNextPage = true;
+        while (hasNextPage) {
+          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
+            pageSize: pageSize, 
+            pageNumber: pageNumber
+          });
+          if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
+          pageNumber++;
+          apsUserList.push(...resultListApsUsers.list);
+        }
+        for (const apsUser of apsUserList) {
+          await ApsUsersService.deleteApsUser({
+            userId: apsUser.userId
+          });
+        }
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }
+      // delete all orgs
+      try {
+        const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+        const orgList: APSOrganizationList = listOrgResponse.list;
+        const totalCount: number = listOrgResponse.meta.totalCount;
+        for(const org of orgList) {
+          await ApsAdministrationService.deleteApsOrganization({
+            organizationId: org.organizationId
+          });
+        }
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }
     });
 
 // ****************************************************************************************************************
@@ -165,6 +164,15 @@ describe(`${scriptName}`, () => {
   
     it(`${scriptName}: should create organizations`, async () => {
       try {
+        // create the one reference org
+        const apsOrg: APSOrganizationCreate = {
+          organizationId: OrganizationIdTemplate,
+          displayName: createOrganizationDisplayName(OrganizationIdTemplate)
+        }
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: apsOrg
+        });
+        //  create the list of orgs
         for(let i=0; i < NumberOfOrganizations; i++) {
           const orgId: APSId = createOrganizationId(i);
           const orgDisplayName: APSDisplayName = createOrganizationDisplayName(orgId);
@@ -246,9 +254,6 @@ describe(`${scriptName}`, () => {
         expect(false, TestLogger.createTestFailMessage('error')).to.be.true;
       }
     });
-
-
-    // create a user with memberof non existing org
 
 });
 

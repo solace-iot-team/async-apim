@@ -8,13 +8,7 @@
       "last": "User",
       "email": "master.user@async-apim-devel.com"
     },
-    "systemRoles": ["systemAdmin", "loginAs"],
-    "memberOfOrganizations": [
-      {
-        "organizationId": "apim-devel",
-        "roles": ["apiTeam", "organizationAdmin", "apiConsumer", "loginAs"]
-      }
-    ]
+    "systemRoles": ["systemAdmin", "loginAs"]
   },
   {
     "userId": "api.consumer@async-apim-devel.com",
@@ -24,13 +18,7 @@
       "first": "Api",
       "last": "Consumer",
       "email": "api.consumer@async-apim-devel.com"
-    },
-    "memberOfOrganizations": [
-      {
-        "organizationId": "apim-devel",
-        "roles": ["apiConsumer"]
-      }
-    ]
+    }
   },
   {
     "userId": "api.team@async-apim-devel.com",
@@ -40,13 +28,7 @@
       "first": "Api",
       "last": "Team",
       "email": "api.team@async-apim-devel.com"
-    },
-    "memberOfOrganizations": [
-      {
-        "organizationId": "apim-devel",
-        "roles": ["apiTeam"]
-      }
-    ]
+    }
   },
   {
     "userId": "org.admin@async-apim-devel.com",
@@ -56,13 +38,7 @@
       "first": "Org",
       "last": "Admin",
       "email": "org.admin@async-apim-devel.com"
-    },
-    "memberOfOrganizations": [
-      {
-        "organizationId": "apim-devel",
-        "roles": ["organizationAdmin"]
-      }
-    ]
+    }
   },
   {
     "userId": "system.admin@async-apim-devel.com",

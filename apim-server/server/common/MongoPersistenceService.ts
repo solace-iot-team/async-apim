@@ -316,28 +316,4 @@ export class MongoPersistenceService {
     return deletedDocument;
   }
 
- 
-  // validateReferences(names: string[]): Promise<boolean> {
-  //   return new Promise<boolean>((resolve, reject) => {
-  //     var results: Promise<boolean>[] = [];
-  //     names.forEach((n) => {
-  //       results.push(new Promise<boolean>((resolve, reject) => {
-  //         this.byName(n).then((p) => {
-  //           resolve(true);
-  //         }
-  //         ).catch((e) => {
-  //           reject(new ErrorResponseInternal(422, `Referenced name ${n} does not exist`));
-  //         })
-  //       }));
-  //     });
-  //     Promise.all(results).then((r) => { resolve(true) }).catch((e) => {
-  //       L.info(e);
-  //       (new ErrorResponseInternal(422, e));
-  //     });
-
-  //   }
-
-  //   );
-  // }
-
 }

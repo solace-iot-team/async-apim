@@ -79,8 +79,7 @@ before(async() => {
   expect(fs.existsSync(TestEnv.startMongoScript), TestLogger.createTestFailMessage(`startMongoScript does not exist = ${TestEnv.startMongoScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.stopMongoScript), TestLogger.createTestFailMessage(`stopMongoScript does not exist = ${TestEnv.stopMongoScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
-  expect(fs.existsSync(TestEnv.bootstrapFiles.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsConnectorListFile
-  }`)).to.be.true;
+  expect(fs.existsSync(TestEnv.bootstrapFiles.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsConnectorListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsUserListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile
   }`)).to.be.true;

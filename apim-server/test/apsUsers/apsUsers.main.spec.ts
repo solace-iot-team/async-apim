@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
+  ApsAdministrationService, 
   APSError, 
   APSErrorIds, 
   APSListResponseMeta, 
@@ -24,20 +25,24 @@ import {
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
+const ReferenceOrg_1 = 'org_1';
+const ReferenceOrg_2 = 'org_2';
+const ReferenceOrg_Updated = 'updated_org';
+const ReferenceOrg_Replaced = 'replaced_org';
 const numberOfUsers: number = 50;
 const apsUserTemplate: APSUser = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
   profile: {
-    email: 'email@aps.com',
+    email: 'email@aps.test',
     first: 'first',
     last: 'last'
   },
   systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
   memberOfOrganizations: [
     { 
-      organizationId: 'org',
+      organizationId: ReferenceOrg_1,
       roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
     }
   ]
@@ -47,13 +52,13 @@ const apsUserTemplate2: APSUser = {
   userId: 'userId2',
   password: 'password2',
   profile: {
-    email: 'email2@aps.com',
+    email: 'email2@aps.test',
     first: 'first2',
     last: 'last2'
   },
   memberOfOrganizations: [
     { 
-      organizationId: 'org2',
+      organizationId: ReferenceOrg_2,
       roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
     }
   ]
@@ -158,6 +163,38 @@ describe(`${scriptName}`, () => {
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('type of array')}`).to.be.an('array');
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('empty array')}`).to.be.empty;
       expect(finalMeta.meta.totalCount, TestLogger.createTestFailMessage('totalCount not zero')).equal(0);
+    });
+
+    it(`${scriptName}: should create organizations for referencing`, async () => {
+      try {
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_1,
+            displayName: ReferenceOrg_1
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_2,
+            displayName: ReferenceOrg_2
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_Updated,
+            displayName: ReferenceOrg_Updated
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_Replaced,
+            displayName: ReferenceOrg_Replaced
+          }
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }
     });
 
     it(`${scriptName}: should create a number of users from templates`, async () => {
@@ -330,12 +367,12 @@ describe(`${scriptName}`, () => {
         password: 'updated',        
         memberOfOrganizations: [ 
           {
-            organizationId: 'updated',
+            organizationId: ReferenceOrg_Updated,
             roles: [ EAPSOrganizationAuthRole.API_CONSUMER]
           }
         ],
         profile: {
-          email: 'updated@aps.com'
+          email: 'updated@aps.test'
         }
       }
       const updateCustomizer = (originalValue: any, updateValue: any): any => {
@@ -403,12 +440,12 @@ describe(`${scriptName}`, () => {
         password: 'replaced',
         memberOfOrganizations: [ 
           {
-            organizationId: 'replaced',
+            organizationId: ReferenceOrg_Replaced,
             roles: [EAPSOrganizationAuthRole.API_TEAM]
           }
         ],
         profile: {
-          email: 'replaced@aps.com',
+          email: 'replaced@aps.test',
           first: 'replaced',
           last: 'replaced'
         }
@@ -513,17 +550,17 @@ describe(`${scriptName}`, () => {
 
     const apsUserSearchTemplate: APSUser = {
       isActivated: true,
-      userId: '@aps.com',
+      userId: '@aps.test',
       password: 'password',
       profile: {
-        email: '@aps.com',
+        email: '@aps.test',
         first: 'first',
         last: 'last'
       },
       systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
       memberOfOrganizations: [ 
         {
-          organizationId: 'org2',
+          organizationId: ReferenceOrg_2,
           roles: [ EAPSOrganizationAuthRole.LOGIN_AS]
          }
       ]
@@ -649,6 +686,40 @@ describe(`${scriptName}`, () => {
       // 50 last-1 & 50 last-2
       expect(receivedTotalCount, `${TestLogger.createTestFailMessage(`receivedTotalCount not ${numberOfUsers}`)}`).equal(numberOfUsers);
     });
+
+
+    it(`${scriptName}: should return invalid reference error for unknown org when creating user`, async () => {
+      const NonExistentOrgName = 'org-does-not-exist';
+      try {
+        const apsUser: APSUser = {
+          ...apsUserTemplate,
+          memberOfOrganizations: [
+            {
+              organizationId: NonExistentOrgName,
+              roles: [EAPSOrganizationAuthRole.API_CONSUMER]
+            }
+          ]
+        }
+        await ApsUsersService.createApsUser({
+          requestBody: apsUser
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+        const apiError: ApiError = e;
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(422);
+        const apsError: APSError = apiError.body;
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+        expect(apsError.meta, TestLogger.createTestFailMessage('property does not exist')).to.have.property('invalidReferenceList');
+        expect(apsError.meta.invalidReferenceList, TestLogger.createTestFailMessage('not an array of correct length')).to.be.an('array').of.length(1);
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('referenceId');
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('referenceType');
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains(NonExistentOrgName);
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('APSOrganization');
+        return;
+      }
+      expect(false, TestLogger.createTestFailMessage('should never get here')).to.be.true;
+    });
+
 
 
 // ****************************************************************************************************************

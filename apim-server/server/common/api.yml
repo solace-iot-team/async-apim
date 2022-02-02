@@ -574,45 +574,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
-        '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '405':
-          description: "Method Not Allowed."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
         '422':
-          description: "User with userId already exists."
+          description: "User with userId already exists or invalid object reference"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     get:
       operationId: listApsUsers
       description: Get a list of APSUsers.
@@ -636,32 +613,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListApsUsersResponse'
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
   /apsUsers/{user_id}:
     parameters:
     - $ref: '#/components/parameters/user_id'
@@ -678,38 +636,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/APSUser'
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     patch:
       operationId: updateApsUser
       description:
@@ -732,39 +667,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     put:
       operationId: replaceApsUser
       description: Replace an APSUser object by user id.
@@ -783,39 +701,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     delete:
       operationId: deleteApsUser
       description: Delete an APSUser object by user id.
@@ -825,38 +726,15 @@ paths:
         '204':
           description: Deleted successfully.
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
   /apsLogin/login:
     post:
       operationId: login
@@ -1127,6 +1005,7 @@ components:
       - pathNotFound
       - invalidSortFieldName
       - invalidQueryParameterCombination
+      - invalidObjectReferences
     APSErrorMeta:
       type: object
       description: Additional details about the error.

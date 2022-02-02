@@ -60,7 +60,7 @@ describe(`${scriptName}`, () => {
   it(`${scriptName}: should read bootstrap user list`, async () => {
     try {
       bootstrapUserList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.apsUserListFile);
-      // TestLogger.logMessageWithId(`bootstrapUserList = \n${JSON.stringify(bootstrapUserList, null, 2)}`);
+      TestLogger.logMessageWithId(`bootstrapUserList = \n${JSON.stringify(bootstrapUserList, null, 2)}`);
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('error')).to.be.true;

@@ -7,6 +7,7 @@ import _ from 'lodash';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
+  ApsAdministrationService, 
   APSError, 
   APSErrorIds, 
   APSOrganizationRolesList, 
@@ -149,6 +150,35 @@ describe(`${scriptName}`, () => {
   //   const userBatchList = createUserBatches(NumberOfBatches, NumberUsersPerBatch);
   //   TestLogger.logMessageWithId(`userBatchList=\n${JSON.stringify(userBatchList, null, 2)}`);
   // });
+  it(`${scriptName}: should create organizations for referencing`, async () => {
+    try {
+      const orgIdList = [
+        SearchCommonOrganizationId_0,
+        SearchCommonOrganizationId_1,
+        SearchCommonOrganizationId_2
+      ]
+      for (const orgId of orgIdList) {
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: orgId,
+            displayName: orgId
+          }
+        });
+      }
+      for(let batchNumber=0; batchNumber < NumberOfBatches; batchNumber++) {
+        const orgId = getOrgIdFromNum(batchNumber);
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: orgId,
+            displayName: orgId
+          }
+        });
+      }
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+    }
+  });
 
   it(`${scriptName}: should create user batches`, async () => {
     try {

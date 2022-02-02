@@ -296,10 +296,17 @@ export class ApiServerErrorFromOpenApiResponseValidatorError extends ApiInternal
 }
 
 export type TApiServerErrorMeta = {
-  id: string,
-  collectionName: string
+  id: string;
+  collectionName: string;
 }
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;
+export type TApiInvalidObjectReferenceError = {
+  referenceType: string;
+  referenceId: string;
+}
+export type TApiInvalidObjectReferencesServerErrorMeta = TApiServerErrorMeta & {
+  invalidReferenceList: Array<TApiInvalidObjectReferenceError>;
+}
 export type TApiKeyNotFoundServerErrorMeta = TApiServerErrorMeta;
 export type TApiObjectNotFoundServerErrorMeta = {
   filter: Record<string, unknown>,
@@ -316,6 +323,15 @@ export class ApiDuplicateKeyServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiDuplicateKeyServerError.apiDefaultDescription, apiMeta: TApiDuplicateKeyServerErrorMeta) {
     super(internalLogName, ApiDuplicateKeyServerError.name, ApiDuplicateKeyServerError.apiStatusCode, ApiDuplicateKeyServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+export class ApiInvalidObjectReferencesServerError extends ApiServerError {
+  private static apiStatusCode = 422;
+  private static apiErrorId: APSErrorIds = 'invalidObjectReferences';
+  private static apiDefaultDescription = 'invalid object references';
+
+  constructor(internalLogName: string, apiDescription: string = ApiInvalidObjectReferencesServerError.apiDefaultDescription, apiMeta: TApiInvalidObjectReferencesServerErrorMeta) {
+    super(internalLogName, ApiInvalidObjectReferencesServerError.name, ApiInvalidObjectReferencesServerError.apiStatusCode, ApiInvalidObjectReferencesServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 

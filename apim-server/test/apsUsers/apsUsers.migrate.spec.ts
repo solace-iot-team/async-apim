@@ -117,7 +117,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should get all migrate users via API`, async () => {
+  it(`${scriptName}: should get all migrated users via API`, async () => {
     try {
       const expectedTotalCount = NumberOfUsers;
       const searchResponse = await ApsUsersService.listApsUsers({        
