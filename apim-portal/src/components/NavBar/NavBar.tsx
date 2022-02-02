@@ -64,7 +64,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const onLogout = () => {
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
-    navigateToOriginHome();
+    navigateTo(EUICommonResourcePaths.Home);
+    // navigateToOriginHome();
   }
 
   const onHideUserOverlayPanel = () => {

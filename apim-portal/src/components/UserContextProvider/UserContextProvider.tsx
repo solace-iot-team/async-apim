@@ -41,7 +41,7 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
   switch (action.type) {
     case 'CLEAR_USER_CONTEXT': {
       const newState: TUserContext = JSON.parse(JSON.stringify(initialUserContext));
-      newState.originAppState = state.originAppState;
+      newState.originAppState = EAppState.UNDEFINED;
       return newState;
     }
     case 'SET_USER': {
