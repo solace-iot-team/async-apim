@@ -20,6 +20,7 @@ import {
   APSUser, 
   ApsLoginService
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidationRules";
 
 import "../APComponents.css";
 import "./UserLogin.css";
@@ -160,11 +161,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
                   <Controller
                     name="userId"
                     control={loginUseForm.control}
-                    rules={{
-                      required: "Enter user id (your e-mail).",
-                      // pattern: { value: Globals.getEmailValidationPattern(), message: 'Invalid E-Mail address. E.g. name@acme.com.' }
-                      pattern: { value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i, message: 'Invalid E-Mail address. E.g. name@acme.com.' }                    
-                    }}
+                    rules={APSOpenApiFormValidationRules.APSEmail("Enter user id (your e-mail).", true)}
                     // defaultValue=''
                     render={( {field, fieldState }) => (
                       <InputText 
