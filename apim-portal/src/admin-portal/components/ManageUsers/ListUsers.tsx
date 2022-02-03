@@ -247,10 +247,10 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     if(props.organizationId !== undefined) {
       cols.push(<Column key={Globals.getUUID()} header="Roles" headerStyle={{width: '20em'}} body={organizationRolesBodyTemplate} />);  
     } else {
-      cols.push(<Column key={Globals.getUUID()} header="System Roles" headerStyle={{width: '12em'}} field="systemRoleDisplayNameListAsString" />);        
+      cols.push(<Column key={Globals.getUUID()} header="System Roles" headerStyle={{width: '12em'}} body={ManageUsersCommon.systemRolesTemplate} field="apiObject.systemRoles" sortable />);        
     }
     if(props.organizationId === undefined) {
-      cols.push(<Column key={Globals.getUUID()} header="Organizations" headerStyle={{width: '20em'}} field="memberOfOrganizationNameListAsString" />);
+      cols.push(<Column key={Globals.getUUID()} header="Organizations" headerStyle={{width: '20em'}} body={ManageUsersCommon.organizationsTemplate} field="apiObject.memberOfOrganizations" sortable />);
     }
 
     cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />);
@@ -304,24 +304,20 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   return (
     <div className="manage-users">
 
-      {managedObjectList.length > 0 && <APComponentHeader header='Users:' /> }
+      <APComponentHeader header='Users:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
-
-      {managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
-      }
 
       {(managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== '')) && 
         renderManagedObjectDataTable()
       }
       
       {/* DEBUG */}
-      {/* {managedObjectList.length > 0 && selectedManagedObject && 
+      {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      } */}
+      }
 
     </div>
   );

@@ -165,6 +165,14 @@ export class ManageUsersCommon {
     else return (<span className="pi pi-times badge-active" />)
   }
 
+  public static organizationsTemplate = (mo: TViewManagedObject) => {
+    return mo.memberOfOrganizationNameListAsString;
+  }
+
+  public static systemRolesTemplate = (mo: TViewManagedObject) => {
+    return mo.systemRoleDisplayNameListAsString;
+  }
+
   public static getUserAssetList = async (apsUser: APSUser, organizationId?: CommonName): Promise<TAPAssetInfoWithOrgList> => {
     let userAssetInfoList: TAPAssetInfoWithOrgList = [];
     const _orgIdList = organizationId !== undefined ? [organizationId] : apsUser.memberOfOrganizations?.map((apsOrganizationRoles: APSOrganizationRoles) => {

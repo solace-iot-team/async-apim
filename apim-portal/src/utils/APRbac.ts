@@ -35,6 +35,7 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.ManageSystemUsers, 
+      EUIAdminPortalResourcePaths.ManageSystemOrganizations,
       EUIAdminPortalResourcePaths.LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
@@ -42,7 +43,7 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
-    // every user will get access to the default resources
+    // every user will get access to the default resources, except root
     id: EAPSDefaultAuthRole.DEFAULT,
     scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
     displayName: 'default',
