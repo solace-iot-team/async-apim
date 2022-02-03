@@ -198,7 +198,7 @@ export class MongoPersistenceService {
         .sort(_sortInfo)
         .skip( (pagingInfo.pageNumber -1) * pagingInfo.pageSize)
         .limit(pagingInfo.pageSize)
-        .project(this.getReturnProjection());
+        .project(this.getReturnProjection())
     } else {
       findCursor
       = collection

@@ -241,7 +241,9 @@ export class APSUsersService {
         email: 'string',
         first: 'string',
         last: 'string'
-      }
+      },
+      systemRoles: [],
+      memberOfOrganizations: []
     };
 
     const mongoPagingInfo: TMongoPagingInfo = { pageNumber: pagingInfo.pageNumber, pageSize: pagingInfo.pageSize };
