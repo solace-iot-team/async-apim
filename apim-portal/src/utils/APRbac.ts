@@ -45,7 +45,8 @@ const rbacRoleList: TAPRbacRoleList = [
   {
     // every user will get access to the default resources, except root
     id: EAPSDefaultAuthRole.DEFAULT,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    // scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.NEVER],
     displayName: 'default',
     description: 'default',
     uiResourcePaths: [

@@ -57,7 +57,8 @@ export class ConfigHelper {
   public static getSortedRbacRoleList = (configContext: TAPConfigContext): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     configContext.rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      if(rbacRole.id !== EAPSSystemAuthRole.ROOT) rbacRoleList.push(rbacRole);
+      // if(rbacRole.id !== EAPSSystemAuthRole.ROOT) rbacRoleList.push(rbacRole);
+      if(!rbacRole.scopeList.includes(EAPRbacRoleScope.NEVER)) rbacRoleList.push(rbacRole);
     });
     return rbacRoleList.sort( (e1: TAPRbacRole, e2: TAPRbacRole) => {
       if(e1.displayName < e2.displayName) return -1;
