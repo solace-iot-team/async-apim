@@ -29,16 +29,20 @@ export class AuthHelper {
 
     const combinedUiResourcePathList: Array<EUICombinedResourcePaths> = [];
 
-    const defaultRoles: Array<EAPSDefaultAuthRole> = [EAPSDefaultAuthRole.DEFAULT];
-    for(const defaultRole of defaultRoles) {
-      const rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
-        return (rbacRole.id === defaultRole)
-      });
-      if(rbacRole === undefined) throw new Error(`${logName}: cannot find defaultRole=${defaultRole} in rbac roles=${JSON.stringify(configContext.rbacRoleList, null, 2)}`);
-      combinedUiResourcePathList.push(...rbacRole.uiResourcePaths);
+    const systemRoles: APSSystemAuthRoleList = apsUser.systemRoles ? apsUser.systemRoles : [];
+
+    // assign default roles to every user except ROOT
+    if(!systemRoles.includes(EAPSSystemAuthRole.ROOT)) {
+      const defaultRoles: Array<EAPSDefaultAuthRole> = [EAPSDefaultAuthRole.DEFAULT];
+      for(const defaultRole of defaultRoles) {
+        const rbacRole: TAPRbacRole | undefined = configContext.rbacRoleList?.find((rbacRole: TAPRbacRole) => {
+          return (rbacRole.id === defaultRole)
+        });
+        if(rbacRole === undefined) throw new Error(`${logName}: cannot find defaultRole=${defaultRole} in rbac roles=${JSON.stringify(configContext.rbacRoleList, null, 2)}`);
+        combinedUiResourcePathList.push(...rbacRole.uiResourcePaths);
+      }
     }
 
-    const systemRoles: APSSystemAuthRoleList = apsUser.systemRoles ? apsUser.systemRoles : [];
     let organizationRoles: APSOrganizationAuthRoleList = [];
     if(userContext.runtimeSettings.currentOrganizationName) {
       const found = apsUser.memberOfOrganizations?.find((memberOfOrganization: APSOrganizationRoles) => {

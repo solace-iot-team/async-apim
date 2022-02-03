@@ -12,7 +12,6 @@ import { ConfigContext } from '../components/ConfigContextProvider/ConfigContext
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
-import { CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export const UserLoginPage: React.FC = () => {
   const componentName = 'UserLoginPage';
@@ -24,11 +23,9 @@ export const UserLoginPage: React.FC = () => {
   const [isLoginSuccess, setIsLoginSuccess] = React.useState<boolean | null>(null);
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
-  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [configContext] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -37,6 +34,10 @@ export const UserLoginPage: React.FC = () => {
     const logName = `${componentName}.${funcName}()`;
     let originAppState: EAppState = userContext.originAppState;
     let newCurrentAppState: EAppState = userContext.currentAppState;
+
+    // DEBUG
+    // check if authContext is set already
+    // alert(`${logName}: authContext.authorizedResourcePathsAsString = ${authContext.authorizedResourcePathsAsString}`);
 
     if(userContext.currentAppState !== EAppState.UNDEFINED) {
       newCurrentAppState = userContext.currentAppState;
@@ -77,7 +78,7 @@ export const UserLoginPage: React.FC = () => {
     if(isFinished) {
       successfulLoginSetup();
     }
-  }, [isFinished]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authContext.authorizedResourcePathsAsString]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLoginSuccess = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(true);
