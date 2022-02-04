@@ -51,7 +51,10 @@ services:
       - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
       - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
       - APIM_SERVER_DATA_PATH=/data
-
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   # apim connector
   qs-async-apim-connector-mongodb:
     container_name: qs-async-apim-connector-mongodb
@@ -84,6 +87,10 @@ services:
       - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 ##
 # The End.
