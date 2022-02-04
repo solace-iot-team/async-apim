@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import APSOrganizationsService from '../../../services/apsAdministration/APSOrganizationsService';
-import APSConnector = Components.Schemas.APSConnector;
 import { ApiMissingParameterServerError } from '../../../../common/ServerError';
 import { 
   APSOrganization, 

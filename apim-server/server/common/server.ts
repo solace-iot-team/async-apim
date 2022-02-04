@@ -4,7 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
 import cookieParser from 'cookie-parser';
-import nocache from 'nocache';
+// import nocache from 'nocache';
 import { AuditLogger4Audit, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';

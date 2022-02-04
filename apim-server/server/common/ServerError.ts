@@ -139,8 +139,8 @@ export class ApiServerError extends ServerError {
   }
 
   public toAPSError = (): APSError => {
-    const funcName = 'toAPSError';
-    const logName = `${ApiServerError.name}.${funcName}()`;
+    // const funcName = 'toAPSError';
+    // const logName = `${ApiServerError.name}.${funcName}()`;
     const apsError: APSError = {
       appId: this.appId,
       errorId: this.apiErrorId,
