@@ -77,6 +77,7 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
+  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
 
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',

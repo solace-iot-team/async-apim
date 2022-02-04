@@ -1,6 +1,7 @@
 import { 
   AdministrationService,
   Organization,
+  OrganizationResponse,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   ApsAdministrationService,
@@ -15,7 +16,7 @@ import {
 import { TAPEntityId } from './APTypes';
 import { Globals } from './Globals';
 
-export type TAPOrganization = Organization & {
+export type TAPOrganization = OrganizationResponse & {
   displayName: APSDisplayName;
 }
 export type TAPOrganizationList = Array<TAPOrganization>;
@@ -82,11 +83,19 @@ export class APOrganizationsService {
     return resultOrgList;
   }
 
-  public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
-
-    const connectorOrganization: Organization = await AdministrationService.getOrganization({
+  private static getConnectorOrganization = async(organizationId: APSId): Promise<OrganizationResponse> => {
+    return await AdministrationService.getOrganization({
       organizationName: organizationId
     });
+  }
+  public static getOrganizationStatus = async(organizatioId: APSId, organizationDisplayName: string): Promise<TAPOrganization> => {
+    return {
+      ...await APOrganizationsService.getConnectorOrganization(organizatioId),
+      displayName: organizationDisplayName
+    }
+  }
+  public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
+    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId);
     let apsOrganization: APSOrganization | undefined = undefined;
     try {
       apsOrganization = await ApsAdministrationService.getApsOrganization({

@@ -17,23 +17,31 @@ import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { MonitorOrganization } from "./MonitorOrganization";
 
 export enum E_ManageOrganizations_Scope {
   ALL_ORGS = "ALL_ORGS",
-  ORG_SETTINGS = "ORG_SETTINGS"
+  ORG_SETTINGS = "ORG_SETTINGS",
+  ORG_STATUS = "ORG_STATUS"
 }
 
-export type TManageOrganizationSettingsScope = {
-  type: E_ManageOrganizations_Scope.ORG_SETTINGS;
+export type TManageOrganizationEntity = {
   organizationId: CommonName;
   organizationDisplayName: CommonDisplayName;
 }
+export type TManageOrganizationSettingsScope = {
+  type: E_ManageOrganizations_Scope.ORG_SETTINGS;
+} & TManageOrganizationEntity;
+export type TMonitorOrganizationStatusScope = {
+  type: E_ManageOrganizations_Scope.ORG_STATUS;
+} & TManageOrganizationEntity;
 export type TManageAllOrganizationsScope = {
   type: E_ManageOrganizations_Scope.ALL_ORGS;
 }
 export type TManageOrganizationsScope = 
   TManageOrganizationSettingsScope
-  | TManageAllOrganizationsScope;
+  | TManageAllOrganizationsScope
+  | TMonitorOrganizationStatusScope;
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -52,6 +60,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
     MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
     MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
+    MONITOR_OBJECT = "MONITOR_OBJECT",
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -88,6 +97,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   
   // * useEffect Hooks *
@@ -103,7 +113,10 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       case E_ManageOrganizations_Scope.ORG_SETTINGS:
         const orgSettingsScope = props.scope as TManageOrganizationSettingsScope;
         onViewManagedObject(orgSettingsScope.organizationId, orgSettingsScope.organizationDisplayName);
-        // setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+        break;
+      case E_ManageOrganizations_Scope.ORG_STATUS:
+        const orgStatusScope = props.scope as TMonitorOrganizationStatusScope;
+        onMonitorManagedObject(orgStatusScope.organizationId, orgStatusScope.organizationDisplayName);
         break;
       default:
         Globals.assertNever(logName, _type);
@@ -151,6 +164,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
+  //  * Monitor Object *
+  const onMonitorManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
+    setApiCallStatus(null);
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
+    setNewComponentState(E_COMPONENT_STATE.MONITOR_OBJECT);
+  }  
+  
   // * New Object *
   const onNewManagedObject = () => {
     setApiCallStatus(null);
@@ -211,6 +232,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
               <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
             </React.Fragment>
           );
+        case E_ManageOrganizations_Scope.ORG_STATUS:
+          throw new Error(`${logName}: viewComponent cannot display status`);
         default:
           Globals.assertNever(logName, _type);
       }
@@ -218,6 +241,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
+    if(showMonitorComponent) return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderRightToolbarContent';
@@ -233,7 +257,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
             </React.Fragment>
           );    
         case E_ManageOrganizations_Scope.ORG_SETTINGS:
-          return undefined;
+        case E_ManageOrganizations_Scope.ORG_STATUS:
+            return undefined;
         default:
           Globals.assertNever(logName, _type);
       }
@@ -293,6 +318,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -300,6 +326,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -308,6 +335,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -315,6 +343,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -323,6 +352,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -330,6 +360,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowMonitorComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -337,6 +368,15 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+      setShowMonitorComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MONITOR_OBJECT) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowMonitorComponent(true);
     }
   }
 
@@ -405,6 +445,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
         />
+      }
+      {showMonitorComponent && managedObjectId && managedObjectDisplayName &&
+        <MonitorOrganization
+          organizationId={managedObjectId}
+          organizationDisplayName={managedObjectDisplayName}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+        />      
       }
     </div>
   );
