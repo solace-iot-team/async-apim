@@ -2,6 +2,43 @@
 
 Solace Async API Management.
 
+## Version 0.0.32
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.32
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.16
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.10
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.1
+
+#### API-M Admin & Developer Portal
+
+**New:**
+- **Separated System Management & Organization Management**
+  - Users are known system wide and can belong to 1 or multiple organizations
+  - for each organization, a User can have different roles
+- **User Management**
+  - Users can be managed at a system level and/or at an organization level
+
+#### API-M Server OpenAPI
+**New:**
+- **resource: apsAdministration/apsOrganizations**
+  - manage organization entities
+
+**Changes:**
+- **APSUser Schema & API**
+  - memberOfOrganizations list contains organization specific roles
+  - PATCH: replaces arrays instead of merging them
+  - GET: added searchOrganizationId, searchIsActivated and searchUserId as query parameters
+
+#### API-M Server
+**New:**
+- **ApsOrganizations Service**
+  - implementation of `apsAdministration/apsOrganizations` resource
+- **DB Migration**
+  - on startup, DB collections are migrated from current version to new versions allowing for simple updates
+
+**Enhancements:**
+- **search**
+  - search now searches for 'contains' and ORs the space separated search word list
+
 ## Version 0.0.31
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.31
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.15

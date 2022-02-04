@@ -10,10 +10,13 @@ import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 
 import { CommonName, Organization } from "@solace-iot-team/apim-connector-openapi-browser";
-import { APSOrganizationAuthRoleList, APSOrganizationRoles, APSOrganizationRolesList, EAPSOrganizationAuthRole } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APSOrganizationAuthRoleList, 
+  APSOrganizationRoles, 
+  APSOrganizationRolesList, 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ConfigHelper, TRoleSelectItemList } from "../ConfigContextProvider/ConfigHelper";
-import { ConfigContext, TAPConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
-import { EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from "../../utils/APRbac";
+import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';

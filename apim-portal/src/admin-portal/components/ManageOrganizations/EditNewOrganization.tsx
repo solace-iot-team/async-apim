@@ -10,10 +10,8 @@ import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
 
 import { 
-  AdministrationService, 
   CommonDisplayName, 
   CommonName, 
-  Organization,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -30,12 +28,12 @@ import {
   ManageOrganizationsCommon, 
   TAPOrganizationConfig,
 } from "./ManageOrganizationsCommon";
-
-import '../../../components/APComponents.css';
-import "./ManageOrganizations.css";
 import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { Globals } from "../../../utils/Globals";
+
+import '../../../components/APComponents.css';
+import "./ManageOrganizations.css";
 
 
 export enum EAction {

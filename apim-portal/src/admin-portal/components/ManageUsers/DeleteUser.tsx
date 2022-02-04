@@ -5,7 +5,6 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
 import { 
-  APSOrganizationIdList,
   APSUser,
   ApsUsersService, 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";

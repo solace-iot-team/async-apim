@@ -57,7 +57,6 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
@@ -80,7 +79,6 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number, sortFieldName: string, sortDirection: EAPSSortDirection, searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectListPage';
     const logName = `${componentName}.${funcName}()`;
-    setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try { 
       const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
@@ -106,7 +104,6 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsGetManagedObjectListInProgress(false);
     return callState;
   }
 

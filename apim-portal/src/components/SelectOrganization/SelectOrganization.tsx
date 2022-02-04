@@ -82,11 +82,11 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }
 
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>();
   const [selectObjectForSelectList, setSelectObjectForSelectList] = React.useState<TSelectObjectForSelectList>([]);
@@ -151,7 +151,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
         authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
       }});
     }
-  }, [userContext.runtimeSettings.currentOrganizationName]);
+  }, [userContext.runtimeSettings.currentOrganizationName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

@@ -2,11 +2,9 @@ import {
   CloudToken,
   CommonDisplayName,
   CommonName,
-  Organization,
   SempV2Authentication, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPOrganization } from '../../../utils/APOrganizationsService';
-
 import { Globals } from '../../../utils/Globals';
 
 export enum EAPReverseProxySempV2AuthType {

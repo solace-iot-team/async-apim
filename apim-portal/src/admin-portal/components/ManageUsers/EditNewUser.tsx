@@ -21,7 +21,11 @@ import {
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { Organization, AdministrationService, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
+import { 
+  Organization, 
+  CommonName 
+} from '@solace-iot-team/apim-connector-openapi-browser';
+import { APOrganizationsService } from "../../../utils/APOrganizationsService";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
@@ -33,11 +37,9 @@ import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigC
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageUsersCommon";
 import { APManageUserOrganizations } from "../../../components/APManageUserOrganizations/APManageUserOrganizations";
 import { Globals } from "../../../utils/Globals";
-import { APConnectorApiCalls } from "../../../utils/APConnectorApiCalls";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
-import { APOrganizationsService } from "../../../utils/APOrganizationsService";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -129,8 +131,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   }
 
   const createEmptyManagedObject = (): TManagedObject => {
-    const funcName = 'createEmptyManagedObject';
-    const logName = `${componentName}.${funcName}()`;
     const emptyManagedObject: TManagedObject = {
       userId: '',
       isActivated: false,
@@ -159,7 +159,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   let exterrnalManagedObjectTriggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc = () => void {};
   const systemRolesSelectItemList = createManagedObjectFormDataSystemRoleSelectItems();
   
-
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
@@ -170,7 +169,6 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
-
 
   // * Api Calls *
   const apiGetManagedObject = async(managedObjectId: TManagedObjectId): Promise<TApiCallState> => {

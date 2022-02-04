@@ -2,11 +2,9 @@
 import React from "react";
 
 import { 
-  AdministrationService, 
   CommonName,
   CommonDisplayName
 } from '@solace-iot-team/apim-connector-openapi-browser';
-
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";

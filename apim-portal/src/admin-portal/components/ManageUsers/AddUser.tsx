@@ -16,10 +16,7 @@ import {
   EAPSSortDirection,
   ListApsUsersResponse,
   APSUserList,
-  APSOrganizationIdList,
   APSOrganizationRoles,
-  APSOrganizationRolesList,
-  EAPSOrganizationAuthRole,
   APSOrganizationAuthRoleList
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
