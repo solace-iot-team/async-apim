@@ -3,7 +3,7 @@ import APSUser = Components.Schemas.APSUser;
 import APSUserLoginCredentials = Components.Schemas.APSUserLoginCredentials;
 import { MongoPersistenceService } from '../../common/MongoPersistenceService';
 import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError } from '../../common/ServerError';
-import APSUsersService from './APSUsersService';
+import APSUsersService from './APSUsersService/APSUsersService';
 
 export class APSLoginService {
   private static collectionName = "apsUsers";

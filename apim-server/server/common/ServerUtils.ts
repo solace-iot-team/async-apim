@@ -35,4 +35,12 @@ export class ServerUtils {
     throw new Error(`${logName}:${extLogName}: unexpected object: ${JSON.stringify(x)}`);
   }
 
+  public static getPropertyNameString = <T extends Record<string, unknown>>(obj: T, selector: (x: Record<keyof T, keyof T>) => keyof T): keyof T => {
+    const keyRecord = Object.keys(obj).reduce((res, key) => {
+      const typedKey = key as keyof T
+      res[typedKey] = typedKey
+      return res
+    }, {} as Record<keyof T, keyof T>)
+    return selector(keyRecord)
+  }
 }

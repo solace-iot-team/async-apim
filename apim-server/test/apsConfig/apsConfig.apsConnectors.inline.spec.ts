@@ -1,10 +1,10 @@
 import 'mocha';
 import { expect } from 'chai';
 import request from 'supertest';
-import Server from '../server/index';
+import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSError, 
@@ -19,7 +19,7 @@ import {
   ListApsConnectorsResponse,
   APSLocationConfigExternal,
   APSLocationConfigInternalProxy
-} from '../src/@solace-iot-team/apim-server-openapi-node';
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
 
 
 const scriptName: string = path.basename(__filename);
@@ -55,6 +55,7 @@ describe(`${scriptName}`, () => {
     });
 
     after(async() => {
+      TestContext.newItId();      
       try {
         const result: ListApsConnectorsResponse = await ApsConfigService.listApsConnectors();
         const apsConnectorList: Array<APSConnector> = result.list;
@@ -84,7 +85,7 @@ describe(`${scriptName}`, () => {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
-      expect(receivedTotalCount, 'number of objects received not the same as reported totalCount').equal(reportedTotalCount);
+      expect(receivedTotalCount, `${TestLogger.createTestFailMessage('number of objects received not the same as reported totalCount')}`).equal(reportedTotalCount);
     });
 
     it(`${scriptName}: should delete all connectors`, async () => {
@@ -141,8 +142,8 @@ describe(`${scriptName}`, () => {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
-      expect(receivedTotalCount, 'number of objects received not the same as reported totalCount').equal(reportedTotalCount);
-      expect(receivedTotalCount, 'number of objects received not the same as numberOfConnectors created').equal(numberOfConnectors);
+      expect(receivedTotalCount, `${TestLogger.createTestFailMessage('number of objects received not the same as reported totalCount')}`).equal(reportedTotalCount);
+      expect(receivedTotalCount, `${TestLogger.createTestFailMessage('number of objects received not the same as numberOfConnectors created')}`).equal(numberOfConnectors);
     });
 
     it(`${scriptName}: should return duplicate key error`, async() => {
@@ -157,9 +158,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'expecting 422').equal(422);
+        expect(apiError.status, `${TestLogger.createTestFailMessage('expecting 422')}`).equal(422);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.DUPLICATE_KEY);
+        expect(apsError.errorId, `${TestLogger.createTestFailMessage('incorrect errorId')}`).equal(APSErrorIds.DUPLICATE_KEY);
       }
     });
 
@@ -189,9 +190,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(404);
+        expect(apiError.status, `${TestLogger.createTestFailMessage('status code')}`).equal(404);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.KEY_NOT_FOUND);
+        expect(apsError.errorId, `${TestLogger.createTestFailMessage('incorrect errorId')}`).equal(APSErrorIds.KEY_NOT_FOUND);
       }
     });
 

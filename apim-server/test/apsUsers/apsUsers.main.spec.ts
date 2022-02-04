@@ -1,12 +1,13 @@
 import 'mocha';
 import { expect } from 'chai';
 import request from 'supertest';
-import Server from '../server/index';
+import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from './lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
+  ApsAdministrationService, 
   APSError, 
   APSErrorIds, 
   APSListResponseMeta, 
@@ -14,39 +15,53 @@ import {
   APSUserReplace, 
   ApsUsersService, 
   APSUserUpdate, 
-  EAPSAuthRole, 
+  EAPSOrganizationAuthRole, 
   EAPSSortDirection,
+  EAPSSystemAuthRole,
   ListApsUsersResponse
-} from '../src/@solace-iot-team/apim-server-openapi-node';
+} from '../../src/@solace-iot-team/apim-server-openapi-node';
 
 
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
+const ReferenceOrg_1 = 'org_1';
+const ReferenceOrg_2 = 'org_2';
+const ReferenceOrg_Updated = 'updated_org';
+const ReferenceOrg_Replaced = 'replaced_org';
 const numberOfUsers: number = 50;
 const apsUserTemplate: APSUser = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
   profile: {
-    email: 'email@aps.com',
+    email: 'email@aps.test',
     first: 'first',
     last: 'last'
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ 'org' ]
+  systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+  memberOfOrganizations: [
+    { 
+      organizationId: ReferenceOrg_1,
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 const apsUserTemplate2: APSUser = {
   isActivated: true,
   userId: 'userId2',
   password: 'password2',
   profile: {
-    email: 'email2@aps.com',
+    email: 'email2@aps.test',
     first: 'first2',
     last: 'last2'
   },
-  roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-  memberOfOrganizations: [ 'org2' ]
+  memberOfOrganizations: [
+    { 
+      organizationId: ReferenceOrg_2,
+      roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
+    }
+  ]
 }
 
 describe(`${scriptName}`, () => {
@@ -59,6 +74,7 @@ describe(`${scriptName}`, () => {
     });
 
     after(async() => {
+      TestContext.newItId();
       let apsUserList: Array<APSUser> = [];
       try {
         const pageSize = 100;
@@ -146,7 +162,39 @@ describe(`${scriptName}`, () => {
       }
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('type of array')}`).to.be.an('array');
       expect(finalApsUserList, `${TestLogger.createTestFailMessage('empty array')}`).to.be.empty;
-      expect(finalMeta.meta.totalCount, `${TestLogger.createTestFailMessage('totalCount not zero')}`).equal(0);
+      expect(finalMeta.meta.totalCount, TestLogger.createTestFailMessage('totalCount not zero')).equal(0);
+    });
+
+    it(`${scriptName}: should create organizations for referencing`, async () => {
+      try {
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_1,
+            displayName: ReferenceOrg_1
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_2,
+            displayName: ReferenceOrg_2
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_Updated,
+            displayName: ReferenceOrg_Updated
+          }
+        });
+        await ApsAdministrationService.createApsOrganization({
+          requestBody: {
+            organizationId: ReferenceOrg_Replaced,
+            displayName: ReferenceOrg_Replaced
+          }
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      }
     });
 
     it(`${scriptName}: should create a number of users from templates`, async () => {
@@ -185,7 +233,7 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.createApsUser() & ApsUsersService.listApsUsers()`;
-        expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
     });
 
@@ -209,10 +257,10 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         let message = `ApsUsersService.deleteApsUser()`;
-        expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
       const message = `receivedTotalCount not  + ${2 * numberOfUsers}`;
-      expect(receivedTotalCount, `${TestLogger.createTestFailMessage(message)}`).equal(2 * numberOfUsers);
+      expect(receivedTotalCount, TestLogger.createTestFailMessage(message)).equal(2 * numberOfUsers);
     });
 
     it(`${scriptName}: should list users with sortInfo: profile.email`, async () => {
@@ -225,7 +273,7 @@ describe(`${scriptName}`, () => {
           });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
       }
     });
 
@@ -239,7 +287,7 @@ describe(`${scriptName}`, () => {
           });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
       }
     });
 
@@ -254,11 +302,11 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'expecting 400').equal(400);
+        expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.INVALID_SORT_FIELD_NAME);
-        expect(apsError.meta.sortFieldName, 'incorrect sortFieldName').equal(sortFieldName);
-        expect(apsError.meta.apsObjectName, 'incorrect apsObjectName').equal('APSUser');
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_SORT_FIELD_NAME);
+        expect(apsError.meta.sortFieldName, TestLogger.createTestFailMessage('incorrect sortFieldName')).equal(sortFieldName);
+        expect(apsError.meta.apsObjectName, TestLogger.createTestFailMessage('incorrect apsObjectName')).equal('APSUser');
         return;
       }
       expect(false, `${TestLogger.createTestFailMessage('should not get here')}`).to.be.true;
@@ -274,11 +322,11 @@ describe(`${scriptName}`, () => {
           requestBody: apsUserTemplate
         });
       } catch (e) {
-        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'expecting 422').equal(422);
+        expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.DUPLICATE_KEY);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.DUPLICATE_KEY);
       }
     });
 
@@ -289,11 +337,11 @@ describe(`${scriptName}`, () => {
           userId: apsUserTemplate.userId
         });
       } catch (e) {
-        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
         let message = `ApsUsersService.getApsUser()`;
-        expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
-      expect(apsUser, `${TestLogger.createTestFailMessage('response equals request')}`).to.deep.equal(apsUserTemplate);
+      expect(apsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal(apsUserTemplate);
     });
 
     it(`${scriptName}: should not find user`, async() => {
@@ -305,9 +353,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(404);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(404);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.KEY_NOT_FOUND);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.KEY_NOT_FOUND);
       }
     });
 
@@ -316,16 +364,23 @@ describe(`${scriptName}`, () => {
       const userId = apsUserTemplate.userId;
       const updateRequest: APSUserUpdate = {
         isActivated: false,
-        password: 'updated',
-        memberOfOrganizations: [ 'updated' ],
-        roles: [ EAPSAuthRole.API_CONSUMER ],
+        password: 'updated',        
+        memberOfOrganizations: [ 
+          {
+            organizationId: ReferenceOrg_Updated,
+            roles: [ EAPSOrganizationAuthRole.API_CONSUMER]
+          }
+        ],
         profile: {
-          email: 'updated@aps.com'
+          email: 'updated@aps.test'
         }
       }
       const updateCustomizer = (originalValue: any, updateValue: any): any => {
-        if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+        // replace arrays
+        if(_.isArray(originalValue)) return updateValue;
         else return undefined;
+        // if(_.isArray(originalValue)) return originalValue.concat(updateValue);
+        // else return undefined;
       }
       const targetApsUser = _.mergeWith(apsUserTemplate, updateRequest, updateCustomizer);
       try {
@@ -371,9 +426,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(404);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(404);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.KEY_NOT_FOUND);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.KEY_NOT_FOUND);
       }
     });
 
@@ -383,10 +438,14 @@ describe(`${scriptName}`, () => {
       const replaceRequest: APSUserReplace = {
         isActivated: true,
         password: 'replaced',
-        memberOfOrganizations: [ 'replaced' ],
-        roles: [ EAPSAuthRole.API_TEAM ],
+        memberOfOrganizations: [ 
+          {
+            organizationId: ReferenceOrg_Replaced,
+            roles: [EAPSOrganizationAuthRole.API_TEAM]
+          }
+        ],
         profile: {
-          email: 'replaced@aps.com',
+          email: 'replaced@aps.test',
           first: 'replaced',
           last: 'replaced'
         }
@@ -401,11 +460,11 @@ describe(`${scriptName}`, () => {
           requestBody: replaceRequest
         });
       } catch (e) {
-        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
         let message = `ApsUsersService.updateApsUser()`;
-        expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
+        expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
-      expect(replacedApsUser, 'user not replaced correctly').to.deep.equal(targetApsUser);
+      expect(replacedApsUser, TestLogger.createTestFailMessage('user not replaced correctly')).to.deep.equal(targetApsUser);
     });
 
     it(`${scriptName}: should not allow empty userId`, async() => {
@@ -426,7 +485,7 @@ describe(`${scriptName}`, () => {
         expect(JSON.stringify(apsError), `${TestLogger.createTestFailMessage('fail')}`).contains('body.userId');
         return;
       }
-      expect(false, `${TestLogger.createTestFailMessage('should not get here')}`).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
     });
 
     it(`${scriptName}: should not allow whitespace in userId`, async() => {
@@ -441,10 +500,10 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, `${TestLogger.createTestFailMessage('fail')}`).equal(400);
+        expect(apiError.status, TestLogger.createTestFailMessage('fail')).equal(400);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, `${TestLogger.createTestFailMessage('fail')}`).equal(APSErrorIds.OPEN_API_REQUEST_VALIDATION);
-        expect(JSON.stringify(apsError), `${TestLogger.createTestFailMessage('fail')}`).contains('body.userId');
+        expect(apsError.errorId, TestLogger.createTestFailMessage('fail')).equal(APSErrorIds.OPEN_API_REQUEST_VALIDATION);
+        expect(JSON.stringify(apsError), TestLogger.createTestFailMessage('fail')).contains('body.userId');
         return;
       }
       expect(false, `${TestLogger.createTestFailMessage('should not get here')}`).to.be.true;
@@ -456,8 +515,12 @@ describe(`${scriptName}`, () => {
       const replaceRequest: APSUserReplace = {
         isActivated: true,
         password: 'replaced',
-        memberOfOrganizations: [ 'replaced' ],
-        roles: [ EAPSAuthRole.API_TEAM ],
+        memberOfOrganizations: [ 
+          {
+            organizationId: 'replaced',
+            roles: [EAPSOrganizationAuthRole.API_TEAM]
+          }
+        ],
         profile: {
           email: 'not-an-email',
           first: 'replaced',
@@ -472,13 +535,13 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, 'status code').equal(400);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(400);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, 'incorrect errorId').equal(APSErrorIds.OPEN_API_REQUEST_VALIDATION);
-        expect(JSON.stringify(apsError), '').contains('body.profile.email');
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.OPEN_API_REQUEST_VALIDATION);
+        expect(JSON.stringify(apsError), TestLogger.createTestFailMessage('does not contain')).contains('body.profile.email');
         return;
       }
-      expect(false, `${TestLogger.createTestFailMessage('should not get here')}`).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
     });
 
     // ****************************************************************************************************************
@@ -487,15 +550,20 @@ describe(`${scriptName}`, () => {
 
     const apsUserSearchTemplate: APSUser = {
       isActivated: true,
-      userId: '@aps.com',
+      userId: '@aps.test',
       password: 'password',
       profile: {
-        email: '@aps.com',
+        email: '@aps.test',
         first: 'first',
         last: 'last'
       },
-      roles: [ EAPSAuthRole.LOGIN_AS, EAPSAuthRole.SYSTEM_ADMIN ],
-      memberOfOrganizations: [ 'org2' ]
+      systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+      memberOfOrganizations: [ 
+        {
+          organizationId: ReferenceOrg_2,
+          roles: [ EAPSOrganizationAuthRole.LOGIN_AS]
+         }
+      ]
     }
     
     it(`${scriptName}: should delete all users`, async () => {
@@ -618,6 +686,40 @@ describe(`${scriptName}`, () => {
       // 50 last-1 & 50 last-2
       expect(receivedTotalCount, `${TestLogger.createTestFailMessage(`receivedTotalCount not ${numberOfUsers}`)}`).equal(numberOfUsers);
     });
+
+
+    it(`${scriptName}: should return invalid reference error for unknown org when creating user`, async () => {
+      const NonExistentOrgName = 'org-does-not-exist';
+      try {
+        const apsUser: APSUser = {
+          ...apsUserTemplate,
+          memberOfOrganizations: [
+            {
+              organizationId: NonExistentOrgName,
+              roles: [EAPSOrganizationAuthRole.API_CONSUMER]
+            }
+          ]
+        }
+        await ApsUsersService.createApsUser({
+          requestBody: apsUser
+        });
+      } catch (e) {
+        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+        const apiError: ApiError = e;
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(422);
+        const apsError: APSError = apiError.body;
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+        expect(apsError.meta, TestLogger.createTestFailMessage('property does not exist')).to.have.property('invalidReferenceList');
+        expect(apsError.meta.invalidReferenceList, TestLogger.createTestFailMessage('not an array of correct length')).to.be.an('array').of.length(1);
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('referenceId');
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('referenceType');
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains(NonExistentOrgName);
+        expect(JSON.stringify(apsError.meta.invalidReferenceList), TestLogger.createTestFailMessage('does not contain')).contains('APSOrganization');
+        return;
+      }
+      expect(false, TestLogger.createTestFailMessage('should never get here')).to.be.true;
+    });
+
 
 
 // ****************************************************************************************************************

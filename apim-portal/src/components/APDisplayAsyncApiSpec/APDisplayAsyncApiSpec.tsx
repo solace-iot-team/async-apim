@@ -3,18 +3,18 @@ import React from "react";
 
 import AsyncApiComponent, { ConfigInterface } from "@asyncapi/react-component";
 
-// import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { APButtonDownloadContentAsFile } from "../APButtons/APButtonDownloadContentAsFile";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { EFileDownloadType, EFileExtension } from "../APComponentsCommon";
-
-import "@asyncapi/react-component/styles/default.css";
-// or minified version
-// import "@asyncapi/react-component/styles/default.min.css";
-import "../APComponents.css";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { Globals } from "../../utils/Globals";
+
+import "./APDisplayAsyncApiSpec.css"
+// import "@asyncapi/react-component/styles/default.css";
+// or minified version
+import "@asyncapi/react-component/styles/default.min.css";
+import "../APComponents.css";
 
 export interface IAPDisplayAsyncApiSpecProps {
   schemaId: string,
@@ -30,17 +30,20 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
   const ToolbarButtonLabel_DownloadYaml = 'Download YAML';
   
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  // create a copy of the schema to pass to the react render component, it modifies it
+  const [schemaCopy] = React.useState<any>(JSON.parse(JSON.stringify(props.schema)));
 
   const config: ConfigInterface = {
     schemaID: props.schemaId,
     show: {
-      sidebar: false,
+      // sidebar: true,
       info: true,
       servers: true,
       operations: true,
-      messages: false,
+      // messages: false,
+      messages: true,
       schemas: true,
-      errors: false,
+      errors: true,
     },
     sidebar: {
       showOperations: 'byOperationsTags'
@@ -100,7 +103,12 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      <AsyncApiComponent schema={props.schema} config={config} />    
+      <div className="ap-async-api-component" >
+        <AsyncApiComponent 
+          schema={schemaCopy} 
+          config={config} 
+        />    
+      </div>
       
       {/* <hr/>        
       <pre style={ { fontSize: '12px' }} >

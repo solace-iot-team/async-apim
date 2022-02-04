@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.15
+  version: 0.0.16
 servers:
 - url: /apim-server/v1
 tags:
@@ -16,7 +16,136 @@ tags:
   description: "Login Service."
 - name: Specification
   description: The swagger API specification
+- name: APSAdministration
+  description: Manage system settings and organizations/tenants.
 paths:
+  /apsAdministration/apsOrganizations:
+    post:
+      operationId: createApsOrganization
+      description: Create an APSOrganization object.
+      tags:
+      - APSAdministration
+      requestBody:
+        description: The APSOrganization object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSOrganizationCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/DuplicateKey'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      operationId: listApsOrganizations
+      description: Get a list of APSOrganizations.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: Array of APSOrganizations and total count of APSOrganizations. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSOrganizationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsAdministration/apsOrganizations/{organization_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    get:
+      operationId: getApsOrganization
+      description: Get an APSOrganization object by id.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: The APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: updateApsOrganization
+      description:
+        Update an APSOrganization object by id.
+        Operation performs a merge update between the exsting object and the update request.
+        Arrays are not merged but replaced in their entirety.
+      tags:
+      - APSAdministration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/APSOrganizationUpdate"
+      responses:
+        '200':
+          description: The updated APSOrganization object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSOrganization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteApsOrganization
+      tags:
+      - APSAdministration
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsConfig/apsConnectors:
     post:
       operationId: createApsConnector
@@ -445,45 +574,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
-        '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '405':
-          description: "Method Not Allowed."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
         '422':
-          description: "User with userId already exists."
+          description: "User with userId already exists or invalid object reference"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     get:
       operationId: listApsUsers
       description: Get a list of APSUsers.
@@ -495,6 +601,10 @@ paths:
       - $ref: '#/components/parameters/sort_field_name'
       - $ref: '#/components/parameters/sort_direction'
       - $ref: '#/components/parameters/search_word_list'
+      - $ref: '#/components/parameters/search_organization_id'
+      - $ref: '#/components/parameters/exclude_search_organization_id'
+      - $ref: '#/components/parameters/search_is_activated'
+      - $ref: '#/components/parameters/search_user_id'
       responses:
         '200':
           description: Array of APSUsers and total count of APSUsers. Returns empty array if none found.
@@ -503,32 +613,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ListApsUsersResponse'
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
   /apsUsers/{user_id}:
     parameters:
     - $ref: '#/components/parameters/user_id'
@@ -545,44 +636,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/APSUser'
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     patch:
       operationId: updateApsUser
       description:
         Update an APSUser object by user id.
         Operation performs a merge update between the exsting APSUser object and the update request.
-        New array values are added to existing arrays.
+        Arrays are not merged but replaced in their entirety.
       tags:
       - APSUsers
       requestBody:
@@ -599,39 +667,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     put:
       operationId: replaceApsUser
       description: Replace an APSUser object by user id.
@@ -650,39 +701,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/APSUser'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
     delete:
       operationId: deleteApsUser
       description: Delete an APSUser object by user id.
@@ -692,38 +726,15 @@ paths:
         '204':
           description: Deleted successfully.
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: "Not Found."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
   /apsLogin/login:
     post:
       operationId: login
@@ -774,6 +785,46 @@ paths:
           description: Return the API specification
           content: {}
 components:
+  responses:
+    BadRequest:
+      description: "Bad Request."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+        "*/*":
+          schema:
+            $ref: "#/components/schemas/APSError"
+    Unauthorized:
+      description: "Unauthorized."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    Forbidden:
+      description: "Forbidden."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    NotFound:
+      description: "Not Found."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    InternalServerError:
+      description: "Internal Server Error."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
+    DuplicateKey:
+      description: "Object with id already exists."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/APSError"
   parameters:
     page_size:
       name: pageSize
@@ -819,6 +870,34 @@ components:
       required: false
       schema:
         type: string
+    search_organization_id:
+      name: searchOrganizationId
+      in: query
+      description: Search for API Objects in a specific organization. Cannot be used with excludeSearchOrganizationId.
+      required: false
+      schema:
+        type: string
+    exclude_search_organization_id:
+      name: excludeSearchOrganizationId
+      in: query
+      description: Exclude results from a specific organization from the search for API Objects. Cannot be used with searchOrganizationId.
+      required: false
+      schema:
+        type: string
+    search_is_activated:
+      name: searchIsActivated
+      in: query
+      description: Filter search results for APSUser by field isActivated.
+      required: false
+      schema:
+        type: boolean
+    search_user_id:
+      name: searchUserId
+      in: query
+      description: Search for APSUsers where userId contains search string.
+      required: false
+      schema:
+        type: string
     user_id:
       name: user_id
       in: path
@@ -831,6 +910,12 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/APSId"
+    organization_id:
+      name: organization_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
   schemas:
     APSId:
       description: Unique Id of an object.
@@ -838,6 +923,12 @@ components:
       minLength: 4
       maxLength: 255
       pattern: ^[A-Za-z0-9_-]*$
+    APSDisplayName:
+      description: Friendly name of an object for display in UIs. Can be changed after object creation.
+      type: string
+      minLength: 1
+      maxLength: 256
+      pattern: "[\\/\\sa-z.A-z0-9_-]*"
     APSUserId:
       type: string
       minLength: 4
@@ -860,10 +951,24 @@ components:
       # from: https://regexr.com/3e48o
       pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
     APSOrganizationIdList:
-      description: List of Organization Ids.
       type: array
       items:
         type: string
+    APSOrganizationRoles:
+      type: object
+      properties:
+        organizationId:
+          type: string
+        roles:
+          $ref: "#/components/schemas/APSOrganizationAuthRoleList"
+      required:
+      - organizationId
+      - roles
+    APSOrganizationRolesList:
+      description: List of Organization Roles.
+      type: array
+      items:
+        $ref: "#/components/schemas/APSOrganizationRoles"
     EAPSSortDirection:
       description: sort direction for query
       type: string
@@ -899,6 +1004,8 @@ components:
       - notAuthorized
       - pathNotFound
       - invalidSortFieldName
+      - invalidQueryParameterCombination
+      - invalidObjectReferences
     APSErrorMeta:
       type: object
       description: Additional details about the error.
@@ -997,19 +1104,46 @@ components:
       - repository
       - issues_url
       - build_date
-    EAPSAuthRole:
+    EAPSOrganizationAuthRole:
       type: string
       enum:
-      - root
       - loginAs
-      - systemAdmin
       - organizationAdmin
       - apiTeam
       - apiConsumer
-    EAPSAuthRoleList:
+    EAPSSystemAuthRole:
+      type: string
+      enum:
+      - root
+      - systemAdmin
+      - loginAs
+    APSOrganizationAuthRoleList:
       type: array
       items:
-        $ref: "#/components/schemas/EAPSAuthRole"
+        $ref: "#/components/schemas/EAPSOrganizationAuthRole"
+      minItems: 1
+    APSSystemAuthRoleList:
+      type: array
+      items:
+        $ref: "#/components/schemas/EAPSSystemAuthRole"
+
+    # EAPSAuthRole:
+    #   type: string
+    #   enum:
+    #   - loginAs
+    #   - organizationAdmin
+    #   - apiTeam
+    #   - apiConsumer
+    #   - root
+    #   - systemAdmin
+    #   # does not work with openapi-validator nor code generators
+    #   # allOf:
+    #   #   - $ref: "#/components/schemas/EAPSSystemAuthRole"
+    #   #   - $ref: "#/components/schemas/EAPSOrganizationAuthRole"
+    # APSAuthRoleList:
+    #   type: array
+    #   items:
+    #     $ref: "#/components/schemas/EAPSAuthRole"
     EAPSClientProtocol:
       type: string
       enum:
@@ -1136,6 +1270,42 @@ components:
         - displayName
         - description
         - connectorClientConfig
+    ListAPSOrganizationResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSOrganizationList'
+      required:
+      - list
+    APSOrganizationList:
+      description: Array of APSOrganizations.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSOrganization'
+    APSOrganization:
+      type: object
+      additionalProperties: false
+      properties:
+        organizationId:
+          $ref: "#/components/schemas/APSId"
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+      required:
+        - organizationId
+        - displayName
+    APSOrganizationCreate:
+      allOf:
+      - description: Create request for an APSOrganization object.
+      - $ref: "#/components/schemas/APSOrganization"
+    APSOrganizationUpdate:
+      description: Update request for an APSOrganization object.
+      type: object
+      additionalProperties: false
+      properties:
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
     APSUserLoginCredentials:
       type: object
       description: Login credentials.
@@ -1188,6 +1358,7 @@ components:
     APSUser:
       description: "A user."
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1197,19 +1368,23 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfile"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          $ref: '#/components/schemas/APSOrganizationIdList'
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of including organization roles.
       required:
         - isActivated
         - userId
         - password
         - profile
-        - roles
     APSUserUpdate:
       description: Update for an APSUser object.
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1217,15 +1392,18 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfileUpdate"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          type: array
-          items:
-            type: string
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of include organization roles.
     APSUserReplace:
       description: Replace an existing APSUser object.
       type: object
+      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1233,16 +1411,17 @@ components:
           type: string
         profile:
           $ref: "#/components/schemas/APSUserProfile"
-        roles:
-          $ref: '#/components/schemas/EAPSAuthRoleList'
+        systemRoles:
+          allOf:
+            - description: System roles applicable across any organization.
+            - $ref: '#/components/schemas/APSSystemAuthRoleList'
         memberOfOrganizations:
-          type: array
-          items:
-            type: string
+          allOf:
+            - $ref: '#/components/schemas/APSOrganizationRolesList'
+            - description: List of organizations the user is a member of include organization roles.
       required:
         - isActivated
         - password
         - profile
-        - roles
 ###
 # The End.

@@ -100,9 +100,9 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
   }
 
   React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    console.log(`${logName}: mounting ...`);
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -156,15 +156,15 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
     if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return (<>Not used.</>);
     return (<>{`API Products: ${mo.apiUsedBy_ApiProductEntityNameList.length}`}</>);
   }
-  const actionBodyTemplate = (mo: TManagedObject) => {
-    const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
-    return (
-      <React.Fragment>
-        <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
-        <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
-      </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (mo: TManagedObject) => {
+  //   const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
+  //   return (
+  //     <React.Fragment>
+  //       <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+  //       <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
+  //     </React.Fragment>
+  //   );
+  // }
 
   const renderManagedObjectDataTable = () => {
 
@@ -243,7 +243,7 @@ export const ListEnvironments: React.FC<IListEnvironmentsProps> = (props: IListE
             <Column header="Datacenter Provider" headerStyle={{width: '14em'}} field="apiObject.datacenterProvider" bodyStyle={{textAlign: 'center' }} sortable />
             <Column header="Used By" body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             {/* <Column field="apiObject.description" header="Description" /> */}
-            <Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
+            {/* <Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} /> */}
         </DataTable>
       </div>
     );

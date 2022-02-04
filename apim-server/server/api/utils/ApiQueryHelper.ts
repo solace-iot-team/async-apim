@@ -4,17 +4,21 @@ import APSSortDirection = Components.Parameters.SortDirection;
 
 
 export type TApiPagingInfo = {
-  pageNumber: number,
-  pageSize: number
+  pageNumber: Components.Parameters.PageNumber;
+  pageSize: Components.Parameters.PageSize;
 }
 
 export type TApiSortInfo = {
-  sortFieldName: string,
-  sortDirection: APSSortDirection
+  sortFieldName: Components.Parameters.SortFieldName;
+  sortDirection: APSSortDirection;
 }
 
 export type TApiSearchInfo = {
-  searchWordList?: string
+  searchWordList?: Components.Parameters.SearchWordList;
+  searchOrganizationId?: Components.Parameters.SearchOrganizationId;
+  excludeSearchOrganizationId?: Components.Parameters.ExcludeSearchOrganizationId;
+  searchIsActivated?: Components.Parameters.SearchIsActivated;
+  searchUserId?: Components.Parameters.SearchUserId;
 }
 
 export class ApiQueryHelper {
@@ -39,7 +43,11 @@ export class ApiQueryHelper {
 
   public static getSearchInfoFromQuery = (query: ParsedQs): TApiSearchInfo => {
     return {
-      searchWordList: query.searchWordList ? ApiQueryHelper.decodeQueryParam(query.searchWordList as string) : undefined
+      searchWordList: query.searchWordList !== undefined ? ApiQueryHelper.decodeQueryParam(query.searchWordList as string) : undefined,
+      searchOrganizationId: query.searchOrganizationId !== undefined ? (query.searchOrganizationId as string) : undefined,
+      excludeSearchOrganizationId: query.excludeSearchOrganizationId !== undefined ? (query.excludeSearchOrganizationId as string) : undefined,
+      searchIsActivated: query.searchIsActivated !== undefined ? (Boolean(JSON.parse(query.searchIsActivated as string))) : undefined,
+      searchUserId: query.searchUserId !== undefined ? (query.searchUserId as string) : undefined,
     }
   }
 

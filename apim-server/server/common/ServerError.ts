@@ -101,6 +101,17 @@ export class ConfigEnvVarNotANumberServerError extends ServerError {
     this.envVarValue = envVarValue;
   }
 }
+export class MigrateServerError extends ServerError {
+  private collectionName: string;
+  private fromVersion: number;
+  private toVersion: number;
+  constructor(internalLogName: string, internalMessage: string, collectionName: string, fromVersion: number, toVersion: number) {
+    super(internalLogName, internalMessage);
+    this.collectionName = collectionName;
+    this.fromVersion = fromVersion;
+    this.toVersion = toVersion;
+  }
+}
 
 type ApiServerErrorResponseHeaders = {
   headerField: string,
@@ -128,19 +139,24 @@ export class ApiServerError extends ServerError {
   }
 
   public toAPSError = (): APSError => {
-    const funcName = 'toAPSError';
-    const logName = `${ApiServerError.name}.${funcName}()`;
+    // const funcName = 'toAPSError';
+    // const logName = `${ApiServerError.name}.${funcName}()`;
     const apsError: APSError = {
       appId: this.appId,
       errorId: this.apiErrorId,
       description: this.apiDescription,
     }
-    // check if apiMeta is a json serializable object
-    try {
-      JSON.parse(JSON.stringify(this.apiMeta));
-      apsError.meta = this.apiMeta;
-    } catch (e: any) {
-      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: `JSON.parse error of apiMeta`, details: { name: e.name, message: e.message } }));    
+    if(this.apiMeta !== undefined) {
+      // check if apiMeta is a json serializable object
+      try {
+        JSON.parse(JSON.stringify(this.apiMeta));
+        apsError.meta = this.apiMeta;
+      } catch (e: any) {
+      }
+    } else {
+      apsError.meta = {
+        message: this.message
+      }
     }
     return apsError;
   }
@@ -280,10 +296,17 @@ export class ApiServerErrorFromOpenApiResponseValidatorError extends ApiInternal
 }
 
 export type TApiServerErrorMeta = {
-  id: string,
-  collectionName: string
+  id: string;
+  collectionName: string;
 }
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;
+export type TApiInvalidObjectReferenceError = {
+  referenceType: string;
+  referenceId: string;
+}
+export type TApiInvalidObjectReferencesServerErrorMeta = TApiServerErrorMeta & {
+  invalidReferenceList: Array<TApiInvalidObjectReferenceError>;
+}
 export type TApiKeyNotFoundServerErrorMeta = TApiServerErrorMeta;
 export type TApiObjectNotFoundServerErrorMeta = {
   filter: Record<string, unknown>,
@@ -300,6 +323,15 @@ export class ApiDuplicateKeyServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiDuplicateKeyServerError.apiDefaultDescription, apiMeta: TApiDuplicateKeyServerErrorMeta) {
     super(internalLogName, ApiDuplicateKeyServerError.name, ApiDuplicateKeyServerError.apiStatusCode, ApiDuplicateKeyServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+export class ApiInvalidObjectReferencesServerError extends ApiServerError {
+  private static apiStatusCode = 422;
+  private static apiErrorId: APSErrorIds = 'invalidObjectReferences';
+  private static apiDefaultDescription = 'invalid object references';
+
+  constructor(internalLogName: string, apiDescription: string = ApiInvalidObjectReferencesServerError.apiDefaultDescription, apiMeta: TApiInvalidObjectReferencesServerErrorMeta) {
+    super(internalLogName, ApiInvalidObjectReferencesServerError.name, ApiInvalidObjectReferencesServerError.apiStatusCode, ApiInvalidObjectReferencesServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 
@@ -349,6 +381,20 @@ export class ApiBadSortFieldNameServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiBadSortFieldNameServerError.apiDefaultDescription, apiMeta: TApiBadSortFieldNameServerErrorrMeta) {
     super(internalLogName, ApiBadSortFieldNameServerError.name, ApiBadSortFieldNameServerError.apiStatusCode, ApiBadSortFieldNameServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+
+export type ApiBadQueryParameterCombinationServerErrorMeta = {
+  invalidQueryParameterCombinationList: Array<string>,
+  apsObjectName: string
+}
+export class ApiBadQueryParameterCombinationServerError extends ApiServerError {
+  private static apiStatusCode = 400;
+  private static apiErrorId: APSErrorIds = 'invalidQueryParameterCombination';
+  private static apiDefaultDescription = 'invalid query parameter combination';
+
+  constructor(internalLogName: string, apiDescription: string = ApiBadQueryParameterCombinationServerError.apiDefaultDescription, apiMeta: ApiBadQueryParameterCombinationServerErrorMeta) {
+    super(internalLogName, ApiBadQueryParameterCombinationServerError.name, ApiBadQueryParameterCombinationServerError.apiStatusCode, ApiBadQueryParameterCombinationServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 

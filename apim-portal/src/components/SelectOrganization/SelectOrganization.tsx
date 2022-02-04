@@ -4,15 +4,17 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 
-import type { TAPOrganizationId, TAPOrganizationIdList } from "../APComponentsCommon";
+import type { TAPOrganizationIdList } from "../APComponentsCommon";
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { ApiCallState } from '../../utils/ApiCallState';
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
-import { Organization, AdministrationService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
+import { APOrganizationsService, TAPOrganizationList } from "../../utils/APOrganizationsService";
+import { AuthHelper } from "../../auth/AuthHelper";
+import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 
 import "../APComponents.css";
 import "./SelectOrganization.css";
@@ -32,8 +34,6 @@ export interface ISelectOrganizationProps {
 export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: ISelectOrganizationProps) => {
   const componentName = 'SelectOrganization';
 
-  type TApiObject = Organization;
-  type TApiObjectList = Array<TApiObject>;
   type TSelectObject = {
     displayName: string, 
     name: string
@@ -59,28 +59,34 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     return organizationNameList;
   }
 
-  const transformApiObjectListToSelectObjectList = (apiObjectList: TApiObjectList): TSelectObjectList => {
-    const funcName = 'transformApiObjectListToSelectObjectList';
+  const transformAPOrganizationListToSelectObjectList = (apOrganizationList: TAPOrganizationList): TSelectObjectList => {
+    const funcName = 'transformAPOrganizationListToSelectObjectList';
     const logName = `${componentName}.${funcName}()`;
-    if(!userContext.user.memberOfOrganizations) throw new Error(`${logName}: user is not a member of any organization`);
-    const userMemberOfOrganizationNameList: TAPOrganizationIdList = userContext.user.memberOfOrganizations;
-    let selectObjectList: TSelectObjectList = [];
-    apiObjectList.forEach((apiObject: TApiObject) => {
-      const organizationName: TAPOrganizationId | undefined = userMemberOfOrganizationNameList.find((userMemberOfOrganizationName: TAPOrganizationId) => {
-        return (userMemberOfOrganizationName === apiObject.name)  
+
+    // TODO: this is possible, handle it nicely
+    if(userContext.user.memberOfOrganizations === undefined) throw new Error(`${logName}: userContext.user.memberOfOrganizations`);
+
+    const selectObjectList: TSelectObjectList = [];
+    for(const apOrganization of apOrganizationList) {
+      const memberOf = userContext.user.memberOfOrganizations.find( (x) => {
+        return x.organizationId === apOrganization.name;
       });
-      if(organizationName) selectObjectList.push({
-        displayName: apiObject.name,
-        name: apiObject.name
-      });
-    });
-    return selectObjectList; 
+      if(memberOf !== undefined) {
+        selectObjectList.push( {
+          name: apOrganization.name,
+          displayName: apOrganization.displayName
+        });
+      }
+    }
+    return selectObjectList;
   }
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [selectObjectList, setSelectObjectList] = React.useState<TSelectObjectList>();
   const [selectObjectForSelectList, setSelectObjectForSelectList] = React.useState<TSelectObjectForSelectList>([]);
@@ -88,21 +94,15 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   const [isGetSelectObjectListInProgress, setIsGetSelectObjectListInProgress] = React.useState<boolean>(false);
   const [selectedObject, setSelectedObject] = React.useState<TSelectObject>();
 
-  // * Custom *
-
-  // * Utils *
   // * Api Calls *
   const apiGetSelectObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetSelectObjectList';
     const logName = `${componentName}.${funcName}()`;
-
     let callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.API_GET_SELECT_OBJECT_LIST, 'retrieve list of organizations');
-    // setApiCallStatus(null);
     setIsGetSelectObjectListInProgress(true);
     try { 
-      const apiSelectObjectList: TApiObjectList = await AdministrationService.listOrganizations({});
-      // console.log(`${logName}: apiSelectObjectList=${JSON.stringify(apiSelectObjectList, null, 2)} `);
-      setSelectObjectList(transformApiObjectListToSelectObjectList(apiSelectObjectList));
+      const apOrganizationList: TAPOrganizationList = await APOrganizationsService.listOrganizations({});
+      setSelectObjectList(transformAPOrganizationListToSelectObjectList(apOrganizationList));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -122,7 +122,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       props.onError(callState);
       return;
     }
-
     if(!userContext.user.memberOfOrganizations || userContext.user.memberOfOrganizations.length === 0) {
       props.onSuccess();
       return;
@@ -139,12 +138,27 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
 
   // * useEffect Hooks *
   React.useEffect(() => {
+    // const funcName = 'useEffect([]';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ..`)
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    if(userContext.runtimeSettings.currentOrganizationName) {
+      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
+        isLoggedIn: true, 
+        authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
+      }});
+    }
+  }, [userContext.runtimeSettings.currentOrganizationName]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
     if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      if(!apiCallStatus.success) {
+        // alert('apiCallStatus not success')
+        props.onError(apiCallStatus);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -159,7 +173,9 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       setSelectedObject(selectObjectList[0]);
       return;
     }
-    if(selectObjectList.length > 1) setSelectObjectForSelectList(transformSelectObjectListToSelectObjectForSelectList(selectObjectList));
+    if(selectObjectList.length > 1) {
+      setSelectObjectForSelectList(transformSelectObjectListToSelectObjectForSelectList(selectObjectList));
+    }
   }, [selectObjectList]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -175,6 +191,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }  
 
   const renderSelectObjectList = () => {
+    // alert(`rendering selectObjectForSelectList=${JSON.stringify(selectObjectForSelectList, null, 2)}`);
     return (
       <div className="card">
         <DataTable

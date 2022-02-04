@@ -39,11 +39,11 @@ export class APConnectorFormValidationRules {
     }
   }
 
-  public static Organization_Token = (requiredMessage: string, isActive: boolean): any => {
+  public static Organization_Token = (isRequired: boolean, requiredMessage: string, isActive: boolean): any => {
     // this is fragile, but let's use it for now
     const api_schema = $Organization.properties['cloud-token'].contains[0];
     const rules: any = {};
-    rules['required'] = (isActive ? requiredMessage : false);
+    rules['required'] = (isActive && isRequired ? requiredMessage : false);
     rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
     rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined);
     rules['pattern'] = (isActive ? APConnectorFormValidationRules.getPatternRule(api_schema, 'Invalid Solace Cloud Token format') : undefined);

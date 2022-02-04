@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js",
@@ -15,6 +15,9 @@
     "lint": "eslint -c .eslintrc.js \"{server, test}/**/*.{js,ts}\" --quiet",
     "test": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts && unset_source_env",
     "test:pretty": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts | pino-pretty && unset_source_env",
+    "test:devel": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/quickstart/quickstart.apsConfig.apsConnectors.bootstrap-data.spec && unset_source_env",
+    "test:devel:pretty": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/apsUsers/apsUsers.bootstrap-data.spec.ts | pino-pretty && unset_source_env",
+    "test:devel:t": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/testFramework/framework.inline.spec && unset_source_env",
     "test:debug": "mocha -r ts-node/register --inspect-brk test/**/*.ts --exit"
   },
   "repository": {
@@ -38,18 +41,21 @@
     "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
   "dependencies": {
+    "async-mutex": "^0.3.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "express-openapi-validator": "^4.12.11",
+    "express-openapi-validator": "^4.13.5",
     "express-requests-logger": "^3.0.3",
     "form-data": "^4.0.0",
     "mongodb": "^4.1.0",
+    "nocache": "^3.0.1",
     "node-fetch": "^2.6.1",
     "pino": "^6.11.3",
-    "print-env": "^0.1.2"
+    "print-env": "^0.1.2",
+    "tiny-typed-emitter": "^2.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",
@@ -69,7 +75,7 @@
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
     "chai": "^4.3.4",
-    "dtsgenerator": "^3.12.1",
+    "dtsgenerator": "^3.13.2",
     "eslint": "^7.27.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",

@@ -7,7 +7,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 
 import "../../pages/Pages.css";
 
@@ -59,6 +59,7 @@ export const ManageOrganizationsPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       <ManageOrganizations 
+        scope={{ type: E_ManageOrganizations_Scope.ALL_ORGS }}
         onSuccess={onSuccess} 
         onError={onError}
         onBreadCrumbLabelList={onBreadcrumbLabelList}

@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
 import { SemVer } from "semver";
+import { v4 as uuidv4 } from 'uuid';
 
 import { 
   APSAbout 
@@ -71,8 +72,13 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationApps = '/admin-portal/manage/organization/apps',
   ManageOrganizationApiProducts = '/admin-portal/manage/organization/apiproducts',
   ManageOrganizationApis = '/admin-portal/manage/organization/apis',
+
+  ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
+  ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
+
+  ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
   ManageSystemTeams = '/admin-portal/manage/system/teams',
   ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
@@ -95,8 +101,6 @@ export enum EUIDeveloperPortalResourcePaths {
 export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
-  BootstrapOrganizations = '/devel/bootstrap/organizations',
-  BootstrapUsers = '/devel/bootstrap/users',
   ViewContexts = '/devel/view/contexts',
 }
 
@@ -104,6 +108,12 @@ export class Globals {
   private static AppUrl = process.env.PUBLIC_URL + '/';
   public static IssuesUrl = "https://github.com/solace-iot-team/async-apim/issues";
 
+  public static getUUID = (): string => {
+    return uuidv4();
+  }
+  public static getHealthCheckOrgName = (): string => {
+    return '__HEALTH_CHECK_ORG__';
+  }
   public static reloadApp = () => {
     window.location.href = Globals.AppUrl;
   }
@@ -177,8 +187,9 @@ export class Globals {
     console.error(`${logName}:\n${JSON.stringify(e, null, 2)}`);
   }
 
-  public static crossCheckConfiguration_PortalApp_X_Connector = (configContext: TAPConfigContext): TAPConfigIssueList => {
+  public static crossCheckConfiguration_PortalApp_X_Connector = (configContext: TAPConfigContext): { success: boolean, issueList: TAPConfigIssueList } => {
     let issueList: TAPConfigIssueList = [];
+    let success: boolean = true;
 
     // use SemVer and do the actual comparison 
     const connectorServerOpenApiVersionStr = configContext.connectorInfo?.connectorAbout.portalAbout.connectorOpenApiVersionStr;
@@ -186,7 +197,9 @@ export class Globals {
     if(connectorServerOpenApiVersionStr && portalAppConnectorClientOpenApiVersionStr) {
       const connectorServerOpenApiSemVer: SemVer = new SemVer(connectorServerOpenApiVersionStr);
       const portalAppConnectorClientOpenApiSemVer: SemVer = new SemVer(portalAppConnectorClientOpenApiVersionStr);
-      if(portalAppConnectorClientOpenApiSemVer.compare(connectorServerOpenApiSemVer) !== 0) {
+      const versionCompare = portalAppConnectorClientOpenApiSemVer.compare(connectorServerOpenApiSemVer);
+      if(versionCompare === 1) success = false;
+      if(versionCompare !== 0) {
         const i1: TAPConfigIssue = {
           issue: EAPConfigIssueNames.CONNECTOR_OPENAPI_VERSION_MISMATCH,
           details: {
@@ -197,11 +210,15 @@ export class Globals {
         issueList.push(i1);  
       }
     }    
-    return issueList;
+    return {
+      success: success,
+      issueList: issueList
+    }
   }
 
-  public static crossCheckConfiguration_PortalApp_X_Server = (apPortalAppInfo: TAPPortalAppInfo, apsAbout: APSAbout): TAPConfigIssueList => {
+  public static crossCheckConfiguration_PortalApp_X_Server = (apPortalAppInfo: TAPPortalAppInfo, apsAbout: APSAbout): { success: boolean, issueList: TAPConfigIssueList } => {
     let issueList: TAPConfigIssueList = [];
+    let success: boolean = true;
   
     // use SemVer and do the actual comparison 
     const portalAppServerOpenApiVersionStr = apPortalAppInfo.portalAppServerClientOpenApiInfo.versionStr;
@@ -209,7 +226,9 @@ export class Globals {
     if(portalAppServerOpenApiVersionStr && apimServerOpenApiVersionStr) {
       const portalAppServerOpenApiSemVer: SemVer = new SemVer(portalAppServerOpenApiVersionStr);
       const apimServerOpenApiSemVer: SemVer = new SemVer(apimServerOpenApiVersionStr);
-      if(portalAppServerOpenApiSemVer.compare(apimServerOpenApiSemVer) !== 0) {
+      const versionCompare = portalAppServerOpenApiSemVer.compare(apimServerOpenApiSemVer);
+      if(versionCompare === 1) success = false;
+      if(versionCompare !== 0) {
         const i1: TAPConfigIssue = {
           issue: EAPConfigIssueNames.APIM_SERVER_OPENAPI_VERSION_MISMATCH,
           details: {
@@ -220,7 +239,10 @@ export class Globals {
         issueList.push(i1);  
       }
     }    
-    return issueList;
+    return {
+      success: success,
+      issueList: issueList
+    }
   }  
 
   public static crossCheckConfiguration_PortalAppLoaded_X_PortalAppOnServer = (apPortalAppLoadedAbout: TAPPortalAppAbout, apPortalAppOnServerAbout: TAPPortalAppAbout): TAPConfigIssueList => {
@@ -244,7 +266,18 @@ export class Globals {
       }
     }    
     return issueList;
+  }
 
+  public static deDuplicateStringList = (stringList: Array<string>): Array<string> => {
+    const unique = new Map<string, number>();
+    let distinct = [];
+    for(let i=0; i < stringList.length; i++) {
+      if(!unique.has(stringList[i])) {
+        distinct.push(stringList[i]);
+        unique.set(stringList[i], 1);
+      }
+    }
+    return distinct;
   }
 }
 

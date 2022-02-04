@@ -4,6 +4,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
 import cookieParser from 'cookie-parser';
+// import nocache from 'nocache';
 import { AuditLogger4Audit, EServerStatusCodes, ServerLogger } from './ServerLogger';
 
 import errorHandler from '../api/middlewares/error.handler';
@@ -31,6 +32,7 @@ export class ExpressServer {
     this.root = config.rootDir;
 
     // app.set("etag", false);
+    app.set("etag", "strong");
     // app.use(nocache());
     app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));

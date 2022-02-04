@@ -6,6 +6,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { MenuItem } from "primereact/api";
 
 import { 
   APSUserList,
@@ -13,6 +14,7 @@ import {
   EAPSSortDirection, 
   ListApsUsersResponse
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
@@ -24,17 +26,20 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { E_CALL_STATE_ACTIONS, ManageUsersCommon, TManagedObjectId, TViewManagedObject } from "./ManageUsersCommon";
+import { TAPAssetInfoWithOrgList } from "../../../utils/APTypes";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
 
 export interface IListUsersProps {
+  organizationId?: CommonName; 
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
   onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
   onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => {
@@ -46,44 +51,12 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
 
   type TManagedObject = TViewManagedObject;
   type TManagedObjectList = Array<TManagedObject>;
-  type TManagedObjectTableDataRow = TManagedObject & {
-    roleDisplayNameListAsString: string,
-    memberOfOrganizationNameListAsString: string
-  };
-  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const transformTableSortFieldNameToApiSortFieldName = (tableSortFieldName: string): string => {
-    // const funcName = 'transformTableSortFieldNameToApiSortFieldName';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: tableSortFieldName = ${tableSortFieldName}`);
-    if(tableSortFieldName.startsWith('apiObject.')) {
-      return tableSortFieldName.replace('apiObject.', '');
-    }
-    return tableSortFieldName;
-  }
-
-  const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
-    const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
-      // const funcName = '_transformManagedObjectToTableDataRow';
-      // const logName = `${componentName}.${funcName}()`;
-      return {
-        ...managedObject,
-        roleDisplayNameListAsString: ManageUsersCommon.getRoleDisplayNameListAsString(configContext, managedObject.apiObject.roles),
-        memberOfOrganizationNameListAsString: ManageUsersCommon.getOrganizationListAsString(managedObject.apiObject.memberOfOrganizations)
-      }
-    }
-    return managedObjectList.map( (managedObject: TManagedObject) => {
-      return _transformManagedObjectToTableDataRow(managedObject);
-    });
-  }
-
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [configContext] = React.useContext(ConfigContext);
   const loginAsHistory = useHistory<TUserLoginCredentials>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPLazyLoadingTableParameters>({
@@ -106,7 +79,6 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number, sortFieldName: string, sortDirection: EAPSSortDirection, searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectListPage';
     const logName = `${componentName}.${funcName}()`;
-    setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try { 
       const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
@@ -114,13 +86,16 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
         pageNumber: pageNumber,
         sortFieldName: sortFieldName,
         sortDirection: sortDirection,
-        searchWordList: searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined
+        searchWordList: searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined,
+        searchOrganizationId: props.organizationId
       });
       const totalCount: number = listApsUsersResponse.meta.totalCount;
       const apsUserList: APSUserList = listApsUsersResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsUser of apsUserList) {
-        _managedObjectList.push(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser));
+        // check if developer exists in connector for any org in list and if they have assets
+        let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUser, props.organizationId);
+        _managedObjectList.push(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser, userAssetInfoList));
       }
       setManagedObjectList(_managedObjectList);
       setLazyLoadingTableTotalRecords(totalCount);
@@ -129,7 +104,6 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsGetManagedObjectListInProgress(false);
     return callState;
   }
 
@@ -137,21 +111,24 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     // const funcName = 'doLoadPage';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: loading ...`);
+    props.onLoadingChange(true);
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
-    const sortFieldName: string = transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
+    const sortFieldName: string = ManageUsersCommon.transformTableSortFieldNameToApiSortFieldName(lazyLoadingTableParams.sortField);
     const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
     const searchWordList: string | undefined = globalFilter;
     await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
     setLazyLoadingTableIsLoading(false);
+    props.onLoadingChange(false);
   }
 
-  // React.useEffect(() => {
-  //   const funcName = 'useEffect([])';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   console.log(`${logName}: mounting ...`);
-  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+  React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
+    props.setBreadCrumbItemList([]);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
 
   React.useEffect(() => {
@@ -210,8 +187,8 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     return (
         <React.Fragment>
           {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.id, managedObject.displayName)} /> */}
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+          {/* <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  /> */}
+          {/* <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} /> */}
           {managedObject.apiObject.isActivated &&
             <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
               <Button tooltip="login as ..." icon="pi pi-sign-in" className="p-button-rounded p-button-outlined p-button-secondary" 
@@ -221,6 +198,25 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
           } 
         </React.Fragment>
     );
+  }
+
+  const assetsBodyTemplate = (mo: TManagedObject) => {
+    if(mo.userAssetInfoList.length > 0) {
+      return (`${mo.userAssetInfoList.length}`);
+    } else {
+      return ('-');
+    }
+  }
+
+  const organizationRolesBodyTemplate = (mo: TManagedObject) => {
+    const funcName = 'rolesBodyTemplate';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.organizationId === undefined) throw new Error(`${logName}: props.organizationId is undefined`);
+    const found = mo.viewMemberOfOrganizations.find( (x) => {
+      return x.organizationId === props.organizationId;
+    });
+    if(!found) throw new Error(`${logName}: found is undefined`);
+    return found.rolesDisplayNameListAsString;
   }
 
   const onPageSelect = (event: any) => {
@@ -237,21 +233,40 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
   }
 
   const renderManagedObjectTableEmptyMessage = () => {
-    if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundWithFilter}: ${globalFilter}.`;
+    if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundWithFilter}: ${globalFilter}`;
     else return MessageNoManagedObjectsFoundCreateNew;
   }
 
+  const renderColumns = (): Array<JSX.Element> => {
+    const cols: Array<JSX.Element> = [];
+    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field="apiObject.isActivated"  bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="E-Mail" field="apiObject.profile.email"  sortable />);
+    if(props.organizationId !== undefined) {
+      cols.push(<Column key={Globals.getUUID()} header="Roles" headerStyle={{width: '20em'}} body={organizationRolesBodyTemplate} />);  
+    } else {
+      cols.push(<Column key={Globals.getUUID()} header="System Roles" headerStyle={{width: '12em'}} body={ManageUsersCommon.systemRolesTemplate} field="apiObject.systemRoles" sortable />);        
+    }
+    if(props.organizationId === undefined) {
+      cols.push(<Column key={Globals.getUUID()} header="Organizations" headerStyle={{width: '20em'}} body={ManageUsersCommon.organizationsTemplate} field="apiObject.memberOfOrganizations" sortable />);
+    }
+
+    cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Last Name" headerStyle={{width: '12em'}} field="apiObject.profile.last"  sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Assets" headerStyle={{width: '5em'}} body={assetsBodyTemplate} bodyStyle={{textAlign: 'center', verticalAling: 'top'}} />);
+    cols.push(<Column key={Globals.getUUID()} headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
+    return cols;
+  }
   const renderManagedObjectDataTable = () => {
     // const funcName = 'renderManagedObjectDataTable';
     // const logName = `${componentName}.${funcName}()`;
-    let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
+    // let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
     return (
-      <div className="card">
+      <div className="card p-mt-4">
           <DataTable
             ref={dt}
-            autoLayout={true}
+            // autoLayout={true}
             header={renderDataTableHeader()}
-            value={managedObjectTableDataList}
+            value={managedObjectList}
             selectionMode="single"
             selection={selectedManagedObject}
             onRowClick={onManagedObjectSelect}
@@ -277,13 +292,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
             sortField={lazyLoadingTableParams.sortField} 
             sortOrder={lazyLoadingTableParams.sortOrder}
           >
-            <Column header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field="apiObject.isActivated"  bodyStyle={{textAlign: 'center' }} body={ManageUsersCommon.isActiveBodyTemplate} sortable />
-            <Column header="E-Mail" field="apiObject.profile.email"  sortable />
-            <Column header="Roles" headerStyle={{width: '12em'}} field="roleDisplayNameListAsString"  />
-            <Column header="Organizations" headerStyle={{width: '12em'}} field="memberOfOrganizationNameListAsString" />
-            <Column header="First Name" headerStyle={{width: '12em'}} field="apiObject.profile.first" sortable />
-            <Column header="Last Name" field="apiObject.profile.last"  sortable />
-            <Column headerStyle={{width: '11em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>
+            {renderColumns()}
         </DataTable>
       </div>
     );
@@ -296,22 +305,16 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFoundCreateNew}</h3>
-      }
-
       {(managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== '')) && 
         renderManagedObjectDataTable()
       }
       
-      {/* DEBUG selected managedObject */}
-      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
-
-      {/* {managedObjectList.length > 0 && selectedManagedObject && 
+      {/* DEBUG */}
+      {managedObjectList.length > 0 && selectedManagedObject && 
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(selectedManagedObject, null, 2)}
         </pre>
-      } */}
+      }
 
     </div>
   );

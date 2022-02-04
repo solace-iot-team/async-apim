@@ -20,6 +20,7 @@ export const ContextsTestPage: React.FC = () => {
       <h5>authContext:</h5>
       <pre style={ { fontSize: '12px' }} >
         {JSON.stringify(authContext, null, 2)}
+        {JSON.stringify(authContext.authorizedResourcePathsAsString.split(','), null, 2)}
       </pre>
       <h5>userContext:</h5>
       <pre style={ { fontSize: '12px' }} >

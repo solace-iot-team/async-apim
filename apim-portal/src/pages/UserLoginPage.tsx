@@ -8,6 +8,7 @@ import { TApiCallState } from "../utils/ApiCallState";
 import { EAppState, Globals } from '../utils/Globals';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
@@ -22,10 +23,9 @@ export const UserLoginPage: React.FC = () => {
   const [isLoginSuccess, setIsLoginSuccess] = React.useState<boolean | null>(null);
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
-  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [configContext] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -35,13 +35,17 @@ export const UserLoginPage: React.FC = () => {
     let originAppState: EAppState = userContext.originAppState;
     let newCurrentAppState: EAppState = userContext.currentAppState;
 
+    // DEBUG
+    // check if authContext is set already
+    // alert(`${logName}: authContext.authorizedResourcePathsAsString = ${authContext.authorizedResourcePathsAsString}`);
+
     if(userContext.currentAppState !== EAppState.UNDEFINED) {
       newCurrentAppState = userContext.currentAppState;
       // catch state management errors
       if(originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: orginAppState is undefined, currentAppState=${newCurrentAppState}`);
     } else {
       // came directly to /login url
-      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> Error
+      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> developer portal
       if(AuthHelper.isAuthorizedToAccessAdminPortal(authContext.authorizedResourcePathsAsString)) {
         originAppState = EAppState.ADMIN_PORTAL; 
         newCurrentAppState = EAppState.ADMIN_PORTAL;
@@ -49,7 +53,9 @@ export const UserLoginPage: React.FC = () => {
         originAppState = EAppState.DEVELOPER_PORTAL; 
         newCurrentAppState = EAppState.DEVELOPER_PORTAL;
       } else {
-        throw new Error(`${logName}: user not authorized to access developer portal nor admin portal. userContext=${JSON.stringify(userContext, null, 2)}`);
+        originAppState = EAppState.DEVELOPER_PORTAL; 
+        newCurrentAppState = EAppState.DEVELOPER_PORTAL;
+        // throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
       }
     }
     dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
@@ -72,7 +78,7 @@ export const UserLoginPage: React.FC = () => {
     if(isFinished) {
       successfulLoginSetup();
     }
-  }, [isFinished]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [authContext.authorizedResourcePathsAsString]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLoginSuccess = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(true);
@@ -83,6 +89,14 @@ export const UserLoginPage: React.FC = () => {
   }
   
   const onSelectOrganizationSuccess = () => {
+    // const funcName = 'onSelectOrganizationSuccess';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: userContext.user.memberOfOrganizations=${JSON.stringify(userContext.user.memberOfOrganizations, null, 2)}`);
+    // alert(`${logName}: userContext.runtimeSettings=${JSON.stringify(userContext.runtimeSettings, null, 2)}`);
+    dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
+      isLoggedIn: true, 
+      authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
+    }});
     setIsOrganizationSelectFinished(true);
     setIsFinished(true);
   }

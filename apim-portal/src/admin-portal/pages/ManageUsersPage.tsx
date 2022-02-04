@@ -6,6 +6,7 @@ import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { ManageUsers } from '../components/ManageUsers/ManageUsers';
+import { E_ManageUsers_Scope } from '../components/ManageUsers/ManageUsersCommon';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 
@@ -19,7 +20,7 @@ export const ManageUsersPage: React.FC = () => {
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -27,10 +28,6 @@ export const ManageUsersPage: React.FC = () => {
 
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
-  }
-
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
   }
 
   const renderBreadcrumbs = () => {
@@ -44,9 +41,12 @@ export const ManageUsersPage: React.FC = () => {
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -58,10 +58,11 @@ export const ManageUsersPage: React.FC = () => {
     <React.Fragment>
       <Toast ref={toast} />
       {renderBreadcrumbs()}
-      <ManageUsers 
+      <ManageUsers
+        scope={ { type: E_ManageUsers_Scope.ALL_USERS }}
         onSuccess={onSuccess} 
         onError={onError} 
-        onBreadCrumbLabelList={onBreadcrumbLabelList}
+        setBreadCrumbItemList={setBreadCrumbItemList}
       />
     </React.Fragment>
 );

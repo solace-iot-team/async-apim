@@ -5,6 +5,7 @@ import apsLoginRouter from './api/controllers/apsLogin/ApsLoginRouter';
 import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsConnectorsRouter';
 import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter';
 import apsMonitorRouter from './api/controllers/apsMonitor/ApsMonitorRouter';
+import apsOrganiztionsRouter from './api/controllers/apsAdministration/apsOrganizations/ApsOrganizationsRouter';
 import verifyServerStatus from './api/middlewares/verifyServerStatus';
 
 export default function routes(app: Application, apiBase: string): void {
@@ -19,6 +20,7 @@ export default function routes(app: Application, apiBase: string): void {
   router.use('/apsLogin', apsLoginRouter);
   router.use('/apsConfig/apsConnectors', apsConnectorRouter);
   router.use('/apsConfig/apsAbout', apsAboutRouter);
+  router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
   // TODO: Test passport
   // const passport = PassportFactory.build();
   // router.use(passport.initialize());

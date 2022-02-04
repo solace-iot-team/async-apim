@@ -30,14 +30,14 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
     if(props.systemHealthInfoPart) setSystemHealthInfoPart(props.systemHealthInfoPart);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderHealthInfo = (name: string, summary: TAPHealthCheckSummary | undefined, undefinedInfo?: string) => {
+  const renderHealthInfo = (name: string, summary: TAPHealthCheckSummary | undefined, undefinedInfo?: string, notPerformedInfo?: string) => {
     if(!summary) return (<></>);
     let success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     let timestampStr: string = 'n/a';
     if(summary.performed) {
       success = summary.success;
       timestampStr = new Date(summary.timestamp).toUTCString();
-    }
+    } 
     const info = `${name}: ${success} (${timestampStr})`;
     return (
       <React.Fragment>
@@ -46,9 +46,14 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
             {info}
           </div>
         }
-        {success === EAPHealthCheckSuccess.UNDEFINED && undefinedInfo &&
-          <div>
+        {summary.performed && success === EAPHealthCheckSuccess.UNDEFINED && undefinedInfo &&
+          <div style={{color: SystemHealthCommon.getColor(EAPHealthCheckSuccess.UNDEFINED) }}>
             {undefinedInfo}
+          </div>
+        }
+        {!summary.performed && notPerformedInfo &&
+          <div style={{color: SystemHealthCommon.getColor(EAPHealthCheckSuccess.UNDEFINED) }}>
+            {notPerformedInfo}
           </div>
         }
       </React.Fragment>
@@ -69,7 +74,7 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
 
   const renderConnectorHealthInfo = (): JSX.Element => {
     if(systemHealthInfoPart === EAPSystemHealthInfoPart.CONNECTOR || systemHealthInfoPart === EAPSystemHealthInfoPart.ALL) {
-      return renderHealthInfo(`Connector: ${props.connectorDisplayName}`, props.healthCheckContext.connectorHealthCheckResult?.summary, 'Connector: no active connector');
+      return renderHealthInfo(`Connector: ${props.connectorDisplayName}`, props.healthCheckContext.connectorHealthCheckResult?.summary, 'Connector: no active connector', 'Connector: n/a');
     } else return (<></>);
   }
 

@@ -16,7 +16,7 @@ export class SystemHealthCommon {
       case EAPHealthCheckSuccess.FAIL:
         return 'red';
       case EAPHealthCheckSuccess.UNDEFINED:
-        throw new Error(`${logName}: success = ${success}`);
+        return 'orange';
       default:
         Globals.assertNever(logName, success);
     }

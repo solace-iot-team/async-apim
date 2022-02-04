@@ -239,13 +239,27 @@ export function getExpectContainedDiff(containedObject: any, object: any): Expec
 }
 
 export type TTestEnv = {
+  projectRootDir: string;
   protocol: string,
   host: string,
   port: number,
   apiBase: string,
   enableLogging: boolean,
   rootUsername: string,
-  rootUserPassword: string
+  rootUserPassword: string;
+  testRootDir: string;
+  standupMongoScript: string;
+  teardownMongoScript: string;
+  startMongoScript: string;
+  stopMongoScript: string;
+  bootstrapFiles: {
+    apsUserListFile: string;
+    apsConnectorListFile: string;
+    quickstart: {
+      apsUserListFile: string;
+      apsConnectorListFile: string;  
+    }
+  }
 }
 
 export class TestContext {

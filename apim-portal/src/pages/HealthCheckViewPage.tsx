@@ -71,12 +71,18 @@ export const HealthCheckViewPage: React.FC = () => {
         <hr />
         <DisplaySystemHealthInfo 
           healthCheckContext={healthCheckContext}
-          connectorDisplayName={configContext.connector ? configContext.connector.displayName : 'unknown'}
+          connectorDisplayName={configContext.connector ? configContext.connector.displayName : '----unknown'}
         />
+        {/* DEBUG */}
         {/* <hr />
-        <h1>Health Check:</h1>
+        <h1>healthCheckContext:</h1>
         <pre style={ { fontSize: '12px' }} >
           {JSON.stringify(healthCheckContext, null, 2)}
+        </pre> */}
+        {/* <hr />
+        <h1>healthCheckContext.connectorHealthCheckResult:</h1>
+        <pre style={ { fontSize: '12px' }} >
+          {JSON.stringify(healthCheckContext.connectorHealthCheckResult, null, 2)}
         </pre> */}
     </React.Fragment>
     );

@@ -9,6 +9,7 @@ import { initializeComponents } from "..";
 
 export class ServerMonitor {
   private collectionName = "apsMonitor";
+  private static collectionSchemaVersion = 0;
   private persistenceService: MongoPersistenceService;
   private connectionTestTimeoutId: NodeJS.Timeout;
   private config: TMonitorConfig;
@@ -67,6 +68,10 @@ export class ServerMonitor {
   }
 
   public initialize = async (config: TMonitorConfig) => {
+    const funcName = 'initialize';
+    const logName = `${ServerMonitor.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
+
     this.config = config;
     await this.persistenceService.initialize();
     let exists = true;
@@ -76,11 +81,21 @@ export class ServerMonitor {
       if(e instanceof ApiKeyNotFoundServerError) exists = false;
       else throw e;
     }
-    if(!exists) await this.persistenceService.create(ServerMonitor.name, { created: Date.now()});
-    else await this.persistenceService.update(ServerMonitor.name, { created: Date.now()});
+    if(!exists) await this.persistenceService.create({
+      collectionDocumentId: ServerMonitor.name,
+      collectionDocument: { created: Date.now() },
+      collectionSchemaVersion: ServerMonitor.collectionSchemaVersion
+    });
+    else await this.persistenceService.update({
+      collectionDocumentId: ServerMonitor.name,
+      collectionDocument: { created: Date.now() },
+      collectionSchemaVersion: ServerMonitor.collectionSchemaVersion
+    });
 
     this.setupConnectionMonitors(config.connectionTestInterval_secs * 1000);
     this.isInitialized = true;
+
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
 
 }

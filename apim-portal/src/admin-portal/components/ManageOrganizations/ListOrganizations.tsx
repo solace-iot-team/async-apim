@@ -4,10 +4,8 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 
 import { 
-  AdministrationService, 
   CommonDisplayName,
   CommonName
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -21,6 +19,7 @@ import {
   ManageOrganizationsCommon, 
   TAPOrganizationConfig, 
 } from "./ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganizationList } from "../../../utils/APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -58,9 +57,9 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_LIST, 'retrieve list of organizations');
     try { 
       let _managedObjectList: TManagedObjectList = [];
-      const apiOrganizationList = await AdministrationService.listOrganizations({});
-      for(const apiOrganization of apiOrganizationList) {
-        const mo: TManagedObject = ManageOrganizationsCommon.transformApiOrganizationToAPOrganizationConfig(apiOrganization);
+      const apOrganizationList: TAPOrganizationList = await APOrganizationsService.listOrganizations({});
+      for(const apOrganization of apOrganizationList) {
+        const mo: TManagedObject = ManageOrganizationsCommon.transformAPOrganizationToAPOrganizationConfig(apOrganization);
         // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
         _managedObjectList.push({...mo});
       }
@@ -102,7 +101,7 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.name, mo.name);
+    props.onManagedObjectView(mo.name, mo.displayName);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -120,15 +119,6 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
       </div>
     );
   }
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    return (
-        <React.Fragment>
-          {/* <Button tooltip="view" icon="pi pi-folder-open" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectView(managedObject.name, managedObject.name)} /> */}
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.name, managedObject.name)}  />
-          <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.name, managedObject.name)} />
-        </React.Fragment>
-    );
-  }
 
   const renderManagedObjectDataTable = () => {
     return (
@@ -144,13 +134,13 @@ export const ListOrganizations: React.FC<IListOrganizationsProps> = (props: ILis
             selection={selectedManagedObject}
             onRowClick={onManagedObjectSelect}
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-            sortMode="single" sortField="name" sortOrder={1}
+            sortMode="single" sortField="displayName" sortOrder={1}
             scrollable 
-            dataKey="name"  
+            dataKey="name"
           >
-            <Column field="name" header="Name" sortable />
+            <Column field="displayName" header="Name" sortable />
             <Column field="configType" header="Type" sortable />
-            <Column body={actionBodyTemplate} headerStyle={{width: '8em' }} bodyStyle={{textAlign: 'right'}}/>
+            <Column field="name" header="Id" sortable />
         </DataTable>
       </div>
     );

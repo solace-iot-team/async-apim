@@ -35,7 +35,7 @@ export const ShowUserInfo: React.FC<IShowUserInfoProps> = (props: IShowUserInfoP
   const transformManagedObjectToViewManagedObject = (managedObject: TManagedObject): TViewManagedObject => {
     return {
       ...managedObject,
-      roleDisplayNameListAsString: ConfigHelper.getAuthorizedRolesDisplayNameList(managedObject.roles, configContext).join(', ')
+      roleDisplayNameListAsString: ConfigHelper.getAuthorizedRolesDisplayNameList(configContext, managedObject, userContext.runtimeSettings.currentOrganizationName).join(', ')
     }
   }
 
