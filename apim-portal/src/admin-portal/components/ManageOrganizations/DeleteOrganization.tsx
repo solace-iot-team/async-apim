@@ -96,7 +96,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Deleting organization <b>{props.organizationDisplayName}</b> will also delete all it's content!</p>
+        <p>Deleting organization <b>{props.organizationDisplayName}</b> will also delete all it's assets!</p>
         <p>Are you sure you want to delete it?</p>
         <p><b>This action is irreversible!</b></p>
       </React.Fragment>  

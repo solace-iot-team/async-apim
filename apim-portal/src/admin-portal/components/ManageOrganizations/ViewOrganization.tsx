@@ -17,13 +17,16 @@ import {
   TAPOrganizationConfig 
 } from "./ManageOrganizationsCommon";
 import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
+import { E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizations";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { Globals } from "../../../utils/Globals";
 
 export interface IViewOrganizationProps {
   organizationId: CommonName;
   organizationDisplayName: CommonDisplayName;
+  scope: TManageOrganizationsScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -137,6 +140,22 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
       </React.Fragment>
     );
   }
+  const renderGeneralInfo = (mo: TManagedObject): Array<JSX.Element> => {
+    const jsxList: Array<JSX.Element> = [];
+    jsxList.push(
+      <div id={Globals.getUUID()}><b>Type</b>: {mo.configType}</div>
+    );
+    if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
+      jsxList.push(
+        <div id={Globals.getUUID()}><b>Cloud Connectivity</b>: {String(mo.apOrganization.status?.cloudConnectivity)}</div>
+      );
+      jsxList.push(
+        <div id={Globals.getUUID()}><b>Event Portal Connectivity</b>: {String(mo.apOrganization.status?.eventPortalConnectivity)}</div>
+      )
+    }
+    return jsxList;
+  }
+
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -148,7 +167,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
         <div className="p-col-12">
           <div className="organization-view">
             <div className="detail-left">
-              <div><b>Type</b>: {managedObject.configType}</div>
+              {renderGeneralInfo(managedObject)}
               {renderSimple(managedObject)}
               {renderAdvanced(managedObject)}
             </div>

@@ -409,6 +409,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         <ViewOrganization
           organizationId={managedObjectId}
           organizationDisplayName={managedObjectDisplayName}
+          scope={props.scope}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
