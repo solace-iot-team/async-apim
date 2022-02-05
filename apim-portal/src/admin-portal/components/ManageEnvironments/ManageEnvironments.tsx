@@ -7,7 +7,6 @@ import { Toolbar } from 'primereact/toolbar';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { ListEnvironments } from "./ListEnvironments";
 import { ViewEnvironment } from "./ViewEnvironment";
 import { EditEnvironment } from "./EditEnvironment";
@@ -17,12 +16,13 @@ import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService, TViewMana
 import { E_MANAGED_OBJECT_CALL_STATE_ACTIONS } from "./ListUnregisteredOrganizationServices";
 import { EnvironmentListItem, EnvironmentsService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { TAPEntityId } from "../../../utils/APEntityId";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
 
 export interface IManageEnvironmentsProps {
-  organizationName: TAPOrganizationId;
+  organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
@@ -87,12 +87,12 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_MANAGED_OBJECT_CALL_STATE_ACTIONS.API_GET_AVAILABLE_ORGANIZATION_SERVICE_LIST, `retrieve service list for organization`);
     try { 
       const _entireServiceList: TOrganizationServiceList = await EnvironmentsService.listServices({ 
-        organizationName: props.organizationName
+        organizationName: props.organizationEntityId.id
       });
       // console.log(`${logName}: _entireServiceList.name[] = ${JSON.stringify(_entireServiceList.map( (x) => { return x.name}))}`);
 
       const _environmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
-        organizationName: props.organizationName
+        organizationName: props.organizationEntityId.id
       });
       let _availableServiceList: TOrganizationServiceList = [];
       _entireServiceList.forEach( (_service: TOrganizationService) => {
@@ -343,7 +343,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       {showListComponent && 
         <ListEnvironments
           key={refreshCounter}
-          organizationName={props.organizationName}
+          organizationName={props.organizationEntityId.id}
           onSuccess={onListEnvironmentsSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
@@ -354,7 +354,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       }
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <ViewEnvironment 
-          organizationName={props.organizationName}
+          organizationName={props.organizationEntityId.id}
           environmentName={managedObjectId}
           environmentDisplayName={managedObjectDisplayName}
           onSuccess={onSubComponentSuccess} 
@@ -364,7 +364,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       }
       {showEditComponent && managedObjectId && managedObjectDisplayName &&
         <EditEnvironment
-          organizationName={props.organizationName}
+          organizationName={props.organizationEntityId.id}
           environmentName={managedObjectId}
           environmentDisplayName={managedObjectDisplayName}
           onSuccess={onEditEnvironmentSuccess} 
@@ -375,7 +375,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteEnvironment
-          organizationName={props.organizationName}
+          organizationName={props.organizationEntityId.id}
           environmentName={managedObjectId}
           environmentDisplayName={managedObjectDisplayName}
           onSuccess={onDeleteEnvironmentSuccess} 
@@ -386,7 +386,7 @@ export const ManageEnvironments: React.FC<IManageEnvironmentsProps> = (props: IM
       }
       {showNewComponent && 
         <NewEnvironment
-          organizationName={props.organizationName}
+          organizationName={props.organizationEntityId.id}
           onSuccess={onNewEnvironmentSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}

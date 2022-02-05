@@ -12,7 +12,7 @@ import { Divider } from 'primereact/divider';
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from '../AuthContextProvider/AuthContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
-import { AuthHelper } from "../../auth/AuthHelper";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import { 
@@ -51,6 +51,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
 
   const loginUseForm = useForm<APSUserLoginCredentials>();
@@ -94,8 +95,9 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }
 
   React.useEffect(() => {
-    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
+    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
+    dispatchOrganizationContextAction({ type: 'CLEAR_ORGANIZATION_CONTEXT'});
     if(props.userCredentials) doAutoLogin(props.userCredentials);
     else setShowLoginForm(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -118,7 +120,6 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
         dispatchUserContextAction({ type: 'SET_USER', user: loggedInUser});
       }
     } else {
-      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: AuthHelper.getEmptyAuthContext() });
       props.onError(apiCallStatus);
     }
   }, [isLoginSuccessful]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -126,15 +127,10 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   React.useEffect(() => {
     if(isLoginSuccessful === undefined || !isLoginSuccessful) return;
     if(apiCallStatus === null) throw new Error('apiCallStatus is null');
-    // set the auth context with only the system roles as user hasn't selected the org yet
+    // do not set auth context - select organization will be called next
     if(loggedInUser) {
-      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
-        isLoggedIn: true, 
-        authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
-      }});
       props.onSuccess(apiCallStatus);
     } else {
-      dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: AuthHelper.getEmptyAuthContext() });
       props.onError(apiCallStatus);
     }
   }, [userContext]) // eslint-disable-line react-hooks/exhaustive-deps

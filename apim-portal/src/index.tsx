@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ConfigContextProvider } from './components/ConfigContextProvider/ConfigContextProvider';
 import { AuthContextProvider } from './components/AuthContextProvider/AuthContextProvider';
 import { UserContextProvider } from './components/UserContextProvider/UserContextProvider';
+import { OrganizationContextProvider } from './components/APContextProviders/APOrganizationContextProvider';
 import { APHealthCheckContextProvider } from './components/APHealthCheckContextProvider';
 import { APHealthCheckSummaryContextProvider } from './components/APHealthCheckSummaryContextProvider';
 import App from './App';
@@ -26,7 +27,9 @@ ReactDOM.render(
           <ConfigContextProvider>
             <AuthContextProvider>
               <UserContextProvider>
-                <App />
+                <OrganizationContextProvider>
+                  <App />
+                </OrganizationContextProvider>
               </UserContextProvider>
             </AuthContextProvider>      
           </ConfigContextProvider>

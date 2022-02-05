@@ -44,11 +44,11 @@ export class AuthHelper {
     }
 
     let organizationRoles: APSOrganizationAuthRoleList = [];
-    if(userContext.runtimeSettings.currentOrganizationName) {
+    if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
       const found = apsUser.memberOfOrganizations?.find((memberOfOrganization: APSOrganizationRoles) => {
-        return (memberOfOrganization.organizationId === userContext.runtimeSettings.currentOrganizationName)
+        return (memberOfOrganization.organizationId === userContext.runtimeSettings.currentOrganizationEntityId?.id)
       });
-      if(!found) throw new Error(`${logName}: cannot find userContext.runtimeSettings.currentOrganizationName=${userContext.runtimeSettings.currentOrganizationName} in apsUser.memberOfOrganizations=${JSON.stringify(apsUser.memberOfOrganizations, null, 2)}`);
+      if(!found) throw new Error(`${logName}: cannot find userContext.runtimeSettings.currentOrganizationEntityId.id=${userContext.runtimeSettings.currentOrganizationEntityId.id} in apsUser.memberOfOrganizations=${JSON.stringify(apsUser.memberOfOrganizations, null, 2)}`);
       organizationRoles = found.roles;
     }
     // if(systemRoles.length === 0 && organizationRoles.length ===0) return CAPSAuthRoleNone;

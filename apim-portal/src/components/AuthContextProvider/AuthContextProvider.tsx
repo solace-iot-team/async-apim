@@ -26,7 +26,7 @@ const authContextReducer = (state: TAPAuthContext, action: AuthContextAction): T
   switch (action.type) {
     case 'SET_AUTH_CONTEXT':
       // console.log(`${logName}: SET_AUTH_CONTEXT with ${JSON.stringify(action.authContext)}`);
-      return action.authContext
+      return JSON.parse(JSON.stringify(action.authContext));
     case 'SET_IS_LOGGED_IN':
       let newState: TAPAuthContext = JSON.parse(JSON.stringify(state));
       newState.isLoggedIn = true;

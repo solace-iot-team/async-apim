@@ -15,10 +15,10 @@ export const ProtectedRouteWithRbacAndOrgAccess: React.FC<IProtectedRouteWithRba
 
   return (
     <React.Fragment>
-      { userContext.runtimeSettings.currentOrganizationName && 
+      { userContext.runtimeSettings.currentOrganizationEntityId && 
         <ProtectedRouteWithRbac {...props} />
       }
-      { !userContext.runtimeSettings.currentOrganizationName && 
+      { !userContext.runtimeSettings.currentOrganizationEntityId && 
         <Redirect to={EUICommonResourcePaths.NoOrganization} />
       }
     </React.Fragment>

@@ -9,12 +9,11 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { ManageEnvironments } from '../components/ManageEnvironments/ManageEnvironments';
-import { CommonDisplayName, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import "../../pages/Pages.css";
 
 export const ManageOrgEnvironmentsPage: React.FC = () => {
-  const componentName="ManageOrgEnvironmentsPage";
+  // const componentName="ManageOrgEnvironmentsPage";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -26,14 +25,6 @@ export const ManageOrgEnvironmentsPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
-  const [organizationName, setOrganizationName] = React.useState<CommonName>();
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
-  }, [userContext]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -47,7 +38,7 @@ export const ManageOrgEnvironmentsPage: React.FC = () => {
     setBreadCrumbLabelList(newBreadCrumbLableList);
   }
 
-  const renderBreadcrumbs = (orgDisplayName: CommonDisplayName) => {
+  const renderBreadcrumbs = (orgDisplayName: string) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
         label: `Organization: ${orgDisplayName}`
@@ -71,10 +62,10 @@ export const ManageOrgEnvironmentsPage: React.FC = () => {
   return (
     <div className="ap-pages">
       <Toast ref={toast} />
-      {organizationName && renderBreadcrumbs(organizationName)}
-      {organizationName &&
+      {userContext.runtimeSettings.currentOrganizationEntityId && renderBreadcrumbs(userContext.runtimeSettings.currentOrganizationEntityId.displayName)}
+      {userContext.runtimeSettings.currentOrganizationEntityId &&
         <ManageEnvironments 
-          organizationName={organizationName}
+          organizationEntityId={userContext.runtimeSettings.currentOrganizationEntityId}
           onSuccess={onSuccess} 
           onError={onError} 
           onBreadCrumbLabelList={onBreadcrumbLabelList}

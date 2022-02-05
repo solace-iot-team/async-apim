@@ -13,12 +13,12 @@ import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvi
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
-import { TAPOrganizationIdList } from "../APComponentsCommon";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 import { APDisplayAbout } from "../APAbout/APDisplayAbout";
+import { TAPEntityIdList } from "../../utils/APEntityId";
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -187,10 +187,10 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     );   
   }
   const renderOpOrganization = () => {
-    const availableOrganizationList: TAPOrganizationIdList = userContext.runtimeSettings.availableOrganizationNameList || [];
-    if(userContext.runtimeSettings.currentOrganizationName) {
-      const label: string = 'Organization: ' + userContext.runtimeSettings.currentOrganizationName;
-      if(availableOrganizationList.length < 2) {
+    const availableOrganizationEntityIdList: TAPEntityIdList = userContext.runtimeSettings.availableOrganizationEntityIdList || [];
+    if(userContext.runtimeSettings.currentOrganizationEntityId) {
+      const label: string = 'Organization: ' + userContext.runtimeSettings.currentOrganizationEntityId.displayName;
+      if(availableOrganizationEntityIdList.length < 2) {
         return (
           <p>{label}</p>
         )
@@ -233,7 +233,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
               className="ap-navbar user-overlay-panel" 
               ref={userOverlayPanel} 
               id="user_overlay_panel" 
-              style={{width: '450px'}}
+              style={{width: '650px'}}
               onHide={onHideUserOverlayPanel}
               >
               {renderUserOpInfo()}

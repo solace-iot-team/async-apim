@@ -2,12 +2,13 @@ import React from "react";
 import { 
   APSUser 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPOrganizationId, TAPOrganizationIdList, TAPUserMessage } from "../APComponentsCommon";
+import { TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
+import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityId';
 
 export type TUserRunttimeSettings = {
-  currentOrganizationName?: TAPOrganizationId,
-  availableOrganizationNameList?: TAPOrganizationIdList
+  currentOrganizationEntityId?: TAPEntityId;
+  availableOrganizationEntityIdList?: TAPEntityIdList;
 }
 
 export type TUserContext = {
@@ -26,8 +27,8 @@ export interface IUserContextProviderProps {
 
 type UserContextAction = 
   | { type: 'SET_USER', user: APSUser }
-  | { type: 'SET_CURRENT_ORGANIZATION_NAME', currentOrganizationName: TAPOrganizationId }
-  | { type: 'SET_AVAILABLE_ORGANIZATION_NAME_LIST', availableOrganizationNameList: TAPOrganizationIdList }
+  | { type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: TAPEntityId }
+  | { type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: TAPEntityIdList }
   | { type: 'SET_USER_MESSAGE', userMessage: TAPUserMessage }
   | { type: 'CLEAR_USER_MESSAGE' }
   | { type: 'CLEAR_USER_CONTEXT' }
@@ -49,9 +50,9 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
       newState.user = JSON.parse(JSON.stringify(action.user));
       return newState;
     }
-    case 'SET_CURRENT_ORGANIZATION_NAME': {
+    case 'SET_CURRENT_ORGANIZATION_ENTITY_ID': {
       const newState: TUserContext = JSON.parse(JSON.stringify(state));
-      newState.runtimeSettings.currentOrganizationName = action.currentOrganizationName;
+      newState.runtimeSettings.currentOrganizationEntityId = action.currentOrganizationEntityId;
       return newState;
     }
     case 'SET_USER_MESSAGE': {
@@ -64,9 +65,9 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
       newState.userMessage = undefined;
       return newState;
     }
-    case 'SET_AVAILABLE_ORGANIZATION_NAME_LIST': {
+    case 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST': {
       const newState: TUserContext = JSON.parse(JSON.stringify(state));
-      newState.runtimeSettings.availableOrganizationNameList = action.availableOrganizationNameList;
+      newState.runtimeSettings.availableOrganizationEntityIdList = action.availableOrganizationEntityIdList;
       return newState;
     }
     case 'SET_ORIGIN_APP_STATE': {

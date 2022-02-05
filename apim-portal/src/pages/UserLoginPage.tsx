@@ -8,7 +8,6 @@ import { TApiCallState } from "../utils/ApiCallState";
 import { EAppState, Globals } from '../utils/Globals';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
-import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
@@ -23,9 +22,8 @@ export const UserLoginPage: React.FC = () => {
   const [isLoginSuccess, setIsLoginSuccess] = React.useState<boolean | null>(null);
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
-  const [configContext] = React.useContext(ConfigContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [authContext] = React.useContext(AuthContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -58,7 +56,8 @@ export const UserLoginPage: React.FC = () => {
         // throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
       }
     }
-    dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
+    // already logged in 
+    // dispatchAuthContextAction({ type: 'SET_IS_LOGGED_IN' });
     dispatchUserContextAction({ type: 'SET_ORIGIN_APP_STATE', appState: originAppState});
     dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: newCurrentAppState});
     navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
@@ -78,7 +77,7 @@ export const UserLoginPage: React.FC = () => {
     if(isFinished) {
       successfulLoginSetup();
     }
-  }, [authContext.authorizedResourcePathsAsString]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isFinished, authContext.authorizedResourcePathsAsString]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onLoginSuccess = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(true);
@@ -89,22 +88,11 @@ export const UserLoginPage: React.FC = () => {
   }
   
   const onSelectOrganizationSuccess = () => {
-    // const funcName = 'onSelectOrganizationSuccess';
-    // const logName = `${componentName}.${funcName}()`;
-    // alert(`${logName}: userContext.user.memberOfOrganizations=${JSON.stringify(userContext.user.memberOfOrganizations, null, 2)}`);
-    // alert(`${logName}: userContext.runtimeSettings=${JSON.stringify(userContext.runtimeSettings, null, 2)}`);
-    dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
-      isLoggedIn: true, 
-      authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
-    }});
     setIsOrganizationSelectFinished(true);
     setIsFinished(true);
   }
 
   const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
-    // const funcName = 'onSelectOrganizationError';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: apiCallStatus = ${JSON.stringify(apiCallStatus, null, 2)}`);
     let userMessage: string;
     if(apiCallStatus.context.action === SelectOrganizationCallStateActions.NO_CONNECTOR_CONFIG) userMessage = 'cannot select organization (no connector configured)';
     else userMessage = apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error';

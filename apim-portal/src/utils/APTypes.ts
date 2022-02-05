@@ -1,10 +1,7 @@
+import { TAPEntityId } from "./APEntityId";
 
 export enum EAPAssetType {
   DEVELOPER_APP = "DEVELOPER_APP"
-}
-export type TAPEntityId = {
-  id: string;
-  displayName: string;
 }
 export type TAPAssetInfo = {
   assetType: EAPAssetType;

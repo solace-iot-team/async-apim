@@ -35,7 +35,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const isDisabledWithoutOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
-      !userContext.runtimeSettings.currentOrganizationName
+      !userContext.runtimeSettings.currentOrganizationEntityId
     );
   }
   const isDisabledWithConnectorUnavailable = (isDisabledFunc: (resourcePath: EUICombinedResourcePaths) => boolean, resourcePath: EUICombinedResourcePaths): boolean => {

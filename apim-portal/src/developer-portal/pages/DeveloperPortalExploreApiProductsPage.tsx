@@ -73,8 +73,8 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
   React.useEffect(() => {
     const funcName = 'useEffect([])';
     const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationName) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationName is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationName);
+    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
+    setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
   }, [userContext]);
 
   return (

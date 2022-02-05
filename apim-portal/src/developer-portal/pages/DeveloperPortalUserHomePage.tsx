@@ -8,7 +8,7 @@ export const DeveloperPortalUserHomePage: React.FC = () => {
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   const renderAccountIssues = () => {
-    const orgList = userContext.runtimeSettings.availableOrganizationNameList;
+    const orgList = userContext.runtimeSettings.availableOrganizationEntityIdList;
     if(orgList && orgList.length === 0) {
       const userMessage = 'You are not a member of any organization. Please contact your system administrator.';
       return (

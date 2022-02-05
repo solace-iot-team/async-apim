@@ -35,7 +35,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
   const isDisabledWithOrg = (resourcePath: EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
-      !userContext.runtimeSettings.currentOrganizationName
+      !userContext.runtimeSettings.currentOrganizationEntityId
     );
   }
 

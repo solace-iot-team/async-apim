@@ -67,7 +67,7 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     calculateShowStates(userContext.currentAppState);
-  }, [userContext.currentAppState]); 
+  }, [userContext.currentAppState, authContext]); 
 
   const onSwitchToDeveloperPortal = () => {
     const funcName = 'onSwitchToDeveloperPortal';
@@ -97,12 +97,17 @@ const App: React.FC = () => {
     else if (appState === EAppState.DEVELOPER_PORTAL) {
       setShowAdminPortal(false);
       setShowDeveloperPortal(true);
+    } else {
+      setShowAdminPortal(false);
+      setShowDeveloperPortal(false);
     }
   }
 
   const displayStateInfo = () => {
     return (
       <p>
+        authContext.isLoggedIn={String(authContext.isLoggedIn)},
+        authContext.authorizedResourcePathsAsString.length={authContext.authorizedResourcePathsAsString.length},
         userContext.originAppState={userContext.originAppState}, 
         userContext.currentAppState={userContext.currentAppState}, 
         showDeveloperPortal={String(showDeveloperPortal)}, 

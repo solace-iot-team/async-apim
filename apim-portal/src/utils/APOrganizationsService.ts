@@ -13,7 +13,7 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPEntityId } from './APTypes';
+import { TAPEntityId } from './APEntityId';
 import { Globals } from './Globals';
 
 export type TAPOrganization = OrganizationResponse & {
@@ -83,19 +83,23 @@ export class APOrganizationsService {
     return resultOrgList;
   }
 
-  private static getConnectorOrganization = async(organizationId: APSId): Promise<OrganizationResponse> => {
-    return await AdministrationService.getOrganization({
+  private static getConnectorOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<OrganizationResponse> => {
+    return APOrganizationsService.maskSecrets(await AdministrationService.getOrganization({
       organizationName: organizationId
-    });
+    }), secretMask);
+    // return await AdministrationService.getOrganization({
+    //   organizationName: organizationId
+    // });
   }
-  public static getOrganizationStatus = async(organizatioId: APSId, organizationDisplayName: string): Promise<TAPOrganization> => {
+  public static getOrganizationStatus = async(organizationId: APSId, organizationDisplayName?: string): Promise<TAPOrganization> => {
+    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId);
     return {
-      ...await APOrganizationsService.getConnectorOrganization(organizatioId),
-      displayName: organizationDisplayName
+      ...connectorOrganization,
+      displayName: organizationDisplayName ? organizationDisplayName : connectorOrganization.name
     }
   }
   public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
-    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId);
+    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId, secretMask);
     let apsOrganization: APSOrganization | undefined = undefined;
     try {
       apsOrganization = await ApsAdministrationService.getApsOrganization({
@@ -104,8 +108,12 @@ export class APOrganizationsService {
     } catch(e) {
       // ignore 
     }
+    // const apOrganization: TAPOrganization = {
+    //   ...APOrganizationsService.maskSecrets(connectorOrganization, secretMask),
+    //   displayName: apsOrganization ? apsOrganization.displayName : connectorOrganization.name
+    // }
     const apOrganization: TAPOrganization = {
-      ...APOrganizationsService.maskSecrets(connectorOrganization, secretMask),
+      ...connectorOrganization,
       displayName: apsOrganization ? apsOrganization.displayName : connectorOrganization.name
     }
     return apOrganization;
