@@ -12,11 +12,11 @@ import {
   ApiError, 
   App, 
   AppsService, 
-  CommonDisplayName, 
   CommonName, 
   DevelopersService 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { TAPEntityId } from "../../../utils/APEntityId";
 
 export type TManagedObjectId = APSUserId;
 
@@ -71,8 +71,7 @@ export enum E_ManageUsers_Scope {
 
 export type TManageOrganizationUsersScope = {
   type: E_ManageUsers_Scope.ORG_USERS;
-  organizationId: CommonName;
-  organizationDisplayName: CommonDisplayName;
+  organizationEntityId: TAPEntityId;
 }
 export type TManageAllUsersScope = {
   type: E_ManageUsers_Scope.ALL_USERS;

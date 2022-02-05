@@ -18,6 +18,7 @@ import { Globals } from "../../../utils/Globals";
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 import { MonitorOrganization } from "./MonitorOrganization";
+import { TAPEntityId } from "../../../utils/APEntityId";
 
 export enum E_ManageOrganizations_Scope {
   ALL_ORGS = "ALL_ORGS",
@@ -25,16 +26,14 @@ export enum E_ManageOrganizations_Scope {
   ORG_STATUS = "ORG_STATUS"
 }
 
-export type TManageOrganizationEntity = {
-  organizationId: CommonName;
-  organizationDisplayName: CommonDisplayName;
-}
 export type TManageOrganizationSettingsScope = {
   type: E_ManageOrganizations_Scope.ORG_SETTINGS;
-} & TManageOrganizationEntity;
+  organizationEntityId: TAPEntityId;
+};
 export type TMonitorOrganizationStatusScope = {
   type: E_ManageOrganizations_Scope.ORG_STATUS;
-} & TManageOrganizationEntity;
+  organizationEntityId: TAPEntityId;
+};
 export type TManageAllOrganizationsScope = {
   type: E_ManageOrganizations_Scope.ALL_ORGS;
 }
@@ -112,11 +111,11 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         break;
       case E_ManageOrganizations_Scope.ORG_SETTINGS:
         const orgSettingsScope = props.scope as TManageOrganizationSettingsScope;
-        onViewManagedObject(orgSettingsScope.organizationId, orgSettingsScope.organizationDisplayName);
+        onViewManagedObject(orgSettingsScope.organizationEntityId.id, orgSettingsScope.organizationEntityId.displayName);
         break;
       case E_ManageOrganizations_Scope.ORG_STATUS:
         const orgStatusScope = props.scope as TMonitorOrganizationStatusScope;
-        onMonitorManagedObject(orgStatusScope.organizationId, orgStatusScope.organizationDisplayName);
+        onMonitorManagedObject(orgStatusScope.organizationEntityId.id, orgStatusScope.organizationEntityId.displayName);
         break;
       default:
         Globals.assertNever(logName, _type);

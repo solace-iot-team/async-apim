@@ -81,7 +81,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
         break;
       case E_ManageUsers_Scope.ORG_USERS:
         const orgUsersScope = props.scope as TManageOrganizationUsersScope;
-        setOrganizationId(orgUsersScope.organizationId);
+        setOrganizationId(orgUsersScope.organizationEntityId.id);
         break;
       default:
         Globals.assertNever(logName, _type);

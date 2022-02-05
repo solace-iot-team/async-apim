@@ -113,7 +113,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
         break;
       case E_ManageUsers_Scope.ORG_USERS:
         const orgUsersScope = props.scope as TManageOrganizationUsersScope;
-        _orgId = orgUsersScope.organizationId;
+        _orgId = orgUsersScope.organizationEntityId.id;
         break;
       default:
         Globals.assertNever(logName, _type);
@@ -150,7 +150,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
       case E_ManageUsers_Scope.ORG_USERS:
         const orgUsersScope = props.scope as TManageOrganizationUsersScope;
         props.onLoadingChange(true);
-        await apiRemoveOrgIdFromManagedObject(orgUsersScope.organizationId);
+        await apiRemoveOrgIdFromManagedObject(orgUsersScope.organizationEntityId.id);
         props.onLoadingChange(false);
         break;
       default:
@@ -228,7 +228,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
     let _orgDisplayName: CommonDisplayName = '';
     if(props.scope.type === E_ManageUsers_Scope.ORG_USERS) {
       const orgUsersScope = props.scope as TManageOrganizationUsersScope;
-      _orgDisplayName = orgUsersScope.organizationDisplayName;
+      _orgDisplayName = orgUsersScope.organizationEntityId.displayName;
     } else throw new Error(`${logName}: wrong props.scope.type = ${props.scope.type}`);
     return (
       <React.Fragment>

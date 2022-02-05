@@ -8,14 +8,13 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
-import { CommonDisplayName, CommonName } from '@solace-iot-team/apim-connector-openapi-browser';
 import { ManageUsers } from '../components/ManageUsers/ManageUsers';
 import { E_ManageUsers_Scope } from '../components/ManageUsers/ManageUsersCommon';
 
 import "../../pages/Pages.css";
 
 export const ManageOrgUsersPage: React.FC = () => {
-  const componentName="ManageOrgUsersPage";
+  // const componentName="ManageOrgUsersPage";
 
   const [userContext] = React.useContext(UserContext);  
   
@@ -26,15 +25,6 @@ export const ManageOrgUsersPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-  const [organizationName, setOrganizationName] = React.useState<CommonName>();
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
-  }, [userContext]);
-
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -44,7 +34,7 @@ export const ManageOrgUsersPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const renderBreadcrumbs = (orgDisplayName: CommonDisplayName) => {
+  const renderBreadcrumbs = (orgDisplayName: string) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
         label: `Organization: ${orgDisplayName}`
@@ -71,10 +61,10 @@ export const ManageOrgUsersPage: React.FC = () => {
   return (
     <div className="ap-pages">
       <Toast ref={toast} />
-      {organizationName && renderBreadcrumbs(organizationName)}
-      {organizationName &&
+      {userContext.runtimeSettings.currentOrganizationEntityId && renderBreadcrumbs(userContext.runtimeSettings.currentOrganizationEntityId.displayName)}
+      {userContext.runtimeSettings.currentOrganizationEntityId &&
         <ManageUsers 
-          scope={ { type: E_ManageUsers_Scope.ORG_USERS, organizationId: organizationName, organizationDisplayName: organizationName }}
+          scope={ { type: E_ManageUsers_Scope.ORG_USERS, organizationEntityId: userContext.runtimeSettings.currentOrganizationEntityId }}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
