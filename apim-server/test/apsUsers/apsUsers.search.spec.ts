@@ -12,11 +12,13 @@ import {
   APSErrorIds, 
   APSOrganizationRolesList, 
   APSUser, 
+  APSUserResponseList, 
   ApsUsersService, 
   EAPSOrganizationAuthRole, 
   EAPSSystemAuthRole,
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import { ApsUsersHelper } from '../lib/apsUsers.helper';
 
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
@@ -115,27 +117,10 @@ describe(`${scriptName}`, () => {
     TestContext.newItId();
   });
 
-  after(async() => {
+  after(`${scriptName}: AFTER: delete all users`, async() => {
     TestContext.newItId();
-    let apsUserList: Array<APSUser> = [];
     try {
-      const pageSize = 100;
-      let pageNumber = 1;
-      let hasNextPage = true;
-      while (hasNextPage) {
-        const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
-          pageSize: pageSize, 
-          pageNumber: pageNumber
-        });
-        if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
-        pageNumber++;
-        apsUserList.push(...resultListApsUsers.list);
-      }
-      for (const apsUser of apsUserList) {
-        await ApsUsersService.deleteApsUser({
-          userId: apsUser.userId
-        });
-      }
+      const apsUserResponseList: APSUserResponseList = await ApsUsersHelper.deleteAllUsers()
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
       expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
@@ -150,6 +135,15 @@ describe(`${scriptName}`, () => {
   //   const userBatchList = createUserBatches(NumberOfBatches, NumberUsersPerBatch);
   //   TestLogger.logMessageWithId(`userBatchList=\n${JSON.stringify(userBatchList, null, 2)}`);
   // });
+  it(`${scriptName}: PREPARE: delete all users`, async () => {
+    try {
+      const apsUserResponseList: APSUserResponseList = await ApsUsersHelper.deleteAllUsers()
+    } catch (e) {
+      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+      expect(false, `${TestLogger.createTestFailMessage('error')}`).to.be.true;
+    }
+  });
+
   it(`${scriptName}: should create organizations for referencing`, async () => {
     try {
       const orgIdList = [
