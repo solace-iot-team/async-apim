@@ -13,7 +13,6 @@ export class APEntityId {
       if(e1.displayName > e2.displayName) return 1;
       return 0;
     });
-
   }
 }
 

@@ -6,7 +6,7 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { 
   ApsUsersService, 
-  APSUser,
+  APSUserResponse,
   APSOrganizationRoles
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -55,11 +55,11 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userId}`);
     try { 
-      const apsUser: APSUser = await ApsUsersService.getApsUser({
+      const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
         userId: props.userId
       });
-      let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUser, props.organizationId);
-      setManagedObject(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser, userAssetInfoList));
+      let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUserResponse, props.organizationId);
+      setManagedObject(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUserResponse, userAssetInfoList));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -156,7 +156,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
       <React.Fragment>
         <APDisplayUserOrganizationRoles
           organizationId={props.organizationId}
-          apsUser={managedObject.apiObject}
+          apsUserResponse={managedObject.apiObject}
           className="p-pt-2"
         />
       </React.Fragment>

@@ -60,11 +60,20 @@ export class APOrganizationsService {
     // console.log(`${logName}: maskedConnectorOrg=${JSON.stringify(maskedConnectorOrg, null, 2)}`);
     return maskedConnectorOrg;
   }
+
+  public static sortAPOrganizationList_byDisplayName = (apOrganizationList: TAPOrganizationList): TAPOrganizationList => {
+    return apOrganizationList.sort( (e1: TAPOrganization, e2: TAPOrganization) => {
+      if(e1.displayName < e2.displayName) return -1;
+      if(e1.displayName > e2.displayName) return 1;
+      return 0;
+    });
+  }
+
   public static listOrganizations = async(options: any): Promise<TAPOrganizationList> => {
     const _connectorOrgList: Array<Organization> = await AdministrationService.listOrganizations(options);
     const _apsResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
     const _apsOrgList: APSOrganizationList = _apsResponse.list;
-    // filter out the health check or if exists
+    // filter out the health check org if exists
     const idx = _connectorOrgList.findIndex((org: Organization) => {
       return org.name === Globals.getHealthCheckOrgName()
     });
@@ -87,9 +96,6 @@ export class APOrganizationsService {
     return APOrganizationsService.maskSecrets(await AdministrationService.getOrganization({
       organizationName: organizationId
     }), secretMask);
-    // return await AdministrationService.getOrganization({
-    //   organizationName: organizationId
-    // });
   }
   public static getOrganizationStatus = async(organizationId: APSId, organizationDisplayName?: string): Promise<TAPOrganization> => {
     const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId);
@@ -108,10 +114,6 @@ export class APOrganizationsService {
     } catch(e) {
       // ignore 
     }
-    // const apOrganization: TAPOrganization = {
-    //   ...APOrganizationsService.maskSecrets(connectorOrganization, secretMask),
-    //   displayName: apsOrganization ? apsOrganization.displayName : connectorOrganization.name
-    // }
     const apOrganization: TAPOrganization = {
       ...connectorOrganization,
       displayName: apsOrganization ? apsOrganization.displayName : connectorOrganization.name

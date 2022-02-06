@@ -15,9 +15,9 @@ import {
   ApsUsersService, 
   EAPSSortDirection,
   ListApsUsersResponse,
-  APSUserList,
-  APSOrganizationRoles,
-  APSOrganizationAuthRoleList
+  APSUserResponseList,
+  APSOrganizationAuthRoleList,
+  APSOrganizationRolesResponse
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
@@ -110,7 +110,7 @@ export const AddUser: React.FC<IAddUserProps> = (props: IAddUserProps) => {
         searchIsActivated: true
       });
       const totalCount: number = listApsUsersResponse.meta.totalCount;
-      const apsUserList: APSUserList = listApsUsersResponse.list;
+      const apsUserList: APSUserResponseList = listApsUsersResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsUser of apsUserList) {
         _managedObjectList.push(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser, []));
@@ -133,7 +133,7 @@ export const AddUser: React.FC<IAddUserProps> = (props: IAddUserProps) => {
       await ApsUsersService.updateApsUser({
         userId: mo.apiObject.userId,
         requestBody: {
-          memberOfOrganizations: mo.apiObject.memberOfOrganizations
+          memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(mo.apiObject.memberOfOrganizations)
         }
       });
     } catch(e: any) {
@@ -323,8 +323,9 @@ export const AddUser: React.FC<IAddUserProps> = (props: IAddUserProps) => {
   }
 
   const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-    const newMemberOfOrganizationRoles: APSOrganizationRoles = {
+    const newMemberOfOrganizationRoles: APSOrganizationRolesResponse = {
       organizationId: props.organizationId,
+      organizationDisplayName: props.organizationId,
       roles: formData.roles
     }
     const mo: TManagedObject = {

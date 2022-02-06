@@ -9,82 +9,80 @@ import { Column } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 
-import { CommonName, Organization } from "@solace-iot-team/apim-connector-openapi-browser";
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSOrganizationAuthRoleList, 
-  APSOrganizationRoles, 
-  APSOrganizationRolesList, 
+  APSOrganizationRolesResponse, 
+  APSOrganizationRolesResponseList, 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ConfigHelper, TRoleSelectItemList } from "../ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { TAPOrganization, TAPOrganizationList } from "../../utils/APOrganizationsService";
+import { APEntityId, TAPEntityIdList } from "../../utils/APEntityId";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';
 
 export interface IAPManageUserOrganizationsProps {
   formId: string;
-  availableOrganizationList: Array<Organization>;
-  organizationRolesList: APSOrganizationRolesList;
+  availableOrganizationList: TAPOrganizationList;
+  organizationRolesList: APSOrganizationRolesResponseList;
   organizationId?: CommonName;
-  onChange: (organizationRolesList: APSOrganizationRolesList) => void;
+  organizationDisplayName?: CommonDisplayName;
+  onChange: (organizationRolesResponseList: APSOrganizationRolesResponseList) => void;
   registerTriggerFormValidationFunc: (formValidationFunc: () => void) => void;
 }
 
 export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps> = (props: IAPManageUserOrganizationsProps) => {
   const componentName = 'APManageUserOrganizations';
 
-  type TOrganizationRolesFormData = APSOrganizationRoles;
-  const emptyManagedOrganizationRoles: APSOrganizationRoles = {
+  type TOrganizationRolesFormData = APSOrganizationRolesResponse;
+  const emptyManagedOrganizationRoles: APSOrganizationRolesResponse = {
     organizationId: '',
+    organizationDisplayName: '',
     roles: []
   }
-  type TOrganizationSelectItem = { label: string, value: string };
-  type TOrganizationSelectItemList = Array<TOrganizationSelectItem>;
-  
+
   const [configContext] = React.useContext(ConfigContext); 
 
-  const transformManagedOrganinzationRolesToFormData = (mor: APSOrganizationRoles): TOrganizationRolesFormData => {
+  const transformManagedOrganinzationRolesToFormData = (mor: APSOrganizationRolesResponse): TOrganizationRolesFormData => {
     return {
       ...mor
-    };
+    }
   }
-  const transformFormDataToManagedOrganizationRoles = (formData: TOrganizationRolesFormData): APSOrganizationRoles => {
+  const transformFormDataToManagedOrganizationRoles = (formData: TOrganizationRolesFormData): APSOrganizationRolesResponse => {
     return {
       ...formData
     }
   }
 
-  const createOrganizationSelectItems = (): TOrganizationSelectItemList => {
-    let selectItems: TOrganizationSelectItemList = [];
-    if(props.organizationId === undefined) {
-      props.availableOrganizationList.forEach( (availableOrganization: Organization) => {
-        const alreadySelected = selectedOrganizationRolesList.find((apsOrganizationRoles: APSOrganizationRoles) => {
+  const createOrganizationSelectItems = (): TAPEntityIdList => {
+    let selectItems: TAPEntityIdList = [];
+    if(props.organizationId === undefined && props.organizationDisplayName === undefined) {
+      props.availableOrganizationList.forEach( (availableOrganization: TAPOrganization) => {
+        const alreadySelected = selectedOrganizationRolesList.find((apsOrganizationRoles: APSOrganizationRolesResponse) => {
           return availableOrganization.name === apsOrganizationRoles.organizationId;
         });
         if(!alreadySelected) {
           selectItems.push({
-            label: availableOrganization.name,
-            value: availableOrganization.name
+            id: availableOrganization.name,
+            displayName: availableOrganization.displayName
           });
         }
       });
-    } else {
-      selectItems.push({
-        label: props.organizationId,
-        value: props.organizationId
-      });  
+    } else if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
+        selectItems.push({
+          id: props.organizationId,
+          displayName: props.organizationDisplayName ? props.organizationDisplayName : props.organizationId
+        });  
     }
-    return selectItems.sort( (e1: TOrganizationSelectItem, e2: TOrganizationSelectItem) => {
-      if(e1.label.toLowerCase() < e2.label.toLowerCase()) return -1;
-      if(e1.label.toLowerCase() > e2.label.toLowerCase()) return 1;
-      return 0;
-    });
+    return APEntityId.sortAPEntityIdList_byDisplayName(selectItems);
   }
 
   const organizationRolesSelectItemList: TRoleSelectItemList = ConfigHelper.createOrganizationRolesSelectItems(configContext);
   const organizationRolesUseForm = useForm<TOrganizationRolesFormData>();
-  const [managedOrganizationRoles, setManagedOrganizationRoles] = React.useState<APSOrganizationRoles>(emptyManagedOrganizationRoles);
-  const [selectedOrganizationRolesList, setSelectedOrganizationRolesList] = React.useState<APSOrganizationRolesList>(props.organizationRolesList);
+  const [managedOrganizationRoles, setManagedOrganizationRoles] = React.useState<APSOrganizationRolesResponse>(emptyManagedOrganizationRoles);
+  const [selectedOrganizationRolesList, setSelectedOrganizationRolesList] = React.useState<APSOrganizationRolesResponseList>(props.organizationRolesList);
   const [isManagedOrganizationRolesListChanged, setIsManagedOrganizationRolesListChanged] = React.useState<boolean>(false);
   const [organizationRolesFormData, setOrganizationRolesFormData] = React.useState<TOrganizationRolesFormData>();
   const organizationRolesListDataTableRef = React.useRef<any>(null);
@@ -99,13 +97,19 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     const logName = `${componentName}.${funcName}()`;
     // alert(`${componentName}: mounting: props.organizationRolesList=${JSON.stringify(props.organizationRolesList, null, 2)}`);
     // alert(`${componentName}: mounting:  props.availableOrganizationList=${JSON.stringify(props.availableOrganizationList, null, 2)}`);
-    if(props.organizationId !== undefined) {
-      let initialOrganizationRoles: APSOrganizationRoles = {
+    const validInputCombination: boolean = (props.organizationId !== undefined && props.organizationDisplayName !== undefined) || (props.organizationId === undefined && props.organizationDisplayName === undefined);
+    if(!validInputCombination) {
+      throw new Error(`${logName}: invalid input combination: props.organizationId=${props.organizationId}, props.organizationDisplayName=${props.organizationDisplayName}`);
+    }
+    if(props.organizationId)
+    if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
+      let initialOrganizationRoles: APSOrganizationRolesResponse = {
         organizationId: props.organizationId,
+        organizationDisplayName: props.organizationDisplayName,
         roles: []
       }
       if(props.organizationRolesList.length > 0) {
-        const roles = props.organizationRolesList.find( (apsOrganizationRoles: APSOrganizationRoles) => {
+        const roles = props.organizationRolesList.find( (apsOrganizationRoles: APSOrganizationRolesResponse) => {
           return apsOrganizationRoles.organizationId === props.organizationId;
         });
         if(!roles) throw new Error(`${logName}: roles is undefined`);
@@ -138,7 +142,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     organizationRolesUseForm.setValue('roles', organizationRolesFormData.roles);
   }
 
-  const doAddManagedOrganizationRoles = (mor: APSOrganizationRoles) => {
+  const doAddManagedOrganizationRoles = (mor: APSOrganizationRolesResponse) => {
     setManagedOrganizationRoles(emptyManagedOrganizationRoles);
     setIsManagedOrganizationRolesListChanged(true);
     const _morl = [...selectedOrganizationRolesList];
@@ -146,8 +150,8 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     setSelectedOrganizationRolesList(_morl);
     setIsManagedOrganizationRolesListChanged(true);
   }
-  const doRemoveManagedOrganizationRoles = (mor: APSOrganizationRoles) => {
-    const idx = selectedOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRoles) => {
+  const doRemoveManagedOrganizationRoles = (mor: APSOrganizationRolesResponse) => {
+    const idx = selectedOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRolesResponse) => {
       return mor.organizationId === organizationRoles.organizationId;
     });
     const _morl = [...selectedOrganizationRolesList];
@@ -155,8 +159,8 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     setSelectedOrganizationRolesList(_morl);
     setIsManagedOrganizationRolesListChanged(true);
   }
-  const doUpdateManagedOrganizationRoles = (mor: APSOrganizationRoles) => {
-    const idx = selectedOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRoles) => {
+  const doUpdateManagedOrganizationRoles = (mor: APSOrganizationRolesResponse) => {
+    const idx = selectedOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRolesResponse) => {
       return mor.organizationId === organizationRoles.organizationId;
     });
     const _morl = [...selectedOrganizationRolesList];
@@ -165,17 +169,29 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     setIsManagedOrganizationRolesListChanged(true);
   }
   const onSubmitOrganizationRolesForm = (organizationRolesFormData: TOrganizationRolesFormData) => {
-    doAddManagedOrganizationRoles(transformFormDataToManagedOrganizationRoles(organizationRolesFormData));
+    alert(`organizationRolesFormData = ${JSON.stringify(organizationRolesFormData, null, 2)}`);
+    const found = props.availableOrganizationList.find((x) => {
+      return x.name === organizationRolesFormData.organizationId;
+    });
+    const fd: TOrganizationRolesFormData = {
+      ...organizationRolesFormData,
+      organizationDisplayName: found ? found.displayName : organizationRolesFormData.organizationId
+    }
+    alert(`fd = ${JSON.stringify(fd, null, 2)}`);
+    doAddManagedOrganizationRoles(transformFormDataToManagedOrganizationRoles(fd));
   }
   const onInvalidSubmitOrganizationRolesForm = () => {
     // placeholder
   }
 
   const onSelectedRolesChanged = (authRoleList: APSOrganizationAuthRoleList) => {
-    if(props.organizationId !== undefined) doUpdateManagedOrganizationRoles({
-      organizationId: props.organizationId,
-      roles: authRoleList
-    });
+    if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
+      doUpdateManagedOrganizationRoles({
+        organizationId: props.organizationId,
+        organizationDisplayName: props.organizationDisplayName,
+        roles: authRoleList
+      });
+    }
   }
 
   const displayManagedOrganizationRolesFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
@@ -188,14 +204,17 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
 
   const renderOrganizationRolesListTable = (): JSX.Element => {
 
-    const rolesBodyTemplate = (row: APSOrganizationRoles) => {
+    const organizationBodyTemplate = (row: APSOrganizationRolesResponse) => {
+      return row.organizationDisplayName;
+    }
+    const rolesBodyTemplate = (row: APSOrganizationRolesResponse) => {
       if(row.roles.length > 0) {
         return ConfigHelper.getAuthorizedOrgRolesDisplayNameList(configContext, row.roles).join(', ');
       } else {
         return ('None');
       }
     }
-    const actionBodyTemplate = (row: APSOrganizationRoles) => {
+    const actionBodyTemplate = (row: APSOrganizationRolesResponse) => {
       return (
           <React.Fragment>
             <Button 
@@ -208,6 +227,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
           </React.Fragment>
       );
     }  
+
     return (
       <React.Fragment>
         <DataTable
@@ -219,11 +239,12 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
           scrollable 
           dataKey="organizationId"  
           sortMode='single'
-          sortField="organizationId"
+          sortField="organizationDisplayName"
           sortOrder={1}
         >
-          <Column header="Organization" field="organizationId" sortable style={{ width: "30em"}}/>
-          <Column header="Roles" body={rolesBodyTemplate}  bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} />
+          {/* <Column header="Id" field="organizationId" /> */}
+          <Column header="Organization" headerStyle={{ width: "30em", textAlign: 'left' }} body={organizationBodyTemplate} bodyStyle={{ textAlign: 'left'}} sortField="organizationDisplayName" sortable />
+          <Column header="Roles" body={rolesBodyTemplate}  bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word', textAlign: 'left' }} />
           <Column body={actionBodyTemplate} bodyStyle={{ width: '3em', textAlign: 'end' }} />
         </DataTable>
       </React.Fragment>        
@@ -283,8 +304,10 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
                           id={field.name}
                           {...field}
                           options={createOrganizationSelectItems()}
-                          onChange={(e) => field.onChange(e.value)}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}     
+                          onChange={(e) => field.onChange(e.value) }
+                          className={classNames({ 'p-invalid': fieldState.invalid })}   
+                          optionLabel="displayName"
+                          optionValue="id"  
                           // disabled={isDisabled}                                   
                         />                        
                     )}}

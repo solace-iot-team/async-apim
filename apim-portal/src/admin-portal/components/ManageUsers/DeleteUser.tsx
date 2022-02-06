@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
 import { 
-  APSUser,
+  APSUserResponse,
   ApsUsersService, 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -51,7 +51,7 @@ export const DeleteUser: React.FC<IDeleteUserProps> = (props: IDeleteUserProps) 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userId}`);
     try { 
-      const apsUser: APSUser = await ApsUsersService.getApsUser({
+      const apsUser: APSUserResponse = await ApsUsersService.getApsUser({
         userId: props.userId
       });
       let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUser, organizationId);
