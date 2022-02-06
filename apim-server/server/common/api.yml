@@ -966,6 +966,7 @@ components:
       - roles
     APSOrganizationRolesResponse:
       type: object
+      # additionalProperties: false
       allOf:
       - $ref: '#/components/schemas/APSOrganizationRoles'
       properties:
@@ -1365,15 +1366,9 @@ components:
           $ref: '#/components/schemas/APSUserResponseList'
       required:
       - list
-    # APSUserList:
-    #   description: Array of APSUsers.
-    #   type: array
-    #   items:
-    #     $ref: '#/components/schemas/APSUser'
-    APSUser:
-      description: "A user."
+    APSUserBase:
+      description: "Base object of a user."
       type: object
-      additionalProperties: false
       properties:
         isActivated:
           type: boolean
@@ -1387,10 +1382,19 @@ components:
           allOf:
             - description: System roles applicable across any organization.
             - $ref: '#/components/schemas/APSSystemAuthRoleList'
+      required:
+        - isActivated
+        - userId
+        - password
+        - profile
+    APSUser:
+      description: "A user."
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/APSUserBase'
+      properties:
         memberOfOrganizations:
-          allOf:
-            - $ref: '#/components/schemas/APSOrganizationRolesList'
-            - description: List of organizations the user is a member of including organization roles.
+          $ref: '#/components/schemas/APSOrganizationRolesList'
       required:
         - isActivated
         - userId
@@ -1399,11 +1403,10 @@ components:
     APSUserResponse:
       type: object
       allOf:
-      - $ref: '#/components/schemas/APSUser'
+      - $ref: '#/components/schemas/APSUserBase'
       properties:
         memberOfOrganizations:
-          allOf:
-            - $ref: '#/components/schemas/APSOrganizationRolesResponseList'
+          $ref: '#/components/schemas/APSOrganizationRolesResponseList'
     APSUserResponseList:
       description: Array of APSUserResponses.
       type: array
