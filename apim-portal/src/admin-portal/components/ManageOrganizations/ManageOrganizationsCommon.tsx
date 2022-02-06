@@ -47,6 +47,7 @@ export type TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning = {
   bsdp_ReverseProxy: TAPBrokerServiceDiscoveryProvioning_ReverseProxy;
 }
 export type TAPOrganizationConfigEventPortal = {
+  isConfigured: boolean;
   baseUrl: string;
   cloudToken: string;
 }
@@ -107,6 +108,7 @@ export class ManageOrganizationsCommon {
       }
     },
     configAdvancedEventPortal: {
+      isConfigured: false,
       baseUrl: ManageOrganizationsCommon.CDefaultEventPortalBaseUrlStr,
       cloudToken: ''
     }
@@ -196,6 +198,7 @@ export class ManageOrganizationsCommon {
           cloudToken: apObject['cloud-token'].cloud.token
         };
         oc.configAdvancedEventPortal = {
+          isConfigured: apObject['cloud-token'].eventPortal.token !== undefined,
           baseUrl: apObject['cloud-token'].eventPortal.baseUrl,
           cloudToken: apObject['cloud-token'].eventPortal.token
         };

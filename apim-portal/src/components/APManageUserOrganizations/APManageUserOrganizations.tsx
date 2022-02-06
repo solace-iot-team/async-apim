@@ -169,7 +169,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     setIsManagedOrganizationRolesListChanged(true);
   }
   const onSubmitOrganizationRolesForm = (organizationRolesFormData: TOrganizationRolesFormData) => {
-    alert(`organizationRolesFormData = ${JSON.stringify(organizationRolesFormData, null, 2)}`);
+    // alert(`organizationRolesFormData = ${JSON.stringify(organizationRolesFormData, null, 2)}`);
     const found = props.availableOrganizationList.find((x) => {
       return x.name === organizationRolesFormData.organizationId;
     });
@@ -177,7 +177,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
       ...organizationRolesFormData,
       organizationDisplayName: found ? found.displayName : organizationRolesFormData.organizationId
     }
-    alert(`fd = ${JSON.stringify(fd, null, 2)}`);
+    // alert(`fd = ${JSON.stringify(fd, null, 2)}`);
     doAddManagedOrganizationRoles(transformFormDataToManagedOrganizationRoles(fd));
   }
   const onInvalidSubmitOrganizationRolesForm = () => {
