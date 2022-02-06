@@ -16,6 +16,7 @@ import { DeleteApi } from "./DeleteApi";
 import { ViewApi } from "./ViewApi";
 import { EventPortalImportApi } from "./EventPortalImportApi";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -65,8 +66,8 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
   const ToolbarButtonLabelImportEventPortal = 'Import from Event Portal';
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
+  const [configContext] = React.useContext(ConfigContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -164,7 +165,8 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     const funcName = 'renderLeftToolbarContent';
     const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
-    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode);
+    const eventPortalConnectivity: boolean = organizationContext.status ? (organizationContext.status.eventPortalConnectivity ? organizationContext.status.eventPortalConnectivity : false) : false;
+    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
