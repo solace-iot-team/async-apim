@@ -5,10 +5,11 @@ import { EventPortalService } from "@solace-iot-team/apim-connector-openapi-brow
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../../../utils/APTypes";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";

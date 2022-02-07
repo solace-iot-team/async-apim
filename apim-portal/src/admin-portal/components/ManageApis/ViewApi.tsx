@@ -5,17 +5,17 @@ import { APIInfo, ApisService, CommonEntityNameList } from "@solace-iot-team/api
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
+import { TAPAsyncApiSpec } from "../../../utils/APTypes";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
 
 export interface IViewApiProps {
-  organizationId: TAPOrganizationId,
+  organizationId: string,
   apiId: TManagedObjectId;
   apiDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
