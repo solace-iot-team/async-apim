@@ -164,20 +164,20 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     return APRenderUtils.renderStringListAsDivList(APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList));
   }
 
-  const actionBodyTemplate = (mo: TManagedObject) => {
-    const showButtonsEditDelete: boolean = (mo.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
-    const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
-    return (
-        <React.Fragment>
-          { showButtonsEditDelete &&
-            <>
-              <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
-              <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed}/>
-            </>
-          }
-        </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (mo: TManagedObject) => {
+  //   const showButtonsEditDelete: boolean = (mo.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+  //   const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
+  //   return (
+  //       <React.Fragment>
+  //         { showButtonsEditDelete &&
+  //           <>
+  //             <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+  //             <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed}/>
+  //           </>
+  //         }
+  //       </React.Fragment>
+  //   );
+  // }
 
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
@@ -206,7 +206,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
             <Column header="Name" field="displayName" bodyStyle={{verticalAlign: 'top'}} sortable filterField="globalSearch" />
             <Column header="Source" field="apiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
             <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
+            {/* <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} /> */}
         </DataTable>
       </div>
     );

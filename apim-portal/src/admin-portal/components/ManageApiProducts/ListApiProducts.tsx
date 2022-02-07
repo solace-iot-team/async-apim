@@ -138,15 +138,15 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     );
   }
 
-  const actionBodyTemplate = (mo: TManagedObject) => {
-    const isDeleteAllowed: boolean = mo.apiUsedBy_AppEntityNameList.length === 0;
-    return (
-      <React.Fragment>
-        <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
-        <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
-      </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (mo: TManagedObject) => {
+  //   const isDeleteAllowed: boolean = mo.apiUsedBy_AppEntityNameList.length === 0;
+  //   return (
+  //     <React.Fragment>
+  //       <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
+  //       <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed} />
+  //     </React.Fragment>
+  //   );
+  // }
 
   const attributesBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
     return APRenderUtils.renderStringListAsDivList(APRenderUtils.getAttributeNameList(rowData.apiProduct.attributes));
@@ -203,7 +203,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             <Column header="Protocols" field="protocolListAsString"  bodyStyle={{ verticalAlign: 'top' }} />
             <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField="guaranteedMessagingEnabled"/>
             <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/>
+            {/* <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', overflow: 'visible', verticalAlign: 'top' }}/> */}
         </DataTable>
       </div>
     );
