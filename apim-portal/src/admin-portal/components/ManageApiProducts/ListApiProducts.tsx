@@ -194,12 +194,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             sortField="displayName"
             sortOrder={1}
           >
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
+            <Column header="Name" field="displayName" bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch"  sortable />
             {/* <Column field="apiProduct.description" header="Description" /> */}
-            <Column field="apiProduct.approvalType" header="Approval" headerStyle={{width: '8em'}} sortable bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={apisBodyTemplate} header="APIs" bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
-            <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }} />
-            <Column body={environmentsBodyTemplate} header="Environments" bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+            <Column header="Approval" headerStyle={{width: '8em'}} field="apiProduct.approvalType"  sortable bodyStyle={{ verticalAlign: 'top' }} />
+            <Column header="Access" headerStyle={{width: '7em'}} field="apiProduct.accessLevel" sortable bodyStyle={{ verticalAlign: 'top' }} />
+            <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
+            <Column header="Attributes" body={attributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+            <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
             <Column header="Protocols" field="protocolListAsString"  bodyStyle={{ verticalAlign: 'top' }} />
             <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField="guaranteedMessagingEnabled"/>
             <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
