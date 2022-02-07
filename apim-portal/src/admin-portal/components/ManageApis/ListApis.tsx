@@ -4,7 +4,6 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
 
 import { 
   APIInfo,

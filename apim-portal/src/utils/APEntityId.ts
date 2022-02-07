@@ -14,5 +14,11 @@ export class APEntityId {
       return 0;
     });
   }
+
+  public static getDisplayNameListAsString = (entityIdList: TAPEntityIdList): string => {
+    if(entityIdList.length > 0) return entityIdList.map((x) => { return x.displayName; }).join(', ');
+    else return '';
+  }
+
 }
 

@@ -6,19 +6,17 @@ import { Button } from 'primereact/button';
 import { DataView, DataViewLayoutOptions, DataViewLayoutType } from 'primereact/dataview';
 import { 
   APIProduct, 
-  ApiProductsService, 
+  APIProductAccessLevel, 
   CommonDisplayName, 
   CommonName, 
-  EnvironmentResponse, 
-  EnvironmentsService 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APManagedApiProductDisplay, TAPDeveloperPortalApiProductDisplay } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "././DeveloperPortalProductCatalogCommon";
 import { Globals } from "../../../utils/Globals";
+import { APProductsService, TAPDeveloperPortalProductDisplay, TAPDeveloperPortalProductDisplayList } from "../../../utils/APProductsService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -38,18 +36,10 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const MessageNoManagedProductsFound = "No API Products found."
   const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
-  const DefaultApiProductCategory = 'Solace AsyncAPI';
-  const DefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
-  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
+  type TManagedObject = TAPDeveloperPortalProductDisplay;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
-    apApiDisplayNameListAsString: string;
-    apProtocolListAsString: string;
-    apAttributeListAsString: string;
-    apEnvironmentListAsStringList: Array<string>;
-    apApiProductCategory: string;
-    apApiProductImageUrl: string;
     globalSearch: string;
   };
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
@@ -58,25 +48,18 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
       const moTdRow: TManagedObjectTableDataRow = {
         ...mo,
-        apApiDisplayNameListAsString: APManagedApiProductDisplay.getApApiDisplayNameListAsString(mo.apiApiProduct.apis),
-        apProtocolListAsString: APManagedApiProductDisplay.getApProtocolListAsString(mo.apiApiProduct.protocols),
-        apAttributeListAsString: APManagedApiProductDisplay.getApAttributeNamesAsString(mo.apiApiProduct.attributes),
-        apEnvironmentListAsStringList: APManagedApiProductDisplay.getApEnvironmentsAsDisplayList(mo.apiEnvironmentList),
-        apApiProductCategory: DefaultApiProductCategory,
-        apApiProductImageUrl: DefaultApiProductImageUrl,
-        globalSearch: ''
-      };
-      const globalSearch = APManagedApiProductDisplay.generateGlobalSearchContent(moTdRow);
-      return {
-        ...moTdRow,
-        globalSearch: globalSearch
+        globalSearch: APProductsService.generateGlobalSearchContent(mo)
       }
+      return moTdRow;
     }
     return moList.map( (mo: TManagedObject) => {
       return _transformManagedObjectToTableDataRow(mo);
     });
   }
   const transformManagedObjectTableDataListToFilteredList = (motdList: TManagedObjectTableDataList, filterStr: string): TManagedObjectTableDataList => {
+    // const funcName = 'transformManagedObjectTableDataListToFilteredList';
+    // const logName = `${componentName}.${funcName}()`;
+
     if(filterStr === '') return motdList;
     const filterList: Array<string> = filterStr.toLowerCase().split(' ').filter( (s: string) => {
       return (s !== '');
@@ -88,9 +71,9 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     motdList.forEach( (dataRow: TManagedObjectTableDataRow) => {
       filterList.forEach( (search: string) => {
         if(dataRow.globalSearch.includes(search)) {
-          // console.log(`${logName}: found search=${search} in ${dataRow.apApiProductDisplayName} ...`);
+          // console.log(`${logName}: found search=${search} in ${dataRow.apEntityId.displayName} ...`);
           const found: number = _filteredMotdList.findIndex( (existingDataRow: TManagedObjectTableDataRow) => {
-            return dataRow.apApiProductName === existingDataRow.apApiProductName;
+            return dataRow.apEntityId.id === existingDataRow.apEntityId.id;
           });
           if(found === -1 ) {
             // console.log(`${logName}: adding ${dataRow.apApiProductDisplayName} ...`);
@@ -120,34 +103,14 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
-    try { 
-      const apiApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-        organizationName: props.organizationId
+    try {
+      const list: TAPDeveloperPortalProductDisplayList = await APProductsService.listDeveloperPortalApiProductDisplay({
+        organizationId: props.organizationId,
+        // includeAccessLevel: APIProductAccessLevel.PUBLIC
+        // includeAccessLevel: APIProductAccessLevel.PRIVATE
+        // includeAccessLevel: APIProductAccessLevel.INTERNAL
       });
-      let _moList: TManagedObjectList = [];
-      // get all envs for all products
-      let _apiEnvListCache: Array<EnvironmentResponse> = [];
-      for(const apiApiProduct of apiApiProductList) {
-        if(!apiApiProduct.environments) throw new Error(`${logName}: apiApiProduct.environments is undefined`);
-        let _apiEnvList: Array<EnvironmentResponse> = [];
-        for(const envName of apiApiProduct.environments) {
-          const found = _apiEnvListCache.find( (apiEnv: EnvironmentResponse) => {
-            return apiEnv.name === envName;
-          });
-          if(!found) {
-            const _apiEnvResp: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-              organizationName: props.organizationId,
-              envName: envName
-            });
-            _apiEnvListCache.push(_apiEnvResp);
-            _apiEnvList.push(_apiEnvResp);
-          } else {
-            _apiEnvList.push(found);
-          }
-        }
-        _moList.push(APManagedApiProductDisplay.createAPDeveloperPortalApiProductDisplayFromApiEntities(apiApiProduct, _apiEnvList));
-      }
-      setManagedObjectList(_moList);
+    setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -221,13 +184,29 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     }
     return 'should never get here';
   }
+  const getAccessLevelText = (accessLevel: APIProductAccessLevel | undefined): string => {
+    const funcName = 'getAccessLevelText';
+    const logName = `${componentName}.${funcName}()`;
+    if(!accessLevel) return 'N/A';
+    switch(accessLevel) {
+      case APIProductAccessLevel.PRIVATE:
+        return 'private';
+      case APIProductAccessLevel.INTERNAL:
+        return 'internal';
+      case APIProductAccessLevel.PUBLIC:
+        return 'public';
+      default:
+        Globals.assertNever(logName, accessLevel);  
+    }
+    return 'should never get here';
+  }
   const getDetailsButton = (dataRow: TManagedObjectTableDataRow): JSX.Element => {
     return (
       <Button
         label='Details'
-        key={componentName + dataRow.apApiProductName}
-        data-id={dataRow.apApiProductName}
-        data-display_name={dataRow.apApiProductDisplayName}
+        key={componentName + dataRow.apEntityId.id}
+        data-id={dataRow.apEntityId.id}
+        data-display_name={dataRow.apEntityId.displayName}
         className="p-button-text p-button-plain p-button-outlined" 
         onClick={onManagedObjectOpen}
       />
@@ -239,9 +218,9 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
         <div className="product-list-item">
           {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
           <div className="product-list-detail">
-            <div className="product-name">{dataRow.apApiProductDisplayName}</div>
-            <div className="product-description">{dataRow.apiApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameListAsString}</div>
+            <div className="product-name">{dataRow.apEntityId.displayName}</div>
+            <div className="product-description">{dataRow.connectorApiProduct.description}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
             <div className="product-api-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
             <div className="product-api-name-list">Environments: {dataRow.apEnvironmentListAsStringList.join(', ')}</div>
             <div className="product-api-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
@@ -252,7 +231,8 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
               <span className="product-category">{dataRow.apApiProductCategory}</span>
             </div>
             <div>
-              <span className={`product-badge status-${dataRow.apiApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.apiApiProduct.approvalType)}</span>
+              <div className={`product-badge status-${dataRow.connectorApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.connectorApiProduct.approvalType)}</div>
+              <div className={`product-badge status-${dataRow.connectorApiProduct.accessLevel?.toLocaleLowerCase()}`}>{getAccessLevelText(dataRow.connectorApiProduct.accessLevel)}</div>
             </div>
             <div className="p-mt-6">{getDetailsButton(dataRow)}</div>
           </div>
@@ -265,21 +245,22 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
     return (
       <div className="p-col-12 p-md-4">
         <div className="product-grid-item card">
-          <div className="product-grid-item-top">
+          <div className="product-grid-item-top" style={{alignItems: 'top'}}>
             <div>
               <i className="pi pi-tag product-category-icon"></i>
               <span className="product-category">{dataRow.apApiProductCategory}</span>
             </div>
             <div>
-              <span className={`product-badge status-${dataRow.apiApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.apiApiProduct.approvalType)}</span>
+              <div className={`product-badge status-${dataRow.connectorApiProduct.approvalType?.toLocaleLowerCase()}`}>{getApprovalText(dataRow.connectorApiProduct.approvalType)}</div>
+              <div className={`product-badge status-${dataRow.connectorApiProduct.accessLevel?.toLocaleLowerCase()}`}>{getAccessLevelText(dataRow.connectorApiProduct.accessLevel)}</div>
             </div>
           </div>
           <div className="product-grid-item-content p-mt-4">
             {/* <img src={`showcase/demo/images/product/${data.image}`} onError={(e) => e.target.src='https://www.primefaces.org/wp-content/uploads/2020/05/placeholder.png'} alt={data.name} /> */}
             {/* <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} /> */}
-            <div className="product-name">{dataRow.apApiProductDisplayName}</div>
-            <div className="product-description">{dataRow.apiApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameListAsString}</div>
+            <div className="product-name">{dataRow.apEntityId.displayName}</div>
+            <div className="product-description">{dataRow.connectorApiProduct.description}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
           </div>
           <div className="product-grid-item-bottom">
             {/* <span className="product-price">${'65'}</span> */}

@@ -121,13 +121,13 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     return true;
   }
 
-  const is_advanced_EventPortal_TokenRequired = (): boolean => {
-    const funcName = 'is_advanced_EventPortal_TokenRequired';
-    const logName = `${componentName}.${funcName}()`;
-    if(props.action === EAction.NEW) return true;
-    if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
-    return originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === undefined || originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === '';
-  }
+  // const is_advanced_EventPortal_TokenRequired = (): boolean => {
+  //   const funcName = 'is_advanced_EventPortal_TokenRequired';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(props.action === EAction.NEW) return true;
+  //   if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
+  //   return originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === undefined || originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === '';
+  // }
 
   const is_simple_solace_cloud_TokenRequired = (): boolean => {
     const funcName = 'is_simple_solace_cloud_TokenRequired';
