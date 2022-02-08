@@ -24,7 +24,6 @@ import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidat
 
 import "../APComponents.css";
 import "./UserLogin.css";
-import { AuthHelper } from "../../auth/AuthHelper";
 
 export type TUserLoginCredentials = APSUserLoginCredentials;
 

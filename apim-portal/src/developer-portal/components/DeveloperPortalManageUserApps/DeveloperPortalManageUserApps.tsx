@@ -35,6 +35,7 @@ import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitor
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationName: TAPOrganizationId;
@@ -472,6 +473,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       
       {!isLoading && renderToolbar() }
       
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
       {showListComponent && 
         <DeveloperPortalListUserApps
           key={refreshCounter}
