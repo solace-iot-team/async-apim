@@ -16,10 +16,11 @@ import { APConnectorApiCalls, APConnectorApiHelper, TGetAsyncApiSpecResult } fro
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { APButtonLoadFileContents } from "../../../components/APButtons/APButtonLoadFileContents";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
+import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../../../utils/APTypes";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";

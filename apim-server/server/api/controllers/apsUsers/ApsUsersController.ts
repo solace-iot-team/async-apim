@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
-import APSUsersService, { TAPSListUserResponse } from '../../services/APSUsersService/APSUsersService';
+import APSUsersService from '../../services/APSUsersService/APSUsersService';
 import { ApiMissingParameterServerError } from '../../../common/ServerError';
-import { APSUser } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSUser, ListApsUsersResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export class ApsUsersController {
   private static className = 'ApsUsersController';
@@ -10,7 +10,7 @@ export class ApsUsersController {
   public static all = (req: Request, res: Response, next: NextFunction): void => {
 
     APSUsersService.all(ApiQueryHelper.getPagingInfoFromQuery(req.query), ApiQueryHelper.getSortInfoFromQuery(req.query), ApiQueryHelper.getSearchInfoFromQuery(req.query))
-    .then( (r: TAPSListUserResponse) => {
+    .then( (r: ListApsUsersResponse) => {
       // res.status(200).type('application/json').json(r);
       res.status(200).json(r);
     })

@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   mongodb:
-    container_name: apim-devel-server-mongodb
+    container_name: apim-devel-server-mongodb-int-vols
     image : mongo:5.0.2
     volumes:
       - mongodbdata:/data/db

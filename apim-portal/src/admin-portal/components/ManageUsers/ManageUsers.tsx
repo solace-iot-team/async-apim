@@ -81,7 +81,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
         break;
       case E_ManageUsers_Scope.ORG_USERS:
         const orgUsersScope = props.scope as TManageOrganizationUsersScope;
-        setOrganizationId(orgUsersScope.organizationId);
+        setOrganizationId(orgUsersScope.organizationEntityId.id);
         break;
       default:
         Globals.assertNever(logName, _type);
@@ -92,14 +92,6 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(!managedObjectDisplayName) return;
-  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-  //     ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-  //   else props.onBreadCrumbLabelList([]);
-  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

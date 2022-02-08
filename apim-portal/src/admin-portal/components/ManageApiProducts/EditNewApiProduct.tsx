@@ -27,7 +27,7 @@ import {
   Protocol,
   APIParameter,
   ClientOptionsGuaranteedMessaging,
-  CommonEntityNameList
+  CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
@@ -38,6 +38,7 @@ import {
   APApiObjectsCommon, 
   APApiProductsCommon, 
   APEnvironmentObjectsCommon, 
+  C_DEFAULT_API_PRODUCT_ACCESS_LEVEL, 
   TAPEnvironmentViewManagedObjectList, 
   TApiEnvironmentList 
 } from "../../../components/APApiObjectsCommon";
@@ -148,7 +149,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return {
       apiProduct: {
         ...apiProduct,
-        approvalType: apiProduct.approvalType ? apiProduct.approvalType : APIProduct.approvalType.AUTO
+        approvalType: apiProduct.approvalType ? apiProduct.approvalType : APIProduct.approvalType.AUTO,
+        accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
       },
       apiInfoList: apiInfoList,
       apiEnvironmentList: apiEnvironmentList,
@@ -157,7 +159,11 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     }
   }
   const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    return managedObject.apiProduct;
+    const apiProduct = managedObject.apiProduct;
+    return {
+      ...apiProduct,
+      accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
+    }
   }
   const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
     const apiProduct = managedObject.apiProduct;
@@ -171,7 +177,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       protocols: apiProduct.protocols,
       pubResources: apiProduct.pubResources,
       subResources: apiProduct.subResources,
-      apis: apiProduct.apis
+      apis: apiProduct.apis,
+      accessLevel: apiProduct.accessLevel
     }
   }
   const transformApiEnvironmentListToViewProtocolList = (environmentList: TApiEnvironmentList): TViewProtocolList => {
@@ -258,6 +265,9 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return apiParameterList;
   }
   const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
+    // const funcName = 'transformManagedObjectToFormData';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: managedObject.apiProduct.accessLevel=${managedObject.apiProduct.accessLevel}`);
     const defaultClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging = {
       requireQueue: false,
       accessType: ClientOptionsGuaranteedMessaging.accessType.EXCLUSIVE,
@@ -370,6 +380,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     const funcName = 'apiUpdateManagedObject';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${managedObject.apiProduct.displayName}`);
+    // alert(`${logName}: managedObject.apiProduct.accessLevel = ${managedObject.apiProduct.accessLevel}`);
     try { 
       await ApiProductsService.updateApiProduct({
         organizationName: props.organizationId,
@@ -567,10 +578,12 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     // const funcName = 'doPopulateManagedObjectFormDataValues';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
+    // alert(`${logName}: managedObjectFormData.apiProduct.accessLevel=${managedObjectFormData.apiProduct.accessLevel}`);
     managedObjectUseForm.setValue('apiProduct.name', managedObjectFormData.apiProduct.name);
     managedObjectUseForm.setValue('apiProduct.displayName', managedObjectFormData.apiProduct.displayName);
     managedObjectUseForm.setValue('apiProduct.description', managedObjectFormData.apiProduct.description);
     managedObjectUseForm.setValue('apiProduct.approvalType', managedObjectFormData.apiProduct.approvalType);
+    managedObjectUseForm.setValue('apiProduct.accessLevel', managedObjectFormData.apiProduct.accessLevel);
     managedObjectUseForm.setValue('apiProduct.attributes', managedObjectFormData.apiProduct.attributes);
     // client options: guaranteed messaging
     managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', managedObjectFormData.clientOptionsGuaranteedMessaging.requireQueue);    
@@ -1073,6 +1086,30 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                 <label htmlFor="apiProduct.approvalType" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.approvalType })}>Approval Type*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.approvalType)}
+            </div>
+            {/* accessLevel */}
+            <div className="p-field">
+              <span className="p-float-label">
+                <Controller
+                  name="apiProduct.accessLevel"
+                  control={managedObjectUseForm.control}
+                  rules={{
+                    required: "Select access level.",
+                  }}
+                  render={( { field, fieldState }) => {
+                      return(
+                        <Dropdown
+                          id={field.name}
+                          {...field}
+                          options={APApiProductsCommon.getAccessLevelSelectList()} 
+                          onChange={(e) => field.onChange(e.value)}
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />                        
+                      )}}
+                />
+                <label htmlFor="apiProduct.accessLevel" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.accessLevel })}>Access Level*</label>
+              </span>
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.accessLevel)}
             </div>
             {/* apis */}
             <div className="p-field">

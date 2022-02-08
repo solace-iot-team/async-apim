@@ -11,8 +11,12 @@ import {
   APSError, 
   APSErrorIds, 
   APSListResponseMeta, 
+  APSOrganizationRoles, 
+  APSOrganizationRolesList, 
   APSUser, 
   APSUserReplace, 
+  APSUserResponse, 
+  APSUserResponseList, 
   ApsUsersService, 
   APSUserUpdate, 
   EAPSOrganizationAuthRole, 
@@ -20,6 +24,7 @@ import {
   EAPSSystemAuthRole,
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import { ApsUsersHelper } from '../lib/apsUsers.helper';
 
 
 const scriptName: string = path.basename(__filename);
@@ -65,41 +70,23 @@ const apsUserTemplate2: APSUser = {
 }
 
 describe(`${scriptName}`, () => {
-  context(`${scriptName}`, () => {
 
-    const apiBase = `${TestContext.getApiBase()}/apsUsers`;
+  const apiBase = `${TestContext.getApiBase()}/apsUsers`;
 
     beforeEach(() => {
       TestContext.newItId();
     });
 
-    after(async() => {
+    after(`${scriptName}: AFTER: delete all users`, async() => {
       TestContext.newItId();
-      let apsUserList: Array<APSUser> = [];
       try {
-        const pageSize = 100;
-        let pageNumber = 1;
-        let hasNextPage = true;
-        while (hasNextPage) {
-          const resultListApsUsers: ListApsUsersResponse  = await ApsUsersService.listApsUsers({
-            pageSize: pageSize, 
-            pageNumber: pageNumber
-          });
-          if(resultListApsUsers.list.length === 0 || resultListApsUsers.list.length < pageSize) hasNextPage = false;
-          pageNumber++;
-          apsUserList.push(...resultListApsUsers.list);
-        }
-        for (const apsUser of apsUserList) {
-          await ApsUsersService.deleteApsUser({
-            userId: apsUser.userId
-          });
-        }
+        const apsUserResponseList: APSUserResponseList = await ApsUsersHelper.deleteAllUsers()
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
       }
     });
-
+  
 // ****************************************************************************************************************
 // * OpenApi API Tests *
 // ****************************************************************************************************************
@@ -331,9 +318,9 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should get 1 user`, async() => {
-      let apsUser: APSUser;
+      let apsUserResponse: APSUserResponse;
       try {
-        apsUser = await ApsUsersService.getApsUser({
+        apsUserResponse = await ApsUsersService.getApsUser({
           userId: apsUserTemplate.userId
         });
       } catch (e) {
@@ -341,7 +328,21 @@ describe(`${scriptName}`, () => {
         let message = `ApsUsersService.getApsUser()`;
         expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
-      expect(apsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal(apsUserTemplate);
+      // expect organizationDisplayName in all memberOfOrganizations to be equal to organizationId
+      let recreatedApsUser: APSUser = apsUserResponse;
+      const recreatedMemberOfOrganizations: APSOrganizationRolesList = [];
+      if(apsUserResponse.memberOfOrganizations !== undefined) {
+        for(const memberOfOrganization of apsUserResponse.memberOfOrganizations) {
+          expect(memberOfOrganization.organizationId, TestLogger.createTestFailMessage('org displayname not equal org id')).to.deep.equal(memberOfOrganization.organizationDisplayName);
+          // also re-create the original data structure 
+          recreatedMemberOfOrganizations.push({
+            organizationId: memberOfOrganization.organizationId,
+            roles: memberOfOrganization.roles
+          });
+        }
+        recreatedApsUser.memberOfOrganizations = recreatedMemberOfOrganizations;
+      }
+      expect(recreatedApsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal(apsUserTemplate);
     });
 
     it(`${scriptName}: should not find user`, async() => {
@@ -398,7 +399,7 @@ describe(`${scriptName}`, () => {
 
     it(`${scriptName}: should handle update user without any data`, async() => {
       let updatedApsUser: APSUser;
-      let existingApsUser: APSUser;
+      let existingApsUser: APSUserResponse;
       const userId = apsUserTemplate.userId;
       try {
         existingApsUser = await ApsUsersService.getApsUser({
@@ -413,7 +414,20 @@ describe(`${scriptName}`, () => {
         let message = `ApsUsersService.updateApsUser()`;
         expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
       }
-      expect(updatedApsUser, 'updated user different from existing user').to.deep.equal(existingApsUser);
+      // delete all the organizationDisplayNames
+      let recreatedExistingApsUser: APSUser = existingApsUser;
+      if(existingApsUser.memberOfOrganizations !== undefined) {
+        const newMemberOfOrganizations: APSOrganizationRolesList = [];
+        for(const memberOfOrganization of recreatedExistingApsUser.memberOfOrganizations) {
+          const newMemberOfOrganization: APSOrganizationRoles = {
+            organizationId: memberOfOrganization.organizationId,
+            roles: memberOfOrganization.roles
+          }
+          newMemberOfOrganizations.push(newMemberOfOrganization);
+        }
+        recreatedExistingApsUser.memberOfOrganizations = newMemberOfOrganizations;
+      }
+      expect(updatedApsUser, 'updated user different from existing user').to.deep.equal(recreatedExistingApsUser);
     });
 
     it(`${scriptName}: should handle update user not found`, async() => {
@@ -766,6 +780,5 @@ describe(`${scriptName}`, () => {
       // TODO: here or in openapi?
     });
 
-  });
 });
 

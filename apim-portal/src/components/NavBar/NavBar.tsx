@@ -12,13 +12,13 @@ import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
-import { TAPOrganizationIdList } from "../APComponentsCommon";
+import { DisplaySystemHealthCheck } from "./DisplaySystemHealthCheck";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 import { APDisplayAbout } from "../APAbout/APDisplayAbout";
+import { TAPEntityIdList } from "../../utils/APEntityId";
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -54,10 +54,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const isSystemAvailable = (): boolean => {
-    if( 
-      healthCheckSummaryContext.serverHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ||
-      healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL
-      ) return false;    
+    // still allow login even if connector is unavailable ==> configure connector
+    if( healthCheckSummaryContext.serverHealthCheckSuccess === EAPHealthCheckSuccess.FAIL) return false;    
     return true;
   }
 
@@ -155,6 +153,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       case EAppState.ADMIN_PORTAL:
         return AdminPortalLogoUrl;
       case EAppState.DEVELOPER_PORTAL:
+      case EAppState.PUBLIC_DEVELOPER_PORTAL:
         return DeveloperPortalLogoUrl;
       case EAppState.UNDEFINED:
         if(userContext.originAppState !== EAppState.UNDEFINED) return getLogoUrl(userContext.originAppState);
@@ -187,10 +186,10 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     );   
   }
   const renderOpOrganization = () => {
-    const availableOrganizationList: TAPOrganizationIdList = userContext.runtimeSettings.availableOrganizationNameList || [];
-    if(userContext.runtimeSettings.currentOrganizationName) {
-      const label: string = 'Organization: ' + userContext.runtimeSettings.currentOrganizationName;
-      if(availableOrganizationList.length < 2) {
+    const availableOrganizationEntityIdList: TAPEntityIdList = userContext.runtimeSettings.availableOrganizationEntityIdList || [];
+    if(userContext.runtimeSettings.currentOrganizationEntityId) {
+      const label: string = 'Organization: ' + userContext.runtimeSettings.currentOrganizationEntityId.displayName;
+      if(availableOrganizationEntityIdList.length < 2) {
         return (
           <p>{label}</p>
         )
@@ -212,7 +211,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
-        <SystemHealthCheck />
+        {/* <SystemHealthCheck /> */}
+        <DisplaySystemHealthCheck />
       </React.Fragment>
     );
     return (
@@ -233,7 +233,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
               className="ap-navbar user-overlay-panel" 
               ref={userOverlayPanel} 
               id="user_overlay_panel" 
-              style={{width: '450px'}}
+              style={{width: '650px'}}
               onHide={onHideUserOverlayPanel}
               >
               {renderUserOpInfo()}
@@ -259,7 +259,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
           </React.Fragment>
         }
-        <SystemHealthCheck />
+        {/* <SystemHealthCheck /> */}
+        <DisplaySystemHealthCheck />
       </React.Fragment>
     );
   }

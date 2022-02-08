@@ -18,7 +18,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApiProductsCommon";
-import { TViewManagedApiProduct } from "../../../components/APApiObjectsCommon";
+import { C_DEFAULT_API_PRODUCT_ACCESS_LEVEL, TViewManagedApiProduct } from "../../../components/APApiObjectsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
@@ -47,6 +47,10 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const transformGetManagedObjectToManagedObjectDisplay = (getManagedObject: TGetManagedObject): TManagedObjectDisplay => {
     const managedObjectDisplay: TManagedObjectDisplay = {
       ...getManagedObject,
+      apiProduct: {
+        ...getManagedObject.apiProduct,
+        accessLevel: getManagedObject.apiProduct.accessLevel ? getManagedObject.apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL,
+      },
       protocolListAsString: APRenderUtils.getProtocolListAsString(getManagedObject.apiProduct.protocols),
     }
     return managedObjectDisplay;
@@ -201,6 +205,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               <div className="p-ml-2">{managedObjectDisplay.apiProduct.description}</div>
 
               <div><b>Approval type</b>: {managedObjectDisplay.apiProduct.approvalType}</div>
+              <div><b>Access level</b>: {managedObjectDisplay.apiProduct.accessLevel}</div>
 
               <div className="p-text-bold">APIs:</div>
               {renderShowApiButtons()}
@@ -261,9 +266,9 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
       </div>
       {/* DEBUG */}
-      {/* <pre style={ { fontSize: '10px' }} >
+      <pre style={ { fontSize: '10px' }} >
         {JSON.stringify(managedObjectDisplay, null, 2)}
-      </pre> */}
+      </pre>
     </React.Fragment>
   );
 }

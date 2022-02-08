@@ -1,6 +1,7 @@
 import { 
   AdministrationService,
   Organization,
+  OrganizationResponse,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   ApsAdministrationService,
@@ -12,10 +13,10 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPEntityId } from './APTypes';
+import { TAPEntityId } from './APEntityId';
 import { Globals } from './Globals';
 
-export type TAPOrganization = Organization & {
+export type TAPOrganization = OrganizationResponse & {
   displayName: APSDisplayName;
 }
 export type TAPOrganizationList = Array<TAPOrganization>;
@@ -59,11 +60,20 @@ export class APOrganizationsService {
     // console.log(`${logName}: maskedConnectorOrg=${JSON.stringify(maskedConnectorOrg, null, 2)}`);
     return maskedConnectorOrg;
   }
+
+  public static sortAPOrganizationList_byDisplayName = (apOrganizationList: TAPOrganizationList): TAPOrganizationList => {
+    return apOrganizationList.sort( (e1: TAPOrganization, e2: TAPOrganization) => {
+      if(e1.displayName < e2.displayName) return -1;
+      if(e1.displayName > e2.displayName) return 1;
+      return 0;
+    });
+  }
+
   public static listOrganizations = async(options: any): Promise<TAPOrganizationList> => {
     const _connectorOrgList: Array<Organization> = await AdministrationService.listOrganizations(options);
     const _apsResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
     const _apsOrgList: APSOrganizationList = _apsResponse.list;
-    // filter out the health check or if exists
+    // filter out the health check org if exists
     const idx = _connectorOrgList.findIndex((org: Organization) => {
       return org.name === Globals.getHealthCheckOrgName()
     });
@@ -82,11 +92,20 @@ export class APOrganizationsService {
     return resultOrgList;
   }
 
-  public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
-
-    const connectorOrganization: Organization = await AdministrationService.getOrganization({
+  private static getConnectorOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<OrganizationResponse> => {
+    return APOrganizationsService.maskSecrets(await AdministrationService.getOrganization({
       organizationName: organizationId
-    });
+    }), secretMask);
+  }
+  public static getOrganizationStatus = async(organizationId: APSId, organizationDisplayName?: string): Promise<TAPOrganization> => {
+    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId);
+    return {
+      ...connectorOrganization,
+      displayName: organizationDisplayName ? organizationDisplayName : connectorOrganization.name
+    }
+  }
+  public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
+    const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId, secretMask);
     let apsOrganization: APSOrganization | undefined = undefined;
     try {
       apsOrganization = await ApsAdministrationService.getApsOrganization({
@@ -96,7 +115,7 @@ export class APOrganizationsService {
       // ignore 
     }
     const apOrganization: TAPOrganization = {
-      ...APOrganizationsService.maskSecrets(connectorOrganization, secretMask),
+      ...connectorOrganization,
       displayName: apsOrganization ? apsOrganization.displayName : connectorOrganization.name
     }
     return apOrganization;

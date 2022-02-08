@@ -26,6 +26,7 @@ import { TAPApiEntityRef } from './APApiObjectsCommon';
 import { Globals } from '../utils/Globals';
 import { APRenderUtils } from '../utils/APRenderUtils';
 import { APContextError } from '../utils/APError';
+import { TAPAsyncApiSpec } from '../utils/APTypes';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -47,20 +48,6 @@ export type TAPUserMessage = {
 export type TAPOrganizationId = string;
 export type TAPOrganizationIdList = Array<TAPOrganizationId>;
 export type TAPEnvironmentName = string;
-export enum EAPAsyncApiSpecFormat {
-  JSON = 'application/json',
-  YAML = 'application/x-yaml',
-  UNKNOWN = 'application/x-unknown'
-}
-export type TAPAsyncApiSpec = {
-  format: EAPAsyncApiSpecFormat,
-  spec: any
-}
-export type TAPAttribute = {
-  name: string,
-  value: string
-}
-export type TAPAttributeList = Array<TAPAttribute>;
 
 // * client information *
 export type TAPAppClientInformation = {
@@ -146,15 +133,6 @@ export class APManagedApiProductDisplay {
   public static getApProtocolListAsString = (apiProtocolList?: Array<Protocol> ): string => {
     return APRenderUtils.getProtocolListAsString(apiProtocolList);
   }
-  public static getApAttributeNamesAsString = (apiAttributeList?: TAPAttributeList): string => {
-    if(apiAttributeList) {
-      const list: Array<string> = apiAttributeList.map( (attribute: TAPAttribute) => {
-        return attribute.name;
-      });
-      return list.join(', ');
-    }
-    else return '';
-  }
   public static getApEnvironmentsAsDisplayList = (apiEnvironmentList: Array<EnvironmentResponse>): Array<string> => {
     return apiEnvironmentList.map( (envResp: EnvironmentResponse) => {
       return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`
@@ -235,7 +213,7 @@ export class APManagedUserAppDisplay {
         if(ep.protocol) return (ep.protocol.name === Protocol.name.HTTP || ep.protocol.name === Protocol.name.HTTPS);
         return false;
       });
-      if(foundHttp && appEnv.permissions && appEnv.permissions.subscribe && appEnv.permissions.subscribe.length > 0) isCapable = true;
+      if(foundHttp && appEnv.permissions && appEnv.permissions.publish && appEnv.permissions.publish.length > 0) isCapable = true;
     }
     return isCapable;
   }

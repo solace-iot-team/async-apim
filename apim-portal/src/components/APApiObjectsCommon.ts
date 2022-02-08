@@ -5,6 +5,7 @@ import {
   APIInfo,
   APIInfoList,
   APIProduct, 
+  APIProductAccessLevel, 
   ApiProductsService, 
   ApisService, 
   AppListItem, 
@@ -50,6 +51,7 @@ export enum EApiTopicSyntax {
   MQTT = "mqtt"
 }
 // * Manage Api Products *
+export const C_DEFAULT_API_PRODUCT_ACCESS_LEVEL = APIProductAccessLevel.PRIVATE;
 export type TApiProduct = APIProduct;
 export type TApiProductList = Array<TApiProduct>;
 export type TApiEnvironmentNameList = Array<string>;
@@ -163,11 +165,19 @@ export class APApiProductsCommon {
     return Object.keys(e).map(k => e[k]);
   }  
 
+  public static getAccessLevelSelectList = (): Array<APIProductAccessLevel> => {
+    const e: any = APIProductAccessLevel;
+    return Object.keys(e).map(k => e[k]);
+  }  
+
   public static transformApiProductToViewManagedApiProduct = (apiProduct: TApiProduct, apiEnvironmentList: TApiEnvironmentList, apiInfoList: APIInfoList, apiUsedBy_AppEntityNameList: CommonEntityNameList): TViewManagedApiProduct => {
     return {
       id: apiProduct.name,
       displayName: apiProduct.displayName,
-      apiProduct: apiProduct,
+      apiProduct: {
+        ...apiProduct,
+        accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
+      },
       apiEnvironmentList: apiEnvironmentList,
       apiInfoList: apiInfoList,
       apiUsedBy_AppEntityNameList: apiUsedBy_AppEntityNameList

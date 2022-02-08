@@ -4,14 +4,14 @@ import { useHistory } from 'react-router-dom';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
-import { AuthHelper } from "../../../auth//AuthHelper";
-import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
-import { AuthContext } from '../../../components/AuthContextProvider/AuthContextProvider';
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
-import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
-import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
+import { AuthHelper } from "../../auth//AuthHelper";
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from "../../utils/Globals";
+import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
+import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
+import { APHealthCheckSummaryContext } from "../../components/APHealthCheckSummaryContextProvider";
+import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 
-import '../../../components/APComponents.css';
+import '../../components/APComponents.css';
 
 export interface IDeveloperPortalSideBarProps {
   onSwitchToAdminPortal: () => void;
@@ -35,7 +35,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
   const isDisabledWithOrg = (resourcePath: EUIDeveloperPortalResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
-      !userContext.runtimeSettings.currentOrganizationName
+      !userContext.runtimeSettings.currentOrganizationEntityId
     );
   }
 

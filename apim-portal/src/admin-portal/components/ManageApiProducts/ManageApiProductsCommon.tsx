@@ -1,4 +1,3 @@
-
 export type TManagedObjectId = string;
 
 export enum E_CALL_STATE_ACTIONS {

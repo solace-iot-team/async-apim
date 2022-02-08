@@ -12,10 +12,10 @@ import {
 import { TAPOrganizationId } from '../components/APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from '../components/APComponentsCommon';
 import { Globals } from './Globals';
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
+import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "./APTypes";
 
 export type TAPAttribute = {
   name: string,

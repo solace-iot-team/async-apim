@@ -174,9 +174,20 @@ export class ConfigHelper {
   }
 
   public static doInitialize = async (dispatchConfigContextAction: React.Dispatch<ConfigContextAction>) => {
-    dispatchConfigContextAction({ type: 'SET_PORTAL_APP_INFO', portalAppInfo: await ConfigHelper.getPortalAppInfo() });
-    dispatchConfigContextAction( { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: await ConfigHelper.getConfigRbacRoleList() });
-    dispatchConfigContextAction( { type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.getActiveConnectorInstance() });
+    // const funcName: string = `doInitialize`;
+    // const logName: string = `${ConfigHelper.name}.${funcName}()`
+
+    const portalAppInfo = await ConfigHelper.getPortalAppInfo();
+    const rbacRoleList = await ConfigHelper.getConfigRbacRoleList();
+    const connector = await ConfigHelper.getActiveConnectorInstance();
+
+    // console.log(`${logName}: portalAppInfo=${JSON.stringify(portalAppInfo, null, 2)}`);
+
+    dispatchConfigContextAction( { type: 'UPDATE_CONFIG_CONTEXT', configContext: {
+      portalAppInfo: portalAppInfo,
+      rbacRoleList: rbacRoleList,
+      connector: connector
+    }});
   }
 
 }

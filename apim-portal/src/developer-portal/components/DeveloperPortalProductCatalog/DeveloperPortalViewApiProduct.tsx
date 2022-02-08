@@ -4,10 +4,6 @@ import React from "react";
 import { TabView, TabPanel } from 'primereact/tabview';
 
 import { 
-  ApiProductsService, 
-  APIProduct, 
-  EnvironmentResponse,
-  EnvironmentsService,
   CommonName,
   CommonDisplayName
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -17,10 +13,10 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalProductCatalogCommon";
-import { APManagedApiProductDisplay, TAPDeveloperPortalApiProductDisplay } from "../../../components/APComponentsCommon";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import { APDisplayApiProductAsyncApis } from "../../../components/APDisplay/APDisplayApiProductAsyncApis";
+import { APProductsService, TAPDeveloperPortalProductDisplay } from "../../../utils/APProductsService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -37,12 +33,8 @@ export interface IDeveloperPortalViewApiProductProps {
 export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProductProps> = (props: IDeveloperPortalViewApiProductProps) => {
   const componentName = 'DeveloperPortalViewApiProduct';
 
-  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
+  type TManagedObject = TAPDeveloperPortalProductDisplay;
   type TManagedObjectDisplay = TManagedObject;
-
-  const transformManagedObjectToDisplay = (mo: TManagedObject): TManagedObjectDisplay => {
-    return mo;
-  }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObjectDisplay>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -54,20 +46,11 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for product: ${props.apiProductDisplayName}`);
     try { 
-      const apiApiProduct: APIProduct = await ApiProductsService.getApiProduct({
-        organizationName: props.organizationId, 
-        apiProductName: props.apiProductId
+      const apProductDisplay: TAPDeveloperPortalProductDisplay = await APProductsService.getDeveloperPortalApiProductDisplay({
+        organizationId: props.organizationId,
+        apiProductId: props.apiProductId 
       });
-      if(!apiApiProduct.environments) throw new Error(`${logName}: apiApiProduct.environments is undefined`);
-      let apiEnvList: Array<EnvironmentResponse> = [];
-      for(const envName of apiApiProduct.environments) {
-        const _apiEnvResp: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-          organizationName: props.organizationId, 
-          envName: envName
-        });
-        apiEnvList.push(_apiEnvResp);
-      }
-      setManagedObject(transformManagedObjectToDisplay(APManagedApiProductDisplay.createAPDeveloperPortalApiProductDisplayFromApiEntities(apiApiProduct, apiEnvList)));
+      setManagedObject(apProductDisplay);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -105,15 +88,16 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='General'>
                   <div className="p-text-bold">Description:</div>
-                  <div className="p-ml-2">{managedObject.apiApiProduct.description}</div>
-                  <div><b>Approval type</b>: {managedObject.apiApiProduct.approvalType}</div>
+                  <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
+                  <div><b>Approval type</b>: {managedObject.connectorApiProduct.approvalType}</div>
+                  <div><b>Access level</b>: {managedObject.connectorApiProduct.accessLevel}</div>
                   <div className="p-text-bold">Environments:</div>
-                  <div className="p-ml-2">{APManagedApiProductDisplay.getApEnvironmentsAsDisplayList(managedObject.apiEnvironmentList).sort().join(', ')}</div>
+                  <div className="p-ml-2">{managedObject.apEnvironmentListAsStringList.sort().join(', ')}</div>
                   <div className="p-text-bold">Protocols:</div>
-                  <div className="p-ml-2">{APManagedApiProductDisplay.getApProtocolListAsString(managedObject.apiApiProduct.protocols)}</div>
+                  <div className="p-ml-2">{managedObject.apProtocolListAsString}</div>
                   <div className="p-text-bold">Client Options:</div>
                   <APDisplayClientOptions
-                    clientOptions={managedObject.apiApiProduct.clientOptions}
+                    clientOptions={managedObject.connectorApiProduct.clientOptions}
                     className="p-ml-4"
                   />
                 </TabPanel>  
@@ -129,7 +113,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
                 </TabPanel>
                 <TabPanel header='Controlled Attributes'>
                   <APDisplayAttributes
-                    attributeList={managedObject.apiApiProduct.attributes}
+                    attributeList={managedObject.connectorApiProduct.attributes}
                     emptyMessage="No attributes defined"
                     // className="p-ml-2"
                   />

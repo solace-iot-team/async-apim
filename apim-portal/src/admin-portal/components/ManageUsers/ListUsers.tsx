@@ -9,7 +9,7 @@ import { Button } from 'primereact/button';
 import { MenuItem } from "primereact/api";
 
 import { 
-  APSUserList,
+  APSUserResponseList,
   ApsUsersService, 
   EAPSSortDirection, 
   ListApsUsersResponse
@@ -90,12 +90,12 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
         searchOrganizationId: props.organizationId
       });
       const totalCount: number = listApsUsersResponse.meta.totalCount;
-      const apsUserList: APSUserList = listApsUsersResponse.list;
+      const apsUserResponseList: APSUserResponseList = listApsUsersResponse.list;
       let _managedObjectList: TManagedObjectList = [];
-      for(const apsUser of apsUserList) {
+      for(const apsUserResponse of apsUserResponseList) {
         // check if developer exists in connector for any org in list and if they have assets
-        let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUser, props.organizationId);
-        _managedObjectList.push(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUser, userAssetInfoList));
+        let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUserResponse, props.organizationId);
+        _managedObjectList.push(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUserResponse, userAssetInfoList));
       }
       setManagedObjectList(_managedObjectList);
       setLazyLoadingTableTotalRecords(totalCount);

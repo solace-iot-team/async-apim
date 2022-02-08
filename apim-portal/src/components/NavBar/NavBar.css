@@ -39,6 +39,10 @@
   min-width: 25rem;
 }
 
+.ap-navbar .system-health-overlay-panel {
+  min-width: 15rem;
+}
+
 .p-menubar-logo {
   height: 40px !important;
 }

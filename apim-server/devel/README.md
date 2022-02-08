@@ -58,22 +58,38 @@ npm run lint
 ### Start Mongo in Docker Container
 
 ````bash
-vi mongodb/start.mongo.sh
+# start it with an external volume
+vi mongodb/start.mongo.external-volume.sh
+# start it with an internal volume
+vi mongodb/start.mongo.internal-volume.sh
 # check the port number mapped and adjust / align with env for apim-server
 ````
 
 ````bash
-# start
-mongodb/start.mongo.sh
+# start it with an external volume
+./mongodb/start.mongo.external-volume.sh
 # login
-docker exec -it apim-devel-server-mongodb bash
+docker exec -it apim-devel-server-mongodb-ext-vols bash
 # docker logs
-docker logs apim-devel-server-mongodb
+docker logs apim-devel-server-mongodb-ext-vols
+
+# or
+
+# start it with an internal volume
+./mongodb/start.mongo.internal-volume.sh
+# login
+docker exec -it apim-devel-server-mongodb-int-vols bash
+# docker logs
+docker logs apim-devel-server-mongodb-int-vols
 ````
 
 ### Stop Mongo Docker Container
 ````bash
-mongodb/stop.mongo.sh
+./mongodb/stop.mongo.external-volume.sh
+
+# or
+
+./mongodb/stop.mongo.internal-volume.sh
 ````
 
 

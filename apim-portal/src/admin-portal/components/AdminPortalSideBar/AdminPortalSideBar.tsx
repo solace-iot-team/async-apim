@@ -35,7 +35,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const isDisabledWithoutOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
-      !userContext.runtimeSettings.currentOrganizationName
+      !userContext.runtimeSettings.currentOrganizationEntityId
     );
   }
   const isDisabledWithConnectorUnavailable = (isDisabledFunc: (resourcePath: EUICombinedResourcePaths) => boolean, resourcePath: EUICombinedResourcePaths): boolean => {
@@ -92,6 +92,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             label: 'Settings',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
+          },
+          {
+            label: 'Status',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
           },
         ] 
       },

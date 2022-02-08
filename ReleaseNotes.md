@@ -2,6 +2,40 @@
 
 Solace Async API Management.
 
+## Version 0.0.34
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.34
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.17
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.11
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.5
+
+#### API-M Admin & Developer Portal
+
+**Enhancements:**
+- **Organization Status**
+  - display connectivity status of the organization
+- **Edit/New Organization**
+  - advanced configuration: event portal config is now optional
+- **Import APIs from Event Portal**
+  - disabled if no event portal connectivity
+- **Organzation Display Name**
+  - use display name instead of id
+- **Admin Portal: Manage API Products**
+  - added `accessLevel` property, defaults to `private`
+- **Developer Portal: Explore API Products**
+  - added `accessLevel` to view & search facility
+
+**Fixes:**
+- **Developer App: Manage Webhooks**
+  - now takes into account the reversal of pub v. sub permissions - these are now the same as the spec
+- **Login without available connector**
+  - login as a user with `systemAdmin` role works now regardless of connector config/availability
+- **Developer Portal: My Apps**
+  - issue: invalid format of portal user as a connector developer
+  - portal now uses the same validation as connector for first/last name
+  - in case of an error, portal displays error message on page instead of blank page
+
+
+
 ## Version 0.0.33
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.33
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.16

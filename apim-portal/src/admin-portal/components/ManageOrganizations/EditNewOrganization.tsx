@@ -34,6 +34,7 @@ import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { Checkbox } from "primereact/checkbox";
 
 
 export enum EAction {
@@ -84,7 +85,11 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
       if(apOrganization["cloud-token"] === '') delete apOrganization["cloud-token"];
       else if(typeof apOrganization["cloud-token"] !== 'string') {
         if(apOrganization["cloud-token"].cloud.token === '') delete apOrganization["cloud-token"].cloud.token;
-        if(apOrganization["cloud-token"].eventPortal.token === '') delete apOrganization["cloud-token"].eventPortal.token;
+        if(!mo.configAdvancedEventPortal.isConfigured) {
+          // delete apOrganization["cloud-token"].eventPortal.baseUrl;
+          delete apOrganization["cloud-token"].eventPortal.token;
+        }
+        // if(apOrganization["cloud-token"].eventPortal.token === '') delete apOrganization["cloud-token"].eventPortal.token;
       }
     }
     return apOrganization;
@@ -116,13 +121,13 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     return true;
   }
 
-  const is_advanced_EventPortal_TokenRequired = (): boolean => {
-    const funcName = 'is_advanced_EventPortal_TokenRequired';
-    const logName = `${componentName}.${funcName}()`;
-    if(props.action === EAction.NEW) return true;
-    if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
-    return originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === undefined || originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === '';
-  }
+  // const is_advanced_EventPortal_TokenRequired = (): boolean => {
+  //   const funcName = 'is_advanced_EventPortal_TokenRequired';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(props.action === EAction.NEW) return true;
+  //   if(originalMaskedManagedObject === undefined) throw new Error(`${logName}: originalMaskedManagedObject is undefined`);
+  //   return originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === undefined || originalMaskedManagedObject.configAdvancedEventPortal.cloudToken === '';
+  // }
 
   const is_simple_solace_cloud_TokenRequired = (): boolean => {
     const funcName = 'is_simple_solace_cloud_TokenRequired';
@@ -517,12 +522,43 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     );
   }
 
-  const renderManagedObjectFormConfigAdvancedDetails_EventPortal = (isActive: boolean) => {
+  const renderManagedObjectFormConfigAdvancedDetails_EventPortal_Option = (isActive: boolean) => {
+    const isEventPortalConfiguredSeparately = managedObjectUseForm.watch('configAdvancedEventPortal.isConfigured');
     return(
-      <React.Fragment>
+      <div className="p-ml-2" hidden={!isActive}>
         <div className="p-mb-4 ap-display-component-header">
           Event Portal:
         </div>
+        {/* option to configure ep separately */}
+        <div className="p-field-checkbox">
+          <span>
+            <Controller
+              name="configAdvancedEventPortal.isConfigured"
+              control={managedObjectUseForm.control}
+              render={( { field, fieldState }) => {
+                  // console.log(`field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                  return(
+                    <Checkbox
+                      inputId={field.name}
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.checked)}                                  
+                      className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                    />
+              )}}
+            />
+            <label htmlFor="configAdvancedEventPortal.isConfigured" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.isConfigured })}> Configure Event Portal Separately</label>
+          </span>
+          {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configAdvancedEventPortal?.isConfigured)}
+        </div>
+        { renderManagedObjectFormConfigAdvancedDetails_EventPortal(isEventPortalConfiguredSeparately) }
+      </div>    
+    );
+  }
+
+  const renderManagedObjectFormConfigAdvancedDetails_EventPortal = (isActive: boolean) => {
+    if(isActive === undefined) return (<></>);
+    return(
+      <div className="p-ml-2 p-mt-6" hidden={!isActive}>
         {/* event portal base url */}
         <div className="p-field">
           <span className="p-float-label">
@@ -551,9 +587,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
             <Controller
               name="configAdvancedEventPortal.cloudToken"
               control={managedObjectUseForm.control}
-              // rules={APConnectorFormValidationRules.Organization_Token(props.action === EAction.NEW, 'Enter Event Portal Token.', isActive)}
-              rules={APConnectorFormValidationRules.Organization_Token(is_advanced_EventPortal_TokenRequired(), 'Enter Event Portal Token.', isActive)}
-              
+              // rules={APConnectorFormValidationRules.Organization_Token(is_advanced_EventPortal_TokenRequired(), 'Enter Event Portal Token.', isActive)}              
+              rules={APConnectorFormValidationRules.Organization_Token(isActive, 'Enter Event Portal Token.', isActive)}              
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -565,11 +600,12 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
                 );
               }}
             />
-            <label htmlFor="configAdvancedEventPortal.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken })}>{isRequiredLabel(is_advanced_EventPortal_TokenRequired(), 'Event Portal Token')}</label>
+            {/* <label htmlFor="configAdvancedEventPortal.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken })}>{isRequiredLabel(is_advanced_EventPortal_TokenRequired(), 'Event Portal Token')}</label> */}
+            <label htmlFor="configAdvancedEventPortal.cloudToken" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken })}>{isRequiredLabel(isActive, 'Event Portal Token')}</label>
           </span>
           {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.configAdvancedEventPortal?.cloudToken)}
         </div>
-    </React.Fragment>    
+    </div>    
     );
   }
 
@@ -578,7 +614,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
       <React.Fragment>
         {renderManagedObjectFormConfigAdvancedDetails_SolaceCloud(isActive, bsdp_Type)}
         {renderManagedObjectFormConfigAdvancedDetails_ReverseProxy(isActive, bsdp_Type)}
-        {renderManagedObjectFormConfigAdvancedDetails_EventPortal(isActive)}
+        {renderManagedObjectFormConfigAdvancedDetails_EventPortal_Option(isActive)}
       </React.Fragment>
     );
   }

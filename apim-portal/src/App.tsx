@@ -12,7 +12,10 @@ import { AdminPortalSideBar } from "./admin-portal/components/AdminPortalSideBar
 // * Developer Portal *
 import { DeveloperPortalHomePage } from "./developer-portal/pages/DeveloperPortalHomePage";
 import { DeveloperPortalAppRoutes } from "./developer-portal/DeveloperPortalAppRoutes";
-import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperPortalSideBar/DeveloperPortalSideBar";
+import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperPortalSideBar";
+// * Public Developer Portal *
+import { PublicDeveloperPortalAppRoutes } from "./developer-portal/PublicDeveloperPortalAppRoutes";
+import { PublicDeveloperPortalSideBar } from "./developer-portal/components/PublicDeveloperPortalSideBar";
 
 import { 
   EUIDeveloperToolsResourcePaths, 
@@ -20,7 +23,8 @@ import {
   EUIAdminPortalResourcePaths, 
   EUIDeveloperPortalResourcePaths, 
   EAppState, 
-  TLocationStateAppState, 
+  TLocationStateAppState,
+  Globals,
 } from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { HomePage } from './pages/HomePage';
@@ -42,6 +46,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.css';
+import { PerformSystemHealthCheck } from "./components/SystemHealth/PerformSystemHealthCheck";
 
 const App: React.FC = () => {
   const componentName = 'App';
@@ -52,6 +57,7 @@ const App: React.FC = () => {
   const [authContext] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [showDeveloperPortal, setShowDeveloperPortal] = React.useState<boolean>(false);
+  const [showPublicDeveloperPortal, setShowPublicDeveloperPortal] = React.useState<boolean>(false);
   const [showAdminPortal, setShowAdminPortal] = React.useState<boolean>(false);
   const [showDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
   const appPortalHistory = useHistory<TLocationStateAppState>();
@@ -67,7 +73,7 @@ const App: React.FC = () => {
 
   React.useEffect(() => {
     calculateShowStates(userContext.currentAppState);
-  }, [userContext.currentAppState]); 
+  }, [userContext.currentAppState, authContext]); 
 
   const onSwitchToDeveloperPortal = () => {
     const funcName = 'onSwitchToDeveloperPortal';
@@ -90,34 +96,70 @@ const App: React.FC = () => {
   }
 
   const calculateShowStates = (appState: EAppState) => {
-    if(appState === EAppState.ADMIN_PORTAL) {
-      setShowAdminPortal(true);
-      setShowDeveloperPortal(false);
-    }
-    else if (appState === EAppState.DEVELOPER_PORTAL) {
-      setShowAdminPortal(false);
-      setShowDeveloperPortal(true);
-    }
+    const funcName = 'calculateShowStates';
+    const logName = `${componentName}.${funcName}()`;
+    switch(appState) {
+      case EAppState.ADMIN_PORTAL:
+        setShowAdminPortal(true);
+        setShowDeveloperPortal(false);
+        setShowPublicDeveloperPortal(false);
+        break;
+      case EAppState.DEVELOPER_PORTAL:
+        setShowAdminPortal(false);
+        setShowDeveloperPortal(true);
+        setShowPublicDeveloperPortal(false);
+        break;
+      case EAppState.PUBLIC_DEVELOPER_PORTAL:
+        setShowAdminPortal(false);
+        setShowDeveloperPortal(false);
+        setShowPublicDeveloperPortal(true);
+        break;
+      case EAppState.UNDEFINED:
+        setShowAdminPortal(false);
+        setShowDeveloperPortal(false);
+        setShowPublicDeveloperPortal(false);
+        break;
+      default:
+        Globals.assertNever(logName, appState);
+      }
+    // if(appState === EAppState.ADMIN_PORTAL) {
+    //   setShowAdminPortal(true);
+    //   setShowDeveloperPortal(false);
+    // }
+    // else if (appState === EAppState.DEVELOPER_PORTAL) {
+    //   setShowAdminPortal(false);
+    //   setShowDeveloperPortal(true);
+    // } else {
+    //   setShowAdminPortal(false);
+    //   setShowDeveloperPortal(false);
+    // }
   }
 
   const displayStateInfo = () => {
     return (
       <p>
+        authContext.isLoggedIn={String(authContext.isLoggedIn)},
+        authContext.authorizedResourcePathsAsString.length={authContext.authorizedResourcePathsAsString.length},
         userContext.originAppState={userContext.originAppState}, 
         userContext.currentAppState={userContext.currentAppState}, 
         showDeveloperPortal={String(showDeveloperPortal)}, 
-        showAdminPortal={String(showAdminPortal)}
+        showAdminPortal={String(showAdminPortal)},
+        showPublicDeveloperPortal={String(showPublicDeveloperPortal)}
       </p>  
     );
   }
 
   return (
     <React.Fragment>
+      <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
       { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
+          {showPublicDeveloperPortal &&
+            <PublicDeveloperPortalSideBar />
+          }
           {showDeveloperPortal &&
             <DeveloperPortalSideBar onSwitchToAdminPortal={onSwitchToAdminPortal} />
           }
@@ -143,6 +185,9 @@ const App: React.FC = () => {
 
               {/* Admin Portal */}
               { showAdminPortal && AdminPortalAppRoutes() }
+
+              {/* Public Developer Portal */}
+              { showPublicDeveloperPortal && PublicDeveloperPortalAppRoutes() }
 
               {/* Developer Portal */}
               { showDeveloperPortal && DeveloperPortalAppRoutes() }

@@ -47,6 +47,7 @@ export type TAPOrganizationConfigAdvancedServiceDiscoveryProvisioning = {
   bsdp_ReverseProxy: TAPBrokerServiceDiscoveryProvioning_ReverseProxy;
 }
 export type TAPOrganizationConfigEventPortal = {
+  isConfigured: boolean;
   baseUrl: string;
   cloudToken: string;
 }
@@ -55,6 +56,7 @@ export enum EAPOrganizationConfigType {
   ADVANCED = 'Advanced'
 }
 export type TAPOrganizationConfig = {
+  apOrganization: TAPOrganization;
   name: CommonName;
   displayName: CommonDisplayName;
   configType: EAPOrganizationConfigType;
@@ -78,6 +80,10 @@ export class ManageOrganizationsCommon {
   private static CDefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal';
 
   private static CEmptyOrganizationConfig: TAPOrganizationConfig = {
+    apOrganization: {
+      name: '',
+      displayName: ''
+    },
     name: '',
     displayName: '',
     configType: EAPOrganizationConfigType.SIMPLE,
@@ -102,6 +108,7 @@ export class ManageOrganizationsCommon {
       }
     },
     configAdvancedEventPortal: {
+      isConfigured: false,
       baseUrl: ManageOrganizationsCommon.CDefaultEventPortalBaseUrlStr,
       cloudToken: ''
     }
@@ -172,6 +179,7 @@ export class ManageOrganizationsCommon {
     let oc: TAPOrganizationConfig = ManageOrganizationsCommon.createEmptyOrganizationConfig();
     oc.name = apObject.name;
     oc.displayName = apObject.displayName;
+    oc.apOrganization = apObject;
     if( typeof apObject["cloud-token"] === 'string' ) {
       oc.configType = EAPOrganizationConfigType.SIMPLE;
       oc.configSimple = { 
@@ -190,6 +198,7 @@ export class ManageOrganizationsCommon {
           cloudToken: apObject['cloud-token'].cloud.token
         };
         oc.configAdvancedEventPortal = {
+          isConfigured: apObject['cloud-token'].eventPortal.token !== undefined,
           baseUrl: apObject['cloud-token'].eventPortal.baseUrl,
           cloudToken: apObject['cloud-token'].eventPortal.token
         };

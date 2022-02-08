@@ -1,9 +1,8 @@
 import {
   $attributes, $ClientOptionsGuaranteedMessaging, $CommonName, $CustomCloudEndpoint, $Organization, $SempV2Authentication, $WebHook, $WebHookBasicAuth, $WebHookHeaderAuth
 } from '@solace-iot-team/apim-connector-openapi-browser';
-
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../components/APComponentsCommon";
 import { APConnectorApiHelper } from "./APConnectorApiCalls";
+import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from './APTypes';
 
 export class APConnectorFormValidationRules {
 
