@@ -50,7 +50,7 @@ import './App.css';
 const App: React.FC = () => {
   const componentName = 'App';
   
-  const IS_DEBUG: boolean = true;
+  const IS_DEBUG: boolean = false;
 
   const [isDebug] = React.useState<boolean>(IS_DEBUG);
   const [authContext] = React.useContext(AuthContext);
