@@ -60,7 +60,6 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
@@ -89,16 +88,22 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }
 
   const doInitialize = async () => {
-    if(!configContext.connector) {
-      const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.NO_CONNECTOR_CONFIG, 'no connector config found');
-      props.onError(callState);
-      return;
-    }
-    if(healthCheckContext.connectorHealthCheckResult && healthCheckContext.connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
-      const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.CONNECTOR_UNAVAILABLE, 'connector unavailable');
-      props.onError(callState);
-      return;
-    }
+    // Notes:
+    // - connector may not be configured yet
+    // - connector may be unavailable
+    // - user may not be member of any org
+    // ==> still able to login with roles = systemAdmin
+
+    // if(!configContext.connector) {
+    //   const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.NO_CONNECTOR_CONFIG, 'no connector config found');
+    //   props.onError(callState);
+    //   return;
+    // }
+    // if(healthCheckContext.connectorHealthCheckResult && healthCheckContext.connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
+    //   const callState: TApiCallState = ApiCallState.getInitialCallState(CALL_STATE_ACTIONS.CONNECTOR_UNAVAILABLE, 'connector unavailable');
+    //   props.onError(callState);
+    //   return;
+    // }
     if(!userContext.user.memberOfOrganizations || userContext.user.memberOfOrganizations.length === 0) {
       setIsFinished(true);
       return;

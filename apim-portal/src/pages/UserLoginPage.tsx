@@ -5,12 +5,15 @@ import { Dialog } from 'primereact/dialog';
 
 import { AuthHelper } from '../auth/AuthHelper';
 import { TApiCallState } from "../utils/ApiCallState";
-import { EAppState, Globals } from '../utils/Globals';
+import { EAppState, EUICommonResourcePaths, Globals } from '../utils/Globals';
 import { UserContext } from '../components/UserContextProvider/UserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 import { TUserLoginCredentials } from '../components/UserLogin/UserLogin';
 import { SelectOrganization, CALL_STATE_ACTIONS as SelectOrganizationCallStateActions } from '../components/SelectOrganization/SelectOrganization';
 import { UserLogin } from '../components/UserLogin/UserLogin';
+import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
+import { APHealthCheckContext } from '../components/APHealthCheckContextProvider';
+import { EAPHealthCheckSuccess } from '../utils/APHealthCheck';
 
 export const UserLoginPage: React.FC = () => {
   const componentName = 'UserLoginPage';
@@ -23,6 +26,8 @@ export const UserLoginPage: React.FC = () => {
   const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [healthCheckContext] = React.useContext(APHealthCheckContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [authContext] = React.useContext(AuthContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
@@ -34,8 +39,20 @@ export const UserLoginPage: React.FC = () => {
     let newCurrentAppState: EAppState = userContext.currentAppState;
 
     // DEBUG
-    // check if authContext is set already
-    // alert(`${logName}: authContext.authorizedResourcePathsAsString = ${authContext.authorizedResourcePathsAsString}`);
+    // check contexts
+    // alert(`${logName}: authContext = >${JSON.stringify(authContext, null, 2)}`);
+    // alert(`${logName}: configContext.connector=${JSON.stringify(configContext.connector, null, 2)}`);
+    // alert(`${logName}: healthCheckContext.connectorHealthCheckResult.summary=${JSON.stringify(healthCheckContext.connectorHealthCheckResult?.summary, null, 2)}`);
+    if(
+      (configContext.connector === undefined) || 
+      (healthCheckContext.connectorHealthCheckResult && healthCheckContext.connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL)
+    ) {
+      // no access to admin portal ==> redirect to system unavailable
+      if(!AuthHelper.isAuthorizedToAccessAdminPortal(authContext.authorizedResourcePathsAsString)) {
+        navigateTo(EUICommonResourcePaths.HealthCheckView);
+        return;
+      }
+    }
 
     if(userContext.currentAppState !== EAppState.UNDEFINED) {
       newCurrentAppState = userContext.currentAppState;
@@ -93,6 +110,10 @@ export const UserLoginPage: React.FC = () => {
   }
 
   const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
+    // const funcName = 'onSelectOrganizationError';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: starting ...`)
+
     let userMessage: string;
     if(apiCallStatus.context.action === SelectOrganizationCallStateActions.NO_CONNECTOR_CONFIG) userMessage = 'cannot select organization (no connector configured)';
     else userMessage = apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error';

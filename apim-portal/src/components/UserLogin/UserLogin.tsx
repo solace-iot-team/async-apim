@@ -24,6 +24,7 @@ import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidat
 
 import "../APComponents.css";
 import "./UserLogin.css";
+import { AuthHelper } from "../../auth/AuthHelper";
 
 export type TUserLoginCredentials = APSUserLoginCredentials;
 
@@ -117,7 +118,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     if(apiCallStatus === null) throw new Error('apiCallStatus is null');
     if(isLoginSuccessful) {
       if(loggedInUser) {
-        dispatchUserContextAction({ type: 'SET_USER', user: loggedInUser});
+        dispatchUserContextAction({ type: 'SET_USER', user: loggedInUser});  
       }
     } else {
       props.onError(apiCallStatus);
