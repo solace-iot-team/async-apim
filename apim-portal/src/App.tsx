@@ -46,6 +46,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.css';
+import { PerformSystemHealthCheck } from "./components/SystemHealth/PerformSystemHealthCheck";
 
 const App: React.FC = () => {
   const componentName = 'App';
@@ -150,6 +151,7 @@ const App: React.FC = () => {
 
   return (
     <React.Fragment>
+      <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
       { isDebug && userContext && displayStateInfo() }

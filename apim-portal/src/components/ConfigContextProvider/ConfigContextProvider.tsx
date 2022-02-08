@@ -21,6 +21,7 @@ export interface IConfigContextProviderProps {
 }
 
 export type ConfigContextAction = 
+  | { type: 'UPDATE_CONFIG_CONTEXT', configContext: Partial<TAPConfigContext> }
   | { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: TAPRbacRoleList }
   | { type: 'SET_CONFIG_CONNECTOR', connector: APSConnector | undefined }
   | { type: 'SET_PORTAL_APP_INFO', portalAppInfo: TAPPortalAppInfo | undefined }
@@ -28,6 +29,13 @@ export type ConfigContextAction =
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
   switch (action.type) {
+    case 'UPDATE_CONFIG_CONTEXT':
+      const newState: TAPConfigContext = JSON.parse(JSON.stringify(state));
+      if(action.configContext.rbacRoleList) newState.rbacRoleList = action.configContext.rbacRoleList;
+      if(action.configContext.connector) newState.connector = action.configContext.connector;
+      if(action.configContext.connectorInfo) newState.connectorInfo = action.configContext.connectorInfo;
+      if(action.configContext.portalAppInfo) newState.portalAppInfo = action.configContext.portalAppInfo;
+      return newState;
     case 'SET_CONFIG_RBAC_ROLE_LIST':
       return {
         ...state,

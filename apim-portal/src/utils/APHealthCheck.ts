@@ -391,7 +391,7 @@ export class APServerHealthCheck {
       callState.error = { reason: 'apsAbout is undefined'}
     } else if(!configContext.portalAppInfo) {
       callState.success = false;
-      callState.error = { reason: 'portalInfo is undefined'}
+      callState.error = { reason: 'portalAppInfo is undefined'}
     } else {
       const {success, issueList } = Globals.crossCheckConfiguration_PortalApp_X_Server(configContext.portalAppInfo, apsAbout);
       configIssueList = issueList;

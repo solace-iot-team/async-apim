@@ -23,9 +23,11 @@ export class SystemHealthCommon {
     return 'red';
   }
 
-  public static getButtonClassName = (systemHealthCheckSummary: TAPHealthCheckSummary): string => {
+  public static getButtonClassName = (systemHealthCheckSummary?: TAPHealthCheckSummary): string => {
     const funcName = 'getButtonClassName';
     const logName = `${SystemHealthCommon.componentName}.${funcName}()`;
+    const undefinedReturn = 'p-button-rounded p-button-secondary p-button-outlined';
+    if(systemHealthCheckSummary === undefined) return undefinedReturn;
     if(!systemHealthCheckSummary.performed) return 'p-button-rounded p-button-secondary p-button-outlined';
     switch(systemHealthCheckSummary.success) {
       case EAPHealthCheckSuccess.PASS:
@@ -35,16 +37,18 @@ export class SystemHealthCommon {
       case EAPHealthCheckSuccess.FAIL:
         return 'p-button-rounded p-button-danger';
       case EAPHealthCheckSuccess.UNDEFINED:
-        return 'p-button-rounded p-button-secondary p-button-outlined';
+        return undefinedReturn;
       default:
         Globals.assertNever(logName, systemHealthCheckSummary.success);
     }
     return 'red';
   }
 
-  public static getSystemHealthIcon = (systemHealthCheckSummary: TAPHealthCheckSummary): string => {
+  public static getSystemHealthIcon = (systemHealthCheckSummary?: TAPHealthCheckSummary): string => {
     const funcName = 'getSystemHealthIcon';
     const logName = `${SystemHealthCommon.componentName}.${funcName}()`;
+    const undefinedReturn = 'pi pi-question';
+    if(systemHealthCheckSummary === undefined) return undefinedReturn;
     if(!systemHealthCheckSummary.performed) return 'pi pi-question';
     switch(systemHealthCheckSummary.success) {
       case EAPHealthCheckSuccess.PASS:
@@ -53,7 +57,7 @@ export class SystemHealthCommon {
       case EAPHealthCheckSuccess.FAIL:
         return 'pi pi-times';
       case EAPHealthCheckSuccess.UNDEFINED:
-        return 'pi pi-question';
+        return undefinedReturn;
       default:
         Globals.assertNever(logName, systemHealthCheckSummary.success);
     }

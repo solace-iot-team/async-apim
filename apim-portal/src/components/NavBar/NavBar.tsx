@@ -12,7 +12,7 @@ import { UserContext } from "../UserContextProvider/UserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
-import { SystemHealthCheck } from "../SystemHealth/SystemHealthCheck";
+import { DisplaySystemHealthCheck } from "./DisplaySystemHealthCheck";
 import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
@@ -54,10 +54,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const isSystemAvailable = (): boolean => {
-    if( 
-      healthCheckSummaryContext.serverHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ||
-      healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL
-      ) return false;    
+    // still allow login even if connector is unavailable ==> configure connector
+    if( healthCheckSummaryContext.serverHealthCheckSuccess === EAPHealthCheckSuccess.FAIL) return false;    
     return true;
   }
 
@@ -213,7 +211,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
-        <SystemHealthCheck />
+        {/* <SystemHealthCheck /> */}
+        <DisplaySystemHealthCheck />
       </React.Fragment>
     );
     return (
@@ -260,7 +259,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
           </React.Fragment>
         }
-        <SystemHealthCheck />
+        {/* <SystemHealthCheck /> */}
+        <DisplaySystemHealthCheck />
       </React.Fragment>
     );
   }

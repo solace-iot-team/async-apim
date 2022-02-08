@@ -22,9 +22,9 @@ APSClientOpenApi.initialize(Config.getAPSClientOpenApiConfig());
 ReactDOM.render(
   <BrowserRouter>
     <APCatchAll>
-      <APHealthCheckContextProvider>
-        <APHealthCheckSummaryContextProvider>
-          <ConfigContextProvider>
+      <ConfigContextProvider>
+        <APHealthCheckContextProvider>
+          <APHealthCheckSummaryContextProvider>
             <AuthContextProvider>
               <UserContextProvider>
                 <OrganizationContextProvider>
@@ -32,13 +32,14 @@ ReactDOM.render(
                 </OrganizationContextProvider>
               </UserContextProvider>
             </AuthContextProvider>      
-          </ConfigContextProvider>
-        </APHealthCheckSummaryContextProvider>      
-      </APHealthCheckContextProvider>            
+          </APHealthCheckSummaryContextProvider>      
+        </APHealthCheckContextProvider>            
+      </ConfigContextProvider>
     </APCatchAll>
   </BrowserRouter>,
   document.getElementById('root')
 );
+
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
