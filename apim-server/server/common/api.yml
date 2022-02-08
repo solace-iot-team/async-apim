@@ -948,6 +948,9 @@ components:
     APSEmail:
       description: E-Mail address.
       type: string
+      minLength: 1
+      maxLength: 512
+      format: email
       # from: https://regexr.com/3e48o
       pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
     APSOrganizationIdList:
@@ -1333,14 +1336,19 @@ components:
       required:
       - userId
       - userPwd
+    APSUserName:
+      type: string
+      minLength: 2
+      maxLength: 128
+      pattern: "([[:punct:]]|[a-zA-Z])*"
     APSUserProfile:
       type: object
       description: User profile info.
       properties:
         first:
-          type: string
+          $ref: '#/components/schemas/APSUserName'
         last:
-          type: string
+          $ref: '#/components/schemas/APSUserName'
         email:
           $ref: '#/components/schemas/APSEmail'
       required:
@@ -1352,9 +1360,9 @@ components:
       description: User profile info.
       properties:
         first:
-          type: string
+          $ref: '#/components/schemas/APSUserName'
         last:
-          type: string
+          $ref: '#/components/schemas/APSUserName'
         email:
           $ref: '#/components/schemas/APSEmail'
     ListApsUsersResponse:

@@ -534,12 +534,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 <Controller
                   name="profile.first"
                   control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Enter First Name.",
-                    validate: {
-                      trim: v => v.trim().length === v.length ? true : 'Enter First Name without leading/trailing spaces.',
-                    }
-                  }}
+                  rules={APSOpenApiFormValidationRules.APSUserName("Enter First Name.", true)}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(
@@ -561,12 +556,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 <Controller
                   name="profile.last"
                   control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Enter Last Name.",
-                    validate: {
-                      trim: v => v.trim().length === v.length ? true : 'Enter Last Name without leading/trailing spaces.',
-                    }
-                  }}
+                  rules={APSOpenApiFormValidationRules.APSUserName("Enter Last Name.", true)}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

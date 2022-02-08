@@ -4,6 +4,7 @@ import {
   $APSHost,
   $APSPort,
   $APSEmail,
+  $APSUserName,
   $APSDisplayName
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
@@ -93,6 +94,15 @@ export class APSOpenApiFormValidationRules {
     rules['maxLength'] = (isActive ? APSOpenApiFormValidationRules.getMaxLengthRule(apiSchema) : undefined);
     rules['minLength'] = (isActive ? APSOpenApiFormValidationRules.getMinLengthRule(apiSchema) : undefined);
     rules['pattern'] = (isActive ? APSOpenApiFormValidationRules.getPatternRule(apiSchema, 'Invalid E-Mail address') : undefined);
+    return rules;
+  }  
+  public static APSUserName = (requiredMessage: string, isActive: boolean): any => {
+    const apiSchema = $APSUserName;
+    const rules: any = {};
+    rules['required'] = (isActive ? requiredMessage : false);
+    rules['maxLength'] = (isActive ? APSOpenApiFormValidationRules.getMaxLengthRule(apiSchema) : undefined);
+    rules['minLength'] = (isActive ? APSOpenApiFormValidationRules.getMinLengthRule(apiSchema) : undefined);
+    rules['pattern'] = (isActive ? APSOpenApiFormValidationRules.getPatternRule(apiSchema, 'Invalid name') : undefined);
     return rules;
   }
   public static APSDisplayName = (requiredMessage: string, isActive: boolean): any => {
