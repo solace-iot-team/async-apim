@@ -47,6 +47,7 @@ export type TAPConfigIssueList = Array<TAPConfigIssue>;
 export enum EAppState {
   ADMIN_PORTAL = 'ADMIN_PORTAL',
   DEVELOPER_PORTAL = 'DEVELOPER_PORTAL',
+  PUBLIC_DEVELOPER_PORTAL = 'PUBLIC_DEVELOPER_PORTAL',
   UNDEFINED = 'UNDEFINED'
 }
 
@@ -99,6 +100,11 @@ export enum EUIDeveloperPortalResourcePaths {
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }
 
+export enum EUIPublicDeveloperPortalResourcePaths {
+  Welcome = '/developer-portal/public/welcome',
+  ExploreApiProducts = '/developer-portal/public/explore/api-products',
+}
+
 export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
@@ -133,15 +139,30 @@ export class Globals {
   public static getCurrentHomePath = (isUserLoggedIn: boolean, currentAppState: EAppState): string => {
     const funcName = 'getCurrentHomePath';
     const logName = `${Globals.name}.${funcName}()`;
-    if(currentAppState === EAppState.ADMIN_PORTAL) {
-      if(isUserLoggedIn) return EUIAdminPortalResourcePaths.UserHome;
-      else return EUIAdminPortalResourcePaths.Home;
+    switch(currentAppState) {
+      case EAppState.ADMIN_PORTAL:
+        if(isUserLoggedIn) return EUIAdminPortalResourcePaths.UserHome;
+        else return EUIAdminPortalResourcePaths.Home;
+      case EAppState.DEVELOPER_PORTAL:
+        if(isUserLoggedIn) return EUIDeveloperPortalResourcePaths.UserHome;
+        else return EUIDeveloperPortalResourcePaths.Home;
+      case EAppState.PUBLIC_DEVELOPER_PORTAL:
+        return EUIPublicDeveloperPortalResourcePaths.Welcome;
+      case EAppState.UNDEFINED:
+        throw new Error(`${logName}: undefined currentAppState=${currentAppState}`);          
+      default:
+        Globals.assertNever(logName, currentAppState);  
     }
-    else if(currentAppState === EAppState.DEVELOPER_PORTAL) {
-      if(isUserLoggedIn) return EUIDeveloperPortalResourcePaths.UserHome;
-      else return EUIDeveloperPortalResourcePaths.Home;
-    }
-    else throw new Error(`${logName}: unknown currentAppState=${currentAppState}`);
+    throw new Error(`${logName}: should never get here`);
+    // if(currentAppState === EAppState.ADMIN_PORTAL) {
+    //   if(isUserLoggedIn) return EUIAdminPortalResourcePaths.UserHome;
+    //   else return EUIAdminPortalResourcePaths.Home;
+    // }
+    // else if(currentAppState === EAppState.DEVELOPER_PORTAL) {
+    //   if(isUserLoggedIn) return EUIDeveloperPortalResourcePaths.UserHome;
+    //   else return EUIDeveloperPortalResourcePaths.Home;
+    // }
+    // else throw new Error(`${logName}: unknown currentAppState=${currentAppState}`);
   }
 
   public static getOriginHomePath = (originAppState: EAppState): string => {

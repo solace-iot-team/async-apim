@@ -155,6 +155,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       case EAppState.ADMIN_PORTAL:
         return AdminPortalLogoUrl;
       case EAppState.DEVELOPER_PORTAL:
+      case EAppState.PUBLIC_DEVELOPER_PORTAL:
         return DeveloperPortalLogoUrl;
       case EAppState.UNDEFINED:
         if(userContext.originAppState !== EAppState.UNDEFINED) return getLogoUrl(userContext.originAppState);

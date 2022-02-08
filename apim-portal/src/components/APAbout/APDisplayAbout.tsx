@@ -144,6 +144,7 @@ export const APDisplayAbout: React.FC<IAPDisplayAboutProps> = (props: IAPDisplay
         setAdminPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT));
         break;
       case EAppState.DEVELOPER_PORTAL:
+      case EAppState.PUBLIC_DEVELOPER_PORTAL:
         setDeveloperPortalAppAboutResult(await apiGetPortalAppAbout(E_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT));
         break;
       case EAppState.UNDEFINED:

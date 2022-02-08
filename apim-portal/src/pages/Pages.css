@@ -2,3 +2,9 @@
   border: none;
   padding: 0.5rem;
 }
+
+.ap-pages .ap-link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}

@@ -6,15 +6,15 @@ import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
-import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
+import { EUIPublicDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
-import { DeveloperPortalExploreApis } from '../components/DeveloperPortalExploreApis/DeveloperPortalExploreApis';
+import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
 
 import "../../pages/Pages.css";
 
-export const DeveloperPortalExploreApisPage: React.FC = () => {
-  const componentName="DeveloperPortalExploreApisPage";
+export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
+  const componentName="DeveloperPortalExplorePublicApiProductsPage";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -44,9 +44,9 @@ export const DeveloperPortalExploreApisPage: React.FC = () => {
         label: 'Explore'
       },
       { 
-        label: 'APIs',
+        label: 'Public API Products',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis) }
+        command: () => { navigateTo(EUIPublicDeveloperPortalResourcePaths.ExploreApiProducts) }
       }
     ];
     breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
@@ -64,6 +64,7 @@ export const DeveloperPortalExploreApisPage: React.FC = () => {
   React.useEffect(() => {
     const funcName = 'useEffect([userContext])';
     const logName = `${componentName}.${funcName}()`;
+    alert(`${logName}: what org to use for public developer portal?`)
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
     setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
   }, [userContext]);
@@ -73,15 +74,15 @@ export const DeveloperPortalExploreApisPage: React.FC = () => {
       <Toast ref={toast} />
       {renderBreadcrumbs()}
       {organizationName &&
-        <DeveloperPortalExploreApis
-          organizationName={organizationName}
-          onSuccess={onSuccess}
-          onError={onError}
+        <DeveloperPortalProductCatalog
+          organizationName={organizationName}
+          onSuccess={onSuccess} 
+          onError={onError} 
           onBreadCrumbLabelList={onBreadcrumbLabelList}
         />
       }
     </React.Fragment>
-);
+  );
 
 }
 

@@ -149,6 +149,7 @@ export class APPortalAppHealthCheck {
         case EAppState.UNDEFINED:
           return E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT;
         case EAppState.DEVELOPER_PORTAL:
+        case EAppState.PUBLIC_DEVELOPER_PORTAL:
           return E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_DEVELOPER_PORTAL_APP_ABOUT;
         default:
           Globals.assertNever(logName, currentAppState);
