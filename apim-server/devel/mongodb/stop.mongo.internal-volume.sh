@@ -13,7 +13,7 @@ dockerProjectName="apim-devel-server-mongo"
 # Run
 
 echo " >>> Stopping mongo in docker..."
-  docker-compose -p $dockerProjectName -f "$scriptDir/docker-compose.yml" down --volumes --rmi all
+  docker-compose -p $dockerProjectName -f "$scriptDir/docker-compose-internal-volume.yml" down --volumes --rmi all
   if [[ $? != 0 ]]; then echo " >>> ERROR: stopping mongo in docker"; exit 1; fi
   docker ps -a
 echo " >>> Success."

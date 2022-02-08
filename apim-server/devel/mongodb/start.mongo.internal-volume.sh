@@ -18,7 +18,7 @@ echo " >>> Starting mongo in docker..."
   code=1; counter=0
   until [[ $code -eq 0 || $counter -gt 30 ]]; do
     ((counter++))
-    docker-compose -p $dockerProjectName -f "$scriptDir/docker-compose.yml" up -d
+    docker-compose -p $dockerProjectName -f "$scriptDir/docker-compose-internal-volume.yml" up -d
     code=$?;
     if [ $code -gt 0 ]; then sleep 2s; fi
   done
