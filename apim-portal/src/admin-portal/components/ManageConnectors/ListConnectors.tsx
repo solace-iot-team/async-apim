@@ -44,8 +44,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   type TManagedObject = TViewManagedObject;
   type TManagedObjectList = Array<TManagedObject>;
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */  
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
@@ -145,20 +144,20 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       </div>
     );
   }
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    return (
-        <React.Fragment>
-          <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-          {/* {!managedObject.apsConnector.isActive &&  */}
-            <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-          {/* } */}
-          <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
-          {!managedObject.apsConnector.isActive && 
-            <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />
-          }
-        </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (managedObject: TManagedObject) => {
+  //   return (
+  //       <React.Fragment>
+  //         <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
+  //         {/* {!managedObject.apsConnector.isActive &&  */}
+  //           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
+  //         {/* } */}
+  //         <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
+  //         {!managedObject.apsConnector.isActive && 
+  //           <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />
+  //         }
+  //       </React.Fragment>
+  //   );
+  // }
 
   const infoBodyTemplate = (managedObject: TManagedObject) => {
     let EventPortalIsProxyMode: string = '?';
@@ -224,7 +223,7 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             <Column header="Info" body={infoBodyTemplate}/>
             <Column header="Active?" headerStyle={{ width: '7em', textAlign: 'center' }} field="isActive" bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.isActiveBodyTemplate} />
             <Column header="Health Check" headerStyle={{width: '12em', textAlign: 'center' }} bodyStyle={{textAlign: 'center'}} body={ManageConnectorsCommon.healthCheckBodyTemplate}/>
-            <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top' }}/>
+            {/* <Column headerStyle={{width: '13em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top' }}/> */}
             <Column headerStyle={{width: '2em'}} />
         </DataTable>
       </div>
