@@ -2,6 +2,33 @@
 
 Solace Async API Management.
 
+## Version 0.0.34
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.34
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.17
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.11
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.5
+
+#### API-M Admin & Developer Portal
+
+**Enhancements:**
+- **Organization Status**
+  - display connectivity status of the organization
+- **Edit/New Organization**
+  - advanced configuration: event portal config is now optional
+- **Import APIs from Event Portal**
+  - disabled if no event portal connectivity
+- **Organzation Display Name**
+  - use display name instead of id
+- **Admin Portal: Manage API Products**
+  - added `accessLevel` property, defaults to `private`
+- **Developer Portal: Explore API Products**
+  - added `accessLevel` to view & search facility
+
+**Fixes:**
+- **Developer App: Manage Webhooks**
+  - now takes into account the reversal of pub v. sub permissions - these are now the same as the spec
+
+
 ## Version 0.0.33
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.33
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.16
