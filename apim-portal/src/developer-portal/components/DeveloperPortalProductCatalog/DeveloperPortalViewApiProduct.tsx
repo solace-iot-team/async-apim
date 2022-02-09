@@ -16,7 +16,9 @@ import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalProductCatalogCommon";
 import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import { APDisplayApiProductAsyncApis } from "../../../components/APDisplay/APDisplayApiProductAsyncApis";
-import { APProductsService, TAPDeveloperPortalProductDisplay } from "../../../utils/APProductsService";
+import APDeveloperPortalApiProductsService, { 
+  TAPDeveloperPortalApiProductDisplay,
+} from "../../utils/APDeveloperPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -33,7 +35,7 @@ export interface IDeveloperPortalViewApiProductProps {
 export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProductProps> = (props: IDeveloperPortalViewApiProductProps) => {
   const componentName = 'DeveloperPortalViewApiProduct';
 
-  type TManagedObject = TAPDeveloperPortalProductDisplay;
+  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
   type TManagedObjectDisplay = TManagedObject;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObjectDisplay>();  
@@ -46,7 +48,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for product: ${props.apiProductDisplayName}`);
     try { 
-      const apProductDisplay: TAPDeveloperPortalProductDisplay = await APProductsService.getDeveloperPortalApiProductDisplay({
+      const apProductDisplay: TAPDeveloperPortalApiProductDisplay = await APDeveloperPortalApiProductsService.getDeveloperPortalApiProductDisplay({
         organizationId: props.organizationId,
         apiProductId: props.apiProductId 
       });

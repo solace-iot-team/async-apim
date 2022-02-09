@@ -11,12 +11,7 @@ import { Globals } from './Globals';
 import { APRenderUtils } from './APRenderUtils';
 import { APAttributesService } from './APAttribute';
 
-// export enum EAPPortalDisplay_Type {
-//   TAPDeveloperPortalDisplay = "TAPDeveloperPortalDisplay",
-//   TAPAdminPortalDisplay = "TAPAdminPortalDisplay"
-// }
-
-type TAPProductDisplay_Base = {
+export type TAPApiProductDisplay = {
   apEntityId: TAPEntityId;
   connectorApiProduct: APIProduct;
   connectorEnvironmentResponseList: Array<EnvironmentResponse>;
@@ -27,23 +22,17 @@ type TAPProductDisplay_Base = {
   apApiProductCategory: string;
   apApiProductImageUrl: string;
 }
+export type TAPApiProductDisplayList = Array<TAPApiProductDisplay>;
 
-export type TAPDeveloperPortalProductDisplay = TAPProductDisplay_Base & {
-  // apPortalDisplayType: EAPPortalDisplay_Type;
-}; 
-export type TAPDeveloperPortalProductDisplayList = Array<TAPDeveloperPortalProductDisplay>;
+export class APApiProductsService {
+  private APApiProductsService_ComponentName = "APApiProductsService";
 
-type TAPProductDisplay = TAPDeveloperPortalProductDisplay;
-
-export class APProductsService {
-  private static componentName = "APApiProductsService";
-
-  private static readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
-  private static readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
+  private readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
+  private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
 
-  private static create_APApiProductDisplay_Base_From_ApiEntities = (connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPProductDisplay_Base => {
-    const _base: TAPProductDisplay_Base = {
+  protected create_APApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPApiProductDisplay {
+    const _base: TAPApiProductDisplay = {
       apEntityId: {
         id: connectorApiProduct.name,
         displayName: connectorApiProduct.displayName
@@ -53,26 +42,17 @@ export class APProductsService {
         accessLevel: connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APIProductAccessLevel.PRIVATE
       },
       connectorEnvironmentResponseList: connectorEnvRespList,
-      apAsyncApiDisplayNameListAsString: APProductsService.getApApiDisplayNameListAsString(connectorApiProduct.apis),
-      apProtocolListAsString: APProductsService.getApProtocolListAsString(connectorApiProduct.protocols),
+      apAsyncApiDisplayNameListAsString: this.getApApiDisplayNameListAsString(connectorApiProduct.apis),
+      apProtocolListAsString: this.getApProtocolListAsString(connectorApiProduct.protocols),
       apAttributeListAsString: APAttributesService.getApAttributeNameListAsString(connectorApiProduct.attributes),
-      apEnvironmentListAsStringList: APProductsService.getApEnvironmentsAsDisplayList(connectorEnvRespList),
-      apApiProductCategory: APProductsService.CDefaultApiProductCategory,
-      apApiProductImageUrl: APProductsService.CDefaultApiProductImageUrl,
-    }
+      apEnvironmentListAsStringList: this.getApEnvironmentsAsDisplayList(connectorEnvRespList),
+      apApiProductCategory: this.CDefaultApiProductCategory,
+      apApiProductImageUrl: this.CDefaultApiProductImageUrl,
+    };
     return _base;
   }
 
-  private static create_APDeveloperPortalApiProductDisplay_From_ApiEntities = (connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPDeveloperPortalProductDisplay => {
-    const _base = APProductsService.create_APApiProductDisplay_Base_From_ApiEntities(connectorApiProduct, connectorEnvRespList);
-    return _base;
-    // return {
-    //   ..._base,
-    //   apPortalDisplayType: EAPPortalDisplay_Type.TAPDeveloperPortalDisplay,
-    // }
-  }
-
-  private static filterConnectorApiProductList = (connectorApiProductList: Array<APIProduct>, includeAccessLevel?: APIProductAccessLevel): Array<APIProduct> => {
+  private filterConnectorApiProductList(connectorApiProductList: Array<APIProduct>, includeAccessLevel?: APIProductAccessLevel): Array<APIProduct> {
     if(includeAccessLevel === undefined) return connectorApiProductList;
     const indicesToDelete: Array<number> = connectorApiProductList.map( (connectorApiProduct: APIProduct, idx: number) => {
       // return -1 if not found, otherwise the actual index
@@ -85,35 +65,35 @@ export class APProductsService {
     return connectorApiProductList;
   }
 
-  public static generateGlobalSearchContent = (apProductDisplay: TAPProductDisplay): string => {
+  public generateGlobalSearchContent(apProductDisplay: TAPApiProductDisplay): string {
     return Globals.generateDeepObjectValuesString(apProductDisplay).toLowerCase();
   }
-  public static getApApiDisplayNameListAsString = (displayNameList: Array<string> ): string => {
+  public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
     if(displayNameList.length > 0) return displayNameList.join(', ');
     else return '';
   }
-  public static getApProtocolListAsString = (apiProtocolList?: Array<Protocol> ): string => {
+  public getApProtocolListAsString(apiProtocolList?: Array<Protocol> ): string {
     return APRenderUtils.getProtocolListAsString(apiProtocolList);
   }
-  public static getApEnvironmentsAsDisplayList = (environmentResponseList: Array<EnvironmentResponse>): Array<string> => {
+  public getApEnvironmentsAsDisplayList(environmentResponseList: Array<EnvironmentResponse>): Array<string> {
     return environmentResponseList.map( (envResp: EnvironmentResponse) => {
       return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`;
     });
   }
 
-  public static listDeveloperPortalApiProductDisplay = async({ organizationId, includeAccessLevel }: {
+  public async listApiProductDisplay({ organizationId, includeAccessLevel }: {
     organizationId: string;
     includeAccessLevel?: APIProductAccessLevel;
-  }): Promise<TAPDeveloperPortalProductDisplayList> => {
+  }): Promise<TAPApiProductDisplayList> {
 
-    const funcName = 'listDeveloperPortalApiProductDisplay';
-    const logName = `${APProductsService.componentName}.${funcName}()`;
+    const funcName = 'listApiProductDisplay';
+    const logName = `${this.APApiProductsService_ComponentName}.${funcName}()`;
 
     const _connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId
     });
-    const connectorApiProductList: Array<APIProduct> = APProductsService.filterConnectorApiProductList(_connectorApiProductList, includeAccessLevel);
-    const _list: TAPDeveloperPortalProductDisplayList = [];
+    const connectorApiProductList: Array<APIProduct> = this.filterConnectorApiProductList(_connectorApiProductList, includeAccessLevel);
+    const _list: TAPApiProductDisplayList = [];
 
     // get all envs for all products
     const _connectorEnvListCache: Array<EnvironmentResponse> = [];
@@ -135,17 +115,17 @@ export class APProductsService {
           connectorEnvResponseList.push(found);
         }
       }
-      _list.push(APProductsService.create_APDeveloperPortalApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList));
+      _list.push(this.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList));
     }
     return _list;
   }
-  public static getDeveloperPortalApiProductDisplay = async({ organizationId, apiProductId }: {
+  public async getApiProductDisplay({ organizationId, apiProductId }: {
     organizationId: string;
     apiProductId: string;
-  }): Promise<TAPDeveloperPortalProductDisplay> => {
+  }): Promise<TAPApiProductDisplay> {
 
-    const funcName = 'getDeveloperPortalApiProductDisplay';
-    const logName = `${APProductsService.componentName}.${funcName}()`;
+    const funcName = 'getApiProductDisplay';
+    const logName = `${this.APApiProductsService_ComponentName}.${funcName}()`;
 
     const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,
@@ -161,7 +141,7 @@ export class APProductsService {
       });
       connectorEnvResponseList.push(_envResponse);
     }
-    return APProductsService.create_APDeveloperPortalApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList);
+    return this.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList);
   }
 
 

@@ -16,7 +16,10 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "././DeveloperPortalProductCatalogCommon";
 import { Globals } from "../../../utils/Globals";
-import { APProductsService, TAPDeveloperPortalProductDisplay, TAPDeveloperPortalProductDisplayList } from "../../../utils/APProductsService";
+import APDeveloperPortalApiProductsService, { 
+  TAPDeveloperPortalApiProductDisplay,
+  TAPDeveloperPortalApiProductDisplayList
+} from "../../utils/APDeveloperPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -37,7 +40,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TAPDeveloperPortalProductDisplay;
+  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
     globalSearch: string;
@@ -48,7 +51,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
       const moTdRow: TManagedObjectTableDataRow = {
         ...mo,
-        globalSearch: APProductsService.generateGlobalSearchContent(mo)
+        globalSearch: APDeveloperPortalApiProductsService.generateGlobalSearchContent(mo)
       }
       return moTdRow;
     }
@@ -104,13 +107,13 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
     try {
-      const list: TAPDeveloperPortalProductDisplayList = await APProductsService.listDeveloperPortalApiProductDisplay({
+      const list: TAPDeveloperPortalApiProductDisplayList = await APDeveloperPortalApiProductsService.listDeveloperPortalApiProductDisplay({
         organizationId: props.organizationId,
         // includeAccessLevel: APIProductAccessLevel.PUBLIC
         // includeAccessLevel: APIProductAccessLevel.PRIVATE
         // includeAccessLevel: APIProductAccessLevel.INTERNAL
       });
-    setManagedObjectList(list);
+      setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

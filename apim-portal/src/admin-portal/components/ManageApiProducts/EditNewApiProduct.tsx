@@ -1111,6 +1111,30 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.accessLevel)}
             </div>
+            {/* accessLevel as attribute*/}
+            <div className="p-field">
+              <span className="p-float-label">
+                <Controller
+                  name="apiProduct.accessLevel"
+                  control={managedObjectUseForm.control}
+                  rules={{
+                    required: "Select access level.",
+                  }}
+                  render={( { field, fieldState }) => {
+                      return(
+                        <Dropdown
+                          id={field.name}
+                          {...field}
+                          options={APApiProductsCommon.getAccessLevelSelectList()} 
+                          onChange={(e) => field.onChange(e.value)}
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />                        
+                      )}}
+                />
+                <label htmlFor="apiProduct.accessLevel" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.accessLevel })}>Access Level*</label>
+              </span>
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.accessLevel)}
+            </div>
             {/* apis */}
             <div className="p-field">
               <span className="p-float-label">
