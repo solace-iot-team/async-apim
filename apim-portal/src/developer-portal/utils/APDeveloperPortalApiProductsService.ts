@@ -9,7 +9,7 @@ export type TAPDeveloperPortalApiProductDisplay = TAPApiProductDisplay & {
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
 
 class APDeveloperPortalApiProductsService extends APApiProductsService {
-  private APDeveloperPortalApiProductsService_ComponentName = "APDeveloperPortalApiProductsService";
+  private readonly ComponentName = "APDeveloperPortalApiProductsService";
 
   // protected create_APApiProductDisplay_From_ApiEntities = (connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPDeveloperPortalApiProductDisplay => {
   //   return super.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvRespList); 

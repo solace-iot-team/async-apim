@@ -25,7 +25,7 @@ export type TAPApiProductDisplay = {
 export type TAPApiProductDisplayList = Array<TAPApiProductDisplay>;
 
 export class APApiProductsService {
-  private APApiProductsService_ComponentName = "APApiProductsService";
+  private readonly BaseComponentName = "APApiProductsService";
 
   private readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
   private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
@@ -42,6 +42,7 @@ export class APApiProductsService {
         accessLevel: connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APIProductAccessLevel.PRIVATE
       },
       connectorEnvironmentResponseList: connectorEnvRespList,
+      // TODO: this should be the displayNames of the APIs
       apAsyncApiDisplayNameListAsString: this.getApApiDisplayNameListAsString(connectorApiProduct.apis),
       apProtocolListAsString: this.getApProtocolListAsString(connectorApiProduct.protocols),
       apAttributeListAsString: APAttributesService.getApAttributeNameListAsString(connectorApiProduct.attributes),
@@ -81,19 +82,21 @@ export class APApiProductsService {
     });
   }
 
-  public async listApiProductDisplay({ organizationId, includeAccessLevel }: {
+  protected async listApiProductDisplay({ organizationId, includeAccessLevel }: {
     organizationId: string;
     includeAccessLevel?: APIProductAccessLevel;
   }): Promise<TAPApiProductDisplayList> {
 
     const funcName = 'listApiProductDisplay';
-    const logName = `${this.APApiProductsService_ComponentName}.${funcName}()`;
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const _connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId
     });
     const connectorApiProductList: Array<APIProduct> = this.filterConnectorApiProductList(_connectorApiProductList, includeAccessLevel);
     const _list: TAPApiProductDisplayList = [];
+
+// TODO: use APEnvironmentsService for this
 
     // get all envs for all products
     const _connectorEnvListCache: Array<EnvironmentResponse> = [];
@@ -119,13 +122,14 @@ export class APApiProductsService {
     }
     return _list;
   }
-  public async getApiProductDisplay({ organizationId, apiProductId }: {
+  
+  protected async getApiProductDisplay({ organizationId, apiProductId }: {
     organizationId: string;
     apiProductId: string;
   }): Promise<TAPApiProductDisplay> {
 
     const funcName = 'getApiProductDisplay';
-    const logName = `${this.APApiProductsService_ComponentName}.${funcName}()`;
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,

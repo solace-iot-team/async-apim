@@ -15,4 +15,11 @@ export class APAttributesService {
     else return '';
   }
 
+  public static getAttributeNameList = (attributeList?: TAPAttributeList): Array<string> => {
+    if(!attributeList) return [];
+    return attributeList.map( (attribute: TAPAttribute) => {
+      return attribute.name;  
+    });
+  }
+
 }

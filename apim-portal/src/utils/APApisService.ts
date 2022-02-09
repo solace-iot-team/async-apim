@@ -1,5 +1,5 @@
 import { 
-  APIInfo,
+  APIInfo, APIInfoList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPEntityId, TAPEntityIdList } from './APEntityId';
 import { TAPAsyncApiSpec } from './APTypes';
@@ -29,6 +29,15 @@ export class APApisService {
     }
     return _base;
   }
+
+  // TODO: this is for AdminPortal Only
+  public static getApiInfoListAsDisplayStringList = (apiInfoList: APIInfoList ): Array<string> => {
+    return apiInfoList.map( (apiInfo: APIInfo) => {
+      return `${apiInfo.name} (${apiInfo.source})`;
+      // return `${apiInfo.name}`;
+    });  
+  }
+  
   public static create_APDeveloperPortalApiDisplay_From_ApiEntities = (apiInfo: APIInfo, apiApiProductEntityIdList: TAPEntityIdList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPDeveloperPortalApiDisplay => {
     const _base: TAPApiDisplay_Base = APApisService.create_APApiDisplay_Base_From_ApiEntities(apiInfo, apiApiProductEntityIdList, apAsyncApiSpec);
     return _base;

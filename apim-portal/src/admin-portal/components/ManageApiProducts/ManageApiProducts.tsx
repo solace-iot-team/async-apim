@@ -71,7 +71,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObjectId, setManagedObjectId] = React.useState<TManagedApiProductId>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
-  const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
+  const [managedObjectHasReferences, setManagedObjectHasReferences] = React.useState<boolean>(false);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -111,11 +111,11 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string, viewManagedObject: TViewManagedObject): void => {
+  const onViewManagedObject = (id: TManagedObjectId, displayName: string, hasReferences: boolean): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
-    setViewManagedObject(viewManagedObject);
+    setManagedObjectHasReferences(hasReferences);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -163,10 +163,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       </React.Fragment>
     );
     if(showViewComponent) {          
-      if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
-      const isDeleteAllowed: boolean = viewManagedObject.apiUsedBy_AppEntityNameList.length === 0;
-
-      // const showButtonsEditDelete: boolean = (viewManagedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+      const isDeleteAllowed: boolean = !managedObjectHasReferences;
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>

@@ -70,7 +70,7 @@ export class APRenderUtils {
   }
 
   public static renderStringListAsDivList = (stringList?: Array<string>): JSX.Element => {
-    let jsxElementList: Array<JSX.Element> = [];
+    const jsxElementList: Array<JSX.Element> = [];
 
     const addJSXElement = (str: string) => {
       const jsxElem: JSX.Element = (
