@@ -26,7 +26,7 @@ export type TManagedObjectId = CommonName;
 export type TManagedObjectDisplayName = CommonDisplayName;
 // * Environments *
 export type TAPEnvironmentViewManagedObject = {
-  id: TManagedApiProductId,
+  id: string,
   displayName: string,
   apiEnvironment: EnvironmentResponse
   globalSearch: string
@@ -56,9 +56,8 @@ export type TApiProduct = APIProduct;
 export type TApiProductList = Array<TApiProduct>;
 export type TApiEnvironmentNameList = Array<string>;
 export type TApiEnvironmentList = Array<EnvironmentResponse>;
-export type TManagedApiProductId = string;
 export type TViewManagedApiProduct = {
-  id: TManagedApiProductId;
+  id: string;
   displayName: string;
   apiProduct: APIProduct;
   apiEnvironmentList: TApiEnvironmentList;

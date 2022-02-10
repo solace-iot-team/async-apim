@@ -18,7 +18,7 @@ import {
 import { ConfigHelper, TRoleSelectItemList } from "../ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { TAPOrganization, TAPOrganizationList } from "../../utils/APOrganizationsService";
-import { APEntityId, TAPEntityIdList } from "../../utils/APEntityId";
+import APEntityIdsService, { TAPEntityIdList } from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';
@@ -76,7 +76,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
           displayName: props.organizationDisplayName ? props.organizationDisplayName : props.organizationId
         });  
     }
-    return APEntityId.sortAPEntityIdList_byDisplayName(selectItems);
+    return APEntityIdsService.sort_byDisplayName(selectItems);
   }
 
   const organizationRolesSelectItemList: TRoleSelectItemList = ConfigHelper.createOrganizationRolesSelectItems(configContext);

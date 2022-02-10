@@ -18,7 +18,7 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 import { APDisplayAbout } from "../APAbout/APDisplayAbout";
-import { TAPEntityIdList } from "../../utils/APEntityId";
+import { TAPEntityIdList } from "../../utils/APEntityIdsService";
 
 import '../APComponents.css';
 import './NavBar.css';

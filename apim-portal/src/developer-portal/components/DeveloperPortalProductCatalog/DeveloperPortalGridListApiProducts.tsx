@@ -223,10 +223,10 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
           <div className="product-list-detail">
             <div className="product-name">{dataRow.apEntityId.displayName}</div>
             <div className="product-description">{dataRow.connectorApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
-            <div className="product-api-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
-            <div className="product-api-name-list">Environments: {dataRow.apEnvironmentListAsStringList.join(', ')}</div>
-            <div className="product-api-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
+            <div className="product-name-list">APIs: {dataRow.apApiDisplayNameList.join(', ')}</div>
+            <div className="product-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
+            <div className="product-name-list">Environments: {dataRow.apEnvironmentDisplayNameList.join(', ')}</div>
+            <div className="product-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
           </div>
           <div className="product-list-right">
             <div>
@@ -263,7 +263,7 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
             {/* <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} /> */}
             <div className="product-name">{dataRow.apEntityId.displayName}</div>
             <div className="product-description">{dataRow.connectorApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameList.join(', ')}</div>
           </div>
           <div className="product-grid-item-bottom">
             {/* <span className="product-price">${'65'}</span> */}

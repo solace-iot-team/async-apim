@@ -2,23 +2,24 @@ import {
   APIProduct,
   APIProductAccessLevel,
   ApiProductsService,
-  EnvironmentResponse,
-  EnvironmentsService,
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPEntityId} from './APEntityId';
+import { TAPEntityId} from './APEntityIdsService';
 import { Globals } from './Globals';
 import { APRenderUtils } from './APRenderUtils';
 import { APAttributesService } from './APAttribute';
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsService';
+import APApisService, { TAPApiDisplayList } from './APApisService';
 
 export type TAPApiProductDisplay = {
   apEntityId: TAPEntityId;
   connectorApiProduct: APIProduct;
-  connectorEnvironmentResponseList: Array<EnvironmentResponse>;
-  apAsyncApiDisplayNameListAsString: string;
+  apEnvironmentDisplayList: TAPEnvironmentDisplayList;
+  apEnvironmentDisplayNameList: Array<string>;
+  apApiDisplayList: TAPApiDisplayList;
+  apApiDisplayNameList: Array<string>;
   apProtocolListAsString: string;
   apAttributeListAsString: string;
-  apEnvironmentListAsStringList: Array<string>;
   apApiProductCategory: string;
   apApiProductImageUrl: string;
 }
@@ -31,7 +32,7 @@ export class APApiProductsService {
   private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
 
-  protected create_APApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPApiProductDisplay {
+  protected create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPApiProductDisplay {
     const _base: TAPApiProductDisplay = {
       apEntityId: {
         id: connectorApiProduct.name,
@@ -41,12 +42,12 @@ export class APApiProductsService {
         ...connectorApiProduct,
         accessLevel: connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APIProductAccessLevel.PRIVATE
       },
-      connectorEnvironmentResponseList: connectorEnvRespList,
-      // TODO: this should be the displayNames of the APIs
-      apAsyncApiDisplayNameListAsString: this.getApApiDisplayNameListAsString(connectorApiProduct.apis),
+      apEnvironmentDisplayList: apEnvironmentDisplayList,
+      apEnvironmentDisplayNameList: APEnvironmentsService.getSortedDisplayNameList(apEnvironmentDisplayList),
+      apApiDisplayList: apApiDisplayList,
+      apApiDisplayNameList: APApisService.getSortedDisplayNameList(apApiDisplayList),
       apProtocolListAsString: this.getApProtocolListAsString(connectorApiProduct.protocols),
       apAttributeListAsString: APAttributesService.getApAttributeNameListAsString(connectorApiProduct.attributes),
-      apEnvironmentListAsStringList: this.getApEnvironmentsAsDisplayList(connectorEnvRespList),
       apApiProductCategory: this.CDefaultApiProductCategory,
       apApiProductImageUrl: this.CDefaultApiProductImageUrl,
     };
@@ -76,76 +77,66 @@ export class APApiProductsService {
   public getApProtocolListAsString(apiProtocolList?: Array<Protocol> ): string {
     return APRenderUtils.getProtocolListAsString(apiProtocolList);
   }
-  public getApEnvironmentsAsDisplayList(environmentResponseList: Array<EnvironmentResponse>): Array<string> {
-    return environmentResponseList.map( (envResp: EnvironmentResponse) => {
-      return `${envResp.displayName} (${envResp.datacenterProvider}:${envResp.datacenterId})`;
-    });
-  }
 
-  protected async listApiProductDisplay({ organizationId, includeAccessLevel }: {
+  protected async listApApiProductDisplay({ organizationId, includeAccessLevel }: {
     organizationId: string;
     includeAccessLevel?: APIProductAccessLevel;
   }): Promise<TAPApiProductDisplayList> {
 
-    const funcName = 'listApiProductDisplay';
+    const funcName = 'listApApiProductDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const _connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId
     });
     const connectorApiProductList: Array<APIProduct> = this.filterConnectorApiProductList(_connectorApiProductList, includeAccessLevel);
-    const _list: TAPApiProductDisplayList = [];
+    const list: TAPApiProductDisplayList = [];
 
-// TODO: use APEnvironmentsService for this
-
-    // get all envs for all products
-    const _connectorEnvListCache: Array<EnvironmentResponse> = [];
+    const apEnvDisplayList = await APEnvironmentsService.listApEnvironmentDisplay({
+      organizationId: organizationId
+    });
     for(const connectorApiProduct of connectorApiProductList) {
       if(!connectorApiProduct.environments) throw new Error(`${logName}: connectorApiProduct.environments is undefined`);
-      const connectorEnvResponseList: Array<EnvironmentResponse> = [];
+      const productApEnvDisplayList: TAPEnvironmentDisplayList = [];
       for(const envName of connectorApiProduct.environments) {
-        const found = _connectorEnvListCache.find( (envResponse: EnvironmentResponse) => {
-          return envResponse.name === envName;
+        const found = apEnvDisplayList.find( (apEnvDisplay: TAPEnvironmentDisplay) => {
+          return envName === apEnvDisplay.apEntityId.id;
         });
-        if(!found) {
-          const _envResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-            organizationName: organizationId,
-            envName: envName
-          });
-          _connectorEnvListCache.push(_envResponse);
-          connectorEnvResponseList.push(_envResponse);
-        } else {
-          connectorEnvResponseList.push(found);
-        }
+        if(found === undefined) throw new Error(`${logName}: found is undefined`);        
+        productApEnvDisplayList.push(found);
       }
-      _list.push(this.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList));
+      const productApApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
+        organizationId: organizationId,
+        apiIdList: connectorApiProduct.apis
+      });
+      list.push(this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, productApEnvDisplayList, productApApiDisplayList));
     }
-    return _list;
+    return list;
   }
   
-  protected async getApiProductDisplay({ organizationId, apiProductId }: {
+  protected async getApApiProductDisplay({ organizationId, apiProductId }: {
     organizationId: string;
     apiProductId: string;
   }): Promise<TAPApiProductDisplay> {
 
-    const funcName = 'getApiProductDisplay';
+    const funcName = 'getApApiProductDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,
       apiProductName: apiProductId
     });
-    // get all envs 
+
     if(!connectorApiProduct.environments) throw new Error(`${logName}: connectorApiProduct.environments is undefined`);
-    const connectorEnvResponseList: Array<EnvironmentResponse> = [];
-    for(const envName of connectorApiProduct.environments) {
-      const _envResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-        organizationName: organizationId,
-        envName: envName
-      });
-      connectorEnvResponseList.push(_envResponse);
-    }
-    return this.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvResponseList);
+    const apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplayForEnvIdList({
+      organizationId: organizationId,
+      envIdList: connectorApiProduct.environments
+    });
+    const apApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
+      organizationId: organizationId,
+      apiIdList: connectorApiProduct.apis
+    });
+    return this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, apEnvironmentDisplayList, apApiDisplayList);
   }
 
 

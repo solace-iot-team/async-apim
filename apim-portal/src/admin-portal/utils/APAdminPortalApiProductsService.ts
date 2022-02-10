@@ -1,9 +1,15 @@
-import { APIInfo, APIInfoList, ApiProductsService, ApisService, CommonEntityNameList, CommonEntityNames } from '@solace-iot-team/apim-connector-openapi-browser';
+import { 
+  ApiProductsService, 
+  CommonEntityNameList, 
+  CommonEntityNames 
+} from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPApiProductDisplay, APApiProductsService, TAPApiProductDisplayList } from '../../utils/APApiProductsService';
-import { TAPEntityIdList } from '../../utils/APEntityId';
+import { TAPApiDisplayList } from '../../utils/APApisService';
+import { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APAdminPortalApisService from './APAdminPortalApisService';
 
 export type TAPAdminPortalApiProductDisplay = TAPApiProductDisplay & {
-  connectorApiInfoList: APIInfoList,
+  apApiDisplayList: TAPApiDisplayList;
   apAppReferenceEntityIdList: TAPEntityIdList
 }; 
 export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProductDisplay>;
@@ -36,7 +42,7 @@ class APAdminPortalApiProductsService extends APApiProductsService {
     });
   }
 
-  public listAdminPortalApiProductDisplay = async({ organizationId }: {
+  public listAdminPortalApApiProductDisplay = async({ organizationId }: {
     organizationId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
 
@@ -44,27 +50,21 @@ class APAdminPortalApiProductsService extends APApiProductsService {
     // const logName = `${this.APDeveloperPortalApiProductsService_ComponentName}.${funcName}()`;
     // console.log(`${logName}: starting ...`)
 
-    const baseList: TAPApiProductDisplayList = await this.listApiProductDisplay({
+    const baseList: TAPApiProductDisplayList = await this.listApApiProductDisplay({
       organizationId: organizationId,
     }); 
     const adminPortalList: TAPAdminPortalApiProductDisplayList = [];
-    // fetch APIInfo for each api
+    // TODO: PARALLELIZE
     for(const base of baseList) {
 
-// TODO: use APApisService for this
-
-      const connectorApiInfoList: APIInfoList = [];
-      for(const connectorApiName of base.connectorApiProduct.apis) {
-        const connectorApiInfo: APIInfo = await ApisService.getApiInfo({
-          organizationName: organizationId,
-          apiName: connectorApiName
-        });
-        connectorApiInfoList.push(connectorApiInfo);
-      }
+      const apApiDisplayList: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplayForApiIdList({
+        organizationId: organizationId,
+        apiIdList: base.connectorApiProduct.apis
+      });
 
       const adminPortalObject: TAPAdminPortalApiProductDisplay = {
         ...base,
-        connectorApiInfoList: connectorApiInfoList,
+        apApiDisplayList: apApiDisplayList,
         apAppReferenceEntityIdList: await this.listAppReferencesToApiProducts({
           organizationId: organizationId,
           apiProductId: base.apEntityId.id
@@ -75,30 +75,24 @@ class APAdminPortalApiProductsService extends APApiProductsService {
     return adminPortalList;
   }
 
-  public getAdminPortalApiProductDisplay = async({ organizationId, apiProductId }: {
+  public getAdminPortalApApiProductDisplay = async({ organizationId, apiProductId }: {
     organizationId: string;
     apiProductId: string;
   }): Promise<TAPAdminPortalApiProductDisplay> => {
 
-    const base = await this.getApiProductDisplay({
+    const base = await this.getApApiProductDisplay({
       organizationId: organizationId,
       apiProductId: apiProductId
     });
 
+    const apApiDisplayList: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplayForApiIdList({
+      organizationId: organizationId,
+      apiIdList: base.connectorApiProduct.apis
+    });
 
-    // TODO: use APApisService for this
-
-    const connectorApiInfoList: APIInfoList = [];
-    for(const connectorApiName of base.connectorApiProduct.apis) {
-      const connectorApiInfo: APIInfo = await ApisService.getApiInfo({
-        organizationName: organizationId,
-        apiName: connectorApiName
-      });
-      connectorApiInfoList.push(connectorApiInfo);
-    }
     const adminPortalObject: TAPAdminPortalApiProductDisplay = {
       ...base,
-      connectorApiInfoList: connectorApiInfoList,
+      apApiDisplayList: apApiDisplayList,
       apAppReferenceEntityIdList: await this.listAppReferencesToApiProducts({
         organizationId: organizationId,
         apiProductId: apiProductId

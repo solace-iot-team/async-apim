@@ -17,7 +17,6 @@ import APAdminPortalApiProductsService, {
   TAPAdminPortalApiProductDisplayList 
 } from "../../utils/APAdminPortalApiProductsService";
 import { APAttributesService } from "../../../utils/APAttribute";
-import { APApisService } from "../../../utils/APApisService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -83,7 +82,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     try {
-      const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsService.listAdminPortalApiProductDisplay({
+      const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsService.listAdminPortalApApiProductDisplay({
         organizationId: props.organizationId
       });
       setManagedObjectList(list);
@@ -150,7 +149,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return APRenderUtils.renderStringListAsDivList(rowData.connectorApiProduct.environments);
   }
   const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(APApisService.getApiInfoListAsDisplayStringList(rowData.connectorApiInfoList));
+    return APRenderUtils.renderStringListAsDivList(rowData.apApiDisplayNameList);
   }
   const guaranteedMessagingBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
     return rowData.isGuaranteedMessagingEnabled.toString();

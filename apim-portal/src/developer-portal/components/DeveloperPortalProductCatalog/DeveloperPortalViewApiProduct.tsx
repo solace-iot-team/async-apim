@@ -94,7 +94,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
                   <div><b>Approval type</b>: {managedObject.connectorApiProduct.approvalType}</div>
                   <div><b>Access level</b>: {managedObject.connectorApiProduct.accessLevel}</div>
                   <div className="p-text-bold">Environments:</div>
-                  <div className="p-ml-2">{managedObject.apEnvironmentListAsStringList.sort().join(', ')}</div>
+                  <div className="p-ml-2">{managedObject.apEnvironmentDisplayNameList.join(', ')}</div>
                   <div className="p-text-bold">Protocols:</div>
                   <div className="p-ml-2">{managedObject.apProtocolListAsString}</div>
                   <div className="p-text-bold">Client Options:</div>

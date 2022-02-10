@@ -14,11 +14,11 @@ import { ViewOrganization } from "./ViewOrganization";
 import { EAction, EditNewOrganziation } from "./EditNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
 import { Globals } from "../../../utils/Globals";
+import { MonitorOrganization } from "./MonitorOrganization";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { MonitorOrganization } from "./MonitorOrganization";
-import { TAPEntityId } from "../../../utils/APEntityId";
 
 export enum E_ManageOrganizations_Scope {
   ALL_ORGS = "ALL_ORGS",

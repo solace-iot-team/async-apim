@@ -3,9 +3,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPApiProductDisplay, APApiProductsService } from '../../utils/APApiProductsService';
 
-export type TAPDeveloperPortalApiProductDisplay = TAPApiProductDisplay & {
-  // apPortalDisplayType: EAPPortalDisplay_Type;
-}; 
+export type TAPDeveloperPortalApiProductDisplay = TAPApiProductDisplay; 
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
 
 class APDeveloperPortalApiProductsService extends APApiProductsService {
@@ -24,7 +22,7 @@ class APDeveloperPortalApiProductsService extends APApiProductsService {
     // const logName = `${this.APDeveloperPortalApiProductsService_ComponentName}.${funcName}()`;
     // console.log(`${logName}: starting ...`)
 
-    return await this.listApiProductDisplay({
+    return await this.listApApiProductDisplay({
       organizationId: organizationId,
       includeAccessLevel: includeAccessLevel
     }); 
@@ -35,7 +33,7 @@ class APDeveloperPortalApiProductsService extends APApiProductsService {
     apiProductId: string;
   }): Promise<TAPDeveloperPortalApiProductDisplay> => {
 
-    return await this.getApiProductDisplay({
+    return await this.getApApiProductDisplay({
       organizationId: organizationId,
       apiProductId: apiProductId
     });
