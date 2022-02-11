@@ -16,7 +16,7 @@ import APAdminPortalApiProductsService, {
   TAPAdminPortalApiProductDisplay,
   TAPAdminPortalApiProductDisplayList 
 } from "../../utils/APAdminPortalApiProductsService";
-import { APAttributesService } from "../../../utils/APAttribute";
+import APAttributesService from "../../../utils/APAttributes/APAttributesService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

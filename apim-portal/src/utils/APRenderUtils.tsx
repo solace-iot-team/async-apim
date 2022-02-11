@@ -7,7 +7,7 @@ import {
   Endpoint, 
   Protocol 
 } from "@solace-iot-team/apim-connector-openapi-browser";
-import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
+import { TAPAttribute, TAPAttributeList } from "./APAttributes/APAttributesService";
 
 export class APRenderUtils {
 

@@ -16,23 +16,23 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { TApiEntitySelectItem, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { 
   APEnvironmentObjectsCommon, 
   TAPEnvironmentViewManagedObject, 
   TAPEnvironmentViewManagedObjectList
 } from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
 
 export interface ISearchSelectEnvironmentsProps {
-  organizationId: TAPOrganizationId,
-  currentSelectedEnvironmetItemList: TApiEntitySelectItemList,
+  organizationId: string;
+  currentSelectedEnvironmentEntityIdList: TAPEntityIdList,
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, selectedApis: TApiEntitySelectItemList) => void;
+  onSave: (apiCallState: TApiCallState, selectedEnvironmentEntityIdList: TAPEntityIdList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -49,9 +49,9 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   type TManagedObjectTableDataRow = TAPEnvironmentViewManagedObject;
   type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const createSelectedManagedObjectTableDataList = (dataTableList: TManagedObjectTableDataList, selectedItemList: TApiEntitySelectItemList): TManagedObjectTableDataList => {
+  const createSelectedManagedObjectTableDataList = (dataTableList: TManagedObjectTableDataList, selectedList: TAPEntityIdList): TManagedObjectTableDataList => {
     let result: TManagedObjectTableDataList = [];
-    selectedItemList.forEach( (selectedItem: TApiEntitySelectItem) => {
+    selectedList.forEach( (selectedItem: TAPEntityId) => {
       const found: TManagedObjectTableDataRow | undefined = dataTableList.find( (row: TManagedObjectTableDataRow) => {
         return row.id === selectedItem.id;
       });
@@ -59,7 +59,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     });
     return result;
   }
-  const transformTableDataListToSelectItemList = (tableDataList: TManagedObjectTableDataList): TApiEntitySelectItemList => {
+  const transformTableDataListToSelectEntityIdList = (tableDataList: TManagedObjectTableDataList): TAPEntityIdList => {
     return tableDataList.map( (row: TManagedObjectTableDataRow) => {
       return {
         id: row.id,
@@ -113,7 +113,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   React.useEffect(() => {
     if(!managedObjectTableDataList) return;
-    setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedEnvironmetItemList));
+    setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedEnvironmentEntityIdList));
   }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
@@ -125,7 +125,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // * UI Controls *
 
   const onSaveSelectedEnvironments = () => {
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), transformTableDataListToSelectItemList(selectedManagedObjectTableDataList));
+    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), transformTableDataListToSelectEntityIdList(selectedManagedObjectTableDataList));
   }
 
   // * Data Table *

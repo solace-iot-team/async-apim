@@ -1,4 +1,5 @@
 import { 
+  APIProduct,
   ApiProductsService, 
   CommonEntityNameList, 
   CommonEntityNames 
@@ -6,20 +7,15 @@ import {
 import { TAPApiProductDisplay, APApiProductsService, TAPApiProductDisplayList } from '../../utils/APApiProductsService';
 import { TAPApiDisplayList } from '../../utils/APApisService';
 import { TAPEntityIdList } from '../../utils/APEntityIdsService';
-import APAdminPortalApisService from './APAdminPortalApisService';
+import { TAPEnvironmentDisplayList } from '../../utils/APEnvironmentsService';
 
 export type TAPAdminPortalApiProductDisplay = TAPApiProductDisplay & {
-  apApiDisplayList: TAPApiDisplayList;
   apAppReferenceEntityIdList: TAPEntityIdList
 }; 
 export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProductDisplay>;
 
 class APAdminPortalApiProductsService extends APApiProductsService {
   private readonly ComponentName = "APAdminPortalApiProductsService";
-
-  // protected create_APApiProductDisplay_From_ApiEntities = (connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPDeveloperPortalApiProductDisplay => {
-  //   return super.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvRespList); 
-  // }
 
   private listAppReferencesToApiProducts = async({organizationId, apiProductId }: {
     organizationId: string;
@@ -42,6 +38,22 @@ class APAdminPortalApiProductsService extends APApiProductsService {
     });
   }
 
+  public createEmptyObject(): TAPAdminPortalApiProductDisplay {
+    const base = super.createEmptyObject();
+    return {
+      ...base,
+      apAppReferenceEntityIdList: []
+    };
+  }
+
+  public create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPAdminPortalApiProductDisplay {
+    const base = super.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, apEnvironmentDisplayList, apApiDisplayList);
+    return {
+      ...base,
+      apAppReferenceEntityIdList: []
+    };
+  }
+
   public listAdminPortalApApiProductDisplay = async({ organizationId }: {
     organizationId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
@@ -56,15 +68,8 @@ class APAdminPortalApiProductsService extends APApiProductsService {
     const adminPortalList: TAPAdminPortalApiProductDisplayList = [];
     // TODO: PARALLELIZE
     for(const base of baseList) {
-
-      const apApiDisplayList: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplayForApiIdList({
-        organizationId: organizationId,
-        apiIdList: base.connectorApiProduct.apis
-      });
-
       const adminPortalObject: TAPAdminPortalApiProductDisplay = {
         ...base,
-        apApiDisplayList: apApiDisplayList,
         apAppReferenceEntityIdList: await this.listAppReferencesToApiProducts({
           organizationId: organizationId,
           apiProductId: base.apEntityId.id
@@ -85,20 +90,38 @@ class APAdminPortalApiProductsService extends APApiProductsService {
       apiProductId: apiProductId
     });
 
-    const apApiDisplayList: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplayForApiIdList({
-      organizationId: organizationId,
-      apiIdList: base.connectorApiProduct.apis
-    });
-
     const adminPortalObject: TAPAdminPortalApiProductDisplay = {
       ...base,
-      apApiDisplayList: apApiDisplayList,
       apAppReferenceEntityIdList: await this.listAppReferencesToApiProducts({
         organizationId: organizationId,
         apiProductId: apiProductId
       })
     }
     return adminPortalObject;
+  }
+
+  public async createAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
+    organizationId: string;
+    apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  }): Promise<void> {
+
+    // TODO: CUSTOM ATTRIBUTES into attributes
+    await super.createApApiProductDisplay({
+      organizationId: organizationId,
+      apApiProductDisplay: apAdminPortalApiProductDisplay
+    });
+
+  }
+
+  public async updateAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
+    organizationId: string;
+    apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  }): Promise<void> {
+    // TODO: CUSTOM ATTRIBUTES into attributes
+    await super.updateApApiProductDisplay({
+      organizationId: organizationId,
+      apApiProductDisplay: apAdminPortalApiProductDisplay
+    });
   }
 }
 

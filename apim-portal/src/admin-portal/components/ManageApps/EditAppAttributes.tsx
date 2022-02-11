@@ -30,8 +30,8 @@ import { TApiProductList } from "../../../components/APApiObjectsCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APManageAttributes } from "../../../components/APManageAttributes/APManageAttributes";
-import { TAPAttribute, TAPAttributeList } from "../../../utils/APConnectorApiCalls";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
+import { TAPAttribute, TAPAttributeList } from "../../../utils/APAttributes/APAttributesService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";

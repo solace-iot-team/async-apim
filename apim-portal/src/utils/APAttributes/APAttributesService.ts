@@ -5,8 +5,9 @@ export type TAPAttribute = {
 export type TAPAttributeList = Array<TAPAttribute>;
 
 export class APAttributesService {
+  private readonly BaseComponentName = "APAttributesService";
 
-  public static getApAttributeNameListAsString = (attributeList?: TAPAttributeList): string => {
+  public getApAttributeNameListAsString(attributeList?: TAPAttributeList): string {
     if(attributeList) {
       return attributeList.map( (attribute: TAPAttribute) => {
         return attribute.name;
@@ -15,7 +16,7 @@ export class APAttributesService {
     else return '';
   }
 
-  public static getAttributeNameList = (attributeList?: TAPAttributeList): Array<string> => {
+  public getAttributeNameList(attributeList?: TAPAttributeList): Array<string> {
     if(!attributeList) return [];
     return attributeList.map( (attribute: TAPAttribute) => {
       return attribute.name;  
@@ -23,3 +24,5 @@ export class APAttributesService {
   }
 
 }
+
+export default new APAttributesService();

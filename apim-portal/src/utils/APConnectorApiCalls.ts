@@ -17,12 +17,6 @@ import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "./APTypes";
 
-export type TAPAttribute = {
-  name: string,
-  value: string
-}
-export type TAPAttributeList = Array<TAPAttribute>;
-
 export type TAPConnectorPortalAbout = {
   isEventPortalApisProxyMode: boolean,
   connectorServerVersionStr?: string,
