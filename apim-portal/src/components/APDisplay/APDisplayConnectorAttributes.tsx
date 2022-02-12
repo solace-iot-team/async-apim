@@ -4,22 +4,22 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { TAPAttributeList } from "../../utils/APAttributes/APAttributesService";
+import { TAPConnectorAttributeList } from "../../utils/APAttributes/APAttributesService";
 
 import "../APComponents.css";
 
-export interface IAPDisplayAttributesProps {
-  attributeList?: TAPAttributeList;
+export interface IAPDisplayConnectorAttributesProps {
+  attributeList?: TAPConnectorAttributeList;
   emptyMessage: string;
   className?: string;
 }
 
-export const APDisplayAttributes: React.FC<IAPDisplayAttributesProps> = (props: IAPDisplayAttributesProps) => {
+export const APDisplayConnectorAttributes: React.FC<IAPDisplayConnectorAttributesProps> = (props: IAPDisplayConnectorAttributesProps) => {
   // const componentName='APDisplayAttributes';
 
   const dataTableRef = React.useRef<any>(null);
 
-  const renderComponent = (attributeList: TAPAttributeList): JSX.Element => {
+  const renderComponent = (attributeList: TAPConnectorAttributeList): JSX.Element => {
     return (
       <React.Fragment>
         <DataTable

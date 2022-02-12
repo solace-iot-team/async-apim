@@ -224,9 +224,10 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
             <div className="product-name">{dataRow.apEntityId.displayName}</div>
             <div className="product-description">{dataRow.connectorApiProduct.description}</div>
             <div className="product-name-list">APIs: {dataRow.apApiDisplayNameList.join(', ')}</div>
-            <div className="product-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
+            <div className="product-name-list">Attributes: {dataRow.apAttributeDisplayNameList.join(', ')}</div>
             <div className="product-name-list">Environments: {dataRow.apEnvironmentDisplayNameList.join(', ')}</div>
-            <div className="product-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
+            <div className="product-name-list">Protocols: {dataRow.apProtocolDisplayNameList.join(', ')}</div>
+
           </div>
           <div className="product-list-right">
             <div>

@@ -6,7 +6,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { TAPApiProductDisplay, APApiProductsService, TAPApiProductDisplayList } from '../../utils/APApiProductsService';
 import { TAPApiDisplayList } from '../../utils/APApisService';
-import { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
 import { TAPEnvironmentDisplayList } from '../../utils/APEnvironmentsService';
 
 export type TAPAdminPortalApiProductDisplay = TAPApiProductDisplay & {
@@ -28,7 +28,7 @@ class APAdminPortalApiProductsService extends APApiProductsService {
       organizationName: organizationId,
       apiProductName: apiProductId
     });
-    return list.map( (x: CommonEntityNames) => {
+    const returnList: TAPEntityIdList = list.map( (x: CommonEntityNames) => {
       if(x.name === undefined) throw new Error(`${logName}: x.name is undefined`);
       if(x.displayName === undefined) throw new Error(`${logName}: x.displayName is undefined`);
       return {
@@ -36,10 +36,11 @@ class APAdminPortalApiProductsService extends APApiProductsService {
         displayName: x.displayName 
       } 
     });
+    return APEntityIdsService.sort_byDisplayName(returnList);
   }
 
-  public createEmptyObject(): TAPAdminPortalApiProductDisplay {
-    const base = super.createEmptyObject();
+  public create_EmptyObject(): TAPAdminPortalApiProductDisplay {
+    const base = super.create_EmptyObject();
     return {
       ...base,
       apAppReferenceEntityIdList: []

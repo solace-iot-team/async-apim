@@ -3,14 +3,14 @@ import {
   APIProductAccessLevel,
   APIProductPatch,
   ApiProductsService,
-  Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay } from './APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from './APEntityIdsService';
 import { Globals } from './Globals';
-import { APRenderUtils } from './APRenderUtils';
-import APAttributesService from "./APAttributes/APAttributesService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/APAttributesService";
 import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsService';
 import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './APApisService';
+import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
+import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
 
 export type TAPApiProductDisplay = IAPEntityIdDisplay & {
   connectorApiProduct: APIProduct;
@@ -18,8 +18,12 @@ export type TAPApiProductDisplay = IAPEntityIdDisplay & {
   apEnvironmentDisplayNameList: Array<string>;
   apApiDisplayList: TAPApiDisplayList;
   apApiDisplayNameList: Array<string>;
-  apProtocolListAsString: string;
-  apAttributeListAsString: string;
+  apProtocolDisplayList: TAPProtocolDisplayList;
+  apProtocolDisplayNameList: Array<string>;
+  // TODO: separate Ap Special Attributes & attributes
+  apAttributeDisplayList: TAPAttributeDisplayList;
+  apAttributeDisplayNameList: Array<string>;
+  // re-work this concept
   apApiProductCategory: string;
   apApiProductImageUrl: string;
 }
@@ -44,7 +48,7 @@ export class APApiProductsService {
     return connectorApiProductList;
   }
 
-  private createEmpty_ConnectorApiProduct(): APIProduct {
+  private create_EmptyConnectorApiProduct(): APIProduct {
     return {
       apis: [],
       attributes: [],
@@ -56,15 +60,17 @@ export class APApiProductsService {
     };
   }
 
-  protected createEmptyObject(): TAPApiProductDisplay {
+  protected create_EmptyObject(): TAPApiProductDisplay {
     return this.create_ApApiProductDisplay_From_ApiEntities(
-      this.createEmpty_ConnectorApiProduct(),
+      this.create_EmptyConnectorApiProduct(),
       [],
       []
     );
   }
 
   protected create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPApiProductDisplay {
+    const apProtocolDisplayList: TAPProtocolDisplayList = APProtocolsService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList(connectorApiProduct.protocols);
+    const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesService.create_SortedApAttributeDisplayList_From_ConnectorAttributeList(connectorApiProduct.attributes);
     const _base: TAPApiProductDisplay = {
       apEntityId: {
         id: connectorApiProduct.name,
@@ -78,8 +84,10 @@ export class APApiProductsService {
       apEnvironmentDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(apEnvironmentDisplayList),
       apApiDisplayList: apApiDisplayList,
       apApiDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPApiDisplay>(apApiDisplayList),
-      apProtocolListAsString: this.getApProtocolListAsString(connectorApiProduct.protocols),
-      apAttributeListAsString: APAttributesService.getApAttributeNameListAsString(connectorApiProduct.attributes),
+      apProtocolDisplayList: apProtocolDisplayList,
+      apProtocolDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPProtocolDisplay>(apProtocolDisplayList),
+      apAttributeDisplayList: apAttributeDisplayList,
+      apAttributeDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPAttributeDisplay>(apAttributeDisplayList), 
       apApiProductCategory: this.CDefaultApiProductCategory,
       apApiProductImageUrl: this.CDefaultApiProductImageUrl,
     };
@@ -89,12 +97,10 @@ export class APApiProductsService {
   public generateGlobalSearchContent(apProductDisplay: TAPApiProductDisplay): string {
     return Globals.generateDeepObjectValuesString(apProductDisplay).toLowerCase();
   }
+
   public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
     if(displayNameList.length > 0) return displayNameList.join(', ');
     else return '';
-  }
-  public getApProtocolListAsString(apiProtocolList?: Array<Protocol> ): string {
-    return APRenderUtils.getProtocolListAsString(apiProtocolList);
   }
 
   protected async listApApiProductDisplay({ organizationId, includeAccessLevel }: {
@@ -129,8 +135,8 @@ export class APApiProductsService {
         apiIdList: connectorApiProduct.apis
       });
       list.push(this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, productApEnvDisplayList, productApApiDisplayList));
-    }
-    return list;
+    };
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiProductDisplay>(list);    
   }
   
   protected async getApApiProductDisplay({ organizationId, apiProductId }: {
@@ -195,7 +201,33 @@ export class APApiProductsService {
       apiProductName: apApiProductDisplay.apEntityId.id,
       requestBody: patch
     });  
-
   }
 
+  public async deleteApApiProductDisplay({ organizationId, apiProductId}: {
+    organizationId: string;
+    apiProductId: string;
+  }): Promise<void> {
+    await ApiProductsService.deleteApiProduct({
+      organizationName: organizationId,
+      apiProductName: apiProductId
+    });
+  }
+
+  public async getApiSpec({ organizationId, apiProductId, apiEntityId }: {
+    organizationId: string;
+    apiProductId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<TAPApiSpecDisplay> {
+    const spec: any = await ApiProductsService.getApiProductApiSpecification({
+      organizationName: organizationId, 
+      apiProductName: apiProductId,
+      apiName: apiEntityId.id,
+      format: EAPApiSpecFormat.JSON
+    });
+    return {
+      apEntityId: apiEntityId,
+      format: EAPApiSpecFormat.JSON,
+      spec: spec
+    };
+  }
 }

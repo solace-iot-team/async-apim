@@ -5,31 +5,24 @@ import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { Divider } from "primereact/divider";
 
-import { 
-  APIProduct, 
-  ApiProductsService, 
-  CommonDisplayName, 
-  CommonEntityNameList, 
-  CommonName
-} from "@solace-iot-team/apim-connector-openapi-browser";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApiProductsCommon";
-import { C_DEFAULT_API_PRODUCT_ACCESS_LEVEL, TViewManagedApiProduct } from "../../../components/APApiObjectsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
+import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
+import { TAPApiSpecDisplay } from "../../../utils/APApiSpecsService";
+import { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
 export interface IViewApiProductProps {
-  organizationId: TAPOrganizationId,
-  apiProductId: TManagedObjectId;
+  organizationId: string,
+  apiProductId: string;
   apiProductDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -39,26 +32,28 @@ export interface IViewApiProductProps {
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
   const componentName = 'ViewApiProduct';
 
-  type TGetManagedObject = TViewManagedApiProduct;
-  type TManagedObjectDisplay = TGetManagedObject & {
-    protocolListAsString: string;
-  }
+  type TManagedObject = TAPAdminPortalApiProductDisplay;
 
-  const transformGetManagedObjectToManagedObjectDisplay = (getManagedObject: TGetManagedObject): TManagedObjectDisplay => {
-    const managedObjectDisplay: TManagedObjectDisplay = {
-      ...getManagedObject,
-      apiProduct: {
-        ...getManagedObject.apiProduct,
-        accessLevel: getManagedObject.apiProduct.accessLevel ? getManagedObject.apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL,
-      },
-      protocolListAsString: APRenderUtils.getProtocolListAsString(getManagedObject.apiProduct.protocols),
-    }
-    return managedObjectDisplay;
-  }
+  // type TGetManagedObject = TViewManagedApiProduct;
+  // type TManagedObjectDisplay = TGetManagedObject & {
+  //   protocolListAsString: string;
+  // }
 
-  const [managedObjectDisplay, setManagedObjectDisplay] = React.useState<TManagedObjectDisplay>();  
+  // const transformGetManagedObjectToManagedObjectDisplay = (getManagedObject: TGetManagedObject): TManagedObjectDisplay => {
+  //   const managedObjectDisplay: TManagedObjectDisplay = {
+  //     ...getManagedObject,
+  //     apiProduct: {
+  //       ...getManagedObject.apiProduct,
+  //       accessLevel: getManagedObject.apiProduct.accessLevel ? getManagedObject.apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL,
+  //     },
+  //     protocolListAsString: APRenderUtils.getProtocolListAsString(getManagedObject.apiProduct.protocols),
+  //   }
+  //   return managedObjectDisplay;
+  // }
+
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [showApiId, setShowApiId] = React.useState<string>();
-  const [apiSpec, setApiSpec] = React.useState<any>();
+  const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
@@ -67,23 +62,11 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductDisplayName}`);
     try { 
-      const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
-        organizationName: props.organizationId,
-        apiProductName: props.apiProductId
+      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsService.getAdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        apiProductId: props.apiProductId
       });
-      const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
-        organizationName: props.organizationId,
-        apiProductName: props.apiProductId
-      });
-      const getManagedObject: TGetManagedObject = {
-        apiProduct: apiProduct,
-        apiEnvironmentList: [],
-        apiInfoList: [],
-        id: apiProduct.name,
-        displayName: apiProduct.displayName,
-        apiUsedBy_AppEntityNameList: apiAppEntityNameList
-      }
-      setManagedObjectDisplay(transformGetManagedObjectToManagedObjectDisplay(getManagedObject));
+      setManagedObject(object);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -92,16 +75,45 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     return callState;
   }
 
-  const apiGetApiSpec = async(apiId: CommonName, apiDisplayName: CommonDisplayName): Promise<TApiCallState> => {
+  // const apiGetManagedObject = async(): Promise<TApiCallState> => {
+  //   const funcName = 'apiGetManagedObject';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductDisplayName}`);
+  //   try { 
+  //     const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
+  //       organizationName: props.organizationId,
+  //       apiProductName: props.apiProductId
+  //     });
+  //     const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
+  //       organizationName: props.organizationId,
+  //       apiProductName: props.apiProductId
+  //     });
+  //     const getManagedObject: TGetManagedObject = {
+  //       apiProduct: apiProduct,
+  //       apiEnvironmentList: [],
+  //       apiInfoList: [],
+  //       id: apiProduct.name,
+  //       displayName: apiProduct.displayName,
+  //       apiUsedBy_AppEntityNameList: apiAppEntityNameList
+  //     }
+  //     setManagedObjectDisplay(transformGetManagedObjectToManagedObjectDisplay(getManagedObject));
+  //   } catch(e) {
+  //     APClientConnectorOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
+
+  const apiGetApiSpec = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
     const funcName = 'apiGetApiSpec';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const apiProductApiSpec: any = await ApiProductsService.getApiProductApiSpecification({
-        organizationName: props.organizationId, 
-        apiProductName: props.apiProductId,
-        apiName: apiId,
-        format: "application/json"
+      const apiProductApiSpec: TAPApiSpecDisplay = await APAdminPortalApiProductsService.getApiSpec({
+        organizationId: props.organizationId, 
+        apiProductId: props.apiProductId,
+        apiEntityId: { id: apiId, displayName: apiDisplayName }
       });
       setApiSpec(apiProductApiSpec);
     } catch(e) {
@@ -142,20 +154,19 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const renderShowApiButtons = () => {
     const funcName = 'renderShowApiButtons';
     const logName = `${componentName}.${funcName}()`;
-    if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
 
     const onShowApi = (event: any): void => {
       setShowApiId(event.currentTarget.dataset.id);
     }
   
-    let jsxButtonList: Array<JSX.Element> = [];
-
-    for (const apiId of managedObjectDisplay?.apiProduct.apis) {
+    const jsxButtonList: Array<JSX.Element> = [];
+    for (const apApiDisplay of managedObject.apApiDisplayList) {
       jsxButtonList.push(
         <Button 
-          label={apiId} 
-          key={apiId} 
-          data-id={apiId} 
+          label={apApiDisplay.apEntityId.displayName} 
+          key={apApiDisplay.apEntityId.id} 
+          data-id={apApiDisplay.apEntityId.id} 
           // icon="pi pi-folder-open" 
           // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
           className="p-button-text p-button-plain" 
@@ -182,19 +193,19 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     );
   }
 
-  const renderUsedByApps = (usedBy_AppsEntityNameList: CommonEntityNameList): JSX.Element => {
-    if(usedBy_AppsEntityNameList.length === 0) return (<div>None.</div>);
+  const renderUsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
+    if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
     return (
       <div>
-        {APRenderUtils.getCommonEntityNameListAsStringList(usedBy_AppsEntityNameList).join(', ')}
+        {apAppReferenceEntityIdList.join(', ')}
       </div>
     );
   }
 
-  const renderManagedObjectDisplay = () => {
-    const funcName = 'renderManagedObjectDisplay';
+  const renderManagedObject = () => {
+    const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
     return (
       <React.Fragment>
         <div className="p-col-12">
@@ -202,40 +213,41 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
             <div className="api-product-view-detail-left">
               
               <div className="p-text-bold">Description:</div>
-              <div className="p-ml-2">{managedObjectDisplay.apiProduct.description}</div>
+              <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
 
-              <div><b>Approval type</b>: {managedObjectDisplay.apiProduct.approvalType}</div>
-              <div><b>Access level</b>: {managedObjectDisplay.apiProduct.accessLevel}</div>
+              <div><b>Approval type</b>: {managedObject.connectorApiProduct.approvalType}</div>
+              <div><b>Access level</b>: {managedObject.connectorApiProduct.accessLevel}</div>
 
               <div className="p-text-bold">APIs:</div>
               {renderShowApiButtons()}
 
               <div className="p-text-bold">Environments:</div>
-              <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div>
+              {/* <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div> */}
+              <div className="p-ml-2">{managedObject.apEnvironmentDisplayNameList.join(', ')}</div>
 
               <div className="p-text-bold">Protocols:</div>
-              <div className="p-ml-2">{managedObjectDisplay.protocolListAsString}</div>
+              <div className="p-ml-2">{managedObject.apProtocolDisplayNameList.join(', ')}</div>
 
               <div className="p-text-bold">Attributes:</div>
-              <APDisplayAttributes
-                attributeList={managedObjectDisplay.apiProduct.attributes}
+              <APDisplayApAttributeDisplayList
+                apAttributeDisplayList={managedObject.apAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
 
               <div className="p-text-bold">Client Options:</div>
               <APDisplayClientOptions
-                clientOptions={managedObjectDisplay.apiProduct.clientOptions}
+                clientOptions={managedObject.connectorApiProduct.clientOptions}
                 className="p-ml-4"
               />
 
               <Divider />
               <div className="p-text-bold">Used by Apps:</div>
-              <div className="p-ml-2">{renderUsedByApps(managedObjectDisplay.apiUsedBy_AppEntityNameList)}</div>
+              <div className="p-ml-2">{renderUsedByApps(managedObject.apAppReferenceEntityIdList)}</div>
 
             </div>
             <div className="api-product-view-detail-right">
-              <div>Id: {managedObjectDisplay.id}</div>
+              <div>Id: {managedObject.apEntityId.id}</div>
             </div>            
           </div>
         </div>  
@@ -262,13 +274,13 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-        {managedObjectDisplay && renderManagedObjectDisplay() }
+        {managedObject && renderManagedObject() }
 
       </div>
       {/* DEBUG */}
-      <pre style={ { fontSize: '10px' }} >
-        {JSON.stringify(managedObjectDisplay, null, 2)}
-      </pre>
+      {/* <pre style={ { fontSize: '10px' }} >
+        {JSON.stringify(managedObject, null, 2)}
+      </pre> */}
     </React.Fragment>
   );
 }

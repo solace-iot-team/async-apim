@@ -1,21 +1,20 @@
 import { 
   APIInfo, APIInfoList, APIParameter, ApisService, CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityIdList } from './APEntityIdsService';
-import { TAPAsyncApiSpec } from './APTypes';
+import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
 
 export type TAPApiParameterList = Array<APIParameter>;
 export type TAPApiDisplay = IAPEntityIdDisplay & {
-  apApiProductReferenceEntityIdList: TAPEntityIdList
+  apApiProductReferenceEntityIdList: TAPEntityIdList;
   connectorApiInfo: APIInfo;
-  apAsyncApiSpec?: TAPAsyncApiSpec;
 }
 export type TAPApiDisplayList = Array<TAPApiDisplay>;
 
 export class APApisService {
   private readonly BaseComponentName = "APApisService";
 
-  private create_ApApiDisplay_From_ApiEntities = (connectorApiInfo: APIInfo, apApiProductEntityIdList: TAPEntityIdList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPApiDisplay => {
+  private create_ApApiDisplay_From_ApiEntities = (connectorApiInfo: APIInfo, apApiProductEntityIdList: TAPEntityIdList): TAPApiDisplay => {
     const _base: TAPApiDisplay = {
       apEntityId: {
         id: connectorApiInfo.name,
@@ -23,7 +22,6 @@ export class APApisService {
       },
       connectorApiInfo: connectorApiInfo,
       apApiProductReferenceEntityIdList: apApiProductEntityIdList,
-      apAsyncApiSpec: apAsyncApiSpec
     }
     return _base;
   }
@@ -114,8 +112,8 @@ export class APApisService {
         organizationId: organizationId,
         apiId: apiId
       }));
-    }
-    return list;
+    };
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiDisplay>(list);    
   }
 
   public async listApApiDisplay({ organizationId }:{
@@ -135,7 +133,7 @@ export class APApisService {
       });
       list.push(this.create_ApApiDisplay_From_ApiEntities(apiInfo, apApiProductReferenceEntityIdList));
     }
-    return list;
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiDisplay>(list);    
   }
   
   public async getApApiDisplay({ organizationId, apiId}: {
@@ -153,6 +151,23 @@ export class APApisService {
     });
 
     return this.create_ApApiDisplay_From_ApiEntities(connectorApiInfo, apApiProductReferenceEntityIdList);
+  }
+
+  public async getApiSpec({ organizationId, apiEntityId }: {
+    organizationId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<TAPApiSpecDisplay> {
+    const jsonSpec: any = await ApisService.getApi({
+      organizationName: organizationId, 
+      apiName: apiEntityId.id,
+      format: EAPApiSpecFormat.JSON
+    });
+    return {
+      apEntityId: apiEntityId,
+      format: EAPApiSpecFormat.JSON,
+      spec: jsonSpec
+    };
+
   }
 
 }

@@ -77,11 +77,16 @@ type TAPManagedApiDisplay_Base = {
 export type TAPDeveloperPortalApiDisplay = TAPManagedApiDisplay_Base & {
   apPortalDisplayType: EAPPortalDisplay_Type;
 };
-export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
-  apPortalDisplayType: EAPPortalDisplay_Type;
-}
-export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+// export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
+//   apPortalDisplayType: EAPPortalDisplay_Type;
+// }
+export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay;
 
+// export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
+  //   apPortalDisplayType: EAPPortalDisplay_Type;
+  // }
+// export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+  
 export class APManagedApiDisplay {
 
   private static createAPManagedApiDisplay_Base_From_ApiEntities = (apiInfo: APIInfo, apiApiProductEntityNameList: CommonEntityNameList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPManagedApiDisplay_Base => {
@@ -114,10 +119,11 @@ type TAPManagedApiProductDisplay_Base = {
 export type TAPDeveloperPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
   apPortalDisplayType: EAPPortalDisplay_Type;
 };
-export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
-  apPortalDisplayType: EAPPortalDisplay_Type;
-}
-export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+// export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
+//   apPortalDisplayType: EAPPortalDisplay_Type;
+// }
+// export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay;
 
 export class APManagedApiProductDisplay {
   public static generateGlobalSearchContent = (apManagedApiProductDisplay: TAPApiProductDisplay): string => {

@@ -142,11 +142,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   const attributesBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    if(rowData.connectorApiProduct.attributes.length === 0) return (<div>-</div>);
-    return APRenderUtils.renderStringListAsDivList(APAttributesService.getAttributeNameList(rowData.connectorApiProduct.attributes));
+    if(rowData.apAttributeDisplayList.length === 0) return (<div>-</div>);
+    return APRenderUtils.renderStringListAsDivList(rowData.apAttributeDisplayNameList);
+    // if(rowData.connectorApiProduct.attributes.length === 0) return (<div>-</div>);
+    // return APRenderUtils.renderStringListAsDivList(APAttributesService.create_SortedAttributeNameList(rowData.connectorApiProduct.attributes));
   }
   const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return APRenderUtils.renderStringListAsDivList(rowData.connectorApiProduct.environments);
+    return APRenderUtils.renderStringListAsDivList(rowData.apEnvironmentDisplayNameList);
   }
   const apisBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
     return APRenderUtils.renderStringListAsDivList(rowData.apApiDisplayNameList);
@@ -167,8 +169,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const accessLevelTemplate = (rowData: TManagedObjectTableDataRow): string => {
     return rowData.connectorApiProduct.accessLevel ? rowData.connectorApiProduct.accessLevel : '?';
   }
-  const protocolsTemplate = (rowData: TManagedObjectTableDataRow): string => {
-    return rowData.apProtocolListAsString;
+  const protocolsTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return APRenderUtils.renderStringListAsDivList(rowData.apProtocolDisplayNameList);
   }
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    

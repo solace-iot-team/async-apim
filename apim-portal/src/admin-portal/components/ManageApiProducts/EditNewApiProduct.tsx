@@ -30,12 +30,13 @@ import {
 import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./ManageApiProductsCommon";
 import { SelectApis } from "./SelectApis";
 import { SelectEnvironments } from "./SelectEnvironments";
-import { APManageAttributes } from "../../../components/APManageAttributes/APManageAttributes";
+import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/APManageApAttributeDisplayList";
 import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
-import { TAPAttribute, TAPAttributeList } from "../../../utils/APAttributes/APAttributesService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList, TAPProtocolDisplayList } from "../../../utils/APEnvironmentsService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/APAttributesService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
 import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/APProtocolsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -83,7 +84,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     selected_ApProtocolDisplayList: TAPProtocolDisplayList;
     // selectedProtocolList: TViewProtocolList;
     clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
-    attributeList: TAPAttributeList;
+    // attributeList: TAPAttributeList;
+    managedApAttributeDisplayList: TAPAttributeDisplayList;
   }
   // type TManagedObjectFormData = TManagedObject & {
   //   apiSelectItemIdList: TApiEntitySelectItemIdList;
@@ -96,7 +98,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const ButtonLabelSelectApis = 'Select API(s)';
   const ButtonLabelSelectEnvironments = 'Select Environment(s)';
 
-  const emptyManagedObject: TManagedObject = APAdminPortalApiProductsService.createEmptyObject();
+  const emptyManagedObject: TManagedObject = APAdminPortalApiProductsService.create_EmptyObject();
 
   // const emptyManagedObject: TManagedObject = {
 
@@ -137,7 +139,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [selected_ApisCombinedApiParameterList, setSelected_ApisCombinedApiParameterList] = React.useState<Array<APIParameter>>([]);
   // selected row in table
   const [selected_ApisCombinedApiParameter, setSelected_ApisCombinedApiParameter] = React.useState<APIParameter>();
-  const [presetAttribute, setPresetAttribute] = React.useState<TAPAttribute>();
+  const [presetAttributeDisplay, setPresetAttributeDisplay] = React.useState<TAPAttributeDisplay>();
   // inForm: MultiSelect
   const [inFormCurrentMultiSelectOption_ApiSelectItemList, setInFormCurrentMultiSelectOption_ApiSelectItemList] = React.useState<TAPEntityIdList>([]);
   // const [inFormCurrentMultiSelectOptionApiSelectItemList, setInFormCurrentMultiSelectOptionApiSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
@@ -300,7 +302,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       selected_environmentIdList: APEntityIdsService.create_IdList(environmentSelectEntityIdList),
       selected_ApProtocolDisplayList: APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(mo.apEnvironmentDisplayList),
       clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
-      attributeList: mo.connectorApiProduct.attributes
+      managedApAttributeDisplayList: JSON.parse(JSON.stringify(mo.apAttributeDisplayList)),
       // apiSelectItemIdList: APApiObjectsCommon.transformApiInfoListToSelectItemIdList(mo.apApiDisplayList.apiInfoList),
       // environmentSelectItemIdList: APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemIdList(managedObject.environmentList),
       // selectedProtocolList: managedObject.apiProduct.protocols ? managedObject.apiProduct.protocols : transformViewEnvironmentListToViewProtocolList(managedObject.environmentList),
@@ -349,11 +351,14 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         name: mofd.apEntityId.id,
         displayName: mofd.apEntityId.displayName,
         apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiDisplay>(selected_ApApiDisplayList),
-        attributes: mofd.attributeList,
+        
+        attributes: APAttributesService.create_ConnectorAttributeList_From_ApAttributeDisplayList(mofd.managedApAttributeDisplayList),
+        // attributes: mofd.attributeList,
+        
         environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selected_ApEnvironmentDisplayList),
         pubResources: [],
         subResources: [],
-        protocols: APEnvironmentsService.create_ConnectorProtocols_From_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList),
+        protocols: APProtocolsService.create_ConnectorProtocols_From_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList),
         // protocols: mofd.selectedProtocolList,
         clientOptions: {
           guaranteedMessaging: mofd.clientOptionsGuaranteedMessaging
@@ -579,11 +584,11 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   
   React.useEffect(() => {
     if(selected_ApisCombinedApiParameter) {
-      const attribute: TAPAttribute = {
+      const connectorAttribute: TAPConnectorAttribute = {
         name: selected_ApisCombinedApiParameter.name,
         value: selected_ApisCombinedApiParameter.enum ? selected_ApisCombinedApiParameter.enum.join(',') : ''
-      }
-      setPresetAttribute(attribute);
+      };
+      setPresetAttributeDisplay(APAttributesService.create_ApAttributeDisplay_From_ConnnectorAttribute(connectorAttribute));
     }
   }, [selected_ApisCombinedApiParameter]);
   
@@ -669,16 +674,16 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   // * Attributes *
-  const onAttributeListUpdate = (attributeList: TAPAttributeList) => {
+  const onAttributeListUpdate = (newApAttributeDisplayList: TAPAttributeDisplayList) => {
     const funcName = 'onAttributeListUpdate';
     const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: newApAttributeDisplayList=${JSON.stringify(newApAttributeDisplayList, null, 2)}`);
 
-    // must not change FormData, which updates values in form
-    // instead: update separate state
-    // onSubmit: merge into formData
+    // must not change FormData field that is used in form ==> would update values in form
+    // instead: update separate field
 
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    managedObjectFormData.attributeList = attributeList;
+    managedObjectFormData.managedApAttributeDisplayList = newApAttributeDisplayList;
   }
 
   // * Form *
@@ -691,7 +696,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     managedObjectUseForm.setValue('connectorApiProduct.description', mofd.connectorApiProduct.description);
     managedObjectUseForm.setValue('connectorApiProduct.approvalType', mofd.connectorApiProduct.approvalType);
     managedObjectUseForm.setValue('connectorApiProduct.accessLevel', mofd.connectorApiProduct.accessLevel);
-    managedObjectUseForm.setValue('connectorApiProduct.attributes', mofd.connectorApiProduct.attributes);
+    // managedObjectUseForm.setValue('connectorApiProduct.attributes', mofd.connectorApiProduct.attributes);
     // client options: guaranteed messaging
     managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', mofd.clientOptionsGuaranteedMessaging.requireQueue);    
     managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', mofd.clientOptionsGuaranteedMessaging.accessType);    
@@ -754,7 +759,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     if(!isSelectedProtocolListValid()) return false;
     const mofd: TManagedObjectFormData = {
       ...newMofd,
-      attributeList: managedObjectFormData.attributeList,
+      managedApAttributeDisplayList: managedObjectFormData.managedApAttributeDisplayList,
       selected_ApProtocolDisplayList: selected_ApProtocolDisplayList,
     }
     doSubmitManagedObject(transformFormDataToManagedObject(mofd));
@@ -961,21 +966,22 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     }
     // main
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
+    const apAttributeDisplayList = managedObjectFormData.apAttributeDisplayList;
+    // const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
     return (  
       <React.Fragment>
         <Panel 
           headerTemplate={panelHeaderTemplate} 
           toggleable={true}
-          collapsed={attributeList.length === 0}
+          collapsed={apAttributeDisplayList.length === 0}
         >
           <React.Fragment>
             {renderManageApiParameterAttributes()}
             <div className='p-mb-6'/>
-            <APManageAttributes
+            <APManageApAttributeDisplayList
               formId={componentName+'_APManageAttributes'}
-              presetAttribute={presetAttribute}
-              attributeList={attributeList}
+              presetApAttributeDisplay={presetAttributeDisplay}
+              apAttributeDisplayList={apAttributeDisplayList}
               onChange={onAttributeListUpdate}
             />
           </React.Fragment>
@@ -1226,7 +1232,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.connectorApiProduct?.approvalType)}
             </div>
             {/* accessLevel */}
-            <div className="p-m-6">TODO: change access level to attribute - filter all reserved attribute names</div>
+            {/* <div className="p-m-6">TODO: change access level to attribute - filter all reserved attribute names</div> */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller

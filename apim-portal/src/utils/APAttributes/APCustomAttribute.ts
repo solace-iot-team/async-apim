@@ -1,4 +1,4 @@
-import { TAPAttribute } from "./APAttributesService";
+import { TAPConnectorAttribute } from "./APAttributesService";
 
 
 export abstract class APCustomAttribute {
@@ -29,7 +29,7 @@ export abstract class APCustomAttribute {
   //   this._value = value;
   // }
 
-  public get apAttribute(): TAPAttribute {
+  public get apAttribute(): TAPConnectorAttribute {
     return {
       name: this._name,
       value: this._value

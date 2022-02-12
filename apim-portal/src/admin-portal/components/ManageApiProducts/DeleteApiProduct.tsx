@@ -4,19 +4,18 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { ApiProductsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import APAdminPortalApiProductsService from "../../utils/APAdminPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
 export interface IDeleteApiProductProps {
-  organizationId: TAPOrganizationId,
-  apiProductId: TManagedObjectId;
+  organizationId: string,
+  apiProductId: string;
   apiProductDisplayName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -38,9 +37,9 @@ export const DeleteApiProduct: React.FC<IDeleteApiProductProps> = (props: IDelet
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT, `delete api product: ${props.apiProductDisplayName}`);
     try { 
-      await ApiProductsService.deleteApiProduct({
-        organizationName: props.organizationId,
-        apiProductName: props.apiProductId
+      await APAdminPortalApiProductsService.deleteApApiProductDisplay({
+        organizationId: props.organizationId,
+        apiProductId: props.apiProductId
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

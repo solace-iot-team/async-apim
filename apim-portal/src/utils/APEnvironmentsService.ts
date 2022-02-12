@@ -5,11 +5,8 @@ import {
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay } from './APEntityIdsService';
+import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
 
-export type TAPProtocolDisplay = IAPEntityIdDisplay & {
-  connectorProtocol: Protocol;
-}
-export type TAPProtocolDisplayList = Array<TAPProtocolDisplay>;
 export type TAPEnvironmentDisplay = IAPEntityIdDisplay & {
   connectorEnvironmentResponse: EnvironmentResponse;
   apDisplayString: string;
@@ -21,7 +18,7 @@ export type TAPEnvironmentDisplayList = Array<TAPEnvironmentDisplay>;
 class APEnvironmentsService {
   private readonly BaseComponentName = "APEnvironmentsService";
 
-  private getApDisplayString(envResponse: EnvironmentResponse): string {
+  private create_DisplayString(envResponse: EnvironmentResponse): string {
     return `${envResponse.displayName} (${envResponse.datacenterProvider}:${envResponse.datacenterId})`;
   }
 
@@ -32,7 +29,7 @@ class APEnvironmentsService {
         displayName: connectorEnvResponse.displayName ? connectorEnvResponse.displayName : connectorEnvResponse.name
       },
       connectorEnvironmentResponse: connectorEnvResponse,
-      apDisplayString: this.getApDisplayString(connectorEnvResponse)
+      apDisplayString: this.create_DisplayString(connectorEnvResponse)
     }
     return _base;
   }
@@ -45,20 +42,8 @@ class APEnvironmentsService {
     }
   }
 
-  public create_ConnectorProtocols_From_ApProtocolDisplayList(list: TAPProtocolDisplayList): Array<Protocol> {
-    return list.map( (x) => {
-      return x.connectorProtocol;
-    });
-  }
-
-  private create_ApProtocolDisplay_From_ConnectorProtocol(connectorProtocol: Protocol): TAPProtocolDisplay {
-    return {
-      apEntityId: {
-        id: connectorProtocol.name,
-        displayName: connectorProtocol.version ? `${connectorProtocol.name} (${connectorProtocol.version })` : connectorProtocol.name
-      },
-      connectorProtocol: connectorProtocol
-    }
+  public create_SortedApProtocolDisplayList_From_ApEnvironmentDisplay(apEnvironmentDisplay: TAPEnvironmentDisplay): TAPProtocolDisplayList {
+    return APProtocolsService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList(apEnvironmentDisplay.connectorEnvironmentResponse.exposedProtocols);
   }
 
   public create_ConsolidatedApProtocolDisplayList(apEnvironmentDisplayList: TAPEnvironmentDisplayList): TAPProtocolDisplayList {
@@ -68,17 +53,14 @@ class APEnvironmentsService {
       connectorList.push(...exposedProtocols);
     }
     const unique = new Map<string, number>();
-    const distinctConnectorList: Array<Protocol> = [];
+    const distinctConnectorProtocolList: Array<Protocol> = [];
     for(let i=0; i < connectorList.length; i++) {      
       if(!unique.has(connectorList[i].name)) {
-        distinctConnectorList.push(connectorList[i]);
+        distinctConnectorProtocolList.push(connectorList[i]);
         unique.set(connectorList[i].name, 1);
       } 
     }
-    const resultList: TAPProtocolDisplayList = [];
-    for(const connectorProtocol of distinctConnectorList) {
-      resultList.push(this.create_ApProtocolDisplay_From_ConnectorProtocol(connectorProtocol));
-    }
+    const resultList: TAPProtocolDisplayList = APProtocolsService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList(distinctConnectorProtocolList);
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPProtocolDisplay>(resultList);
   }
 
@@ -98,15 +80,15 @@ class APEnvironmentsService {
       organizationName: organizationId
     });
     // TODO: PARALLELIZE
-    const apEnvDisplayList: TAPEnvironmentDisplayList = [];
+    const list: TAPEnvironmentDisplayList = [];
     for(const envListItem of envListItemList) {
       const envResponse = await EnvironmentsService.getEnvironment({
         organizationName: organizationId,
         envName: envListItem.name
       });
-      apEnvDisplayList.push(this.create_ApEnvironmentDisplay_From_ApiEntities(envResponse));
+      list.push(this.create_ApEnvironmentDisplay_From_ApiEntities(envResponse));
     }
-    return apEnvDisplayList;
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPEnvironmentDisplay>(list);    
   }
 
   public async listApEnvironmentDisplayForEnvIdList({ organizationId, envIdList }: {
@@ -115,15 +97,15 @@ class APEnvironmentsService {
   }): Promise<TAPEnvironmentDisplayList> {
 
     // TODO: PARALLELIZE
-    const apEnvDisplayList: TAPEnvironmentDisplayList = [];
+    const list: TAPEnvironmentDisplayList = [];
     for(const envId of envIdList) {
       const envResponse = await EnvironmentsService.getEnvironment({
         organizationName: organizationId,
         envName: envId
       });
-      apEnvDisplayList.push(this.create_ApEnvironmentDisplay_From_ApiEntities(envResponse));
+      list.push(this.create_ApEnvironmentDisplay_From_ApiEntities(envResponse));
     }
-    return apEnvDisplayList;
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPEnvironmentDisplay>(list);    
   }
 
 }

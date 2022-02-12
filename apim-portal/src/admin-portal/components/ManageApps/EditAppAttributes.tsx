@@ -29,9 +29,9 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { TApiProductList } from "../../../components/APApiObjectsCommon";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
-import { APManageAttributes } from "../../../components/APManageAttributes/APManageAttributes";
+import { APManageConnectorAttributes } from "../../../components/APManageAttributes/APManageConnectorAttributes";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
-import { TAPAttribute, TAPAttributeList } from "../../../utils/APAttributes/APAttributesService";
+import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../../utils/APAttributes/APAttributesService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -71,10 +71,10 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     apiProductList: TApiProductList;
     apsUser: APSUser;
     consolidatedApiProductAttributeValueListList: TAPApiProductAttributeValueListList;
-    modifiedAppAttributeList: TAPAttributeList
+    modifiedAppAttributeList: TAPConnectorAttributeList
   }
   type TManagedObjectFormData = TManagedObject & {
-    attributeList: TAPAttributeList
+    attributeList: TAPConnectorAttributeList
   }
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
@@ -84,15 +84,15 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
   // APP Attributes
   const combinedApiProductAttributesDataTableRef = React.useRef<any>(null);
   const [combinedApiProductAttributesDataTableGlobalFilter, setCombinedApiProductAttributesDataTableGlobalFilter] = React.useState<string>();
-  const [selectedCombinedApiProductAttribute, setSelectedCombinedApiProductAttribute] = React.useState<TAPAttribute>();
+  const [selectedCombinedApiProductAttribute, setSelectedCombinedApiProductAttribute] = React.useState<TAPConnectorAttribute>();
   const [expandedApiProductAttributesDataTableRows, setExpandedApiProductAttributesDataTableRows] = React.useState<any>(null);
-  const [managedAttributeListFormData, setManagedAttributeListFormData] = React.useState<TAPAttributeList>([]);
+  const [managedAttributeListFormData, setManagedAttributeListFormData] = React.useState<TAPConnectorAttributeList>([]);
   
   // form
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
 
-  const transformApiProductAttributeToAttribute = (apiProductAttributeValueList: TAPApiProductAttributeValueList): TAPAttribute => {
+  const transformApiProductAttributeToAttribute = (apiProductAttributeValueList: TAPApiProductAttributeValueList): TAPConnectorAttribute => {
     return {
       name: apiProductAttributeValueList.name,
       value: apiProductAttributeValueList.valueList.join(',')
@@ -125,7 +125,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     let _attributeValueListList: TAPApiProductAttributeValueListList = [];
     for (const apiProduct of apiProductList) {
       // console.log(`${logName}:  apiProduct.name=${apiProduct.name}, apiProduct.attributes=${JSON.stringify(apiProduct.attributes)}`);
-      apiProduct.attributes.forEach( (attribute: TAPAttribute) => {
+      apiProduct.attributes.forEach( (attribute: TAPConnectorAttribute) => {
         const attributeName: string = attribute.name;
         const attributeValueList: Array<string> = createValueListFromAttributeValue(attribute.value);
         const _found: TAPApiProductAttributeValueList | undefined = _attributeValueListList.find( (existing: TAPApiProductAttributeValueList) => {
@@ -317,7 +317,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Attributes *
-  const onAttributeListUpdate = (attributeList: TAPAttributeList) => {
+  const onAttributeListUpdate = (attributeList: TAPConnectorAttributeList) => {
     setManagedAttributeListFormData(attributeList);
   }
 
@@ -476,12 +476,12 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     const funcName = 'renderManageAttributes';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
+    const attributeList: TAPConnectorAttributeList = managedObjectFormData.attributeList;
     return (  
       <React.Fragment>
         {renderCombinedApiProductAttributes()}
         <div className='p-mb-6'/>
-        <APManageAttributes
+        <APManageConnectorAttributes
           formId={componentName+'_APManageAttributes'}
           presetAttribute={selectedCombinedApiProductAttribute}
           attributeList={attributeList}

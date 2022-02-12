@@ -10,89 +10,90 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import { APConnectorFormValidationRules } from "../../utils/APConnectorOpenApiFormValidationRules";
-import { TAPAttribute, TAPAttributeList } from "../../utils/APAttributes/APAttributesService";
+// import { TAPAttribute, TAPAttributeList } from "../../utils/APAttributes/APAttributesService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "../../utils/APAttributes/APAttributesService";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';
 
-export interface IAPManageAttributesProps {
+export interface IAPManageApAttributeDisplayListProps {
   formId: string;
-  presetAttribute?: TAPAttribute;
-  attributeList: TAPAttributeList;
-  onChange: (attributeList: TAPAttributeList) => void;
+  presetApAttributeDisplay?: TAPAttributeDisplay;
+  apAttributeDisplayList: TAPAttributeDisplayList;
+  onChange: (apAttributeDisplayList: TAPAttributeDisplayList) => void;
 }
 
-export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IAPManageAttributesProps) => {
-  const componentName = 'APManageAttributes';
+export const APManageApAttributeDisplayList: React.FC<IAPManageApAttributeDisplayListProps> = (props: IAPManageApAttributeDisplayListProps) => {
+  const componentName = 'APManageApAttributeDisplayList';
 
-  type TAttributeFormData = TAPAttribute;
-  const emptyManagedAttribute: TAPAttribute = {
-    name: '',
-    value: ''
-  }
-  const attributeUseForm = useForm<TAttributeFormData>();
+  type TManagedAttribute = TAPAttributeDisplay; 
+  type TManagedAttributeList = Array<TManagedAttribute>;
+  type TManagedAttributeFormData = TManagedAttribute;
+  const emptyManagedAttribute: TManagedAttribute = APAttributesService.create_EmptyObject();
+  const attributeUseForm = useForm<TManagedAttributeFormData>();
 
-  const [managedAttribute, setManagedAttribute] = React.useState<TAPAttribute>(emptyManagedAttribute);
-  const [managedAttributeList, setManagedAttributeList] = React.useState<TAPAttributeList>(props.attributeList);
+  const [managedAttribute, setManagedAttribute] = React.useState<TManagedAttribute>(emptyManagedAttribute);
+  const [managedAttributeList, setManagedAttributeList] = React.useState<TManagedAttributeList>(props.apAttributeDisplayList);
   const [isManagedAttributeListChanged, setIsManagedAttributeListChanged] = React.useState<boolean>(false);
-  const [attributeFormData, setAttributeFormData] = React.useState<TAttributeFormData>();
+  const [attributeFormData, setAttributeFormData] = React.useState<TManagedAttributeFormData>();
   const attributeDataTableRef = React.useRef<any>(null);
 
-  const transformManagedAttributeToFormData = (managedAttribute: TAPAttribute): TAttributeFormData => {
+  const transformManagedAttributeToFormData = (ma: TManagedAttribute): TManagedAttributeFormData => {
     return {
-      ...managedAttribute
+      ...ma
     };
   }
-  const transformFormDataToManagedAttribute = (formData: TAttributeFormData): TAPAttribute => {
-    return {
-      ...formData
-    }
+  const transformFormDataToManagedAttribute = (fd: TManagedAttributeFormData): TManagedAttribute => {
+    // edited: connectorAttribute
+    return APAttributesService.create_ApAttributeDisplay_From_ConnnectorAttribute(fd.connectorAttribute);
   }
 
   React.useEffect(() => {
-    if(props.presetAttribute) {
-      setManagedAttribute(props.presetAttribute);
+    if(props.presetApAttributeDisplay) {
+      setManagedAttribute(props.presetApAttributeDisplay);
       attributeUseForm.clearErrors();
     }
-  }, [props.presetAttribute]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [props.presetApAttributeDisplay]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedAttribute) setAttributeFormData(transformManagedAttributeToFormData(managedAttribute));
+    if(managedAttribute) {
+      if(!APAttributesService.is_EmptyObject(managedAttribute)) {
+        setAttributeFormData(transformManagedAttributeToFormData(managedAttribute));
+      }
+      attributeUseForm.clearErrors();
+      const connectorAttributeName = attributeUseForm.getValues('connectorAttribute.name');
+      if(connectorAttributeName !== undefined && connectorAttributeName !== '') attributeUseForm.trigger();
+    }
   }, [managedAttribute]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(isManagedAttributeListChanged) {
-      attributeUseForm.clearErrors();
-      if(attributeUseForm.getValues('name') !== '') attributeUseForm.trigger();
       props.onChange(managedAttributeList);
+      setIsManagedAttributeListChanged(false);
     }
-  }, [managedAttributeList]) /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [managedAttributeList, isManagedAttributeListChanged]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(attributeFormData) doPopulateAttributeFormDataValues(attributeFormData);
   }, [attributeFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const doPopulateAttributeFormDataValues = (attributeFormData: TAttributeFormData) => {
-    attributeUseForm.setValue('name', attributeFormData.name);
-    attributeUseForm.setValue('value', attributeFormData.value);
+  const doPopulateAttributeFormDataValues = (fd: TManagedAttributeFormData) => {
+    attributeUseForm.setValue('connectorAttribute', fd.connectorAttribute);
+    // attributeUseForm.setValue('value', attributeFormData.value);
   }
 
-  const doAddManagedAttribute = (managedAttribute: TAPAttribute) => {
+  const doAddManagedAttribute = (ma: TManagedAttribute) => {
+    setAttributeFormData(transformManagedAttributeToFormData(emptyManagedAttribute));
     setManagedAttribute(emptyManagedAttribute);
-    setIsManagedAttributeListChanged(true);
-    const _managedAttributeList: TAPAttributeList = [...managedAttributeList];
-    _managedAttributeList.push(managedAttribute);
-    setManagedAttributeList(_managedAttributeList);
-  }
-  const doRemoveManagedAttribute = (managedAttribute: TAPAttribute) => {
-    const idx = managedAttributeList.indexOf(managedAttribute);
-    const _mal = [...managedAttributeList];
-    _mal.splice(idx, 1);
-    setManagedAttributeList(_mal);
+    setManagedAttributeList(APAttributesService.add_ApAttributeDisplay_To_ApAttributeDisplayList(managedAttributeList, ma));
     setIsManagedAttributeListChanged(true);
   }
-  const onSubmitAttributeForm = (attributeFormData: TAttributeFormData) => {
-    doAddManagedAttribute(transformFormDataToManagedAttribute(attributeFormData));
+  const doRemoveManagedAttribute = (ma: TManagedAttribute) => {
+    setManagedAttributeList(APAttributesService.remove_ApAttributeDisplay_From_ApAttributeDisplayList(managedAttributeList, ma));
+    setIsManagedAttributeListChanged(true);
+  }
+  const onSubmitAttributeForm = (mafd: TManagedAttributeFormData) => {
+    doAddManagedAttribute(transformFormDataToManagedAttribute(mafd));
   }
   const onInvalidSubmitAttributeForm = () => {
     // placeholder
@@ -103,19 +104,19 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
   }
 
   const renderAttributeTable = (): JSX.Element => {
-    const actionBodyTemplate = (attribute: TAPAttribute) => {
+    const actionBodyTemplate = (ma: TManagedAttribute) => {
       return (
           <React.Fragment>
             <Button 
-              key={componentName+'remove'+attribute.name} 
+              key={componentName+'remove'+ma.apEntityId.id} 
               type='button'
               icon="pi pi-times" 
               className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" 
-              onClick={() => doRemoveManagedAttribute(attribute)} 
+              onClick={() => doRemoveManagedAttribute(ma)} 
             />
           </React.Fragment>
       );
-    }  
+    }
     return (
       <React.Fragment>
         <DataTable
@@ -125,23 +126,23 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
           value={managedAttributeList}
           emptyMessage='No attributes defined.'
           scrollable 
-          dataKey="name"  
+          dataKey="apEntityId.id"  
           sortMode='single'
-          sortField="name"
+          sortField="apEntityId.displayName"
           sortOrder={1}
         >
-          <Column field="name" header="Attribute Name" sortable style={{ width: "20em"}}/>
-          <Column field="value" header="Attribute Value" bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} />
+          <Column field="apEntityId.displayName" header="Attribute Name" sortable style={{ width: "20em"}}/>
+          <Column field="connectorAttribute.value" header="Attribute Value" bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} />
           <Column body={actionBodyTemplate} bodyStyle={{ width: '3em', textAlign: 'end' }} />
         </DataTable>
       </React.Fragment>        
     );
   }
 
-  const validateAttributeName = (value: string): string | boolean => {
-    // check if name is unique
-    const found: TAPAttribute | undefined = managedAttributeList.find( (attribute: TAPAttribute) => {
-      return attribute.name === value;
+  const validateAttributeName = (name: string): string | boolean => {
+    // check that name is unique
+    const found: TAPAttributeDisplay | undefined = managedAttributeList.find( (apAttributeDisplay: TAPAttributeDisplay) => {
+      return apAttributeDisplay.connectorAttribute.name === name;
     });
     if(found) return `Attribute name already exists.`;
     return true;
@@ -157,7 +158,7 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
               <span className="p-float-label p-input-icon-right">
                 <i className="pi pi-key" />
                 <Controller
-                  name="name"
+                  name="connectorAttribute.name"
                   control={attributeUseForm.control}
                   rules={{
                     ...APConnectorFormValidationRules.AttributeName(),
@@ -172,15 +173,15 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
                       />
                   )}}
                 />
-                <label htmlFor="name" className={classNames({ 'p-error': attributeUseForm.formState.errors.name })}>Attribute Name*</label>
+                <label htmlFor="connectorAttribute.name" className={classNames({ 'p-error': attributeUseForm.formState.errors.connectorAttribute?.name })}>Attribute Name*</label>
               </span>
-              {displayManagedAttributeFormFieldErrorMessage(attributeUseForm.formState.errors.name)}
+              {displayManagedAttributeFormFieldErrorMessage(attributeUseForm.formState.errors.connectorAttribute?.name)}
             </div>
             {/* Value */}
             <div className="p-field" style={{ width: '75%' }} >
               <span className="p-float-label">
                 <Controller
-                  name="value"
+                  name="connectorAttribute.value"
                   control={attributeUseForm.control}
                   rules={APConnectorFormValidationRules.AttributeValue()}
                   render={( { field, fieldState }) => {
@@ -194,9 +195,9 @@ export const APManageAttributes: React.FC<IAPManageAttributesProps> = (props: IA
                       />
                   )}}
                 />
-                <label htmlFor="value" className={classNames({ 'p-error': attributeUseForm.formState.errors.value })}>Attribute Value*</label>
+                <label htmlFor="connectorAttribute.value" className={classNames({ 'p-error': attributeUseForm.formState.errors.connectorAttribute?.value })}>Attribute Value*</label>
               </span>
-              {displayManagedAttributeFormFieldErrorMessage(attributeUseForm.formState.errors.value)}
+              {displayManagedAttributeFormFieldErrorMessage(attributeUseForm.formState.errors.connectorAttribute?.value)}
             </div>
             <div>          
               <Button key={componentName+'submit'} form={props.formId} type="submit" icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" />
