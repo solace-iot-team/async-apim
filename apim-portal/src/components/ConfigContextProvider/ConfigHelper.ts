@@ -173,6 +173,13 @@ export class ConfigHelper {
     return portalInfo;
   }
 
+  public static getEmptyContext = (): TAPConfigContext => {
+    return {
+      isInitialized: false,
+      rbacRoleList: []
+    };
+  }
+
   public static doInitialize = async (dispatchConfigContextAction: React.Dispatch<ConfigContextAction>) => {
     // const funcName: string = `doInitialize`;
     // const logName: string = `${ConfigHelper.name}.${funcName}()`
@@ -188,6 +195,7 @@ export class ConfigHelper {
       rbacRoleList: rbacRoleList,
       connector: connector
     }});
+    dispatchConfigContextAction( { type: 'SET_IS_INITIALIZED', isInitialized: true });
   }
 
 }

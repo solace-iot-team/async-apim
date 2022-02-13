@@ -211,7 +211,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
-        {/* <SystemHealthCheck /> */}
         <DisplaySystemHealthCheck />
       </React.Fragment>
     );
@@ -259,7 +258,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
           </React.Fragment>
         }
-        {/* <SystemHealthCheck /> */}
         <DisplaySystemHealthCheck />
       </React.Fragment>
     );

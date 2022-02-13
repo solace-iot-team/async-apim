@@ -10,6 +10,7 @@ import { TAPPortalAppInfo } from "../../utils/Globals";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
+  isInitialized: boolean;
   rbacRoleList: TAPRbacRoleList,
   connector?: APSConnector,
   connectorInfo?: TAPConnectorInfo,
@@ -25,6 +26,7 @@ export type ConfigContextAction =
   | { type: 'SET_CONFIG_RBAC_ROLE_LIST', rbacRoleList: TAPRbacRoleList }
   | { type: 'SET_CONFIG_CONNECTOR', connector: APSConnector | undefined }
   | { type: 'SET_PORTAL_APP_INFO', portalAppInfo: TAPPortalAppInfo | undefined }
+  | { type: 'SET_IS_INITIALIZED', isInitialized: boolean }
   | { type: 'default'};
 
 const configContextReducer = (state: TAPConfigContext, action: ConfigContextAction): TAPConfigContext => {
@@ -56,21 +58,23 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
           ...state,
           portalAppInfo: action.portalAppInfo
         }
+      case 'SET_IS_INITIALIZED': 
+        return {
+          ...state,
+          isInitialized: action.isInitialized
+        }
       default: 
         return state;  
   }
 }
-const initialConfigContext: TAPConfigContext = {
-  rbacRoleList: []
-}
 
 const initialAction: React.Dispatch<ConfigContextAction> = (value: ConfigContextAction) => {};
 
-export const ConfigContext = React.createContext<[TAPConfigContext, React.Dispatch<ConfigContextAction>]>([initialConfigContext, initialAction]);
+export const ConfigContext = React.createContext<[TAPConfigContext, React.Dispatch<ConfigContextAction>]>([ConfigHelper.getEmptyContext(), initialAction]);
 
 export const ConfigContextProvider: React.FC<IConfigContextProviderProps> = (props: IConfigContextProviderProps) => {
 
-  const [state, dispatch] = React.useReducer(configContextReducer, initialConfigContext);
+  const [state, dispatch] = React.useReducer(configContextReducer, ConfigHelper.getEmptyContext());
 
   React.useEffect(() => {
     ConfigHelper.doInitialize(dispatch);

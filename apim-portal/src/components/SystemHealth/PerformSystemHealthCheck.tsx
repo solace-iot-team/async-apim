@@ -33,10 +33,10 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
   const HealthCheckInterval_ms: number = 60000; // every minute
   // const HealthCheckInterval_ms: number = 10000;
 
-  const connectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
-  const serverHealthCheckResultNotPerformed: TAPServerHealthCheckResult = APServerHealthCheck.getInitializedHealthCheckResult_NotPerformed();
-  const portalAppHealthCheckResultNotPerformed: TAPPortalAppHealthCheckResult = APPortalAppHealthCheck.getInitializedHealthCheckResult_NotPerformed();
-  const initialHealthCheckSummary: TAPHealthCheckSummary = {
+  const ConnectorHealthCheckResultNotPerformed: TAPConnectorHealthCheckResult = APConnectorHealthCheck.getInitializedHealthCheckResult_NotPerformed();
+  const ServerHealthCheckResultNotPerformed: TAPServerHealthCheckResult = APServerHealthCheck.getInitializedHealthCheckResult_NotPerformed();
+  const PortalAppHealthCheckResultNotPerformed: TAPPortalAppHealthCheckResult = APPortalAppHealthCheck.getInitializedHealthCheckResult_NotPerformed();
+  const InitialHealthCheckSummary: TAPHealthCheckSummary = {
     performed: false,
     success: EAPHealthCheckSuccess.UNDEFINED,
     timestamp: Date.now(),
@@ -48,10 +48,10 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
   const [healthCheckSummaryContext, dispatchHealthCheckSummaryContextAction] = React.useContext(APHealthCheckSummaryContext);
   const [delay] = React.useState<number>(HealthCheckInterval_ms); 
   const [count, setCount] = React.useState<number>(0);
-  const [serverHealthCheckResult, setServerHealthCheckResult] = React.useState<TAPServerHealthCheckResult>(serverHealthCheckResultNotPerformed);
-  const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>(connectorHealthCheckResultNotPerformed);
-  const [portalAppHealthCheckResult, setPortalAppHealthCheckResult] = React.useState<TAPPortalAppHealthCheckResult>(portalAppHealthCheckResultNotPerformed);
-  const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<TAPHealthCheckSummary>(initialHealthCheckSummary);
+  const [serverHealthCheckResult, setServerHealthCheckResult] = React.useState<TAPServerHealthCheckResult>(ServerHealthCheckResultNotPerformed);
+  const [connectorHealthCheckResult, setConnectorHealthCheckResult] = React.useState<TAPConnectorHealthCheckResult>(ConnectorHealthCheckResultNotPerformed);
+  const [portalAppHealthCheckResult, setPortalAppHealthCheckResult] = React.useState<TAPPortalAppHealthCheckResult>(PortalAppHealthCheckResultNotPerformed);
+  const [systemHealthCheckSummary, setSystemHealthCheckSummary] = React.useState<TAPHealthCheckSummary>(InitialHealthCheckSummary);
   const [reinitializeConfigContextCount, setReinitializeConfigContextCount] = React.useState<number>(0);
 
   React.useEffect(() => {
@@ -112,7 +112,7 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
   const doServerHealthCheck = async (): Promise<TAPServerHealthCheckResult> => {
     const funcName = 'doServerHealthCheck';
     const logName = `${componentName}.${funcName}()`;
-    let _serverHealthCheckResult: TAPServerHealthCheckResult = serverHealthCheckResultNotPerformed;
+    let _serverHealthCheckResult: TAPServerHealthCheckResult = ServerHealthCheckResultNotPerformed;
     try {
       _serverHealthCheckResult = await APServerHealthCheck.doHealthCheck(configContext);
     } catch(e) {
@@ -126,9 +126,9 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
     const funcName = 'doConnectorHealthCheck';
     const logName = `${componentName}.${funcName}()`;
     if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) {
-      return connectorHealthCheckResultNotPerformed;
+      return ConnectorHealthCheckResultNotPerformed;
     }
-    let _connectorHealthCheckResult: TAPConnectorHealthCheckResult = connectorHealthCheckResultNotPerformed;
+    let _connectorHealthCheckResult: TAPConnectorHealthCheckResult = ConnectorHealthCheckResultNotPerformed;
     if(configContext.connector) {
       try {
         _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, configContext.connector.connectorClientConfig);
@@ -147,32 +147,35 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
     setCount(count + 1);
     // alert(`${logName}: delay=${delay}, count=${count}`);
 
-    const portalAppHealthCheckResult: TAPPortalAppHealthCheckResult = await doPortalAppHealthCheck();
-    // if portal healthcheck fail, reload app
-    if(portalAppHealthCheckResult.summary.success !== EAPHealthCheckSuccess.PASS) {
-      Globals.reloadApp();
-    } 
+    if(configContext.isInitialized) {
+      const portalAppHealthCheckResult: TAPPortalAppHealthCheckResult = await doPortalAppHealthCheck();
+      // if portal healthcheck fail, reload app
+      if(portalAppHealthCheckResult.summary.success !== EAPHealthCheckSuccess.PASS) {
+        Globals.reloadApp();
+      } 
+  
+      const serverHealthCheckResult: TAPServerHealthCheckResult = await doServerHealthCheck();
+      const connectorHealthCheckResult: TAPConnectorHealthCheckResult = await doConnectorHealthCheck(serverHealthCheckResult);
+  
+      const summary: TAPHealthCheckSummary = {
+        performed: serverHealthCheckResult.summary.performed || connectorHealthCheckResult.summary.performed,
+        success: EAPHealthCheckSuccess.UNDEFINED,
+        timestamp: Date.now()
+      };
+      if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS && connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS) summary.success = EAPHealthCheckSuccess.PASS;
+      if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS && connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.UNDEFINED) summary.success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES || connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES) summary.success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
+      if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL || connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) summary.success = EAPHealthCheckSuccess.FAIL;
+  
+      setSystemHealthCheckSummary(summary);
+      setServerHealthCheckResult(serverHealthCheckResult);
+      setConnectorHealthCheckResult(connectorHealthCheckResult);
+      setPortalAppHealthCheckResult(portalAppHealthCheckResult);
+  
+      // re-initialize config context if server status has changed 
+      if(serverHealthCheckResult.summary.success !== healthCheckContext.serverHealthCheckResult?.summary.success) setReinitializeConfigContextCount(reinitializeConfigContextCount + 1);  
+    }
 
-    const serverHealthCheckResult: TAPServerHealthCheckResult = await doServerHealthCheck();
-    const connectorHealthCheckResult: TAPConnectorHealthCheckResult = await doConnectorHealthCheck(serverHealthCheckResult);
-
-    const summary: TAPHealthCheckSummary = {
-      performed: serverHealthCheckResult.summary.performed || connectorHealthCheckResult.summary.performed,
-      success: EAPHealthCheckSuccess.UNDEFINED,
-      timestamp: Date.now()
-    };
-    if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS && connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS) summary.success = EAPHealthCheckSuccess.PASS;
-    if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS && connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.UNDEFINED) summary.success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
-    if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES || connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES) summary.success = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
-    if(serverHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL || connectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) summary.success = EAPHealthCheckSuccess.FAIL;
-
-    setSystemHealthCheckSummary(summary);
-    setServerHealthCheckResult(serverHealthCheckResult);
-    setConnectorHealthCheckResult(connectorHealthCheckResult);
-    setPortalAppHealthCheckResult(portalAppHealthCheckResult);
-
-    // re-initialize config context if server status has changed 
-    if(serverHealthCheckResult.summary.success !== healthCheckContext.serverHealthCheckResult?.summary.success) setReinitializeConfigContextCount(reinitializeConfigContextCount + 1);
   }
 
   return (<></>);
