@@ -16,43 +16,24 @@ import { InputNumber } from "primereact/inputnumber";
 import { classNames } from 'primereact/utils';
 
 import { 
-  ApisService, 
-  APIInfo, 
-  APIProduct, 
-  APIProductPatch,
-  ApiProductsService,
-  APIInfoList,
-  EnvironmentsService,
-  EnvironmentResponse,
-  Protocol,
   APIParameter,
   ClientOptionsGuaranteedMessaging,
-  CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { 
-  APApiObjectsCommon, 
-  APApiProductsCommon, 
-  APEnvironmentObjectsCommon, 
-  C_DEFAULT_API_PRODUCT_ACCESS_LEVEL, 
-  TAPEnvironmentViewManagedObjectList, 
-  TApiEnvironmentList 
-} from "../../../components/APApiObjectsCommon";
-import { 
-  APComponentsCommon,
-  TApiEntitySelectItemIdList, 
-  TApiEntitySelectItemList, 
-  TAPOrganizationId 
-} from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./ManageApiProductsCommon";
 import { SelectApis } from "./SelectApis";
 import { SelectEnvironments } from "./SelectEnvironments";
-import { APManageAttributes } from "../../../components/APManageAttributes/APManageAttributes";
-import { TAPAttribute, TAPAttributeList } from "../../../utils/APConnectorApiCalls";
+import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/APManageApAttributeDisplayList";
+import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/APAttributesService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/APProtocolsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -62,12 +43,12 @@ export enum EAction {
   NEW = 'NEW'
 }
 export interface IEditNewApiProductProps {
-  action: EAction,
-  organizationId: TAPOrganizationId,
-  apiProductId?: TManagedObjectId;
+  action: EAction;
+  organizationId: string;
+  apiProductId?: string;
   apiProductDisplayName?: string;
   onError: (apiCallState: TApiCallState) => void;
-  onNewSuccess: (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => void;
+  onNewSuccess: (apiCallState: TApiCallState, newId: string, newDisplayName: string) => void;
   onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -76,44 +57,21 @@ export interface IEditNewApiProductProps {
 export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEditNewApiProductProps) => {
   const componentName = 'EditNewApiProduct';
 
-  type TViewProtocol = Protocol & {
-    // environmentList: TApiEntitySelectItemIdList
-  }
-  type TViewProtocolList = Array<TViewProtocol>;
-  type TUpdateApiObject = APIProductPatch;
-  type TCreateApiObject = APIProduct;
-  type TManagedObject = {
-    apiProduct: APIProduct;
-    apiInfoList: APIInfoList;
-    apiEnvironmentList: TApiEnvironmentList;
-    environmentList: TAPEnvironmentViewManagedObjectList;
-    apiUsedBy_AppEntityNameList: CommonEntityNameList;
-  }
+  type TManagedObject = TAPAdminPortalApiProductDisplay;
+
   type TManagedObjectFormData = TManagedObject & {
-    apiSelectItemIdList: TApiEntitySelectItemIdList, 
-    environmentSelectItemIdList: TApiEntitySelectItemIdList,
-    selectedProtocolList: TViewProtocolList,
-    clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging,
-    attributeList: TAPAttributeList
+    apiSelectEntityIdList: TAPEntityIdList;
+    selected_apiIdList: Array<string>;
+    environmentSelectEntityIdList: TAPEntityIdList;
+    selected_environmentIdList: Array<string>;
+    selected_ApProtocolDisplayList: TAPProtocolDisplayList;
+    clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
+    managedApAttributeDisplayList: TAPAttributeDisplayList;
   }
   
   const ButtonLabelSelectApis = 'Select API(s)';
   const ButtonLabelSelectEnvironments = 'Select Environment(s)';
-  const emptyManagedObject: TManagedObject = {
-    apiProduct: {
-      apis: [],
-      attributes: [],
-      name: '',
-      displayName: '',
-      description: '',
-      pubResources: [],
-      subResources: []
-    },
-    apiInfoList: [],
-    apiEnvironmentList: [],
-    environmentList: [],
-    apiUsedBy_AppEntityNameList: []
-  };
+  const EmptyManagedObject: TManagedObject = APAdminPortalApiProductsService.create_EmptyObject();
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -122,149 +80,27 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApis, setShowSelectApis] = React.useState<boolean>(false);
-  const [selectedApiInfoList, setSelectedApiInfoList] = React.useState<APIInfoList>([]);
+  const [selected_ApApiDisplayList, setSelected_ApApiDisplayList] = React.useState<TAPApiDisplayList>([]);
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
-  const [selectedEnvironmentList, setSelectedEnvironmentList] = React.useState<TApiEnvironmentList>([]);
-  const [selectedProtocolList, setSelectedProtocolList] = React.useState<TViewProtocolList>([]);
+  const [selected_ApEnvironmentDisplayList, setSelected_ApEnvironmentDisplayList] = React.useState<TAPEnvironmentDisplayList>([]);
+  
+  const [selected_ApProtocolDisplayList, setSelected_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>([]);
+  
   // manage ApiParameterAttribute
   const [manageApiParameterAttributesDataTableGlobalFilter, setManageApiParameterAttributesDataTableGlobalFilter] = React.useState<string>();
   const manageApiParameterAttributesDataTableRef = React.useRef<any>(null);
-  const [selectedApisCombinedApiParameterList, setSelectedApisCombinedApiParameterList] = React.useState<Array<APIParameter>>([]);
-  const [selectedApisCombinedApiParameter, setSelectedApisCombinedApiParameter] = React.useState<APIParameter>();
-  const [presetAttribute, setPresetAttribute] = React.useState<TAPAttribute>();
+  const [selected_ApisCombinedApiParameterList, setSelected_ApisCombinedApiParameterList] = React.useState<Array<APIParameter>>([]);
+  // selected row in table
+  const [selected_ApisCombinedApiParameter, setSelected_ApisCombinedApiParameter] = React.useState<APIParameter>();
+  const [presetAttributeDisplay, setPresetAttributeDisplay] = React.useState<TAPAttributeDisplay>();
   // inForm: MultiSelect
-  const [inFormCurrentMultiSelectOptionApiSelectItemList, setInFormCurrentMultiSelectOptionApiSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
-  const [inFormCurrentMultiSelectOptionEnvironmentSelectItemList, setInFormCurrentMultiSelectOptionEnvironmentSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
+  const [inFormCurrentMultiSelectOption_ApiSelectItemList, setInFormCurrentMultiSelectOption_ApiSelectItemList] = React.useState<TAPEntityIdList>([]);
+  const [inFormCurrentMultiSelectOption_EnvironmentSelectItemList, setInFormCurrentMultiSelectOption_EnvironmentSelectItemList] = React.useState<TAPEntityIdList>([]);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
 
-  const transformGetApiObjectsToManagedObject = (
-    apiProduct: APIProduct, 
-    apiInfoList: APIInfoList, 
-    apiEnvironmentList: TApiEnvironmentList, 
-    environmentList: TAPEnvironmentViewManagedObjectList,
-    apiUsedBy_AppEntityNameList: CommonEntityNameList
-  ): TManagedObject => {
-    return {
-      apiProduct: {
-        ...apiProduct,
-        approvalType: apiProduct.approvalType ? apiProduct.approvalType : APIProduct.approvalType.AUTO,
-        accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
-      },
-      apiInfoList: apiInfoList,
-      apiEnvironmentList: apiEnvironmentList,
-      environmentList: environmentList,
-      apiUsedBy_AppEntityNameList: apiUsedBy_AppEntityNameList
-    }
-  }
-  const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-    const apiProduct = managedObject.apiProduct;
-    return {
-      ...apiProduct,
-      accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
-    }
-  }
-  const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-    const apiProduct = managedObject.apiProduct;
-    return {
-      displayName: apiProduct.displayName,
-      description: apiProduct.description,
-      approvalType: apiProduct.approvalType,
-      attributes: apiProduct.attributes,
-      clientOptions: apiProduct.clientOptions,
-      environments: apiProduct.environments,
-      protocols: apiProduct.protocols,
-      pubResources: apiProduct.pubResources,
-      subResources: apiProduct.subResources,
-      apis: apiProduct.apis,
-      accessLevel: apiProduct.accessLevel
-    }
-  }
-  const transformApiEnvironmentListToViewProtocolList = (environmentList: TApiEnvironmentList): TViewProtocolList => {
-    // const funcName = 'transformApiEnvironmentListToViewProtocolList';
-    // const logName = `${componentName}.${funcName}()`;
-    let viewProtocolList: TViewProtocolList = [];
-    for(const environment of environmentList) {
-      const exposedProtocols: Array<Protocol> = environment.exposedProtocols ? environment.exposedProtocols : [];
-      viewProtocolList.push(...exposedProtocols);
-    }
-    const unique = new Map<string, number>();
-    let distinct = [];
-    for(let i=0; i < viewProtocolList.length; i++) {      
-      if(!unique.has(viewProtocolList[i].name)) {
-        distinct.push(viewProtocolList[i]);
-        unique.set(viewProtocolList[i].name, 1);
-      } 
-    }
-    return distinct;
-  }
-  const transformViewEnvironmentListToViewProtocolList = (environmentList: TAPEnvironmentViewManagedObjectList): TViewProtocolList => {
-    // const funcName = 'transformApiEnvironmentListToViewProtocolList';
-    // const logName = `${componentName}.${funcName}()`;
-    let apiEnvironmentList: TApiEnvironmentList = [];
-    for(const env of environmentList) {
-      apiEnvironmentList.push(env.apiEnvironment);
-    }
-    return transformApiEnvironmentListToViewProtocolList(apiEnvironmentList);
-  }
-
-  const createCombinedApiParameterList = (selectedApiInfoList: APIInfoList): Array<APIParameter> => {
-    const funcName = 'createCombinedApiParameterList';
-    const logName = `${componentName}.${funcName}()`;
-    const mergeEnumLists = (one: Array<string> | undefined, two: Array<string> | undefined): Array<string> | undefined => {
-      let mergedList: Array<string> = [];
-      if(!one && !two) return undefined;
-      if(one) {
-        if(two) mergedList = one.concat(two);
-        else mergedList = one;
-      } else if(two) {
-        mergedList = two;
-      }
-      // dedup mergedList
-      const unique = new Map<string, number>();
-      let distinct = [];
-      for(let i=0; i < mergedList.length; i++) {
-        if(!unique.has(mergedList[i])) {
-          distinct.push(mergedList[i]);
-          unique.set(mergedList[i], 1);
-        }
-      }
-      return distinct;
-    }
-    let apiParameterList: Array<APIParameter> = [];
-    for(const apiInfo of selectedApiInfoList) {
-      if(apiInfo.apiParameters) {
-        for(const newApiParameter of apiInfo.apiParameters) {
-          // console.log(`${logName}: start: apiParameterList=${JSON.stringify(apiParameterList)}`);
-          const found: APIParameter | undefined = apiParameterList.find( (exsistingApiParameter: APIParameter) => {
-            if(exsistingApiParameter.name === newApiParameter.name) {
-              if(exsistingApiParameter.type !== newApiParameter.type) {
-                console.warn(`${logName}: how to handle mismatching api parameter types: name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`)
-              }
-              return true;
-            }  
-            return false;
-          });
-          if(found) {
-            // merge the two enums if they have them
-            // console.log(`${logName}: found.enum=${JSON.stringify(found.enum)}`)
-            // console.log(`${logName}: newApiParameter.enum=${JSON.stringify(newApiParameter.enum)}`)
-            const newEnumList: Array<string> | undefined = mergeEnumLists(found.enum, newApiParameter.enum);
-            // console.log(`${logName}: newEnumList=${JSON.stringify(newEnumList)}`);
-            if(newEnumList) {
-              const idx = apiParameterList.findIndex( (elem: APIParameter) => {
-                return elem.name === found.name;
-              });
-              apiParameterList[idx].enum = newEnumList;
-            }
-          } else apiParameterList.push(newApiParameter);
-        }
-      }
-    }
-    return apiParameterList;
-  }
-  const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
+  const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
     // const funcName = 'transformManagedObjectToFormData';
     // const logName = `${componentName}.${funcName}()`;
     // alert(`${logName}: managedObject.apiProduct.accessLevel=${managedObject.apiProduct.accessLevel}`);
@@ -275,40 +111,53 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       maxTtl: 86400
     } 
     let formDataClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
-    if(managedObject.apiProduct.clientOptions && managedObject.apiProduct.clientOptions.guaranteedMessaging) {
-      formDataClientOptionsGuaranteedMessaging = managedObject.apiProduct.clientOptions.guaranteedMessaging;
+    if(mo.connectorApiProduct.clientOptions && mo.connectorApiProduct.clientOptions.guaranteedMessaging) {
+      formDataClientOptionsGuaranteedMessaging = mo.connectorApiProduct.clientOptions.guaranteedMessaging;
     } else {
       formDataClientOptionsGuaranteedMessaging = defaultClientOptionsGuaranteedMessaging;
     }
-    let fd: TManagedObjectFormData = {
-      ...managedObject,
-      apiSelectItemIdList: APApiObjectsCommon.transformApiInfoListToSelectItemIdList(managedObject.apiInfoList),
-      environmentSelectItemIdList: APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemIdList(managedObject.environmentList),
-      selectedProtocolList: managedObject.apiProduct.protocols ? managedObject.apiProduct.protocols : transformViewEnvironmentListToViewProtocolList(managedObject.environmentList),
+
+    const apiSelectEntityIdList: TAPEntityIdList = APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPApiDisplay>(mo.apApiDisplayList);
+    const environmentSelectEntityIdList: TAPEntityIdList = APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(mo.apEnvironmentDisplayList);
+    const fd: TManagedObjectFormData = {
+      ...mo,
+      apiSelectEntityIdList: apiSelectEntityIdList,
+      selected_apiIdList: APEntityIdsService.create_IdList(apiSelectEntityIdList),
+      environmentSelectEntityIdList: environmentSelectEntityIdList,
+      selected_environmentIdList: APEntityIdsService.create_IdList(environmentSelectEntityIdList),
+      selected_ApProtocolDisplayList: APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(mo.apEnvironmentDisplayList),
       clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
-      attributeList: managedObject.apiProduct.attributes
-    }
+      managedApAttributeDisplayList: JSON.parse(JSON.stringify(mo.apAttributeDisplayList)),
+    };
+    // console.log(`${logName}: fd = ${JSON.stringify(fd, null, 2)}`);
+    // alert(`${logName}: check console for fd ...`)
     return fd;
   }
-  const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
+
+  const transformFormDataToManagedObject = (mofd: TManagedObjectFormData): TManagedObject => {
+    // const funcName = 'transformFormDataToManagedObject';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mofd = ${JSON.stringify(mofd, null, 2)}`);
+    // alert(`${logName}: check console for mofd, apEntityId=${JSON.stringify(mofd.apEntityId, null, 2)} ...`)
     let mo: TManagedObject = {
-      apiProduct: {
-        ...formData.apiProduct,
-        apis: formData.apiSelectItemIdList,
-        attributes: formData.attributeList,
-        environments: formData.environmentSelectItemIdList,
+      ...mofd,
+      connectorApiProduct: {
+        ...mofd.connectorApiProduct,
+        name: mofd.apEntityId.id,
+        displayName: mofd.apEntityId.displayName,
+        apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiDisplay>(selected_ApApiDisplayList),        
+        attributes: APAttributesService.create_ConnectorAttributeList_From_ApAttributeDisplayList(mofd.managedApAttributeDisplayList),
+        environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selected_ApEnvironmentDisplayList),
         pubResources: [],
         subResources: [],
-        protocols: formData.selectedProtocolList,
+        protocols: APProtocolsService.create_ConnectorProtocols_From_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList),
         clientOptions: {
-          guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
+          guaranteedMessaging: mofd.clientOptionsGuaranteedMessaging
         }
       },
-      apiInfoList: [],
-      apiEnvironmentList: [],
-      environmentList: [],
-      apiUsedBy_AppEntityNameList: []
     };
+    // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+    // alert(`${logName}: check console for mo ...`)
     return mo;
   }
 
@@ -318,37 +167,11 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${managedObjectDisplayName}`);
     try {
-      const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
-        organizationName: props.organizationId,
-        apiProductName: managedObjectId
+      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsService.getAdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        apiProductId: managedObjectId
       });
-      const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
-        organizationName: props.organizationId,
-        apiProductName: apiProduct.name
-      });
-      // get all api infos
-      let apiInfoList: APIInfoList = [];
-      for(const apiId of apiProduct.apis) {
-        const apiInfo: APIInfo = await ApisService.getApiInfo({
-          organizationName: props.organizationId,
-          apiName: apiId
-        });
-        apiInfoList.push(apiInfo);
-      }
-      // get environment 
-      let environmentList: TAPEnvironmentViewManagedObjectList = [];
-      let apiEnvironmentList: TApiEnvironmentList = [];
-      if(apiProduct.environments) {
-        for(const environmentName of apiProduct.environments) {
-          const envResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-            organizationName: props.organizationId,
-            envName: environmentName
-          });
-          environmentList.push(APEnvironmentObjectsCommon.transformEnvironmentResponseToEnvironmentViewManagedObject(envResponse));
-          apiEnvironmentList.push(envResponse);
-        }
-      }
-      setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, apiEnvironmentList, environmentList, apiAppEntityNameList));
+      setManagedObject(object);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -357,17 +180,17 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;
   }
 
-  const apiCreateManagedObject = async(managedObject: TManagedObject): Promise<TApiCallState> => {
+  const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API_PRODUCT, `create api product: ${managedObject.apiProduct.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
     try { 
-      await ApiProductsService.createApiProduct({
-        organizationName: props.organizationId,
-        requestBody: transformManagedObjectToCreateApiObject(managedObject)
-      });
-      setCreatedManagedObjectId(managedObject.apiProduct.name);
-      setCreatedManagedObjectDisplayName(managedObject.apiProduct.displayName);      
+      await APAdminPortalApiProductsService.createAdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        apAdminPortalApiProductDisplay: mo
+      })
+      setCreatedManagedObjectId(mo.apEntityId.id);
+      setCreatedManagedObjectDisplayName(mo.apEntityId.displayName);      
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -376,18 +199,17 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;
   }
 
-  const apiUpdateManagedObject = async(managedObject: TManagedObject): Promise<TApiCallState> => {
+  const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${managedObject.apiProduct.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     // alert(`${logName}: managedObject.apiProduct.accessLevel = ${managedObject.apiProduct.accessLevel}`);
     try { 
-      await ApiProductsService.updateApiProduct({
-        organizationName: props.organizationId,
-        apiProductName: managedObject.apiProduct.name,
-        requestBody: transformManagedObjectToUpdateApiObject(managedObject)
-      });  
-      setUpdatedManagedObjectDisplayName(managedObject.apiProduct.displayName);
+      await APAdminPortalApiProductsService.updateAdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        apAdminPortalApiProductDisplay: mo
+      });
+      setUpdatedManagedObjectDisplayName(mo.apEntityId.displayName);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -396,21 +218,17 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;
   }
 
-  const apiGetSelectedEnvironmentList = async(envIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
-    const funcName = 'apiGetSelectedEnvironmentList';
+  const apiGetSelectedApEnvironmentDisplayList = async(envIdList: Array<string>): Promise<TApiCallState> => {
+    const funcName = 'apiGetSelectedApEnvironmentDisplayList';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, `retrieve selected environment list`);
     try {
-      let apiEnvList: TApiEnvironmentList = [];
-      for(const envId of envIdList) {
-        const apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-          organizationName: props.organizationId,
-          envName: envId
-        });
-        apiEnvList.push(apiEnvironmentResponse);
-      }
-      setSelectedEnvironmentList(apiEnvList);
-      setSelectedProtocolList(transformApiEnvironmentListToViewProtocolList(apiEnvList));
+      const apEnvDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplayForEnvIdList({
+        organizationId: props.organizationId,
+        envIdList: envIdList
+      });
+      setSelected_ApEnvironmentDisplayList(apEnvDisplayList);
+      setSelected_ApProtocolDisplayList(APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(apEnvDisplayList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -419,20 +237,16 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;  
   }
 
-  const apiGetSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
-    const funcName = 'apiGetSelectedApiInfoList';
+  const apiGetSelectedApApiDisplayList = async(apiIdList: Array<string>): Promise<TApiCallState> => {
+    const funcName = 'apiGetSelectedApApiDisplayList';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, `retrieve selected api info list`);
     try {
-      let apiInfoList: APIInfoList = [];
-      for(const apiId of apiIdList) {
-        const apiInfo: APIInfo = await ApisService.getApiInfo({
-          organizationName: props.organizationId,
-          apiName: apiId
-        });
-        apiInfoList.push(apiInfo);
-      }
-      setSelectedApiInfoList(apiInfoList);
+      const apApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
+        organizationId: props.organizationId,
+        apiIdList: apiIdList
+      });
+      setSelected_ApApiDisplayList(apApiDisplayList);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -451,7 +265,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       if(!props.apiProductDisplayName) throw new Error(`${logName}: props.action=${props.action}: props.apiDisplayName is undefined`);
       await apiGetManagedObject(props.apiProductId, props.apiProductDisplayName);
     } else {
-      setManagedObject(emptyManagedObject);
+      setManagedObject(EmptyManagedObject);
     }
     props.onLoadingChange(false);
   }
@@ -471,20 +285,19 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }, [managedObjectFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    setSelectedApisCombinedApiParameterList(createCombinedApiParameterList(selectedApiInfoList));
-  }, [selectedApiInfoList]);
+    setSelected_ApisCombinedApiParameterList(APApisService.create_CombinedApiParameterList(selected_ApApiDisplayList));
+  }, [selected_ApApiDisplayList]);
   
   React.useEffect(() => {
-    if(selectedApisCombinedApiParameter) {
-      const attribute: TAPAttribute = {
-        name: selectedApisCombinedApiParameter.name,
-        value: selectedApisCombinedApiParameter.enum ? selectedApisCombinedApiParameter.enum.join(',') : ''
-      }
-      setPresetAttribute(attribute);
+    if(selected_ApisCombinedApiParameter) {
+      const connectorAttribute: TAPConnectorAttribute = {
+        name: selected_ApisCombinedApiParameter.name,
+        value: selected_ApisCombinedApiParameter.enum ? selected_ApisCombinedApiParameter.enum.join(',') : ''
+      };
+      setPresetAttributeDisplay(APAttributesService.create_ApAttributeDisplay_From_ConnnectorAttribute(connectorAttribute));
     }
-  }, [selectedApisCombinedApiParameter]);
+  }, [selected_ApisCombinedApiParameter]);
   
-
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
     const logName = `${componentName}.${funcName}()`;
@@ -506,15 +319,15 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     setShowSelectApis(true);
   }
 
-  const onManagedObjectFormSelectApisSuccess = (apiCallState: TApiCallState, modifiedSelectedApiEntityList: TApiEntitySelectItemList) => {
+  const onManagedObjectFormSelectApisSuccess = (apiCallState: TApiCallState, modifiedSelectedApiEntityIdList: TAPEntityIdList) => {
     const funcName = 'onManagedObjectFormSelectApisSuccess';
     const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: modifiedSelectedApiEntityList=${JSON.stringify(modifiedSelectedApiEntityList, null, 2)}`);
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
-    setInFormCurrentMultiSelectOptionApiSelectItemList(modifiedSelectedApiEntityList);
-    const modifiedIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedApiEntityList);
-    managedObjectUseForm.setValue('apiSelectItemIdList', modifiedIdList);
-    managedObjectUseForm.trigger('apiSelectItemIdList');
+    setInFormCurrentMultiSelectOption_ApiSelectItemList(modifiedSelectedApiEntityIdList);
+    const modifiedIdList: Array<string> = APEntityIdsService.create_IdList(modifiedSelectedApiEntityIdList);
+    managedObjectUseForm.setValue('selected_apiIdList', modifiedIdList);
+    managedObjectUseForm.trigger('selected_apiIdList');
     setShowSelectApis(false);
     onApisSelect(modifiedIdList);
   }
@@ -523,12 +336,12 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     setShowSelectApis(false);
   }
 
-  const doUpdateSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList) => {
-    await apiGetSelectedApiInfoList(apiIdList);
+  const doUpdateSelectedApApiDisplayList = async(apiIdList: Array<string>) => {
+    await apiGetSelectedApApiDisplayList(apiIdList);
   }
 
-  const onApisSelect = (apiIdList: TApiEntitySelectItemIdList) => {
-    doUpdateSelectedApiInfoList(apiIdList);
+  const onApisSelect = (apiIdList: Array<string>) => {
+    doUpdateSelectedApApiDisplayList(apiIdList);
   }
 
   // * Search + Select Environments & Protocols *
@@ -536,15 +349,18 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     setShowSelectEnvironments(true);
   }
 
-  const onManagedObjectFormSelectEnvironmentsSuccess = (apiCallState: TApiCallState, modifiedSelectedEnvEntityList: TApiEntitySelectItemList) => {
+  const onManagedObjectFormSelectEnvironmentsSuccess = (apiCallState: TApiCallState, modifiedSelectedEnvEntityIdList: TAPEntityIdList) => {
     const funcName = 'onManagedObjectFormSelectEnvironmentsSuccess';
     const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: modifiedSelectedApiEntityList=${JSON.stringify(modifiedSelectedApiEntityList, null, 2)}`);
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
-    setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(modifiedSelectedEnvEntityList);
-    const modifiedIdList: TApiEntitySelectItemIdList = APComponentsCommon.transformSelectItemListToSelectItemIdList(modifiedSelectedEnvEntityList);
-    managedObjectUseForm.setValue('environmentSelectItemIdList', modifiedIdList);
-    managedObjectUseForm.trigger('environmentSelectItemIdList');
+
+    setInFormCurrentMultiSelectOption_EnvironmentSelectItemList(modifiedSelectedEnvEntityIdList);
+
+    const modifiedIdList: Array<string> = APEntityIdsService.create_IdList(modifiedSelectedEnvEntityIdList);
+    managedObjectUseForm.setValue('selected_environmentIdList', modifiedIdList);
+    managedObjectUseForm.trigger('selected_environmentIdList');
+
     setShowSelectEnvironments(false);
     onEnvironmentsSelect(modifiedIdList);
   }
@@ -553,75 +369,77 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     setShowSelectEnvironments(false);
   }
 
-  const doUpdateAvailableProtocolList = async(envIdList: TApiEntitySelectItemIdList) => {
-    await apiGetSelectedEnvironmentList(envIdList);
+  const doUpdateAvailableProtocolList = async(envIdList: Array<string>) => {
+    await apiGetSelectedApEnvironmentDisplayList(envIdList);
+    // await apiGetSelectedEnvironmentList(envIdList);
   }
-  const onEnvironmentsSelect = (envIdList: TApiEntitySelectItemIdList) => {
+  const onEnvironmentsSelect = (envIdList: Array<string>) => {
     doUpdateAvailableProtocolList(envIdList);
   }
 
   // * Attributes *
-  const onAttributeListUpdate = (attributeList: TAPAttributeList) => {
+  const onAttributeListUpdate = (newApAttributeDisplayList: TAPAttributeDisplayList) => {
     const funcName = 'onAttributeListUpdate';
     const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: newApAttributeDisplayList=${JSON.stringify(newApAttributeDisplayList, null, 2)}`);
 
-    // must not change FormData, which updates values in form
-    // instead: update separate state
-    // onSubmit: merge into formData
+    // must not change FormData field that is used in form ==> would update values in form
+    // instead: update separate field
 
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    managedObjectFormData.attributeList = attributeList;
+    managedObjectFormData.managedApAttributeDisplayList = newApAttributeDisplayList;
   }
 
   // * Form *
-  const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
+  const doPopulateManagedObjectFormDataValues = (mofd: TManagedObjectFormData) => {
     // const funcName = 'doPopulateManagedObjectFormDataValues';
     // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
-    // alert(`${logName}: managedObjectFormData.apiProduct.accessLevel=${managedObjectFormData.apiProduct.accessLevel}`);
-    managedObjectUseForm.setValue('apiProduct.name', managedObjectFormData.apiProduct.name);
-    managedObjectUseForm.setValue('apiProduct.displayName', managedObjectFormData.apiProduct.displayName);
-    managedObjectUseForm.setValue('apiProduct.description', managedObjectFormData.apiProduct.description);
-    managedObjectUseForm.setValue('apiProduct.approvalType', managedObjectFormData.apiProduct.approvalType);
-    managedObjectUseForm.setValue('apiProduct.accessLevel', managedObjectFormData.apiProduct.accessLevel);
-    managedObjectUseForm.setValue('apiProduct.attributes', managedObjectFormData.apiProduct.attributes);
+    // alert(`${logName}: mofd.apEntityId=${JSON.stringify(mofd.apEntityId, null, 2)}`);
+
+    managedObjectUseForm.setValue('apEntityId', mofd.apEntityId);
+    managedObjectUseForm.setValue('connectorApiProduct.description', mofd.connectorApiProduct.description);
+    managedObjectUseForm.setValue('connectorApiProduct.approvalType', mofd.connectorApiProduct.approvalType);
+    managedObjectUseForm.setValue('connectorApiProduct.accessLevel', mofd.connectorApiProduct.accessLevel);
     // client options: guaranteed messaging
-    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', managedObjectFormData.clientOptionsGuaranteedMessaging.requireQueue);    
-    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', managedObjectFormData.clientOptionsGuaranteedMessaging.accessType);    
-    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxTtl', managedObjectFormData.clientOptionsGuaranteedMessaging.maxTtl);    
-    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxMsgSpoolUsage', managedObjectFormData.clientOptionsGuaranteedMessaging.maxMsgSpoolUsage);    
-    managedObjectUseForm.setValue('apiSelectItemIdList', managedObjectFormData.apiSelectItemIdList);
-    setInFormCurrentMultiSelectOptionApiSelectItemList(APApiObjectsCommon.transformApiInfoListToSelectItemList(managedObjectFormData.apiInfoList));
-    setSelectedApiInfoList(managedObjectFormData.apiInfoList);
-    managedObjectUseForm.setValue('environmentSelectItemIdList', managedObjectFormData.environmentSelectItemIdList);
-    setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemList(managedObjectFormData.environmentList));
-    setSelectedEnvironmentList(managedObjectFormData.apiEnvironmentList);
-    setSelectedProtocolList(managedObjectFormData.selectedProtocolList);
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', mofd.clientOptionsGuaranteedMessaging.requireQueue);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', mofd.clientOptionsGuaranteedMessaging.accessType);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxTtl', mofd.clientOptionsGuaranteedMessaging.maxTtl);    
+    managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxMsgSpoolUsage', mofd.clientOptionsGuaranteedMessaging.maxMsgSpoolUsage);
+    // apis
+    managedObjectUseForm.setValue('selected_apiIdList', mofd.selected_apiIdList);
+    setInFormCurrentMultiSelectOption_ApiSelectItemList(mofd.apiSelectEntityIdList);
+    setSelected_ApApiDisplayList(mofd.apApiDisplayList);
+    // environments
+    managedObjectUseForm.setValue('selected_environmentIdList', mofd.selected_environmentIdList);
+    setInFormCurrentMultiSelectOption_EnvironmentSelectItemList(mofd.environmentSelectEntityIdList);
+    setSelected_ApEnvironmentDisplayList(mofd.apEnvironmentDisplayList);
+    // protocols
+    setSelected_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList);
   }
 
-  const doSubmitManagedObject = async (managedObject: TManagedObject) => {
+  const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onLoadingChange(true);
-    if(props.action === EAction.NEW) await apiCreateManagedObject(managedObject);
-    else await apiUpdateManagedObject(managedObject);
+    if(props.action === EAction.NEW) await apiCreateManagedObject(mo);
+    else await apiUpdateManagedObject(mo);
     props.onLoadingChange(false);
   }
 
   const isSelectedProtocolListValid = (): boolean => {
-    return selectedProtocolList.length > 0;
+    return selected_ApProtocolDisplayList.length > 0;
   }
 
-  const onSubmitManagedObjectForm = (newManagedObjectFormData: TManagedObjectFormData) => {
+  const onSubmitManagedObjectForm = (newMofd: TManagedObjectFormData) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
     setIsFormSubmitted(true);
     if(!isSelectedProtocolListValid()) return false;
-    const _managedObjectFormData: TManagedObjectFormData = {
-      ...newManagedObjectFormData,
-      attributeList: managedObjectFormData.attributeList,
-      selectedProtocolList: selectedProtocolList
+    const mofd: TManagedObjectFormData = {
+      ...newMofd,
+      managedApAttributeDisplayList: managedObjectFormData.managedApAttributeDisplayList,
+      selected_ApProtocolDisplayList: selected_ApProtocolDisplayList,
     }
-    doSubmitManagedObject(transformFormDataToManagedObject(_managedObjectFormData));
+    doSubmitManagedObject(transformFormDataToManagedObject(mofd));
   }
 
   const onCancelManagedObjectForm = () => {
@@ -698,8 +516,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         </div>
       );
     }
-    if(selectedEnvironmentList.length === 0) return (<></>);
-    const exposedProtocolList: TViewProtocolList = transformApiEnvironmentListToViewProtocolList(selectedEnvironmentList);
+    if(selected_ApEnvironmentDisplayList.length === 0) return (<></>);
+    const exposedProtocolList: TAPProtocolDisplayList = APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(selected_ApEnvironmentDisplayList);
     return (  
       <React.Fragment>
         {displaySelectedProtocolsErrorMessage()}
@@ -711,19 +529,19 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           {displaySelectedProtocolsErrorMessage()}
           <DataTable 
             className="p-datatable-sm"
-            // header="Select protocols:"
             value={exposedProtocolList}
             // autoLayout={true}
-            selection={selectedProtocolList}
-            onSelectionChange={(e) => setSelectedProtocolList(e.value)}
+            selection={selected_ApProtocolDisplayList}
+            onSelectionChange={(e) => setSelected_ApProtocolDisplayList(e.value)}
             // sorting
             sortMode='single'
-            sortField="name"
+            sortField="connectorProtocol.name"
             sortOrder={1}          
+            dataKey="apEntityId.id"
           >
             <Column selectionMode="multiple" style={{width:'3em'}} />
-            <Column field="name" header="Protocol" style={{width: '20em'}} />
-            <Column field="version" header="Version" />
+            <Column field="connectorProtocol.name" header="Protocol" style={{width: '20em'}} />
+            <Column field="connectorProtocol.version" header="Version" />
           </DataTable>
         </Panel>
       </React.Fragment>
@@ -763,15 +581,15 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           dataKey="name"
           className="p-datatable-sm"
           header={renderDataTableHeader()}
-          value={selectedApisCombinedApiParameterList}
+          value={selected_ApisCombinedApiParameterList}
           emptyMessage='No API Parameters available.'
           globalFilter={manageApiParameterAttributesDataTableGlobalFilter}
           autoLayout={false}
           selectionMode="single"
           // onRowClick={onManagedObjectSelect}
           // onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-          selection={selectedApisCombinedApiParameter}
-          onSelectionChange={(e) => setSelectedApisCombinedApiParameter(e.value)}
+          selection={selected_ApisCombinedApiParameter}
+          onSelectionChange={(e) => setSelected_ApisCombinedApiParameter(e.value)}
           scrollable 
           scrollHeight="200px" 
           sortMode='single'
@@ -823,21 +641,21 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     }
     // main
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
-    const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
+    const apAttributeDisplayList = managedObjectFormData.apAttributeDisplayList;
     return (  
       <React.Fragment>
         <Panel 
           headerTemplate={panelHeaderTemplate} 
           toggleable={true}
-          collapsed={attributeList.length === 0}
+          collapsed={apAttributeDisplayList.length === 0}
         >
           <React.Fragment>
             {renderManageApiParameterAttributes()}
             <div className='p-mb-6'/>
-            <APManageAttributes
+            <APManageApAttributeDisplayList
               formId={componentName+'_APManageAttributes'}
-              presetAttribute={presetAttribute}
-              attributeList={attributeList}
+              presetApAttributeDisplay={presetAttributeDisplay}
+              apAttributeDisplayList={apAttributeDisplayList}
               onChange={onAttributeListUpdate}
             />
           </React.Fragment>
@@ -899,7 +717,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                       <Dropdown
                         id={field.name}
                         {...field}
-                        options={APApiProductsCommon.getQueueAccessTypeSelectList()} 
+                        options={APAdminPortalApiProductsService.create_SelectList_From_QueueAccessType()} 
                         onChange={(e) => field.onChange(e.value)}
                         className={classNames({ 'p-invalid': fieldState.invalid })}     
                         // disabled={isDisabled}                                   
@@ -920,10 +738,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                 control={managedObjectUseForm.control}
                 name="clientOptionsGuaranteedMessaging.maxTtl"
                 rules={APConnectorFormValidationRules.ClientOptionsGuaranteedMessaging_MaxTTL()}
-                // custom, isDisabled dependent function
-                // rules={{
-                //   validate: validateMaxTTL
-                // }}
                 render={( { field, fieldState }) => {
                   return(
                     <InputNumber
@@ -934,7 +748,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                       useGrouping={false}
                       className={classNames({ 'p-invalid': fieldState.invalid })}      
                       // disabled={isDisabled}      
-                      />
+                    />
                 )}}
               />
               <label htmlFor="clientOptionsGuaranteedMessaging.maxTtl" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxTtl })}>Max TTL (seconds) *</label>
@@ -1000,7 +814,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
               <span className="p-float-label p-input-icon-right">
                 <i className="pi pi-key" />
                 <Controller
-                  name="apiProduct.name"
+                  name="apEntityId.id"
                   control={managedObjectUseForm.control}
                   rules={APConnectorFormValidationRules.Name()}
                   render={( { field, fieldState }) => {
@@ -1015,15 +829,15 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="apiProduct.name" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.name })}>Name/Id*</label>
+                <label htmlFor="apEntityId.id" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apEntityId?.id })}>Id*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.name)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apEntityId?.id)}
             </div>
             {/* Display Name */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="apiProduct.displayName"
+                  name="apEntityId.displayName"
                   control={managedObjectUseForm.control}
                   rules={APConnectorFormValidationRules.DisplayName()}
                   render={( { field, fieldState }) => {
@@ -1037,15 +851,15 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="apiProduct.displayName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.displayName })}>Display Name*</label>
+                <label htmlFor="apEntityId.displayName" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apEntityId?.displayName })}>Display Name*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.displayName)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apEntityId?.displayName)}
             </div>
             {/* description */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="apiProduct.description"
+                  name="connectorApiProduct.description"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Enter description.",
@@ -1059,15 +873,15 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                       )}}
                 />
-                <label htmlFor="apiProduct.description" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.description })}>Description*</label>
+                <label htmlFor="connectorApiProduct.description" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.connectorApiProduct?.description })}>Description*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.description)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.connectorApiProduct?.description)}
             </div>
             {/* approvalType */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="apiProduct.approvalType"
+                  name="connectorApiProduct.approvalType"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Select approval type.",
@@ -1077,21 +891,22 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <Dropdown
                           id={field.name}
                           {...field}
-                          options={APApiProductsCommon.getApprovalTypeSelectList()} 
+                          options={APAdminPortalApiProductsService.create_SelectList_From_ApprovalType()} 
                           onChange={(e) => field.onChange(e.value)}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        
                       )}}
                 />
-                <label htmlFor="apiProduct.approvalType" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.approvalType })}>Approval Type*</label>
+                <label htmlFor="connectorApiProduct.approvalType" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.connectorApiProduct?.approvalType })}>Approval Type*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.approvalType)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.connectorApiProduct?.approvalType)}
             </div>
             {/* accessLevel */}
+            {/* <div className="p-m-6">TODO: change access level to attribute - filter all reserved attribute names</div> */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="apiProduct.accessLevel"
+                  name="connectorApiProduct.accessLevel"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Select access level.",
@@ -1101,21 +916,21 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <Dropdown
                           id={field.name}
                           {...field}
-                          options={APApiProductsCommon.getAccessLevelSelectList()} 
+                          options={APAdminPortalApiProductsService.create_SelectList_From_AccessLevel()} 
                           onChange={(e) => field.onChange(e.value)}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        
                       )}}
                 />
-                <label htmlFor="apiProduct.accessLevel" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiProduct?.accessLevel })}>Access Level*</label>
+                <label htmlFor="connectorApiProduct.accessLevel" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.connectorApiProduct?.accessLevel })}>Access Level*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apiProduct?.accessLevel)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.connectorApiProduct?.accessLevel)}
             </div>
             {/* apis */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="apiSelectItemIdList"
+                  name="selected_apiIdList"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Choose at least 1 API."
@@ -1125,7 +940,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <MultiSelect
                           display="chip"
                           value={field.value ? [...field.value] : []} 
-                          options={inFormCurrentMultiSelectOptionApiSelectItemList} 
+                          options={inFormCurrentMultiSelectOption_ApiSelectItemList} 
                           onChange={(e) => { field.onChange(e.value); onApisSelect(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
@@ -1133,16 +948,16 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="apiSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apiSelectItemIdList })}>API(s)*</label>
+                <label htmlFor="selected_apiIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.selected_apiIdList })}>API(s)*</label>
               </span>
-              { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.apiSelectItemIdList) }
+              { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.selected_apiIdList) }
               { renderApisToolbar() }
             </div>
             {/* environments */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="environmentSelectItemIdList"
+                  name="selected_environmentIdList"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Choose at least 1 Environment."
@@ -1152,7 +967,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <MultiSelect
                           display="chip"
                           value={field.value ? [...field.value] : []} 
-                          options={inFormCurrentMultiSelectOptionEnvironmentSelectItemList} 
+                          options={inFormCurrentMultiSelectOption_EnvironmentSelectItemList} 
                           onChange={(e) => { field.onChange(e.value); onEnvironmentsSelect(e.value); }}
                           optionLabel="displayName"
                           optionValue="id"
@@ -1161,9 +976,9 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         />
                   )}}
                 />
-                <label htmlFor="environmentSelectItemIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.environmentSelectItemIdList })}>Environment(s)*</label>
+                <label htmlFor="selected_environmentIdList" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.selected_environmentIdList })}>Environment(s)*</label>
               </span>
-              { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.environmentSelectItemIdList) }
+              { displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.selected_environmentIdList) }
               { renderEnvironmentsToolbar() }
               { renderProtocolsSelectionTable() } 
             </div>
@@ -1184,8 +999,8 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   }
 
   const getEditNotes = (mo: TManagedObject): string => {
-    if(mo.apiUsedBy_AppEntityNameList.length === 0) return 'Not used by any Apps.';
-    return `Used by ${mo.apiUsedBy_AppEntityNameList.length} Apps.`;
+    if(mo.apAppReferenceEntityIdList.length === 0) return 'Not used by any Apps.';
+    return `Used by ${mo.apAppReferenceEntityIdList.length} Apps.`;
   }
   
   return (
@@ -1208,7 +1023,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       {showSelectApis &&
         <SelectApis 
           organizationId={props.organizationId}
-          currentSelectedApiItemList={inFormCurrentMultiSelectOptionApiSelectItemList}
+          currentSelectedApiEntityIdList={inFormCurrentMultiSelectOption_ApiSelectItemList}
           onSave={onManagedObjectFormSelectApisSuccess}
           onError={props.onError}          
           onCancel={onManagedObjectFormSelectApisCancel}
@@ -1219,7 +1034,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       {showSelectEnvironments &&
         <SelectEnvironments
           organizationId={props.organizationId}
-          currentSelectedEnvironmentItemList={inFormCurrentMultiSelectOptionEnvironmentSelectItemList}
+          currentSelectedEnvironmentEntityIdList={inFormCurrentMultiSelectOption_EnvironmentSelectItemList}
           onSave={onManagedObjectFormSelectEnvironmentsSuccess}
           onError={props.onError}          
           onCancel={onManagedObjectFormSelectEnvironmentsCancel}

@@ -13,7 +13,7 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPEntityId } from './APEntityId';
+import { TAPEntityId } from './APEntityIdsService';
 import { Globals } from './Globals';
 
 export type TAPOrganization = OrganizationResponse & {

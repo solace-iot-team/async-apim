@@ -4,7 +4,7 @@ import {
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
-import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityId';
+import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 
 export type TUserRunttimeSettings = {
   currentOrganizationEntityId?: TAPEntityId;

@@ -22,11 +22,11 @@ import {
   WebHook,
   WebHookStatus
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPApiEntityRef } from './APApiObjectsCommon';
 import { Globals } from '../utils/Globals';
 import { APRenderUtils } from '../utils/APRenderUtils';
 import { APContextError } from '../utils/APError';
 import { TAPAsyncApiSpec } from '../utils/APTypes';
+import { TAPApiEntityRef } from './APApiObjectsCommon';
 
 export type TAPApiCallState = {
   success: boolean;
@@ -77,11 +77,16 @@ type TAPManagedApiDisplay_Base = {
 export type TAPDeveloperPortalApiDisplay = TAPManagedApiDisplay_Base & {
   apPortalDisplayType: EAPPortalDisplay_Type;
 };
-export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
-  apPortalDisplayType: EAPPortalDisplay_Type;
-}
-export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+// export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
+//   apPortalDisplayType: EAPPortalDisplay_Type;
+// }
+export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay;
 
+// export type TAPAdminPortalApiDisplay = TAPManagedApiDisplay_Base & {
+  //   apPortalDisplayType: EAPPortalDisplay_Type;
+  // }
+// export type TAPApiDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+  
 export class APManagedApiDisplay {
 
   private static createAPManagedApiDisplay_Base_From_ApiEntities = (apiInfo: APIInfo, apiApiProductEntityNameList: CommonEntityNameList, apAsyncApiSpec?: TAPAsyncApiSpec): TAPManagedApiDisplay_Base => {
@@ -114,10 +119,11 @@ type TAPManagedApiProductDisplay_Base = {
 export type TAPDeveloperPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
   apPortalDisplayType: EAPPortalDisplay_Type;
 };
-export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
-  apPortalDisplayType: EAPPortalDisplay_Type;
-}
-export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+// export type TAPAdminPortalApiProductDisplay = TAPManagedApiProductDisplay_Base & {
+//   apPortalDisplayType: EAPPortalDisplay_Type;
+// }
+// export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay | TAPAdminPortalApiProductDisplay;
+export type TAPApiProductDisplay = TAPDeveloperPortalApiProductDisplay;
 
 export class APManagedApiProductDisplay {
   public static generateGlobalSearchContent = (apManagedApiProductDisplay: TAPApiProductDisplay): string => {

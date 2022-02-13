@@ -13,7 +13,7 @@ import { APOrganizationsService, TAPOrganizationList } from "../../utils/APOrgan
 import { AuthHelper } from "../../auth/AuthHelper";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
-import { APEntityId, TAPEntityId, TAPEntityIdList } from "../../utils/APEntityId";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
 import "./SelectOrganization.css";
@@ -52,7 +52,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
         });
       }
     }
-    return APEntityId.sortAPEntityIdList_byDisplayName(entityIdList);
+    return APEntityIdsService.sort_byDisplayName(entityIdList);
   }
 
   /* eslint-disable @typescript-eslint/no-unused-vars */

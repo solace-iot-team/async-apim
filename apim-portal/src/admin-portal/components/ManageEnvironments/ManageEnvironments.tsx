@@ -16,7 +16,7 @@ import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService, TViewMana
 import { E_MANAGED_OBJECT_CALL_STATE_ACTIONS } from "./ListUnregisteredOrganizationServices";
 import { EnvironmentListItem, EnvironmentsService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPEntityId } from "../../../utils/APEntityId";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";

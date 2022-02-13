@@ -3,17 +3,17 @@ import React from "react";
 
 import { Dialog } from 'primereact/dialog';
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { SearchSelectApis } from "./SearchSelectApis";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 export interface ISelectApisProps {
-  organizationId: TAPOrganizationId,
-  currentSelectedApiItemList: TApiEntitySelectItemList,
+  organizationId: string;
+  currentSelectedApiEntityIdList: TAPEntityIdList,
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, modifiedSelectedApiItemList: TApiEntitySelectItemList) => void;
+  onSave: (apiCallState: TApiCallState, modifiedSelectedApiEntityIdList: TAPEntityIdList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -27,7 +27,7 @@ export const SelectApis: React.FC<ISelectApisProps> = (props: ISelectApisProps) 
         {/* <p>currentSelectedApiItemList={JSON.stringify(props.currentSelectedApiItemList, null, 2)}</p> */}
         <SearchSelectApis 
           organizationId={props.organizationId}
-          currentSelectedApiItemList={props.currentSelectedApiItemList}
+          currentSelectedApiItemList={props.currentSelectedApiEntityIdList}
           onError={props.onError}
           onSave={props.onSave}
           onCancel={props.onCancel}
@@ -44,11 +44,11 @@ export const SelectApis: React.FC<ISelectApisProps> = (props: ISelectApisProps) 
         visible={true} 
         style={{ width: '80%', height: '50rem' }} 
         modal
-        closable={false}
-        onHide={()=> {}}
+        closable={true}
+        onHide={()=> { props.onCancel(); }}
       >
         <div className="manage-api-products select-apis-dialog-content">
-            {renderSelectDialogContent()}
+          {renderSelectDialogContent()}
         </div>
       </Dialog>
     );

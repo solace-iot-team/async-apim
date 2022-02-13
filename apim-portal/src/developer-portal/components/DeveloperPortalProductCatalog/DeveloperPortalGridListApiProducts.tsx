@@ -16,7 +16,10 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "././DeveloperPortalProductCatalogCommon";
 import { Globals } from "../../../utils/Globals";
-import { APProductsService, TAPDeveloperPortalProductDisplay, TAPDeveloperPortalProductDisplayList } from "../../../utils/APProductsService";
+import APDeveloperPortalApiProductsService, { 
+  TAPDeveloperPortalApiProductDisplay,
+  TAPDeveloperPortalApiProductDisplayList
+} from "../../utils/APDeveloperPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -37,7 +40,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TAPDeveloperPortalProductDisplay;
+  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
     globalSearch: string;
@@ -48,7 +51,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
       const moTdRow: TManagedObjectTableDataRow = {
         ...mo,
-        globalSearch: APProductsService.generateGlobalSearchContent(mo)
+        globalSearch: APDeveloperPortalApiProductsService.generateGlobalSearchContent(mo)
       }
       return moTdRow;
     }
@@ -104,13 +107,13 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
     try {
-      const list: TAPDeveloperPortalProductDisplayList = await APProductsService.listDeveloperPortalApiProductDisplay({
+      const list: TAPDeveloperPortalApiProductDisplayList = await APDeveloperPortalApiProductsService.listDeveloperPortalApiProductDisplay({
         organizationId: props.organizationId,
         // includeAccessLevel: APIProductAccessLevel.PUBLIC
         // includeAccessLevel: APIProductAccessLevel.PRIVATE
         // includeAccessLevel: APIProductAccessLevel.INTERNAL
       });
-    setManagedObjectList(list);
+      setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -220,10 +223,11 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
           <div className="product-list-detail">
             <div className="product-name">{dataRow.apEntityId.displayName}</div>
             <div className="product-description">{dataRow.connectorApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
-            <div className="product-api-name-list">Attributes: {dataRow.apAttributeListAsString}</div>
-            <div className="product-api-name-list">Environments: {dataRow.apEnvironmentListAsStringList.join(', ')}</div>
-            <div className="product-api-name-list">Protocols: {dataRow.apProtocolListAsString}</div>
+            <div className="product-name-list">APIs: {dataRow.apApiDisplayNameList.join(', ')}</div>
+            <div className="product-name-list">Attributes: {dataRow.apAttributeDisplayNameList.join(', ')}</div>
+            <div className="product-name-list">Environments: {dataRow.apEnvironmentDisplayNameList.join(', ')}</div>
+            <div className="product-name-list">Protocols: {dataRow.apProtocolDisplayNameList.join(', ')}</div>
+
           </div>
           <div className="product-list-right">
             <div>
@@ -260,7 +264,7 @@ const renderApiProductAsGridItem = (dataRow: TManagedObjectTableDataRow) => {
             {/* <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} /> */}
             <div className="product-name">{dataRow.apEntityId.displayName}</div>
             <div className="product-description">{dataRow.connectorApiProduct.description}</div>
-            <div className="product-api-name-list">APIs: {dataRow.apAsyncApiDisplayNameListAsString}</div>
+            <div className="product-api-name-list">APIs: {dataRow.apApiDisplayNameList.join(', ')}</div>
           </div>
           <div className="product-grid-item-bottom">
             {/* <span className="product-price">${'65'}</span> */}

@@ -8,7 +8,6 @@ import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { TManagedApiProductId, TViewManagedApiProduct } from '../../../components/APApiObjectsCommon';
 import { E_CALL_STATE_ACTIONS } from './ManageApiProductsCommon';
 import { ListApiProducts } from "./ListApiProducts";
 import { EAction, EditNewApiProduct } from "./EditNewApiProduct";
@@ -27,9 +26,6 @@ export interface IManageApiProductsProps {
 
 export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IManageApiProductsProps) => {
   const componentName = 'ManageApiProducts';
-
-  type TManagedObjectId = TManagedApiProductId;
-  type TViewManagedObject = TViewManagedApiProduct;
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
@@ -69,9 +65,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [managedObjectId, setManagedObjectId] = React.useState<TManagedApiProductId>();
+  const [managedObjectId, setManagedObjectId] = React.useState<string>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
-  const [viewManagedObject, setViewManagedObject] = React.useState<TViewManagedObject>();
+  const [managedObjectHasReferences, setManagedObjectHasReferences] = React.useState<boolean>(false);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -111,11 +107,11 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string, viewManagedObject: TViewManagedObject): void => {
+  const onViewManagedObject = (id: string, displayName: string, hasReferences: boolean): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
-    setViewManagedObject(viewManagedObject);
+    setManagedObjectHasReferences(hasReferences);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -132,7 +128,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onEditManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onEditManagedObject = (id: string, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -146,7 +142,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onDeleteManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onDeleteManagedObject = (id: string, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -154,8 +150,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderLeftToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
+    // const funcName = 'renderLeftToolbarContent';
+    // const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
@@ -163,10 +159,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       </React.Fragment>
     );
     if(showViewComponent) {          
-      if(!viewManagedObject) throw new Error(`${logName}: viewManagedObject is undefined`);
-      const isDeleteAllowed: boolean = viewManagedObject.apiUsedBy_AppEntityNameList.length === 0;
-
-      // const showButtonsEditDelete: boolean = (viewManagedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
+      const isDeleteAllowed: boolean = !managedObjectHasReferences;
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
@@ -195,7 +188,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: string, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(newId);

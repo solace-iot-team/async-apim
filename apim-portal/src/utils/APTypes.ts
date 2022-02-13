@@ -1,4 +1,4 @@
-import { TAPEntityId } from "./APEntityId";
+import { TAPEntityId } from "./APEntityIdsService";
 
 export enum EAPAssetType {
   DEVELOPER_APP = "DEVELOPER_APP"

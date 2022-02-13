@@ -31,7 +31,13 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderHealthInfo = (name: string, summary: TAPHealthCheckSummary | undefined, undefinedInfo?: string, notPerformedInfo?: string) => {
-    if(!summary) return (<></>);
+    if(!summary || !summary?.performed) return (
+      <React.Fragment>
+          <div style={{color: SystemHealthCommon.getColor(EAPHealthCheckSuccess.UNDEFINED) }}>
+            {undefinedInfo}
+          </div>
+      </React.Fragment>
+    );
     let success: EAPHealthCheckSuccess = EAPHealthCheckSuccess.UNDEFINED;
     let timestampStr: string = 'n/a';
     if(summary.performed) {
@@ -79,6 +85,13 @@ export const DisplaySystemHealthInfo: React.FC<IDisplaySystemHealthInfoProps> = 
   }
 
   const renderComponent = (): JSX.Element => {
+    if(!props.healthCheckContext.systemHealthCheckSummary || !props.healthCheckContext.systemHealthCheckSummary.performed) {
+      return (
+        <React.Fragment>
+          {renderHealthInfo('System Health', undefined, 'System health unavailable')}
+        </React.Fragment>
+      );
+    }
     return (
       <React.Fragment>
         {renderPortalAppHealthInfo()}

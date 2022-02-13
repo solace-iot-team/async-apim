@@ -17,7 +17,7 @@ import {
   DevelopersService 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityId";
+import { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 export type TManagedObjectId = APSUserId;
 

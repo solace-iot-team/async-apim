@@ -33,7 +33,7 @@ import {
 } from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
-import { APDisplayAttributes } from "../../../components/APDisplay/APDisplayAttributes";
+import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDisplayConnectorAttributes";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
@@ -175,7 +175,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     
     const rowExpansionTemplate = (rowData: TApiProduct) => {
       return (
-        <APDisplayAttributes
+        <APDisplayConnectorAttributes
           attributeList={rowData.attributes}
           emptyMessage="No attributes defined."
         />
@@ -356,7 +356,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
                 collapsed={false}
                 className="p-pt-2"
               >
-                <APDisplayAttributes
+                <APDisplayConnectorAttributes
                   attributeList={managedObjectDisplay.apiAppResponse_smf.attributes}
                   emptyMessage="No attributes defined."
                   // className="p-ml-4"

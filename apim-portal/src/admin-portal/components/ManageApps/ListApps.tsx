@@ -237,11 +237,11 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             sortField="displayName"
             sortOrder={1}
           >
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column field="appListItem.status" header="State" sortable bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column field="appListItem.appType" header="Type" sortable bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column field="appListItem.ownerId" header="Owner" sortable bodyStyle={{ verticalAlign: 'top' }}/>
-            <Column body={apiProductsBodyTemplate} header="API Products" bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
+            <Column header="Name" field="displayName" bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortable />
+            <Column header="State" headerStyle={{ width: '7em'}} field="appListItem.status" bodyStyle={{ verticalAlign: 'top' }} sortable />
+            <Column header="Type" headerStyle={{ width: '7em'}} field="appListItem.appType" bodyStyle={{ verticalAlign: 'top' }} sortable />
+            <Column header="Owner" field="appListItem.ownerId" bodyStyle={{ verticalAlign: 'top' }}  sortable />
+            <Column header="API Products" body={apiProductsBodyTemplate}  bodyStyle={{textAlign: 'left', overflow: 'hidden'}}/>
         </DataTable>
       </div>
     );
@@ -275,11 +275,13 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     <div className="ap-manage-apps">
 
       <APComponentHeader header='APPs:' />
-
+  
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {renderContent()}
-      
+      <div className="p-mt-4">
+        {renderContent()}
+      </div>
+
       {/* DEBUG OUTPUT         */}
       {/* {renderDebugSelectedManagedObject()} */}
 

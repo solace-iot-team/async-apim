@@ -1,5 +1,3 @@
-import { SelectItem } from 'primereact/api';
-
 import { 
   ApiError,
   APIInfo,
@@ -9,7 +7,6 @@ import {
   ApiProductsService, 
   ApisService, 
   AppListItem, 
-  ClientOptionsGuaranteedMessaging, 
   CommonDisplayName, 
   CommonEntityNameList, 
   CommonName, 
@@ -18,20 +15,9 @@ import {
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../utils/ApiCallState";
-import { Globals } from "../utils/Globals";
-import { TApiEntitySelectItem, TApiEntitySelectItemIdList, TApiEntitySelectItemList, TAPOrganizationId } from "./APComponentsCommon";
-
 
 export type TManagedObjectId = CommonName;
 export type TManagedObjectDisplayName = CommonDisplayName;
-// * Environments *
-export type TAPEnvironmentViewManagedObject = {
-  id: TManagedApiProductId,
-  displayName: string,
-  apiEnvironment: EnvironmentResponse
-  globalSearch: string
-}
-export type TAPEnvironmentViewManagedObjectList = Array<TAPEnvironmentViewManagedObject>;
 
 export type TAPApiEntityRef = {
   name: CommonName,
@@ -56,9 +42,8 @@ export type TApiProduct = APIProduct;
 export type TApiProductList = Array<TApiProduct>;
 export type TApiEnvironmentNameList = Array<string>;
 export type TApiEnvironmentList = Array<EnvironmentResponse>;
-export type TManagedApiProductId = string;
 export type TViewManagedApiProduct = {
-  id: TManagedApiProductId;
+  id: string;
   displayName: string;
   apiProduct: APIProduct;
   apiEnvironmentList: TApiEnvironmentList;
@@ -85,91 +70,9 @@ export type TViewManagedApp = {
 }
 export type TViewManagedAppList = Array<TViewManagedApp>;
 
-export class APEnvironmentObjectsCommon {
-
-  public static transformEnvironmentResponseToEnvironmentViewManagedObject = (envResponse: EnvironmentResponse): TAPEnvironmentViewManagedObject => {
-    const globalSearch = envResponse;
-    return {
-      id: envResponse.name,
-      displayName: envResponse.displayName ? envResponse.displayName : envResponse.name,
-      apiEnvironment: envResponse,
-      globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
-    }
-  }
-
-  public static transformEnvironmentListToSelectItemIdList = (environmentList: TAPEnvironmentViewManagedObjectList): TApiEntitySelectItemIdList => {
-    return environmentList.map( (environment: TAPEnvironmentViewManagedObject) => {
-      return environment.id;
-    });
-  }
-
-  public static transformEnvironmentListToSelectItemList = (environmentList: TAPEnvironmentViewManagedObjectList): TApiEntitySelectItemList => {
-    return environmentList.map( (environment: TAPEnvironmentViewManagedObject) => {
-      return {
-        id: environment.id,
-        displayName: environment.displayName
-      }
-    });
-  }
-
-}
-
-export class APApiObjectsCommon {
-
-  public static transformSelectItemListToTableGlobalFilter = (selectItemList: TApiEntitySelectItemList): string => {
-    const list: Array<string> = selectItemList.map( (selectItem: TApiEntitySelectItem) => {
-      return selectItem.displayName;
-    });
-    return list.join(' ');
-  }
-
-  public static transformApiInfoListToSelectItemIdList = (apiInfoList: APIInfoList): TApiEntitySelectItemIdList => {
-    const funcName = 'transformApiInfoListToSelectItemIdList';
-    const logName = `${APApiObjectsCommon.name}.${funcName}()`;
-    return apiInfoList.map( (apiInfo: APIInfo) => {
-      if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-      return apiInfo.name;
-    });
-  }
-
-  public static transformApiInfoListToSelectItemList = (apiInfoList: APIInfoList): TApiEntitySelectItemList => {
-    const funcName = 'transformApiInfoListToSelectItemList';
-    const logName = `${APApiObjectsCommon.name}.${funcName}()`;
-    return apiInfoList.map( (apiInfo: APIInfo) => {
-      if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-      return {
-        id: apiInfo.name,
-        displayName: apiInfo.name
-      };
-    });
-  }
-
-}
-
 export class APApiProductsCommon {
 
-  public static getBooleanSelectList = (): Array<SelectItem> => {
-    return [
-      { label: 'yes', value: true },
-      { label: 'no', value: false }
-    ];
-  }  
-
-  public static getQueueAccessTypeSelectList = (): Array<ClientOptionsGuaranteedMessaging.accessType> => {
-    const e: any = ClientOptionsGuaranteedMessaging.accessType;
-    return Object.keys(e).map(k => e[k]);
-  }  
-
-  public static getApprovalTypeSelectList = (): Array<APIProduct.approvalType> => {
-    const e: any = APIProduct.approvalType;
-    return Object.keys(e).map(k => e[k]);
-  }  
-
-  public static getAccessLevelSelectList = (): Array<APIProductAccessLevel> => {
-    const e: any = APIProductAccessLevel;
-    return Object.keys(e).map(k => e[k]);
-  }  
-
+  // TODO: delete me once developer portal api products are refactored
   public static transformApiProductToViewManagedApiProduct = (apiProduct: TApiProduct, apiEnvironmentList: TApiEnvironmentList, apiInfoList: APIInfoList, apiUsedBy_AppEntityNameList: CommonEntityNameList): TViewManagedApiProduct => {
     return {
       id: apiProduct.name,
@@ -186,9 +89,11 @@ export class APApiProductsCommon {
 
 }
 
+// TODO: delete me once developer portal api products are refactored
+  
 export class APApiObjectsApiCalls {
 
-  public static apiGetApiInfoList = async(organizationId: TAPOrganizationId, initialApiCallState: TApiCallState): Promise<TApiGetApiInfoListResult> => {
+  public static apiGetApiInfoList = async(organizationId: string, initialApiCallState: TApiCallState): Promise<TApiGetApiInfoListResult> => {
     const funcName = 'apiGetApiInfoList';
     const logName = `${APApiObjectsApiCalls.name}.${funcName}()`;
     let result: TApiGetApiInfoListResult = {
@@ -218,7 +123,7 @@ export class APApiObjectsApiCalls {
     return result;
   }
 
-  public static apiGetApiProductList = async(organizationId: TAPOrganizationId, initialApiCallState: TApiCallState): Promise<TApiGetApiProductListResult> => {
+  public static apiGetApiProductList = async(organizationId: string, initialApiCallState: TApiCallState): Promise<TApiGetApiProductListResult> => {
     const funcName = 'apiGetApiProductList';
     const logName = `${APApiObjectsApiCalls.name}.${funcName}()`;
     let result: TApiGetApiProductListResult = {

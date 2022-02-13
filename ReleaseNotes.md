@@ -2,6 +2,23 @@
 
 Solace Async API Management.
 
+## Version 0.0.35
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.35
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.17
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.11
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.5
+
+#### API-M Admin & Developer Portal
+
+**Fixes:**
+- **Intial page load showing 'system unavailable'**
+  - fixed. shows homepage.
+- **Typescript version:**
+  - moved back to 4.3.5 (supported version)
+
+**Framework**
+- **refactored Manage API Products**
+
 ## Version 0.0.34
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.34
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.17

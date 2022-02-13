@@ -7,7 +7,12 @@ import {
   Endpoint, 
   Protocol 
 } from "@solace-iot-team/apim-connector-openapi-browser";
-import { TAPAttribute, TAPAttributeList } from "./APConnectorApiCalls";
+
+export type TAPAttribute = {
+  name: string,
+  value: string
+}
+export type TAPAttributeList = Array<TAPAttribute>;
 
 export class APRenderUtils {
 
@@ -22,6 +27,7 @@ export class APRenderUtils {
     });  
   }
 
+  // TODO: REFACTOR-OUT
   public static getProtocolListAsString = (protocolList?: Protocol[] ): string => {
     if(protocolList) {
       let _protocolList: Array<string> = [];
@@ -70,7 +76,7 @@ export class APRenderUtils {
   }
 
   public static renderStringListAsDivList = (stringList?: Array<string>): JSX.Element => {
-    let jsxElementList: Array<JSX.Element> = [];
+    const jsxElementList: Array<JSX.Element> = [];
 
     const addJSXElement = (str: string) => {
       const jsxElem: JSX.Element = (

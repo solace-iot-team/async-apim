@@ -6,30 +6,24 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 
-import { 
-  APIInfo, 
-  APIInfoList, 
-  ApisService 
-} from "@solace-iot-team/apim-connector-openapi-browser";
-
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { TApiEntitySelectItem, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { TAPApiViewManagedObject } from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
+import APAdminPortalApisService from "../../utils/APAdminPortalApisService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
-
 export interface ISearchSelectApisProps {
-  organizationId: TAPOrganizationId,
-  currentSelectedApiItemList: TApiEntitySelectItemList,
+  organizationId: string,
+  currentSelectedApiItemList: TAPEntityIdList,
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, selectedApis: TApiEntitySelectItemList) => void;
+  onSave: (apiCallState: TApiCallState, selectedApis: TAPEntityIdList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -40,52 +34,11 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   const DialogHeader = 'Search & Select API(s):';
   const MessageNoManagedObjectsFound = "No APIs found."
   const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
-  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const GlobalSearchPlaceholder = 'search...';
 
-  type TManagedObjectTableDataRow = TAPApiViewManagedObject;
-  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
-
-  const createSelectedManagedObjectTableDataList = (dataTableList: TManagedObjectTableDataList, selectedItemList: TApiEntitySelectItemList): TManagedObjectTableDataList => {
-    let result: TManagedObjectTableDataList = [];
-    selectedItemList.forEach( (selectedItem: TApiEntitySelectItem) => {
-      const found: TManagedObjectTableDataRow | undefined = dataTableList.find( (row: TManagedObjectTableDataRow) => {
-        return row.id === selectedItem.id;
-      });
-      if(found) result.push(found); 
-    });
-    return result;
-  }
-
-  const transformApiInfoListToDataTableList =(apiInfoList: APIInfoList): TManagedObjectTableDataList => {
-    const transformApiInfoToDataTableRow = (apiInfo: APIInfo): TManagedObjectTableDataRow => {
-      const funcName = 'transformApiInfoToDataTableRow';
-      const logName = `${componentName}.${funcName}()`;
-      if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-      const globalSearch = apiInfo;
-      return {
-        id: apiInfo.name,
-        displayName: apiInfo.name,
-        apiInfo: apiInfo,
-        globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
-      };
-    }
-    return apiInfoList.map( (apiInfo: APIInfo) => {
-      return transformApiInfoToDataTableRow(apiInfo);
-    });
-  }
-
-  const transformTableDataListToSelectItemList = (tableDataList: TManagedObjectTableDataList): TApiEntitySelectItemList => {
-    return tableDataList.map( (row: TManagedObjectTableDataRow) => {
-      return {
-        id: row.id,
-        displayName: row.displayName
-      }
-    });
-  }
-
-
-  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
-  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPApiDisplayList>([]);
+  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPApiDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -96,11 +49,10 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, 'retrieve list of apis');
     try { 
-      const apiAPIInfoList: APIInfoList = await ApisService.listApis({
-        organizationName: props.organizationId,
-        format: "extended"
-      }) as APIInfoList;
-      setManagedObjectTableDataList(transformApiInfoListToDataTableList(apiAPIInfoList));
+      const list: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplay({
+        organizationId: props.organizationId
+      });
+      setManagedObjectTableDataList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -121,9 +73,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
 
   React.useEffect(() => {
     if(!managedObjectTableDataList) return;
-    setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedApiItemList));
-    // does not work for primereact/DataTable native filter
-    // setGlobalFilter(APApiObjectsCommon.transformSelectItemListToTableGlobalFilter(props.currentSelectedApiItemList));
+    setSelectedManagedObjectTableDataList(APAdminPortalApisService.create_ApApiDisplayList_FilteredBy_EntityIdList(managedObjectTableDataList, props.currentSelectedApiItemList));
   }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
 
@@ -139,12 +89,8 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     // const funcName = ' onSaveSelectedApis';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: selectedManagedObjectTableDataList=${JSON.stringify(selectedManagedObjectTableDataList, null, 2)}`);
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_APIS, `select apis`), transformTableDataListToSelectItemList(selectedManagedObjectTableDataList));
+    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_APIS, `select apis`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPApiDisplay>(selectedManagedObjectTableDataList));
   }
-
-  // const onCancel = () => {
-  //   props.onCancel();
-  // }
 
   // * Data Table *
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -183,36 +129,47 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     else return MessageNoManagedObjectsFound;
   }
 
+  const usedByApiProductsBodyTemplate = (mo: TAPApiDisplay): JSX.Element => {
+    if(mo.apApiProductReferenceEntityIdList.length === 0) return (<>-</>);
+    return APRenderUtils.renderStringListAsDivList(APEntityIdsService.create_DisplayNameList(mo.apApiProductReferenceEntityIdList));
+  }
+
+  // const develSearchContentTemplate = (mo: TAPApiDisplay): JSX.Element => {
+  //   return (
+  //     <pre style={ { fontSize: '10px' }} >
+  //       {JSON.stringify(mo.apSearchContent.split(','), null, 2)}
+  //     </pre>
+  //   );
+  // }
   const renderManagedObjectDataTable = (): JSX.Element => {
-    return (
+     return (
       <div className="card">
           <DataTable
             ref={dt}
             className="p-datatable-sm"
-            autoLayout={true}
-            resizableColumns 
-            columnResizeMode="expand"
-            showGridlines
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
             scrollable 
             scrollHeight="800px" 
-            dataKey="id"  
+            dataKey="apEntityId.id"  
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // selection
             selection={selectedManagedObjectTableDataList}
             onSelectionChange={onSelectionChange}
             // sorting
             sortMode='single'
-            sortField="displayName"
+            sortField="apEntityId.displayName"
             sortOrder={1}
           >
             <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiInfo.source" header="Source" sortable />
-            <Column field="apiInfo.description" header="Description" />
-            {/* <Column body={actionBodyTemplate} headerStyle={{width: '20em', textAlign: 'center'}} bodyStyle={{textAlign: 'left', overflow: 'visible'}}/> */}
+            <Column header="Name" field="apEntityId.displayName" filterField="apSearchContent" sortable />
+            <Column header="Source" headerStyle={{width: '12em'}} field="connectorApiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
+            <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+
+            {/* <Column header="devel:apSearchContent" body={develSearchContentTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+
+            {/* <Column header="Description" field="connectorApiInfo.description"  /> */}
         </DataTable>
       </div>
     );
@@ -225,15 +182,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {/* {managedProductList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success &&
-        <h3>{MessageNoManagedObjectsFound}</h3>
-      } */}
-
-      {/* {(managedProductList.length > 0 || (managedProductList.length === 0 && globalFilter && globalFilter !== '')) && 
-        renderManagedObjectDataTable()
-      } */}
-
-      {/* { managedObjectTableDataList.length > 0 && globalFilter && selectedManagedObjectTableDataList && */}
       { renderManagedObjectDataTable() }
 
       {/* DEBUG selected managedObjects */}
