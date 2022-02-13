@@ -3,9 +3,10 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
+import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 
 export type TAPApiParameterList = Array<APIParameter>;
-export type TAPApiDisplay = IAPEntityIdDisplay & {
+export type TAPApiDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
   connectorApiInfo: APIInfo;
 }
@@ -22,8 +23,10 @@ export class APApisService {
       },
       connectorApiInfo: connectorApiInfo,
       apApiProductReferenceEntityIdList: apApiProductEntityIdList,
-    }
-    return _base;
+      apSearchContent: ''
+    };
+    return APSearchContentService.add_SearchContent<TAPApiDisplay>(_base);
+    // return _base;
   }
 
   private listApiProductReferencesToApi = async({organizationId, apiId }: {
@@ -99,6 +102,17 @@ export class APApisService {
       }
     }
     return this.sort_ApApiParameterList(apApiParameterList);
+  }
+
+  public create_ApApiDisplayList_FilteredBy_EntityIdList(apApiDisplayList: TAPApiDisplayList, filterByEntityIdList: TAPEntityIdList): TAPApiDisplayList {
+    if(apApiDisplayList.length === 0) return [];
+    if(filterByEntityIdList.length === 0) return JSON.parse(JSON.stringify(apApiDisplayList));
+    return apApiDisplayList.filter( (x) => {
+      const idx = filterByEntityIdList.findIndex( (y) => {
+        return x.apEntityId.id === y.id;
+      });
+      return (idx > -1);
+    });
   }
 
   public async listApApiDisplayForApiIdList({organizationId, apiIdList}: {

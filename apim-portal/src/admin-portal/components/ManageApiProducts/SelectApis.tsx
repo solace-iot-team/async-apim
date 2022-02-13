@@ -44,11 +44,11 @@ export const SelectApis: React.FC<ISelectApisProps> = (props: ISelectApisProps) 
         visible={true} 
         style={{ width: '80%', height: '50rem' }} 
         modal
-        closable={false}
-        onHide={()=> {}}
+        closable={true}
+        onHide={()=> { props.onCancel(); }}
       >
         <div className="manage-api-products select-apis-dialog-content">
-            {renderSelectDialogContent()}
+          {renderSelectDialogContent()}
         </div>
       </Dialog>
     );

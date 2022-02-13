@@ -44,11 +44,11 @@ export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: IS
         visible={true} 
         style={{ width: '80%', height: '50rem' }} 
         modal
-        closable={false}
-        onHide={()=> {}}
+        closable={true}
+        onHide={() => { props.onCancel(); }}
       >
         <div className="manage-api-products select-environments-dialog-content">
-            {renderSelectDialogContent()}
+          {renderSelectDialogContent()}
         </div>
       </Dialog>
     );

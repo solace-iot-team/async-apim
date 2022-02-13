@@ -24,9 +24,6 @@ import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { 
-  APApiProductsCommon, 
-} from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./ManageApiProductsCommon";
 import { SelectApis } from "./SelectApis";
 import { SelectEnvironments } from "./SelectEnvironments";
@@ -60,62 +57,21 @@ export interface IEditNewApiProductProps {
 export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEditNewApiProductProps) => {
   const componentName = 'EditNewApiProduct';
 
-  // type TViewProtocol = Protocol & {
-  //   // environmentList: TApiEntitySelectItemIdList
-  // }
-  // type TViewProtocolList = Array<TViewProtocol>;
-  
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
-  // type TManagedObject = {
-  //   apiProduct: APIProduct;
-  //   apiInfoList: APIInfoList;
-  //   apiEnvironmentList: TApiEnvironmentList;
-  //   environmentList: TAPEnvironmentViewManagedObjectList;
-  //   apiUsedBy_AppEntityNameList: CommonEntityNameList;
-  // }
   type TManagedObjectFormData = TManagedObject & {
     apiSelectEntityIdList: TAPEntityIdList;
     selected_apiIdList: Array<string>;
-    // apiSelectItemIdList: TApiEntitySelectItemIdList;
     environmentSelectEntityIdList: TAPEntityIdList;
     selected_environmentIdList: Array<string>;
-    // environmentSelectItemIdList: TApiEntitySelectItemIdList;
     selected_ApProtocolDisplayList: TAPProtocolDisplayList;
-    // selectedProtocolList: TViewProtocolList;
     clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
-    // attributeList: TAPAttributeList;
     managedApAttributeDisplayList: TAPAttributeDisplayList;
   }
-  // type TManagedObjectFormData = TManagedObject & {
-  //   apiSelectItemIdList: TApiEntitySelectItemIdList;
-  //   environmentSelectItemIdList: TApiEntitySelectItemIdList;
-  //   selectedProtocolList: TViewProtocolList;
-  //   clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
-  //   attributeList: TAPAttributeList;
-  // }
   
   const ButtonLabelSelectApis = 'Select API(s)';
   const ButtonLabelSelectEnvironments = 'Select Environment(s)';
-
-  const emptyManagedObject: TManagedObject = APAdminPortalApiProductsService.create_EmptyObject();
-
-  // const emptyManagedObject: TManagedObject = {
-
-  //   apiProduct: {
-  //     apis: [],
-  //     attributes: [],
-  //     name: '',
-  //     displayName: '',
-  //     description: '',
-  //     pubResources: [],
-  //     subResources: []
-  //   },
-  //   apiInfoList: [],
-  //   apiEnvironmentList: [],
-  //   environmentList: [],
-  //   apiUsedBy_AppEntityNameList: []
-  // };
+  const EmptyManagedObject: TManagedObject = APAdminPortalApiProductsService.create_EmptyObject();
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -125,13 +81,10 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApis, setShowSelectApis] = React.useState<boolean>(false);
   const [selected_ApApiDisplayList, setSelected_ApApiDisplayList] = React.useState<TAPApiDisplayList>([]);
-  // const [selectedApiInfoList, setSelectedApiInfoList] = React.useState<APIInfoList>([]);
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
-  // const [selectedEnvironmentList, setSelectedEnvironmentList] = React.useState<TApiEnvironmentList>([]);
   const [selected_ApEnvironmentDisplayList, setSelected_ApEnvironmentDisplayList] = React.useState<TAPEnvironmentDisplayList>([]);
   
   const [selected_ApProtocolDisplayList, setSelected_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>([]);
-  // const [selectedProtocolList, setSelectedProtocolList] = React.useState<TViewProtocolList>([]);
   
   // manage ApiParameterAttribute
   const [manageApiParameterAttributesDataTableGlobalFilter, setManageApiParameterAttributesDataTableGlobalFilter] = React.useState<string>();
@@ -142,138 +95,10 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
   const [presetAttributeDisplay, setPresetAttributeDisplay] = React.useState<TAPAttributeDisplay>();
   // inForm: MultiSelect
   const [inFormCurrentMultiSelectOption_ApiSelectItemList, setInFormCurrentMultiSelectOption_ApiSelectItemList] = React.useState<TAPEntityIdList>([]);
-  // const [inFormCurrentMultiSelectOptionApiSelectItemList, setInFormCurrentMultiSelectOptionApiSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
   const [inFormCurrentMultiSelectOption_EnvironmentSelectItemList, setInFormCurrentMultiSelectOption_EnvironmentSelectItemList] = React.useState<TAPEntityIdList>([]);
-  // const [inFormCurrentMultiSelectOptionEnvironmentSelectItemList, setInFormCurrentMultiSelectOptionEnvironmentSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
   const managedObjectUseForm = useForm<TManagedObjectFormData>();
   const formId = componentName;
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
-
-  // const transformGetApiObjectsToManagedObject = (
-  //   apiProduct: APIProduct, 
-  //   apiInfoList: APIInfoList, 
-  //   apiEnvironmentList: TApiEnvironmentList, 
-  //   environmentList: TAPEnvironmentViewManagedObjectList,
-  //   apiUsedBy_AppEntityNameList: CommonEntityNameList
-  // ): TManagedObject => {
-  //   return {
-  //     apiProduct: {
-  //       ...apiProduct,
-  //       approvalType: apiProduct.approvalType ? apiProduct.approvalType : APIProduct.approvalType.AUTO,
-  //       accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
-  //     },
-  //     apiInfoList: apiInfoList,
-  //     apiEnvironmentList: apiEnvironmentList,
-  //     environmentList: environmentList,
-  //     apiUsedBy_AppEntityNameList: apiUsedBy_AppEntityNameList
-  //   }
-  // }
-  // const transformManagedObjectToCreateApiObject = (managedObject: TManagedObject): TCreateApiObject => {
-  //   const apiProduct = managedObject.apiProduct;
-  //   return {
-  //     ...apiProduct,
-  //     accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL
-  //   }
-  // }
-  // const transformManagedObjectToUpdateApiObject = (managedObject: TManagedObject): TUpdateApiObject => {
-  //   const apiProduct = managedObject.apiProduct;
-  //   return {
-  //     displayName: apiProduct.displayName,
-  //     description: apiProduct.description,
-  //     approvalType: apiProduct.approvalType,
-  //     attributes: apiProduct.attributes,
-  //     clientOptions: apiProduct.clientOptions,
-  //     environments: apiProduct.environments,
-  //     protocols: apiProduct.protocols,
-  //     pubResources: apiProduct.pubResources,
-  //     subResources: apiProduct.subResources,
-  //     apis: apiProduct.apis,
-  //     accessLevel: apiProduct.accessLevel
-  //   }
-  // }
-  // const transformApiEnvironmentListToViewProtocolList = (environmentList: TApiEnvironmentList): TViewProtocolList => {
-  //   // const funcName = 'transformApiEnvironmentListToViewProtocolList';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   let viewProtocolList: TViewProtocolList = [];
-  //   for(const environment of environmentList) {
-  //     const exposedProtocols: Array<Protocol> = environment.exposedProtocols ? environment.exposedProtocols : [];
-  //     viewProtocolList.push(...exposedProtocols);
-  //   }
-  //   const unique = new Map<string, number>();
-  //   let distinct = [];
-  //   for(let i=0; i < viewProtocolList.length; i++) {      
-  //     if(!unique.has(viewProtocolList[i].name)) {
-  //       distinct.push(viewProtocolList[i]);
-  //       unique.set(viewProtocolList[i].name, 1);
-  //     } 
-  //   }
-  //   return distinct;
-  // }
-  // const transformViewEnvironmentListToViewProtocolList = (environmentList: TAPEnvironmentViewManagedObjectList): TViewProtocolList => {
-  //   // const funcName = 'transformApiEnvironmentListToViewProtocolList';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   let apiEnvironmentList: TApiEnvironmentList = [];
-  //   for(const env of environmentList) {
-  //     apiEnvironmentList.push(env.apiEnvironment);
-  //   }
-  //   return transformApiEnvironmentListToViewProtocolList(apiEnvironmentList);
-  // }
-
-  // const createCombinedApiParameterList = (selectedApiInfoList: APIInfoList): Array<APIParameter> => {
-  //   const funcName = 'createCombinedApiParameterList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   const mergeEnumLists = (one: Array<string> | undefined, two: Array<string> | undefined): Array<string> | undefined => {
-  //     let mergedList: Array<string> = [];
-  //     if(!one && !two) return undefined;
-  //     if(one) {
-  //       if(two) mergedList = one.concat(two);
-  //       else mergedList = one;
-  //     } else if(two) {
-  //       mergedList = two;
-  //     }
-  //     // dedup mergedList
-  //     const unique = new Map<string, number>();
-  //     let distinct = [];
-  //     for(let i=0; i < mergedList.length; i++) {
-  //       if(!unique.has(mergedList[i])) {
-  //         distinct.push(mergedList[i]);
-  //         unique.set(mergedList[i], 1);
-  //       }
-  //     }
-  //     return distinct;
-  //   }
-  //   let apiParameterList: Array<APIParameter> = [];
-  //   for(const apiInfo of selectedApiInfoList) {
-  //     if(apiInfo.apiParameters) {
-  //       for(const newApiParameter of apiInfo.apiParameters) {
-  //         // console.log(`${logName}: start: apiParameterList=${JSON.stringify(apiParameterList)}`);
-  //         const found: APIParameter | undefined = apiParameterList.find( (exsistingApiParameter: APIParameter) => {
-  //           if(exsistingApiParameter.name === newApiParameter.name) {
-  //             if(exsistingApiParameter.type !== newApiParameter.type) {
-  //               console.warn(`${logName}: how to handle mismatching api parameter types: name:${newApiParameter.name}, api:${apiInfo.name}, type:${newApiParameter.type}, previous type=${exsistingApiParameter.type}`)
-  //             }
-  //             return true;
-  //           }  
-  //           return false;
-  //         });
-  //         if(found) {
-  //           // merge the two enums if they have them
-  //           // console.log(`${logName}: found.enum=${JSON.stringify(found.enum)}`)
-  //           // console.log(`${logName}: newApiParameter.enum=${JSON.stringify(newApiParameter.enum)}`)
-  //           const newEnumList: Array<string> | undefined = mergeEnumLists(found.enum, newApiParameter.enum);
-  //           // console.log(`${logName}: newEnumList=${JSON.stringify(newEnumList)}`);
-  //           if(newEnumList) {
-  //             const idx = apiParameterList.findIndex( (elem: APIParameter) => {
-  //               return elem.name === found.name;
-  //             });
-  //             apiParameterList[idx].enum = newEnumList;
-  //           }
-  //         } else apiParameterList.push(newApiParameter);
-  //       }
-  //     }
-  //   }
-  //   return apiParameterList;
-  // }
 
   const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
     // const funcName = 'transformManagedObjectToFormData';
@@ -303,42 +128,12 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       selected_ApProtocolDisplayList: APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(mo.apEnvironmentDisplayList),
       clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
       managedApAttributeDisplayList: JSON.parse(JSON.stringify(mo.apAttributeDisplayList)),
-      // apiSelectItemIdList: APApiObjectsCommon.transformApiInfoListToSelectItemIdList(mo.apApiDisplayList.apiInfoList),
-      // environmentSelectItemIdList: APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemIdList(managedObject.environmentList),
-      // selectedProtocolList: managedObject.apiProduct.protocols ? managedObject.apiProduct.protocols : transformViewEnvironmentListToViewProtocolList(managedObject.environmentList),
-      // clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
-      // attributeList: managedObject.apiProduct.attributes
     };
     // console.log(`${logName}: fd = ${JSON.stringify(fd, null, 2)}`);
     // alert(`${logName}: check console for fd ...`)
     return fd;
   }
-  // const transformManagedObjectToFormData = (managedObject: TManagedObject): TManagedObjectFormData => {
-  //   // const funcName = 'transformManagedObjectToFormData';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   // alert(`${logName}: managedObject.apiProduct.accessLevel=${managedObject.apiProduct.accessLevel}`);
-  //   const defaultClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging = {
-  //     requireQueue: false,
-  //     accessType: ClientOptionsGuaranteedMessaging.accessType.EXCLUSIVE,
-  //     maxMsgSpoolUsage: 500,
-  //     maxTtl: 86400
-  //   } 
-  //   let formDataClientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging;
-  //   if(managedObject.apiProduct.clientOptions && managedObject.apiProduct.clientOptions.guaranteedMessaging) {
-  //     formDataClientOptionsGuaranteedMessaging = managedObject.apiProduct.clientOptions.guaranteedMessaging;
-  //   } else {
-  //     formDataClientOptionsGuaranteedMessaging = defaultClientOptionsGuaranteedMessaging;
-  //   }
-  //   let fd: TManagedObjectFormData = {
-  //     ...managedObject,
-  //     apiSelectItemIdList: APApiObjectsCommon.transformApiInfoListToSelectItemIdList(managedObject.apiInfoList),
-  //     environmentSelectItemIdList: APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemIdList(managedObject.environmentList),
-  //     selectedProtocolList: managedObject.apiProduct.protocols ? managedObject.apiProduct.protocols : transformViewEnvironmentListToViewProtocolList(managedObject.environmentList),
-  //     clientOptionsGuaranteedMessaging: JSON.parse(JSON.stringify(formDataClientOptionsGuaranteedMessaging)),
-  //     attributeList: managedObject.apiProduct.attributes
-  //   }
-  //   return fd;
-  // }
+
   const transformFormDataToManagedObject = (mofd: TManagedObjectFormData): TManagedObject => {
     // const funcName = 'transformFormDataToManagedObject';
     // const logName = `${componentName}.${funcName}()`;
@@ -350,16 +145,12 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         ...mofd.connectorApiProduct,
         name: mofd.apEntityId.id,
         displayName: mofd.apEntityId.displayName,
-        apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiDisplay>(selected_ApApiDisplayList),
-        
+        apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiDisplay>(selected_ApApiDisplayList),        
         attributes: APAttributesService.create_ConnectorAttributeList_From_ApAttributeDisplayList(mofd.managedApAttributeDisplayList),
-        // attributes: mofd.attributeList,
-        
         environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selected_ApEnvironmentDisplayList),
         pubResources: [],
         subResources: [],
         protocols: APProtocolsService.create_ConnectorProtocols_From_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList),
-        // protocols: mofd.selectedProtocolList,
         clientOptions: {
           guaranteedMessaging: mofd.clientOptionsGuaranteedMessaging
         }
@@ -369,27 +160,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     // alert(`${logName}: check console for mo ...`)
     return mo;
   }
-  // const transformFormDataToManagedObject = (formData: TManagedObjectFormData): TManagedObject => {
-  //   let mo: TManagedObject = {
-  //     apiProduct: {
-  //       ...formData.apiProduct,
-  //       apis: formData.apiSelectItemIdList,
-  //       attributes: formData.attributeList,
-  //       environments: formData.environmentSelectItemIdList,
-  //       pubResources: [],
-  //       subResources: [],
-  //       protocols: formData.selectedProtocolList,
-  //       clientOptions: {
-  //         guaranteedMessaging: formData.clientOptionsGuaranteedMessaging
-  //       }
-  //     },
-  //     apiInfoList: [],
-  //     apiEnvironmentList: [],
-  //     environmentList: [],
-  //     apiUsedBy_AppEntityNameList: []
-  //   };
-  //   return mo;
-  // }
 
   // * Api Calls *
   const apiGetManagedObject = async(managedObjectId: TManagedObjectId, managedObjectDisplayName: string): Promise<TApiCallState> => {
@@ -402,37 +172,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         apiProductId: managedObjectId
       });
       setManagedObject(object);
-      // const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
-      //   organizationName: props.organizationId,
-      //   apiProductName: managedObjectId
-      // });
-      // const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
-      //   organizationName: props.organizationId,
-      //   apiProductName: apiProduct.name
-      // });
-      // // get all api infos
-      // let apiInfoList: APIInfoList = [];
-      // for(const apiId of apiProduct.apis) {
-      //   const apiInfo: APIInfo = await ApisService.getApiInfo({
-      //     organizationName: props.organizationId,
-      //     apiName: apiId
-      //   });
-      //   apiInfoList.push(apiInfo);
-      // }
-      // // get environment 
-      // let environmentList: TAPEnvironmentViewManagedObjectList = [];
-      // let apiEnvironmentList: TApiEnvironmentList = [];
-      // if(apiProduct.environments) {
-      //   for(const environmentName of apiProduct.environments) {
-      //     const envResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-      //       organizationName: props.organizationId,
-      //       envName: environmentName
-      //     });
-      //     environmentList.push(APEnvironmentObjectsCommon.transformEnvironmentResponseToEnvironmentViewManagedObject(envResponse));
-      //     apiEnvironmentList.push(envResponse);
-      //   }
-      // }
-      // setManagedObject(transformGetApiObjectsToManagedObject(apiProduct, apiInfoList, apiEnvironmentList, environmentList, apiAppEntityNameList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -489,17 +228,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
         envIdList: envIdList
       });
       setSelected_ApEnvironmentDisplayList(apEnvDisplayList);
-      // let apiEnvList: TApiEnvironmentList = [];
-      // for(const envId of envIdList) {
-      //   const apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-      //     organizationName: props.organizationId,
-      //     envName: envId
-      //   });
-      //   apiEnvList.push(apiEnvironmentResponse);
-      // }
-      // setSelectedEnvironmentList(apiEnvList);
       setSelected_ApProtocolDisplayList(APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(apEnvDisplayList));
-      // setSelectedProtocolList(APEnvironmentsService.getConsolidatedApProtocolList(apEnvDisplayList));
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -526,28 +255,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     return callState;  
   }
 
-  // const apiGetSelectedApiInfoList = async(apiIdList: TApiEntitySelectItemIdList): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetSelectedApiInfoList';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, `retrieve selected api info list`);
-  //   try {
-  //     let apiInfoList: APIInfoList = [];
-  //     for(const apiId of apiIdList) {
-  //       const apiInfo: APIInfo = await ApisService.getApiInfo({
-  //         organizationName: props.organizationId,
-  //         apiName: apiId
-  //       });
-  //       apiInfoList.push(apiInfo);
-  //     }
-  //     setSelectedApiInfoList(apiInfoList);
-  //   } catch(e: any) {
-  //     APClientConnectorOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;  
-  // }
-
   // * useEffect Hooks *
   const doInitialize = async () => {
     const funcName = 'doInitialize';
@@ -558,7 +265,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
       if(!props.apiProductDisplayName) throw new Error(`${logName}: props.action=${props.action}: props.apiDisplayName is undefined`);
       await apiGetManagedObject(props.apiProductId, props.apiProductDisplayName);
     } else {
-      setManagedObject(emptyManagedObject);
+      setManagedObject(EmptyManagedObject);
     }
     props.onLoadingChange(false);
   }
@@ -579,7 +286,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
   React.useEffect(() => {
     setSelected_ApisCombinedApiParameterList(APApisService.create_CombinedApiParameterList(selected_ApApiDisplayList));
-    // setSelectedApisCombinedApiParameterList(createCombinedApiParameterList(selectedApiInfoList));
   }, [selected_ApApiDisplayList]);
   
   React.useEffect(() => {
@@ -592,7 +298,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     }
   }, [selected_ApisCombinedApiParameter]);
   
-
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
     const logName = `${componentName}.${funcName}()`;
@@ -633,7 +338,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
 
   const doUpdateSelectedApApiDisplayList = async(apiIdList: Array<string>) => {
     await apiGetSelectedApApiDisplayList(apiIdList);
-    // await apiGetSelectedApiInfoList(apiIdList);
   }
 
   const onApisSelect = (apiIdList: Array<string>) => {
@@ -696,7 +400,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     managedObjectUseForm.setValue('connectorApiProduct.description', mofd.connectorApiProduct.description);
     managedObjectUseForm.setValue('connectorApiProduct.approvalType', mofd.connectorApiProduct.approvalType);
     managedObjectUseForm.setValue('connectorApiProduct.accessLevel', mofd.connectorApiProduct.accessLevel);
-    // managedObjectUseForm.setValue('connectorApiProduct.attributes', mofd.connectorApiProduct.attributes);
     // client options: guaranteed messaging
     managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', mofd.clientOptionsGuaranteedMessaging.requireQueue);    
     managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', mofd.clientOptionsGuaranteedMessaging.accessType);    
@@ -713,32 +416,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     // protocols
     setSelected_ApProtocolDisplayList(mofd.selected_ApProtocolDisplayList);
   }
-  // const doPopulateManagedObjectFormDataValues = (mofd: TManagedObjectFormData) => {
-  //   // const funcName = 'doPopulateManagedObjectFormDataValues';
-  //   // const logName = `${componentName}.${funcName}()`;
-  //   // console.log(`${logName}: managedObjectFormData=${JSON.stringify(managedObjectFormData, null, 2)}`);
-  //   // alert(`${logName}: managedObjectFormData.apiProduct.accessLevel=${managedObjectFormData.apiProduct.accessLevel}`);
-  //   managedObjectUseForm.setValue('apiProduct.name', managedObjectFormData.apiProduct.name);
-  //   managedObjectUseForm.setValue('apiProduct.displayName', managedObjectFormData.apiProduct.displayName);
-  //   managedObjectUseForm.setValue('apiProduct.description', managedObjectFormData.apiProduct.description);
-  //   managedObjectUseForm.setValue('apiProduct.approvalType', managedObjectFormData.apiProduct.approvalType);
-  //   managedObjectUseForm.setValue('apiProduct.accessLevel', managedObjectFormData.apiProduct.accessLevel);
-  //   managedObjectUseForm.setValue('apiProduct.attributes', managedObjectFormData.apiProduct.attributes);
-  //   // client options: guaranteed messaging
-  //   managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.requireQueue', managedObjectFormData.clientOptionsGuaranteedMessaging.requireQueue);    
-  //   managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.accessType', managedObjectFormData.clientOptionsGuaranteedMessaging.accessType);    
-  //   managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxTtl', managedObjectFormData.clientOptionsGuaranteedMessaging.maxTtl);    
-  //   managedObjectUseForm.setValue('clientOptionsGuaranteedMessaging.maxMsgSpoolUsage', managedObjectFormData.clientOptionsGuaranteedMessaging.maxMsgSpoolUsage);    
-
-  //   managedObjectUseForm.setValue('apiSelectItemIdList', managedObjectFormData.apiSelectItemIdList);
-  //   setInFormCurrentMultiSelectOptionApiSelectItemList(APApiObjectsCommon.transformApiInfoListToSelectItemList(managedObjectFormData.apiInfoList));
-  //   setSelectedApiInfoList(managedObjectFormData.apiInfoList);
-  
-  //   managedObjectUseForm.setValue('environmentSelectItemIdList', managedObjectFormData.environmentSelectItemIdList);
-  //   setInFormCurrentMultiSelectOptionEnvironmentSelectItemList(APEnvironmentObjectsCommon.transformEnvironmentListToSelectItemList(managedObjectFormData.environmentList));
-  //   setSelectedEnvironmentList(managedObjectFormData.apiEnvironmentList);
-  //   setSelectedProtocolList(managedObjectFormData.selectedProtocolList);
-  // }
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onLoadingChange(true);
@@ -841,7 +518,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     }
     if(selected_ApEnvironmentDisplayList.length === 0) return (<></>);
     const exposedProtocolList: TAPProtocolDisplayList = APEnvironmentsService.create_ConsolidatedApProtocolDisplayList(selected_ApEnvironmentDisplayList);
-    // const exposedProtocolList: TViewProtocolList = transformApiEnvironmentListToViewProtocolList(selectedEnvironmentList);    
     return (  
       <React.Fragment>
         {displaySelectedProtocolsErrorMessage()}
@@ -853,7 +529,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
           {displaySelectedProtocolsErrorMessage()}
           <DataTable 
             className="p-datatable-sm"
-            // header="Select protocols:"
             value={exposedProtocolList}
             // autoLayout={true}
             selection={selected_ApProtocolDisplayList}
@@ -967,7 +642,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
     // main
     if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
     const apAttributeDisplayList = managedObjectFormData.apAttributeDisplayList;
-    // const attributeList: TAPAttributeList = managedObjectFormData.attributeList;
     return (  
       <React.Fragment>
         <Panel 
@@ -1043,7 +717,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                       <Dropdown
                         id={field.name}
                         {...field}
-                        options={APApiProductsCommon.getQueueAccessTypeSelectList()} 
+                        options={APAdminPortalApiProductsService.create_SelectList_From_QueueAccessType()} 
                         onChange={(e) => field.onChange(e.value)}
                         className={classNames({ 'p-invalid': fieldState.invalid })}     
                         // disabled={isDisabled}                                   
@@ -1064,10 +738,6 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                 control={managedObjectUseForm.control}
                 name="clientOptionsGuaranteedMessaging.maxTtl"
                 rules={APConnectorFormValidationRules.ClientOptionsGuaranteedMessaging_MaxTTL()}
-                // custom, isDisabled dependent function
-                // rules={{
-                //   validate: validateMaxTTL
-                // }}
                 render={( { field, fieldState }) => {
                   return(
                     <InputNumber
@@ -1078,7 +748,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                       useGrouping={false}
                       className={classNames({ 'p-invalid': fieldState.invalid })}      
                       // disabled={isDisabled}      
-                      />
+                    />
                 )}}
               />
               <label htmlFor="clientOptionsGuaranteedMessaging.maxTtl" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.clientOptionsGuaranteedMessaging?.maxTtl })}>Max TTL (seconds) *</label>
@@ -1221,7 +891,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <Dropdown
                           id={field.name}
                           {...field}
-                          options={APApiProductsCommon.getApprovalTypeSelectList()} 
+                          options={APAdminPortalApiProductsService.create_SelectList_From_ApprovalType()} 
                           onChange={(e) => field.onChange(e.value)}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        
@@ -1246,7 +916,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                         <Dropdown
                           id={field.name}
                           {...field}
-                          options={APApiProductsCommon.getAccessLevelSelectList()} 
+                          options={APAdminPortalApiProductsService.create_SelectList_From_AccessLevel()} 
                           onChange={(e) => field.onChange(e.value)}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />                        

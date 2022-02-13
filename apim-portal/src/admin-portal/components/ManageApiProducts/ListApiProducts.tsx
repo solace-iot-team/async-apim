@@ -16,7 +16,6 @@ import APAdminPortalApiProductsService, {
   TAPAdminPortalApiProductDisplay,
   TAPAdminPortalApiProductDisplayList 
 } from "../../utils/APAdminPortalApiProductsService";
-import APAttributesService from "../../../utils/APAttributes/APAttributesService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -192,13 +191,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             scrollable 
             scrollHeight="800px" 
-            dataKey="id"  
+            dataKey="apEntityId.id"  
             // sorting
             sortMode='single'
-            sortField="displayName"
+            sortField="apEntityId.displayName"
             sortOrder={1}
           >
-            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
+            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="apSearchContent" sortField="apEntityId.displayName" sortable />
             <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField="connectorApiProduct.approvalType"  sortable  />
             <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField="connectorApiProduct.accessLevel" sortable />
             <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>

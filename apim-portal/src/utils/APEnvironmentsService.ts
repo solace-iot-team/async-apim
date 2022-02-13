@@ -4,10 +4,11 @@ import {
   EnvironmentsService,
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay } from './APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityIdList } from './APEntityIdsService';
 import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
+import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 
-export type TAPEnvironmentDisplay = IAPEntityIdDisplay & {
+export type TAPEnvironmentDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   connectorEnvironmentResponse: EnvironmentResponse;
   apDisplayString: string;
   // references ...
@@ -29,9 +30,10 @@ class APEnvironmentsService {
         displayName: connectorEnvResponse.displayName ? connectorEnvResponse.displayName : connectorEnvResponse.name
       },
       connectorEnvironmentResponse: connectorEnvResponse,
-      apDisplayString: this.create_DisplayString(connectorEnvResponse)
+      apDisplayString: this.create_DisplayString(connectorEnvResponse),
+      apSearchContent: ''
     }
-    return _base;
+    return APSearchContentService.add_SearchContent<TAPEnvironmentDisplay>(_base);
   }
 
   private create_Empty_ConnectorEnvironmentResponse(): EnvironmentResponse {
@@ -68,8 +70,20 @@ class APEnvironmentsService {
     return {
       apEntityId: APEntityIdsService.create_EmptyObject(),
       connectorEnvironmentResponse: this.create_Empty_ConnectorEnvironmentResponse(),
-      apDisplayString: ''
+      apDisplayString: '',
+      apSearchContent: ''
     };
+  }
+
+  public create_ApEnvironmentDisplayList_FilteredBy_EntityIdList(apEnvironmentDisplayList: TAPEnvironmentDisplayList, filterByEntityIdList: TAPEntityIdList): TAPEnvironmentDisplayList {
+    if(apEnvironmentDisplayList.length === 0) return [];
+    if(filterByEntityIdList.length === 0) return JSON.parse(JSON.stringify(apEnvironmentDisplayList));
+    return apEnvironmentDisplayList.filter( (x) => {
+      const idx = filterByEntityIdList.findIndex( (y) => {
+        return x.apEntityId.id === y.id;
+      });
+      return (idx > -1);
+    });
   }
 
   public async listApEnvironmentDisplay({ organizationId }: {

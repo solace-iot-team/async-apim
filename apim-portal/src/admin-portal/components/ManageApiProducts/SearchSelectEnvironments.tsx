@@ -6,27 +6,16 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 
-import { 
-  EnvironmentListItem, 
-  EnvironmentResponse,
-  EnvironmentsService
-} from "@solace-iot-team/apim-connector-openapi-browser";
-
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { 
-  APEnvironmentObjectsCommon, 
-  TAPEnvironmentViewManagedObject, 
-  TAPEnvironmentViewManagedObjectList
-} from "../../../components/APApiObjectsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-
 
 export interface ISearchSelectEnvironmentsProps {
   organizationId: string;
@@ -46,31 +35,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
-  type TManagedObjectTableDataRow = TAPEnvironmentViewManagedObject;
-  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
-
-  const createSelectedManagedObjectTableDataList = (dataTableList: TManagedObjectTableDataList, selectedList: TAPEntityIdList): TManagedObjectTableDataList => {
-    let result: TManagedObjectTableDataList = [];
-    selectedList.forEach( (selectedItem: TAPEntityId) => {
-      const found: TManagedObjectTableDataRow | undefined = dataTableList.find( (row: TManagedObjectTableDataRow) => {
-        return row.id === selectedItem.id;
-      });
-      if(found) result.push(found); 
-    });
-    return result;
-  }
-  const transformTableDataListToSelectEntityIdList = (tableDataList: TManagedObjectTableDataList): TAPEntityIdList => {
-    return tableDataList.map( (row: TManagedObjectTableDataRow) => {
-      return {
-        id: row.id,
-        displayName: row.displayName
-      }
-    });
-  }
-
-  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
-  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TManagedObjectTableDataList>([]);
-  const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>([]);
+  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -80,19 +46,11 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, 'retrieve list of environments');
-    try { 
-      const apiEnvironmentList: Array<EnvironmentListItem> = await EnvironmentsService.listEnvironments({
-        organizationName: props.organizationId
-      });
-      let viewManagedObjectList: TAPEnvironmentViewManagedObjectList = [];
-      for(const apiEnvironment of apiEnvironmentList) {
-        const apiEnvironmentResponse: EnvironmentResponse = await EnvironmentsService.getEnvironment({
-          organizationName: props.organizationId,
-          envName: apiEnvironment.name
-        });
-        viewManagedObjectList.push(APEnvironmentObjectsCommon.transformEnvironmentResponseToEnvironmentViewManagedObject(apiEnvironmentResponse));
-      }
-      setManagedObjectTableDataList(viewManagedObjectList);
+    try {
+      const apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplay({ 
+        organizationId: props.organizationId
+      })
+      setManagedObjectTableDataList(apEnvironmentDisplayList);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -113,7 +71,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   React.useEffect(() => {
     if(!managedObjectTableDataList) return;
-    setSelectedManagedObjectTableDataList(createSelectedManagedObjectTableDataList(managedObjectTableDataList, props.currentSelectedEnvironmentEntityIdList));
+    setSelectedManagedObjectTableDataList(APEnvironmentsService.create_ApEnvironmentDisplayList_FilteredBy_EntityIdList(managedObjectTableDataList, props.currentSelectedEnvironmentEntityIdList));
   }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
@@ -125,7 +83,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // * UI Controls *
 
   const onSaveSelectedEnvironments = () => {
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), transformTableDataListToSelectEntityIdList(selectedManagedObjectTableDataList));
+    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selectedManagedObjectTableDataList));
   }
 
   // * Data Table *
@@ -166,28 +124,6 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-
-    const protocolsExpansionTemplate = (row: TManagedObjectTableDataRow) => {
-      const tmpExposedProtocolsBodyTemplate = (row: TManagedObjectTableDataRow): JSX.Element => {
-        return (
-          <div>{JSON.stringify(row.apiEnvironment.exposedProtocols)}</div>
-        );
-      }
-      const protocolDataTableList = [row];  
-      return (
-        <div className="select-protocols-sub-table">
-          <DataTable 
-            className="p-datatable-sm"
-            value={protocolDataTableList}
-            autoLayout={true}
-            dataKey="id"
-          >
-            <Column field="apiEnvironment.exposedProtocols" header="exposedProtocols" body={tmpExposedProtocolsBodyTemplate} />
-          </DataTable>
-        </div>
-      );
-    }
-
     return (
       <div className="card">
           <DataTable
@@ -202,27 +138,22 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             globalFilter={globalFilter}
             scrollable 
             scrollHeight="800px" 
-            dataKey="id"  
+            dataKey="apEntityId.id"  
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // selection
             selection={selectedManagedObjectTableDataList}
             onSelectionChange={onSelectionChange}
             // sorting
             sortMode='single'
-            sortField="displayName"
+            sortField="apEntityId.displayName"
             sortOrder={1}
-            // expansion
-            expandedRows={expandedManagedObjectDataTableRows}
-            onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
-            rowExpansionTemplate={protocolsExpansionTemplate}
           >
-            <Column expander style={{ width: '3em' }} />
             <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column field="displayName" header="Name" sortable filterField="globalSearch" />
-            <Column field="apiEnvironment.serviceName" header="Service Name" sortable />
-            <Column field="apiEnvironment.msgVpnName" header="Msg Vpn Name" sortable />
-            <Column field="apiEnvironment.datacenterProvider" header="Datacenter Provider" sortable />
-            <Column field="apiEnvironment.description" header="Description" />
+            <Column header="Name" field="apEntityId.displayName" filterField="apSearchContent" sortable />
+            <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
+            <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
+            <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
+            {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
         </DataTable>
       </div>
     );

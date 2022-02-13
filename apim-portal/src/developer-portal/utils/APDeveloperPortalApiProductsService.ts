@@ -9,10 +9,6 @@ export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalAp
 class APDeveloperPortalApiProductsService extends APApiProductsService {
   private readonly ComponentName = "APDeveloperPortalApiProductsService";
 
-  // protected create_APApiProductDisplay_From_ApiEntities = (connectorApiProduct: APIProduct, connectorEnvRespList: Array<EnvironmentResponse>): TAPDeveloperPortalApiProductDisplay => {
-  //   return super.create_APApiProductDisplay_From_ApiEntities(connectorApiProduct, connectorEnvRespList); 
-  // }
-
   public listDeveloperPortalApiProductDisplay = async({ organizationId, includeAccessLevel }: {
     organizationId: string;
     includeAccessLevel?: APIProductAccessLevel;

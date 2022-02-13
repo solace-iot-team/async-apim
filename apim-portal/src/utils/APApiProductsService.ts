@@ -3,6 +3,7 @@ import {
   APIProductAccessLevel,
   APIProductPatch,
   ApiProductsService,
+  ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from './APEntityIdsService';
 import { Globals } from './Globals';
@@ -11,8 +12,9 @@ import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList
 import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './APApisService';
 import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
 import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
+import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 
-export type TAPApiProductDisplay = IAPEntityIdDisplay & {
+export type TAPApiProductDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   connectorApiProduct: APIProduct;
   apEnvironmentDisplayList: TAPEnvironmentDisplayList;
   apEnvironmentDisplayNameList: Array<string>;
@@ -90,13 +92,29 @@ export class APApiProductsService {
       apAttributeDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPAttributeDisplay>(apAttributeDisplayList), 
       apApiProductCategory: this.CDefaultApiProductCategory,
       apApiProductImageUrl: this.CDefaultApiProductImageUrl,
+      apSearchContent: ''
     };
-    return _base;
+    return APSearchContentService.add_SearchContent<TAPApiProductDisplay>(_base);
   }
 
   public generateGlobalSearchContent(apProductDisplay: TAPApiProductDisplay): string {
     return Globals.generateDeepObjectValuesString(apProductDisplay).toLowerCase();
   }
+
+  public create_SelectList_From_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
+    const e: any = ClientOptionsGuaranteedMessaging.accessType;
+    return Object.keys(e).map(k => e[k]);
+  }
+
+  public create_SelectList_From_ApprovalType(): Array<APIProduct.approvalType> {
+    const e: any = APIProduct.approvalType;
+    return Object.keys(e).map(k => e[k]);
+  }  
+
+  public create_SelectList_From_AccessLevel(): Array<APIProductAccessLevel> {
+    const e: any = APIProductAccessLevel;
+    return Object.keys(e).map(k => e[k]);
+  }  
 
   public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
     if(displayNameList.length > 0) return displayNameList.join(', ');

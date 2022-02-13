@@ -22,11 +22,11 @@ import {
   WebHook,
   WebHookStatus
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPApiEntityRef } from './APApiObjectsCommon';
 import { Globals } from '../utils/Globals';
 import { APRenderUtils } from '../utils/APRenderUtils';
 import { APContextError } from '../utils/APError';
 import { TAPAsyncApiSpec } from '../utils/APTypes';
+import { TAPApiEntityRef } from './APApiObjectsCommon';
 
 export type TAPApiCallState = {
   success: boolean;

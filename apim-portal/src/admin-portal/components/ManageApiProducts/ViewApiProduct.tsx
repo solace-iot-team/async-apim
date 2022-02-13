@@ -15,7 +15,7 @@ import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/A
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
 import { TAPApiSpecDisplay } from "../../../utils/APApiSpecsService";
-import { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -33,23 +33,6 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const componentName = 'ViewApiProduct';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay;
-
-  // type TGetManagedObject = TViewManagedApiProduct;
-  // type TManagedObjectDisplay = TGetManagedObject & {
-  //   protocolListAsString: string;
-  // }
-
-  // const transformGetManagedObjectToManagedObjectDisplay = (getManagedObject: TGetManagedObject): TManagedObjectDisplay => {
-  //   const managedObjectDisplay: TManagedObjectDisplay = {
-  //     ...getManagedObject,
-  //     apiProduct: {
-  //       ...getManagedObject.apiProduct,
-  //       accessLevel: getManagedObject.apiProduct.accessLevel ? getManagedObject.apiProduct.accessLevel : C_DEFAULT_API_PRODUCT_ACCESS_LEVEL,
-  //     },
-  //     protocolListAsString: APRenderUtils.getProtocolListAsString(getManagedObject.apiProduct.protocols),
-  //   }
-  //   return managedObjectDisplay;
-  // }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [showApiId, setShowApiId] = React.useState<string>();
@@ -75,36 +58,6 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     return callState;
   }
 
-  // const apiGetManagedObject = async(): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetManagedObject';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductDisplayName}`);
-  //   try { 
-  //     const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
-  //       organizationName: props.organizationId,
-  //       apiProductName: props.apiProductId
-  //     });
-  //     const apiAppEntityNameList: CommonEntityNameList = await ApiProductsService.listAppReferencesToApiProducts({
-  //       organizationName: props.organizationId,
-  //       apiProductName: props.apiProductId
-  //     });
-  //     const getManagedObject: TGetManagedObject = {
-  //       apiProduct: apiProduct,
-  //       apiEnvironmentList: [],
-  //       apiInfoList: [],
-  //       id: apiProduct.name,
-  //       displayName: apiProduct.displayName,
-  //       apiUsedBy_AppEntityNameList: apiAppEntityNameList
-  //     }
-  //     setManagedObjectDisplay(transformGetManagedObjectToManagedObjectDisplay(getManagedObject));
-  //   } catch(e) {
-  //     APClientConnectorOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
-
   const apiGetApiSpec = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
     const funcName = 'apiGetApiSpec';
     const logName = `${componentName}.${funcName}()`;
@@ -115,6 +68,8 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
         apiProductId: props.apiProductId,
         apiEntityId: { id: apiId, displayName: apiDisplayName }
       });
+      // console.log(`${logName}: apiProductApiSpec=\n${JSON.stringify(apiProductApiSpec, null, 2)}`)
+      // alert(`${logName}: check console for apiProductApiSpec ..`)
       setApiSpec(apiProductApiSpec);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -197,7 +152,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
     return (
       <div>
-        {apAppReferenceEntityIdList.join(', ')}
+        {APEntityIdsService.create_DisplayNameList(apAppReferenceEntityIdList).join(', ')}
       </div>
     );
   }
@@ -255,7 +210,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
           <React.Fragment>
             <Divider/>        
             <APDisplayAsyncApiSpec 
-              schema={apiSpec} 
+              schema={apiSpec.spec} 
               schemaId={showApiId} 
               onDownloadSuccess={props.onSuccess}
               onDownloadError={props.onError}
@@ -280,6 +235,9 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
       {/* DEBUG */}
       {/* <pre style={ { fontSize: '10px' }} >
         {JSON.stringify(managedObject, null, 2)}
+      </pre> */}
+      {/* <pre style={ { fontSize: '10px' }} >
+        apSearchContent={JSON.stringify(managedObject?.apSearchContent.split(','), null, 2)}
       </pre> */}
     </React.Fragment>
   );
