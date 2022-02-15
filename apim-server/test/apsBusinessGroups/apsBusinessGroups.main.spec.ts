@@ -4,7 +4,7 @@ import request from 'supertest';
 import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from '../lib/test.helpers';
+import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSId,
@@ -105,8 +105,16 @@ describe(`${scriptName}`, () => {
         await ApsAdministrationService.deleteApsOrganization({
           organizationId: org.organizationId
         });
+        // wait until done
+        try {
+          await ApsBusinessGroupsService.listApsBusinessGroups({
+            organizationId: org.organizationId
+          });
+        } catch(e) {}
       }
       // check DB directly
+      // above call ensures background delete job is done.
+      // await testHelperSleep(1000);
       const DBList: Array<any> = await APSBusinessGroupsService.getPersistenceService().allRawLessThanTargetSchemaVersion(APSBusinessGroupsService.getDBObjectSchemaVersion() + 1);
       expect(DBList.length, TestLogger.createTestFailMessage('DB List length does not equal 0')).to.equal(0);
     } catch (e) {
@@ -171,7 +179,7 @@ describe(`${scriptName}`, () => {
       await ApsAdministrationService.deleteApsOrganization({
         organizationId: orgId
       });
-      // check that is checks for missing organization
+      // check that it checks for missing organization
       try {
         const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroups({
           organizationId: orgId        

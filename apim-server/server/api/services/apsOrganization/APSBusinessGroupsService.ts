@@ -47,20 +47,21 @@ export class APSBusinessGroupsService {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
     
-    // TODO: test without arrow function
-    // doesn't seem to work 
-    // await this.collectionMutex.waitForUnlock();
-
-    const releaser = await this.collectionMutex.acquire();
-    releaser();
+    await this.collectionMutex.waitForUnlock();
+    // const releaser = await this.collectionMutex.acquire();
+    // releaser();
     if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
 
   }
   private onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
     // TODO: test without arrow function
-    await this.collectionMutex.runExclusive(async () => {
+    // await this.collectionMutex.runExclusive(async () => {
+    //   await this._onOrganizationDeleted(apsOrganizationId);
+    // });
+    const x = async(): Promise<void> => {
       await this._onOrganizationDeleted(apsOrganizationId);
-    });
+    }
+    await this.collectionMutex.runExclusive(x);
   }
 
   private _onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {

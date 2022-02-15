@@ -32,7 +32,7 @@ import APSBusinessGroupsService from '../../server/api/services/apsOrganization/
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
-const OrganizationId = "test_mixed_bu"
+const OrganizationId = "test_mixed_internal_external_business_groups";
 const DefaultBusinessGroupOwnerId = 'biz.group.owner@async-apim.test';
 const InternalMasterGroupId = "internal-master";
 const ExternalMasterGroupId = "external-master";
