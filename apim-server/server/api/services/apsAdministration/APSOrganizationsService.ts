@@ -53,7 +53,7 @@ export class APSOrganizationsService {
   }
 
   public all = async(): Promise<ListAPSOrganizationResponse> => {
-    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all();
+    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({});
     return {
       list: mongoAllReturn.documentList as APSOrganizationList,
       meta: {
@@ -68,7 +68,9 @@ export class APSOrganizationsService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId}));
 
-    const apsOrganization: APSOrganization = await this.persistenceService.byId(apsOrganizationId) as APSOrganization;
+    const apsOrganization: APSOrganization = await this.persistenceService.byId({
+      collectionDocumentId: apsOrganizationId
+    }) as APSOrganization;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganization', details: apsOrganization}));
 
@@ -109,7 +111,9 @@ export class APSOrganizationsService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId }));
 
-    const deleted = (await this.persistenceService.delete(apsOrganizationId) as unknown) as APSOrganization;
+    const deleted = (await this.persistenceService.delete({
+      collectionDocumentId: apsOrganizationId
+    }) as unknown) as APSOrganization;
     
     APSOrganizationsServiceEventEmitter.emit('deleted', apsOrganizationId);
 

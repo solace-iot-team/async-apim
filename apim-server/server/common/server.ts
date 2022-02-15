@@ -57,6 +57,13 @@ export class ExpressServer {
     const validateResponseOpts: ValidateResponseOpts = {      
       onError: ( (err, body, req) => {
         const logName = `${ExpressServer.name}.OpenApiValidator.validateResponse.onError()`;
+        // * DEBUG * 
+        // ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: 'testing response validation', details: {
+        //   err: err.message,
+        //   errors: err.errors,
+        //   body: body
+        // }}));
+        // throw new Error(`${logName}: continue here`);
         throw new ApiServerErrorFromOpenApiResponseValidatorError(logName, err, body, ServerLogger.getRequestInfo(req));
       })
     }

@@ -24,7 +24,7 @@ export class APSOrganizationsDBMigrate {
     if(targetDBSchemaVersion === 0) {
       // get all users and create orgs they are members of
       const userOrgList: APSOrganizationList = [];
-      const res: TMongoAllReturn = await APSUsersService.getPersistenceService().all();
+      const res: TMongoAllReturn = await APSUsersService.getPersistenceService().all({});
       for (const apsDoc of res.documentList) {
         const apsUser: APSUser = apsDoc as APSUser;
         if(apsUser.memberOfOrganizations !== undefined) {

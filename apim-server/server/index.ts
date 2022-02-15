@@ -14,6 +14,7 @@ import APSAboutService from './api/services/apsConfig/APSAboutService';
 import APSMonitorService from './api/services/APSMonitorService';
 import ServerMonitor from './common/ServerMonitor';
 import APSOrganizationsService from './api/services/apsAdministration/APSOrganizationsService';
+import APSBusinessGroupsService from './api/services/apsOrganization/APSBusinessGroupsService';
 
 const componentName = 'index';
 
@@ -24,6 +25,7 @@ const migrateComponents = async(): Promise<void> => {
   try {
     await APSUsersService.migrate();
     await APSOrganizationsService.migrate();
+    await APSBusinessGroupsService.migrate();
     ServerStatus.setIsMigrated();
   } catch(e: any) {
     if (e instanceof MigrateServerError) {
@@ -44,6 +46,7 @@ const bootstrapComponents = async(): Promise<void> => {
   try {
     await APSConnectorsService.bootstrap();
     await APSUsersService.bootstrap();
+    await APSBusinessGroupsService.bootstrap();
     ServerStatus.setIsBootstrapped();
   } catch(e: any) {
     if (e instanceof BootstrapErrorFromApiError || e instanceof BootstrapErrorFromError) {

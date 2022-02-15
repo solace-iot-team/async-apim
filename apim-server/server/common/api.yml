@@ -48,7 +48,12 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '422':
-          $ref: '#/components/responses/DuplicateKey'
+          description: >
+            "duplicate key": APSOrganization object with connectorId already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
@@ -553,6 +558,206 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
+  /apsBusinessGroups/{organization_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    post:
+      operationId: createApsBusinessGroup
+      description: Create an APSBusinessGroup object.
+      tags:
+      - APSBusinessGroups
+      requestBody:
+        description: The APSBusinessGroup object.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSBusinessGroupCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSBusinessGroup.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSBusinessGroupResponse'
+        '422':
+          description: "Business Group with groupId already exists or invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      operationId: listApsBusinessGroups
+      description: Get a list of APSBusinessGroupResponse objects in the organization.
+      tags:
+      - APSBusinessGroups
+      responses:
+        '200':
+          description: Array of APSBusinessGroupResponse object and total count of the objects. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSBusinessGroupsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsBusinessGroups/{organization_id}/externalSystem/{external_system_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    - $ref: '#/components/parameters/external_system_id'
+    get:
+      operationId: listApsBusinessGroupsByExternalSystem
+      description: Get a list of APSBusinessGroupResponse objects by external system id.
+      tags:
+      - APSBusinessGroups
+      responses:
+        '200':
+          description: Array of APSBusinessGroupResponse object and total count of the objects. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSBusinessGroupsExternalSystemResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsBusinessGroups/{organization_id}/{businessgroup_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    - $ref: '#/components/parameters/businessgroup_id'
+    get:
+      operationId: getApsBusinessGroup
+      description: Get a APSBusinessGroupResponse object by business group id.
+      tags:
+      - APSBusinessGroups
+      responses:
+        '200':
+          description: The APSBusinessGroupResponse object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSBusinessGroupResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: updateApsBusinessGroup
+      description:
+        Update an APSBusinessGroup object by business group id.
+        Operation performs a merge update between the exsting object and the update request.
+        Arrays are not merged but replaced in their entirety.
+      tags:
+      - APSBusinessGroups
+      requestBody:
+        description: The APSBusinessGroupUpdate object.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/APSBusinessGroupUpdate"
+      responses:
+        '200':
+          description: The APSBusinessGroup object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSBusinessGroupResponse'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteApsBusinessGroup
+      description: Delete an APSBusinessGroup object.
+      tags:
+      - APSBusinessGroups
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: "Invalid object reference"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsBusinessGroups/{organization_id}/externalReference/{external_reference_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    - $ref: '#/components/parameters/external_reference_id'
+    get:
+      operationId: getApsBusinessGroupByExternalReference
+      description: Get a APSBusinessGroupResponse object by external reference id.
+      tags:
+      - APSBusinessGroups
+      responses:
+        '200':
+          description: The APSBusinessGroupResponse object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSBusinessGroupResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /apsUsers:
     post:
@@ -916,13 +1121,36 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/APSId"
+    businessgroup_id:
+      name: businessgroup_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
+    external_system_id:
+      name: external_system_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
+    external_reference_id:
+      name: external_reference_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
   schemas:
     APSId:
-      description: Unique Id of an object.
+      description: Unique object id.
       type: string
       minLength: 4
       maxLength: 255
       pattern: ^[A-Za-z0-9_-]*$
+    APSIdList:
+      description: List of APSId objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSId'
     APSDisplayName:
       description: Friendly name of an object for display in UIs. Can be changed after object creation.
       type: string
@@ -934,6 +1162,23 @@ components:
       minLength: 4
       maxLength: 64
       pattern: ^\S*$
+    APSExternalReference:
+      type: object
+      additionalProperties: false
+      properties:
+        externalId:
+          type: string
+        externalDisplayName:
+          type: string
+        externalSystemId:
+          type: string
+        externalSystemDisplayName:
+          type: string
+      required:
+      - externalId
+      - externalDisplayName
+      - externalSystemId
+      - externalSystemDisplayName
     APSHost:
       description: Hostname or IP address.
       type: string
@@ -1025,6 +1270,7 @@ components:
       - invalidSortFieldName
       - invalidQueryParameterCombination
       - invalidObjectReferences
+      - organizationNotFound
     APSErrorMeta:
       type: object
       description: Additional details about the error.
@@ -1462,5 +1708,91 @@ components:
         - isActivated
         - password
         - profile
+    #
+    # Business Groups
+    #
+    ListAPSBusinessGroupsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSBusinessGroupResponseList'
+      required:
+      - list
+    ListAPSBusinessGroupsExternalSystemResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSBusinessGroupExternalResponseList'
+      required:
+      - list
+    APSBusinessGroupBase:
+      description: "Base object of a business group."
+      type: object
+      properties:
+        businessGroupDisplayName:
+          $ref: "#/components/schemas/APSDisplayName"
+        businessGroupParentId:
+          $ref: "#/components/schemas/APSId"
+        ownerId:
+          $ref: "#/components/schemas/APSUserId"
+        externalReference:
+          $ref: '#/components/schemas/APSExternalReference'
+    APSBusinessGroupCreate:
+      description: "A business group create object."
+      allOf:
+      - $ref: '#/components/schemas/APSBusinessGroupBase'
+      properties:
+        businessGroupId:
+          $ref: "#/components/schemas/APSId"
+      required:
+      - businessGroupId
+      - businessGroupDisplayName
+      - ownerId
+    APSBusinessGroupResponse:
+      description: "A business group response object."
+      allOf:
+      - $ref: '#/components/schemas/APSBusinessGroupBase'
+      properties:
+        businessGroupId:
+          $ref: "#/components/schemas/APSId"
+        businessGroupChildIds:
+          $ref: "#/components/schemas/APSIdList"
+      required:
+      - businessGroupId
+      - businessGroupDisplayName
+      - ownerId
+      - businessGroupChildIds
+    APSBusinessGroupResponseList:
+      description: Array of APSBusinessGroupResponse objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSBusinessGroupResponse'
+    APSBusinessGroupExternalResponse:
+    # note the duplication from APSBusinessGroup
+      description: An APSBusinessGroupResponse object with required external reference.
+      allOf:
+      - $ref: '#/components/schemas/APSBusinessGroupBase'
+      properties:
+        businessGroupId:
+          $ref: "#/components/schemas/APSId"
+      required:
+      - businessGroupId
+      - businessGroupDisplayName
+      - ownerId
+      - externalReference
+    APSBusinessGroupExternalResponseList:
+      description: Array of APSBusinessGroupExternalResponse objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSBusinessGroupExternalResponse'
+    APSBusinessGroupUpdate:
+      description: Update for an APSBusinessGroup object.
+      allOf:
+      - $ref: '#/components/schemas/APSBusinessGroupBase'
+
 ###
 # The End.

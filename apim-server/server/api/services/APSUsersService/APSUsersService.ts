@@ -89,7 +89,9 @@ export class APSUsersService {
         }
       };
   
-      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(undefined, undefined, mongoSearchInfo);
+      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+        searchInfo: mongoSearchInfo
+      });
   
       const apsUserList: APSUserList = mongoAllReturn.documentList as APSUserList;
       for(const apsUser of apsUserList) {
@@ -287,7 +289,11 @@ export class APSUsersService {
       mongoSearchInfo.filter.userId = new RegExp('.*' + searchInfo.searchUserId + '.*');
     }
 
-    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(mongoPagingInfo, mongoSortInfo, mongoSearchInfo);
+    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+      pagingInfo: mongoPagingInfo,
+      sortInfo: mongoSortInfo,
+      searchInfo: mongoSearchInfo
+    });
     const apsUserList: APSUserList = mongoAllReturn.documentList;
     ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserList', details: apsUserList }));
     const apsUserResponseList: APSUserResponseList = await this.createAPSUserResponseList(apsUserList);
@@ -308,7 +314,9 @@ export class APSUsersService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
 
-    const apsUser: APSUser = await this.persistenceService.byId(apsUserId) as APSUser;
+    const apsUser: APSUser = await this.persistenceService.byId({
+      collectionDocumentId: apsUserId
+    }) as APSUser;
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = await this.createAPSUserResponse(apsUser, apsOrganizationList);
@@ -393,7 +401,9 @@ export class APSUsersService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
 
-    const deletedUser: APSUser = (await this.persistenceService.delete(apsUserId) as unknown) as APSUser;
+    const deletedUser: APSUser = (await this.persistenceService.delete({
+      collectionDocumentId: apsUserId
+    }) as unknown) as APSUser;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedUser', details: deletedUser }));
 
