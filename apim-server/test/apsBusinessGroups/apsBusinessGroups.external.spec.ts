@@ -43,7 +43,6 @@ const ExternalReference_Master: APSExternalReference = {
   externalId: ExternalReference_MasterGroupId,
   externalDisplayName: ExternalReference_MasterGroupId,
   externalSystemId: ExternalReference_SystemId,
-  externalSystemDisplayName: ExternalReference_SystemId
 }
 const NumberOfChildrenGroups = 3;
 const createInternalChildBusinessGroupId = (masterId: string, childI: number): APSId => {
@@ -54,46 +53,6 @@ const createExternalChildBusinessGroupId = (masterId: string, childI: number): A
   const childIStr: string = String(childI).padStart(5,'C');
   return `${masterId}-external-${childIStr}`;
 }
-// const OrganizationIdTemplate: APSId = 'test_businessgroups_organization';
-// const OrganizationDisplayNamePrefix: string = 'displayName for ';
-// const NumberOfOrganizations: number = 3;
-
-// const createOrganizationId = (i: number): APSId => {
-//   const iStr: string = String(i).padStart(5, '0');
-//   const orgId: APSId = `${OrganizationIdTemplate}_${iStr}`;
-//   return orgId;
-// }
-// const createOrganizationDisplayName = (orgId: APSId): APSDisplayName => {
-//   return `${OrganizationDisplayNamePrefix}${orgId}`;
-// }
-
-// const DefaultBusinessGroupOwnerId = 'biz.group.owner@async-apim.test';
-// const PatchedBusinessGroupOwnerId = 'patch.biz.group.owner@async-apim.test';
-
-// const BusinessGroupMasterName = 'master';
-// const BusinessGroupIdTemplate: string = 'test_bizgroup';
-// const BusinessGroupDisplayNamePrefix: string = 'displayName for ';
-// const createBusinessGroupId = (orgI: number, bizGroupName: string, bizGroupParentName?: string): APSId => {
-//   const orgIStr: string = String(orgI).padStart(5, '0');
-//   let bizGroupId = `${orgIStr}-${BusinessGroupIdTemplate}-${bizGroupName}`;
-//   if(bizGroupParentName) bizGroupId += `-${bizGroupParentName}`;
-//   return bizGroupId;
-// }
-// const createBusinessGroupDisplayName = (bizGroupId: string): APSDisplayName => {
-//   return `${BusinessGroupDisplayNamePrefix}${bizGroupId}`;
-// }
-
-// const NumberOfChildrenGroups = 3;
-// const BusinessGroupChildName = 'child';
-// const createChildBusinessGroupId = (orgI: number, masterI: number, childI: number, bizGroupName: string, bizGroupParentName?: string): APSId => {
-//   const orgIStr: string = String(orgI).padStart(5, 'O');
-//   const masterIStr: string = String(masterI).padStart(5, 'M');
-//   const childIStr: string = String(childI).padStart(5,'C');
-//   let bizGroupId = `${orgIStr}-${masterIStr}-${childIStr}-${BusinessGroupIdTemplate}-${bizGroupName}`;
-//   if(bizGroupParentName) bizGroupId += `-of-${bizGroupParentName}`;
-//   return bizGroupId;
-// }
-
 
 describe(`${scriptName}`, () => {
 
@@ -207,7 +166,6 @@ describe(`${scriptName}`, () => {
           externalId: childId,
           externalDisplayName: childId,
           externalSystemId: ExternalReference_Master.externalSystemId,
-          externalSystemDisplayName: ExternalReference_Master.externalSystemDisplayName
         }
         const createExternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
@@ -271,7 +229,7 @@ describe(`${scriptName}`, () => {
       const groupList: APSBusinessGroupExternalResponseList = listResponse.list;
       // verify they all have an external reference
       for(const group of groupList) {
-        expect(group.externalReference, TestLogger.createTestFailMessage('totalCount does not equal expectedNumberOfGroupsPerOrg')).to.be.true;
+        expect(group.externalReference !== undefined, TestLogger.createTestFailMessage('group.externalReference is undefined')).to.be.true;
       }
       const meta = listResponse.meta;
       const totalCount: number = meta.totalCount;
@@ -280,17 +238,69 @@ describe(`${scriptName}`, () => {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
-    expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
   });
 
+  it(`${scriptName}: should list all groups by external System and get the groups by externalReferenceId`, async () => {
+    try {
+      const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+        organizationId: OrganizationId,
+        externalSystemId: ExternalReference_SystemId
+      });
+      const groupList: APSBusinessGroupExternalResponseList = listResponse.list;
+      // verify they all have an external reference
+      for(const group of groupList) {
+        const groupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroupByExternalReference({
+          organizationId: OrganizationId,
+          externalReferenceId: group.externalReference.externalId
+        });        
+        expect(groupResponse.externalReference !== undefined, TestLogger.createTestFailMessage('group.externalReference is undefined')).to.be.true;
+        expect(groupResponse.externalReference.externalId, TestLogger.createTestFailMessage('')).to.equal(group.externalReference.externalId);
+      }
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+  });
 
-  xit(`${scriptName}: continue writing tests`, async () => {
-    // create children with external for external masters
-    // get master groups by externalSystem
-    // get all the children groups from list of children
-    // get master by externalReference
-    // get child by externalReference
-    expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  it(`${scriptName}: should catch duplicate external reference id`, async () => {
+    try {
+      // Expects these to exist already
+      // create external children again
+      for(let childI=0; childI < NumberOfChildrenGroups; childI++) {
+        const externalId = `${createExternalChildBusinessGroupId(ExternalMasterGroupId, childI)}`;
+        const childId = `${externalId}-duplicate`;
+        const externalReference: APSExternalReference = {
+          externalId: externalId,
+          externalDisplayName: externalId,
+          externalSystemId: ExternalReference_Master.externalSystemId,
+        }
+        const createExternal: APSBusinessGroupCreate = {
+          businessGroupId: childId,
+          businessGroupDisplayName: childId,
+          businessGroupParentId: ExternalMasterGroupId,
+          ownerId: DefaultBusinessGroupOwnerId,
+          externalReference: externalReference
+        }
+        try {
+          const createdExternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+            organizationId: OrganizationId,
+            requestBody: createExternal,
+          });  
+          expect(false, TestLogger.createTestFailMessage('shoud never get here')).to.be.true;
+        } catch(e) {
+          expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+          const apiError: ApiError = e;
+          expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+          const apsError: APSError = apiError.body;
+          expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.DUPLICATE_KEY);
+          const metaStr = JSON.stringify(apsError.meta);
+          expect(metaStr, TestLogger.createTestFailMessage('error does not contain the externalId')).to.contain(externalId);  
+        }
+      }
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
   });
 
     // xit(`${scriptName}: should return unauthorized request`, async() => {

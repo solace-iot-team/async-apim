@@ -176,7 +176,6 @@ export class ApiInternalServerError extends ApiServerError {
   }
 }
 
-
 export class ApiInternalServerErrorNotOperational extends ApiServerError {
   private static internalServerErrorName = 'ApiInternalServerErrorNotOperational';
   protected static apiStatusCode = 500;
@@ -301,6 +300,7 @@ export class ApiServerErrorFromOpenApiResponseValidatorError extends ApiInternal
 export type TApiServerErrorMeta = {
   organizationId?: string;
   id: string;
+  externalId?: string;
   collectionName: string;
 }
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;

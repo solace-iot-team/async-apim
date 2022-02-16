@@ -1172,13 +1172,10 @@ components:
           type: string
         externalSystemId:
           type: string
-        externalSystemDisplayName:
-          type: string
       required:
       - externalId
       - externalDisplayName
       - externalSystemId
-      - externalSystemDisplayName
     APSHost:
       description: Hostname or IP address.
       type: string
@@ -1779,11 +1776,14 @@ components:
       properties:
         businessGroupId:
           $ref: "#/components/schemas/APSId"
+        businessGroupChildIds:
+          $ref: "#/components/schemas/APSIdList"
       required:
       - businessGroupId
       - businessGroupDisplayName
       - ownerId
       - externalReference
+      - businessGroupChildIds
     APSBusinessGroupExternalResponseList:
       description: Array of APSBusinessGroupExternalResponse objects.
       type: array
