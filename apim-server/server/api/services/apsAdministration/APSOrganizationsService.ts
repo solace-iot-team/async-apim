@@ -1,6 +1,5 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
-import APSOrganizationId = Components.Schemas.APSId;
 import { 
   APSId, 
   APSOrganization, 
@@ -11,6 +10,7 @@ import {
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsServiceEventEmitter from './APSOrganizationsServiceEvent';
 import { APSOrganizationsDBMigrate } from './APSOrganizationsDBMigrate';
+import APSOrganizationId = Components.Schemas.APSId;
 
 export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
@@ -53,9 +53,18 @@ export class APSOrganizationsService {
   }
 
   public all = async(): Promise<ListAPSOrganizationResponse> => {
+    const funcName = 'all';
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSOrganizationList' }));
+
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({});
+    const list: APSOrganizationList = mongoAllReturn.documentList;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSOrganizationList', details: list }));
+
     return {
-      list: mongoAllReturn.documentList as APSOrganizationList,
+      list: list,
       meta: {
         totalCount: mongoAllReturn.totalDocumentCount
       }
@@ -66,13 +75,15 @@ export class APSOrganizationsService {
     const funcName = 'byId';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSOrganization', details: {
+      apsOrganizationId: apsOrganizationId
+    }}));
 
     const apsOrganization: APSOrganization = await this.persistenceService.byId({
       collectionDocumentId: apsOrganizationId
     }) as APSOrganization;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganization', details: apsOrganization}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSOrganization', details: apsOrganization }));
 
     return apsOrganization;
   }
@@ -80,13 +91,16 @@ export class APSOrganizationsService {
   public create = async(apsOrganizationCreateRequest: APSOrganizationCreate): Promise<APSOrganization> => {
     const funcName = 'create';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSOrganizationCreate', details: apsOrganizationCreateRequest }));
+
     const created: APSOrganization = await this.persistenceService.create({
       collectionDocumentId: apsOrganizationCreateRequest.organizationId,
       collectionDocument: apsOrganizationCreateRequest,
       collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSOrganization', details: created}));
 
     return created;
   }
@@ -94,13 +108,19 @@ export class APSOrganizationsService {
   public update = async(apsOrganizationId: APSId, apsOrganizationUpdateRequest: APSOrganizationUpdate): Promise<APSOrganization> => {
     const funcName = 'update';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSOrganizationUpdate', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsOrganizationUpdateRequest: apsOrganizationUpdateRequest 
+    }}));
+
     const updated: APSOrganization = await this.persistenceService.update({
       collectionDocumentId: apsOrganizationId,
       collectionDocument: apsOrganizationUpdateRequest,
       collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSOrganization', details: updated }));
 
     return updated;
   }
@@ -109,7 +129,9 @@ export class APSOrganizationsService {
     const funcName = 'delete';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsOrganizationId', details: apsOrganizationId }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, message: 'APSOrganization', details: {
+      apsOrganizationId: apsOrganizationId
+    }}));
 
     const deleted = (await this.persistenceService.delete({
       collectionDocumentId: apsOrganizationId
@@ -117,7 +139,7 @@ export class APSOrganizationsService {
     
     APSOrganizationsServiceEventEmitter.emit('deleted', apsOrganizationId);
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleted', details: deleted }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'APSOrganization', details: deleted }));
 
   }
 

@@ -1,12 +1,12 @@
-import APSId = Components.Schemas.APSId;
 import { TypedEmitter } from 'tiny-typed-emitter';
 
 interface APSExternalSystemsServiceEvents {
-  'deleted': (apsOrganizationId: APSId, apsExternalSystemId: APSId) => void;
+  'deleted': (apsOrganizationId: string, apsExternalSystemId: string) => void;
+  'await_request_delete': (apsOrganizationId: string, apsExternalSystemId: string, resolveCallback: (value: unknown) => void, rejectCallback: (reason: any) => void) => void;
 }
 
-class APSExternalSystemssServiceEventEmitter extends TypedEmitter<APSExternalSystemsServiceEvents> {
+class APSExternalSystemsServiceEventEmitter extends TypedEmitter<APSExternalSystemsServiceEvents> {
   constructor() { super(); }
 }
 
-export default new APSExternalSystemssServiceEventEmitter();
+export default new APSExternalSystemsServiceEventEmitter();

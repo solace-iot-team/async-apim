@@ -312,6 +312,11 @@ export type TApiInvalidObjectReferenceError = {
 export type TApiInvalidObjectReferencesServerErrorMeta = TApiServerErrorMeta & {
   invalidReferenceList: Array<TApiInvalidObjectReferenceError>;
 }
+export type TApiDependantObjectReferencesErrorMeta = TApiServerErrorMeta & {
+  parentType: string;
+  parentId: string;
+  dependantList: Array<any>;
+}
 export type TApiKeyNotFoundServerErrorMeta = TApiServerErrorMeta;
 export type TOrganizationNotFoundServerErrorMeta = {
   organizationId: string;
@@ -342,6 +347,15 @@ export class ApiInvalidObjectReferencesServerError extends ApiServerError {
     super(internalLogName, ApiInvalidObjectReferencesServerError.name, ApiInvalidObjectReferencesServerError.apiStatusCode, ApiInvalidObjectReferencesServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
+export class ApiDependantsReferencesServerError extends ApiServerError {
+  private static apiStatusCode = 422;
+  private static apiErrorId: APSErrorIds = APSErrorIds.DEPENDANT_OBJECTS;
+  private static apiDefaultDescription = 'dependant objects';
+
+  constructor(internalLogName: string, apiDescription: string = ApiDependantsReferencesServerError.apiDefaultDescription, apiMeta: TApiDependantObjectReferencesErrorMeta) {
+    super(internalLogName, ApiDependantsReferencesServerError.name, ApiDependantsReferencesServerError.apiStatusCode, ApiDependantsReferencesServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
 
 export class ApiKeyNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
@@ -363,13 +377,13 @@ export class ApiObjectNotFoundServerError extends ApiServerError {
   }
 }
 
-export class OrganizationNotFoundServerError extends ApiServerError {
+export class ApiOrganizationNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
   private static apiErrorId: APSErrorIds = APSErrorIds.ORGANIZATION_NOT_FOUND;
   private static apiDefaultDescription = 'organization does not exist';
 
-  constructor(internalLogName: string, apiDescription: string = OrganizationNotFoundServerError.apiDefaultDescription, apiMeta: TOrganizationNotFoundServerErrorMeta) {
-    super(internalLogName, OrganizationNotFoundServerError.name, OrganizationNotFoundServerError.apiStatusCode, OrganizationNotFoundServerError.apiErrorId, apiDescription, apiMeta);
+  constructor(internalLogName: string, apiDescription: string = ApiOrganizationNotFoundServerError.apiDefaultDescription, apiMeta: TOrganizationNotFoundServerErrorMeta) {
+    super(internalLogName, ApiOrganizationNotFoundServerError.name, ApiOrganizationNotFoundServerError.apiStatusCode, ApiOrganizationNotFoundServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 

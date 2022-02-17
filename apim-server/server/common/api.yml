@@ -153,6 +153,13 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          description: >
+            "dependantObjects": APSExternalSystem has depedants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -1404,6 +1411,7 @@ components:
       - invalidSortFieldName
       - invalidQueryParameterCombination
       - invalidObjectReferences
+      - dependantObjects
       - organizationNotFound
     APSErrorMeta:
       type: object

@@ -23,6 +23,7 @@ import {
   APSExternalReference,
   ListAPSBusinessGroupsExternalSystemResponse,
   APSBusinessGroupExternalResponseList,
+  ApsExternalSystemsService,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 
@@ -59,19 +60,19 @@ describe(`${scriptName}`, () => {
   });
 
   after(async() => {
-    // TestContext.newItId();      
-    // try {
-    //   const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-    //   const orgList: APSOrganizationList = listOrgResponse.list;
-    //   for(const org of orgList) {
-    //     await ApsAdministrationService.deleteApsOrganization({
-    //       organizationId: org.organizationId
-    //     });
-    //   }
-    // } catch (e) {
-    //   expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-    //   expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-    // }
+    TestContext.newItId();      
+    try {
+      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+      const orgList: APSOrganizationList = listOrgResponse.list;
+      for(const org of orgList) {
+        await ApsAdministrationService.deleteApsOrganization({
+          organizationId: org.organizationId
+        });
+      }
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
   });
 
   // ****************************************************************************************************************
@@ -97,7 +98,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should create reference org with 1 internal master and 1 external master`, async () => {
+  it(`${scriptName}: should create reference org with 1 externalSystem, 1 internal master and 1 external master`, async () => {
     try {
       // create org
       const apsOrg: APSOrganizationCreate = {
@@ -107,6 +108,15 @@ describe(`${scriptName}`, () => {
       const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
         requestBody: apsOrg
       });
+
+      // create externalSystem
+      const aspExternalSystemCreated = await ApsExternalSystemsService.createApsExternalSystem({
+        organizationId: OrganizationId,
+        requestBody: {
+          externalSystemId: ExternalReference_SystemId,
+          displayName: `display name for ${ExternalReference_SystemId}`
+        }
+      })
 
       // create internal master group
       const createInternal: APSBusinessGroupCreate = {
@@ -298,6 +308,39 @@ describe(`${scriptName}`, () => {
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+  });
+
+  it(`${scriptName}: should catch deleting external system with groups referencing it`, async () => {
+    try {
+      const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+        organizationId: OrganizationId,
+        externalSystemId: ExternalReference_SystemId
+      });
+      // ensure we have groups, otherwise test setup is wrong
+      expect(listResponse.list.length, TestLogger.createTestFailMessage('group.externalReference is undefined')).to.be.greaterThan(0);
+
+      // delete external system
+      await ApsExternalSystemsService.deleteApsExternalSystem({
+        organizationId: OrganizationId,
+        externalSystemId: ExternalReference_SystemId
+      });
+      expect(false, TestLogger.createTestFailMessage('should never get here')).to.be.true;
+
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.DEPENDANT_OBJECTS);
+      expect(apsError, TestLogger.createTestFailMessage('meta is undefined')).to.haveOwnProperty('meta');
+      const meta = apsError.meta;
+      expect(meta, TestLogger.createTestFailMessage('meta.dependantList is undefined')).to.haveOwnProperty('dependantList');
+      const dependantList: Array<any> = (meta.dependantList as unknown) as Array<any>;
+      expect(dependantList, TestLogger.createTestFailMessage('meta.dependantList is not an array')).to.be.an('array');
+      expect(dependantList.length, TestLogger.createTestFailMessage('meta.dependantList is not an array')).to.be.greaterThan(0);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parentId')).to.contain(ExternalReference_SystemId);  
     }
   });
 

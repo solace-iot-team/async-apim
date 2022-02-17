@@ -20,6 +20,7 @@ import { APSExternalSystemsDBMigrate } from "./APSExternalSystemsDBMigrate";
 import { ValidationUtils } from "../../../utils/ValidationUtils";
 import APSOrganizationId = Components.Schemas.APSId;
 import APSExternalSystemId = Components.Schemas.APSId;
+import APSBusinessGroupsService from "../apsBusinessGroups/APSBusinessGroupsService";
 
 
 export class APSExternalSystemsService {
@@ -130,7 +131,7 @@ export class APSExternalSystemsService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to retrieve list', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSExternalSystemList', details: {
       apsOrganizationId: apsOrganizationId,
      }}));
 
@@ -141,7 +142,7 @@ export class APSExternalSystemsService {
     });
     const list: APSExternalSystemList = mongoAllReturn.documentList;
     
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'retrieved list APSExternalSystemList', details: list }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSExternalSystemList', details: list }));
 
     return {
       list: list,
@@ -160,7 +161,7 @@ export class APSExternalSystemsService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to retrieve', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSExternalSystem', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
@@ -172,7 +173,7 @@ export class APSExternalSystemsService {
       collectionDocumentId: apsExternalSystemId 
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'retrieved APSExternalSystem', details: response }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSExternalSystem', details: response }));
 
     return response;
   }
@@ -186,7 +187,7 @@ export class APSExternalSystemsService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'create APSExternalSystem', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSExternalSystem', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemCreate: apsExternalSystemCreate
     } }));
@@ -200,7 +201,7 @@ export class APSExternalSystemsService {
       collectionSchemaVersion: APSExternalSystemsService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created APSExternalSystem', details: created }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSExternalSystem', details: created }));
     
     return created;
   }
@@ -215,6 +216,12 @@ export class APSExternalSystemsService {
 
     await this.wait4CollectionUnlock();
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSExternalSystem', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemId: apsExternalSystemId,
+      apsExternalSystemUpdate: apsExternalSystemUpdate
+    }}));
+
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
 
     const updated: APSExternalSystem = await this.persistenceService.update({
@@ -224,7 +231,7 @@ export class APSExternalSystemsService {
       collectionSchemaVersion: APSExternalSystemsService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated APSExternalSystem', details: updated }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSExternalSystem', details: updated }));
 
     return updated;
   }
@@ -238,12 +245,34 @@ export class APSExternalSystemsService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to be deleted', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, message: 'APSExternalSystem', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
 
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    // TODO: revisit at a later date
+    // for now, hardwire 
+    await APSBusinessGroupsService.on_AwaitRequestDelete_ExternalSystem(apsOrganizationId, apsExternalSystemId);
+    // // emit delete request
+    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'await_request_delete', details: {
+    //   apsOrganizationId: apsOrganizationId,
+    //   apsExternalSystemId: apsExternalSystemId
+    // }}));
+    // // TODO: try: https://github.com/jameslnewell/wait-for-event
+    // if(APSExternalSystemsServiceEventEmitter.listeners('await_request_delete').length > 0) {
+    //   // TODO: needs to do this for every listener
+    //   await new Promise( (resolve, reject) => {
+    //     APSExternalSystemsServiceEventEmitter.emit('await_request_delete', apsOrganizationId, apsExternalSystemId, resolve, reject);
+    //   }).catch( (e) => {
+    //     throw e;
+    //   });
+    // }
+    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'await_request_delete', details: {
+    //   apsOrganizationId: apsOrganizationId,
+    //   apsExternalSystemId: apsExternalSystemId
+    // }}));
 
     const deleted: APSExternalSystem = (await this.persistenceService.delete({
       organizationId: apsOrganizationId,
@@ -251,30 +280,18 @@ export class APSExternalSystemsService {
     }) as unknown) as APSExternalSystem;
 
     // emit delete event
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'emit delete event', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'delete', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
     APSExternalSystemsServiceEventEmitter.emit('deleted', apsOrganizationId, apsExternalSystemId);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'emitted delete event', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'delete', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleted APSExternalSystem', details: deleted }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSExternalSystem', details: deleted }));
   }
-
-  // private validateOrganization = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
-  //   const funcName = 'validateOrganization';
-  //   const logName = `${APSExternalSystemsService.name}.${funcName}()`;
-  //   try {
-  //     await APSOrganizationsService.byId(apsOrganizationId);
-  //   } catch(e) {
-  //     // re-write error
-  //     if(e instanceof ApiKeyNotFoundServerError) throw new OrganizationNotFoundServerError(logName, undefined, { organizationId: apsOrganizationId });
-  //     else throw e;
-  //   }
-  // }
 }
 
 export default new APSExternalSystemsService();
