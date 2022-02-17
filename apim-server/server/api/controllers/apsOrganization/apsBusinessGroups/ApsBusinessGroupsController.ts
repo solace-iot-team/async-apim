@@ -6,7 +6,7 @@ import {
   ListAPSBusinessGroupsExternalSystemResponse,
   APSBusinessGroupExternalResponse
 } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
-import APSBusinessGroupsService from '../../../services/apsOrganization/APSBusinessGroupsService';
+import APSBusinessGroupsService from '../../../services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { ControllerUtils } from '../../ControllerUtils';
 
 export type All_Params = Pick<Components.PathParameters, 'organization_id'>;

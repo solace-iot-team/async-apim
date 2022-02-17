@@ -1,0 +1,280 @@
+import { Mutex } from "async-mutex";
+import { EServerStatusCodes, ServerLogger } from '../../../../common/ServerLogger';
+import { 
+  MongoPersistenceService, 
+  TMongoAllReturn 
+} from '../../../../common/MongoPersistenceService';
+import { 
+  APSExternalSystemList,
+  ListAPSExternalSystemsResponse,
+  APSExternalSystem,
+  APSExternalSystemCreate,
+  APSExternalSystemUpdate
+ } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { 
+  ServerErrorFromError, 
+} from '../../../../common/ServerError';
+import APSOrganizationsServiceEventEmitter from '../../apsAdministration/APSOrganizationsServiceEvent';
+import APSExternalSystemsServiceEventEmitter from "./APSExternalSystemsServiceEvent";
+import { APSExternalSystemsDBMigrate } from "./APSExternalSystemsDBMigrate";
+import { ValidationUtils } from "../../../utils/ValidationUtils";
+import APSOrganizationId = Components.Schemas.APSId;
+import APSExternalSystemId = Components.Schemas.APSId;
+
+
+export class APSExternalSystemsService {
+  private static collectionName = "apsExternalSystems";
+  private static apiObjectName = "APSExernalSystem";
+  private static collectionSchemaVersion = 1;
+  private persistenceService: MongoPersistenceService;
+  private collectionMutex = new Mutex();
+
+  constructor() {
+    this.persistenceService = new MongoPersistenceService(APSExternalSystemsService.collectionName, false);
+    APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
+  }
+
+  private wait4CollectionUnlock = async() => {
+    const funcName = 'wait4CollectionUnlock';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+    
+    await this.collectionMutex.waitForUnlock();
+    // const releaser = await this.collectionMutex.acquire();
+    // releaser();
+    if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
+
+  }
+  private onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+    // TODO: test without arrow function
+    // await this.collectionMutex.runExclusive(async () => {
+    //   await this._onOrganizationDeleted(apsOrganizationId);
+    // });
+    const x = async(): Promise<void> => {
+      await this._onOrganizationDeleted(apsOrganizationId);
+    }
+    await this.collectionMutex.runExclusive(x);
+  }
+
+  private _onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+    const funcName = '_onOrganizationDeleted';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'organizationId', details: {
+        organizationId: apsOrganizationId
+      }}));
+
+      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+        organizationId: apsOrganizationId
+      });
+      const list: APSExternalSystemList = mongoAllReturn.documentList;
+      for(const element of list) {
+        await this.persistenceService.delete({
+          organizationId: apsOrganizationId,
+          collectionDocumentId: element.externalSystemId
+        });
+      }
+  
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: ex.message , details: ex.toObject() }));
+    } 
+  }
+
+  public getPersistenceService = (): MongoPersistenceService => {
+    return this.persistenceService;
+  }
+  public getCollectionName = (): string => {
+    return APSExternalSystemsService.collectionName;
+  }
+  public getDBObjectSchemaVersion = (): number => {
+    return APSExternalSystemsService.collectionSchemaVersion;
+  }
+  public initialize = async() => {
+    const funcName = 'initialize';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
+    
+    // for devel: drop the collection
+    // await this.persistenceService.dropCollection();
+    
+    await this.persistenceService.initialize();
+
+    // custom, one time maintenance
+    // await this.persistenceService.delete("master.user@aps.com");
+
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
+  }
+
+  public bootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+    // placeholder
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
+  public migrate = async(): Promise<void> => {
+    const funcName = 'migrate';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING }));
+    await APSExternalSystemsDBMigrate.migrate(this);
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
+  }
+
+  public all = async({ apsOrganizationId }: {
+    apsOrganizationId: APSOrganizationId
+  }): Promise<ListAPSExternalSystemsResponse> => {
+    const funcName = 'all';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to retrieve list', details: {
+      apsOrganizationId: apsOrganizationId,
+     }}));
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+      organizationId: apsOrganizationId
+    });
+    const list: APSExternalSystemList = mongoAllReturn.documentList;
+    
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'retrieved list APSExternalSystemList', details: list }));
+
+    return {
+      list: list,
+      meta: {
+        totalCount: mongoAllReturn.totalDocumentCount
+      }
+    }
+  }
+
+  public byId = async({ apsOrganizationId, apsExternalSystemId }: {
+    apsOrganizationId: APSOrganizationId;
+    apsExternalSystemId: APSExternalSystemId;    
+  }): Promise<APSExternalSystem> => {
+    const funcName = 'byId';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to retrieve', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemId: apsExternalSystemId
+    }}));
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    const response: APSExternalSystem = await this.persistenceService.byId({
+      organizationId: apsOrganizationId,
+      collectionDocumentId: apsExternalSystemId 
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'retrieved APSExternalSystem', details: response }));
+
+    return response;
+  }
+
+  public create = async({ apsOrganizationId, apsExternalSystemCreate }: {
+    apsOrganizationId: APSOrganizationId;
+    apsExternalSystemCreate: APSExternalSystemCreate;
+  }): Promise<APSExternalSystem> => {
+    const funcName = 'create';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'create APSExternalSystem', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemCreate: apsExternalSystemCreate
+    } }));
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    const created: APSExternalSystem = await this.persistenceService.create({
+      organizationId: apsOrganizationId,
+      collectionDocumentId: apsExternalSystemCreate.externalSystemId,
+      collectionDocument: apsExternalSystemCreate,
+      collectionSchemaVersion: APSExternalSystemsService.collectionSchemaVersion
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created APSExternalSystem', details: created }));
+    
+    return created;
+  }
+
+  public update = async({ apsOrganizationId, apsExternalSystemId, apsExternalSystemUpdate }: {
+    apsOrganizationId: APSOrganizationId;
+    apsExternalSystemId: APSExternalSystemId;
+    apsExternalSystemUpdate: APSExternalSystemUpdate;
+  }): Promise<APSExternalSystem> => {
+    const funcName = 'update';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    const updated: APSExternalSystem = await this.persistenceService.update({
+      organizationId: apsOrganizationId,
+      collectionDocumentId: apsExternalSystemId,
+      collectionDocument: apsExternalSystemUpdate,
+      collectionSchemaVersion: APSExternalSystemsService.collectionSchemaVersion
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated APSExternalSystem', details: updated }));
+
+    return updated;
+  }
+
+  public delete = async({apsOrganizationId, apsExternalSystemId }: {
+    apsOrganizationId: APSOrganizationId;
+    apsExternalSystemId: APSExternalSystemId;
+  }): Promise<void> => {
+    const funcName = 'delete';
+    const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'to be deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemId: apsExternalSystemId
+    }}));
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    const deleted: APSExternalSystem = (await this.persistenceService.delete({
+      organizationId: apsOrganizationId,
+      collectionDocumentId: apsExternalSystemId
+    }) as unknown) as APSExternalSystem;
+
+    // emit delete event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'emit delete event', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemId: apsExternalSystemId
+    }}));
+    APSExternalSystemsServiceEventEmitter.emit('deleted', apsOrganizationId, apsExternalSystemId);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'emitted delete event', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsExternalSystemId: apsExternalSystemId
+    }}));
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleted APSExternalSystem', details: deleted }));
+  }
+
+  // private validateOrganization = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  //   const funcName = 'validateOrganization';
+  //   const logName = `${APSExternalSystemsService.name}.${funcName}()`;
+  //   try {
+  //     await APSOrganizationsService.byId(apsOrganizationId);
+  //   } catch(e) {
+  //     // re-write error
+  //     if(e instanceof ApiKeyNotFoundServerError) throw new OrganizationNotFoundServerError(logName, undefined, { organizationId: apsOrganizationId });
+  //     else throw e;
+  //   }
+  // }
+}
+
+export default new APSExternalSystemsService();

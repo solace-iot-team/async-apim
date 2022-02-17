@@ -1,10 +1,10 @@
 import { Mutex } from "async-mutex";
 import { Filter } from 'mongodb';
-import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
+import { EServerStatusCodes, ServerLogger } from '../../../../common/ServerLogger';
 import { 
   MongoPersistenceService, 
   TMongoAllReturn 
-} from '../../../common/MongoPersistenceService';
+} from '../../../../common/MongoPersistenceService';
 import { 
   ListAPSBusinessGroupsResponse,
   APSBusinessGroupResponseList,
@@ -17,7 +17,7 @@ import {
   APSBusinessGroupExternalResponseList,
   APSExternalReference,
   APSBusinessGroupExternalResponse
- } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+ } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { 
   ApiDuplicateKeyServerError,
   ApiInternalServerError, 
@@ -26,9 +26,9 @@ import {
   OrganizationNotFoundServerError, 
   ServerErrorFromError, 
   TApiInvalidObjectReferenceError
-} from '../../../common/ServerError';
-import APSOrganizationsServiceEventEmitter from '../apsAdministration/APSOrganizationsServiceEvent';
-import APSOrganizationsService from '../apsAdministration/APSOrganizationsService';
+} from '../../../../common/ServerError';
+import APSOrganizationsServiceEventEmitter from '../../apsAdministration/APSOrganizationsServiceEvent';
+import APSOrganizationsService from '../../apsAdministration/APSOrganizationsService';
 import { APSBusinessGroupsDBMigrate } from './APSBusinessGroupsDBMigrate';
 import APSOrganizationId = Components.Schemas.APSId;
 import APSBusinessGroupId = Components.Schemas.APSId;

@@ -12,7 +12,6 @@ import {
   ListAPSOrganizationResponse,
   APSOrganizationList,
   APSOrganization,
-  APSDisplayName,
   APSError,
   APSErrorIds,
   APSOrganizationCreate,
@@ -21,12 +20,11 @@ import {
   APSBusinessGroupResponseList,
   APSBusinessGroupCreate,
   APSBusinessGroupResponse,
-  APSBusinessGroupUpdate,
   APSExternalReference,
   ListAPSBusinessGroupsExternalSystemResponse,
   APSBusinessGroupExternalResponseList,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import APSBusinessGroupsService from '../../server/api/services/apsOrganization/APSBusinessGroupsService';
+import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 
 
 const scriptName: string = path.basename(__filename);

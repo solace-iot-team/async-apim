@@ -7,22 +7,28 @@ import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter'
 import apsMonitorRouter from './api/controllers/apsMonitor/ApsMonitorRouter';
 import apsOrganiztionsRouter from './api/controllers/apsAdministration/apsOrganizations/ApsOrganizationsRouter';
 import apsBusinessGroupRouter from './api/controllers/apsOrganization/apsBusinessGroups/ApsBusinessGroupsRouter';
+import apsExternalSystemsRouter from './api/controllers/apsOrganization/apsExternalSystems/ApsExternalSystemsRouter';
+
 import verifyServerStatus from './api/middlewares/verifyServerStatus';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
-  // unprotected routes
+  // Public Routes
   // available even if server not operational
   router.use('/apsMonitor', apsMonitorRouter);
   // check that server is ready
   router.use(verifyServerStatus);
-  // protected routes
+  // System Admin routes
   router.use('/apsUsers', apsUsersRouter);
   router.use('/apsLogin', apsLoginRouter);
   router.use('/apsConfig/apsConnectors', apsConnectorRouter);
   router.use('/apsConfig/apsAbout', apsAboutRouter);
   router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
+  // Organization Admin routes
   router.use('/apsBusinessGroups', apsBusinessGroupRouter);
+  router.use('/apsExternalSystems', apsExternalSystemsRouter);
+
+
   // TODO: Test passport
   // const passport = PassportFactory.build();
   // router.use(passport.initialize());

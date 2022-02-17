@@ -4,7 +4,10 @@ import request from 'supertest';
 import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
+import { 
+  TestContext, 
+  TestLogger 
+} from '../lib/test.helpers';
 import { 
   ApiError, 
   APSId,
@@ -23,7 +26,7 @@ import {
   APSBusinessGroupResponse,
   APSBusinessGroupUpdate,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import APSBusinessGroupsService from '../../server/api/services/apsOrganization/APSBusinessGroupsService';
+import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -416,7 +419,6 @@ describe(`${scriptName}`, () => {
   });
 
   it(`${scriptName}: should catch creating/patching child group for non-existing parent group`, async () => {
-
     const orgI = 0;
     const organizationId = createOrganizationId(orgI);
     const nonExistingParentBusinessGroupId = "non-existing-parent-group-id";
@@ -498,7 +500,94 @@ describe(`${scriptName}`, () => {
     }
   });
 
+  it(`${scriptName}: should catch create attempt for non-existing organization`, async () => {
+    const NonExistOrganizationId = createOrganizationId(11111);
+    const create: APSBusinessGroupCreate = {
+      businessGroupId: 'any-id',
+      businessGroupDisplayName: 'any',
+      ownerId: DefaultBusinessGroupOwnerId,
+    }
+    try {
+      const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+        organizationId: NonExistOrganizationId,
+        requestBody: create
+      });
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 404')).equal(404);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.ORGANIZATION_NOT_FOUND);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(NonExistOrganizationId);
+    }
+  });
+
+  it(`${scriptName}: should catch patch attempt for non-existing organization`, async () => {
+    const NonExistOrganizationId = createOrganizationId(11111);
+    const update: APSBusinessGroupUpdate = {
+      businessGroupDisplayName: 'any',
+      ownerId: DefaultBusinessGroupOwnerId,
+    }
+    try {
+      const updated: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
+        organizationId: NonExistOrganizationId,
+        businessgroupId: 'any-id',
+        requestBody: update
+      });
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 404')).equal(404);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.ORGANIZATION_NOT_FOUND);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(NonExistOrganizationId);
+    }
+  });
+
+  it(`${scriptName}: should catch get list attempt for non-existing organization`, async () => {
+    const NonExistOrganizationId = createOrganizationId(11111);
+    try {
+      await ApsBusinessGroupsService.listApsBusinessGroups({
+        organizationId: NonExistOrganizationId
+      });
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 404')).equal(404);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.ORGANIZATION_NOT_FOUND);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(NonExistOrganizationId);
+    }
+  });
+
+  it(`${scriptName}: should catch get attempt for non-existing organization`, async () => {
+    const NonExistOrganizationId = createOrganizationId(11111);
+    try {
+      await ApsBusinessGroupsService.getApsBusinessGroup({
+        organizationId: NonExistOrganizationId,
+        businessgroupId: 'any-id'
+      });
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 404')).equal(404);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.ORGANIZATION_NOT_FOUND);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(NonExistOrganizationId);
+    }
+  });
+
+
   xit(`${scriptName}: continue writing tests`, async () => {
+    // unknown organization: list, get, create, patch, delete
     // not found error (delete non existing, patch non-existing)
     expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
   });

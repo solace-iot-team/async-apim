@@ -1,35 +1,26 @@
-import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
-import { APSBusinessGroupsService } from './APSBusinessGroupsService';
+import { EServerStatusCodes, ServerLogger } from '../../../../common/ServerLogger';
+import { APSExternalSystemsService } from './APSExternalSystemsService';
 
 // capture all the schema versions over time here
 // Version: 1
-export type APSBusinessGroup_ExternalReferene_DB_1 = {
-  externalId: string;
-  externalDisplayName: string;
-  externalSystemId: string;
-  externalSystemDisplayName: string;
-}
-export type APSBusinessGroup_DB_1 = {
+export type APSExternalSystem_DB_1 = {
   _id: string;
   _schemaVersion: number;
   _organizationId: string;
-  businessGroupId: string;
-  businessGroupDisplayName: string;
-  businessGroupParentId: string;
-  ownerId: string;
-  externalReference: APSBusinessGroup_ExternalReferene_DB_1;
+  externalSystemId: string;
+  displayName: string;
 }
 
-export class APSBusinessGroupsDBMigrate {
+export class APSExternalSystemsDBMigrate {
 
-  public static migrate = async(apsBusinessGroupsService: APSBusinessGroupsService): Promise<number> => {
+  public static migrate = async(apsExternalSytemsService: APSExternalSystemsService): Promise<number> => {
     const funcName = 'migrate';
-    const logName = `${APSBusinessGroupsDBMigrate.name}.${funcName}()`;
-    const targetDBSchemaVersion = apsBusinessGroupsService.getDBObjectSchemaVersion();
+    const logName = `${APSExternalSystemsDBMigrate.name}.${funcName}()`;
+    const targetDBSchemaVersion = apsExternalSytemsService.getDBObjectSchemaVersion();
 
     // nothing to do at the moment
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'migrating users', details: { 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'migrating external systems', details: { 
       targetDBSchemaVersion: targetDBSchemaVersion,
     }}));
 

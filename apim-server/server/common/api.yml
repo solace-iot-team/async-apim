@@ -19,6 +19,143 @@ tags:
 - name: APSAdministration
   description: Manage system settings and organizations/tenants.
 paths:
+  /apsExternalSystems/{organization_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    post:
+      operationId: createApsExternalSystem
+      description: Create an APSExternalSystem object.
+      tags:
+      - APSExternalSystems
+      requestBody:
+        description: The APSExternalSystem object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSExternalSystemCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSExternalSystem object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSExternalSystem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: >
+            "duplicate key": APSExternalSystem object with same id already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      operationId: listApsExternalSystems
+      description: Get a list of APSExternalSystem objects.
+      tags:
+      - APSExternalSystems
+      responses:
+        '200':
+          description: Array of APSExternalSystem and total count. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSExternalSystemsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsExternalSystems/{organization_id}/{external_system_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    - $ref: '#/components/parameters/external_system_id'
+    get:
+      operationId: getApsExternalSystem
+      description: Get an APSExternalSystem object by id.
+      tags:
+      - APSExternalSystems
+      responses:
+        '200':
+          description: The APSExternalSystem object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSExternalSystem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: updateApsExternalSystem
+      description:
+        Update an APSExternalSystem object by id.
+        Operation performs a merge update between the exsting object and the update request.
+        Arrays are not merged but replaced in their entirety.
+      tags:
+      - APSExternalSystems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              # $ref: "#/components/schemas/APSOrganizationUpdate"
+              $ref: "#/components/schemas/APSExternalSystemUpdate"
+      responses:
+        '200':
+          description: The updated APSExternalSystem object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSExternalSystem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      operationId: deleteApsExternalSystem
+      tags:
+      - APSExternalSystems
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /apsAdministration/apsOrganizations:
     post:
       operationId: createApsOrganization
@@ -49,7 +186,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '422':
           description: >
-            "duplicate key": APSOrganization object with connectorId already exists.
+            "duplicate key": APSOrganization object with same id already exists.
           content:
             application/json:
               schema:
@@ -58,7 +195,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     get:
       operationId: listApsOrganizations
-      description: Get a list of APSOrganizations.
+      description: Get a list of APSOrganization objects.
       tags:
       - APSAdministration
       responses:
@@ -1532,6 +1669,44 @@ components:
         - displayName
         - description
         - connectorClientConfig
+
+    ListAPSExternalSystemsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSExternalSystemList'
+      required:
+      - list
+    APSExternalSystemList:
+      description: Array of APSExternalSystem objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSExternalSystem'
+    APSExternalSystem:
+      type: object
+      additionalProperties: false
+      properties:
+        externalSystemId:
+          $ref: "#/components/schemas/APSId"
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+      required:
+        - externalSystemId
+        - displayName
+    APSExternalSystemCreate:
+      allOf:
+      - description: Create request for an APSExternalSystem object.
+      - $ref: "#/components/schemas/APSExternalSystem"
+    APSExternalSystemUpdate:
+      description: Update request for an APSExternalSystem object.
+      type: object
+      additionalProperties: false
+      properties:
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+
     ListAPSOrganizationResponse:
       type: object
       allOf:
