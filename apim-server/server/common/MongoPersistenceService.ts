@@ -149,6 +149,14 @@ export class MongoPersistenceService {
     const funcName = 'all';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, details: {
+      collectionName: this.collectionName,
+      organizationId: organizationId,
+      pagingInfo: pagingInfo,
+      sortInfo: sortInfo,
+      searchInfo: searchInfo
+     }}));
+
     if(sortInfo) {
       const dbObjectSortFieldNameValidationSchema: any & { _id: string } = {
         ...sortInfo.apsObjectSortFieldNameValidationSchema,
@@ -202,7 +210,6 @@ export class MongoPersistenceService {
 
     const collection: mongodb.Collection = this.getCollection();
     const totalDocumentCount: number = await collection.countDocuments(filter);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'totalDocumentCount', details: totalDocumentCount}));
 
     let findCursor: mongodb.FindCursor;
 
@@ -223,11 +230,16 @@ export class MongoPersistenceService {
     }
 
     const documentList: Array<Document> = await findCursor.toArray();
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'documentList', details: documentList }));
-    return {
+
+    const returnObject: TMongoAllReturn = {
       documentList: documentList,
       totalDocumentCount: totalDocumentCount
     }
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, details: {
+      collectionName: this.collectionName,
+      returnObject: returnObject
+    }}));
+    return returnObject;
   }
 
   public byId = async({ organizationId, collectionDocumentId }: {
@@ -242,9 +254,21 @@ export class MongoPersistenceService {
       filter[MongoPersistenceService.organizationIdFieldName] = organizationId;
     }
     filter[MongoPersistenceService.idFieldName] = collectionDocumentId;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, details: {
+      collectionName: this.collectionName,
+      filter: filter
+    }}));
+
     const foundDocument = await collection.findOne(filter, { projection: this.getReturnProjection() });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'foundDocument', details: foundDocument }));
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, details: {
+      collectionName: this.collectionName,
+      document: foundDocument
+    }}));
+
     if(!foundDocument) throw new ApiKeyNotFoundServerError(logName, undefined, { id: collectionDocumentId, collectionName: collection.collectionName });
+
     return foundDocument;
   }
    
@@ -257,6 +281,11 @@ export class MongoPersistenceService {
     }
     const collection: mongodb.Collection = this.getCollection();
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, details: {
+      collectionName: this.collectionName,
+      options: options
+    }}));
+
     // find by combined key: orgId + collectionDocumentId
     const filter: Filter<any> = {};
     if(options.organizationId) {
@@ -264,7 +293,10 @@ export class MongoPersistenceService {
     }
     filter[MongoPersistenceService.idFieldName] = options.collectionDocumentId;
     const existingDocument = await collection.findOne(filter, { projection: { _id: 1 } });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument ? existingDocument : { exists: false }}));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, details: {
+      collectionName: this.collectionName,
+      existingDocument: existingDocument ? existingDocument : { exists: false }
+    }}));
     
     if(existingDocument) {
       throw new ApiDuplicateKeyServerError(logName, undefined, { organizationId: options.organizationId, id: options.collectionDocumentId, collectionName: collection.collectionName});
@@ -274,11 +306,21 @@ export class MongoPersistenceService {
     if(options.organizationId) options.collectionDocument[MongoPersistenceService.organizationIdFieldName] = options.organizationId;
     options.collectionDocument[MongoPersistenceService.idFieldName] = options.collectionDocumentId;
     options.collectionDocument[MongoPersistenceService.schemaVersionFieldName] = options.collectionSchemaVersion;
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'inserting document', details: options.collectionDocument }));
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, details: {
+      collectionName: this.collectionName,
+      insertingDocument: options.collectionDocument
+    }}));
+
     await collection.insertOne(options.collectionDocument, opts);
     const insertedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'insertedDocument', details: insertedDocument }));
     if(!insertedDocument) throw new ApiInternalServerError(logName, 'insertedDocument is undefined');
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, details: {
+      collectionName: this.collectionName,
+      insertedDocument: insertedDocument
+    }}));
+    
     return insertedDocument;
   }
 
@@ -300,6 +342,11 @@ export class MongoPersistenceService {
     }  
     const collection: mongodb.Collection = this.getCollection();
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      collectionName: this.collectionName,
+      options: options
+    }}));
+
     // find by combined key: orgId + collectionDocumentId
     const filter: Filter<any> = {};
     if(options.organizationId) {
@@ -307,8 +354,18 @@ export class MongoPersistenceService {
     }
     filter[MongoPersistenceService.idFieldName] = options.collectionDocumentId;
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      collectionName: this.collectionName,
+      findExistingDocumentFilter: filter
+    }}));
+
     const existingDocument = await collection.findOne(filter, { projection: { _id: 0 } });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument }));
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      collectionName: this.collectionName,
+      existingDocument: existingDocument
+    }}));
+
     if(!existingDocument) {
       throw new ApiKeyNotFoundServerError(logName, undefined, { organizationId: options.organizationId, id: options.collectionDocumentId, collectionName: collection.collectionName});
     }
@@ -318,11 +375,25 @@ export class MongoPersistenceService {
     const mergedDocument = _.mergeWith(existingDocument, options.collectionDocument, this.updateMergeCustomizer);
     if(this.isTextSearchEnabled) mergedDocument[MongoPersistenceService.searchContentFieldName] = this.createSearchContent(options.collectionDocument);
 
-    const result: UpdateResult | Document = await collection.updateOne({ _id: options.collectionDocumentId }, { $set: mergedDocument } , opts);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'result', details: result }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      collectionName: this.collectionName,
+      updateDocument: mergedDocument
+    }}));
+    
+    const updateResult: UpdateResult | Document = await collection.updateOne({ _id: options.collectionDocumentId }, { $set: mergedDocument } , opts);
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      updateResult: updateResult
+    }}));
+
     const updatedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updatedDocument', details: updatedDocument }));
     if(!updatedDocument) throw new ApiInternalServerError(logName, 'updatedDocument is undefined');
+    
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, details: {
+      collectionName: this.collectionName,
+      updatedDocument: updatedDocument
+    }}));
+
     return updatedDocument;
   }
 
@@ -337,6 +408,11 @@ export class MongoPersistenceService {
     }  
     const collection: mongodb.Collection = this.getCollection();
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, details: {
+      collectionName: this.collectionName,
+      options: options
+    }}));
+
     // find by combined key: orgId + collectionDocumentId
     const filter: Filter<any> = {};
     if(options.organizationId) {
@@ -344,8 +420,18 @@ export class MongoPersistenceService {
     }
     filter[MongoPersistenceService.idFieldName] = options.collectionDocumentId;
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, details: {
+      collectionName: this.collectionName,
+      findExistingDocumentFilter: filter
+    }}));
+
     const existingDocument = await collection.findOne(filter, { projection: { _id: 0 } });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'existingDocument', details: existingDocument }));
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, details: {
+      collectionName: this.collectionName,
+      existingDocument: existingDocument
+    }}));
+
     if(!existingDocument) {
       throw new ApiKeyNotFoundServerError(logName, undefined, { organizationId: options.organizationId, id: options.collectionDocumentId, collectionName: collection.collectionName});
     }
@@ -354,11 +440,25 @@ export class MongoPersistenceService {
     // options.collectionDocument[MongoPersistenceService.idFieldName] = options.collectionDocumentId;
     options.collectionDocument[MongoPersistenceService.schemaVersionFieldName] = options.collectionSchemaVersion;
 
-    const result: UpdateResult | Document = await collection.replaceOne({ _id: options.collectionDocumentId }, options.collectionDocument, opts);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'result', details: result }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, details: {
+      collectionName: this.collectionName,
+      replaceDocument: options.collectionDocument
+    }}));
+
+    const replaceResult: UpdateResult | Document = await collection.replaceOne({ _id: options.collectionDocumentId }, options.collectionDocument, opts);    
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {
+      replaceResult: replaceResult
+    }}));
+
     const replacedDocument = await collection.findOne({ _id: options.collectionDocumentId }, { projection: this.getReturnProjection() });
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedDocument', details: replacedDocument }));
     if(!replacedDocument) throw new ApiInternalServerError(logName, 'replacedDocument is undefined');
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, details: {
+      collectionName: this.collectionName,
+      replacedDocument: replacedDocument
+    }}));
+
     return replacedDocument;
   }
 
@@ -368,13 +468,13 @@ export class MongoPersistenceService {
   }): Promise<Record<string, unknown>> => {
     const funcName = 'delete';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
+    const collection: mongodb.Collection = this.getCollection();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'collectionDocumentId', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, details: {
+      collectionName: this.collectionName,
       organizationId: organizationId,
       collectionDocumentId: collectionDocumentId
     }}));
-
-    const collection: mongodb.Collection = this.getCollection();
 
     const deletedDocument = await this.byId({
       organizationId: organizationId,
@@ -387,12 +487,24 @@ export class MongoPersistenceService {
     }
     filter[MongoPersistenceService.idFieldName] = collectionDocumentId;
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, details: {
+      collectionName: this.collectionName,
+      filter: filter,
+    }}));
+
     const deleteResult: DeleteResult = await collection.deleteOne(filter);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deleteResult', details: deleteResult }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, details: {
+      deleteResult: deleteResult 
+    }}));
 
     let deletedCount = 0;
     if (deleteResult.acknowledged) deletedCount = deleteResult.deletedCount;
     if (deletedCount === 0) throw new ApiKeyNotFoundServerError(logName, undefined, { organizationId: organizationId, id: collectionDocumentId, collectionName: collection.collectionName});
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, details: {
+      deletedDocument: deletedDocument
+    }}));
+
     return deletedDocument;
   }
 

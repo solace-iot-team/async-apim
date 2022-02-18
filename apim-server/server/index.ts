@@ -48,6 +48,7 @@ const bootstrapComponents = async(): Promise<void> => {
   try {
     await APSConnectorsService.bootstrap();
     await APSUsersService.bootstrap();
+    await APSOrganizationsService.bootstrap();
     await APSBusinessGroupsService.bootstrap();
     await APSExternalSystemsService.bootstrap();
     ServerStatus.setIsBootstrapped();
@@ -75,6 +76,7 @@ export const initializeComponents = async(): Promise<void> => {
     await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
     await APSOrganizationsService.initialize();
+    await APSBusinessGroupsService.initialize();
     await APSExternalSystemsService.initialize();
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());

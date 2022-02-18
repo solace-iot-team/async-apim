@@ -12,8 +12,6 @@ import {
   ApiError, 
   APSId,
   ApsAdministrationService,
-  ListAPSOrganizationResponse,
-  APSOrganizationList,
   APSOrganization,
   APSDisplayName,
   APSError,
@@ -27,6 +25,7 @@ import {
   APSBusinessGroupUpdate,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
+import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
 
 
 const scriptName: string = path.basename(__filename);
@@ -45,12 +44,10 @@ const createOrganizationDisplayName = (orgId: APSId): APSDisplayName => {
   return `${OrganizationDisplayNamePrefix}${orgId}`;
 }
 
-const DefaultBusinessGroupOwnerId = 'biz.group.owner@async-apim.test';
-const PatchedBusinessGroupOwnerId = 'patch.biz.group.owner@async-apim.test';
-
 const BusinessGroupMasterName = 'master';
 const BusinessGroupIdTemplate: string = 'test_bizgroup';
 const BusinessGroupDisplayNamePrefix: string = 'displayName for ';
+const PatchedDisplayName = 'patched display name';
 const createBusinessGroupId = (orgI: number, bizGroupName: string, bizGroupParentName?: string): APSId => {
   const orgIStr: string = String(orgI).padStart(5, '0');
   let bizGroupId = `${orgIStr}-${BusinessGroupIdTemplate}-${bizGroupName}`;
@@ -81,45 +78,15 @@ describe(`${scriptName}`, () => {
 
   after(async() => {
     TestContext.newItId();      
-    try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-      }
-    } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-    }
   });
 
   // ****************************************************************************************************************
   // * OpenApi API Tests *
   // ****************************************************************************************************************
 
-  it(`${scriptName}: SETUP: should list all organizations and delete them and check no more business groups exist`, async () => {
+  it(`${scriptName}: SETUP: should delete all orgs and all it's dependants`, async () => {
     try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      const totalCount: number = listOrgResponse.meta.totalCount;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-        // wait until done
-        try {
-          await ApsBusinessGroupsService.listApsBusinessGroups({
-            organizationId: org.organizationId
-          });
-        } catch(e) {}
-      }
-      // check DB directly
-      // above call ensures background delete job is done.
-      // await testHelperSleep(1000);
-      const DBList: Array<any> = await APSBusinessGroupsService.getPersistenceService().allRawLessThanTargetSchemaVersion(APSBusinessGroupsService.getDBObjectSchemaVersion() + 1);
-      expect(DBList.length, TestLogger.createTestFailMessage('DB List length does not equal 0')).to.equal(0);
+      await TestApsOrganizationUtils.deleteAllOrgs();
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
@@ -150,7 +117,6 @@ describe(`${scriptName}`, () => {
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: masterBusinessGroupId,
           businessGroupDisplayName: masterBusinessGroupId,
-          ownerId: DefaultBusinessGroupOwnerId
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: orgId,
@@ -169,7 +135,6 @@ describe(`${scriptName}`, () => {
           const childBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: childBusinessGroupId,
             businessGroupDisplayName: childBusinessGroupId,
-            ownerId: DefaultBusinessGroupOwnerId
             }
           const createdChildGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
             organizationId: orgId,
@@ -260,7 +225,6 @@ describe(`${scriptName}`, () => {
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: businessGroupId,
           businessGroupDisplayName: businessGroupDisplayName,
-          ownerId: DefaultBusinessGroupOwnerId,
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: organizationId,
@@ -297,7 +261,6 @@ describe(`${scriptName}`, () => {
           const apsBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: businessGroupId,
             businessGroupDisplayName: businessGroupDisplayName,
-            ownerId: DefaultBusinessGroupOwnerId,
             businessGroupParentId: businessGroupParentId
           }
           const createdApsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -373,14 +336,14 @@ describe(`${scriptName}`, () => {
       const businessGroupId = createBusinessGroupId(orgI, BusinessGroupMasterName);
       try {
         const patch: APSBusinessGroupUpdate = {
-          businessGroupDisplayName: PatchedBusinessGroupOwnerId
+          businessGroupDisplayName: PatchedDisplayName
         }
         const result: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
           organizationId: organizationId,
           businessgroupId: businessGroupId,
           requestBody: patch
         });
-        expect(result.businessGroupDisplayName, TestLogger.createTestFailMessage('failed to update display name')).equal(PatchedBusinessGroupOwnerId);
+        expect(result.businessGroupDisplayName, TestLogger.createTestFailMessage('failed to update display name')).equal(PatchedDisplayName);
       } catch(e) {
         expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
         expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
@@ -426,7 +389,6 @@ describe(`${scriptName}`, () => {
     const apsBusinessGroup: APSBusinessGroupCreate = {
       businessGroupId: childBusinessGroupId,
       businessGroupDisplayName: childBusinessGroupId,
-      ownerId: DefaultBusinessGroupOwnerId,
       businessGroupParentId: nonExistingParentBusinessGroupId
     }
     // create
@@ -461,7 +423,6 @@ describe(`${scriptName}`, () => {
         const parent: APSBusinessGroupCreate = {
           businessGroupId: existingBusinessGroupParentId,
           businessGroupDisplayName: existingBusinessGroupParentId,
-          ownerId: DefaultBusinessGroupOwnerId,
         }
         const createdParent: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: organizationId,
@@ -471,7 +432,6 @@ describe(`${scriptName}`, () => {
       const child: APSBusinessGroupCreate = {
         businessGroupId: existingChildBusinessGroupId,
         businessGroupDisplayName: existingChildBusinessGroupId,
-        ownerId: DefaultBusinessGroupOwnerId,
         businessGroupParentId: existingBusinessGroupParentId
       }
       const createdChild: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -479,7 +439,7 @@ describe(`${scriptName}`, () => {
         requestBody: child
       });
       const patch: APSBusinessGroupUpdate = {
-        businessGroupDisplayName: PatchedBusinessGroupOwnerId,
+        businessGroupDisplayName: PatchedDisplayName,
         businessGroupParentId: nonExistingParentBusinessGroupId
       }
       const patched: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
@@ -505,7 +465,6 @@ describe(`${scriptName}`, () => {
     const create: APSBusinessGroupCreate = {
       businessGroupId: 'any-id',
       businessGroupDisplayName: 'any',
-      ownerId: DefaultBusinessGroupOwnerId,
     }
     try {
       const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -528,7 +487,6 @@ describe(`${scriptName}`, () => {
     const NonExistOrganizationId = createOrganizationId(11111);
     const update: APSBusinessGroupUpdate = {
       businessGroupDisplayName: 'any',
-      ownerId: DefaultBusinessGroupOwnerId,
     }
     try {
       const updated: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({

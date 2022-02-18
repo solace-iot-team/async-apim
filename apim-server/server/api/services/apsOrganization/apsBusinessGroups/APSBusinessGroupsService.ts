@@ -32,8 +32,8 @@ import {
 } from '../../../../common/ServerError';
 import APSOrganizationsServiceEventEmitter from '../../apsAdministration/APSOrganizationsServiceEvent';
 import { APSBusinessGroupsDBMigrate } from './APSBusinessGroupsDBMigrate';
+import APSBusinessGroupsServiceEventEmitter from "./APSBusinessGroupsServiceEvent";
 import APSExternalSystemsService from "../apsExternalSystems/APSExternalSystemsService";
-import APSExternalSystemsServiceEventEmitter from '../apsExternalSystems/APSExternalSystemsServiceEvent'
 import { ValidationUtils } from "../../../utils/ValidationUtils";
 import { ServerUtils } from "../../../../common/ServerUtils";
 import APSOrganizationId = Components.Schemas.APSId;
@@ -53,10 +53,11 @@ export class APSBusinessGroupsService {
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSBusinessGroupsService.collectionName, false);
     APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
-    APSExternalSystemsServiceEventEmitter.on('await_request_delete', this.on_AwaitRequestDelete_ExternalSystem);
+    // APSExternalSystemsServiceEventEmitter.on('await_request_delete', this.on_AwaitRequestDelete_ExternalSystem);
   }
 
-  private wait4CollectionUnlock = async() => {
+  // make public for test access
+  public wait4CollectionUnlock = async() => {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
     
@@ -81,7 +82,7 @@ export class APSBusinessGroupsService {
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
     try {
-      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'organizationId', details: {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
         organizationId: apsOrganizationId
       }}));
 
@@ -95,6 +96,10 @@ export class APSBusinessGroupsService {
           collectionDocumentId: apsBusinessGroup.businessGroupId
         });
       }
+
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
+        organizationId: apsOrganizationId
+      }}));
   
     } catch(e) {
       const ex = new ServerErrorFromError(e, logName);
@@ -469,6 +474,15 @@ export class APSBusinessGroupsService {
       collectionDocumentId: apsBusinessGroupId
     }) as unknown) as APSBusinessGroupResponse;
 
+    // emit deleted event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+    }}));
+    APSBusinessGroupsServiceEventEmitter.emit('deleted', apsOrganizationId, apsBusinessGroupId);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+    }}));
+    
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSBusinessGroupResponse', details: deleted }));
   }
 

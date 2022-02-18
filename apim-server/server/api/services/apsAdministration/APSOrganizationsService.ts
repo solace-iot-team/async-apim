@@ -44,6 +44,14 @@ export class APSOrganizationsService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
 
+  public bootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSOrganizationsService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+    // placeholder
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
   public migrate = async(): Promise<void> => {
     const funcName = 'migrate';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
@@ -137,9 +145,16 @@ export class APSOrganizationsService {
       collectionDocumentId: apsOrganizationId
     }) as unknown) as APSOrganization;
     
+    // emit deleted event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+    }}));
     APSOrganizationsServiceEventEmitter.emit('deleted', apsOrganizationId);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+    }}));
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'APSOrganization', details: deleted }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSOrganization', details: deleted }));
 
   }
 

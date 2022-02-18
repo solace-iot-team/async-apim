@@ -1917,8 +1917,6 @@ components:
           $ref: "#/components/schemas/APSDisplayName"
         businessGroupParentId:
           $ref: "#/components/schemas/APSId"
-        ownerId:
-          $ref: "#/components/schemas/APSUserId"
         externalReference:
           $ref: '#/components/schemas/APSExternalReference'
     APSBusinessGroupCreate:
@@ -1931,7 +1929,6 @@ components:
       required:
       - businessGroupId
       - businessGroupDisplayName
-      - ownerId
     APSBusinessGroupResponse:
       description: "A business group response object."
       allOf:
@@ -1944,7 +1941,6 @@ components:
       required:
       - businessGroupId
       - businessGroupDisplayName
-      - ownerId
       - businessGroupChildIds
     APSBusinessGroupResponseList:
       description: Array of APSBusinessGroupResponse objects.
@@ -1964,7 +1960,6 @@ components:
       required:
       - businessGroupId
       - businessGroupDisplayName
-      - ownerId
       - externalReference
       - businessGroupChildIds
     APSBusinessGroupExternalResponseList:

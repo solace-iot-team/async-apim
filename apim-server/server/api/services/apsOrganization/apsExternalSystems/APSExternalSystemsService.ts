@@ -35,7 +35,8 @@ export class APSExternalSystemsService {
     APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
   }
 
-  private wait4CollectionUnlock = async() => {
+  // public for test access
+  public wait4CollectionUnlock = async() => {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSExternalSystemsService.name}.${funcName}()`;
     
@@ -279,13 +280,13 @@ export class APSExternalSystemsService {
       collectionDocumentId: apsExternalSystemId
     }) as unknown) as APSExternalSystem;
 
-    // emit delete event
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'delete', details: {
+    // emit deleted event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
     APSExternalSystemsServiceEventEmitter.emit('deleted', apsOrganizationId, apsExternalSystemId);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'delete', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));

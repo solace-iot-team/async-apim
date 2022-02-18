@@ -4,7 +4,7 @@ import request from 'supertest';
 import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, TestLogger } from '../lib/test.helpers';
+import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSId,
@@ -26,13 +26,14 @@ import {
   ApsExternalSystemsService,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
+import APSExternalSystemsService from '../../server/api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
+import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
 
 
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
 const OrganizationId = "test_mixed_internal_external_business_groups";
-const DefaultBusinessGroupOwnerId = 'biz.group.owner@async-apim.test';
 const InternalMasterGroupId = "internal-master";
 const ExternalMasterGroupId = "external-master";
 
@@ -60,38 +61,16 @@ describe(`${scriptName}`, () => {
   });
 
   after(async() => {
-    TestContext.newItId();      
-    try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-      }
-    } catch (e) {
-      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
-      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
-    }
+    TestContext.newItId();
   });
 
   // ****************************************************************************************************************
   // * OpenApi API Tests *
   // ****************************************************************************************************************
 
-  it(`${scriptName}: SETUP: should list all organizations and delete them and check no more business groups exist`, async () => {
+  it(`${scriptName}: SETUP: should delete all orgs and all it's dependants`, async () => {
     try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      const totalCount: number = listOrgResponse.meta.totalCount;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-      }
-      // check DB directly
-      const DBList: Array<any> = await APSBusinessGroupsService.getPersistenceService().allRawLessThanTargetSchemaVersion(APSBusinessGroupsService.getDBObjectSchemaVersion() + 1);
-      expect(DBList.length, TestLogger.createTestFailMessage('DB List length does not equal 0')).to.equal(0);
+      await TestApsOrganizationUtils.deleteAllOrgs();
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
@@ -122,7 +101,6 @@ describe(`${scriptName}`, () => {
       const createInternal: APSBusinessGroupCreate = {
           businessGroupId: InternalMasterGroupId,
           businessGroupDisplayName: InternalMasterGroupId,
-          ownerId: DefaultBusinessGroupOwnerId
         }
       const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
         organizationId: OrganizationId,
@@ -134,7 +112,6 @@ describe(`${scriptName}`, () => {
       const createExternal: APSBusinessGroupCreate = {
         businessGroupId: ExternalMasterGroupId,
         businessGroupDisplayName: ExternalMasterGroupId,
-        ownerId: DefaultBusinessGroupOwnerId,
         externalReference: externalReference
       }
       const createdExternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -160,7 +137,6 @@ describe(`${scriptName}`, () => {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
           businessGroupParentId: InternalMasterGroupId,
-          ownerId: DefaultBusinessGroupOwnerId
         }
         const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: OrganizationId,
@@ -179,7 +155,6 @@ describe(`${scriptName}`, () => {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
           businessGroupParentId: ExternalMasterGroupId,
-          ownerId: DefaultBusinessGroupOwnerId,
           externalReference: externalReference
         }
         const createdExternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -286,7 +261,6 @@ describe(`${scriptName}`, () => {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
           businessGroupParentId: ExternalMasterGroupId,
-          ownerId: DefaultBusinessGroupOwnerId,
           externalReference: externalReference
         }
         try {
