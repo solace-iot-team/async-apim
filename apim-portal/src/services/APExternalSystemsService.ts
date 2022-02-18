@@ -22,7 +22,8 @@ class APExternalSystemsService {
   private create_EmptyApsExternalSystem(): APSExternalSystem {
     return {
       displayName: '',
-      externalSystemId: ''
+      externalSystemId: '',
+      description: '',
     };
   }
 
@@ -108,7 +109,8 @@ class APExternalSystemsService {
     apExternalSystemDisplay: TAPExternalSystemDisplay
   }): Promise<void> {
     const patch: APSExternalSystemUpdate = {
-      displayName: apExternalSystemDisplay.apsExternalSystem.displayName
+      displayName: apExternalSystemDisplay.apsExternalSystem.displayName,
+      description: apExternalSystemDisplay.apsExternalSystem.description,
     }
     await ApsExternalSystemsService.updateApsExternalSystem({
       organizationId: organizationId,

@@ -68,19 +68,17 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
   }
 
   const transformFormData_To_ManagedObject = (mofd: TManagedObjectFormData): TManagedObject => {
-    // const funcName = 'transformFormDataToManagedObject';
+    // const funcName = 'transformFormData_To_ManagedObject';
     // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mofd = ${JSON.stringify(mofd, null, 2)}`);
-    // alert(`${logName}: check console for mofd, apEntityId=${JSON.stringify(mofd.apEntityId, null, 2)} ...`)
     let mo: TManagedObject = {
       ...mofd,
       apsExternalSystem: {
+        ...mofd.apsExternalSystem,
         displayName: mofd.apEntityId.displayName,
-        externalSystemId: mofd.apEntityId.id
+        externalSystemId: mofd.apEntityId.id,
       }
     };
-    // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
-    // alert(`${logName}: check console for mo ...`)
+    // alert(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
     return mo;
   }
 
@@ -192,7 +190,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     // alert(`${logName}: mofd.apEntityId=${JSON.stringify(mofd.apEntityId, null, 2)}`);
 
     managedObjectUseForm.setValue('apEntityId', mofd.apEntityId);
-    // managedObjectUseForm.setValue('apsExternalSystem.description', mofd.apsExternalSystem.description);
+    managedObjectUseForm.setValue('apsExternalSystem', mofd.apsExternalSystem);
   }
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
@@ -303,10 +301,10 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apEntityId?.displayName)}
             </div>
             {/* description */}
-            {/* <div className="p-field">
+            <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="connectorApiProduct.description"
+                  name="apsExternalSystem.description"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Enter description.",
@@ -320,10 +318,10 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
                         />
                       )}}
                 />
-                <label htmlFor="connectorApiProduct.description" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.connectorApiProduct?.description })}>Description*</label>
+                <label htmlFor="apsExternalSystem.description" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsExternalSystem?.description })}>Description*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.connectorApiProduct?.description)}
-            </div> */}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.apsExternalSystem?.description)}
+            </div>
           </form>  
           {/* footer */}
           { renderManagedObjectFormFooter() }

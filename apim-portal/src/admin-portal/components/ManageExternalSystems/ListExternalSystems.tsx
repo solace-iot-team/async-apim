@@ -136,6 +136,9 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     if(rowData.apsBusinessGroupExternalResponseList.length === 0) return (<>-</>);
     return (<>{`Business Groups: ${rowData.apsBusinessGroupExternalResponseList.length}`}</>);
   }
+  const desriptionByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return (<>{rowData.apsExternalSystem.description}</>);
+  }
   const nameBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
     return rowData.apEntityId.displayName;
   }
@@ -165,8 +168,9 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
             sortField="apEntityId.displayName"
             sortOrder={1}
           >
-            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
-            <Column header="References" headerStyle={{width: '7em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
+            <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="References" headerStyle={{width: '10em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>
     );

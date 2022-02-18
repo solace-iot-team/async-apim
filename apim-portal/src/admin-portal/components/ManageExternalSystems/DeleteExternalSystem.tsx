@@ -85,13 +85,16 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
   const renderDeleteManagedObjectDialogFooter = (): JSX.Element =>{
     return (
       <React.Fragment>
-          <Button label="Cancel" className="p-button-text p-button-plain" onClick={onDeleteManagedObjectCancel} />
-          <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
+        <Button label="Cancel" className="p-button-text p-button-plain" onClick={onDeleteManagedObjectCancel} />
+        <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
       </React.Fragment>
     );
   } 
 
   const renderManagedObjectDeleteDialog = (): JSX.Element => {
+    const funcName = 'renderManagedObjectDeleteDialog';
+    const logName = `${componentName}.${funcName}()`;
+    alert(`${logName}: test delete with business groups, then disable delete if any `)
     return (
       <Dialog
         className="p-fluid"
