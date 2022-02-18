@@ -92,6 +92,8 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationUsers,
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
+      EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
+      EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems
     ]
   },
   {

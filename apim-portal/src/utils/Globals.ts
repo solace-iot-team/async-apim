@@ -80,6 +80,9 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
 
+  ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
+  ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
+
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
   ManageSystemTeams = '/admin-portal/manage/system/teams',

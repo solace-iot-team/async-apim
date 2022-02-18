@@ -18,6 +18,7 @@ import { AdminPortalHealthCheckViewPage } from "./pages/AdminPortalHealthCheckVi
 import { ManageOrgUsersPage } from "./pages/ManageOrgUsersPage";
 import { ManageOrgSettingsPage } from "./pages/ManageOrgSettingsPage";
 import { MonitorOrgStatusPage } from "./pages/MonitorOrgStatusPage";
+import { ManageOrgIntegrationExternalSystemsPage } from "./pages/ManageOrgIntegrationExternalSystemsPage";
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
@@ -37,6 +38,8 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} component={MonitorOrgStatusPage} exact key={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationUsers} component={ManageOrgUsersPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationUsers} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageOrgEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} component={ManageOrgIntegrationExternalSystemsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} />,
+        /* API Team*/
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
