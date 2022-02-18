@@ -47,6 +47,7 @@ const createOrganizationDisplayName = (orgId: APSId): APSDisplayName => {
 const BusinessGroupMasterName = 'master';
 const BusinessGroupIdTemplate: string = 'test_bizgroup';
 const BusinessGroupDisplayNamePrefix: string = 'displayName for ';
+const DefaultDescription = 'a default description';
 const PatchedDisplayName = 'patched display name';
 const createBusinessGroupId = (orgI: number, bizGroupName: string, bizGroupParentName?: string): APSId => {
   const orgIStr: string = String(orgI).padStart(5, '0');
@@ -117,6 +118,7 @@ describe(`${scriptName}`, () => {
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: masterBusinessGroupId,
           businessGroupDisplayName: masterBusinessGroupId,
+          description: DefaultDescription,
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: orgId,
@@ -135,6 +137,7 @@ describe(`${scriptName}`, () => {
           const childBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: childBusinessGroupId,
             businessGroupDisplayName: childBusinessGroupId,
+            description: DefaultDescription,
             }
           const createdChildGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
             organizationId: orgId,
@@ -225,6 +228,7 @@ describe(`${scriptName}`, () => {
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: businessGroupId,
           businessGroupDisplayName: businessGroupDisplayName,
+          description: DefaultDescription,
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: organizationId,
@@ -261,7 +265,8 @@ describe(`${scriptName}`, () => {
           const apsBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: businessGroupId,
             businessGroupDisplayName: businessGroupDisplayName,
-            businessGroupParentId: businessGroupParentId
+            businessGroupParentId: businessGroupParentId,
+            description: DefaultDescription,
           }
           const createdApsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
             organizationId: organizationId,
@@ -336,7 +341,8 @@ describe(`${scriptName}`, () => {
       const businessGroupId = createBusinessGroupId(orgI, BusinessGroupMasterName);
       try {
         const patch: APSBusinessGroupUpdate = {
-          businessGroupDisplayName: PatchedDisplayName
+          businessGroupDisplayName: PatchedDisplayName,
+          description: DefaultDescription,
         }
         const result: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
           organizationId: organizationId,
@@ -389,7 +395,8 @@ describe(`${scriptName}`, () => {
     const apsBusinessGroup: APSBusinessGroupCreate = {
       businessGroupId: childBusinessGroupId,
       businessGroupDisplayName: childBusinessGroupId,
-      businessGroupParentId: nonExistingParentBusinessGroupId
+      businessGroupParentId: nonExistingParentBusinessGroupId,
+      description: DefaultDescription,      
     }
     // create
     try {
@@ -423,6 +430,7 @@ describe(`${scriptName}`, () => {
         const parent: APSBusinessGroupCreate = {
           businessGroupId: existingBusinessGroupParentId,
           businessGroupDisplayName: existingBusinessGroupParentId,
+          description: DefaultDescription,
         }
         const createdParent: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: organizationId,
@@ -432,7 +440,8 @@ describe(`${scriptName}`, () => {
       const child: APSBusinessGroupCreate = {
         businessGroupId: existingChildBusinessGroupId,
         businessGroupDisplayName: existingChildBusinessGroupId,
-        businessGroupParentId: existingBusinessGroupParentId
+        businessGroupParentId: existingBusinessGroupParentId,
+        description: DefaultDescription,
       }
       const createdChild: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
         organizationId: organizationId,
@@ -465,6 +474,7 @@ describe(`${scriptName}`, () => {
     const create: APSBusinessGroupCreate = {
       businessGroupId: 'any-id',
       businessGroupDisplayName: 'any',
+      description: DefaultDescription,
     }
     try {
       const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({

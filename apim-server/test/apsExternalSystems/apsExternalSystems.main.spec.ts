@@ -32,6 +32,7 @@ import APSExternalSystemsService from '../../server/api/services/apsOrganization
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
+const DefaultDescription = 'a default description';
 const OrganizationIdTemplate: APSId = 'test_external-systems_organization';
 const NumberOfOrganizations: number = 3;
 
@@ -128,7 +129,8 @@ describe(`${scriptName}`, () => {
         const extDisplayName = createExternalSystemDisplayName(extSystemId);
         const create: APSExternalSystemCreate = {
           externalSystemId: extSystemId,
-          displayName: extDisplayName
+          displayName: extDisplayName,
+          description: DefaultDescription
         }
         const created: APSExternalSystem = await ApsExternalSystemsService.createApsExternalSystem({
           organizationId: orgId,
@@ -193,7 +195,8 @@ describe(`${scriptName}`, () => {
           const extDisplayName = createExternalSystemDisplayName(extSystemId);
           const create: APSExternalSystemCreate = {
             externalSystemId: extSystemId,
-            displayName: extDisplayName
+            displayName: extDisplayName,
+            description: DefaultDescription            
           }
           const created: APSExternalSystem = await ApsExternalSystemsService.createApsExternalSystem({
             organizationId: orgId,
@@ -230,6 +233,7 @@ describe(`${scriptName}`, () => {
           const expectedPatched: APSExternalSystem = {
             displayName: updateDisplayName,
             externalSystemId: apsExternalSystem.externalSystemId,
+            description: DefaultDescription
           }
           expect(patched, TestLogger.createTestFailMessage('patched does not equal expectedPatched')).to.deep.equal(expectedPatched);
         }
@@ -274,7 +278,8 @@ describe(`${scriptName}`, () => {
     try {
       const create: APSExternalSystemCreate = {
         externalSystemId: 'any-id',
-        displayName: 'any'
+        displayName: 'any',
+        description: DefaultDescription
       }
       const created: APSExternalSystem = await ApsExternalSystemsService.createApsExternalSystem({
         organizationId: NonExistOrganizationId,

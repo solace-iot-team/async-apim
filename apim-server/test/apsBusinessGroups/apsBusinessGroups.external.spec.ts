@@ -4,13 +4,11 @@ import request from 'supertest';
 import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   APSId,
   ApsAdministrationService,
-  ListAPSOrganizationResponse,
-  APSOrganizationList,
   APSOrganization,
   APSError,
   APSErrorIds,
@@ -25,8 +23,6 @@ import {
   APSBusinessGroupExternalResponseList,
   ApsExternalSystemsService,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
-import APSExternalSystemsService from '../../server/api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
 
 
@@ -36,6 +32,7 @@ TestLogger.logMessage(scriptName, ">>> starting ...");
 const OrganizationId = "test_mixed_internal_external_business_groups";
 const InternalMasterGroupId = "internal-master";
 const ExternalMasterGroupId = "external-master";
+const DefaultDescription = 'a default description';
 
 const ExternalReference_SystemId = "EXTERNAL_SYSTEM_ID";
 const ExternalReference_MasterGroupId = "external-system-master-id";
@@ -93,7 +90,8 @@ describe(`${scriptName}`, () => {
         organizationId: OrganizationId,
         requestBody: {
           externalSystemId: ExternalReference_SystemId,
-          displayName: `display name for ${ExternalReference_SystemId}`
+          displayName: `display name for ${ExternalReference_SystemId}`,
+          description: DefaultDescription
         }
       })
 
@@ -101,6 +99,7 @@ describe(`${scriptName}`, () => {
       const createInternal: APSBusinessGroupCreate = {
           businessGroupId: InternalMasterGroupId,
           businessGroupDisplayName: InternalMasterGroupId,
+          description: DefaultDescription
         }
       const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
         organizationId: OrganizationId,
@@ -112,6 +111,7 @@ describe(`${scriptName}`, () => {
       const createExternal: APSBusinessGroupCreate = {
         businessGroupId: ExternalMasterGroupId,
         businessGroupDisplayName: ExternalMasterGroupId,
+        description: DefaultDescription,
         externalReference: externalReference
       }
       const createdExternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -137,6 +137,7 @@ describe(`${scriptName}`, () => {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
           businessGroupParentId: InternalMasterGroupId,
+          description: DefaultDescription,
         }
         const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
           organizationId: OrganizationId,
@@ -154,6 +155,7 @@ describe(`${scriptName}`, () => {
         const createExternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
+          description: DefaultDescription,
           businessGroupParentId: ExternalMasterGroupId,
           externalReference: externalReference
         }
@@ -260,6 +262,7 @@ describe(`${scriptName}`, () => {
         const createExternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
           businessGroupDisplayName: childId,
+          description: DefaultDescription,
           businessGroupParentId: ExternalMasterGroupId,
           externalReference: externalReference
         }

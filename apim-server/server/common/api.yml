@@ -1301,6 +1301,8 @@ components:
       minLength: 1
       maxLength: 256
       pattern: "[\\/\\sa-z.A-z0-9_-]*"
+    APSDescription:
+      type: string
     APSUserId:
       type: string
       minLength: 4
@@ -1700,9 +1702,12 @@ components:
           $ref: "#/components/schemas/APSId"
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        description:
+          $ref: "#/components/schemas/APSDescription"
       required:
         - externalSystemId
         - displayName
+        - description
     APSExternalSystemCreate:
       allOf:
       - description: Create request for an APSExternalSystem object.
@@ -1714,6 +1719,8 @@ components:
       properties:
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        description:
+          $ref: "#/components/schemas/APSDescription"
 
     ListAPSOrganizationResponse:
       type: object
@@ -1926,9 +1933,12 @@ components:
       properties:
         businessGroupId:
           $ref: "#/components/schemas/APSId"
+        description:
+          $ref: "#/components/schemas/APSDescription"
       required:
       - businessGroupId
       - businessGroupDisplayName
+      - description
     APSBusinessGroupResponse:
       description: "A business group response object."
       allOf:
@@ -1942,6 +1952,7 @@ components:
       - businessGroupId
       - businessGroupDisplayName
       - businessGroupChildIds
+      - description
     APSBusinessGroupResponseList:
       description: Array of APSBusinessGroupResponse objects.
       type: array
@@ -1960,6 +1971,7 @@ components:
       required:
       - businessGroupId
       - businessGroupDisplayName
+      - description
       - externalReference
       - businessGroupChildIds
     APSBusinessGroupExternalResponseList:
@@ -1971,6 +1983,10 @@ components:
       description: Update for an APSBusinessGroup object.
       allOf:
       - $ref: '#/components/schemas/APSBusinessGroupBase'
+      properties:
+        description:
+          $ref: "#/components/schemas/APSDescription"
+
 
 ###
 # The End.
