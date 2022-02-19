@@ -2,8 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { 
   ListAPSBusinessGroupsResponse, 
   APSBusinessGroupResponse,
-  ListAPSBusinessGroupsExternalSystemResponse,
-  APSBusinessGroupExternalResponse
 } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../../services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { ControllerUtils } from '../../ControllerUtils';
@@ -46,7 +44,7 @@ export class ApsBusinessGroupsController {
         apsOrganizationId: ControllerUtils.getParamValue<AllByExternalSystemId_Params>(logName, req.params, 'organization_id'),
         apsExternalSystemId: ControllerUtils.getParamValue<AllByExternalSystemId_Params>(logName, req.params, 'external_system_id')
       })
-      .then( (r: ListAPSBusinessGroupsExternalSystemResponse) => {
+      .then( (r: ListAPSBusinessGroupsResponse) => {
         res.status(200).json(r);
       })
       .catch( (e) => {
@@ -85,7 +83,7 @@ export class ApsBusinessGroupsController {
         apsOrganizationId: ControllerUtils.getParamValue<ByExternalReferenceId_Params>(logName, req.params, 'organization_id'),
         apsExternalReferenceId: ControllerUtils.getParamValue<ByExternalReferenceId_Params>(logName, req.params, 'external_reference_id'),
       })
-      .then( (r: APSBusinessGroupExternalResponse) => {
+      .then( (r: APSBusinessGroupResponse) => {
         res.status(200).json(r);
       })
       .catch( (e) => {

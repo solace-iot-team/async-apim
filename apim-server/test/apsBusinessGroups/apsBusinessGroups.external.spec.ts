@@ -14,14 +14,13 @@ import {
   APSErrorIds,
   APSOrganizationCreate,
   ApsBusinessGroupsService,
-  ListAPSBusinessGroupsResponse,
-  APSBusinessGroupResponseList,
   APSBusinessGroupCreate,
   APSBusinessGroupResponse,
   APSExternalReference,
-  ListAPSBusinessGroupsExternalSystemResponse,
-  APSBusinessGroupExternalResponseList,
+  ListAPSBusinessGroupsResponse,
+  APSBusinessGroupResponseList,
   ApsExternalSystemsService,
+  APSBusinessGroupUpdate,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
 
@@ -38,7 +37,7 @@ const ExternalReference_SystemId = "EXTERNAL_SYSTEM_ID";
 const ExternalReference_MasterGroupId = "external-system-master-id";
 const ExternalReference_Master: APSExternalReference = {
   externalId: ExternalReference_MasterGroupId,
-  externalDisplayName: ExternalReference_MasterGroupId,
+  displayName: ExternalReference_MasterGroupId,
   externalSystemId: ExternalReference_SystemId,
 }
 const NumberOfChildrenGroups = 3;
@@ -98,7 +97,7 @@ describe(`${scriptName}`, () => {
       // create internal master group
       const createInternal: APSBusinessGroupCreate = {
           businessGroupId: InternalMasterGroupId,
-          businessGroupDisplayName: InternalMasterGroupId,
+          displayName: InternalMasterGroupId,
           description: DefaultDescription
         }
       const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -110,7 +109,7 @@ describe(`${scriptName}`, () => {
       const externalReference: APSExternalReference = ExternalReference_Master;
       const createExternal: APSBusinessGroupCreate = {
         businessGroupId: ExternalMasterGroupId,
-        businessGroupDisplayName: ExternalMasterGroupId,
+        displayName: ExternalMasterGroupId,
         description: DefaultDescription,
         externalReference: externalReference
       }
@@ -135,7 +134,7 @@ describe(`${scriptName}`, () => {
         const childId = createInternalChildBusinessGroupId(InternalMasterGroupId, childI);
         const createInternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
-          businessGroupDisplayName: childId,
+          displayName: childId,
           businessGroupParentId: InternalMasterGroupId,
           description: DefaultDescription,
         }
@@ -149,12 +148,12 @@ describe(`${scriptName}`, () => {
         const childId = createExternalChildBusinessGroupId(ExternalMasterGroupId, childI);
         const externalReference: APSExternalReference = {
           externalId: childId,
-          externalDisplayName: childId,
+          displayName: childId,
           externalSystemId: ExternalReference_Master.externalSystemId,
         }
         const createExternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
-          businessGroupDisplayName: childId,
+          displayName: childId,
           description: DefaultDescription,
           businessGroupParentId: ExternalMasterGroupId,
           externalReference: externalReference
@@ -206,12 +205,12 @@ describe(`${scriptName}`, () => {
 
   it(`${scriptName}: should list all groups by external System`, async () => {
     try {
-      const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+      const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
         organizationId: OrganizationId,
         externalSystemId: ExternalReference_SystemId
       });
       const expectedNumberOfGroups = 1 + NumberOfChildrenGroups;
-      const groupList: APSBusinessGroupExternalResponseList = listResponse.list;
+      const groupList: APSBusinessGroupResponseList = listResponse.list;
       // verify they all have an external reference
       for(const group of groupList) {
         expect(group.externalReference !== undefined, TestLogger.createTestFailMessage('group.externalReference is undefined')).to.be.true;
@@ -227,11 +226,11 @@ describe(`${scriptName}`, () => {
 
   it(`${scriptName}: should list all groups by external System and get the groups by externalReferenceId`, async () => {
     try {
-      const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+      const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
         organizationId: OrganizationId,
         externalSystemId: ExternalReference_SystemId
       });
-      const groupList: APSBusinessGroupExternalResponseList = listResponse.list;
+      const groupList: APSBusinessGroupResponseList = listResponse.list;
       // verify they all have an external reference
       for(const group of groupList) {
         const groupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroupByExternalReference({
@@ -256,12 +255,12 @@ describe(`${scriptName}`, () => {
         const childId = `${externalId}-duplicate`;
         const externalReference: APSExternalReference = {
           externalId: externalId,
-          externalDisplayName: externalId,
+          displayName: externalId,
           externalSystemId: ExternalReference_Master.externalSystemId,
         }
         const createExternal: APSBusinessGroupCreate = {
           businessGroupId: childId,
-          businessGroupDisplayName: childId,
+          displayName: childId,
           description: DefaultDescription,
           businessGroupParentId: ExternalMasterGroupId,
           externalReference: externalReference
@@ -290,7 +289,7 @@ describe(`${scriptName}`, () => {
 
   it(`${scriptName}: should catch deleting external system with groups referencing it`, async () => {
     try {
-      const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+      const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
         organizationId: OrganizationId,
         externalSystemId: ExternalReference_SystemId
       });
@@ -318,6 +317,83 @@ describe(`${scriptName}`, () => {
       expect(dependantList.length, TestLogger.createTestFailMessage('meta.dependantList is not an array')).to.be.greaterThan(0);
       const metaStr = JSON.stringify(apsError.meta);
       expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parentId')).to.contain(ExternalReference_SystemId);  
+    }
+  });
+
+  it(`${scriptName}: should catch creating group for non-existing external system`, async () => {
+    const organizationId = OrganizationId;
+    const businessGroupId = 'never-business-group-id';
+    const externalId = 'never-external-id';
+    const nonExistingExternalSystemId = "non-existing-external-system-id";
+    const apsBusinessGroup: APSBusinessGroupCreate = {
+      businessGroupId: businessGroupId,
+      displayName: businessGroupId,
+      description: DefaultDescription,      
+      externalReference: {
+        externalId: externalId,
+        displayName: externalId,
+        externalSystemId: nonExistingExternalSystemId
+      }
+    }
+    // create
+    try {
+      const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+        organizationId: organizationId,
+        requestBody: apsBusinessGroup
+      });
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the external system id')).to.contain(nonExistingExternalSystemId);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=externalReference.externalSystemId')).to.contain('externalReference.externalSystemId');
+    }
+  });
+
+  it(`${scriptName}: should catch updating group with non-existing external system`, async () => {
+    const organizationId = OrganizationId;
+    const businessGroupId = 'patch-me-business-group-id';
+    const externalId = 'never-external-id';
+    const nonExistingExternalSystemId = "non-existing-external-system-id";
+
+    const createRequest: APSBusinessGroupCreate = {
+      businessGroupId: businessGroupId,
+      displayName: businessGroupId,
+      description: DefaultDescription,      
+    }
+
+    const updateRequest: APSBusinessGroupUpdate = {
+      externalReference: {
+        externalId: externalId,
+        displayName: externalId,
+        externalSystemId: nonExistingExternalSystemId
+      }
+    }
+    // create & patch
+    try {
+      const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+        organizationId: organizationId,
+        requestBody: createRequest
+      });
+      const updated: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
+        organizationId: organizationId,
+        businessgroupId: businessGroupId,
+        requestBody: updateRequest
+      })
+      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+    } catch(e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+      const metaStr = JSON.stringify(apsError.meta);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the external system id')).to.contain(nonExistingExternalSystemId);
+      expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=externalReference.externalSystemId')).to.contain('externalReference.externalSystemId');
     }
   });
 

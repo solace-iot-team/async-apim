@@ -11,12 +11,8 @@ import {
   APSBusinessGroupUpdate,
   APSBusinessGroupCreate,
   APSBusinessGroupResponse,
-  APSBusinessGroupBase,
   APSIdList,
-  ListAPSBusinessGroupsExternalSystemResponse,
-  APSBusinessGroupExternalResponseList,
   APSExternalReference,
-  APSBusinessGroupExternalResponse,
   APSExternalSystem,
   ListAPSExternalSystemsResponse,
   APSExternalSystemList
@@ -159,7 +155,7 @@ export class APSBusinessGroupsService {
     }}));
 
     // check if any business groups reference the external system
-    const listResponse: ListAPSBusinessGroupsExternalSystemResponse = await this.allByExternalSystemId({
+    const listResponse: ListAPSBusinessGroupsResponse = await this.allByExternalSystemId({
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     });
@@ -268,13 +264,13 @@ export class APSBusinessGroupsService {
   public allByExternalSystemId = async({ apsOrganizationId, apsExternalSystemId }: {
     apsOrganizationId: APSOrganizationId;
     apsExternalSystemId: APSExternalSystemId;
-  }): Promise<ListAPSBusinessGroupsExternalSystemResponse> => {
+  }): Promise<ListAPSBusinessGroupsResponse> => {
     const funcName = 'allByExternalSystemId';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'list ListAPSBusinessGroupsExternalSystemResponse', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'list ListAPSBusinessGroupsResponse', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
@@ -282,7 +278,7 @@ export class APSBusinessGroupsService {
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
 
     // construct key
-    const k: keyof APSBusinessGroupBase = 'externalReference';
+    const k: keyof APSBusinessGroupResponse = 'externalReference';
     const sk: keyof APSExternalReference = 'externalSystemId';
     const filterKey = `${k}.${sk}`;
     const filter: Filter<any> = {};
@@ -294,13 +290,13 @@ export class APSBusinessGroupsService {
         filter: filter
       }
     });
-    const responseList: APSBusinessGroupExternalResponseList = mongoAllReturn.documentList;
+    const responseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
     // collect all the children
     for(const response of responseList) {
       response.businessGroupChildIds = await this.listChildren(apsOrganizationId, response.businessGroupId);
     }
 
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'list APSBusinessGroupExternalResponseList', details: responseList }));
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'list ListAPSBusinessGroupsResponse', details: responseList }));
 
     return {
       list: responseList,
@@ -340,13 +336,13 @@ export class APSBusinessGroupsService {
   public byExternalReferenceId = async({ apsOrganizationId, apsExternalReferenceId }: {
     apsOrganizationId: APSOrganizationId;
     apsExternalReferenceId: APSExternalReferenceId;    
-  }): Promise<APSBusinessGroupExternalResponse> => {
+  }): Promise<APSBusinessGroupResponse> => {
     const funcName = 'byExternalReferenceId';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSBusinessGroupExternalResponse', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSBusinessGroupResponse', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalReferenceId: apsExternalReferenceId
     }}));
@@ -354,7 +350,7 @@ export class APSBusinessGroupsService {
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
 
     // construct key
-    const k: keyof APSBusinessGroupBase = 'externalReference';
+    const k: keyof APSBusinessGroupResponse = 'externalReference';
     const sk: keyof APSExternalReference = 'externalId';
     const filterKey = `${k}.${sk}`;
     const filter: Filter<any> = {};
@@ -366,7 +362,7 @@ export class APSBusinessGroupsService {
         filter: filter
       }
     });
-    const responseList: APSBusinessGroupExternalResponseList = mongoAllReturn.documentList;
+    const responseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
     if(responseList.length === 0) {
       throw new ApiKeyNotFoundServerError(logName, undefined, { organizationId: apsOrganizationId, id: apsExternalReferenceId, collectionName: APSBusinessGroupsService.collectionName });
     } 
@@ -378,11 +374,11 @@ export class APSBusinessGroupsService {
       }}));
       throw new ApiInternalServerError(logName, 'api resource not operational');
     }
-    const responseGroup: APSBusinessGroupExternalResponse = responseList[0];
+    const responseGroup: APSBusinessGroupResponse = responseList[0];
     // collect all the children
     responseGroup.businessGroupChildIds = await this.listChildren(apsOrganizationId, responseGroup.businessGroupId);
 
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupExternalResponse', details: responseGroup }));
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponse', details: responseGroup }));
     
     return responseGroup;
   }
@@ -488,7 +484,7 @@ export class APSBusinessGroupsService {
 
   private listChildren = async(apsOrganizationId: APSOrganizationId, apsBusinessGroupId: APSBusinessGroupId): Promise<APSIdList> => {
 
-    const filter: Filter<APSBusinessGroupBase> = {
+    const filter: Filter<APSBusinessGroupResponse> = {
       businessGroupParentId: apsBusinessGroupId
     };
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
@@ -516,7 +512,7 @@ export class APSBusinessGroupsService {
     if(apsBusinessGroup.externalReference === undefined) return;
 
     // construct key
-    const k: keyof APSBusinessGroupBase = 'externalReference';
+    const k: keyof APSBusinessGroupResponse = 'externalReference';
     const sk: keyof APSExternalReference = 'externalId';
     const filterKey = `${k}.${sk}`;
     const filter: Filter<any> = {};
@@ -528,9 +524,9 @@ export class APSBusinessGroupsService {
         filter: filter
       }
     });
-    const responseList: APSBusinessGroupExternalResponseList = mongoAllReturn.documentList;
+    const responseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
     if(responseList.length > 0) {
-      throw new ApiDuplicateKeyServerError(logName, 'externalId already exists', { 
+      throw new ApiDuplicateKeyServerError(logName, 'APSBusinessGroup with externalId already exists', { 
         organizationId: apsOrganizationId, 
         id: '',
         externalId: apsBusinessGroup.externalReference.externalId, 
@@ -548,7 +544,7 @@ export class APSBusinessGroupsService {
       apsBusinessGroupId: apsBusinessGroupId
     }}));
 
-    const filter: Filter<APSBusinessGroupBase> = {
+    const filter: Filter<APSBusinessGroupResponse> = {
       businessGroupParentId: apsBusinessGroupId
     };
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
@@ -568,7 +564,7 @@ export class APSBusinessGroupsService {
         referenceType: 'businessGroupChildren',
         referenceDetails: apsBusinessGroupResponseList.map( (value: APSBusinessGroupResponse) => {
           return {
-            businessGroupDisplayName: value.businessGroupDisplayName,
+            businessGroupDisplayName: value.displayName,
             businessGroupId: value.businessGroupId,
             businessGroupParentId: value.businessGroupParentId
           };

@@ -117,7 +117,7 @@ describe(`${scriptName}`, () => {
         const masterBusinessGroupId = createBusinessGroupId(masterI, BusinessGroupMasterName);
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: masterBusinessGroupId,
-          businessGroupDisplayName: masterBusinessGroupId,
+          displayName: masterBusinessGroupId,
           description: DefaultDescription,
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -136,7 +136,7 @@ describe(`${scriptName}`, () => {
           const childBusinessGroupId = createChildBusinessGroupId(orgI, masterI, childI, BusinessGroupChildName, masterBusinessGroupId);
           const childBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: childBusinessGroupId,
-            businessGroupDisplayName: childBusinessGroupId,
+            displayName: childBusinessGroupId,
             description: DefaultDescription,
             }
           const createdChildGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -227,7 +227,7 @@ describe(`${scriptName}`, () => {
         const businessGroupDisplayName = createBusinessGroupDisplayName(businessGroupId);
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: businessGroupId,
-          businessGroupDisplayName: businessGroupDisplayName,
+          displayName: businessGroupDisplayName,
           description: DefaultDescription,
         }
         const createdApsBusinessGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
@@ -264,7 +264,7 @@ describe(`${scriptName}`, () => {
           const businessGroupDisplayName = createBusinessGroupDisplayName(businessGroupId);
           const apsBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: businessGroupId,
-            businessGroupDisplayName: businessGroupDisplayName,
+            displayName: businessGroupDisplayName,
             businessGroupParentId: businessGroupParentId,
             description: DefaultDescription,
           }
@@ -341,7 +341,7 @@ describe(`${scriptName}`, () => {
       const businessGroupId = createBusinessGroupId(orgI, BusinessGroupMasterName);
       try {
         const patch: APSBusinessGroupUpdate = {
-          businessGroupDisplayName: PatchedDisplayName,
+          displayName: PatchedDisplayName,
           description: DefaultDescription,
         }
         const result: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
@@ -349,7 +349,7 @@ describe(`${scriptName}`, () => {
           businessgroupId: businessGroupId,
           requestBody: patch
         });
-        expect(result.businessGroupDisplayName, TestLogger.createTestFailMessage('failed to update display name')).equal(PatchedDisplayName);
+        expect(result.displayName, TestLogger.createTestFailMessage('failed to update display name')).equal(PatchedDisplayName);
       } catch(e) {
         expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
         expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
@@ -387,14 +387,14 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should catch creating/patching child group for non-existing parent group`, async () => {
+  it(`${scriptName}: should catch creating group for non-existing parent group`, async () => {
     const orgI = 0;
     const organizationId = createOrganizationId(orgI);
     const nonExistingParentBusinessGroupId = "non-existing-parent-group-id";
     const childBusinessGroupId = 'never-child-group-id';
     const apsBusinessGroup: APSBusinessGroupCreate = {
       businessGroupId: childBusinessGroupId,
-      businessGroupDisplayName: childBusinessGroupId,
+      displayName: childBusinessGroupId,
       businessGroupParentId: nonExistingParentBusinessGroupId,
       description: DefaultDescription,      
     }
@@ -415,65 +415,96 @@ describe(`${scriptName}`, () => {
       expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(nonExistingParentBusinessGroupId);
       expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=businessGroupParentId')).to.contain('businessGroupParentId');
     }
-    // patch
-    try {
-      const existingBusinessGroupParentId = createBusinessGroupId(orgI, BusinessGroupMasterName);
-      const childI = 0;
-      const existingChildBusinessGroupId = createBusinessGroupId(orgI, createBusinessGroupId(childI, 'child'), existingBusinessGroupParentId);
-      // ensure they both exists
-      try {
-        await ApsBusinessGroupsService.getApsBusinessGroup({ 
-          organizationId: organizationId,
-          businessgroupId: existingBusinessGroupParentId
-        });
-      } catch(e) {
-        const parent: APSBusinessGroupCreate = {
-          businessGroupId: existingBusinessGroupParentId,
-          businessGroupDisplayName: existingBusinessGroupParentId,
-          description: DefaultDescription,
-        }
-        const createdParent: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
-          organizationId: organizationId,
-          requestBody: parent
-        });
-      }
-      const child: APSBusinessGroupCreate = {
-        businessGroupId: existingChildBusinessGroupId,
-        businessGroupDisplayName: existingChildBusinessGroupId,
-        businessGroupParentId: existingBusinessGroupParentId,
-        description: DefaultDescription,
-      }
-      const createdChild: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
-        organizationId: organizationId,
-        requestBody: child
-      });
-      const patch: APSBusinessGroupUpdate = {
-        businessGroupDisplayName: PatchedDisplayName,
-        businessGroupParentId: nonExistingParentBusinessGroupId
-      }
-      const patched: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
-        organizationId: organizationId,
-        businessgroupId: existingChildBusinessGroupId,
-        requestBody: patch
-      });
-      expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
-    } catch(e) {
-      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
-      const apiError: ApiError = e;
-      expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
-      const apsError: APSError = apiError.body;
-      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
-      const metaStr = JSON.stringify(apsError.meta);
-      expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(nonExistingParentBusinessGroupId);
-      expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=businessGroupParentId')).to.contain('businessGroupParentId');
-    }
   });
+
+
+  // it(`${scriptName}: should catch creating/patching child group for non-existing parent group`, async () => {
+  //   const orgI = 0;
+  //   const organizationId = createOrganizationId(orgI);
+  //   const nonExistingParentBusinessGroupId = "non-existing-parent-group-id";
+  //   const childBusinessGroupId = 'never-child-group-id';
+  //   const apsBusinessGroup: APSBusinessGroupCreate = {
+  //     businessGroupId: childBusinessGroupId,
+  //     displayName: childBusinessGroupId,
+  //     businessGroupParentId: nonExistingParentBusinessGroupId,
+  //     description: DefaultDescription,      
+  //   }
+  //   // create
+  //   try {
+  //     const created: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+  //       organizationId: organizationId,
+  //       requestBody: apsBusinessGroup
+  //     });
+  //     expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+  //   } catch(e) {
+  //     expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+  //     const apiError: ApiError = e;
+  //     expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+  //     const apsError: APSError = apiError.body;
+  //     expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+  //     const metaStr = JSON.stringify(apsError.meta);
+  //     expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(nonExistingParentBusinessGroupId);
+  //     expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=businessGroupParentId')).to.contain('businessGroupParentId');
+  //   }
+  //   // patch
+  //   try {
+  //     const existingBusinessGroupParentId = createBusinessGroupId(orgI, BusinessGroupMasterName);
+  //     const childI = 0;
+  //     const existingChildBusinessGroupId = createBusinessGroupId(orgI, createBusinessGroupId(childI, 'child'), existingBusinessGroupParentId);
+  //     // ensure they both exists
+  //     try {
+  //       await ApsBusinessGroupsService.getApsBusinessGroup({ 
+  //         organizationId: organizationId,
+  //         businessgroupId: existingBusinessGroupParentId
+  //       });
+  //     } catch(e) {
+  //       const parent: APSBusinessGroupCreate = {
+  //         businessGroupId: existingBusinessGroupParentId,
+  //         displayName: existingBusinessGroupParentId,
+  //         description: DefaultDescription,
+  //       }
+  //       const createdParent: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+  //         organizationId: organizationId,
+  //         requestBody: parent
+  //       });
+  //     }
+  //     const child: APSBusinessGroupCreate = {
+  //       businessGroupId: existingChildBusinessGroupId,
+  //       displayName: existingChildBusinessGroupId,
+  //       businessGroupParentId: existingBusinessGroupParentId,
+  //       description: DefaultDescription,
+  //     }
+  //     const createdChild: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
+  //       organizationId: organizationId,
+  //       requestBody: child
+  //     });
+  //     const patch: APSBusinessGroupUpdate = {
+  //       displayName: PatchedDisplayName,
+  //       businessGroupParentId: nonExistingParentBusinessGroupId
+  //     }
+  //     const patched: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
+  //       organizationId: organizationId,
+  //       businessgroupId: existingChildBusinessGroupId,
+  //       requestBody: patch
+  //     });
+  //     expect(false, TestLogger.createTestFailMessage('must never get here')).to.be.true;
+  //   } catch(e) {
+  //     expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+  //     const apiError: ApiError = e;
+  //     expect(apiError.status, TestLogger.createTestFailMessage('status not 422')).equal(422);
+  //     const apsError: APSError = apiError.body;
+  //     expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INVALID_OBJECT_REFERENCES);
+  //     const metaStr = JSON.stringify(apsError.meta);
+  //     expect(metaStr, TestLogger.createTestFailMessage('error does not contain the parent group id')).to.contain(nonExistingParentBusinessGroupId);
+  //     expect(metaStr, TestLogger.createTestFailMessage('error does not contain referenceType=businessGroupParentId')).to.contain('businessGroupParentId');
+  //   }
+  // });
 
   it(`${scriptName}: should catch create attempt for non-existing organization`, async () => {
     const NonExistOrganizationId = createOrganizationId(11111);
     const create: APSBusinessGroupCreate = {
       businessGroupId: 'any-id',
-      businessGroupDisplayName: 'any',
+      displayName: 'any',
       description: DefaultDescription,
     }
     try {
@@ -496,7 +527,7 @@ describe(`${scriptName}`, () => {
   it(`${scriptName}: should catch patch attempt for non-existing organization`, async () => {
     const NonExistOrganizationId = createOrganizationId(11111);
     const update: APSBusinessGroupUpdate = {
-      businessGroupDisplayName: 'any',
+      displayName: 'any',
     }
     try {
       const updated: APSBusinessGroupResponse = await ApsBusinessGroupsService.updateApsBusinessGroup({
