@@ -5,10 +5,15 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
-import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
-import { E_COMPONENT_STATE, E_CALL_STATE_ACTIONS, E_ManageUsers_Scope, TManagedObjectId, TManageOrganizationUsersScope, TManageUsersScope } from "./ManageUsersCommon";
+import { 
+  E_COMPONENT_STATE, 
+  E_CALL_STATE_ACTIONS, 
+  E_ManageUsers_Scope, 
+  TManageOrganizationUsersScope, 
+  TManageUsersScope 
+} from "./ManageUsersCommon";
 import { ListUsers } from "./ListUsers";
 import { ViewUser } from "./ViewUser";
 import { DeleteUser } from "./DeleteUser";
@@ -59,7 +64,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [managedObjectId, setManagedObjectId] = React.useState<TManagedObjectId>();
+  const [managedObjectId, setManagedObjectId] = React.useState<string>();
   const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<string>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -68,7 +73,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showAddComponent, setShowAddComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [organizationId, setOrganizationId] = React.useState<CommonName>();
+  const [organizationId, setOrganizationId] = React.useState<string>();
 
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -111,7 +116,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onViewManagedObject = (id: string, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -135,7 +140,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onEditManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onEditManagedObject = (id: string, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -149,7 +154,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
   }
-  const onDeleteManagedObject = (id: TManagedObjectId, displayName: string): void => {
+  const onDeleteManagedObject = (id: string, displayName: string): void => {
     setApiCallStatus(null);
     setManagedObjectId(id);
     setManagedObjectDisplayName(displayName);
@@ -191,7 +196,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
     props.setBreadCrumbItemList(newItemList);
   }
-  const onSetManageUserComponentState = (componentState: E_COMPONENT_STATE, userId: TManagedObjectId, userDisplayName: string) => {
+  const onSetManageUserComponentState = (componentState: E_COMPONENT_STATE, userId: string, userDisplayName: string) => {
     setManagedObjectId(userId);
     setManagedObjectDisplayName(userDisplayName);
     setNewComponentState(componentState);
@@ -205,7 +210,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: TManagedObjectId, newDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: string, newDisplayName: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(newId);
@@ -214,7 +219,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onAddManagedObjectSuccess = (apiCallState: TApiCallState, addedId: TManagedObjectId, addedDisplayName: string) => {
+  const onAddManagedObjectSuccess = (apiCallState: TApiCallState, addedId: string, addedDisplayName: string) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectId(addedId);

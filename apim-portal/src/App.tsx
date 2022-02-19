@@ -36,17 +36,18 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
 import { HealthCheckViewPage } from "./pages/HealthCheckViewPage";
+import { PerformSystemHealthCheck } from "./components/SystemHealth/PerformSystemHealthCheck";
 // * Developer Tools *
 import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
 import { ErrorTestPage } from "./pages/devel/ErrorTestPage";
+import { BusinessGroupsTestPage } from "./pages/devel/BusinessGroupsTestPage";
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.css';
-import { PerformSystemHealthCheck } from "./components/SystemHealth/PerformSystemHealthCheck";
 
 const App: React.FC = () => {
   const componentName = 'App';
@@ -198,6 +199,7 @@ const App: React.FC = () => {
                   <ProtectedRouteWithRbac path={EUIDeveloperToolsResourcePaths.TestRoles} key={EUIDeveloperToolsResourcePaths.TestRoles} component={RolesTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.TestErrors} key={EUIDeveloperToolsResourcePaths.TestErrors} component={ErrorTestPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.TestBusinessGroups} key={EUIDeveloperToolsResourcePaths.TestBusinessGroups} component={BusinessGroupsTestPage} exact />,
                 ]
               }
 

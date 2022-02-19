@@ -90,6 +90,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageOrganizationEnvironments,
       EUIAdminPortalResourcePaths.ManageOrganizationUsers,
+      EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups,
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,

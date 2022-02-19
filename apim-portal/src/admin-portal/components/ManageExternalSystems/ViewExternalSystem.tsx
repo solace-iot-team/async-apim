@@ -9,7 +9,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APExternalSystemsService, { TAPExternalSystemDisplay } from "../../../services/APExternalSystemsService";
-import { APSBusinessGroupExternalResponseList } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { TAPBusinessGroupDisplayList } from "../../../services/APBusinessGroupsService";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -67,12 +67,12 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderBusinessGroups = (apsBusinessGroupExternalResponseList: APSBusinessGroupExternalResponseList): JSX.Element => {
-    if(apsBusinessGroupExternalResponseList.length === 0) return (<div>None.</div>);
+  const renderBusinessGroups = (apsBusinessGroupExternalDisplayList: TAPBusinessGroupDisplayList): JSX.Element => {
+    if(apsBusinessGroupExternalDisplayList.length === 0) return (<div>None.</div>);
     return (
       <div>
         <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(apsBusinessGroupExternalResponseList, null, 2)}
+          {JSON.stringify(apsBusinessGroupExternalDisplayList, null, 2)}
         </pre>
         {/* {APEntityIdsService.create_DisplayNameList(apAppReferenceEntityIdList).join(', ')} */}
       </div>
@@ -102,7 +102,7 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
               <Divider />
               {/* TODO: use the display component for business groups */}
               <div className="p-text-bold">Business Groups:</div>
-              <div className="p-ml-2">{renderBusinessGroups(managedObject.apsBusinessGroupExternalResponseList)}</div>
+              <div className="p-ml-2">{renderBusinessGroups(managedObject.apsBusinessGroupExternalDisplayList)}</div>
 
             </div>
             <div className="view-detail-right">

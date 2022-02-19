@@ -8,25 +8,22 @@ import { MenuItem } from "primereact/api";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { E_CALL_STATE_ACTIONS } from './ManageExternalSystemsCommon';
-import { EAction, EditNewExternalSystem } from "./EditNewExternalSystem";
-import { ListExternalSystems } from "./ListExternalSystems";
-import { ViewExternalSystem } from "./ViewExternalSystem";
-import { DeleteExternalSystem } from "./DeleteExternalSystem";
+import { E_CALL_STATE_ACTIONS } from './ManageBusinessGroupsCommon';
+import { ListBusinessGroups } from "./ListBusinessGroups";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
-import "./ManageExternalSystems.css";
+import "./ManageBusinessGroups.css";
 
-export interface IManageExternalSystemsProps {
+export interface IManageBusinessGroupsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (props: IManageExternalSystemsProps) => {
-  const componentName = 'ManageExternalSystems';
+export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props: IManageBusinessGroupsProps) => {
+  const componentName = 'ManageBusinessGroups';
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
@@ -90,16 +87,16 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   //   if(!managedObjectDisplayName) return;
   //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
   //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-  //     ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-  //   else props.onBreadCrumbLabelList([]);
+  //     ) props.setBreadCrumbItemList([managedObjectDisplayName]);
+  //   else props.setBreadCrumbItemList([]);
   // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST:
-          case E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM:
+          case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST:
+          case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP:
             break;
           default:
             props.onSuccess(apiCallStatus);
@@ -181,14 +178,14 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   }
   
   // * prop callbacks *
-  const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    setBreadCrumbItemList(itemList);
-    props.setBreadCrumbItemList(itemList);
-  }
-  const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-    props.setBreadCrumbItemList(newItemList);
-  }
+  // const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+  //   setBreadCrumbItemList(itemList);
+  //   props.setBreadCrumbItemList(itemList);
+  // }
+  // const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
+  //   props.setBreadCrumbItemList(newItemList);
+  // }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -285,7 +282,7 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   }
 
   return (
-    <div className="ap-manage-external-system">
+    <div className="ap-manage-business-groups">
 
       <CheckConnectorHealth />
       
@@ -294,7 +291,7 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
       { !isLoading && renderToolbar() }
 
       {showListComponent && 
-        <ListExternalSystems
+        <ListBusinessGroups
           key={refreshCounter}
           organizationId={props.organizationEntityId.id}
           onSuccess={onListManagedObjectsSuccess} 
@@ -306,19 +303,19 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
           setBreadCrumbItemList={props.setBreadCrumbItemList}
         />
       }
-      {showViewComponent && managedObjectId && managedObjectDisplayName &&
+      {/* {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <ViewExternalSystem
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           externalSystemId={managedObjectId}
           externalSystemDisplayName={managedObjectDisplayName}
           onSuccess={onSubComponentSuccessNoChange} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
         />      
-      }
-      {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
+      } */}
+      {/* {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteExternalSystem
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           externalSystemId={managedObjectId}
           externalSystemDisplayName={managedObjectDisplayName}
           onSuccess={onDeleteManagedObjectSuccess} 
@@ -326,22 +323,22 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
         />
-      }
-      {showNewComponent &&
+      } */}
+      {/* {showNewComponent &&
         <EditNewExternalSystem
           action={EAction.NEW}
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           onNewSuccess={onNewManagedObjectSuccess}
           onEditSuccess={onEditManagedObjectSuccess}
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading} 
         />
-      }
-      {showEditComponent && managedObjectId && managedObjectDisplayName &&
+      } */}
+      {/* {showEditComponent && managedObjectId && managedObjectDisplayName &&
         <EditNewExternalSystem
           action={EAction.EDIT}
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           externalSystemId={managedObjectId}
           externalSystemDisplayName={managedObjectDisplayName}
           onNewSuccess={onNewManagedObjectSuccess} 
@@ -350,7 +347,7 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
         />
-      }
+      } */}
     </div>
   );
 }

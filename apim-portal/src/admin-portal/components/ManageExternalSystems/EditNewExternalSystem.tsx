@@ -331,8 +331,8 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
   }
 
   const getEditNotes = (mo: TManagedObject): string => {
-    if(mo.apsBusinessGroupExternalResponseList.length === 0) return 'No imported business groups.';
-    return `Imported Business Groups: ${mo.apsBusinessGroupExternalResponseList.length}.`;
+    if(mo.apsBusinessGroupExternalDisplayList.length === 0) return 'No imported business groups.';
+    return `Imported Business Groups: ${mo.apsBusinessGroupExternalDisplayList.length}.`;
   }
   
   return (

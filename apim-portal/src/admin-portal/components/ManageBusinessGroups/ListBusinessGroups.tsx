@@ -10,17 +10,17 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APExternalSystemsService, { 
-  TAPExternalSystemDisplay, 
-  TAPExternalSystemDisplayList 
-} from "../../../services/APExternalSystemsService";
+import APBusinessGroupsService, { 
+  TAPBusinessGroupDisplay, 
+  TAPBusinessGroupDisplayList 
+} from "../../../services/APBusinessGroupsService";
 
 import '../../../components/APComponents.css';
-import "./ManageExternalSystems.css";
+import "./ManageBusinessGroups.css";
 
-export interface IListExternalSystemsProps {
+export interface IListBusinessGroupsProps {
   organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -31,13 +31,13 @@ export interface IListExternalSystemsProps {
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: IListExternalSystemsProps) => {
-  const ComponentName = 'ListExternalSystems';
+export const ListBusinessGroups: React.FC<IListBusinessGroupsProps> = (props: IListBusinessGroupsProps) => {
+  const ComponentName = 'ListBusinessGroups';
 
-  const MessageNoManagedObjectsFoundCreateNew = 'No External Systems found.';
+  const MessageNoManagedObjectsFoundCreateNew = 'No Business Groups found.';
   const GlobalSearchPlaceholder = 'search...';
 
-  type TManagedObject = TAPExternalSystemDisplay;
+  type TManagedObject = TAPBusinessGroupDisplay;
   type TManagedObjectList = Array<TManagedObject>;
   type TManagedObjectTableDataRow = TManagedObject & {
     globalSearch: string;
@@ -73,9 +73,9 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST, 'retrieve list of external systems');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplay({
         organizationId: props.organizationId
       })
       setManagedObjectList(list);
@@ -115,7 +115,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.apEntityId.id, mo.apEntityId.displayName, mo.apsBusinessGroupExternalDisplayList.length > 0);
+    props.onManagedObjectView(mo.apEntityId.id, mo.apEntityId.displayName, mo.apsBusinessGroupResponse.businessGroupChildIds.length > 0);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -135,14 +135,18 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
   }
 
   const referencesByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    if(rowData.apsBusinessGroupExternalDisplayList.length === 0) return (<>-</>);
-    return (<>{`Business Groups: ${rowData.apsBusinessGroupExternalDisplayList.length}`}</>);
+    if(rowData.apsBusinessGroupResponse.businessGroupChildIds.length === 0) return (<>-</>);
+    return (<>{`Children: ${rowData.apsBusinessGroupResponse.businessGroupChildIds.length}`}</>);
   }
   const desriptionByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return (<>{rowData.apsExternalSystem.description}</>);
+    return (<>{rowData.apsBusinessGroupResponse.description}</>);
   }
   const nameBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
     return rowData.apEntityId.displayName;
+  }
+  const sourceByBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
+    if(rowData.apExternalRefernce !== undefined) return rowData.apExternalRefernce.externalSystemDisplayName;
+    else return '-';
   }
   const renderManagedObjectDataTable = () => {
     let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectList_To_TableDataList(managedObjectList);    
@@ -172,6 +176,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
           >
             <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
             <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column header="References" headerStyle={{width: '10em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>
@@ -203,9 +208,9 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
   // }
 
   return (
-    <div className="ap-manage-external-system">
+    <div className="ap-manage-business-groups">
 
-      <APComponentHeader header='Exernal Systems:' />
+      <APComponentHeader header='Business Groups:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
@@ -213,9 +218,17 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
         {renderContent()}
       </div>
       
-      {/* DEBUG OUTPUT         */}
-      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
-
+      {/* DEBUG */}
+      {selectedManagedObject &&
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify({ 
+            ...selectedManagedObject, 
+            globalSearch: ' not shown',
+            apSearchContent: 'not shown'
+          }, null, 2)}
+          {/* {JSON.stringify(selectedManagedObject, null, 2)} */}
+        </pre>
+      }
     </div>
   );
 }

@@ -19,6 +19,7 @@ import { ManageOrgUsersPage } from "./pages/ManageOrgUsersPage";
 import { ManageOrgSettingsPage } from "./pages/ManageOrgSettingsPage";
 import { MonitorOrgStatusPage } from "./pages/MonitorOrgStatusPage";
 import { ManageOrgIntegrationExternalSystemsPage } from "./pages/ManageOrgIntegrationExternalSystemsPage";
+import { ManageOrgBusinessGroupsPage } from "./pages/ManageOrgBusinessGroupsPage";
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
@@ -37,6 +38,7 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationSettings} component={ManageOrgSettingsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationSettings} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} component={MonitorOrgStatusPage} exact key={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationUsers} component={ManageOrgUsersPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationUsers} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} component={ManageOrgBusinessGroupsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageOrgEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} component={ManageOrgIntegrationExternalSystemsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} />,
         /* API Team*/

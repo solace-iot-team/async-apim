@@ -1,18 +1,18 @@
 import { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
-  APSBusinessGroupExternalResponseList,
-  ApsBusinessGroupsService,
   APSExternalSystem, 
   ApsExternalSystemsService, 
   APSExternalSystemUpdate, 
-  ListAPSBusinessGroupsExternalSystemResponse, 
   ListAPSExternalSystemsResponse 
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
+import APBusinessGroupsService, { 
+  TAPBusinessGroupDisplayList 
+} from './APBusinessGroupsService';
 
 export type TAPExternalSystemDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsExternalSystem: APSExternalSystem;
-  apsBusinessGroupExternalResponseList: APSBusinessGroupExternalResponseList;
+  apsBusinessGroupExternalDisplayList: TAPBusinessGroupDisplayList;
 }
 export type TAPExternalSystemDisplayList = Array<TAPExternalSystemDisplay>;
 
@@ -34,14 +34,14 @@ class APExternalSystemsService {
     );
   }
 
-  protected create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem: APSExternalSystem, apsBusinessGroupExternalResponseList: APSBusinessGroupExternalResponseList): TAPExternalSystemDisplay {
+  protected create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem: APSExternalSystem, apBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPExternalSystemDisplay {
     const base: TAPExternalSystemDisplay = {
       apEntityId: {
         id: apsExternalSystem.externalSystemId,
         displayName: apsExternalSystem.displayName
       },
       apsExternalSystem: apsExternalSystem,
-      apsBusinessGroupExternalResponseList: apsBusinessGroupExternalResponseList,
+      apsBusinessGroupExternalDisplayList: apBusinessGroupDisplayList,
       apSearchContent: ''
     };
     return APSearchContentService.add_SearchContent<TAPExternalSystemDisplay>(base);
@@ -68,12 +68,11 @@ class APExternalSystemsService {
     });
     const list: TAPExternalSystemDisplayList = [];
     for(const apsExternalSystem of response.list) {
-      // TODO: use APBusinessGroupsService for this
-      const listBusinessGroupsResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplayByExternalSystem({
         organizationId: organizationId,
         externalSystemId: apsExternalSystem.externalSystemId
-      });  
-      list.push(this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, listBusinessGroupsResponse.list));
+      });
+      list.push(this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, apBusinessGroupDisplayList));
     }
     return list;
   }
@@ -86,12 +85,11 @@ class APExternalSystemsService {
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
-    // TODO: use APBusinessGroupsService for this
-    const listBusinessGroupsResponse: ListAPSBusinessGroupsExternalSystemResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
+    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplayByExternalSystem({
       organizationId: organizationId,
-      externalSystemId: externalSystemId
+      externalSystemId: apsExternalSystem.externalSystemId
     });
-    return this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, listBusinessGroupsResponse.list);
+    return this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, apBusinessGroupDisplayList);
   }
 
   public async createApExternalSystemDisplay({ organizationId, apExternalSystemDisplay }: {
