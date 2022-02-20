@@ -12,6 +12,14 @@ import {
   APSExternalSystemList
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 
+// TODO: create this type based on primereact TreeNode, replacing data:any with data: TAPBusinessGroupDisplay
+export type TAPBusinessGroupTreeNodeDisplay = {
+  key: string;
+  data: TAPBusinessGroupDisplay;
+  children: TAPBusinessGroupTreeNodeDisplayList;
+}
+export type TAPBusinessGroupTreeNodeDisplayList = Array<TAPBusinessGroupTreeNodeDisplay>;
+
 export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsBusinessGroupResponse: APSBusinessGroupResponse;
   apExternalRefernce?: APSExternalReference & {
@@ -36,6 +44,45 @@ class APBusinessGroupsService {
     return this.create_ApBusinessGroupDisplay_From_ApiEntities(
       this.create_EmptyApsBusinessGroup(),
     );
+  }
+
+  private create_ApBusinessGroupTreeNode_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay): TAPBusinessGroupTreeNodeDisplay {
+
+    const tnDisplay: TAPBusinessGroupTreeNodeDisplay = {
+      key: apBusinessGroupDisplay.apEntityId.id,
+      data: apBusinessGroupDisplay,
+      children: []
+    };
+    return tnDisplay;
+  }
+
+  public isDeleteAllowed(apsBusinessGroupDisplay: TAPBusinessGroupDisplay): boolean {
+    return (apsBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds.length === 0);
+  }
+
+  public create_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPBusinessGroupTreeNodeDisplayList {
+    const funcName = 'create_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    console.log(`${logName}: apBusinessGroupDisplayList = \n${JSON.stringify(apBusinessGroupDisplayList, null, 2)}`);
+    const list: TAPBusinessGroupTreeNodeDisplayList = [];
+
+    for(const apBusinessGroupDisplay of apBusinessGroupDisplayList) {
+      if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId === undefined) {
+        const masterTreeNode: TAPBusinessGroupTreeNodeDisplay = this.create_ApBusinessGroupTreeNode_From_ApBusinessGroupDisplay(apBusinessGroupDisplay);
+        // find all the children
+        for(const childId of apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds) {
+          // find it
+          const found = apBusinessGroupDisplayList.find( (x) => {
+            return x.apEntityId.id === childId;
+          });
+          if(found === undefined) throw new Error(`${logName}: cannot find childId in apBusinessGroupDisplayList, childId=${childId}, apBusinessGroupDisplayList=${JSON.stringify(apBusinessGroupDisplayList, null, 2)}`);
+          masterTreeNode.children.push(this.create_ApBusinessGroupTreeNode_From_ApBusinessGroupDisplay(found));
+        }
+        list.push(masterTreeNode);
+      }
+    }
+    return list;
   }
 
   protected create_ApBusinessGroupDisplay_From_ApiEntities(apsBusinessGroupResponse: APSBusinessGroupResponse, externalSystemDisplayName?: string): TAPBusinessGroupDisplay {

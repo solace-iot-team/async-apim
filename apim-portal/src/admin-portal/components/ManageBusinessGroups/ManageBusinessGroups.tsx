@@ -14,6 +14,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
+import { ListAsTreeTableBusinessGroups } from "./ListAsTreeTableBusinessGroups";
 
 export interface IManageBusinessGroupsProps {
   organizationEntityId: TAPEntityId;
@@ -31,7 +32,8 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
     MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
     MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW"
+    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
+    MANAGED_OBJECT_IMPORT_FROM_EXTERNAL_SYSTEM = "MANAGED_OBJECT_IMPORT_FROM_EXTERNAL_SYSTEM"
   }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -55,6 +57,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
   }
   
   const ToolbarNewManagedObjectButtonLabel = 'New';
+  const ToolbarButtonLabelImportBusinessGroup = 'Import';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
@@ -119,6 +122,14 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
+
+  // * Import *
+  const onImportBusinessGroup = () => {
+    alert('import business group(s) from external system');
+    // setApiCallStatus(null);
+    // setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_FROM_EXTERNAL_SYSTEM);
+  }
+
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
@@ -152,9 +163,16 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     // const funcName = 'renderLeftToolbarContent';
     // const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
+
+    // check for external systems and if they have the capability of importing business groups
+    const showImportBusinessGroupButton: boolean = true;
+
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        {showImportBusinessGroupButton && 
+          <Button label={ToolbarButtonLabelImportBusinessGroup} icon="pi pi-cloud-download" onClick={onImportBusinessGroup} className="p-button-text p-button-plain p-button-outlined"/>
+        }
       </React.Fragment>
     );
     if(showViewComponent) {          
@@ -291,7 +309,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
       { !isLoading && renderToolbar() }
 
       {showListComponent && 
-        <ListBusinessGroups
+        <ListAsTreeTableBusinessGroups
           key={refreshCounter}
           organizationId={props.organizationEntityId.id}
           onSuccess={onListManagedObjectsSuccess} 
@@ -303,6 +321,19 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
           setBreadCrumbItemList={props.setBreadCrumbItemList}
         />
       }
+      {/* {showListComponent && 
+        <ListBusinessGroups
+          key={refreshCounter}
+          organizationId={props.organizationEntityId.id}
+          onSuccess={onListManagedObjectsSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading} 
+          onManagedObjectEdit={onEditManagedObject}
+          onManagedObjectDelete={onDeleteManagedObject}
+          onManagedObjectView={onViewManagedObject}
+          setBreadCrumbItemList={props.setBreadCrumbItemList}
+        />
+      } */}
       {/* {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <ViewExternalSystem
           organizationId={props.organizationId}
