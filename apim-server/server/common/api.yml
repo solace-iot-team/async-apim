@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.0.18
+  version: 0.0.19
 servers:
 - url: /apim-server/v1
 tags:
@@ -1376,6 +1376,41 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/APSOrganizationRolesResponse"
+
+
+    APSBusinessGroupAuthRoleList:
+      type: array
+      items:
+        $ref: "#/components/schemas/EAPSBusinessGroupAuthRole"
+      minItems: 1
+
+    APSMemberOfBusinessGroup:
+      description: Business group and roles.
+      type: object
+      properties:
+        businessGroupId:
+          $ref: "#/components/schemas/APSId"
+        roles:
+          $ref: "#/components/schemas/APSBusinessGroupAuthRoleList"
+
+    APSMemberOfOrganizationGroups:
+      description: List of business groups with roles for an organization.
+      type: object
+      properties:
+        organizationId:
+          $ref: "#/components/schemas/APSId"
+        memberOfBusinessGroupList:
+          type: array
+          items:
+            $ref: "#/components/schemas/APSMemberOfBusinessGroup"
+
+    APSMemberOfOrganizationGroupsList:
+      description: List of APSMemberOfOrganizationGroups objects.
+      type: array
+      items:
+        $ref: "#/components/schemas/APSMemberOfOrganizationGroups"
+
+
     EAPSSortDirection:
       description: sort direction for query
       type: string
@@ -1513,6 +1548,14 @@ components:
       - repository
       - issues_url
       - build_date
+
+    EAPSBusinessGroupAuthRole:
+      type: string
+      enum:
+      - loginAs
+      - organizationAdmin
+      - apiTeam
+      - apiConsumer
     EAPSOrganizationAuthRole:
       type: string
       enum:
@@ -1818,6 +1861,8 @@ components:
       properties:
         memberOfOrganizations:
           $ref: '#/components/schemas/APSOrganizationRolesList'
+        memberOfOrganizationGroups:
+          $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
       required:
         - isActivated
         - userId
@@ -1830,6 +1875,8 @@ components:
       properties:
         memberOfOrganizations:
           $ref: '#/components/schemas/APSOrganizationRolesResponseList'
+        memberOfOrganizationGroups:
+          $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
     APSUserResponseList:
       description: Array of APSUserResponses.
       type: array
@@ -1854,6 +1901,8 @@ components:
           allOf:
             - $ref: '#/components/schemas/APSOrganizationRolesList'
             - description: List of organizations the user is a member of include organization roles.
+        memberOfOrganizationGroups:
+          $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
     APSUserReplace:
       description: Replace an existing APSUser object.
       type: object
@@ -1873,6 +1922,8 @@ components:
           allOf:
             - $ref: '#/components/schemas/APSOrganizationRolesList'
             - description: List of organizations the user is a member of include organization roles.
+        memberOfOrganizationGroups:
+          $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
       required:
         - isActivated
         - password
