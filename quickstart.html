@@ -20,6 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="quickstart-content/installation.html" />
     <link rel="prev" title="Solace Async API Management" href="index.html" /> 
 </head>
 
@@ -40,7 +41,15 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart-content/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart-content/setup.html">Setup</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://solace-iot-team.github.io/solace-axway-agent/">Axway Integration</a></li>
 </ul>
 
         </div>
@@ -68,42 +77,13 @@
            <div itemprop="articleBody">
              
   <section id="quickstart">
-<h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h1>
-<p>The quickstart starts all required services using this
-<a class="reference download internal" download="" href="_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
-<dl class="field-list simple">
-<dt class="field-odd">qs-async-apim-www</dt>
-<dd class="field-odd"><p>an nginx service as a single point of entry, see <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> for exposed services</p>
-</dd>
-<dt class="field-even">qs-async-apim-admin-portal</dt>
-<dd class="field-even"><p>the admin portal web server</p>
-</dd>
-<dt class="field-odd">qs-async-apim-server</dt>
-<dd class="field-odd"><p>the portal server</p>
-</dd>
-<dt class="field-even">qs-async-apim-server-mongodb</dt>
-<dd class="field-even"><p>the portal database</p>
-</dd>
-<dt class="field-odd">qs-async-apim-connector</dt>
-<dd class="field-odd"><p>the connector</p>
-</dd>
-<dt class="field-even">qs-async-apim-connector-mongodb</dt>
-<dd class="field-even"><p>the connector database</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in Repo.</p></li>
+<span id="id1"></span><h1>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart-content/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart-content/setup.html">Setup</a></li>
 </ul>
 </div>
-<p>The following figure shows the set-up of the containers:</p>
-<figure class="align-default" id="id2">
-<a class="reference internal image-reference" href="_images/async-apim.quickstart.png"><img alt="_images/async-apim.quickstart.png" src="_images/async-apim.quickstart.png" style="width: 800px;" /></a>
-<figcaption>
-<p><span class="caption-text">Figure 1: Quickstart Docker Compose Container Setup</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
-</figcaption>
-</figure>
 </section>
 
 
@@ -111,13 +91,14 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Solace Async API Management" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart-content/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 15 Dec 2021 at 10:53.
+      <span class="lastupdated">Last updated on 21 Feb 2022 at 16:02.
       </span></p>
   </div>
 
