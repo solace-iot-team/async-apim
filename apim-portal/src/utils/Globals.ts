@@ -76,9 +76,13 @@ export enum EUIAdminPortalResourcePaths {
 
   ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
+  ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
+
+  ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
+  ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
 
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
@@ -109,6 +113,7 @@ export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
   ViewContexts = '/devel/view/contexts',
+  TestBusinessGroups = '/devel/test/business-groups'  
 }
 
 export class Globals {

@@ -1,9 +1,12 @@
 import { MongoError } from "mongodb";
 import { HttpError as OpenApiValidatorHttpError } from 'express-openapi-validator/dist/framework/types';
-import APSErrorIds = Components.Schemas.APSErrorIds;
-import APSError = Components.Schemas.APSError;
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
-import { ApiError, APSStatus } from "../../src/@solace-iot-team/apim-server-openapi-node";
+import { 
+  ApiError, 
+  APSStatus, 
+  APSErrorIds,
+  APSError,
+} from "../../src/@solace-iot-team/apim-server-openapi-node";
 import ServerConfig from "./ServerConfig";
 import ServerStatus from "./ServerStatus";
 
@@ -149,8 +152,8 @@ export class ApiServerError extends ServerError {
     if(this.apiMeta !== undefined) {
       // check if apiMeta is a json serializable object
       try {
-        JSON.parse(JSON.stringify(this.apiMeta));
-        apsError.meta = this.apiMeta;
+        // ensures also that no undefined properties make it through
+        apsError.meta = JSON.parse(JSON.stringify(this.apiMeta));
       } catch (e: any) {
       }
     } else {
@@ -165,7 +168,7 @@ export class ApiServerError extends ServerError {
 export class ApiInternalServerError extends ApiServerError {
   private static internalServerErrorName = 'InternalServerError';
   protected static apiStatusCode = 500;
-  protected static apiErrorId: APSErrorIds = 'internalServerError';
+  protected static apiErrorId: APSErrorIds = APSErrorIds.INTERNAL_SERVER_ERROR;
   protected static apiDefaultDescription = 'Internal Server Error';
 
   constructor(internalLogName: string, internalMessage: string, apiDescription : string = ApiInternalServerError.apiDefaultDescription, apiMeta?: any) {
@@ -173,11 +176,10 @@ export class ApiInternalServerError extends ApiServerError {
   }
 }
 
-
 export class ApiInternalServerErrorNotOperational extends ApiServerError {
   private static internalServerErrorName = 'ApiInternalServerErrorNotOperational';
   protected static apiStatusCode = 500;
-  protected static apiErrorId: APSErrorIds = 'serverNotOperational';
+  protected static apiErrorId: APSErrorIds = APSErrorIds.SERVER_NOT_OPERATIONAL;
   protected static apiDefaultDescription = 'Server Not Operational';
   private static apiMessage = 'server not operational';
 
@@ -258,7 +260,7 @@ export class ApiServerErrorFromOpenApiRequestValidatorError extends ApiServerErr
       internalLogName, 
       ApiServerErrorFromOpenApiRequestValidatorError.name, 
       httpError.status, 
-      'openApiRequestValidation', 
+      APSErrorIds.OPEN_API_REQUEST_VALIDATION, 
       ApiServerErrorFromOpenApiRequestValidatorError.apiDescription, 
       { 
         requestInfo: requestInfo,
@@ -296,18 +298,29 @@ export class ApiServerErrorFromOpenApiResponseValidatorError extends ApiInternal
 }
 
 export type TApiServerErrorMeta = {
+  organizationId?: string;
   id: string;
+  externalId?: string;
   collectionName: string;
 }
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;
 export type TApiInvalidObjectReferenceError = {
   referenceType: string;
   referenceId: string;
+  referenceDetails?: any;
 }
 export type TApiInvalidObjectReferencesServerErrorMeta = TApiServerErrorMeta & {
   invalidReferenceList: Array<TApiInvalidObjectReferenceError>;
 }
+export type TApiDependantObjectReferencesErrorMeta = TApiServerErrorMeta & {
+  parentType: string;
+  parentId: string;
+  dependantList: Array<any>;
+}
 export type TApiKeyNotFoundServerErrorMeta = TApiServerErrorMeta;
+export type TOrganizationNotFoundServerErrorMeta = {
+  organizationId: string;
+}
 export type TApiObjectNotFoundServerErrorMeta = {
   filter: Record<string, unknown>,
   collectionName: string
@@ -318,7 +331,7 @@ export type TApiNotAuthorizedServerErrorMeta = {
 
 export class ApiDuplicateKeyServerError extends ApiServerError {
   private static apiStatusCode = 422;
-  private static apiErrorId: APSErrorIds = 'duplicateKey';
+  private static apiErrorId: APSErrorIds = APSErrorIds.DUPLICATE_KEY;
   private static apiDefaultDescription = 'document already exists';
 
   constructor(internalLogName: string, apiDescription: string = ApiDuplicateKeyServerError.apiDefaultDescription, apiMeta: TApiDuplicateKeyServerErrorMeta) {
@@ -327,17 +340,26 @@ export class ApiDuplicateKeyServerError extends ApiServerError {
 }
 export class ApiInvalidObjectReferencesServerError extends ApiServerError {
   private static apiStatusCode = 422;
-  private static apiErrorId: APSErrorIds = 'invalidObjectReferences';
+  private static apiErrorId: APSErrorIds = APSErrorIds.INVALID_OBJECT_REFERENCES;
   private static apiDefaultDescription = 'invalid object references';
 
   constructor(internalLogName: string, apiDescription: string = ApiInvalidObjectReferencesServerError.apiDefaultDescription, apiMeta: TApiInvalidObjectReferencesServerErrorMeta) {
     super(internalLogName, ApiInvalidObjectReferencesServerError.name, ApiInvalidObjectReferencesServerError.apiStatusCode, ApiInvalidObjectReferencesServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
+export class ApiDependantsReferencesServerError extends ApiServerError {
+  private static apiStatusCode = 422;
+  private static apiErrorId: APSErrorIds = APSErrorIds.DEPENDANT_OBJECTS;
+  private static apiDefaultDescription = 'dependant objects';
+
+  constructor(internalLogName: string, apiDescription: string = ApiDependantsReferencesServerError.apiDefaultDescription, apiMeta: TApiDependantObjectReferencesErrorMeta) {
+    super(internalLogName, ApiDependantsReferencesServerError.name, ApiDependantsReferencesServerError.apiStatusCode, ApiDependantsReferencesServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
 
 export class ApiKeyNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
-  private static apiErrorId: APSErrorIds = 'keyNotFound';
+  private static apiErrorId: APSErrorIds = APSErrorIds.KEY_NOT_FOUND;
   private static apiDefaultDescription = 'document does not exist';
 
   constructor(internalLogName: string, apiDescription: string = ApiKeyNotFoundServerError.apiDefaultDescription, apiMeta: TApiKeyNotFoundServerErrorMeta) {
@@ -347,11 +369,21 @@ export class ApiKeyNotFoundServerError extends ApiServerError {
 
 export class ApiObjectNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
-  private static apiErrorId: APSErrorIds = 'objectNotFound';
+  private static apiErrorId: APSErrorIds = APSErrorIds.OBJECT_NOT_FOUND;
   private static apiDefaultDescription = 'object not found';
 
   constructor(internalLogName: string, apiDescription: string = ApiObjectNotFoundServerError.apiDefaultDescription, apiMeta: TApiObjectNotFoundServerErrorMeta) {
     super(internalLogName, ApiObjectNotFoundServerError.name, ApiObjectNotFoundServerError.apiStatusCode, ApiObjectNotFoundServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+
+export class ApiOrganizationNotFoundServerError extends ApiServerError {
+  private static apiStatusCode = 404;
+  private static apiErrorId: APSErrorIds = APSErrorIds.ORGANIZATION_NOT_FOUND;
+  private static apiDefaultDescription = 'organization does not exist';
+
+  constructor(internalLogName: string, apiDescription: string = ApiOrganizationNotFoundServerError.apiDefaultDescription, apiMeta: TOrganizationNotFoundServerErrorMeta) {
+    super(internalLogName, ApiOrganizationNotFoundServerError.name, ApiOrganizationNotFoundServerError.apiStatusCode, ApiOrganizationNotFoundServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 
@@ -361,7 +393,7 @@ export type TApiMissingParameterServerErrorMeta = {
 
 export class ApiMissingParameterServerError extends ApiServerError {
   private static apiStatusCode = 400;
-  private static apiErrorId: APSErrorIds = 'missingParameter';
+  private static apiErrorId: APSErrorIds = APSErrorIds.MISSING_PARAMETER;
   private static apiDefaultDescription = 'missing paramter';
 
   constructor(internalLogName: string, apiDescription: string = ApiMissingParameterServerError.apiDefaultDescription, apiMeta: TApiMissingParameterServerErrorMeta) {
@@ -376,7 +408,7 @@ export type TApiBadSortFieldNameServerErrorrMeta = {
 
 export class ApiBadSortFieldNameServerError extends ApiServerError {
   private static apiStatusCode = 400;
-  private static apiErrorId: APSErrorIds = 'invalidSortFieldName';
+  private static apiErrorId: APSErrorIds = APSErrorIds.INVALID_SORT_FIELD_NAME;
   private static apiDefaultDescription = 'invalid sortFieldName';
 
   constructor(internalLogName: string, apiDescription: string = ApiBadSortFieldNameServerError.apiDefaultDescription, apiMeta: TApiBadSortFieldNameServerErrorrMeta) {
@@ -390,7 +422,7 @@ export type ApiBadQueryParameterCombinationServerErrorMeta = {
 }
 export class ApiBadQueryParameterCombinationServerError extends ApiServerError {
   private static apiStatusCode = 400;
-  private static apiErrorId: APSErrorIds = 'invalidQueryParameterCombination';
+  private static apiErrorId: APSErrorIds = APSErrorIds.INVALID_QUERY_PARAMETER_COMBINATION;
   private static apiDefaultDescription = 'invalid query parameter combination';
 
   constructor(internalLogName: string, apiDescription: string = ApiBadQueryParameterCombinationServerError.apiDefaultDescription, apiMeta: ApiBadQueryParameterCombinationServerErrorMeta) {
@@ -400,7 +432,7 @@ export class ApiBadQueryParameterCombinationServerError extends ApiServerError {
 
 export class ApiNotAuthorizedServerError extends ApiServerError {
   private static apiStatusCode = 401;
-  private static apiErrorId: APSErrorIds = 'notAuthorized';
+  private static apiErrorId: APSErrorIds = APSErrorIds.NOT_AUTHORIZED;
   private static apiDefaultDescription = 'not authorized';
 
   constructor(internalLogName: string, apiDescription: string = ApiNotAuthorizedServerError.apiDefaultDescription, apiMeta: TApiNotAuthorizedServerErrorMeta) {
@@ -414,7 +446,7 @@ export type TApiPathNotFoundServerErrorMeta = {
 
 export class ApiPathNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
-  private static apiErrorId: APSErrorIds = 'pathNotFound';
+  private static apiErrorId: APSErrorIds = APSErrorIds.PATH_NOT_FOUND;
   private static apiDefaultDescription = 'path does not exist';
 
   constructor(internalLogName: string, apiDescription: string = ApiPathNotFoundServerError.apiDefaultDescription, apiMeta: TApiPathNotFoundServerErrorMeta) {

@@ -46,21 +46,21 @@ describe(`${scriptName}`, () => {
     TestContext.newItId();
   });
 
-  after(async() => {
-    TestContext.newItId();      
-    try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-      }
-    } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-    }
-  });
+  // after(async() => {
+  //   TestContext.newItId();      
+  //   try {
+  //     const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+  //     const orgList: APSOrganizationList = listOrgResponse.list;
+  //     for(const org of orgList) {
+  //       await ApsAdministrationService.deleteApsOrganization({
+  //         organizationId: org.organizationId
+  //       });
+  //     }
+  //   } catch (e) {
+  //     expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+  //     expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+  //   }
+  // });
 
   // ****************************************************************************************************************
   // * OpenApi API Tests *

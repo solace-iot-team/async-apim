@@ -58,18 +58,20 @@ export class APSUsersService {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSUsersService.name}.${funcName}()`;
     
-    // doesn't seem to work 
-    // await this.collectionMutex.waitForUnlock();
-
-    const releaser = await this.collectionMutex.acquire();
-    releaser();
+    await this.collectionMutex.waitForUnlock();
+    // const releaser = await this.collectionMutex.acquire();
+    // releaser();
     if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
 
   }
   private onOrganizationDeleted = async(apsOrganizationId: APSId): Promise<void> => {
-    await this.collectionMutex.runExclusive(async () => {
+    // await this.collectionMutex.runExclusive(async () => {
+    //   await this._onOrganizationDeleted(apsOrganizationId);
+    // });
+    const x = async(): Promise<void> => {
       await this._onOrganizationDeleted(apsOrganizationId);
-    });
+    }
+    await this.collectionMutex.runExclusive(x);
   }
 
   private _onOrganizationDeleted = async(apsOrganizationId: APSId): Promise<void> => {
@@ -89,7 +91,9 @@ export class APSUsersService {
         }
       };
   
-      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(undefined, undefined, mongoSearchInfo);
+      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+        searchInfo: mongoSearchInfo
+      });
   
       const apsUserList: APSUserList = mongoAllReturn.documentList as APSUserList;
       for(const apsUser of apsUserList) {
@@ -232,7 +236,7 @@ export class APSUsersService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'parameters', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'ListApsUsersResponse', details: {
       pagingInfo: pagingInfo,
       sortInfo: sortInfo,
       searchInfo: searchInfo
@@ -287,10 +291,15 @@ export class APSUsersService {
       mongoSearchInfo.filter.userId = new RegExp('.*' + searchInfo.searchUserId + '.*');
     }
 
-    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all(mongoPagingInfo, mongoSortInfo, mongoSearchInfo);
+    const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
+      pagingInfo: mongoPagingInfo,
+      sortInfo: mongoSortInfo,
+      searchInfo: mongoSearchInfo
+    });
     const apsUserList: APSUserList = mongoAllReturn.documentList;
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserList', details: apsUserList }));
     const apsUserResponseList: APSUserResponseList = await this.createAPSUserResponseList(apsUserList);
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserResponseList', details: apsUserResponseList }));
 
     return {
       list: apsUserResponseList,
@@ -306,14 +315,16 @@ export class APSUsersService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserResponse', details: apsUserId }));
 
-    const apsUser: APSUser = await this.persistenceService.byId(apsUserId) as APSUser;
+    const apsUser: APSUser = await this.persistenceService.byId({
+      collectionDocumentId: apsUserId
+    }) as APSUser;
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
-    const apsUserResponse: APSUserResponse = await this.createAPSUserResponse(apsUser, apsOrganizationList);
+    const apsUserResponse: APSUserResponse = this.createAPSUserResponse(apsUser, apsOrganizationList);
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserResponse', details: apsUserResponse }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserResponse', details: apsUserResponse }));
 
     return apsUserResponse;
   }
@@ -324,6 +335,8 @@ export class APSUsersService {
 
     await this.wait4CollectionUnlock();
 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSUser', details: apsUser }));
+
     await this.validateReferences(apsUser);
 
     const created: APSUser = await this.persistenceService.create({
@@ -332,7 +345,7 @@ export class APSUsersService {
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'created', details: created }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSUser', details: created }));
 
     return created;
   }
@@ -342,6 +355,11 @@ export class APSUsersService {
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSUser', details: {
+      apsUserId: apsUserId,
+      apsUserUpdate: apsUserUpdate
+    }}));
 
     const apsDocument: Partial<APSUser> = {
       ...apsUserUpdate,
@@ -357,7 +375,7 @@ export class APSUsersService {
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'updated', details: updated }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSUser', details: updated }));
 
     return updated;
   }
@@ -367,6 +385,11 @@ export class APSUsersService {
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, message: 'APSUser', details: {
+      apsUserId: apsUserId,
+      apsUserReplace: apsUserReplace
+    }}));
 
     const apsDocument: Partial<APSUser> = {
       ...apsUserReplace,
@@ -380,7 +403,7 @@ export class APSUsersService {
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion  
     });
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACED, message: 'APSUser', details: replaced }));
 
     return replaced;
   }
@@ -391,11 +414,15 @@ export class APSUsersService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsUserId', details: apsUserId }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, message: 'keys', details: {
+      apsUserId: apsUserId 
+    }}));
 
-    const deletedUser: APSUser = (await this.persistenceService.delete(apsUserId) as unknown) as APSUser;
+    const deletedUser: APSUser = (await this.persistenceService.delete({
+      collectionDocumentId: apsUserId
+    }) as unknown) as APSUser;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedUser', details: deletedUser }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSUser', details: deletedUser }));
 
   }
 

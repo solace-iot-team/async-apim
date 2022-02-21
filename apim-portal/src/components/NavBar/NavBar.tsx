@@ -105,6 +105,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           label: 'View Contexts',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.ViewContexts); }
+        },
+        {
+          label: 'Test Business Groups',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestBusinessGroups); }
         }
       ]
     };

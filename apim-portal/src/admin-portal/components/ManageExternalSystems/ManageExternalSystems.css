@@ -1,0 +1,57 @@
+.ap-manage-external-system .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ap-manage-external-system .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.ap-manage-external-system .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.ap-manage-external-system .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ap-manage-external-system .error {
+  border-color: #df2121;
+}
+.ap-manage-external-system .card form {
+  margin-top: 2rem;
+}
+.ap-manage-external-system .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .ap-manage-external-system .card {
+    width: 80%;
+  }
+}
+.ap-manage-external-system .view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-manage-external-system .view .view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-manage-external-system .view .view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}

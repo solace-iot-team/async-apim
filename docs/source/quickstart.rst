@@ -6,5 +6,5 @@ Quickstart
 .. toctree::
   :maxdepth: 1
 
-  installation
-  setup
+  quickstart-content/installation
+  quickstart-content/setup

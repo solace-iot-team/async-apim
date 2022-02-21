@@ -40,7 +40,14 @@ const serverErrorHandler = (apiServerError: ApiServerError, _req: Request, res: 
     ServerLogger.warn(logEntry);  
   else 
     ServerLogger.debug(logEntry);
-  
+
+  // * DEBUG *
+  // check getAPSErrorHeaders()
+  // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apiServerError.getAPSErrorHeaders()', details: apiServerError.getAPSErrorHeaders() }));
+  // check toAPSError()
+  // const x: Components.Schemas.APSError = apiServerError.toAPSError();
+  // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apiServerError.toAPSError()', details: x }));
+
   for (const responseHeader of apiServerError.getAPSErrorHeaders()) {
     res.header(responseHeader.headerField, responseHeader.headerValue);
   }

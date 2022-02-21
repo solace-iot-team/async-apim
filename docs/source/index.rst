@@ -3,10 +3,17 @@ Solace Async API Management
 ===========================
 
 .. toctree::
-  :maxdepth: 1
+  :maxdepth: 2
   :caption: Guides
 
-  quickstart/index.rst
+  quickstart
+
+.. toctree::
+  :maxdepth: 2
+  :caption: Vendor Integrations
+
+  Axway Integration <https://solace-iot-team.github.io/solace-axway-agent/>
+
 
 Repos & Links
 -------------

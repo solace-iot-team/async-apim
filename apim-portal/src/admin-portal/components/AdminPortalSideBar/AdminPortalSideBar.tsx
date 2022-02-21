@@ -71,6 +71,18 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     return _items;
   }
 
+  const getOrganizationIntegrationMenuItems = (): Array<MenuItem> => {
+    if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
+    let _items: Array<MenuItem> = [
+      {
+        label: 'External Systems',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems),         
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems); }
+      },
+    ];
+    return _items;
+  }
+
   const getOrganizationMenuItems = (): Array<MenuItem> => {
     if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
     let _items: Array<MenuItem> = [
@@ -82,6 +94,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             label: 'Environments',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationEnvironments),         
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
+          },
+          {
+            label: 'Business Groups',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
           },
           {
             label: 'Users',
@@ -97,6 +114,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             label: 'Status',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
+          },
+          {
+            label: 'Integration',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationIntegration),
+            items: getOrganizationIntegrationMenuItems()
           },
         ] 
       },

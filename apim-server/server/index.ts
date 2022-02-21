@@ -14,6 +14,8 @@ import APSAboutService from './api/services/apsConfig/APSAboutService';
 import APSMonitorService from './api/services/APSMonitorService';
 import ServerMonitor from './common/ServerMonitor';
 import APSOrganizationsService from './api/services/apsAdministration/APSOrganizationsService';
+import APSBusinessGroupsService from './api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
+import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 
 const componentName = 'index';
 
@@ -24,6 +26,8 @@ const migrateComponents = async(): Promise<void> => {
   try {
     await APSUsersService.migrate();
     await APSOrganizationsService.migrate();
+    await APSBusinessGroupsService.migrate();
+    await APSExternalSystemsService.migrate();
     ServerStatus.setIsMigrated();
   } catch(e: any) {
     if (e instanceof MigrateServerError) {
@@ -44,6 +48,9 @@ const bootstrapComponents = async(): Promise<void> => {
   try {
     await APSConnectorsService.bootstrap();
     await APSUsersService.bootstrap();
+    await APSOrganizationsService.bootstrap();
+    await APSBusinessGroupsService.bootstrap();
+    await APSExternalSystemsService.bootstrap();
     ServerStatus.setIsBootstrapped();
   } catch(e: any) {
     if (e instanceof BootstrapErrorFromApiError || e instanceof BootstrapErrorFromError) {
@@ -69,6 +76,8 @@ export const initializeComponents = async(): Promise<void> => {
     await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
     await APSOrganizationsService.initialize();
+    await APSBusinessGroupsService.initialize();
+    await APSExternalSystemsService.initialize();
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
     // finally: set the server to initialized & ready

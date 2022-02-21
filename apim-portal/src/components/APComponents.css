@@ -31,7 +31,8 @@
   font-size: 1rem;
   font-weight: 500;
   margin-left: 0.2rem;
-  /* margin-top: 3.5rem; */
+  margin-top: 1rem;
+  margin-bottom: 2rem;
 }
 
 .ap-component-section-header {
