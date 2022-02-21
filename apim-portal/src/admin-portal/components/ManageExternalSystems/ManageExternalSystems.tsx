@@ -61,10 +61,7 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
-  // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  // const [configContext, dispatchConfigContext] = React.useContext(ConfigContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObjectId, setManagedObjectId] = React.useState<string>();
@@ -85,14 +82,6 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(!managedObjectDisplayName) return;
-  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-  //     ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-  //   else props.onBreadCrumbLabelList([]);
-  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -181,14 +170,6 @@ export const ManageExternalSystems: React.FC<IManageExternalSystemsProps> = (pro
   }
   
   // * prop callbacks *
-  const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    setBreadCrumbItemList(itemList);
-    props.setBreadCrumbItemList(itemList);
-  }
-  const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-    props.setBreadCrumbItemList(newItemList);
-  }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);

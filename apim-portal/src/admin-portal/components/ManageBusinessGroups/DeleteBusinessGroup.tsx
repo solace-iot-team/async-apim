@@ -7,26 +7,26 @@ import { Dialog } from 'primereact/dialog';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import APExternalSystemsService from "../../../services/APExternalSystemsService";
+import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import APBusinessGroupsService from "../../../services/APBusinessGroupsService";
 
 import '../../../components/APComponents.css';
-import "./ManageExternalSystems.css";
+import "./ManageBusinessGroups.css";
 
-export interface IDeleteExternalSystemProps {
+export interface IDeleteBusinessGroupProps {
   organizationId: string;
-  externalSystemId: string;
-  externalSystemDisplayName: string;
+  businessGroupEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props: IDeleteExternalSystemProps) => {
-  const componentName = 'DeleteExternalSystem';
+export const DeleteBusinessGroup: React.FC<IDeleteBusinessGroupProps> = (props: IDeleteBusinessGroupProps) => {
+  const componentName = 'DeleteBusinessGroup';
 
-  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting External System";
+  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting Business Group";
 
   const [showManagedObjectDeleteDialog, setShowManagedObjectDeleteDialog] = React.useState<boolean>(true);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -35,11 +35,11 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_EXTERNAL_SYSTEM, `delete external system: ${props.externalSystemDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_BUSINESS_GROUP, `delete business group: ${props.businessGroupEntityId.displayName}`);
     try { 
-      await APExternalSystemsService.deleteApExternalSystemDisplay({
+      await APBusinessGroupsService.deleteApBusinessGroupDisplay({
         organizationId: props.organizationId,
-        externalSystemId: props.externalSystemId
+        businessGroupId: props.businessGroupEntityId.id
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -76,7 +76,7 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Deleting External System: <b>{props.externalSystemDisplayName}</b>.</p>
+        <p>Deleting Business Group: <b>{props.businessGroupEntityId.displayName}</b>.</p>
         <p>Are you sure you want to delete it?</p>
       </React.Fragment>  
     );
@@ -92,8 +92,6 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
   } 
 
   const renderManagedObjectDeleteDialog = (): JSX.Element => {
-    // const funcName = 'renderManagedObjectDeleteDialog';
-    // const logName = `${componentName}.${funcName}()`;
     return (
       <Dialog
         className="p-fluid"
@@ -115,7 +113,7 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
   } 
   
   return (
-    <div className="ap-manage-external-system">
+    <div className="ap-manage-business-groups">
       {renderManagedObjectDeleteDialog()}
     </div>
   );

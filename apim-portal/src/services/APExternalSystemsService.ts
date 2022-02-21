@@ -56,6 +56,19 @@ class APExternalSystemsService {
   //   else return '';
   // }
 
+  public async listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({ organizationId}: {
+    organizationId: string;
+  }): Promise<TAPExternalSystemDisplayList> {
+    // TODO: switch on once implemented
+    // const all = await this.listApExternalSystemDisplay({ 
+    //   organizationId: organizationId
+    // });
+    // return  all.filter( (x: TAPExternalSystemDisplay) => {
+    //   return x.apsExternalSystem.capabilityList.include('interactiveImportBusinessGroupCapability');
+    // });
+    return [];
+  }
+
   public async listApExternalSystemDisplay({ organizationId}: {
     organizationId: string;
   }): Promise<TAPExternalSystemDisplayList> {

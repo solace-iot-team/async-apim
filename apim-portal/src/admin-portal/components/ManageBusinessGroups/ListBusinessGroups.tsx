@@ -145,7 +145,7 @@ export const ListBusinessGroups: React.FC<IListBusinessGroupsProps> = (props: IL
     return rowData.apEntityId.displayName;
   }
   const sourceByBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
-    if(rowData.apExternalRefernce !== undefined) return rowData.apExternalRefernce.externalSystemDisplayName;
+    if(rowData.apExternalReference !== undefined) return rowData.apExternalReference.externalSystemDisplayName;
     else return '-';
   }
   const renderManagedObjectDataTable = () => {

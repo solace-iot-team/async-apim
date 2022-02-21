@@ -6,27 +6,26 @@ import { Divider } from "primereact/divider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APExternalSystemsService, { TAPExternalSystemDisplay } from "../../../services/APExternalSystemsService";
-import { APDisplayApBusinessGroupDisplayList } from "../../../components/APDisplay/APDisplayApBusinessGroupDisplayList";
+import APBusinessGroupsService, { TAPBusinessGroupDisplay } from "../../../services/APBusinessGroupsService";
+import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
-import "./ManageExternalSystems.css";
+import "./ManageBusinessGroups.css";
 
-export interface IViewExternalSystemProps {
+export interface IViewBusinessGroupProps {
   organizationId: string,
-  externalSystemId: string;
-  externalSystemDisplayName: string;
+  businessGroupEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IViewExternalSystemProps) => {
-  const componentName = 'ViewExternalSystem';
+export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IViewBusinessGroupProps) => {
+  const componentName = 'ViewBusinessGroup';
 
-  type TManagedObject = TAPExternalSystemDisplay;
+  type TManagedObject = TAPBusinessGroupDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -35,12 +34,12 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM, `retrieve details for external system: ${props.externalSystemDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${props.businessGroupEntityId.displayName}`);
     try { 
-      const object: TAPExternalSystemDisplay = await APExternalSystemsService.getApExternalSystemDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsService.getApBusinessGroupDisplay({
         organizationId: props.organizationId,
-        externalSystemId: props.externalSystemId
-      })
+        businessGroupId: props.businessGroupEntityId.id
+      });
       setManagedObject(object);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -67,6 +66,34 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const renderParentDisplayName = (mo: TManagedObject): JSX.Element => {
+    if(mo.apBusinessGroupParentEntityId !== undefined) return (
+      <div><b>Parent</b>: {mo.apBusinessGroupParentEntityId.displayName}</div>
+    );
+    return (<></>);
+  }
+  const renderParentId = (mo: TManagedObject): JSX.Element => {
+    if(mo.apBusinessGroupParentEntityId !== undefined) return (
+      <div>Parent Id: {mo.apBusinessGroupParentEntityId.id}</div>
+    );
+    return (<></>);
+  }
+  const renderSourceDisplayName = (mo: TManagedObject): JSX.Element => {
+    return (
+      <div><b>Source</b>: {APBusinessGroupsService.getSourceDisplayString(mo)}</div>
+    );
+  }
+  const renderReferences = (mo: TManagedObject): JSX.Element => {
+    if(mo.apsBusinessGroupResponse.businessGroupChildIds.length > 0) {
+      return(
+        <div><b>Children</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(mo.apBusinessGroupChildrenEntityIdList)}</div>
+      );
+    }
+    return (
+      <div><b>Children</b>: None.</div>    
+    );
+  }
+
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
@@ -77,20 +104,19 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
           <div className="view">
             <div className="view-detail-left">
               
+              {renderParentDisplayName(managedObject)}
+              {renderSourceDisplayName(managedObject)}
               <div className="p-text-bold">Description:</div>
-              <div className="p-ml-2">{managedObject.apsExternalSystem.description}</div>
+              <div className="p-ml-2">{managedObject.apsBusinessGroupResponse.description}</div>
 
               <Divider />
-              <div className="p-text-bold">Business Groups:</div>
-              <APDisplayApBusinessGroupDisplayList 
-                className="p-ml-4 p-mt-4"
-                apBusinessGroupDisplayList={managedObject.apsBusinessGroupExternalDisplayList} 
-                emptyMessage="None."  
-              />
+
+              {renderReferences(managedObject)}
 
             </div>
             <div className="view-detail-right">
               <div>Id: {managedObject.apEntityId.id}</div>
+              {renderParentId(managedObject)}
             </div>            
           </div>
         </div>  
@@ -100,9 +126,9 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
 
   return (
     <React.Fragment>
-      <div className="ap-manage-external-system">
+      <div className="ap-manage-business-groups">
 
-        <APComponentHeader header={`External System: ${props.externalSystemDisplayName}`} />
+        <APComponentHeader header={`Business Group: ${props.businessGroupEntityId.displayName}`} />
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
