@@ -1535,24 +1535,6 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/EAPSSystemAuthRole"
-
-    # EAPSAuthRole:
-    #   type: string
-    #   enum:
-    #   - loginAs
-    #   - organizationAdmin
-    #   - apiTeam
-    #   - apiConsumer
-    #   - root
-    #   - systemAdmin
-    #   # does not work with openapi-validator nor code generators
-    #   # allOf:
-    #   #   - $ref: "#/components/schemas/EAPSSystemAuthRole"
-    #   #   - $ref: "#/components/schemas/EAPSOrganizationAuthRole"
-    # APSAuthRoleList:
-    #   type: array
-    #   items:
-    #     $ref: "#/components/schemas/EAPSAuthRole"
     EAPSClientProtocol:
       type: string
       enum:
@@ -1935,28 +1917,6 @@ components:
           $ref: '#/components/schemas/APSBusinessGroupResponseList'
       required:
       - list
-
-    # APSBusinessGroup:
-    #   description: The APSBusinessGroup object.
-    #   type: object
-    #   properties:
-    #     businessGroupId:
-    #       $ref: "#/components/schemas/APSId"
-    #     displayName:
-    #       $ref: "#/components/schemas/APSDisplayName"
-    #     description:
-    #       $ref: "#/components/schemas/APSDescription"
-    #     businessGroupParentId:
-    #       $ref: "#/components/schemas/APSId"
-    #     externalReference:
-    #       $ref: '#/components/schemas/APSExternalReference'
-    #     businessGroupChildIds:
-    #       $ref: "#/components/schemas/APSIdList"
-    #   required:
-    #   - businessGroupId
-    #   - displayName
-    #   - description
-
     APSBusinessGroupCreate:
       description: Create an APSBusinessGroup object.
       type: object
@@ -1987,99 +1947,6 @@ components:
           $ref: "#/components/schemas/APSDisplayName"
         externalReference:
           $ref: '#/components/schemas/APSExternalReference'
-
-
-
-
-    # ListAPSBusinessGroupsResponse:
-    #   type: object
-    #   allOf:
-    #     - $ref: '#/components/schemas/APSListResponseMeta'
-    #   properties:
-    #     list:
-    #       $ref: '#/components/schemas/APSBusinessGroupResponseList'
-    #   required:
-    #   - list
-    # ListAPSBusinessGroupsExternalSystemResponse:
-    #   type: object
-    #   allOf:
-    #     - $ref: '#/components/schemas/APSListResponseMeta'
-    #   properties:
-    #     list:
-    #       $ref: '#/components/schemas/APSBusinessGroupExternalResponseList'
-    #   required:
-    #   - list
-    # APSBusinessGroupBase:
-    #   description: "Base object of a business group."
-    #   type: object
-    #   properties:
-    #     businessGroupDisplayName:
-    #       $ref: "#/components/schemas/APSDisplayName"
-    #     businessGroupParentId:
-    #       $ref: "#/components/schemas/APSId"
-    #     externalReference:
-    #       $ref: '#/components/schemas/APSExternalReference'
-    # APSBusinessGroupCreate:
-    #   description: "A business group create object."
-    #   allOf:
-    #   - $ref: '#/components/schemas/APSBusinessGroupBase'
-    #   properties:
-    #     businessGroupId:
-    #       $ref: "#/components/schemas/APSId"
-    #     description:
-    #       $ref: "#/components/schemas/APSDescription"
-    #   required:
-    #   - businessGroupId
-    #   - businessGroupDisplayName
-    #   - description
-    # APSBusinessGroupResponse:
-    #   description: "A business group response object."
-    #   allOf:
-    #   - $ref: '#/components/schemas/APSBusinessGroupBase'
-    #   properties:
-    #     businessGroupId:
-    #       $ref: "#/components/schemas/APSId"
-    #     businessGroupChildIds:
-    #       $ref: "#/components/schemas/APSIdList"
-    #   required:
-    #   - businessGroupId
-    #   - businessGroupDisplayName
-    #   - businessGroupChildIds
-    #   - description
-    # APSBusinessGroupResponseList:
-    #   description: Array of APSBusinessGroupResponse objects.
-    #   type: array
-    #   items:
-    #     $ref: '#/components/schemas/APSBusinessGroupResponse'
-    # APSBusinessGroupExternalResponse:
-    # # note the duplication from APSBusinessGroup
-    #   description: An APSBusinessGroupResponse object with required external reference.
-    #   allOf:
-    #   - $ref: '#/components/schemas/APSBusinessGroupBase'
-    #   properties:
-    #     businessGroupId:
-    #       $ref: "#/components/schemas/APSId"
-    #     businessGroupChildIds:
-    #       $ref: "#/components/schemas/APSIdList"
-    #   required:
-    #   - businessGroupId
-    #   - businessGroupDisplayName
-    #   - description
-    #   - externalReference
-    #   - businessGroupChildIds
-    # APSBusinessGroupExternalResponseList:
-    #   description: Array of APSBusinessGroupExternalResponse objects.
-    #   type: array
-    #   items:
-    #     $ref: '#/components/schemas/APSBusinessGroupExternalResponse'
-    # APSBusinessGroupUpdate:
-    #   description: Update for an APSBusinessGroup object.
-    #   allOf:
-    #   - $ref: '#/components/schemas/APSBusinessGroupBase'
-    #   properties:
-    #     description:
-    #       $ref: "#/components/schemas/APSDescription"
-
 
 ###
 # The End.
