@@ -44,7 +44,7 @@ export class APSUsersService {
   private static collectionName = "apsUsers";
   private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
-  private static collectionSchemaVersion = 1;
+  private static collectionSchemaVersion = 2;
   private static rootApsUser: Components.Schemas.APSUser;
   private persistenceService: MongoPersistenceService;
   private collectionMutex = new Mutex();
@@ -79,7 +79,7 @@ export class APSUsersService {
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     try {
-      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'organizationId', details: {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
         organizationId: apsOrganizationId
       }}));
 
@@ -112,6 +112,11 @@ export class APSUsersService {
           collectionSchemaVersion: APSUsersService.collectionSchemaVersion
         })
       }
+
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
+        organizationId: apsOrganizationId
+      }}));
+
     } catch(e) {
       const ex = new ServerErrorFromError(e, logName);
       ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: ex.message , details: ex.toObject() }));

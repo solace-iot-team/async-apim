@@ -118,12 +118,19 @@ export class MongoPersistenceService {
     const collection: mongodb.Collection = this.getCollection();
 
     // only added schemaVersion from 1 onwards
-    const filter: Filter<any> = {};
-    filter[MongoPersistenceService.schemaVersionFieldName] = targetSchemaVersion > 1 ? { $lt: targetSchemaVersion } : undefined;
-    const documentList: Array<Document> = await collection.find(filter).toArray();
+    // NOTE: cannot make $or filter work, so search twice.
+    const undefinedFilter: Filter<any> = {};
+    // undefinedFilter[MongoPersistenceService.schemaVersionFieldName] = { $exists: false };
+    undefinedFilter[MongoPersistenceService.schemaVersionFieldName] = undefined;
+    const ltFilter: Filter<any> = {};
+    ltFilter[MongoPersistenceService.schemaVersionFieldName] = { $lt: targetSchemaVersion };
+    const undefinedDocumentList: Array<Document> = await collection.find(undefinedFilter).toArray();
+    const ltDocumentList: Array<Document> = await collection.find(ltFilter).toArray();
+    const documentList: Array<Document> = undefinedDocumentList.concat(ltDocumentList);
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'documentList for schemaVersion', details: { 
-      filter: filter,
+      undefinedFilter: undefinedFilter,
+      ltFilter: ltFilter,
       documentList: documentList 
     }}));
     return documentList;
@@ -139,7 +146,7 @@ export class MongoPersistenceService {
     const documentList: Array<Document> = await findCursor.toArray();
     return documentList;
   }
-  
+
   public byIdRaw = async(documentId: string): Promise<any> => {
     const funcName = 'byIdRaw';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
