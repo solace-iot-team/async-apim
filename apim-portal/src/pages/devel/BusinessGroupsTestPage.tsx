@@ -78,6 +78,7 @@ export const BusinessGroupsTestPage: React.FC = () => {
       for(let parentI=0; parentI < NumParentBusinessGroups; parentI++) {
         const parentBusinessGroupId = createInternalParentBusinessGroupId(parentI);
         const create: APSBusinessGroupCreate = {
+          businessGroupParentId: organizationId,
           businessGroupId: parentBusinessGroupId,
           displayName: parentBusinessGroupId,
           description: parentBusinessGroupId,
@@ -121,6 +122,7 @@ export const BusinessGroupsTestPage: React.FC = () => {
         for(let parentI=0; parentI < NumParentBusinessGroups; parentI++) {
           const parentBusinessGroupId = createExternalParentBusinessGroupId(externalSystemId, parentI);
           const create: APSBusinessGroupCreate = {
+            businessGroupParentId: organizationId,
             businessGroupId: parentBusinessGroupId,
             displayName: parentBusinessGroupId,
             description: parentBusinessGroupId,

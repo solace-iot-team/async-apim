@@ -19,6 +19,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
+import APBusinessGroupsService from "../../../services/APBusinessGroupsService";
 
 export interface IManageBusinessGroupsProps {
   organizationEntityId: TAPEntityId;
@@ -77,6 +78,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [externalSystemDisplayListCapableOfImport, setExternalSystemDisplayListCapableOfImport] = React.useState<TAPExternalSystemDisplayList>([]);
+  const [rootGroupEntityId, setRootGroupEntityId] = React.useState<TAPEntityId>();
 
   //  * Api Calls *
   const apiGetApExternalSystemsCapableOfInteractiveImportBusinessGroups = async(): Promise<TApiCallState> => {
@@ -96,11 +98,28 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     return callState;
   }
 
+  const apiGetRootApBusinessGroupEntityId = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetRootApBusinessGroupEntityId';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ROOT_BUSINESS_GROUP, `retrieve root business group`);
+    try { 
+      const rootEntityId: TAPEntityId = await APBusinessGroupsService.getRootApBusinessGroupEntityId({
+        organizationId: props.organizationEntityId.id
+      });
+      setRootGroupEntityId(rootEntityId);
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
 
   // * useEffect Hooks *
   const doInitialize = async () => {
     setIsLoading(true);
     await apiGetApExternalSystemsCapableOfInteractiveImportBusinessGroups();
+    await apiGetRootApBusinessGroupEntityId();
     setIsLoading(false);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
@@ -120,6 +139,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
           case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST:
           case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP:
           case E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST_CAPABLE_OF_INTERACTIVE_IMPORT_OF_BUSINESS_GRAOUPS:
+          case E_CALL_STATE_ACTIONS.API_GET_ROOT_BUSINESS_GROUP:
             break;
           default:
             props.onSuccess(apiCallStatus);
@@ -137,14 +157,17 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
   }  
 
   // * New Object *
-  const onNewManagedObject = (parentBusinessGroupEntityId: TAPEntityId | undefined) => {
+  const onNewManagedObject = (parentBusinessGroupEntityId: TAPEntityId) => {
     // alert(`new business group, parentBusinessGroupEntityId=${JSON.stringify(parentBusinessGroupEntityId)}`);
     setManagedObjectParentEntityId(parentBusinessGroupEntityId);
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
   const onNewManagedObjectFromToolbar = () => {
-    onNewManagedObject(undefined);
+    const funcName = 'onNewManagedObjectFromToolbar';
+    const logName = `${componentName}.${funcName}()`;
+    if(rootGroupEntityId === undefined) throw new Error(`${logName}: rootGroupEntityId === undefined`);
+    onNewManagedObject(rootGroupEntityId);
   }
 
   // * Import *

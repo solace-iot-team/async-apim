@@ -71,6 +71,7 @@ class APBusinessGroupsService {
   }
 
   public isDeleteAllowed(apBusinessGroupDisplay: TAPBusinessGroupDisplay): boolean {
+    if(apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) return false; // this is the root
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return false;
     if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds.length > 0) return false;
     return true;
@@ -247,6 +248,19 @@ class APBusinessGroupsService {
     return list;
   }
 
+  public async getRootApBusinessGroupEntityId({organizationId}:{
+    organizationId: string
+  }): Promise<TAPEntityId> {
+    const apsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroup({
+      organizationId: organizationId,
+      businessgroupId: organizationId
+    });
+    return {
+      id: apsBusinessGroupResponse.businessGroupId,
+      displayName: apsBusinessGroupResponse.displayName
+    }
+  }
+
   public async getApBusinessGroupDisplay({ organizationId, businessGroupId }: {
     organizationId: string;
     businessGroupId: string;
@@ -292,11 +306,15 @@ class APBusinessGroupsService {
     organizationId: string;
     apBusinessGroupDisplay: TAPBusinessGroupDisplay
   }): Promise<void> {
+    const funcName = 'createApBusinessGroupDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId === undefined) throw new Error(`${logName}: apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId === undefined`);
     const create: APSBusinessGroupCreate = {
+      businessGroupParentId: apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId,
       businessGroupId: apBusinessGroupDisplay.apEntityId.id,
       displayName: apBusinessGroupDisplay.apEntityId.displayName,
       description: apBusinessGroupDisplay.apsBusinessGroupResponse.description,
-      businessGroupParentId: apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId,
       externalReference: apBusinessGroupDisplay.apsBusinessGroupResponse.externalReference,
     }
     await ApsBusinessGroupsService.createApsBusinessGroup({
