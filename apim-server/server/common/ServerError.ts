@@ -303,6 +303,7 @@ export type TApiServerErrorMeta = {
   externalId?: string;
   collectionName: string;
 }
+export type TApiDeleteNotAllowedForKeyErrorMeta = TApiServerErrorMeta;
 export type TApiDuplicateKeyServerErrorMeta = TApiServerErrorMeta;
 export type TApiInvalidObjectReferenceError = {
   referenceType: string;
@@ -336,6 +337,15 @@ export class ApiDuplicateKeyServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiDuplicateKeyServerError.apiDefaultDescription, apiMeta: TApiDuplicateKeyServerErrorMeta) {
     super(internalLogName, ApiDuplicateKeyServerError.name, ApiDuplicateKeyServerError.apiStatusCode, ApiDuplicateKeyServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+export class ApiDeleteNotAllowedForKeyServerError extends ApiServerError {
+  private static apiStatusCode = 422;
+  private static apiErrorId: APSErrorIds = APSErrorIds.DELETE_NOT_ALLOWED_FOR_KEY;
+  private static apiDefaultDescription = 'delete not allowed for key';
+
+  constructor(internalLogName: string, apiDescription: string = ApiDeleteNotAllowedForKeyServerError.apiDefaultDescription, apiMeta: TApiDeleteNotAllowedForKeyErrorMeta) {
+    super(internalLogName, ApiDeleteNotAllowedForKeyServerError.name, ApiDeleteNotAllowedForKeyServerError.apiStatusCode, ApiDeleteNotAllowedForKeyServerError.apiErrorId, apiDescription, apiMeta);
   }
 }
 export class ApiInvalidObjectReferencesServerError extends ApiServerError {

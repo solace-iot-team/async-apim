@@ -1,8 +1,8 @@
-import APSId = Components.Schemas.APSId;
 import { TypedEmitter } from 'tiny-typed-emitter';
 
 interface APSOrganizationsServiceEvents {
-  'deleted': (apsOrganizationId: APSId) => void;
+  'deleted': (organizationId: string) => void;
+  'created': (organizationId: string, displayName: string) => void;
 }
 
 class APSOrganizationsServiceEventEmitter extends TypedEmitter<APSOrganizationsServiceEvents> {

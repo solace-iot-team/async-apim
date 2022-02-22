@@ -100,7 +100,7 @@ export class ApsBusinessGroupsController {
     try {
       APSBusinessGroupsService.create({
         apsOrganizationId: ControllerUtils.getParamValue<Create_Params>(logName, req.params, 'organization_id'),
-        apsBusinessGroup: req.body
+        apsBusinessGroupCreate: req.body
       })
       .then((r: APSBusinessGroupResponse) => {
         res.status(201).json(r);

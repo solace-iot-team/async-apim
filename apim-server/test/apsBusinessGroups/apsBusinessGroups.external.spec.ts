@@ -97,8 +97,9 @@ describe(`${scriptName}`, () => {
       // create internal master group
       const createInternal: APSBusinessGroupCreate = {
           businessGroupId: InternalMasterGroupId,
+          businessGroupParentId: OrganizationId,
           displayName: InternalMasterGroupId,
-          description: DefaultDescription
+          description: DefaultDescription,
         }
       const createdInternalGroup: APSBusinessGroupResponse = await ApsBusinessGroupsService.createApsBusinessGroup({
         organizationId: OrganizationId,
@@ -109,6 +110,7 @@ describe(`${scriptName}`, () => {
       const externalReference: APSExternalReference = ExternalReference_Master;
       const createExternal: APSBusinessGroupCreate = {
         businessGroupId: ExternalMasterGroupId,
+        businessGroupParentId: OrganizationId,
         displayName: ExternalMasterGroupId,
         description: DefaultDescription,
         externalReference: externalReference
@@ -192,7 +194,7 @@ describe(`${scriptName}`, () => {
       const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroups({
         organizationId: OrganizationId        
       });
-      const expectedNumberOfGroups = 2 + (2 * NumberOfChildrenGroups);
+      const expectedNumberOfGroups = 2 + (2 * NumberOfChildrenGroups) + 1;
       const groupList: APSBusinessGroupResponseList = listResponse.list;
       const meta = listResponse.meta;
       const totalCount: number = meta.totalCount;
@@ -327,6 +329,7 @@ describe(`${scriptName}`, () => {
     const nonExistingExternalSystemId = "non-existing-external-system-id";
     const apsBusinessGroup: APSBusinessGroupCreate = {
       businessGroupId: businessGroupId,
+      businessGroupParentId: organizationId,
       displayName: businessGroupId,
       description: DefaultDescription,      
       externalReference: {
@@ -362,6 +365,7 @@ describe(`${scriptName}`, () => {
 
     const createRequest: APSBusinessGroupCreate = {
       businessGroupId: businessGroupId,
+      businessGroupParentId: organizationId,
       displayName: businessGroupId,
       description: DefaultDescription,      
     }

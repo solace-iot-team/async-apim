@@ -129,6 +129,17 @@ export class MongoPersistenceService {
     return documentList;
   }
   
+  public allByOrganizationIdRaw = async(organizationId: string): Promise<any> => {
+    const funcName = 'allByOrganizationIdRaw';
+    const logName = `${MongoPersistenceService.name}.${funcName}()`;
+    const collection: mongodb.Collection = this.getCollection();
+    let filter: Filter<any> = {};
+    filter[MongoPersistenceService.organizationIdFieldName] = organizationId;
+    const findCursor: mongodb.FindCursor = collection.find(filter);
+    const documentList: Array<Document> = await findCursor.toArray();
+    return documentList;
+  }
+  
   public byIdRaw = async(documentId: string): Promise<any> => {
     const funcName = 'byIdRaw';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
@@ -139,7 +150,6 @@ export class MongoPersistenceService {
     return foundDocument;
   }
 
-  // public all = async(pagingInfo?: TMongoPagingInfo, sortInfo?: TMongoSortInfo, searchInfo?: TMongoSearchInfo): Promise<TMongoAllReturn> => {
   public all = async({ organizationId, pagingInfo, sortInfo, searchInfo }: {
     pagingInfo?: TMongoPagingInfo;
     sortInfo?: TMongoSortInfo;

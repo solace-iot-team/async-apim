@@ -108,6 +108,17 @@ export class APSOrganizationsService {
       collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
+    // emit created event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'created', details: {
+      organizationId: apsOrganizationCreateRequest.organizationId,
+      displayName: apsOrganizationCreateRequest.displayName
+    }}));
+    APSOrganizationsServiceEventEmitter.emit('created', apsOrganizationCreateRequest.organizationId, apsOrganizationCreateRequest.displayName);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'created', details: {
+      organizationId: apsOrganizationCreateRequest.organizationId,
+      displayName: apsOrganizationCreateRequest.displayName
+    }}));
+    
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSOrganization', details: created}));
 
     return created;
