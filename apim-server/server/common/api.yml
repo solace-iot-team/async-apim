@@ -1392,6 +1392,9 @@ components:
           $ref: "#/components/schemas/APSId"
         roles:
           $ref: "#/components/schemas/APSBusinessGroupAuthRoleList"
+      required:
+      - businessGroupId
+      - roles
 
     APSMemberOfOrganizationGroups:
       description: List of business groups with roles for an organization.
@@ -1403,6 +1406,9 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/APSMemberOfBusinessGroup"
+      required:
+        - organizationId
+        - memberOfBusinessGroupList
 
     APSMemberOfOrganizationGroupsList:
       description: List of APSMemberOfOrganizationGroups objects.
