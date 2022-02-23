@@ -10,12 +10,12 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplay, 
   TAPBusinessGroupDisplayList, 
   TAPBusinessGroupTreeNodeDisplay,
   TAPBusinessGroupTreeNodeDisplayList, 
-} from "../../../services/APBusinessGroupsService";
+} from "../../../displayServices/APBusinessGroupsDisplayService";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
@@ -47,7 +47,7 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     // const funcName = 'transformManagedObjectList_To_ManagedObjecTreeTableNodeList';
     // const logName = `${ComponentName}.${funcName}()`;
     // console.log(`${logName}: moList = \n${JSON.stringify(moList, null, 2)}`);
-    const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(moList);
+    const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(moList);
     // console.log(`${logName}: apBusinessGroupTreeNodeDisplayList = \n${JSON.stringify(apBusinessGroupTreeNodeDisplayList, null, 2)}`);
     return apBusinessGroupTreeNodeDisplayList;
   }
@@ -66,7 +66,7 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
         organizationId: props.organizationId
       })
       setManagedObjectList(list);
@@ -124,13 +124,13 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     return (<>{node.data.apsBusinessGroupResponse.description}</>);
   }
   const sourceByBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
-    return APBusinessGroupsService.getSourceDisplayString(node.data);
+    return APBusinessGroupsDisplayService.getSourceDisplayString(node.data);
   }
 
   const actionBodyTemplate = (node: TManagedObjectTreeTableNode) => {
-    const isDeleteAllowed: boolean = APBusinessGroupsService.isDeleteAllowed(node.data);
-    const isAddChildAllowed: boolean = APBusinessGroupsService.isAddChildAllowed(node.data);
-    const isEditAllowed: boolean = APBusinessGroupsService.isEditAllowed(node.data);
+    const isDeleteAllowed: boolean = APBusinessGroupsDisplayService.isDeleteAllowed(node.data);
+    const isAddChildAllowed: boolean = APBusinessGroupsDisplayService.isAddChildAllowed(node.data);
+    const isEditAllowed: boolean = APBusinessGroupsDisplayService.isEditAllowed(node.data);
     const key = node.key;
     return (
       <React.Fragment>

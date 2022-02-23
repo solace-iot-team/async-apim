@@ -154,6 +154,7 @@ export class ConfigHelper {
   }
 
   private static getConfigRbacRoleList = async(): Promise<TAPRbacRoleList> => {
+    APRbac.checkRoleDefinitions();
     const configRbacRoleList: TAPRbacRoleList = APRbac.getAPRbacRoleList();
     return configRbacRoleList;
   }

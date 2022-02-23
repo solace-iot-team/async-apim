@@ -13,7 +13,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import APExternalSystemsService, { TAPExternalSystemDisplay } from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplay } from "../../../displayServices/APExternalSystemsDisplayService";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 
 import '../../../components/APComponents.css';
@@ -43,7 +43,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
   type TManagedObjectFormData = TManagedObject & {
   }
   
-  const EmptyManagedObject: TManagedObject = APExternalSystemsService.create_EmptyObject();
+  const EmptyManagedObject: TManagedObject = APExternalSystemsDisplayService.create_EmptyObject();
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<string>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -88,7 +88,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM, `retrieve details for external system: ${managedObjectDisplayName}`);
     try {
-      const object: TAPExternalSystemDisplay = await APExternalSystemsService.getApExternalSystemDisplay({
+      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.getApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: managedObjectId
       })
@@ -106,7 +106,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_EXTERNAL_SYSTEM, `create external system: ${mo.apEntityId.displayName}`);
     try { 
-      await APExternalSystemsService.createApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.createApExternalSystemDisplay({
         organizationId: props.organizationId,
         apExternalSystemDisplay: mo
       });
@@ -125,7 +125,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_EXTERNAL_SYSTEM, `update external system: ${mo.apEntityId.displayName}`);
     try { 
-      await APExternalSystemsService.updateApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.updateApExternalSystemDisplay({
         organizationId: props.organizationId,
         apExternalSystemDisplay: mo
       });

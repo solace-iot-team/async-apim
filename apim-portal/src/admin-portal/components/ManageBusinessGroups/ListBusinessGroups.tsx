@@ -12,10 +12,10 @@ import { Globals } from "../../../utils/Globals";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplay, 
   TAPBusinessGroupDisplayList 
-} from "../../../services/APBusinessGroupsService";
+} from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
@@ -75,7 +75,7 @@ export const ListBusinessGroups: React.FC<IListBusinessGroupsProps> = (props: IL
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
         organizationId: props.organizationId
       })
       setManagedObjectList(list);

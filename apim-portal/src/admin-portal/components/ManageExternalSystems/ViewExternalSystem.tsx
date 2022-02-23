@@ -8,7 +8,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APExternalSystemsService, { TAPExternalSystemDisplay } from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplay } from "../../../displayServices/APExternalSystemsDisplayService";
 import { APDisplayApBusinessGroupDisplayList } from "../../../components/APDisplay/APDisplayApBusinessGroupDisplayList";
 
 import '../../../components/APComponents.css';
@@ -37,7 +37,7 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM, `retrieve details for external system: ${props.externalSystemDisplayName}`);
     try { 
-      const object: TAPExternalSystemDisplay = await APExternalSystemsService.getApExternalSystemDisplay({
+      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.getApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
       })

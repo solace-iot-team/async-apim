@@ -3,10 +3,10 @@ import React from "react";
 
 import { Tree } from 'primereact/tree';
 
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplayList, 
   TAPBusinessGroupTreeNodeDisplayList 
-} from "../../services/APBusinessGroupsService";
+} from "../../displayServices/APBusinessGroupsDisplayService";
 
 import "../APComponents.css";
 
@@ -21,7 +21,7 @@ export const APDisplayApBusinessGroupDisplayList: React.FC<IAPDisplayApBusinessG
 
   const renderComponent = (apBusinessGroupDisplayList: TAPBusinessGroupDisplayList): JSX.Element => {
 
-    const treeTableNodeList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
+    const treeTableNodeList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
 
     return (
       <React.Fragment>

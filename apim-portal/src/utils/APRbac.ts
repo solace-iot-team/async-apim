@@ -1,6 +1,7 @@
 import { 
   EAPSSystemAuthRole,
   EAPSOrganizationAuthRole,
+  EAPSBusinessGroupAuthRole,
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
@@ -9,7 +10,7 @@ export const CAPSAuthRoleNone = '';
 export enum EAPSDefaultAuthRole {
   DEFAULT = 'default',
 }
-export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EAPSOrganizationAuthRole;
+export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EAPSOrganizationAuthRole | EAPSBusinessGroupAuthRole;
 
 export enum  EAPRbacRoleScope {
   NEVER = "NEVER",
@@ -131,7 +132,7 @@ const rbacRoleList: TAPRbacRoleList = [
 
 export class APRbac {
 
-  private static checkRoleDefinitions = () => {
+  public static checkRoleDefinitions = () => {
     const funcName: string = `checkRoleDefinitions`;
     const logName: string = `${APRbac.name}.${funcName}()`;
 
@@ -155,7 +156,6 @@ export class APRbac {
   }
 
   public static getAPRbacRoleList = (): TAPRbacRoleList => {
-    APRbac.checkRoleDefinitions();
     return rbacRoleList;
   }
 

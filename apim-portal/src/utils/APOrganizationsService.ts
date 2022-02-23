@@ -13,7 +13,7 @@ import {
   APSOrganizationUpdate, 
   ListAPSOrganizationResponse
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPEntityId } from './APEntityIdsService';
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
 import { Globals } from './Globals';
 
 export type TAPOrganization = OrganizationResponse & {
@@ -69,6 +69,27 @@ export class APOrganizationsService {
     });
   }
 
+  public static listOrganizationEntityIdList_For_OrganizationIdList = async( { organizationIdList } : {
+    organizationIdList: Array<string>;
+  }): Promise<TAPEntityIdList> => {
+    const allOrgs: TAPEntityIdList = await APOrganizationsService.listOrganizationEntityIdList();
+    return APEntityIdsService.create_EntityIdList_FilteredBy_IdList({
+      apEntityIdList: allOrgs,
+      idList: organizationIdList
+    });
+  }
+
+  public static listOrganizationEntityIdList = async(): Promise<TAPEntityIdList> => {
+    const apsResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+    const list = apsResponse.list;
+    return list.map( (x) => {
+      return {
+        id: x.organizationId,
+        displayName: x.displayName
+      };
+    });
+  }
+
   public static listOrganizations = async(options: any): Promise<TAPOrganizationList> => {
     const _connectorOrgList: Array<Organization> = await AdministrationService.listOrganizations(options);
     const _apsResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
@@ -104,6 +125,15 @@ export class APOrganizationsService {
       displayName: organizationDisplayName ? organizationDisplayName : connectorOrganization.name
     }
   }
+  public static getOrganizationEntityId = async(organizationId: string): Promise<TAPEntityId> => {
+    const apsOrganization: APSOrganization = await ApsAdministrationService.getApsOrganization({
+      organizationId: organizationId
+    });
+    return {
+      id: apsOrganization.organizationId,
+      displayName: apsOrganization.displayName
+    };
+  }
   public static getOrganization = async(organizationId: APSId, secretMask: string = APOrganizationsService.C_SECRET_MASK): Promise<TAPOrganization> => {
     const connectorOrganization: Organization = await APOrganizationsService.getConnectorOrganization(organizationId, secretMask);
     let apsOrganization: APSOrganization | undefined = undefined;
@@ -122,7 +152,7 @@ export class APOrganizationsService {
   }
 
   public static getOrganizationAssets = async({ organizationId }: { organizationId: APSId }): Promise<TAPOrganizationAssets> => {
-
+    // TODO: move to APAssetDisplayService
     // TODO: return at least id and displayName
     return {
       userList: [ { id: 'userId', displayName: 'displayName-userId'} ],

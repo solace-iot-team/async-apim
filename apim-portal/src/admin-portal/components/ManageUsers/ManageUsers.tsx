@@ -15,7 +15,8 @@ import {
   TManageUsersScope 
 } from "./ManageUsersCommon";
 import { ListUsers } from "./ListUsers";
-import { ViewUser } from "./ViewUser";
+import { ViewUser } from "./ViewUser_new";
+// import { ViewUser } from "./ViewUser";
 import { DeleteUser } from "./DeleteUser";
 import { AddUser } from "./AddUser";
 import { EAction, EditNewUser } from "./EditNewUser";
@@ -23,6 +24,7 @@ import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 export interface IManageUsersProps {
   scope: TManageUsersScope;
@@ -196,9 +198,9 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
     props.setBreadCrumbItemList(newItemList);
   }
-  const onSetManageUserComponentState = (componentState: E_COMPONENT_STATE, userId: string, userDisplayName: string) => {
-    setManagedObjectId(userId);
-    setManagedObjectDisplayName(userDisplayName);
+  const onSetManageUserComponentState = (componentState: E_COMPONENT_STATE, userEntityId: TAPEntityId) => {
+    setManagedObjectId(userEntityId.id);
+    setManagedObjectDisplayName(userEntityId.displayName);
     setNewComponentState(componentState);
     setRefreshCounter(refreshCounter + 1);
   }
@@ -339,6 +341,18 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <ViewUser
           key={refreshCounter}
+          userEntityId={ { id: managedObjectId, displayName: managedObjectDisplayName }}
+          organizationId={organizationId}
+          onSuccess={onSubComponentSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageUserComponentState}
+        />      
+      }
+      {/* {showViewComponent && managedObjectId && managedObjectDisplayName &&
+        <ViewUser
+          key={refreshCounter}
           userId={managedObjectId}
           userDisplayName={managedObjectDisplayName}
           organizationId={organizationId}
@@ -348,7 +362,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageUserComponentState}
         />      
-      }
+      } */}
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteUser
           userId={managedObjectId}

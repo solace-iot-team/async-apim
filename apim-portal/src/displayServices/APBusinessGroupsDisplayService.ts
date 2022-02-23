@@ -32,8 +32,8 @@ export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
 }
 export type TAPBusinessGroupDisplayList = Array<TAPBusinessGroupDisplay>;
 
-class APBusinessGroupsService {
-  private readonly BaseComponentName = "APBusinessGroupsService";
+class APBusinessGroupsDisplayService {
+  private readonly BaseComponentName = "APBusinessGroupsDisplayService";
 
   private create_EmptyApsBusinessGroup(apBusinessGroupParentEntityId: TAPEntityId | undefined): APSBusinessGroupResponse {
     const bg: APSBusinessGroupResponse = {
@@ -350,4 +350,4 @@ class APBusinessGroupsService {
   }
 }
 
-export default new APBusinessGroupsService();
+export default new APBusinessGroupsDisplayService();

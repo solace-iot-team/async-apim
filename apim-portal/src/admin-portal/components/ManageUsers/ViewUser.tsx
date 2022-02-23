@@ -217,9 +217,9 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
       {managedObject && renderManagedObject() }
 
       {/* DEBUG */}
-      {/* <pre style={ { fontSize: '12px' }} >
+      <pre style={ { fontSize: '12px' }} >
         {JSON.stringify(managedObject, null, 2)}
-      </pre> */}
+      </pre>
 
     </div>
   );

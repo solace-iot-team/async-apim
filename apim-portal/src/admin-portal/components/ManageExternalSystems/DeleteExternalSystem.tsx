@@ -8,7 +8,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import APExternalSystemsService from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService from "../../../displayServices/APExternalSystemsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -37,7 +37,7 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_EXTERNAL_SYSTEM, `delete external system: ${props.externalSystemDisplayName}`);
     try { 
-      await APExternalSystemsService.deleteApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.deleteApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
       });

@@ -48,6 +48,15 @@ class APEntityIdsService {
     });
   }
 
+  public create_EntityIdList_FilteredBy_IdList({apEntityIdList, idList}: {
+    apEntityIdList: TAPEntityIdList; 
+    idList: Array<string>;
+  }): TAPEntityIdList {
+    return apEntityIdList.filter( (x) => {
+      return idList.includes(x.id);
+    });
+  }
+
   public sort_ApDisplayObjectList_By_DisplayName<T extends IAPEntityIdDisplay>(list: Array<T>): Array<T> {
     return list.sort( (e1: T, e2: T) => {
       if(e1.apEntityId.displayName.toLocaleLowerCase() < e2.apEntityId.displayName.toLocaleLowerCase()) return -1;

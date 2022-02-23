@@ -14,12 +14,12 @@ import { ListAsTreeTableBusinessGroups } from "./ListAsTreeTableBusinessGroups";
 import { EAction, EditNewBusinessGroups } from "./EditNewBusinessGroup";
 import { DeleteBusinessGroup } from "./DeleteBusinessGroup";
 import { ViewBusinessGroup } from "./ViewBusinessGroup";
-import APExternalSystemsService, { TAPExternalSystemDisplayList } from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from "../../../displayServices/APExternalSystemsDisplayService";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import APBusinessGroupsDisplayService from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
-import APBusinessGroupsService from "../../../services/APBusinessGroupsService";
 
 export interface IManageBusinessGroupsProps {
   organizationEntityId: TAPEntityId;
@@ -86,7 +86,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST_CAPABLE_OF_INTERACTIVE_IMPORT_OF_BUSINESS_GRAOUPS, `retrieve external systems`);
     try { 
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({
         organizationId: props.organizationEntityId.id
       });
       setExternalSystemDisplayListCapableOfImport(list);
@@ -103,7 +103,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ROOT_BUSINESS_GROUP, `retrieve root business group`);
     try { 
-      const rootEntityId: TAPEntityId = await APBusinessGroupsService.getRootApBusinessGroupEntityId({
+      const rootEntityId: TAPEntityId = await APBusinessGroupsDisplayService.getRootApBusinessGroupEntityId({
         organizationId: props.organizationEntityId.id
       });
       setRootGroupEntityId(rootEntityId);

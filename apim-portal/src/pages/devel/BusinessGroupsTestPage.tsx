@@ -7,14 +7,9 @@ import { UserContext } from '../../components/UserContextProvider/UserContextPro
 import { Loading } from '../../components/Loading/Loading';
 import { ApiCallStatusError } from '../../components/ApiCallStatusError/ApiCallStatusError';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
-import APExternalSystemsService, { TAPExternalSystemDisplayList } from '../../services/APExternalSystemsService';
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APSBusinessGroupCreate, ApsBusinessGroupsService } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
-
-// Toolbar with button: Create Business Groups
-// - create internal hierarchy
-// - create external hierarchy for each external system
-
 
 export const BusinessGroupsTestPage: React.FC = () => {
   const ComponentName = 'BusinessGroupsTestPage';
@@ -57,7 +52,7 @@ export const BusinessGroupsTestPage: React.FC = () => {
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEMS_LIST, 'retrieve list of external systems');
     try {
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay({
         organizationId: organizationId
       });
       setExternalSystemsDisplayList(list);

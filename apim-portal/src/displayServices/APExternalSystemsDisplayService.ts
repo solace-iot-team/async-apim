@@ -6,9 +6,9 @@ import {
   APSExternalSystemUpdate, 
   ListAPSExternalSystemsResponse 
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplayList 
-} from './APBusinessGroupsService';
+} from './APBusinessGroupsDisplayService';
 
 export type TAPExternalSystemDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsExternalSystem: APSExternalSystem;
@@ -16,8 +16,8 @@ export type TAPExternalSystemDisplay = IAPEntityIdDisplay & IAPSearchContent & {
 }
 export type TAPExternalSystemDisplayList = Array<TAPExternalSystemDisplay>;
 
-class APExternalSystemsService {
-  private readonly BaseComponentName = "APExternalSystemsService";
+class APExternalSystemsDisplayService {
+  private readonly BaseComponentName = "APExternalSystemsDisplayService";
 
   private create_EmptyApsExternalSystem(): APSExternalSystem {
     return {
@@ -81,7 +81,7 @@ class APExternalSystemsService {
     });
     const list: TAPExternalSystemDisplayList = [];
     for(const apsExternalSystem of response.list) {
-      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplayByExternalSystem({
+      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplayByExternalSystem({
         organizationId: organizationId,
         externalSystemId: apsExternalSystem.externalSystemId
       });
@@ -98,7 +98,7 @@ class APExternalSystemsService {
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
-    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsService.listApBusinessGroupSystemDisplayByExternalSystem({
+    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplayByExternalSystem({
       organizationId: organizationId,
       externalSystemId: apsExternalSystem.externalSystemId
     });
@@ -141,4 +141,4 @@ class APExternalSystemsService {
   }
 }
 
-export default new APExternalSystemsService();
+export default new APExternalSystemsDisplayService();
