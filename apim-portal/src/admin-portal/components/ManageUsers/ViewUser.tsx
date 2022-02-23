@@ -4,47 +4,36 @@ import React from "react";
 import { Divider } from "primereact/divider";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
-import { 
-  ApsUsersService, 
-  APSUserResponse,
-  APSOrganizationRoles
-} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
-
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { ConfigContext } from '../../../components/ConfigContextProvider/ConfigContextProvider';
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE, ManageUsersCommon, TManagedObjectId, TViewManagedObject } from "./ManageUsersCommon";
-import { TAPAssetInfoWithOrgList, TAPOrgAsset, TAPOrgAssetList } from "../../../utils/APTypes";
-import { APDisplayOrgAssetList } from "../../../components/APDisplay/APDisplayOrgAssetList";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageUsersCommon";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
-import { APDisplayUserOrganizationRoles } from "../../../components/APDisplay/APDisplayUserOrganizationRoles";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APUsersDisplayService, { TAPMemberOfBusinessGroupDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
-import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IViewUserProps {
-  userId: TManagedObjectId;
-  userDisplayName: string;
-  organizationId?: CommonName; 
+  userEntityId: TAPEntityId;
+  organizationId?: string; 
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  onNavigateHere: (componentState: E_COMPONENT_STATE, userId: TManagedObjectId, userDisplayName: string) => void;
+  onNavigateHere: (componentState: E_COMPONENT_STATE, userEntityId: TAPEntityId) => void;
 }
 
 export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   const componentName = 'ViewUser';
 
-  type TManagedObject = TViewManagedObject;
+  type TManagedObject = TAPUserDisplay;
 
-  const [configContext] = React.useContext(ConfigContext); 
   const [authContext] = React.useContext(AuthContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -53,13 +42,13 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userEntityId.id}`);
     try { 
-      const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
-        userId: props.userId
+      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+        userId: props.userEntityId.id,
+        organizationId: props.organizationId
       });
-      let userAssetInfoList: TAPAssetInfoWithOrgList = await ManageUsersCommon.getUserAssetList(apsUserResponse, props.organizationId);
-      setManagedObject(ManageUsersCommon.transformViewApiObjectToViewManagedObject(configContext, apsUserResponse, userAssetInfoList));
+      setManagedObject(apUserDisplay);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -69,7 +58,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
   }
 
   const ViewUser_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.userId, props.userDisplayName);
+    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.userEntityId);
   }
 
   // * useEffect Hooks *
@@ -81,7 +70,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
 
   React.useEffect(() => {
     props.setBreadCrumbItemList([{
-      label: `User: ${props.userDisplayName}`,
+      label: `User: ${props.userEntityId.displayName}`,
       command: ViewUser_onNavigateHereCommand
     }]);
     doInitialize();
@@ -93,43 +82,61 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const transformUserAssetListToOrgAssetList = (userAssetList: TAPAssetInfoWithOrgList): TAPOrgAssetList => {
-    const orgAssetList: TAPOrgAssetList = [];
-    for (const _userAsset of userAssetList) {
-      const foundOrgAsset = orgAssetList.find( (orgAsset: TAPOrgAsset) => {
-        return orgAsset.organizationEntityId.id === _userAsset.organizationEntityId.id;
-      });
-      if(foundOrgAsset) {
-        foundOrgAsset.assetInfoList.push({
-          assetType: _userAsset.assetType,
-          assetEntityId: _userAsset.assetEntityId
-        });
-      } else {
-        const orgAsset: TAPOrgAsset = {
-          organizationEntityId: _userAsset.organizationEntityId,
-          assetInfoList: [{ 
-            assetType: _userAsset.assetType,
-            assetEntityId: _userAsset.assetEntityId
-          }]
-        };
-        orgAssetList.push(orgAsset);
-      }
-    }
-    return orgAssetList;
-  }
+  // const transformUserAssetListToOrgAssetList = (userAssetList: TAPAssetInfoWithOrgList): TAPOrgAssetList => {
+  //   const orgAssetList: TAPOrgAssetList = [];
+  //   for (const _userAsset of userAssetList) {
+  //     const foundOrgAsset = orgAssetList.find( (orgAsset: TAPOrgAsset) => {
+  //       return orgAsset.organizationEntityId.id === _userAsset.organizationEntityId.id;
+  //     });
+  //     if(foundOrgAsset) {
+  //       foundOrgAsset.assetInfoList.push({
+  //         assetType: _userAsset.assetType,
+  //         assetEntityId: _userAsset.assetEntityId
+  //       });
+  //     } else {
+  //       const orgAsset: TAPOrgAsset = {
+  //         organizationEntityId: _userAsset.organizationEntityId,
+  //         assetInfoList: [{ 
+  //           assetType: _userAsset.assetType,
+  //           assetEntityId: _userAsset.assetEntityId
+  //         }]
+  //       };
+  //       orgAssetList.push(orgAsset);
+  //     }
+  //   }
+  //   return orgAssetList;
+  // }
+  // const renderAssets = () => {
+  //   const funcName = 'renderAssets';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    
+  //   const orgAssetList = transformUserAssetListToOrgAssetList(managedObject.userAssetInfoList);
+
+  //   return (
+  //     <React.Fragment>
+  //       <APDisplayOrgAssetList
+  //         organizationId={props.organizationId}
+  //         numberOfAssets={managedObject.userAssetInfoList.length}
+  //         orgAssetList={orgAssetList}
+  //         className="p-pt-2"
+  //       />
+  //       {/* <pre style={ { fontSize: '12px' }} >
+  //         {JSON.stringify(orgAssetList, null, 2)}
+  //       </pre> */}
+  //     </React.Fragment>
+  //   );
+  // }
+
   const renderAssets = () => {
     const funcName = 'renderAssets';
     const logName = `${componentName}.${funcName}()`;
-    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-    
-    const orgAssetList = transformUserAssetListToOrgAssetList(managedObject.userAssetInfoList);
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
 
     return (
       <React.Fragment>
-        <APDisplayOrgAssetList
-          organizationId={props.organizationId}
-          numberOfAssets={managedObject.userAssetInfoList.length}
-          orgAssetList={orgAssetList}
+        <APDisplayOrganizationAssetInfoDisplayList
+          apOrganizationAssetInfoDisplayList={managedObject.apOrganizationAssetInfoDisplayList}
           className="p-pt-2"
         />
         {/* <pre style={ { fontSize: '12px' }} >
@@ -138,30 +145,53 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
       </React.Fragment>
     );
   }
+
+  const renderSystemRoles = (apSystemRoleEntityIdList: TAPEntityIdList): string => {
+    if(apSystemRoleEntityIdList.length === 0) return 'None';
+    return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
+  }
+  const renderBusinessGroupRoles = (apSystemRoleEntityIdList: TAPEntityIdList): string => {
+    if(apSystemRoleEntityIdList.length === 0) return 'None';
+    return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
+  }
+
   const renderOrganizations = () => {
     const funcName = 'renderOrganizations';
     const logName = `${componentName}.${funcName}()`;
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-    if(props.organizationId) {
-      if(!managedObject.apiObject.memberOfOrganizations) throw new Error(`${logName}: managedObject.apiObject.memberOfOrganizations is undefined`);
-      const apsOrganizationRoles = managedObject.apiObject.memberOfOrganizations.find((apsOrganizationRoles: APSOrganizationRoles) => {
-        return props.organizationId === apsOrganizationRoles.organizationId;
+    if(props.organizationId !== undefined) {
+      // get the groups for this org
+      const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = APUsersDisplayService.find_ApMemberOfBusinessGroupDisplayList({
+        organizationId: props.organizationId,
+        apUserDisplay: managedObject
       });
-      if(!apsOrganizationRoles) throw new Error(`${logName}: apsOrganizationRoles is undefined`);
-      return (
-        <div><b>Roles</b>: {ConfigHelper.getAuthorizedOrgRolesDisplayNameList(configContext, apsOrganizationRoles.roles).join(', ')}</div>
-      );
-    }
-    return (
-      <React.Fragment>
-        <APDisplayUserOrganizationRoles
-          organizationId={props.organizationId}
-          apsUserResponse={managedObject.apiObject}
-          className="p-pt-2"
-        />
-      </React.Fragment>
-    );
 
+      // TODO: create separate display component
+      // TODO: probably need a tree view
+      const businessGroups_jsxList: Array<JSX.Element> = [];
+      for(const apMemberOfBusinessGroupDisplay of apMemberOfBusinessGroupDisplayList) {
+        businessGroups_jsxList.push(
+          <div>
+            <div>TODO: Business Groups: needs a panel with a tree table?</div>
+            <div><b>Business Group</b>: {apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName}</div>
+            <div className="p-ml-2">Roles: {renderBusinessGroupRoles(apMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList)}</div>
+          </div>
+        );
+      }
+      return businessGroups_jsxList;
+    }
+
+    // TODO: build this one: 
+    throw new Error(`${logName} - implement system users - multiple orgs display..`);
+    // return (
+    //   <React.Fragment>
+    //     <APDisplayUserOrganizationRoles
+    //       organizationId={props.organizationId}
+    //       apsUserResponse={managedObject.apiObject}
+    //       className="p-pt-2"
+    //     />
+    //   </React.Fragment>
+    // );
   }
 
   const renderManagedObject = () => {
@@ -175,20 +205,20 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
           <div className="user-view">
             <div className="detail-left">
               
-              <div><b>Activated</b>: {String(managedObject.apiObject.isActivated)}</div>
+              <div><b>Activated</b>: {String(managedObject.apsUserResponse.isActivated)}</div>
 
               <Divider />
 
-              <div><b>E-mail</b>: {managedObject.apiObject.profile.email}</div>
+              <div><b>E-mail</b>: {managedObject.apsUserResponse.profile.email}</div>
 
-              <div><b>First</b>: {managedObject.apiObject.profile.first}</div>
+              <div><b>First</b>: {managedObject.apsUserResponse.profile.first}</div>
 
-              <div><b>Last</b>: {managedObject.apiObject.profile.last}</div>
+              <div><b>Last</b>: {managedObject.apsUserResponse.profile.last}</div>
 
               <Divider />
 
               { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
-                <div><b>System Roles</b>: {managedObject.systemRoleDisplayNameListAsString ? managedObject.systemRoleDisplayNameListAsString : 'None'}</div>
+                <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
               }
 
               <div className="p-mt-2">{renderOrganizations()}</div>
@@ -197,7 +227,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
               
             </div>
             <div className="detail-right">
-              <div>Id: {managedObject.id}</div>
+              <div>Id: {managedObject.apEntityId.id}</div>
             </div>            
           </div>
         </div>  
@@ -209,7 +239,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     <div className="manage-users">
 
       { managedObject && 
-        <APComponentHeader header={`User: ${managedObject.displayName}`} />
+        <APComponentHeader header={`User: ${managedObject.apEntityId.displayName}`} />
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />

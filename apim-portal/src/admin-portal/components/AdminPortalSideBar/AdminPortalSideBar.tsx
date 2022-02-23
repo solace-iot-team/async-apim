@@ -96,14 +96,14 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
           },
           {
-            label: 'Business Groups',
-            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
-          },
-          {
             label: 'Users',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationUsers),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationUsers); }
+          },
+          {
+            label: 'Business Groups',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
           },
           {
             label: 'Settings',

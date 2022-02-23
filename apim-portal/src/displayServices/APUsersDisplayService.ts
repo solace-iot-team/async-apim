@@ -5,28 +5,31 @@ import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEnt
 import { APOrganizationsService } from '../utils/APOrganizationsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
+  APSListResponseMeta,
   APSMemberOfOrganizationGroups,
+  APSUser,
   APSUserProfile, 
   APSUserResponse, 
-  ApsUsersService, 
+  ApsUsersService,
+  EAPSSortDirection,
+  ListApsUsersResponse, 
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from './APBusinessGroupsDisplayService';
 import APRbacDisplayService from './APRbacDisplayService';
 import APAssetDisplayService, { TAPOrganizationAssetInfoDisplayList } from './APAssetsDisplayService';
+import { Globals } from '../utils/Globals';
+import { DataTableSortOrderType } from 'primereact/datatable';
 
-// export enum EAPAssetTypeDisplay {
-//   DEVELOPER_APP = "DEVELOPER_APP"
-// }
-// export type TAPUserAssetInfoDisplay = {
-//   apAssetTypeDisplay: EAPAssetTypeDisplay;
-//   apAssetEntityId: TAPEntityId;
-//   apOrganizationEntityId: TAPEntityId;
-// }
-// export type TAPUserAssetInfoDisplayList = Array<TAPUserAssetInfoDisplay>;
+export type TAPUserDisplayLazyLoadingTableParameters = {
+  isInitialSetting: boolean; // differentiate between first time and subsequent times
+  first: number; // index of the first row to be displayed
+  rows: number; // number of rows to display per page
+  page: number;
+  // sortField: (keyof APSUser | keyof APSUserProfile);
+  sortField: string;
+  sortOrder: DataTableSortOrderType
+}
 
-// export type xTAPMemberOfBusinessGroupDisplay = APSMemberOfBusinessGroup & {
-//   apBusinessGroupDisplay: TAPBusinessGroupDisplay;
-// }
 export type TAPMemberOfBusinessGroupDisplay =  {
   apBusinessGroupDisplay: TAPBusinessGroupDisplay;
   apBusinessGroupRoleEntityIdList: TAPEntityIdList;
@@ -55,9 +58,29 @@ export type TAPUserDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   // apMemberOfGroups ... 
 }
 export type TAPUserDisplayList = Array<TAPUserDisplay>;
+export type TAPUserDisplayListResponse = APSListResponseMeta & {
+  apUserDisplayList: TAPUserDisplayList;
+}
 
 class APUsersDisplayService {
   private readonly BaseComponentName = "APUsersDisplayService";
+
+  // TODO: re-work to do deep property names generically
+  public nameOf(name: keyof TAPUserDisplay) {
+    return name;
+  }
+  public nameOf_ApsUserResponse(name: keyof APSUserResponse) {
+    return `apsUserResponse.${name}`;
+  }
+  public nameOf_ApsUserResponse_ApsProfile(name: keyof APSUserProfile) {
+    return `apsUserResponse.profile.${name}`;
+  }
+  public map_nameOf_To_APSUser_nameOf(name: string): string {
+    if(name.startsWith('apsUserResponse.')) {
+      return name.replace('apsUserResponse.', '');
+    }
+    return name;
+  }
 
   private create_EmptyProfile(): APSUserProfile {
     return {
@@ -106,6 +129,14 @@ class APUsersDisplayService {
       apSearchContent: ''
     };
     return APSearchContentService.add_SearchContent<TAPUserDisplay>(base);
+  }
+
+  public create_ApBusinessGroupEntityIdList_From_ApMemberOfBusinessGroupDisplayList({apMemberOfBusinessGroupDisplayList}: {
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList
+  }): TAPEntityIdList {
+    return apMemberOfBusinessGroupDisplayList.map( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay) => {
+      return apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId
+    });
   }
 
   public find_ApMemberOfBusinessGroupDisplayList({organizationId, apUserDisplay }: {
@@ -249,6 +280,55 @@ class APUsersDisplayService {
       apMemberOfOrganizationGroupsDisplayList: apMemberOfOrganizationGroupsDisplayList
     });
   }
+
+  public async listApUserDisplay({
+    pageSize = 20,
+    pageNumber = 1,
+    sortFieldName,
+    sortDirection,
+    searchWordList,
+    searchOrganizationId,
+    excludeSearchOrganizationId,
+    searchIsActivated,
+    searchUserId,
+  }: {
+    pageSize?: number,
+    pageNumber?: number,
+    sortFieldName?: string,
+    sortDirection?: EAPSSortDirection,
+    searchWordList?: string,
+    searchOrganizationId?: string,
+    excludeSearchOrganizationId?: string,
+    searchIsActivated?: boolean,
+    searchUserId?: string,
+  }): Promise<TAPUserDisplayListResponse> {
+
+    const funcName = 'listApUserDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
+      pageSize: pageSize,
+      pageNumber: pageNumber,
+      sortFieldName: sortFieldName,
+      sortDirection: sortDirection,
+      searchWordList: searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined,
+      searchOrganizationId: searchOrganizationId,
+    });
+  
+    const list: TAPUserDisplayList = [];
+    for(const apsUserResponse of listApsUsersResponse.list) {
+      const apUserDisplay: TAPUserDisplay = await this.getApUserDisplay({
+        organizationId: searchOrganizationId,
+        userId: apsUserResponse.userId
+      });
+      list.push(apUserDisplay);
+    }
+    return {
+      meta: listApsUsersResponse.meta,
+      apUserDisplayList: list
+    };
+  }
+
 
 }
 

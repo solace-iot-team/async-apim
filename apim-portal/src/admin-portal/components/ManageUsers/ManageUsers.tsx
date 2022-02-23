@@ -15,8 +15,7 @@ import {
   TManageUsersScope 
 } from "./ManageUsersCommon";
 import { ListUsers } from "./ListUsers";
-import { ViewUser } from "./ViewUser_new";
-// import { ViewUser } from "./ViewUser";
+import { ViewUser } from "./ViewUser";
 import { DeleteUser } from "./DeleteUser";
 import { AddUser } from "./AddUser";
 import { EAction, EditNewUser } from "./EditNewUser";
@@ -118,10 +117,10 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (id: string, displayName: string): void => {
+  const onViewManagedObject = (apEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectId(id);
-    setManagedObjectDisplayName(displayName);
+    setManagedObjectId(apEntityId.id);
+    setManagedObjectDisplayName(apEntityId.displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -140,12 +139,12 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
-    onEditManagedObject(managedObjectId, managedObjectDisplayName);
+    onEditManagedObject({ id: managedObjectId, displayName: managedObjectDisplayName});
   }
-  const onEditManagedObject = (id: string, displayName: string): void => {
+  const onEditManagedObject = (entityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectId(id);
-    setManagedObjectDisplayName(displayName);
+    setManagedObjectId(entityId.id);
+    setManagedObjectDisplayName(entityId.displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
   // * Delete Object *
@@ -154,12 +153,12 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     const logName = `${componentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
-    onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
+    onDeleteManagedObject({ id: managedObjectId, displayName: managedObjectDisplayName});
   }
-  const onDeleteManagedObject = (id: string, displayName: string): void => {
+  const onDeleteManagedObject = (entityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectId(id);
-    setManagedObjectDisplayName(displayName);
+    setManagedObjectId(entityId.id);
+    setManagedObjectDisplayName(entityId.displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
   // * Toolbar *
