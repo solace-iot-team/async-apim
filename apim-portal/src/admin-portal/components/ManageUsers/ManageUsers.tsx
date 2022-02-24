@@ -20,10 +20,10 @@ import { DeleteUser } from "./DeleteUser";
 import { AddUser } from "./AddUser";
 import { EAction, EditNewUser } from "./EditNewUser";
 import { Globals } from "../../../utils/Globals";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
-import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 export interface IManageUsersProps {
   scope: TManageUsersScope;
@@ -211,11 +211,11 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: string, newDisplayName: string) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newUserEntityId: TAPEntityId) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectId(newId);
-      setManagedObjectDisplayName(newDisplayName);
+      setManagedObjectId(newUserEntityId.id);
+      setManagedObjectDisplayName(newUserEntityId.displayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -349,19 +349,6 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
           onNavigateHere={onSetManageUserComponentState}
         />      
       }
-      {/* {showViewComponent && managedObjectId && managedObjectDisplayName &&
-        <ViewUser
-          key={refreshCounter}
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
-          organizationId={organizationId}
-          onSuccess={onSubComponentSuccess} 
-          onError={onSubComponentError} 
-          onLoadingChange={setIsLoading}
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onNavigateHere={onSetManageUserComponentState}
-        />      
-      } */}
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteUser
           userId={managedObjectId}
@@ -398,8 +385,7 @@ export const ManageUsers: React.FC<IManageUsersProps> = (props: IManageUsersProp
       {showEditComponent && managedObjectId && managedObjectDisplayName &&
         <EditNewUser
           action={EAction.EDIT}
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
+          userEntityId={{id: managedObjectId, displayName: managedObjectDisplayName }}
           organizationId={organizationId}
           onNewSuccess={onNewManagedObjectSuccess} 
           onEditSuccess={onEditManagedObjectSuccess} 

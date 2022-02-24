@@ -14,31 +14,30 @@ import { MenuItem } from "primereact/api";
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 
 import { 
-  ApsUsersService, 
-  APSUserResponse,
-  APSUserReplace,
-  APSUser,
   APSOrganizationRolesResponseList,
+  APSSystemAuthRoleList,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { 
-  CommonName 
-} from '@solace-iot-team/apim-connector-openapi-browser';
-import { APOrganizationsService, TAPOrganization, TAPOrganizationList } from "../../../utils/APOrganizationsService";
+import { APOrganizationsService } from "../../../utils/APOrganizationsService";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
-import { EAPRbacRoleScope, EAPSCombinedAuthRole, TAPRbacRole, TAPRbacRoleList } from "../../../utils/APRbac";
+import { EAPSCombinedAuthRole } from "../../../utils/APRbac";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
-import { E_CALL_STATE_ACTIONS, ManageUsersCommon, TManagedObjectId } from "./ManageUsersCommon";
-import { APManageUserOrganizations } from "../../../components/APManageUserOrganizations/APManageUserOrganizations";
+import { E_CALL_STATE_ACTIONS } from "./ManageUsersCommon";
+import { APManageUserOrganizations } from "../../../components/APManageUserMemberOf/APManageUserOrganizations";
+import APUsersDisplayService, { TAPMemberOfOrganizationGroupsDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
+import { APManageUserMemberOfBusinessGroups } from "../../../components/APManageUserMemberOf/APManageUserMemberOfBusinessGroups";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -46,11 +45,10 @@ export enum EAction {
 }
 export interface IEditNewUserProps {
   action: EAction,
-  userId?: TManagedObjectId;
-  userDisplayName?: string;
-  organizationId?: CommonName;
+  userEntityId?: TAPEntityId;
+  organizationId?: string;
   onError: (apiCallState: TApiCallState) => void;
-  onNewSuccess: (apiCallState: TApiCallState, newUserId: TManagedObjectId, newDisplayName: string) => void;
+  onNewSuccess: (apiCallState: TApiCallState, newUserEntityId: TAPEntityId) => void;
   onEditSuccess: (apiCallState: TApiCallState, updatedDisplayName?: string) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -60,134 +58,209 @@ export interface IEditNewUserProps {
 export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProps) => {
   const componentName = 'EditNewUser';
 
-  type TReplaceApiObject = APSUserReplace;
-  type TCreateApiObject = APSUser;
-  type TGetApiObject = APSUserResponse;
-  type TManagedObject = APSUserResponse;
-  type TManagedObjectFormData = APSUserResponse;
+  type TManagedObject = TAPUserDisplay;
+  // type TManagedObjectFormData = TManagedObject & {
+  //   formSystemRoleList: APSSystemAuthRoleList;
+  // };
+  type TManagedObjectFormData = {
+    email: string;
+    first: string;
+    last: string;
+    password: string;
+    systemRoleIdList: APSSystemAuthRoleList;
+    isActivated: boolean;
+  };
+  type TManagedObjectFormDataEnvelope = {
+    formData: TManagedObjectFormData;
+  }
+  type TExternalManagedBusinessGroupsFormData = TAPMemberOfOrganizationGroupsDisplayList;
+
+  // type TReplaceApiObject = APSUserReplace;
+  // type TCreateApiObject = APSUser;
+  // type TGetApiObject = APSUserResponse;
+  // type TManagedObject = APSUserResponse;
+  // type TManagedObjectFormData = APSUserResponse;
   type TExternalManagedObjectFormData = {
     memberOfOrganizations: APSOrganizationRolesResponseList | undefined;
   }
   type TExternalManagedObjectTriggerFormValidationFunc = () => void;
   type TRoleSelectItem = { label: string, value: EAPSCombinedAuthRole };
-  type TManagedObjectFormDataRoleSelectItems = Array<TRoleSelectItem>;
+  // type TManagedObjectFormDataRoleSelectItems = Array<TRoleSelectItem>;
 
-  const [configContext] = React.useContext(ConfigContext);
 
-  const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
-    return getApiObject;
-  }
+  // const [configContext] = React.useContext(ConfigContext);
 
-  const transformManagedObjectToReplaceApiObject = (mo: TManagedObject): TReplaceApiObject => {
-    return {
-      isActivated: mo.isActivated,
-      password: mo.password,
-      profile: mo.profile,
-      memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(mo.memberOfOrganizations),
-      systemRoles: mo.systemRoles,
-    }
-  }
+  // const transformGetApiObjectToManagedObject = (getApiObject: TGetApiObject): TManagedObject => {
+  //   return getApiObject;
+  // }
 
-  const transformManagedObjectToCreateApiObject = (mo: TManagedObject): TCreateApiObject => {
-    return {
-      userId: mo.userId,
-      isActivated: mo.isActivated,
-      password: mo.password,
-      profile: mo.profile,
-      memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(mo.memberOfOrganizations),
-      systemRoles: mo.systemRoles,
-    }
-  }
+  // const transformManagedObjectToReplaceApiObject = (mo: TManagedObject): TReplaceApiObject => {
+  //   return {
+  //     isActivated: mo.isActivated,
+  //     password: mo.password,
+  //     profile: mo.profile,
+  //     memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(mo.memberOfOrganizations),
+  //     systemRoles: mo.systemRoles,
+  //   }
+  // }
 
-  const createManagedObjectFormDataSystemRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
-    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.SYSTEM];
-    const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
-    const selectItems: TManagedObjectFormDataRoleSelectItems = [];
-    rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
-      selectItems.push({
-        label: rbacRole.displayName,
-        value: rbacRole.id
-      });
-    });
-    return selectItems; 
-  }
+  // const transformManagedObjectToCreateApiObject = (mo: TManagedObject): TCreateApiObject => {
+  //   return {
+  //     userId: mo.userId,
+  //     isActivated: mo.isActivated,
+  //     password: mo.password,
+  //     profile: mo.profile,
+  //     memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(mo.memberOfOrganizations),
+  //     systemRoles: mo.systemRoles,
+  //   }
+  // }
 
-  const transformManagedObjectToFormData = (mo: TManagedObject): TManagedObjectFormData => {
+  // const createManagedObjectFormDataSystemRoleSelectItems = (): TManagedObjectFormDataRoleSelectItems => {
+  //   const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.SYSTEM];
+  //   const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
+  //   const selectItems: TManagedObjectFormDataRoleSelectItems = [];
+  //   rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
+  //     selectItems.push({
+  //       label: rbacRole.displayName,
+  //       value: rbacRole.id
+  //     });
+  //   });
+  //   return selectItems; 
+  // }
+
+  const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      ...mo,
-    }
-    return fd;
+        email: mo.apsUserResponse.profile.email,
+        first: mo.apsUserResponse.profile.first,
+        last: mo.apsUserResponse.profile.last,
+        password: mo.apsUserResponse.password,
+        isActivated: mo.apsUserResponse.isActivated,
+        systemRoleIdList: APEntityIdsService.create_IdList(mo.apSystemRoleEntityIdList) as APSSystemAuthRoleList
+    };
+    return {
+      formData: fd
+    };
   }
-  const transformManagedObjectToExternalFormData = (mo: TManagedObject): TExternalManagedObjectFormData => {
+
+  const transform_ManagedObject_To_ExternalFormData = (mo: TManagedObject): TExternalManagedObjectFormData => {
     const efd: TExternalManagedObjectFormData = {
-      memberOfOrganizations: mo.memberOfOrganizations
+      memberOfOrganizations: mo.apsUserResponse.memberOfOrganizations
     }
     return efd;
   }
-  const transformFormDataToManagedObject = (formData: TManagedObjectFormData, externalFormData: TExternalManagedObjectFormData): TManagedObject => {
-    const mo: TManagedObject = {
-      ...formData,
-      userId: formData.profile.email,
+
+  const transform_ManagedObject_To_ExternalBusinessGroupsFormData = (mo: TManagedObject): TExternalManagedBusinessGroupsFormData => {
+    return [...mo.apMemberOfOrganizationGroupsDisplayList];
+  }
+
+  const create_ManagedObject_From_FormEntities = ({orginalManagedObject, formDataEnvelope, externalManagedBusinessGroupsFormData, externalFormData}: {
+    orginalManagedObject: TManagedObject;
+    formDataEnvelope: TManagedObjectFormDataEnvelope;
+    externalManagedBusinessGroupsFormData: TExternalManagedBusinessGroupsFormData;
+    externalFormData: TExternalManagedObjectFormData;
+  }): TManagedObject => {
+
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${componentName}.${funcName}()`;
+
+    // alert(`${logName}: formData.apSystemRoleEntityIdList = ${JSON.stringify(formData.apSystemRoleEntityIdList, null, 2)}`);
+    // alert(`${logName}: formData.formSystemRoleList = ${JSON.stringify(formData.formSystemRoleList, null, 2)}`);
+    console.log(`${logName}: receiving formData = ${JSON.stringify(formDataEnvelope.formData, null, 2)}`);
+
+    const mo: TManagedObject = orginalManagedObject;
+    const fd: TManagedObjectFormData = formDataEnvelope.formData;
+    mo.apSystemRoleEntityIdList = APEntityIdsService.create_EntityIdList_FilteredBy_IdList({ 
+      apEntityIdList: mo.apSystemRoleEntityIdList,
+      idList: fd.systemRoleIdList
+    });
+    mo.apMemberOfOrganizationGroupsDisplayList = externalManagedBusinessGroupsFormData;
+    mo.apsUserResponse = {
+      ...orginalManagedObject.apsUserResponse,
       memberOfOrganizations: externalFormData.memberOfOrganizations
+    };
+    mo.apsUserResponse.profile = {
+      email: fd.email,
+      first: fd.first,
+      last: fd.last
     }
+    mo.apEntityId = {
+      id: fd.email,
+      displayName: APUsersDisplayService.createUserDisplayName(mo.apsUserResponse.profile)
+    }
+    mo.apsUserResponse.userId = fd.email;
+    mo.apsUserResponse.password = fd.password;
     if(props.action === EAction.NEW && props.organizationId !== undefined) {
-      mo.isActivated = true;
+      mo.apsUserResponse.isActivated = true;
     }
     return mo;
   }
+  // const transformFormDataToManagedObject = (formData: TManagedObjectFormData, externalFormData: TExternalManagedObjectFormData): TManagedObject => {
+  //   const mo: TManagedObject = {
+  //     ...formData,
+  //     userId: formData.profile.email,
+  //     memberOfOrganizations: externalFormData.memberOfOrganizations
+  //   }
+  //   if(props.action === EAction.NEW && props.organizationId !== undefined) {
+  //     mo.isActivated = true;
+  //   }
+  //   return mo;
+  // }
 
-  const createEmptyManagedObject = (): TManagedObject => {
-    const emptyManagedObject: TManagedObject = {
-      userId: '',
-      isActivated: false,
-      password: '',
-      profile: {
-        first: '',
-        last: '',
-        email: ''
-      },
-      systemRoles: [],
-      memberOfOrganizations: []
-    }
-    if(props.action === EAction.NEW) {
-      if(props.organizationId !== undefined) {
-        emptyManagedObject.memberOfOrganizations = [
-          {
-            organizationId: props.organizationId,
-            organizationDisplayName: '',
-            roles: []
-          }
-        ];
-      }
-    }
-    return emptyManagedObject;
-  }
+  // const createEmptyManagedObject = (): TManagedObject => {
+  //   const emptyManagedObject: TManagedObject = {
+  //     userId: '',
+  //     isActivated: false,
+  //     password: '',
+  //     profile: {
+  //       first: '',
+  //       last: '',
+  //       email: ''
+  //     },
+  //     systemRoles: [],
+  //     memberOfOrganizations: []
+  //   }
+  //   if(props.action === EAction.NEW) {
+  //     if(props.organizationId !== undefined) {
+  //       emptyManagedObject.memberOfOrganizations = [
+  //         {
+  //           organizationId: props.organizationId,
+  //           organizationDisplayName: '',
+  //           roles: []
+  //         }
+  //       ];
+  //     }
+  //   }
+  //   return emptyManagedObject;
+  // }
   
   let exterrnalManagedObjectTriggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc = () => void {};
-  const systemRolesSelectItemList = createManagedObjectFormDataSystemRoleSelectItems();
+  let exterrnalManaged_UserMemberOfBusinessGroups_TriggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc = () => void {};
+  // const systemRolesSelectItemList = createManagedObjectFormDataSystemRoleSelectItems();
   
-  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<TManagedObjectId>();
+  const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<string>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<string>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  const [managedObjectFormData, setManagedObjectFormData] = React.useState<TManagedObjectFormData>();
+  const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [externalManagedObjectFormData, setExternalManagedObjectFormData] = React.useState<TExternalManagedObjectFormData>();
-  const [availableOrganizationList, setAvailableOrganizationList] = React.useState<TAPOrganizationList>();  
-  const [currentOrganization, setCurrentOrganization] = React.useState<TAPOrganization>();
+  const [externalManagedBusinessGroupsFormData, setExternalManagedBusinessGroupsFormData] = React.useState<TExternalManagedBusinessGroupsFormData>();
+  const [availableOrganizationEntityIdList, setAvailableOrganizationEntityIdList] = React.useState<TAPEntityIdList>([]);
+  const [currentOrganizationEntityId, setCurrentOrganizationEntityId] = React.useState<TAPEntityId>();
+  const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const managedObjectUseForm = useForm<TManagedObjectFormData>();
+  const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const formId = componentName;
 
   // * Api Calls *
-  const apiGetManagedObject = async(managedObjectId: TManagedObjectId): Promise<TApiCallState> => {
+  const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${managedObjectId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.displayName}`);
     try { 
-      const apsUser: APSUserResponse = await ApsUsersService.getApsUser({
-        userId: managedObjectId
+      const object: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+        userId: userEntityId.id
       });
-      setManagedObject(transformGetApiObjectToManagedObject(apsUser));
+      setManagedObject(object);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -196,16 +269,21 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     return callState;
   }
 
-  const apiReplaceManagedObject = async(managedObjectId: TManagedObjectId, managedObject: TManagedObject): Promise<TApiCallState> => {
+  const apiReplaceManagedObject = async(moId: string, mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiReplaceManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${managedObjectId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${moId}`);
     try { 
-      await ApsUsersService.replaceApsUser({
-        userId: managedObjectId, 
-        requestBody: transformManagedObjectToReplaceApiObject(managedObject)
+      await APUsersDisplayService.replaceApUserDisplay({
+        userId: moId,
+        apUserDisplay: mo
       });
-      setUpdatedManagedObjectDisplayName(managedObject.userId);      
+      setUpdatedManagedObjectDisplayName(mo.apEntityId.displayName);
+      // await ApsUsersService.replaceApsUser({
+      //   userId: managedObjectId, 
+      //   requestBody: transformManagedObjectToReplaceApiObject(managedObject)
+      // });
+      // setUpdatedManagedObjectDisplayName(managedObject.userId);      
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -214,16 +292,21 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     return callState;
   }
 
-  const apiCreateManagedObject = async(managedObject: TManagedObject): Promise<TApiCallState> => {
+  const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_USER, `create user: ${managedObject.userId}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_USER, `create user: ${mo.apEntityId.id}`);
+
+    // console.log(`${logName}: mo = ${JSON.stringify(mo, null, 2)}`);
+    // alert(`${logName}: check console for managedObject to create....`);
+    // return callState;
+
     try { 
-      const createdApiObject: APSUser = await ApsUsersService.createApsUser({
-        requestBody: transformManagedObjectToCreateApiObject(managedObject)
+      await APUsersDisplayService.createApUserDisplay({
+        apUserDisplay: mo
       });
-      setCreatedManagedObjectId(createdApiObject.userId);
-      setCreatedManagedObjectDisplayName(createdApiObject.userId);      
+      setCreatedManagedObjectId(mo.apEntityId.id);
+      setCreatedManagedObjectDisplayName(mo.apEntityId.displayName);      
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -237,14 +320,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_AVAILABE_ORGANIZATIONS, 'retrieve list of organizations');
     try { 
-      if(!configContext.connector) {
-        setAvailableOrganizationList([]);  
-        // TODO: create user message or warning to pop up and render in page
-        throw new Error('cannot get list of organizations (no active connector config)');
-      } else {
-        const apOrganizationList: TAPOrganizationList = await APOrganizationsService.listOrganizations({});
-        setAvailableOrganizationList(APOrganizationsService.sortAPOrganizationList_byDisplayName(apOrganizationList));
-      }
+      const organizationEntityIdList: TAPEntityIdList = await APOrganizationsService.listOrganizationEntityIdList();
+      setAvailableOrganizationEntityIdList(organizationEntityIdList);
+      // if(!configContext.connector) {
+      //   setAvailableOrganizationList([]);  
+      //   // TODO: create user message or warning to pop up and render in page
+      //   throw new Error('cannot get list of organizations (no active connector config)');
+      // } else {
+      //   const apOrganizationList: TAPOrganizationList = await APOrganizationsService.listOrganizations({});
+      //   setAvailableOrganizationList(APOrganizationsService.sortAPOrganizationList_byDisplayName(apOrganizationList));
+      // }
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -257,10 +342,31 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const funcName = 'apiGetOrganization';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve organization: ${props.organizationId}`);
-    try { 
-      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(organizationId);
-      setAvailableOrganizationList([apOrganization]);
-      setCurrentOrganization(apOrganization);
+    try {
+      const organzationEntityId: TAPEntityId = await APOrganizationsService.getOrganizationEntityId(organizationId);
+      setAvailableOrganizationEntityIdList([organzationEntityId]);
+      setCurrentOrganizationEntityId(organzationEntityId);
+
+      // const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(organizationId);
+      // setAvailableOrganizationList([apOrganization]);
+      // setCurrentOrganization(apOrganization);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const apiGetAllApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
+    const funcName = 'apiGetAllApBusinessGroupDisplayList';
+    const logName = `${componentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
+    try {
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
+        organizationId: organizationId
+      });
+      setCompleteOrganizationApBusinessGroupDisplayList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -274,12 +380,15 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
     if(!props.organizationId) await apiGetAvailableOrganizations();
-    else await apiGetOrganization(props.organizationId);
+    else {
+      await apiGetOrganization(props.organizationId);
+      await apiGetAllApBusinessGroupDisplayList(props.organizationId);
+    }
     if(props.action === EAction.EDIT) {
-      if(!props.userId) throw new Error(`${logName}: props.userId is undefined`);
-      await apiGetManagedObject(props.userId);
+      if(props.userEntityId === undefined) throw new Error(`${logName}: props.userEntityId === undefined`);
+      await apiGetManagedObject(props.userEntityId);
     } else {
-      setManagedObject(createEmptyManagedObject());
+      setManagedObject(await APUsersDisplayService.create_EmptyObject({ organizationId: props.organizationId }));
     }
     props.onLoadingChange(false);
   }
@@ -295,14 +404,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
 
   React.useEffect(() => {
     if(managedObject) {
-      setManagedObjectFormData(transformManagedObjectToFormData(managedObject));
-      setExternalManagedObjectFormData(transformManagedObjectToExternalFormData(managedObject));
+      setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
+      setExternalManagedObjectFormData(transform_ManagedObject_To_ExternalFormData(managedObject));
+      setExternalManagedBusinessGroupsFormData(transform_ManagedObject_To_ExternalBusinessGroupsFormData(managedObject));
     }
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormData) doPopulateManagedObjectFormDataValues(managedObjectFormData);
-  }, [managedObjectFormData]) /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    // doPopulateManagedObjectFormDataValues(managedObjectFormDataEnvelope);
+  }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus]';
@@ -312,7 +423,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       else if(props.action === EAction.NEW && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_USER) {
         if(!createdManagedObjectId) throw new Error(`${logName}: createdManagedObjectId is undefined`);
         if(!createdManagedObjectDisplayName) throw new Error(`${logName}: createdManagedObjectDisplayName is undefined`);
-        props.onNewSuccess(apiCallStatus, createdManagedObjectId, createdManagedObjectDisplayName);
+        props.onNewSuccess(apiCallStatus, { id: createdManagedObjectId, displayName: createdManagedObjectDisplayName });
       }  
       else if(props.action === EAction.EDIT && apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_REPLACE_USER) {
         props.onEditSuccess(apiCallStatus, updatedManagedObjectDisplayName);
@@ -335,26 +446,32 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     exterrnalManagedObjectTriggerFormValidationFunc = triggerFormValidationFunc;
   }
 
-  const doPopulateManagedObjectFormDataValues = (managedObjectFormData: TManagedObjectFormData) => {
-    managedObjectUseForm.setValue('userId', managedObjectFormData.userId);
-    managedObjectUseForm.setValue('password', managedObjectFormData.password);
-    managedObjectUseForm.setValue('isActivated', managedObjectFormData.isActivated);
-    managedObjectUseForm.setValue('systemRoles', managedObjectFormData.systemRoles);
-    // uncontrolled, managed outside form in separate component
-    // managedObjectUseForm.setValue('memberOfOrganizations', managedObjectFormData.memberOfOrganizations);
-    managedObjectUseForm.setValue('profile.first', managedObjectFormData.profile.first);
-    managedObjectUseForm.setValue('profile.last', managedObjectFormData.profile.last);
-    managedObjectUseForm.setValue('profile.email', managedObjectFormData.profile.email);
+
+  const onMemberOfBusinessGroupsUpdate = (updatedApMemberOfOrganizationGroupsDisplayList: TAPMemberOfOrganizationGroupsDisplayList) => {
+    const funcName = 'onMemberOfBusinessGroupsUpdate';
+    const logName = `${componentName}.${funcName}()`;
+    if(externalManagedBusinessGroupsFormData === undefined) throw new Error(`${logName}: externalManagedBusinessGroupsFormData === undefined`);
+    setExternalManagedBusinessGroupsFormData(updatedApMemberOfOrganizationGroupsDisplayList);
   }
 
-  const doSubmitManagedObject = async (managedObject: TManagedObject) => {
+  const register_APManageUserMemberOfBusinessGroups_FormValidation_Func = (triggerFormValidationFunc: TExternalManagedObjectTriggerFormValidationFunc) => {
+    exterrnalManaged_UserMemberOfBusinessGroups_TriggerFormValidationFunc = triggerFormValidationFunc;
+  }
+
+
+
+  // const doPopulateManagedObjectFormDataValues = (mofde: TManagedObjectFormDataEnvelope) => {
+  //   managedObjectUseForm.setValue('formData', mofde.formData);
+  // }
+
+  const doSubmitManagedObject = async (mo: TManagedObject) => {
     const funcName = 'doSubmitManagedObject';
     const logName = `${componentName}.${funcName}()`;
     props.onLoadingChange(true);
-    if(props.action === EAction.NEW) await apiCreateManagedObject(managedObject);
+    if(props.action === EAction.NEW) await apiCreateManagedObject(mo);
     else {
-      if(!props.userId) throw new Error(`${logName}: userId is undefined`);
-      await apiReplaceManagedObject(props.userId, managedObject);
+      if(props.userEntityId === undefined) throw new Error(`${logName}: props.userEntityId === undefined`);
+      await apiReplaceManagedObject(props.userEntityId.id, mo);
     }
     props.onLoadingChange(false);
   }
@@ -369,14 +486,39 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     // alert(`isMemberOfOrganizationsValid: it is valid`)
     return true;
   }
-  const onSubmitManagedObjectForm = (newFormData: TManagedObjectFormData) => {
+  const isMemberOfBusinessGroupsValid = (apMemberOfOrganizationGroupsDisplayList: TAPMemberOfOrganizationGroupsDisplayList | undefined): boolean => {
+    const funcName = 'isMemberOfBusinessGroupsValid';
+    const logName = `${componentName}.${funcName}()`;
+    exterrnalManaged_UserMemberOfBusinessGroups_TriggerFormValidationFunc();
+    // do more validation here
+    if(apMemberOfOrganizationGroupsDisplayList === undefined) return false;
+    for(const apMemberOfOrganizationGroupsDisplay of apMemberOfOrganizationGroupsDisplayList) {
+      if(apMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList.length === 0) return false;
+      for(const apMemberOfBusinessGroupDisplay of apMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList) {
+        if(apMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList.length === 0) return false;
+      }
+    }
+    return true;
+  }
+  const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${componentName}.${funcName}()`;
-    if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // if(!managedObjectFormData) throw new Error(`${logName}: managedObjectFormData is undefined`);
     if(!externalManagedObjectFormData) throw new Error(`${logName}: externalManagedObjectFormData is undefined`);
+    if(!externalManagedBusinessGroupsFormData) throw new Error(`${logName}: externalManagedBusinessGroupsFormData is undefined`);
     // validate externally controlled memberOfOrganizations
     if(!isMemberOfOrganizationsValid(externalManagedObjectFormData.memberOfOrganizations)) return false;
-    doSubmitManagedObject(transformFormDataToManagedObject(newFormData, externalManagedObjectFormData));
+    if(!isMemberOfBusinessGroupsValid(externalManagedBusinessGroupsFormData)) {
+      alert(`${logName}: isMemberOfBusinessGroupsValid returned false`)
+      return false;
+    }
+    doSubmitManagedObject(create_ManagedObject_From_FormEntities({
+      orginalManagedObject: managedObject,
+      formDataEnvelope: newMofde,
+      externalFormData: externalManagedObjectFormData,
+      externalManagedBusinessGroupsFormData: externalManagedBusinessGroupsFormData, 
+    }));
   }
 
   const onCancelManagedObjectForm = () => {
@@ -437,17 +579,20 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
 
     const renderContent = () => {
       if(!externalManagedObjectFormData) throw new Error(`${logName}: externalManagedObjectFormData is undefined`);
-      if(!availableOrganizationList) throw new Error(`${logName}: availableOrganizationList is undefined`);
       return (
-        <APManageUserOrganizations
-          formId={componentName+'_APManageUserOrganizations'}
-          availableOrganizationList={availableOrganizationList}
-          organizationRolesList={externalManagedObjectFormData.memberOfOrganizations ? externalManagedObjectFormData.memberOfOrganizations : []}
-          organizationId={props.organizationId}
-          organizationDisplayName={currentOrganization?.displayName}
-          onChange={onOrganizationRolesListUpdate}
-          registerTriggerFormValidationFunc={register_APManageUserOrganizations_FormValidation_Func}
-        />
+        <React.Fragment>
+          <p><b>TODO: leave in here until removed in Server - backwards compatibility</b></p>
+          <APManageUserOrganizations
+            formId={componentName+'_APManageUserOrganizations'}
+            availableOrganizationEntityIdList={availableOrganizationEntityIdList}
+            organizationRolesList={externalManagedObjectFormData.memberOfOrganizations ? externalManagedObjectFormData.memberOfOrganizations : []}
+            organizationEntityId={currentOrganizationEntityId}
+            // organizationId={props.organizationId}
+            // organizationDisplayName={currentOrganization?.displayName}
+            onChange={onOrganizationRolesListUpdate}
+            registerTriggerFormValidationFunc={register_APManageUserOrganizations_FormValidation_Func}
+          />
+        </React.Fragment>
       );
     }
     // main
@@ -470,8 +615,78 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     );
   }
 
+  const renderManageMemberOfBusinessGroups = (): JSX.Element => {
+    const funcName = 'renderManageMemberOfBusinessGroups';
+    const logName = `${componentName}.${funcName}()`;
+
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Organizations
+          </span>
+        </div>
+      );
+    }
+
+    const renderContent = (organizationEntityId: TAPEntityId) => {
+      if(externalManagedBusinessGroupsFormData === undefined) throw new Error(`${logName}: externalManagedBusinessGroupsFormData === undefined`);
+      if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+      return (
+        <React.Fragment>
+          <p><b>TODO: Business Groups</b></p>
+          <APManageUserMemberOfBusinessGroups
+            formId={componentName+'_APManageUserMemberOfBusinessGroups'}
+            organizationEntityId={organizationEntityId}
+            completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
+            apMemberOfOrganizationGroupsDisplayList={managedObject.apMemberOfOrganizationGroupsDisplayList}     
+            onChange={onMemberOfBusinessGroupsUpdate}       
+            registerTriggerFormValidationFunc={register_APManageUserMemberOfBusinessGroups_FormValidation_Func}
+          />
+        </React.Fragment>
+      );
+    }
+    // main
+    if(props.organizationId !== undefined) {
+      if(currentOrganizationEntityId === undefined) throw new Error(`${logName}: currentOrganizationEntityId === undefined`);
+      return renderContent(currentOrganizationEntityId);
+    }
+
+    // only supports 1 organization
+    return (<></>);
+    // return (  
+    //   <React.Fragment>
+    //     <Panel 
+    //       headerTemplate={panelHeaderTemplate} 
+    //       toggleable={true}
+    //       // collapsed={memberOfOrganizations.length === 0}
+    //       collapsed={false}
+    //     >
+    //       <React.Fragment>
+    //         <div className='p-mb-6'/>
+    //         {renderContent()}
+    //       </React.Fragment>
+    //     </Panel>
+    //   </React.Fragment>
+    // );
+  }
+
   const renderManagedObjectForm = () => {
     const isNewUser: boolean = (props.action === EAction.NEW);
+
+    // testing 
+    // if(managedObject !== undefined) {
+    //   const apEntity = APUsersDisplayService.getPropertyNameString(managedObject, (x) => x.apEntityId);
+    // }
+
+
+
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -481,7 +696,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
               <span className="p-float-label p-input-icon-right">
                 <i className="pi pi-envelope" />
                 <Controller
-                  name="profile.email"
+                  name="formData.email"
                   control={managedObjectUseForm.control}
                   rules={APSOpenApiFormValidationRules.APSEmail("Enter E-Mail.", true)}
                   render={( { field, fieldState }) => {
@@ -496,15 +711,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                         />
                   )}}
                 />
-                <label htmlFor="profile.email" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.profile?.email })}>E-Mail*</label>
+                {/* <label htmlFor={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('email')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsUserResponse?.profile?.email })}>E-Mail*</label> */}
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.email })}>E-Mail*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.profile?.email)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.email)}
             </div>
             {/* Password */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="password"
+                  name="formData.password"
                   control={managedObjectUseForm.control}
                   rules={{
                     required: "Enter Password.",
@@ -524,15 +740,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                         />
                   )}}
                 />
-                <label htmlFor="password" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.password })}>Password*</label>
+                {/* <label htmlFor={APUsersDisplayService.nameOf_ApsUserResponse('password')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsUserResponse?.password })}>Password*</label> */}
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.password })}>Password*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.password)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.password)}
             </div>
             {/* First Name */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="profile.first"
+                  name="formData.first"
                   control={managedObjectUseForm.control}
                   rules={APSOpenApiFormValidationRules.APSUserName("Enter First Name.", true)}
                   render={( { field, fieldState }) => {
@@ -546,15 +763,16 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                         />
                   )}}
                 />
-                <label htmlFor="profile.first" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.profile?.first })}>First Name*</label>
+                {/* <label htmlFor={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('first')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsUserResponse?.profile?.first })}>First Name*</label> */}
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.first })}>First Name*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.profile?.first)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.first)}
             </div>
             {/* Last Name */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
-                  name="profile.last"
+                  name="formData.last"
                   control={managedObjectUseForm.control}
                   rules={APSOpenApiFormValidationRules.APSUserName("Enter Last Name.", true)}
                   render={( { field, fieldState }) => {
@@ -567,12 +785,40 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                         />
                   )}}
                 />
-                <label htmlFor="profile.last" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.profile?.last })}>Last Name*</label>
+                {/* <label htmlFor={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('last')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsUserResponse?.profile?.last })}>Last Name*</label> */}
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.last })}>Last Name*</label>
               </span>
-              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.profile?.last)}
+              {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.last)}
             </div>
             {/* System Roles */}
             {props.organizationId === undefined &&
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    name="formData.systemRoleIdList"
+                    control={managedObjectUseForm.control}
+                    render={( { field, fieldState }) => {
+                        // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
+                        return(
+                          <MultiSelect
+                            display="chip"
+                            value={field.value ? [...field.value] : []} 
+                            options={APRbacDisplayService.get_SystemRolesSelect_EntityIdList()} 
+                            onChange={(e) => field.onChange(e.value)}
+                            optionLabel={APEntityIdsService.nameOf('displayName')}
+                            optionValue={APEntityIdsService.nameOf('id')}
+                            // style={{width: '500px'}} 
+                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                          />
+                    )}}
+                  />
+                  {/* <label htmlFor={APDisplayUtils.nameOf<TManagedObjectFormData>('formSystemRoleList')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formSystemRoleList })}>System Role(s)</label> */}
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.systemRoleIdList })}>System Role(s)</label>
+                </span>
+                {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.formData?.systemRoleIdList)}
+              </div>
+            }
+            {/* {props.organizationId === undefined &&
               <div className="p-field">
                 <span className="p-float-label">
                   <Controller
@@ -597,13 +843,13 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                 </span>
                 {displayManagedObjectFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.systemRoles)}
               </div>
-            }
+            } */}
             {/* isActivated */}
             {props.organizationId === undefined &&
               <div className="p-field-checkbox">
                 <span>
                   <Controller
-                    name="isActivated"
+                    name="formData.isActivated"
                     control={managedObjectUseForm.control}
                     render={( { field, fieldState }) => {
                         // console.log(`field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
@@ -616,15 +862,20 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                           />
                     )}}
                   />
-                  <label htmlFor="isActivated" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.isActivated })}> Activate User</label>
+                  {/* <label htmlFor={APUsersDisplayService.nameOf_ApsUserResponse('isActivated')} className={classNames({ 'p-error': managedObjectUseForm.formState.errors.apsUserResponse?.isActivated })}> Activate User</label> */}
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.isActivated })}> Activate User</label>
                 </span>
-                {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.isActivated)}
+                {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.isActivated)}
               </div>
             }
           </form>  
-          {/* Organizations & Roles */}
+          {/* OLD Organizations & Roles */}
           <div className="p-field">
             { renderManageOrganzationsRoles() }
+          </div>
+          {/* Organization Groups & Roles */}
+          <div className="p-field">
+            { renderManageMemberOfBusinessGroups() }
           </div>
           {/* footer */}
           <Divider />
@@ -642,12 +893,12 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       }
 
       {props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit User: ${props.userId}`} />
+        <APComponentHeader header={`Edit User: ${props.userEntityId?.displayName}`} />
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && availableOrganizationList && managedObjectFormData &&
+      {managedObject && availableOrganizationEntityIdList.length > 0 && managedObjectFormDataEnvelope &&
         renderManagedObjectForm()
       }
     </div>

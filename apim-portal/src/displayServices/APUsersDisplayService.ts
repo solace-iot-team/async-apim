@@ -1,14 +1,19 @@
 import { ApiError, App, AppsService, Developer, DevelopersService } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TViewAPSOrganizationRolesList } from '../admin-portal/components/ManageUsers/ManageUsersCommon';
+import { ManageUsersCommon, TViewAPSOrganizationRolesList } from '../admin-portal/components/ManageUsers/ManageUsersCommon';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
-import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import { APOrganizationsService } from '../utils/APOrganizationsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
+  APSBusinessGroupAuthRoleList,
   APSListResponseMeta,
+  APSMemberOfBusinessGroup,
   APSMemberOfOrganizationGroups,
+  APSMemberOfOrganizationGroupsList,
+  APSSystemAuthRoleList,
   APSUser,
   APSUserProfile, 
+  APSUserReplace, 
   APSUserResponse, 
   ApsUsersService,
   EAPSSortDirection,
@@ -82,6 +87,27 @@ class APUsersDisplayService {
     return name;
   }
 
+  // TODO: this is generic
+  // returns the name as string of the property
+  // public getPropertyNameString = <T extends Record<string, unknown>>(obj: T, selector: (x: Record<keyof T, keyof T>) => keyof T): keyof T => {
+  //   const keyRecord = Object.keys(obj).reduce((res, key) => {
+  //     const typedKey = key as keyof T
+  //     res[typedKey] = typedKey
+  //     return res
+  //   }, {} as Record<keyof T, keyof T>)
+  //   return selector(keyRecord)
+  // }
+  public getPropertyNameString = <T extends TAPUserDisplay>(obj: T, selector: (x: Record<keyof T, keyof T>) => keyof T): keyof T => {
+    const keyRecord = Object.keys(obj).reduce((res, key) => {
+      const typedKey = key as keyof T
+      res[typedKey] = typedKey
+      return res
+    }, {} as Record<keyof T, keyof T>)
+    return selector(keyRecord)
+  }
+  // END: TODO: re-work to do deep property names generically
+
+
   private create_EmptyProfile(): APSUserProfile {
     return {
       first: '',
@@ -95,18 +121,47 @@ class APUsersDisplayService {
       userId: '',
       password: '',
       profile: this.create_EmptyProfile(),
+      systemRoles: [],
+      memberOfOrganizations: [],
+      memberOfOrganizationGroups: []
     };
   }
 
-  public create_EmptyObject(): TAPUserDisplay {
+  public async create_EmptyObject({organizationId}: {
+    organizationId: string | undefined
+  }): Promise<TAPUserDisplay> {
+
+    const emptyApsUserResponse: APSUserResponse = this.create_EmptyApsUserResponse();
+    const emptyApMemberOfOrganizationGroupDisplayList: TAPMemberOfOrganizationGroupsDisplayList = [];
+    if(organizationId !== undefined) {
+      const organizationEntityId: TAPEntityId = await APOrganizationsService.getOrganizationEntityId(organizationId);
+      emptyApsUserResponse.memberOfOrganizations = [
+        {
+          organizationId: organizationId,
+          organizationDisplayName: organizationEntityId.displayName,
+          roles: []
+        }
+      ];
+      const rootBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getRootApBusinessGroupDisplay({
+        organizationId: organizationId,
+      });
+      emptyApMemberOfOrganizationGroupDisplayList.push({
+        apOrganizationEntityId: organizationEntityId,
+        apMemberOfBusinessGroupDisplayList: [{
+          apBusinessGroupRoleEntityIdList: [],
+          apBusinessGroupDisplay: rootBusinessGroupDisplay,
+        }]
+      });
+    }
+
     return this.create_ApUserDisplay_From_ApiEntities({
-      apsUserResponse: this.create_EmptyApsUserResponse(),
+      apsUserResponse: emptyApsUserResponse,
       apOrganizationAssetInfoDisplayList: [],
-      apMemberOfOrganizationGroupsDisplayList: []
+      apMemberOfOrganizationGroupsDisplayList: emptyApMemberOfOrganizationGroupDisplayList
     });
   }
 
-  private createUserDisplayName(apsUserProfile: APSUserProfile): string {
+  public createUserDisplayName(apsUserProfile: APSUserProfile): string {
     return `${apsUserProfile.first} ${apsUserProfile.last}`;
   }
   protected create_ApUserDisplay_From_ApiEntities({apsUserResponse, apOrganizationAssetInfoDisplayList, apMemberOfOrganizationGroupsDisplayList}: {
@@ -327,6 +382,86 @@ class APUsersDisplayService {
       meta: listApsUsersResponse.meta,
       apUserDisplayList: list
     };
+  }
+
+  private create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(apMemberOfOrganizationGroupsDisplayList: TAPMemberOfOrganizationGroupsDisplayList): APSMemberOfOrganizationGroupsList {
+    const apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = [];
+    for(const apMemberOfOrganizationGroupsDisplay of apMemberOfOrganizationGroupsDisplayList) {
+      const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups = {
+        organizationId: apMemberOfOrganizationGroupsDisplay.apOrganizationEntityId.id,
+        memberOfBusinessGroupList: []
+      }
+      for(const apMemberOfBusinessGroupDisplay of apMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList) {
+        const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup = {
+          businessGroupId: apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id,
+          roles: APEntityIdsService.create_IdList(apMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList) as APSBusinessGroupAuthRoleList,
+        }
+        apsMemberOfOrganizationGroups.memberOfBusinessGroupList.push(apsMemberOfBusinessGroup);
+      }
+      apsMemberOfOrganizationGroupsList.push(apsMemberOfOrganizationGroups);
+    }
+    return apsMemberOfOrganizationGroupsList;
+  }
+
+  public async replaceApUserDisplay({
+    userId,
+    apUserDisplay
+  }: {
+    userId: string;
+    apUserDisplay: TAPUserDisplay
+  }): Promise<void> {
+    const funcName = 'replaceApUserDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const replace: APSUserReplace = {
+      isActivated: apUserDisplay.apsUserResponse.isActivated,
+      password: apUserDisplay.apsUserResponse.password,
+      profile: apUserDisplay.apsUserResponse.profile,
+      systemRoles: APEntityIdsService.create_IdList(apUserDisplay.apSystemRoleEntityIdList) as APSSystemAuthRoleList,
+      memberOfOrganizationGroups: this.create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(apUserDisplay.apMemberOfOrganizationGroupsDisplayList),
+      // TODO: remove once removed
+      memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(apUserDisplay.apsUserResponse.memberOfOrganizations),
+    }
+    await ApsUsersService.replaceApsUser({
+      userId: userId, 
+      requestBody: replace
+    });
+  }
+
+  /**
+   * Create APSUser from a TAPUserDisplay.
+   * 
+   * Maps:
+   * - userId: apUserDisplay.apEntity.id
+   * - isActivated: apUserDisplay.apsUserResponse.isActivated,
+   * - password: apUserDisplay.apsUserResponse.password,
+   * - profile: apUserDisplay.apsUserResponse.profile,
+   * - systemRoles: apUserDisplay.apSystemRoleEntityIdList
+   * - memberOfOrganizationGroups: apUserDisplay.apMemberOfOrganizationGroupsDisplayList
+   * @return void
+   * @throws ApiError
+   */
+  public async createApUserDisplay({
+    apUserDisplay
+  }: {
+    apUserDisplay: TAPUserDisplay
+  }): Promise<void> {
+    const funcName = 'createApUserDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const create: APSUser = {
+      userId: apUserDisplay.apEntityId.id,
+      isActivated: apUserDisplay.apsUserResponse.isActivated,
+      password: apUserDisplay.apsUserResponse.password,
+      profile: apUserDisplay.apsUserResponse.profile,
+      systemRoles: APEntityIdsService.create_IdList(apUserDisplay.apSystemRoleEntityIdList) as APSSystemAuthRoleList,
+      memberOfOrganizationGroups: this.create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(apUserDisplay.apMemberOfOrganizationGroupsDisplayList),
+      // TODO: remove once removed
+      memberOfOrganizations: ManageUsersCommon.transformAPSOrganizationRolesResponseListToAPSOrganizationRolesList(apUserDisplay.apsUserResponse.memberOfOrganizations),
+    }
+    await ApsUsersService.createApsUser({
+      requestBody: create
+    });
   }
 
 

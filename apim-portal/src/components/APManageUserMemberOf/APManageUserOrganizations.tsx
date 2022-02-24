@@ -9,7 +9,6 @@ import { Column } from "primereact/column";
 import { Dropdown } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 
-import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
   APSOrganizationAuthRoleList, 
   APSOrganizationRolesResponse, 
@@ -17,18 +16,19 @@ import {
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ConfigHelper, TRoleSelectItemList } from "../ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
-import { TAPOrganization, TAPOrganizationList } from "../../utils/APOrganizationsService";
-import APEntityIdsService, { TAPEntityIdList } from "../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';
 
 export interface IAPManageUserOrganizationsProps {
   formId: string;
-  availableOrganizationList: TAPOrganizationList;
+  // availableOrganizationList: TAPOrganizationList;
+  availableOrganizationEntityIdList: TAPEntityIdList;
   organizationRolesList: APSOrganizationRolesResponseList;
-  organizationId?: CommonName;
-  organizationDisplayName?: CommonDisplayName;
+  organizationEntityId?: TAPEntityId;
+  // organizationId?: CommonName;
+  // organizationDisplayName?: CommonDisplayName;
   onChange: (organizationRolesResponseList: APSOrganizationRolesResponseList) => void;
   registerTriggerFormValidationFunc: (formValidationFunc: () => void) => void;
 }
@@ -58,23 +58,28 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
 
   const createOrganizationSelectItems = (): TAPEntityIdList => {
     let selectItems: TAPEntityIdList = [];
-    if(props.organizationId === undefined && props.organizationDisplayName === undefined) {
-      props.availableOrganizationList.forEach( (availableOrganization: TAPOrganization) => {
+    if(props.organizationEntityId === undefined) {
+      props.availableOrganizationEntityIdList.forEach( (availableOrganization) => {
         const alreadySelected = selectedOrganizationRolesList.find((apsOrganizationRoles: APSOrganizationRolesResponse) => {
-          return availableOrganization.name === apsOrganizationRoles.organizationId;
+          return availableOrganization.id === apsOrganizationRoles.organizationId;
         });
         if(!alreadySelected) {
-          selectItems.push({
-            id: availableOrganization.name,
-            displayName: availableOrganization.displayName
-          });
+          selectItems.push(availableOrganization);
         }
       });
-    } else if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
-        selectItems.push({
-          id: props.organizationId,
-          displayName: props.organizationDisplayName ? props.organizationDisplayName : props.organizationId
-        });  
+      // props.availableOrganizationList.forEach( (availableOrganization: TAPOrganization) => {
+      //   const alreadySelected = selectedOrganizationRolesList.find((apsOrganizationRoles: APSOrganizationRolesResponse) => {
+      //     return availableOrganization.name === apsOrganizationRoles.organizationId;
+      //   });
+      //   if(!alreadySelected) {
+      //     selectItems.push({
+      //       id: availableOrganization.name,
+      //       displayName: availableOrganization.displayName
+      //     });
+      //   }
+      // });
+    } else if(props.organizationEntityId !== undefined) {
+        selectItems.push(props.organizationEntityId);
     }
     return APEntityIdsService.sort_byDisplayName(selectItems);
   }
@@ -97,20 +102,20 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     const logName = `${componentName}.${funcName}()`;
     // alert(`${componentName}: mounting: props.organizationRolesList=${JSON.stringify(props.organizationRolesList, null, 2)}`);
     // alert(`${componentName}: mounting:  props.availableOrganizationList=${JSON.stringify(props.availableOrganizationList, null, 2)}`);
-    const validInputCombination: boolean = (props.organizationId !== undefined && props.organizationDisplayName !== undefined) || (props.organizationId === undefined && props.organizationDisplayName === undefined);
-    if(!validInputCombination) {
-      throw new Error(`${logName}: invalid input combination: props.organizationId=${props.organizationId}, props.organizationDisplayName=${props.organizationDisplayName}`);
-    }
-    if(props.organizationId)
-    if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
+    // const validInputCombination: boolean = (props.organizationId !== undefined && props.organizationDisplayName !== undefined) || (props.organizationId === undefined && props.organizationDisplayName === undefined);
+    // const validInputCombination: boolean = (props.organizationEntityId !== undefined ) || (props.organizationEntityId === undefined);
+    // if(!validInputCombination) {
+    //   throw new Error(`${logName}: invalid input combination: props.organizationId=${props.organizationId}, props.organizationDisplayName=${props.organizationDisplayName}`);
+    // }
+    if(props.organizationEntityId !== undefined) {
       let initialOrganizationRoles: APSOrganizationRolesResponse = {
-        organizationId: props.organizationId,
-        organizationDisplayName: props.organizationDisplayName,
+        organizationId: props.organizationEntityId.id,
+        organizationDisplayName: props.organizationEntityId.displayName,
         roles: []
       }
       if(props.organizationRolesList.length > 0) {
         const roles = props.organizationRolesList.find( (apsOrganizationRoles: APSOrganizationRolesResponse) => {
-          return apsOrganizationRoles.organizationId === props.organizationId;
+          return apsOrganizationRoles.organizationId === props.organizationEntityId?.id;
         });
         if(!roles) throw new Error(`${logName}: roles is undefined`);
         initialOrganizationRoles = roles
@@ -170,8 +175,8 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   }
   const onSubmitOrganizationRolesForm = (organizationRolesFormData: TOrganizationRolesFormData) => {
     // alert(`organizationRolesFormData = ${JSON.stringify(organizationRolesFormData, null, 2)}`);
-    const found = props.availableOrganizationList.find((x) => {
-      return x.name === organizationRolesFormData.organizationId;
+    const found = props.availableOrganizationEntityIdList.find((x) => {
+      return x.id === organizationRolesFormData.organizationId;
     });
     const fd: TOrganizationRolesFormData = {
       ...organizationRolesFormData,
@@ -185,10 +190,10 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   }
 
   const onSelectedRolesChanged = (authRoleList: APSOrganizationAuthRoleList) => {
-    if(props.organizationId !== undefined && props.organizationDisplayName !== undefined) {
+    if(props.organizationEntityId !== undefined) {
       doUpdateManagedOrganizationRoles({
-        organizationId: props.organizationId,
-        organizationDisplayName: props.organizationDisplayName,
+        organizationId: props.organizationEntityId.id,
+        organizationDisplayName: props.organizationEntityId.displayName,
         roles: authRoleList
       });
     }
@@ -252,7 +257,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   }
 
   const renderRolesField = () => {
-    const width = props.organizationId === undefined ? '75%' : '100%';
+    const width = props.organizationEntityId === undefined ? '75%' : '100%';
     return (
       <div className="p-field" style={{ width: width }} >
         <span className="p-float-label">
@@ -334,7 +339,7 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
     );  
   }
 
-  const renderOneOrgForm = (orgId: CommonName) => {
+  const renderOneOrgForm = (organizationEntityId: TAPEntityId) => {
     return (
       <div className="card">
         <div className="p-fluid">
@@ -352,8 +357,8 @@ export const APManageUserOrganizations: React.FC<IAPManageUserOrganizationsProps
   }
 
   const renderForm = () => {
-    if(props.organizationId === undefined) return renderAllOrgsForm();
-    else return renderOneOrgForm(props.organizationId);
+    if(props.organizationEntityId === undefined) return renderAllOrgsForm();
+    else return renderOneOrgForm(props.organizationEntityId);
   }
 
   return renderForm();

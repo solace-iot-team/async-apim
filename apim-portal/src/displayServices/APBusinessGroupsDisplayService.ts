@@ -261,6 +261,15 @@ class APBusinessGroupsDisplayService {
     }
   }
 
+  public async getRootApBusinessGroupDisplay({organizationId}:{
+    organizationId: string
+  }): Promise<TAPBusinessGroupDisplay> {
+    return await this.getApBusinessGroupDisplay({ 
+      organizationId: organizationId,
+      businessGroupId: organizationId
+    });
+  }
+
   public async getApBusinessGroupDisplay({ organizationId, businessGroupId }: {
     organizationId: string;
     businessGroupId: string;

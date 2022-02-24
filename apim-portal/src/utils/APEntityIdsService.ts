@@ -13,6 +13,10 @@ export type TAPEntityIdList = Array<TAPEntityId>;
 class APEntityIdsService {
   private readonly ComponentName = "APEntityIdsService";
 
+  public nameOf(name: keyof TAPEntityId) {
+    return name;
+  }
+
   public create_EmptyObject = (): TAPEntityId => {
     return {
       id: '',
