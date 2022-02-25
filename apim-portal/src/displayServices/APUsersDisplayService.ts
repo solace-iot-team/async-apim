@@ -25,6 +25,15 @@ import APAssetDisplayService, { TAPOrganizationAssetInfoDisplayList } from './AP
 import { Globals } from '../utils/Globals';
 import { DataTableSortOrderType } from 'primereact/datatable';
 
+// TODO: create this type based on primereact TreeNode, replacing data:any with data: TAPMemberOfBusinessGroupDisplay
+export type TAPMemberOfBusinessGroupTreeNodeDisplay = {
+  key: string;
+  label: string;
+  data: TAPMemberOfBusinessGroupDisplay;
+  children: TAPMemberOfBusinessGroupTreeNodeDisplayList;
+}
+export type TAPMemberOfBusinessGroupTreeNodeDisplayList = Array<TAPMemberOfBusinessGroupTreeNodeDisplay>;
+
 export type TAPUserDisplayLazyLoadingTableParameters = {
   isInitialSetting: boolean; // differentiate between first time and subsequent times
   first: number; // index of the first row to be displayed
@@ -207,7 +216,70 @@ class APUsersDisplayService {
     if(found === undefined) throw new Error(`${logName}: found === undefined`);
     return found.apMemberOfBusinessGroupDisplayList;
   }
-  
+
+  private create_ApMemberOfBusinessGroupTreeNodeDisplay_From_ApMemberOfBusinessGroupDisplay({apMemberOfBusinessGroupsDisplay}:{
+    apMemberOfBusinessGroupsDisplay: TAPMemberOfBusinessGroupDisplay;
+  }): TAPMemberOfBusinessGroupTreeNodeDisplay {
+    const tnDisplay: TAPMemberOfBusinessGroupTreeNodeDisplay = {
+      key: apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apEntityId.id,
+      label: apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apEntityId.displayName,
+      data: apMemberOfBusinessGroupsDisplay,
+      children: []
+    };
+    return tnDisplay;
+  }
+  private generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay({apMemberOfBusinessGroupsDisplay, apMemberOfBusinessGroupsDisplayList}:{
+    apMemberOfBusinessGroupsDisplay: TAPMemberOfBusinessGroupDisplay;
+    apMemberOfBusinessGroupsDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  }): TAPMemberOfBusinessGroupTreeNodeDisplay {
+    const funcName = 'generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    const thisTreeNode: TAPMemberOfBusinessGroupTreeNodeDisplay = this.create_ApMemberOfBusinessGroupTreeNodeDisplay_From_ApMemberOfBusinessGroupDisplay({
+      apMemberOfBusinessGroupsDisplay: apMemberOfBusinessGroupsDisplay
+    });
+    for(const childEntityId of apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apBusinessGroupChildrenEntityIdList) {
+      // find it and add it
+      const found: TAPMemberOfBusinessGroupDisplay | undefined = apMemberOfBusinessGroupsDisplayList.find( (x) => {
+        return x.apBusinessGroupDisplay.apEntityId.id === childEntityId.id;
+      });
+      // not a member if not found
+      if(found !== undefined) {
+        // recurse into child
+        const childTreeNodeDisplay: TAPMemberOfBusinessGroupTreeNodeDisplay = this.generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay({
+          apMemberOfBusinessGroupsDisplay: found,
+          apMemberOfBusinessGroupsDisplayList: apMemberOfBusinessGroupsDisplayList
+        });
+        thisTreeNode.children.push(childTreeNodeDisplay);
+      }
+    }
+    return thisTreeNode;
+  }
+  public generate_ApMemberOfBusinessGroupsTreeNodeDisplay({ apMemberOfBusinessGroupsDisplayList }:{
+    apMemberOfBusinessGroupsDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  }): TAPMemberOfBusinessGroupTreeNodeDisplayList {
+    const list: TAPMemberOfBusinessGroupTreeNodeDisplayList = [];
+    for(const apMemberOfBusinessGroupsDisplay of apMemberOfBusinessGroupsDisplayList) {
+      if(apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) {
+        const masterTreeNode: TAPMemberOfBusinessGroupTreeNodeDisplay = this.generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay({
+          apMemberOfBusinessGroupsDisplay: apMemberOfBusinessGroupsDisplay,
+          apMemberOfBusinessGroupsDisplayList: apMemberOfBusinessGroupsDisplayList,
+        });
+        list.push(masterTreeNode);
+      }
+    }
+    // if only 1 master, flatten without master
+    if(list.length === 1) {
+      const finalList: TAPMemberOfBusinessGroupTreeNodeDisplayList = [];
+      const master: TAPMemberOfBusinessGroupTreeNodeDisplay = list[0];
+      for(const child of master.children) {
+        finalList.push(child);
+      }
+      return finalList;
+    } else {
+      return list;
+    }
+  }
+
   private async get_ApMemberOfBusinessGroupDisplayList({organizationId, apsUserResponse }: {
     organizationId: string;
     apsUserResponse: APSUserResponse;

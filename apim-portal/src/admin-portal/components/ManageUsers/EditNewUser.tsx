@@ -29,7 +29,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { E_CALL_STATE_ACTIONS } from "./ManageUsersCommon";
 import { APManageUserOrganizations } from "../../../components/APManageUserMemberOf/APManageUserOrganizations";
-import APUsersDisplayService, { TAPMemberOfOrganizationGroupsDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import APUsersDisplayService, { TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationGroupsDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
@@ -629,7 +629,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
             <span className={toggleIcon}></span>
           </button>
           <span className={titleClassName}>
-            Organizations
+            Business Groups
           </span>
         </div>
       );
@@ -638,14 +638,19 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const renderContent = (organizationEntityId: TAPEntityId) => {
       if(externalManagedBusinessGroupsFormData === undefined) throw new Error(`${logName}: externalManagedBusinessGroupsFormData === undefined`);
       if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+      const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = APUsersDisplayService.find_ApMemberOfBusinessGroupDisplayList({
+        organizationId: organizationEntityId.id,
+        apUserDisplay: managedObject
+      });
       return (
         <React.Fragment>
-          <p><b>TODO: Business Groups</b></p>
+          {/* <p><b>TODO: Business Groups</b></p> */}
           <APManageUserMemberOfBusinessGroups
             formId={componentName+'_APManageUserMemberOfBusinessGroups'}
             organizationEntityId={organizationEntityId}
             completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
-            apMemberOfOrganizationGroupsDisplayList={managedObject.apMemberOfOrganizationGroupsDisplayList}     
+            existingOrganizationApMemberOfBusinessGroupDisplayList={apMemberOfBusinessGroupDisplayList}     
             onChange={onMemberOfBusinessGroupsUpdate}       
             registerTriggerFormValidationFunc={register_APManageUserMemberOfBusinessGroups_FormValidation_Func}
           />
@@ -653,28 +658,29 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
       );
     }
     // main
-    if(props.organizationId !== undefined) {
-      if(currentOrganizationEntityId === undefined) throw new Error(`${logName}: currentOrganizationEntityId === undefined`);
-      return renderContent(currentOrganizationEntityId);
-    }
+    // if(props.organizationId !== undefined) {
+    //   if(currentOrganizationEntityId === undefined) throw new Error(`${logName}: currentOrganizationEntityId === undefined`);
+    //   return renderContent(currentOrganizationEntityId);
+    // }
 
     // only supports 1 organization
-    return (<></>);
-    // return (  
-    //   <React.Fragment>
-    //     <Panel 
-    //       headerTemplate={panelHeaderTemplate} 
-    //       toggleable={true}
-    //       // collapsed={memberOfOrganizations.length === 0}
-    //       collapsed={false}
-    //     >
-    //       <React.Fragment>
-    //         <div className='p-mb-6'/>
-    //         {renderContent()}
-    //       </React.Fragment>
-    //     </Panel>
-    //   </React.Fragment>
-    // );
+    if(currentOrganizationEntityId === undefined) throw new Error(`${logName}: currentOrganizationEntityId === undefined`);
+
+    return (  
+      <React.Fragment>
+        <Panel 
+          headerTemplate={panelHeaderTemplate} 
+          toggleable={true}
+          // collapsed={memberOfOrganizations.length === 0}
+          collapsed={false}
+        >
+          <React.Fragment>
+            {/* <div className='p-mb-6'/> */}
+            {renderContent(currentOrganizationEntityId)}
+          </React.Fragment>
+        </Panel>
+      </React.Fragment>
+    );
   }
 
   const renderManagedObjectForm = () => {
@@ -878,7 +884,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
             { renderManageMemberOfBusinessGroups() }
           </div>
           {/* footer */}
-          <Divider />
+          {/* <Divider /> */}
           { renderManagedObjectFormFooter() }
         </div>
       </div>

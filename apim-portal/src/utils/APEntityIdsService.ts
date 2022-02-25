@@ -14,7 +14,11 @@ class APEntityIdsService {
   private readonly ComponentName = "APEntityIdsService";
 
   public nameOf(name: keyof TAPEntityId) {
-    return name;
+    return `${name}`;
+  }
+
+  public nameOf_ApEntityIdDisplay(name: keyof TAPEntityId) {
+    return `apEntityId.${name}`;
   }
 
   public create_EmptyObject = (): TAPEntityId => {

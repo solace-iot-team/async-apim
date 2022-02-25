@@ -57,19 +57,6 @@ class APBusinessGroupsDisplayService {
     });
   }
 
-  private create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay): TAPBusinessGroupTreeNodeDisplay {
-    // const funcName = 'create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay';
-    // const logName = `${this.BaseComponentName}.${funcName}()`;
-    const tnDisplay: TAPBusinessGroupTreeNodeDisplay = {
-      key: apBusinessGroupDisplay.apEntityId.id,
-      label: apBusinessGroupDisplay.apEntityId.displayName,
-      data: apBusinessGroupDisplay,
-      children: []
-    };
-    // console.log(`${logName}: key = ${tnDisplay.key}`);
-    return tnDisplay;
-  }
-
   public isDeleteAllowed(apBusinessGroupDisplay: TAPBusinessGroupDisplay): boolean {
     if(apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) return false; // this is the root
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return false;
@@ -90,6 +77,19 @@ class APBusinessGroupsDisplayService {
   public getSourceDisplayString(apBusinessGroupDisplay: TAPBusinessGroupDisplay): string {
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return apBusinessGroupDisplay.apExternalReference.externalSystemDisplayName;
     else return '-';
+  }
+
+  private create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay): TAPBusinessGroupTreeNodeDisplay {
+    // const funcName = 'create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    const tnDisplay: TAPBusinessGroupTreeNodeDisplay = {
+      key: apBusinessGroupDisplay.apEntityId.id,
+      label: apBusinessGroupDisplay.apEntityId.displayName,
+      data: apBusinessGroupDisplay,
+      children: []
+    };
+    // console.log(`${logName}: key = ${tnDisplay.key}`);
+    return tnDisplay;
   }
 
   private generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay, referenceApBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPBusinessGroupTreeNodeDisplay {

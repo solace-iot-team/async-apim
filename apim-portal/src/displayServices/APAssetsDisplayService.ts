@@ -15,7 +15,8 @@ export type TAPDeveloperAppAssetInfoDisplay = IAPEntityIdDisplay & {
   apAssetType: EAPAssetType.DEVELOPER_APP;
 }
 // add more types when ready
-export type TAPAssetInfoDisplayList = Array<TAPDeveloperAppAssetInfoDisplay>;
+export type TAPAssetInfoDisplay = TAPDeveloperAppAssetInfoDisplay;
+export type TAPAssetInfoDisplayList = Array<TAPAssetInfoDisplay>;
 
 export type TAPOrganizationAssetInfoDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apAssetInfoDisplayList: TAPAssetInfoDisplayList;
@@ -25,16 +26,34 @@ export type TAPOrganizationAssetInfoDisplayList = Array<TAPOrganizationAssetInfo
 class APAssetDisplayService {
   private readonly BaseComponentName = "APAssetDisplayService";
 
-  public getNumberOfAssets(apOrganizationAssetInfoDisplay: TAPOrganizationAssetInfoDisplay): number {
+  public nameOf_ApAssetInfoDisplay(name: keyof TAPAssetInfoDisplay) {
+    return `${name}`;
+  }
+
+  public getNumberOfOrganizationAssets(apOrganizationAssetInfoDisplay: TAPOrganizationAssetInfoDisplay): number {
     return apOrganizationAssetInfoDisplay.apAssetInfoDisplayList.length;
   }
 
   public getNumberOfAssetsForAllOrganizations(apOrganizationAssetInfoDisplayList: TAPOrganizationAssetInfoDisplayList): number {
     let numAssets = 0;
     for(const apOrganizationAssetInfoDisplay of apOrganizationAssetInfoDisplayList) {
-      numAssets += this.getNumberOfAssets(apOrganizationAssetInfoDisplay)
+      numAssets += this.getNumberOfOrganizationAssets(apOrganizationAssetInfoDisplay)
     }
     return numAssets;
+  }
+
+  public find_ApOrganizationAssetInfoDisplay({ organizationId, apOrganizationAssetInfoDisplayList }:{
+    organizationId: string;
+    apOrganizationAssetInfoDisplayList: TAPOrganizationAssetInfoDisplayList;
+  }): TAPOrganizationAssetInfoDisplay {
+    const funcName = 'find_ApOrganizationAssetInfoDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const found = apOrganizationAssetInfoDisplayList.find( (apOrganizationAssetInfoDisplay: TAPOrganizationAssetInfoDisplay) => {
+      return apOrganizationAssetInfoDisplay.apEntityId.id === organizationId;
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    return found;
   }
 
   protected create_ApOrganizationAssetInfoDisplay_From_ApiEntities({apOrganizationEntityId, apAssetInfoDisplayList}: {

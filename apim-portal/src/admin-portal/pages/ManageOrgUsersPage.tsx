@@ -12,6 +12,7 @@ import { ManageUsers } from '../components/ManageUsers/ManageUsers';
 import { E_ManageUsers_Scope } from '../components/ManageUsers/ManageUsersCommon';
 
 import "../../pages/Pages.css";
+import { ManageOrganizationUsers } from '../components/ManageOrganizationUsers/ManageOrganizationUsers';
 
 export const ManageOrgUsersPage: React.FC = () => {
   // const componentName="ManageOrgUsersPage";
@@ -63,8 +64,8 @@ export const ManageOrgUsersPage: React.FC = () => {
       <Toast ref={toast} />
       {userContext.runtimeSettings.currentOrganizationEntityId && renderBreadcrumbs(userContext.runtimeSettings.currentOrganizationEntityId.displayName)}
       {userContext.runtimeSettings.currentOrganizationEntityId &&
-        <ManageUsers 
-          scope={ { type: E_ManageUsers_Scope.ORG_USERS, organizationEntityId: userContext.runtimeSettings.currentOrganizationEntityId }}
+        <ManageOrganizationUsers 
+          organizationEntityId={userContext.runtimeSettings.currentOrganizationEntityId}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
