@@ -19,6 +19,7 @@ import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
 import { DeleteOrganizationUser } from "./DeleteOrganizationUser";
 import { ViewOrganizationUser } from "./ViewOrganizationUser";
+import { EditOrganizationUser } from "./EditNewOrganizationUser/EditOrganizationUser";
 
 export interface IManageOrganizationUsersProps {
   organizationEntityId: TAPEntityId;
@@ -210,13 +211,14 @@ export const ManageOrganizationUsers: React.FC<IManageOrganizationUsersProps> = 
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
-  const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: string | undefined) => {
+  const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
-      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    }
-    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    props.onSuccess(apiCallState);
+    // if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+    //   if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
+    //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    // }
+    // else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -362,19 +364,17 @@ export const ManageOrganizationUsers: React.FC<IManageOrganizationUsersProps> = 
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
       }
-      {/* {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <EditNewUser
-          action={EAction.EDIT}
+      {showEditComponent && managedObjectId && managedObjectDisplayName &&
+        <EditOrganizationUser
+          organizationEntityId={props.organizationEntityId}
           userEntityId={{id: managedObjectId, displayName: managedObjectDisplayName }}
-          organizationId={organizationId}
-          onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
+          onSaveSuccess={onEditSaveManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
-      } */}
+      }
     </div>
   );
 }

@@ -129,6 +129,20 @@ class APBusinessGroupsDisplayService {
     return list;
   }
 
+  public find_ApBusinessGroupDisplay_by_id({apBusinessGroupDisplayList, businessGroupId }: {
+    apBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
+    businessGroupId: string;
+  }): TAPBusinessGroupDisplay {
+    const funcName = 'find_ApBusinessGroupDisplay_by_id';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const found = apBusinessGroupDisplayList.find( (x) => {
+      return x.apEntityId.id === businessGroupId;
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    return found;
+  }
+
   protected create_ApBusinessGroupDisplay_From_ApiEntities({apsBusinessGroupResponse, externalSystemDisplayName, apParentBusinessGroupEntityId, apBusinessGroupChildrenEntityIdList}: {
     apsBusinessGroupResponse: APSBusinessGroupResponse;
     externalSystemDisplayName?: string;

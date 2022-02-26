@@ -40,11 +40,6 @@ class APRbacDisplayService {
     return this.get_RolesSelect_EntityIdList(rbacRoleList);
   }
 
-  public get_BusinessGroupRolesSelect_EntityIdList(): TAPEntityIdList {
-    const rbacRoleList: TAPRbacRoleList = this.get_Scoped_RbacRoleList([EAPRbacRoleScope.ORG]);
-    return this.get_RolesSelect_EntityIdList(rbacRoleList);
-  }
-
   public get_RoleDisplayName(apsRole: EAPSCombinedAuthRole): string {
     const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
     return rbacRole.displayName;
@@ -61,6 +56,11 @@ class APRbacDisplayService {
       });
     });
     return entityIdList;
+  }
+
+  public get_BusinessGroupRolesSelect_EntityIdList(): TAPEntityIdList {
+    const rbacRoleList: TAPRbacRoleList = this.get_Scoped_RbacRoleList([EAPRbacRoleScope.ORG]);
+    return this.get_RolesSelect_EntityIdList(rbacRoleList);
   }
 
   public getBusinessGroupRolesEntityIdList(apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList): TAPEntityIdList {

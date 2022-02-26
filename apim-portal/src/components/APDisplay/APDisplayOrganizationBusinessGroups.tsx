@@ -10,11 +10,13 @@ import APUsersDisplayService, {
   TAPMemberOfBusinessGroupTreeNodeDisplay, 
   TAPMemberOfBusinessGroupTreeNodeDisplayList 
 } from "../../displayServices/APUsersDisplayService";
+import { TAPBusinessGroupDisplayList } from "../../displayServices/APBusinessGroupsDisplayService";
 
 import "../APComponents.css";
 
 export interface IAPDisplayOrganizationBusinessGroupsProps {
   apMemberOfOrganizationGroupsDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  completeOrganizationApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   organizationEntityId: TAPEntityId;
   className?: string;
 }
@@ -54,10 +56,10 @@ export const APDisplayOrganizationBusinessGroups: React.FC<IAPDisplayOrganizatio
         </div>
 
         {/* DEBUG */}
-        <p><b>apMemberOfBusinessGroupTreeNodeDisplayList=</b></p>
+        {/* <p><b>apMemberOfBusinessGroupTreeNodeDisplayList=</b></p>
         <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(apMemberOfBusinessGroupTreeNodeDisplayList, null, 2)}
-        </pre>
+        </pre> */}
 
       </React.Fragment>
     );
@@ -79,7 +81,8 @@ export const APDisplayOrganizationBusinessGroups: React.FC<IAPDisplayOrganizatio
 
   const renderComponent = (): JSX.Element => {
     const treeNodeList: TAPMemberOfBusinessGroupTreeNodeDisplayList = APUsersDisplayService.generate_ApMemberOfBusinessGroupsTreeNodeDisplay({
-      apMemberOfBusinessGroupsDisplayList: props.apMemberOfOrganizationGroupsDisplayList
+      apMemberOfBusinessGroupDisplayList: props.apMemberOfOrganizationGroupsDisplayList,
+      apBusinessGroupDisplayList: props.completeOrganizationApBusinessGroupDisplayList
     });
     return (
       <React.Fragment>
