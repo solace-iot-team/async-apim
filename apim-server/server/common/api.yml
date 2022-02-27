@@ -1382,7 +1382,7 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/EAPSBusinessGroupAuthRole"
-      minItems: 1
+      minItems: 0
 
     APSMemberOfBusinessGroup:
       description: Business group and roles.
