@@ -2,6 +2,7 @@ import APEntityIdsService, { TAPEntityIdList } from '../utils/APEntityIdsService
 import { APRbac, EAPRbacRoleScope, EAPSCombinedAuthRole, TAPRbacRole, TAPRbacRoleList } from '../utils/APRbac';
 import { 
   APSBusinessGroupAuthRoleList,
+  APSOrganizationAuthRoleList,
   APSSystemAuthRoleList,
   EAPSBusinessGroupAuthRole,
   EAPSSystemAuthRole, 
@@ -10,7 +11,7 @@ import {
 class APRbacDisplayService {
   private readonly BaseComponentName = "APRbacDisplayService";
 
-  private get_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
+  private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     for(const rbacRole of APRbac.getAPRbacRoleList()) {
       if(!rbacRole.scopeList.includes(EAPRbacRoleScope.NEVER)) {
@@ -25,7 +26,13 @@ class APRbacDisplayService {
     return rbacRoleList;    
   }
 
-  private get_RolesSelect_EntityIdList(rbacRoleList: TAPRbacRoleList): TAPEntityIdList {
+  public get_RoleDisplayName(apsRole: EAPSCombinedAuthRole): string {
+    const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
+    return rbacRole.displayName;
+  }
+
+
+  private create_Roles_SelectEntityIdList(rbacRoleList: TAPRbacRoleList): TAPEntityIdList {
     const entityIdList: TAPEntityIdList = rbacRoleList.map( (x) => {
       return {
         id: x.id,
@@ -35,17 +42,12 @@ class APRbacDisplayService {
     return APEntityIdsService.sort_byDisplayName(entityIdList);
   }
   
-  public get_SystemRolesSelect_EntityIdList(): TAPEntityIdList {
-    const rbacRoleList: TAPRbacRoleList = this.get_Scoped_RbacRoleList([EAPRbacRoleScope.SYSTEM]);
-    return this.get_RolesSelect_EntityIdList(rbacRoleList);
+  public create_SystemRoles_SelectEntityIdList(): TAPEntityIdList {
+    const rbacRoleList: TAPRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.SYSTEM]);
+    return this.create_Roles_SelectEntityIdList(rbacRoleList);
   }
 
-  public get_RoleDisplayName(apsRole: EAPSCombinedAuthRole): string {
-    const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
-    return rbacRole.displayName;
-  }
-
-  public getSystemRolesEntityIdList(apsSystemAuthRoleList?: APSSystemAuthRoleList): TAPEntityIdList {
+  public create_SystemRoles_EntityIdList(apsSystemAuthRoleList?: APSSystemAuthRoleList): TAPEntityIdList {
     if(apsSystemAuthRoleList === undefined) return [];
     const entityIdList: TAPEntityIdList = [];
     apsSystemAuthRoleList.forEach( (apsSystemAuthRole: EAPSSystemAuthRole) => {
@@ -58,12 +60,28 @@ class APRbacDisplayService {
     return entityIdList;
   }
 
-  public get_BusinessGroupRolesSelect_EntityIdList(): TAPEntityIdList {
-    const rbacRoleList: TAPRbacRoleList = this.get_Scoped_RbacRoleList([EAPRbacRoleScope.ORG]);
-    return this.get_RolesSelect_EntityIdList(rbacRoleList);
+  public create_OrganizationRoles_SelectEntityIdList(): TAPEntityIdList {
+    const rbacRoleList: TAPRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.ORGANIZATION, EAPRbacRoleScope.BUSINESS_GROUP]);
+    return this.create_Roles_SelectEntityIdList(rbacRoleList);
   }
 
-  public getBusinessGroupRolesEntityIdList(apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList): TAPEntityIdList {
+  public create_OrganizationRoles_EntityIdList(apsOrganizationAuthRoleList: APSOrganizationAuthRoleList): TAPEntityIdList {
+    const entityIdList: TAPEntityIdList = apsOrganizationAuthRoleList.map( (apsOrganizationAuthRole) => {
+      const apRbacRole: TAPRbacRole = APRbac.getByRole(apsOrganizationAuthRole);
+      return {
+        id: apRbacRole.id,
+        displayName: apRbacRole.displayName
+      };
+    });
+    return entityIdList;
+  }
+
+  public create_BusinessGroupRoles_SelectEntityIdList(): TAPEntityIdList {
+    const rbacRoleList: TAPRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP]);
+    return this.create_Roles_SelectEntityIdList(rbacRoleList);
+  }
+
+  public create_BusinessGroupRoles_EntityIdList(apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList): TAPEntityIdList {
     const entityIdList: TAPEntityIdList = [];
     apsBusinessGroupAuthRoleList.forEach( (apsBusinessGroupAuthRole: EAPSBusinessGroupAuthRole) => {
       const apRbacRole: TAPRbacRole = APRbac.getByRole(apsBusinessGroupAuthRole);

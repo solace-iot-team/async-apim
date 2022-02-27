@@ -28,6 +28,18 @@ class APEntityIdsService {
     };
   }
 
+  public create_deduped_EntityIdList = (list: TAPEntityIdList): TAPEntityIdList => {
+    const unique = new Map<string, number>();
+    const distinct: TAPEntityIdList = [];
+    for(let i=0; i < list.length; i++) {
+      if(!unique.has(list[i].id)) {
+        distinct.push(list[i]);
+        unique.set(list[i].id, 1);
+      }
+    }
+    return distinct;
+  }
+
   public getSortedDisplayNameList_As_String = (list: TAPEntityIdList): string => {
     if(list.length > 0) {
       const sortedList = this.sort_byDisplayName(list);

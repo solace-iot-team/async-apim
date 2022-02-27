@@ -2,24 +2,27 @@
 import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
-import { Password } from "primereact/password";
 import { Button } from 'primereact/button';
-import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
+import { MultiSelect } from "primereact/multiselect";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import APUsersDisplayService, { 
-  TAPUserCredentialsDisplay, 
-  TAPUserDisplay
+  TAPUserDisplay,
+  TAPUserOrganizationRolesDisplay
 } from "../../../../displayServices/APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APEntityIdsService, { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
+import { APSOrganizationAuthRoleList } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
-export interface IEditOrganizationUserCredentialsProps {
+export interface IEditOrganizationUserOrganizationRolesProps {
+  organizationEntityId: TAPEntityId;
   apUserDisplay: TAPUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
@@ -27,19 +30,19 @@ export interface IEditOrganizationUserCredentialsProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCredentialsProps> = (props: IEditOrganizationUserCredentialsProps) => {
-  const ComponentName = 'EditOrganizationUserCredentails';
+export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUserOrganizationRolesProps> = (props: IEditOrganizationUserOrganizationRolesProps) => {
+  const ComponentName = 'EditOrganizationUserOrganizationRoles';
 
-  type TManagedObject = TAPUserCredentialsDisplay;
+  type TManagedObject = TAPUserOrganizationRolesDisplay;
   type TManagedObjectFormData = {
-    password: string;
+    organizationAuthRoleIdList: Array<string>;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
   }
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      password: '',
+      organizationAuthRoleIdList: APEntityIdsService.create_IdList(mo.apOrganizationAuthRoleEntityIdList)
     };
     return {
       formData: fd
@@ -50,13 +53,11 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
-
     // const funcName = 'create_ManagedObject_From_FormEntities';
     // const logName = `${ComponentName}.${funcName}()`;
-
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.password = fd.password;
+    mo.apOrganizationAuthRoleEntityIdList = APRbacDisplayService.create_OrganizationRoles_EntityIdList(fd.organizationAuthRoleIdList as APSOrganizationAuthRoleList);
     return mo;
   }
   
@@ -73,8 +74,10 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_CREDENTIALS, `update credentials for user: ${mo.apEntityId.id}`);
     try { 
-      await APUsersDisplayService.apsUpdate_ApUserCredentialsDisplay({
-        apUserCredentialsDisplay: mo
+      await APUsersDisplayService.apsUpdate_ApUserOrganizationRolesDisplay({
+        organizationEntityId: props.organizationEntityId,
+        apUserDisplay: props.apUserDisplay,
+        apUserOrganizationRolesDisplay: mo
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -87,7 +90,8 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
   const doInitialize = async () => {
     // const funcName = 'doInitialize';
     // const logName = `${ComponentName}.${funcName}()`;
-    setManagedObject(APUsersDisplayService.get_ApUserCredentialsDisplay({
+    setManagedObject(APUsersDisplayService.get_ApUserOrganizationRolesDisplay({
+      organizationId: props.organizationEntityId.id,
       apUserDisplay: props.apUserDisplay
     }));
   }
@@ -105,12 +109,12 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData.organizationAuthRoleIdList', managedObjectFormDataEnvelope.formData.organizationAuthRoleIdList);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${ComponentName}.${funcName}()`;
+    // const funcName = 'useEffect[apiCallStatus]';
+    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSaveSuccess(apiCallStatus);
@@ -129,6 +133,7 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    alert(`${logName}: if roles are empty, check if any other roles in any other groups, otherwise ask user to remove user from org? cancel, remove`);
     doSubmitManagedObject(create_ManagedObject_From_FormEntities({
       orginalManagedObject: managedObject,
       formDataEnvelope: newMofde,
@@ -139,61 +144,45 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
     // placeholder
   }
 
-  const onCancelManagedObjectForm = () => {
-    props.onCancel();
-  }
-
-  const managedObjectFormFooterRightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-      </React.Fragment>
-    );
-  }
-
-  const renderManagedObjectFormFooter = (): JSX.Element => {
-    return (
-      <Toolbar className="p-mb-4" right={managedObjectFormFooterRightToolbarTemplate} />
-    )
-  }
-
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
-      <div className="card p-mt-4">
+      <div className="card p-mt-2">
+        <div><b>Organization</b>:</div>
         <div className="p-fluid">
           <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
-            {/* Password */}
+            {/* Organization Roles */}
             <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  name="formData.password"
-                  control={managedObjectUseForm.control}
-                  rules={{
-                    required: "Enter Password.",
-                    validate: {
-                      trim: v => v.trim().length === v.length ? true : 'Enter Password without leading/trailing spaces.',
-                    }
-                  }}
-                  render={( { field, fieldState }) => {
-                      // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
+              <div className="p-d-flex">
+                <span className="p-float-label">
+                  <Controller
+                    name="formData.organizationAuthRoleIdList"
+                    control={managedObjectUseForm.control}
+                    render={( { field, fieldState }) => {
+                      // console.log(`${logName}: field=${JSON.stringify(field)}, fieldState=${JSON.stringify(fieldState)}`);
                       return(
-                        <Password
-                          id={field.name}
-                          toggleMask={true}
-                          feedback={false}        
-                          {...field}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                  )}}
-                />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.password })}>Password*</label>
-              </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.password)}
+                        <React.Fragment>
+                          <MultiSelect
+                            display="chip"
+                            value={field.value ? [...field.value] : []} 
+                            options={APRbacDisplayService.create_OrganizationRoles_SelectEntityIdList()} 
+                            onChange={(e) => field.onChange(e.value)}
+                            optionLabel={APEntityIdsService.nameOf('displayName')}
+                            optionValue={APEntityIdsService.nameOf('id')}
+                            // style={{width: '800px'}} 
+                            className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                          />
+                        </React.Fragment>
+                    )}}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.organizationAuthRoleIdList })}>Role(s)</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.formData?.organizationAuthRoleIdList)}
+                <div className="p-ml-2 p-as-center">
+                  <Button key={ComponentName+'Save'} style={{ width: 'fit-content' }} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+                </div>
+              </div>
             </div>
           </form>  
-          {/* footer */}
-          { renderManagedObjectFormFooter() }
         </div>
       </div>
     );

@@ -13,15 +13,15 @@ import { AuthHelper } from "../../../auth/AuthHelper";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APUsersDisplayService, { TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import APUsersDisplayService, { APLegacyUserDisplayService, TAPLegacyMemberOfOrganizationRolesDisplay, TAPLegacyMemberOfOrganizationRolesDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
 import APAssetDisplayService from "../../../displayServices/APAssetsDisplayService";
 import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";
-import { APDisplayOrganizationBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups";
+import { APDisplayOrganizationBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationBusinessGroups";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 
 export interface IViewOrganizationUserProps {
   userEntityId: TAPEntityId;
@@ -50,7 +50,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userEntityId.displayName}`);
     try { 
-      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
         userId: props.userEntityId.id,
         organizationId: props.organizationEntityId.id
       });
@@ -67,7 +67,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: organizationId
       });
       setCompleteOrganizationApBusinessGroupDisplayList(list);
@@ -106,8 +106,16 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderSystemRoles = (apSystemRoleEntityIdList: TAPEntityIdList): string => {
-    if(apSystemRoleEntityIdList.length === 0) return 'None';
+    if(apSystemRoleEntityIdList.length === 0) return 'None.';
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
+  }
+
+  const renderLegacyOrganzationRoles = (apLegacy_MemberOfOrganizationRolesDisplayList: TAPLegacyMemberOfOrganizationRolesDisplayList): string => {
+    const apLegacyMemberOfOrganizationRolesDisplay: TAPLegacyMemberOfOrganizationRolesDisplay = APLegacyUserDisplayService.find_LegacyMemberOfOrganizationRolesDisplay({ 
+      organizationId: props.organizationEntityId.id,
+      apLegacyMemberOfOrganizationRolesDisplayList: apLegacy_MemberOfOrganizationRolesDisplayList
+    });
+    return APEntityIdsService.getSortedDisplayNameList_As_String(apLegacyMemberOfOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList);
   }
 
   const renderManagedObjectDisplay = () => {
@@ -130,11 +138,12 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                     // header="Profile"
                   />
                 </TabPanel>
-                <TabPanel header='Roles & Business Groups'>
+                <TabPanel header='Roles & Groups'>
                   <React.Fragment>
                     { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
                       <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
                     }
+                    <div className="p-mt-2"><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject.apLegacy_MemberOfOrganizationRolesDisplayList)}.</div>                    
                     <APDisplayOrganizationBusinessGroups
                       organizationEntityId={props.organizationEntityId}
                       completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
@@ -142,6 +151,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                         organizationId: props.organizationEntityId.id,
                         apUserDisplay: managedObject
                       })}
+                      className="card p-mt-2"
                     />
 
                   </React.Fragment>

@@ -64,7 +64,7 @@ export const APManageUserMemberOfBusinessGroups: React.FC<IAPManageUserMemberOfB
     const funcName = 'transform_BusinessGroupRolesFormDataEnvelope_To_MemberOfBusinessGroupDisplay';
     const logName = `${ComponentName}.${funcName}()`;
 
-    const roleEntityIdList: TAPEntityIdList = APRbacDisplayService.getBusinessGroupRolesEntityIdList(bgrFde.formData.roles as APSBusinessGroupAuthRoleList);
+    const roleEntityIdList: TAPEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(bgrFde.formData.roles as APSBusinessGroupAuthRoleList);
 
     const found = props.completeOrganizationApBusinessGroupDisplayList.find( (apBusinessGroupDisplay: TAPBusinessGroupDisplay) => {
       return apBusinessGroupDisplay.apEntityId.id === bgrFde.formData.businessGroupId;
@@ -73,7 +73,8 @@ export const APManageUserMemberOfBusinessGroups: React.FC<IAPManageUserMemberOfB
 
     const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = {
       apBusinessGroupDisplay: found,
-      apBusinessGroupRoleEntityIdList: roleEntityIdList
+      apConfiguredBusinessGroupRoleEntityIdList: roleEntityIdList,
+      apCalculatedBusinessGroupRoleEntityIdList: []
     }
     return apMemberOfBusinessGroupDisplay;
   }
@@ -230,7 +231,7 @@ export const APManageUserMemberOfBusinessGroups: React.FC<IAPManageUserMemberOfB
                   <MultiSelect
                     display="chip"
                     value={field.value ? [...field.value] : []} 
-                    options={APRbacDisplayService.get_BusinessGroupRolesSelect_EntityIdList()} 
+                    options={APRbacDisplayService.create_BusinessGroupRoles_SelectEntityIdList()} 
                     onChange={(e) => field.onChange(e.value)}
                     optionLabel={APEntityIdsService.nameOf('displayName')}
                     optionValue={APEntityIdsService.nameOf('id')}

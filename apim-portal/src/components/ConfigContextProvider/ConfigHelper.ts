@@ -23,7 +23,7 @@ export type TRoleSelectItemList = Array<TRoleSelectItem>;
 export class ConfigHelper {
 
   public static createOrganizationRolesSelectItems = (configContext: TAPConfigContext): TRoleSelectItemList => {
-    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
+    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORGANIZATION];
     const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
     const selectItems: TRoleSelectItemList = [];
     rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {

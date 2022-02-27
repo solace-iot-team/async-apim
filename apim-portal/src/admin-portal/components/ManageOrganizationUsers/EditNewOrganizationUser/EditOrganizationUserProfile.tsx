@@ -66,7 +66,7 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
       first: fd.first,
       last: fd.last
     };
-    mo.apEntityId.displayName = APUsersDisplayService.createUserDisplayName(mo.apsUserProfile);
+    mo.apEntityId.displayName = APUsersDisplayService.create_UserDisplayName(mo.apsUserProfile);
     return mo;
   }
   
@@ -83,7 +83,7 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_PROFILE, `update profile for user: ${mo.apEntityId.id}`);
     try { 
-      await APUsersDisplayService.updateApUserProfileDisplay({
+      await APUsersDisplayService.apsUpdate_ApUserProfileDisplay({
         apUserProfileDisplay: mo
       });
     } catch(e: any) {
@@ -123,7 +123,7 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
     // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      props.onSaveSuccess(apiCallStatus);
+      else props.onSaveSuccess(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

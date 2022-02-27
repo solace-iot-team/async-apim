@@ -15,7 +15,8 @@ export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EA
 export enum  EAPRbacRoleScope {
   NEVER = "NEVER",
   SYSTEM = "SYSTEM",
-  ORG = "ORG",
+  ORGANIZATION = "ORGANIZATION",
+  BUSINESS_GROUP = "BUSINESS_GROUP",
 }
 export type TAPRbacRole = {
   id: EAPSCombinedAuthRole;
@@ -56,7 +57,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSSystemAuthRole.LOGIN_AS,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
     displayName: 'Login As',
     description: 'Login as any User.',
     uiResourcePaths: [
@@ -82,7 +83,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.ORGANIZATION],
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
     uiResourcePaths: [
@@ -100,7 +101,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_TEAM,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
@@ -114,7 +115,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_CONSUMER,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
     uiResourcePaths: [

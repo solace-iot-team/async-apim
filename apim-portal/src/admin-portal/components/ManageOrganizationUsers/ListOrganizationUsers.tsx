@@ -79,7 +79,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try {
-      const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.listApUserDisplay({
+      const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.apsGetList_ApUserDisplayListResponse({
         pageSize: pageSize,
         pageNumber: pageNumber,
         sortFieldName: sortFieldName,
@@ -207,15 +207,15 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     });
     return APEntityIdsService.create_DisplayNameList(APUsersDisplayService.create_ApBusinessGroupEntityIdList_From_ApMemberOfBusinessGroupDisplayList({
       apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
-    }));
+    })).join(', ');
   }
-  const organizationsBodyTemplate = (mo: TManagedObject) => {
+  // const organizationsBodyTemplate = (mo: TManagedObject) => {
 
-    return 'mo.apMemberOfOrganizationGroupsDisplayList';
-  }
-  const systemRolesBodyTemplate = (mo: TManagedObject) => {
-    return APEntityIdsService.create_DisplayNameList(mo.apSystemRoleEntityIdList);
-  }
+  //   return 'mo.apMemberOfOrganizationGroupsDisplayList';
+  // }
+  // const systemRolesBodyTemplate = (mo: TManagedObject) => {
+  //   return APEntityIdsService.create_DisplayNameList(mo.apSystemRoleEntityIdList);
+  // }
   const isActiveBodyTemplate = (mo: TManagedObject): JSX.Element => {
     if(mo.apsUserResponse.isActivated) return (<span className="pi pi-check badge-active" />)
     else return (<span className="pi pi-times badge-active" />)

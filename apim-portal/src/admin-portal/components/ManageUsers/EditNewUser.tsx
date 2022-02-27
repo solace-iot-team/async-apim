@@ -8,7 +8,6 @@ import { Checkbox } from 'primereact/checkbox';
 import { Password } from "primereact/password";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
-import { Divider } from "primereact/divider";
 import { classNames } from 'primereact/utils';
 import { MenuItem } from "primereact/api";
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
@@ -26,18 +25,16 @@ import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormVali
 import { EAPSCombinedAuthRole } from "../../../utils/APRbac";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { E_CALL_STATE_ACTIONS } from "./ManageUsersCommon";
 import { APManageUserOrganizations } from "../../../components/APManageUserMemberOf/APManageUserOrganizations";
 import APUsersDisplayService, { TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationGroupsDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
+import { APManageUserMemberOfBusinessGroups } from "../../../components/APManageUserMemberOf/APManageUserMemberOfBusinessGroups";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageUsers.css";
-import { APManageUserMemberOfBusinessGroups } from "../../../components/APManageUserMemberOf/APManageUserMemberOfBusinessGroups";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -185,7 +182,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     }
     mo.apEntityId = {
       id: fd.email,
-      displayName: APUsersDisplayService.createUserDisplayName(mo.apsUserResponse.profile)
+      displayName: APUsersDisplayService.create_UserDisplayName(mo.apsUserResponse.profile)
     }
     mo.apsUserResponse.userId = fd.email;
     mo.apsUserResponse.password = fd.password;
@@ -257,7 +254,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.displayName}`);
     try { 
-      const object: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+      const object: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
         userId: userEntityId.id
       });
       setManagedObject(object);
@@ -274,7 +271,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_REPLACE_USER, `update user: ${moId}`);
     try { 
-      await APUsersDisplayService.replaceApUserDisplay({
+      await APUsersDisplayService.deprecated_apsReplace_ApUserDisplay({
         userId: moId,
         apUserDisplay: mo
       });
@@ -302,7 +299,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     // return callState;
 
     try { 
-      await APUsersDisplayService.createApUserDisplay({
+      await APUsersDisplayService.apsCreate_ApUserDisplay({
         apUserDisplay: mo
       });
       setCreatedManagedObjectId(mo.apEntityId.id);
@@ -363,7 +360,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: organizationId
       });
       setCompleteOrganizationApBusinessGroupDisplayList(list);
@@ -495,7 +492,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     for(const apMemberOfOrganizationGroupsDisplay of apMemberOfOrganizationGroupsDisplayList) {
       if(apMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList.length === 0) return false;
       for(const apMemberOfBusinessGroupDisplay of apMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList) {
-        if(apMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList.length === 0) return false;
+        if(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length === 0) return false;
       }
     }
     return true;
@@ -809,7 +806,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
                           <MultiSelect
                             display="chip"
                             value={field.value ? [...field.value] : []} 
-                            options={APRbacDisplayService.get_SystemRolesSelect_EntityIdList()} 
+                            options={APRbacDisplayService.create_SystemRoles_SelectEntityIdList()} 
                             onChange={(e) => field.onChange(e.value)}
                             optionLabel={APEntityIdsService.nameOf('displayName')}
                             optionValue={APEntityIdsService.nameOf('id')}

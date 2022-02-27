@@ -79,7 +79,7 @@ export const ListUsers: React.FC<IListUsersProps> = (props: IListUsersProps) => 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try {
-      const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.listApUserDisplay({
+      const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.apsGetList_ApUserDisplayListResponse({
         pageSize: pageSize,
         pageNumber: pageNumber,
         sortFieldName: sortFieldName,

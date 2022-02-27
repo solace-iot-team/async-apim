@@ -18,6 +18,7 @@ import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUs
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import { EditOrganizationUserOrganizationRoles } from "./EditOrganizationUserOrganizationRoles";
 
 export interface IEditOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -37,6 +38,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [refreshCounter_EditOrganizationUserMemberOfBusinessGroups, setRefreshCounter_EditOrganizationUserMemberOfBusinessGroups] = React.useState<number>(0);
 
   // * Api Calls *
   const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
@@ -44,7 +46,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.displayName}`);
     try { 
-      const object: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+      const object: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
         userId: userEntityId.id
       });
       setManagedObject(object);
@@ -85,6 +87,10 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     setApiCallStatus(apiCallState);
   }
 
+  const onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups = (apiCallState: TApiCallState) => {
+    props.onSaveSuccess(apiCallState);
+    setRefreshCounter_EditOrganizationUserMemberOfBusinessGroups(refreshCounter_EditOrganizationUserMemberOfBusinessGroups + 1);
+  }
   const renderContent = (mo: TManagedObject) => {
     return (
       <React.Fragment>
@@ -102,15 +108,23 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Business Groups'>
+          <TabPanel header='Roles & Groups'>
             <React.Fragment>
-              <p>{ComponentName}: No System Roles in Organization Edit</p>
-              <EditOrganizationUserMemberOfBusinessGroups
+              <EditOrganizationUserOrganizationRoles
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
+                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups}
+                onLoadingChange={props.onLoadingChange}
+              />
+              <EditOrganizationUserMemberOfBusinessGroups
+                key={refreshCounter_EditOrganizationUserMemberOfBusinessGroups}
+                organizationEntityId={props.organizationEntityId}
+                apUserDisplay={mo}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups}
                 onLoadingChange={props.onLoadingChange}
               />
             </React.Fragment>

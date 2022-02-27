@@ -4,15 +4,16 @@ import React from "react";
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
 
-import APEntityIdsService, { TAPEntityId } from "../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APUsersDisplayService, { 
   TAPMemberOfBusinessGroupDisplayList, 
   TAPMemberOfBusinessGroupTreeNodeDisplay, 
   TAPMemberOfBusinessGroupTreeNodeDisplayList 
-} from "../../displayServices/APUsersDisplayService";
-import { TAPBusinessGroupDisplayList } from "../../displayServices/APBusinessGroupsDisplayService";
+} from "../../../displayServices/APUsersDisplayService";
+import { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
+import { APDisplayOrganizationBusinessGroupRoles } from "./APDisplayOrganizationBusinessGroupRoles";
 
-import "../APComponents.css";
+import "../../APComponents.css";
 
 export interface IAPDisplayOrganizationBusinessGroupsProps {
   apMemberOfOrganizationGroupsDisplayList: TAPMemberOfBusinessGroupDisplayList;
@@ -24,8 +25,12 @@ export interface IAPDisplayOrganizationBusinessGroupsProps {
 export const APDisplayOrganizationBusinessGroups: React.FC<IAPDisplayOrganizationBusinessGroupsProps> = (props: IAPDisplayOrganizationBusinessGroupsProps) => {
   const ComponentName='APDisplayOrganizationBusinessGroups';
 
-  const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): string => {
-    return APEntityIdsService.getSortedDisplayNameList_As_String(node.data.apBusinessGroupRoleEntityIdList);
+  const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): JSX.Element => {
+    return (
+      <APDisplayOrganizationBusinessGroupRoles 
+        apMemberOfBusinessGroupTreeNodeDisplay={node}
+      />
+    );
   }
 
   const renderOrganizationBusinessGroupsTreeTable = (apMemberOfBusinessGroupTreeNodeDisplayList: TAPMemberOfBusinessGroupTreeNodeDisplayList): JSX.Element => {
@@ -35,7 +40,7 @@ export const APDisplayOrganizationBusinessGroups: React.FC<IAPDisplayOrganizatio
     const field_Name = 'apBusinessGroupDisplay.apEntityId.displayName';
     return (
       <React.Fragment>
-        <div><b>Business Groups</b>:</div>
+        <div className="p-mb-2"><b>Business Groups</b>:</div>
         <div className="card">
           <TreeTable
             value={apMemberOfBusinessGroupTreeNodeDisplayList}
@@ -72,9 +77,10 @@ export const APDisplayOrganizationBusinessGroups: React.FC<IAPDisplayOrganizatio
       return x.apBusinessGroupDisplay.apEntityId.id === props.organizationEntityId.id;
     });
     if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    const organizationRolesDisplayString = found.apCalculatedBusinessGroupRoleEntityIdList.length > 0 ? APEntityIdsService.getSortedDisplayNameList_As_String(found.apCalculatedBusinessGroupRoleEntityIdList) : 'None.';
     return (
       <React.Fragment>
-        <div><b>Organization Roles</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(found.apBusinessGroupRoleEntityIdList)}</div>
+        <div><b>Organization Roles</b>: {organizationRolesDisplayString}</div>
       </React.Fragment>
     );
   }

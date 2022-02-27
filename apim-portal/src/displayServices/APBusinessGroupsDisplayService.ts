@@ -212,7 +212,7 @@ class APBusinessGroupsDisplayService {
     return entityIdList;
   }
 
-  public async listApBusinessGroupSystemDisplay({ organizationId}: {
+  public async apsGetList_ApBusinessGroupSystemDisplayList({ organizationId}: {
     organizationId: string;
   }): Promise<TAPBusinessGroupDisplayList> {
 

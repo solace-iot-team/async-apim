@@ -45,7 +45,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userEntityId.id}`);
     try { 
-      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
         userId: props.userEntityId.id,
         organizationId: props.organizationId
       });
@@ -179,7 +179,7 @@ export const ViewUser: React.FC<IViewUserProps> = (props: IViewUserProps) => {
           <div>
             <div>TODO: Business Groups: needs a panel with a tree table?</div>
             <div><b>Business Group</b>: {apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName}</div>
-            <div className="p-ml-2">Roles: {renderBusinessGroupRoles(apMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList)}</div>
+            <div className="p-ml-2">Roles: {renderBusinessGroupRoles(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList)}</div>
           </div>
         );
       }

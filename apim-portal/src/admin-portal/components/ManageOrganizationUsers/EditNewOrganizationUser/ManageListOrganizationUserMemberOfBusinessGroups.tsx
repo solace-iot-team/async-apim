@@ -23,6 +23,7 @@ import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { EditOrganizationUserBusinessGroupRoles, EEditOrganzationUserBusinessGroupRolesAction } from "./EditOrganizationUserBusinessGroupRoles";
+import { APDisplayOrganizationBusinessGroupRoles } from "../../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationBusinessGroupRoles";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -57,7 +58,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.id}`);
     try { 
-      const object: TAPUserDisplay = await APUsersDisplayService.getApUserDisplay({
+      const object: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
         userId: userEntityId.id
       });
       setApUserDisplay(object);
@@ -73,7 +74,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplay({
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: organizationId
       });
       setCompleteOrganizationApBusinessGroupDisplayList(list);
@@ -106,53 +107,68 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_USER) return;
-      if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST) return;
-      props.onSaveSuccess(apiCallStatus);
+      else {
+        if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_USER) return;
+        if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST) return;
+        props.onSaveSuccess(apiCallStatus);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onBusinessGroupEdit = (node: TAPMemberOfBusinessGroupTreeNodeDisplay) => {
     setEditBusinessGroupsRolesObject({
       businessGroupEntityId: node.data.apBusinessGroupDisplay.apEntityId,
-      businessGroupRoleEntityIdList: node.data.apBusinessGroupRoleEntityIdList
+      businessGroupRoleEntityIdList: node.data.apConfiguredBusinessGroupRoleEntityIdList
     });
   }
 
   const onBusinessGroupRemove = (node: TAPMemberOfBusinessGroupTreeNodeDisplay) => {
     setRemoveBusinessGroupRolesObject({
       businessGroupEntityId: node.data.apBusinessGroupDisplay.apEntityId,
-      businessGroupRoleEntityIdList: node.data.apBusinessGroupRoleEntityIdList
+      businessGroupRoleEntityIdList: node.data.apConfiguredBusinessGroupRoleEntityIdList
     });
   }
 
-  const renderOrganizationRoles = (): JSX.Element => {
-    const funcName = 'renderOrganizationRoles';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
-    const foundApMemberOfOrganizationGroupsDisplay: TAPMemberOfOrganizationGroupsDisplay | undefined = apUserDisplay.apMemberOfOrganizationGroupsDisplayList.find( (x) => {
-      return x.apOrganizationEntityId.id === props.organizationEntityId.id;
-    });
-    if(foundApMemberOfOrganizationGroupsDisplay === undefined) throw new Error(`${logName}: foundApMemberOfOrganizationGroupsDisplay === undefined`);
-    const foundApMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = foundApMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList.find( (x) => {
-      return x.apBusinessGroupDisplay.apEntityId.id === props.organizationEntityId.id;
-    });
-    if(foundApMemberOfBusinessGroupDisplay === undefined) throw new Error(`${logName}: foundApMemberOfBusinessGroupDisplay === undefined`);
+  // const renderOrganizationRoles = (): JSX.Element => {
+  //   const funcName = 'renderOrganizationRoles';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
+  //   const foundApMemberOfOrganizationGroupsDisplay: TAPMemberOfOrganizationGroupsDisplay | undefined = apUserDisplay.apMemberOfOrganizationGroupsDisplayList.find( (x) => {
+  //     return x.apEntityId.id === props.organizationEntityId.id;
+  //   });
+  //   if(foundApMemberOfOrganizationGroupsDisplay === undefined) throw new Error(`${logName}: foundApMemberOfOrganizationGroupsDisplay === undefined`);
+  //   const foundApMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = foundApMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList.find( (x) => {
+  //     return x.apBusinessGroupDisplay.apEntityId.id === props.organizationEntityId.id;
+  //   });
+  //   if(foundApMemberOfBusinessGroupDisplay === undefined) throw new Error(`${logName}: foundApMemberOfBusinessGroupDisplay === undefined`);
+
+
+  //   return (
+  //     <React.Fragment>
+  //       <div><b>Organization Roles</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(foundApMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList)}</div>
+  //     </React.Fragment>
+  //   );
+  // }
+
+  const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): JSX.Element => {
     return (
-      <React.Fragment>
-        <div><b>Organization Roles</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(foundApMemberOfBusinessGroupDisplay.apBusinessGroupRoleEntityIdList)}</div>
-      </React.Fragment>
+      <APDisplayOrganizationBusinessGroupRoles 
+        apMemberOfBusinessGroupTreeNodeDisplay={node}
+      />
     );
   }
 
-  const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): string => {
-    return APEntityIdsService.getSortedDisplayNameList_As_String(node.data.apBusinessGroupRoleEntityIdList);
-  }
+  // const topLevelBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): string => {
+  //   const isTopLevel: boolean = node.key === props.organizationEntityId.id;
+  //   return String(isTopLevel);
+  // }
 
   const actionBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay) => {
-    const isRemovePossible: boolean = node.data.apBusinessGroupRoleEntityIdList.length > 0;
-    const editIcon: string = (node.data.apBusinessGroupRoleEntityIdList.length > 0 ? "pi pi-pencil" : "pi pi-plus");
+    const isTopLevel: boolean = node.key === props.organizationEntityId.id;
+    const isRemovePossible: boolean = node.data.apConfiguredBusinessGroupRoleEntityIdList.length > 0;
+    const editIcon: string = (node.data.apConfiguredBusinessGroupRoleEntityIdList.length > 0 ? "pi pi-pencil" : "pi pi-plus");
     const key = node.key;
+    if(isTopLevel) return (<></>);
     return (
       <React.Fragment>
         <Button key={`edit-${key}`} icon={editIcon} className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" style={{ border: 'none'}} onClick={() => onBusinessGroupEdit(node)} />
@@ -178,6 +194,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
             sortOrder={1}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
+            {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
           </TreeTable>
@@ -201,14 +218,14 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
       organizationId: props.organizationEntityId.id,
       apUserDisplay: apUserDisplay
     });
-    console.log(`${logName}: apMemberOfBusinessGroupsDisplayList=\n${JSON.stringify(apMemberOfBusinessGroupsDisplayList, null, 2)}`);
+    // console.log(`${logName}: apMemberOfBusinessGroupsDisplayList=\n${JSON.stringify(apMemberOfBusinessGroupsDisplayList, null, 2)}`);
     const treeNodeList: TAPMemberOfBusinessGroupTreeNodeDisplayList = APUsersDisplayService.generate_ApMemberOfBusinessGroupsTreeNodeDisplay({
       apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupsDisplayList,
       apBusinessGroupDisplayList: completeOrganizationApBusinessGroupDisplayList
     });
     return (
       <React.Fragment>
-        <div className="p-mt-2">{renderOrganizationRoles()}</div>
+        {/* <div className="p-mt-2">{renderOrganizationRoles()}</div> */}
         <div className="p-mt-2">{renderOrganizationBusinessGroupsTreeTable(treeNodeList)}</div>
       </React.Fragment>
     );
@@ -274,7 +291,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
 
     const dialogHeader = 'Remove User from Business Group';
-    const isDialogVisible: boolean = (removeBusinessGroupRolesObject !== undefined);
+    // const isDialogVisible: boolean = (removeBusinessGroupRolesObject !== undefined);
 
     return (
       <Dialog

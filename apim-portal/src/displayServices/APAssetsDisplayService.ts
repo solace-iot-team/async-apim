@@ -74,7 +74,7 @@ class APAssetDisplayService {
     userId: string;
   }): Promise<TAPAssetInfoDisplayList> {
 
-    const connectorDeveloper: Developer | undefined = await APUsersDisplayService.getConnectorUser({
+    const connectorDeveloper: Developer | undefined = await APUsersDisplayService.connectorGet_Developer({
       organizationId: organizationId,
       userId: userId
     });
