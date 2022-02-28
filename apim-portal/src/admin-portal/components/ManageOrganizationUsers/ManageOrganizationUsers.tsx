@@ -20,6 +20,7 @@ import "./ManageOrganizationUsers.css";
 import { DeleteOrganizationUser } from "./DeleteOrganizationUser";
 import { ViewOrganizationUser } from "./ViewOrganizationUser";
 import { EditOrganizationUser } from "./EditNewOrganizationUser/EditOrganizationUser";
+import { NewOrganizationUser } from "./EditNewOrganizationUser/NewOrganizationUser";
 
 export interface IManageOrganizationUsersProps {
   organizationEntityId: TAPEntityId;
@@ -342,18 +343,16 @@ export const ManageOrganizationUsers: React.FC<IManageOrganizationUsersProps> = 
           onLoadingChange={setIsLoading}
         />
       }
-      {/* { showNewComponent &&
-        <EditNewUser
-          action={EAction.NEW}
-          organizationId={organizationId}
+      { showNewComponent &&
+        <NewOrganizationUser
+          organizationEntityId={props.organizationEntityId}
           onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
-      } */}
+      }
       { showAddComponent && 
         <AddOrganizationUser
           organizationEntityId={props.organizationEntityId}
