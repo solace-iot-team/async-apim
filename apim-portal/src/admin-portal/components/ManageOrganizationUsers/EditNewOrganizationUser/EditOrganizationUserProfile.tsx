@@ -55,10 +55,6 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
-
-    // const funcName = 'create_ManagedObject_From_FormEntities';
-    // const logName = `${ComponentName}.${funcName}()`;
-
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     mo.apsUserProfile = {
@@ -119,8 +115,6 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[apiCallStatus]';
-    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSaveSuccess(apiCallStatus);

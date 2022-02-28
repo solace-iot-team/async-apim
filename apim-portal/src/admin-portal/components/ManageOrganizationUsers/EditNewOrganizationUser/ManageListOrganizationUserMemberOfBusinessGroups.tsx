@@ -6,15 +6,13 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 
-import APEntityIdsService, { 
+import { 
   TAPEntityId, TAPEntityIdList, 
 } from "../../../../utils/APEntityIdsService";
 import APUsersDisplayService, { 
-  TAPMemberOfBusinessGroupDisplay, 
   TAPMemberOfBusinessGroupDisplayList, 
   TAPMemberOfBusinessGroupTreeNodeDisplay, 
   TAPMemberOfBusinessGroupTreeNodeDisplayList, 
-  TAPMemberOfOrganizationGroupsDisplay, 
   TAPUserDisplay
 } from "../../../../displayServices/APUsersDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
@@ -103,8 +101,6 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
 
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[apiCallStatus]';
-    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else {
@@ -128,27 +124,6 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
       businessGroupRoleEntityIdList: node.data.apConfiguredBusinessGroupRoleEntityIdList
     });
   }
-
-  // const renderOrganizationRoles = (): JSX.Element => {
-  //   const funcName = 'renderOrganizationRoles';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
-  //   const foundApMemberOfOrganizationGroupsDisplay: TAPMemberOfOrganizationGroupsDisplay | undefined = apUserDisplay.apMemberOfOrganizationGroupsDisplayList.find( (x) => {
-  //     return x.apEntityId.id === props.organizationEntityId.id;
-  //   });
-  //   if(foundApMemberOfOrganizationGroupsDisplay === undefined) throw new Error(`${logName}: foundApMemberOfOrganizationGroupsDisplay === undefined`);
-  //   const foundApMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = foundApMemberOfOrganizationGroupsDisplay.apMemberOfBusinessGroupDisplayList.find( (x) => {
-  //     return x.apBusinessGroupDisplay.apEntityId.id === props.organizationEntityId.id;
-  //   });
-  //   if(foundApMemberOfBusinessGroupDisplay === undefined) throw new Error(`${logName}: foundApMemberOfBusinessGroupDisplay === undefined`);
-
-
-  //   return (
-  //     <React.Fragment>
-  //       <div><b>Organization Roles</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(foundApMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList)}</div>
-  //     </React.Fragment>
-  //   );
-  // }
 
   const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeNodeDisplay): JSX.Element => {
     return (
@@ -225,7 +200,6 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     });
     return (
       <React.Fragment>
-        {/* <div className="p-mt-2">{renderOrganizationRoles()}</div> */}
         <div className="p-mt-2">{renderOrganizationBusinessGroupsTreeTable(treeNodeList)}</div>
       </React.Fragment>
     );
@@ -254,7 +228,6 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
 
     const dialogHeader = 'Edit User Role(s)';
-    // const isDialogVisible: boolean = (editBusinessGroupRolesObject !== undefined);
 
     return (
       <Dialog
@@ -291,7 +264,6 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
 
     const dialogHeader = 'Remove User from Business Group';
-    // const isDialogVisible: boolean = (removeBusinessGroupRolesObject !== undefined);
 
     return (
       <Dialog

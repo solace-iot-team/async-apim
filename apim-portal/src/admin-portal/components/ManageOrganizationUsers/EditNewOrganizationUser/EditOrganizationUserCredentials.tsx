@@ -50,10 +50,6 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
-
-    // const funcName = 'create_ManagedObject_From_FormEntities';
-    // const logName = `${ComponentName}.${funcName}()`;
-
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     mo.password = fd.password;
@@ -85,8 +81,6 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
   }
 
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${ComponentName}.${funcName}()`;
     setManagedObject(APUsersDisplayService.get_ApUserCredentialsDisplay({
       apUserDisplay: props.apUserDisplay
     }));
@@ -118,8 +112,6 @@ export const EditOrganizationUserCredentails: React.FC<IEditOrganizationUserCred
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${ComponentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiUpdateManagedObject(mo);
     props.onLoadingChange(false);

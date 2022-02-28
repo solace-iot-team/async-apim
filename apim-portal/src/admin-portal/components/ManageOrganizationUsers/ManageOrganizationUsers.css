@@ -58,3 +58,19 @@
   font-style: italic;
   margin-left: 2.5rem;
 }
+
+.manage-users .org-roles-view {
+  display: flex;
+  /* padding: 1rem; */
+  width: 100%;
+}
+.manage-users .org-roles-view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.manage-users .org-roles-view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}

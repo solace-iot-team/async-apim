@@ -5,7 +5,6 @@ import { APOrganizationsService } from '../utils/APOrganizationsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
   APSBusinessGroupAuthRoleList,
-  ApsBusinessGroupsService,
   APSListResponseMeta,
   APSMemberOfBusinessGroup,
   APSMemberOfOrganizationGroups,
@@ -331,6 +330,51 @@ class APUsersDisplayService {
     return APEntityIdsService.create_deduped_EntityIdList(dupRolesEntityIdList);
   }
 
+  public validate_Update_OrganizationUser_With_OrganizationRoles({organizationId, currentApUserDisplay, updateApUserOrganizationRolesDisplay }: {
+    organizationId: string;
+    currentApUserDisplay: TAPUserDisplay;
+    updateApUserOrganizationRolesDisplay: TAPUserOrganizationRolesDisplay;
+  }): boolean {
+    const funcName = 'validate_Update_OrganizationUser_With_OrganizationRoles';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    if(updateApUserOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList.length > 0) return true;
+    // apply the new roles
+    const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = this.apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay({
+      organizationId: organizationId,
+      apUserDisplay: currentApUserDisplay,
+      apUserOrganizationRolesDisplay: updateApUserOrganizationRolesDisplay
+    });
+    // check if any other business groups with roles in them
+    // if not, then return false
+    for(const apMemberOfBusinessGroupDisplay of apMemberOfBusinessGroupDisplayList) {
+      // alert(`${logName}: apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList = ${JSON.stringify(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList, null, 2)}`);
+      if(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) return true;
+    }
+    return false;
+  }
+
+  public validate_Update_OrganizationUser_With_ApMemberOfBusinessGroupDisplayList({organizationEntityId, currentApUserDisplay, updateApUserMemberOfBusinessGroupDisplayList}: {
+    organizationEntityId: TAPEntityId;
+    currentApUserDisplay: TAPUserDisplay;
+    updateApUserMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  }): boolean {
+    const funcName = 'validate_Update_OrganizationUser_With_ApMemberOfBusinessGroupDisplayList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // make a copy
+    const copyOfCurrentApUserDisplay: TAPUserDisplay = JSON.parse(JSON.stringify(currentApUserDisplay));
+    const newList: TAPMemberOfOrganizationGroupsDisplayList = this.apply_ApMemberOfOrganizationGroupDisplayList_To_ApsUserDisplay({
+      organizationEntityId: organizationEntityId,
+      apUserDisplay: copyOfCurrentApUserDisplay,
+      apMemberOfBusinessGroupDisplayList: updateApUserMemberOfBusinessGroupDisplayList
+    });
+    const apsOrganizationRolesList: APSOrganizationRolesList = APLegacyUserDisplayService.create_APSOrganizationRolesList_From_ApMemberOfOrganizationGroupsDisplayList({
+      apMemberOfOrganizationGroupsDisplayList: newList
+    });
+    if(apsOrganizationRolesList.length !== 1) throw new Error(`${logName}: apsOrganizationRolesList.length !== 1`);
+    if(apsOrganizationRolesList[0].roles.length === 0) return false;
+    return true;
+  }
+
   public find_ApMemberOfBusinessGroupDisplayList({organizationId, apUserDisplay }: {
     organizationId: string;
     apUserDisplay: TAPUserDisplay;
@@ -384,43 +428,6 @@ class APUsersDisplayService {
     };
   }
 
-  // private create_ApMemberOfBusinessGroupTreeNodeDisplay_From_ApMemberOfBusinessGroupDisplay({apMemberOfBusinessGroupsDisplay}:{
-  //   apMemberOfBusinessGroupsDisplay: TAPMemberOfBusinessGroupDisplay;
-  // }): TAPMemberOfBusinessGroupTreeNodeDisplay {
-  //   const tnDisplay: TAPMemberOfBusinessGroupTreeNodeDisplay = {
-  //     key: apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apEntityId.id,
-  //     label: apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apEntityId.displayName,
-  //     data: apMemberOfBusinessGroupsDisplay,
-  //     children: []
-  //   };
-  //   return tnDisplay;
-  // }
-  // private generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay({apMemberOfBusinessGroupsDisplay, apMemberOfBusinessGroupsDisplayList}:{
-  //   apMemberOfBusinessGroupsDisplay: TAPMemberOfBusinessGroupDisplay;
-  //   apMemberOfBusinessGroupsDisplayList: TAPMemberOfBusinessGroupDisplayList;
-  // }): TAPMemberOfBusinessGroupTreeNodeDisplay {
-  //   const funcName = 'generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
-  //   const thisTreeNode: TAPMemberOfBusinessGroupTreeNodeDisplay = this.create_ApMemberOfBusinessGroupTreeNodeDisplay_From_ApMemberOfBusinessGroupDisplay({
-  //     apMemberOfBusinessGroupsDisplay: apMemberOfBusinessGroupsDisplay
-  //   });
-  //   for(const childEntityId of apMemberOfBusinessGroupsDisplay.apBusinessGroupDisplay.apBusinessGroupChildrenEntityIdList) {
-  //     // find it and add it
-  //     const found: TAPMemberOfBusinessGroupDisplay | undefined = apMemberOfBusinessGroupsDisplayList.find( (x) => {
-  //       return x.apBusinessGroupDisplay.apEntityId.id === childEntityId.id;
-  //     });
-  //     // not a member if not found
-  //     if(found !== undefined) {
-  //       // recurse into child
-  //       const childTreeNodeDisplay: TAPMemberOfBusinessGroupTreeNodeDisplay = this.generate_ApMemberOfBusinessGroupsTreeNodeDisplay_From_ApMemberOfBusinessGroupsDisplay({
-  //         apMemberOfBusinessGroupsDisplay: found,
-  //         apMemberOfBusinessGroupsDisplayList: apMemberOfBusinessGroupsDisplayList
-  //       });
-  //       thisTreeNode.children.push(childTreeNodeDisplay);
-  //     }
-  //   }
-  //   return thisTreeNode;
-  // }
   private create_ApMemberOfBusinessGroupTreeNodeDisplay({apBusinessGroupDisplay, apMemberOfBusinessGroupsDisplay}:{
     apBusinessGroupDisplay: TAPBusinessGroupDisplay;
     apMemberOfBusinessGroupsDisplay?: TAPMemberOfBusinessGroupDisplay;
@@ -487,6 +494,57 @@ class APUsersDisplayService {
         });
         list.push(...rootTreeNode.children);
       }      
+    }
+    return list;
+  }
+
+  private apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay({organizationId, apUserDisplay, apUserOrganizationRolesDisplay}: {
+    organizationId: string;
+    apUserDisplay: TAPUserDisplay;
+    apUserOrganizationRolesDisplay: TAPUserOrganizationRolesDisplay;
+  }): TAPMemberOfBusinessGroupDisplayList {
+    const funcName = 'apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = this.find_ApMemberOfBusinessGroupDisplayList({
+      organizationId: organizationId,
+      apUserDisplay: apUserDisplay
+    });
+    // this is the top level business group
+    const index = apMemberOfBusinessGroupDisplayList.findIndex( (x) => {
+      return x.apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined;
+    });
+    if(index === -1) throw new Error(`${logName}: index === -1`);
+    const newApMemmberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = {
+      apBusinessGroupDisplay: apMemberOfBusinessGroupDisplayList[index].apBusinessGroupDisplay,
+      apConfiguredBusinessGroupRoleEntityIdList: apUserOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList,
+      apCalculatedBusinessGroupRoleEntityIdList: []
+    }
+    apMemberOfBusinessGroupDisplayList[index] = newApMemmberOfBusinessGroupDisplay;
+    return apMemberOfBusinessGroupDisplayList;
+  }
+
+  private apply_ApMemberOfOrganizationGroupDisplayList_To_ApsUserDisplay({organizationEntityId, apUserDisplay, apMemberOfBusinessGroupDisplayList}:{
+    organizationEntityId: TAPEntityId;
+    apUserDisplay: TAPUserDisplay;
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;  
+  }): TAPMemberOfOrganizationGroupsDisplayList {
+    const funcName = 'apply_ApMemberOfOrganizationGroupDisplayList_To_ApsUserDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const list: TAPMemberOfOrganizationGroupsDisplayList = apUserDisplay.apMemberOfOrganizationGroupsDisplayList;
+    const existingIndex = list.findIndex( (apMemberOfOrganizationGroupsDisplay: TAPMemberOfOrganizationGroupsDisplay) => {
+      return apMemberOfOrganizationGroupsDisplay.apEntityId.id === organizationEntityId.id;
+    });
+    if(existingIndex > -1) {
+      // replace
+      list[existingIndex].apMemberOfBusinessGroupDisplayList = apMemberOfBusinessGroupDisplayList;
+    } else {
+      // add
+      list.push({
+        apEntityId: organizationEntityId,
+        apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
+      });      
     }
     return list;
   }
@@ -820,26 +878,14 @@ class APUsersDisplayService {
     // set the roles for top business group
     const funcName = 'apsUpdate_ApUserOrganizationRolesDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
-    // replace in list
-    const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = this.find_ApMemberOfBusinessGroupDisplayList({
-      organizationId: organizationEntityId.id,
-      apUserDisplay: apUserDisplay
-    });
-    // this is the top level business group
-    const index = apMemberOfBusinessGroupDisplayList.findIndex( (x) => {
-      return x.apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined;
-    });
-    if(index === -1) throw new Error(`${logName}: index === -1`);
-    const newApMemmberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = {
-      apBusinessGroupDisplay: apMemberOfBusinessGroupDisplayList[index].apBusinessGroupDisplay,
-      apConfiguredBusinessGroupRoleEntityIdList: apUserOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList,
-      apCalculatedBusinessGroupRoleEntityIdList: []
-    }
-    apMemberOfBusinessGroupDisplayList[index] = newApMemmberOfBusinessGroupDisplay;
     await this.apsUpdate_ApMemberOfBusinessGroupDisplayList({
       organizationEntityId: organizationEntityId,
       apUserDisplay: apUserDisplay,
-      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
+      apMemberOfBusinessGroupDisplayList: this.apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay({
+        organizationId: organizationEntityId.id,
+        apUserDisplay: apUserDisplay,
+        apUserOrganizationRolesDisplay: apUserOrganizationRolesDisplay
+      })
     });
   }
 
@@ -850,26 +896,18 @@ class APUsersDisplayService {
   }: {
     organizationEntityId: TAPEntityId;
     apUserDisplay: TAPUserDisplay;
-    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList  
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;  
   }): Promise<void> {
     const funcName = 'apsUpdate_ApMemberOfBusinessGroupDisplayList';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    const existingIndex = apUserDisplay.apMemberOfOrganizationGroupsDisplayList.findIndex( (apMemberOfOrganizationGroupsDisplay: TAPMemberOfOrganizationGroupsDisplay) => {
-      return apMemberOfOrganizationGroupsDisplay.apEntityId.id === organizationEntityId.id;
+    const newList = this.apply_ApMemberOfOrganizationGroupDisplayList_To_ApsUserDisplay({
+      organizationEntityId: organizationEntityId,
+      apUserDisplay: apUserDisplay,
+      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
     });
-    if(existingIndex > -1) {
-      // replace
-      apUserDisplay.apMemberOfOrganizationGroupsDisplayList[existingIndex].apMemberOfBusinessGroupDisplayList = apMemberOfBusinessGroupDisplayList;
-    } else {
-      // add
-      apUserDisplay.apMemberOfOrganizationGroupsDisplayList.push({
-        apEntityId: organizationEntityId,
-        apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
-      });      
-    }
     const update: APSUserUpdate = {
-      memberOfOrganizationGroups: this.create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(apUserDisplay.apMemberOfOrganizationGroupsDisplayList),
+      memberOfOrganizationGroups: this.create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(newList),
       // LEGACY
       memberOfOrganizations: APLegacyUserDisplayService.create_APSOrganizationRolesList_From_ApMemberOfOrganizationGroupsDisplayList({
         apMemberOfOrganizationGroupsDisplayList: apUserDisplay.apMemberOfOrganizationGroupsDisplayList

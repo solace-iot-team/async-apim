@@ -15,10 +15,10 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
 import { EditOrganizationUserCredentails } from "./EditOrganizationUserCredentials";
 import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
+import { EditOrganizationUserMemberOfOrganizationRoles } from "./EditOrganizationUserMemberOfOrganizationRoles";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { EditOrganizationUserOrganizationRoles } from "./EditOrganizationUserOrganizationRoles";
 
 export interface IEditOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -38,7 +38,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [refreshCounter_EditOrganizationUserMemberOfBusinessGroups, setRefreshCounter_EditOrganizationUserMemberOfBusinessGroups] = React.useState<number>(0);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   // * Api Calls *
   const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
@@ -59,8 +59,6 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   }
 
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${ComponentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiGetManagedObject(props.userEntityId);
     props.onLoadingChange(false);
@@ -76,8 +74,6 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[apiCallStatus]';
-    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
@@ -87,10 +83,17 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     setApiCallStatus(apiCallState);
   }
 
-  const onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
-    setRefreshCounter_EditOrganizationUserMemberOfBusinessGroups(refreshCounter_EditOrganizationUserMemberOfBusinessGroups + 1);
+  const onError_EditOrganizationUserMemberOf = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    props.onError(apiCallState);
+    setRefreshCounter(refreshCounter + 1);
   }
+
+  const onSaveSuccess_EditOrganizationUserMemberOf = (apiCallState: TApiCallState) => {
+    props.onSaveSuccess(apiCallState);
+    setRefreshCounter(refreshCounter + 1);
+  }
+
   const renderContent = (mo: TManagedObject) => {
     return (
       <React.Fragment>
@@ -110,21 +113,22 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
           </TabPanel>
           <TabPanel header='Roles & Groups'>
             <React.Fragment>
-              <EditOrganizationUserOrganizationRoles
+              <EditOrganizationUserMemberOfOrganizationRoles
+                key={`EditOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
-                onError={onError_SubComponent}
+                onError={onError_EditOrganizationUserMemberOf}
                 onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups}
+                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
               />
               <EditOrganizationUserMemberOfBusinessGroups
-                key={refreshCounter_EditOrganizationUserMemberOfBusinessGroups}
+                key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
-                onError={onError_SubComponent}
+                onError={onError_EditOrganizationUserMemberOf}
                 onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOfBusinessGroups}
+                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
               />
             </React.Fragment>

@@ -72,13 +72,11 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TBusinessGroupRolesFormDataEnvelope;
   }): TManagedObject => {
-    // const funcName = 'create_ManagedObject_From_FormEntities';
-    // const logName = `${ComponentName}.${funcName}()`;
     if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
       formDataEnvelope.formData.roles = [];
     }
-
-    const mo: TManagedObject = orginalManagedObject;
+    // make a copy
+    const mo: TManagedObject = JSON.parse(JSON.stringify(orginalManagedObject));
     const fd: TBusinessGroupRolesFormData = formDataEnvelope.formData;
     const existingIndex = mo.findIndex( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay) => {
       return apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === props.businessGroupEntityId.id;
@@ -174,7 +172,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
       return (
         <React.Fragment>
           <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
-          <Button key={ComponentName+'submit'} label="Remove" form={formId} type="submit" icon="pi pi-times" className="p-button-text p-button-plain p-button-outlined" />
+          <Button key={ComponentName+'submit'} label="Remove" form={formId} type="submit" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }
@@ -199,14 +197,41 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
   const onSubmitForm = (fde: TBusinessGroupRolesFormDataEnvelope) => {
     const funcName = 'onSubmitForm';
     const logName = `${ComponentName}.${funcName}()`;
-
-    alert(`${logName}: if roles are empty, check if any other roles in any other groups, otherwise ask user to remove user from org? cancel, remove`);
-
     doSubmitForm(fde);
   }
 
   const onInvalidSubmitForm = () => {
     // placeholder
+  }
+
+  const validate_UpdatedOrganizationUserBusinessGroupRoles = (rolesIdList: APSBusinessGroupAuthRoleList): string | boolean => {
+    const funcName = 'validate_UpdatedOrganizationUserBusinessGroupRoles';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) rolesIdList = [];
+    if(rolesIdList.length > 0) return true;
+
+    const validation_fde: TBusinessGroupRolesFormDataEnvelope = {
+      formData: {
+        roles: rolesIdList
+      }
+    };
+    const validationManagedObject: TManagedObject = create_ManagedObject_From_FormEntities({
+      orginalManagedObject: managedObject,
+      formDataEnvelope: validation_fde
+    });
+    const areUserRolesValid: boolean = APUsersDisplayService.validate_Update_OrganizationUser_With_ApMemberOfBusinessGroupDisplayList({
+      organizationEntityId: props.organizationEntityId,
+      currentApUserDisplay: props.apUserDisplay,
+      updateApUserMemberOfBusinessGroupDisplayList: validationManagedObject
+    });
+    if(!areUserRolesValid) {
+      if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
+        return `Cannot remove user from business group. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
+      }
+      return `Specify at least 1 business group role. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
+    }
+    return true;
   }
 
   const renderManagedObjectForm = () => {
@@ -221,9 +246,10 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
               <Controller
                 control={businessGroupRolesUseForm.control}
                 name="formData.roles"
-                // rules={{
+                rules={{
                 //   required: "Choose at least 1 Role."
-                // }}
+                  validate: validate_UpdatedOrganizationUserBusinessGroupRoles  
+                }}
                 render={( { field, fieldState }) => {
                     return(
                       <MultiSelect
