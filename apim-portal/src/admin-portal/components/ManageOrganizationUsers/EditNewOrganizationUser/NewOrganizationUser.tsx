@@ -3,22 +3,26 @@ import React from "react";
 import { MenuItem } from "primereact/api";
 import { TabPanel, TabView } from "primereact/tabview";
 
+import { Globals } from "../../../../utils/Globals";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW_USER } from "../ManageOrganizationUsersCommon";
 import APUsersDisplayService, { 
-  TAPUserDisplay 
+  TAPUserCredentialsDisplay,
+  TAPUserDisplay, 
+  TAPUserProfileDisplay 
 } from "../../../../displayServices/APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
-import { EditOrganizationUserCredentails } from "./EditOrganizationUserCredentials";
-import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
-import { EditOrganizationUserMemberOfOrganizationRoles } from "./EditOrganizationUserMemberOfOrganizationRoles";
+import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
+import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
+import { NewOrganizationUserCredentials } from "./NewOrganizationUserCredentials";
+import { NewOrganizationUserReviewAndCreate } from "./NewOrganizationUserReviewAndCreate";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 export interface INewOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -54,21 +58,76 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       currentState: componentState.previousState
     });
   }
+  const setNextComponentState = () => {
+    const funcName = 'setNextComponentState';
+    const logName = `${ComponentName}.${funcName}()`;
+    switch(componentState.currentState) {
+      case E_COMPONENT_STATE_NEW_USER.UNDEFINED:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
+      case E_COMPONENT_STATE_NEW_USER.PROFILE:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS);
+      case E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.CREDENTIALS);
+      case E_COMPONENT_STATE_NEW_USER.CREDENTIALS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.REVIEW);
+      case E_COMPONENT_STATE_NEW_USER.REVIEW:
+        return;
+      default:
+        Globals.assertNever(logName, componentState.currentState);
+    }
+  }
 
-// need a map from state to tabindex
+  const ComponentState2TabIndexMap = new Map<E_COMPONENT_STATE_NEW_USER, number>([
+    [E_COMPONENT_STATE_NEW_USER.PROFILE, 0],
+    [E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS, 1],
+    [E_COMPONENT_STATE_NEW_USER.CREDENTIALS, 2],
+    [E_COMPONENT_STATE_NEW_USER.REVIEW, 3]
+  ]);
+
+  const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_NEW_USER) => {
+    const funcName = 'setActiveTabIndexByComponentState';
+    const logName = `${ComponentName}.${funcName}()`;
+    const idx = ComponentState2TabIndexMap.get(state);
+    if(idx === undefined) throw new Error(`${logName}: idx === undefined, state=${state}`);
+    setTabActiveIndex(idx);
+  }
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showProfile, setShowProfile] = React.useState<boolean>(false);
   const [showRolesAndGroups, setShowRolesAndGroups] = React.useState<boolean>(false);
   const [showCredentials, setShowCredentials] = React.useState<boolean>(false);
   const [showReview, setShowReview] = React.useState<boolean>(false);
-  // const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
 
   // * Api Calls *
 
+  const apiGetCompleteApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
+    const funcName = 'apiGetCompleteApBusinessGroupDisplayList';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
+    try {
+      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+        organizationId: organizationId
+      });
+      setCompleteOrganizationApBusinessGroupDisplayList(list);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doInitialize = async () => {
+    props.onLoadingChange(true);
+    await apiGetCompleteApBusinessGroupDisplayList(props.organizationEntityId.id);
+    setManagedObject(await APUsersDisplayService.create_EmptyObject({ organizationId: props.organizationEntityId.id }));
+    setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
+    props.onLoadingChange(false);
+  }
 
   // * useEffect Hooks *
 
@@ -76,7 +135,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     props.setBreadCrumbItemList([{
       label: 'New User'
     }]);
-    setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
+    doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -90,13 +149,14 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const calculateShowStates = (componentState: TComponentState) => {
-    if(!componentState.currentState) {
+    if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.UNDEFINED) {
       setShowProfile(false);
       setShowRolesAndGroups(false);
       setShowCredentials(false);
       setShowReview(false);
+      return;
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.PROFILE) {
+    if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.PROFILE) {
       setShowProfile(true);
       setShowRolesAndGroups(false);
       setShowCredentials(false);
@@ -120,91 +180,109 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       setShowCredentials(false);
       setShowReview(true);
     }
+    // set the tabIndex
+    setActiveTabIndexByComponentState(componentState.currentState);
   }
 
   const onError_SubComponent = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
 
-  // const onError_EditOrganizationUserMemberOf = (apiCallState: TApiCallState) => {
-  //   setApiCallStatus(apiCallState);
-  //   props.onError(apiCallState);
-  //   setRefreshCounter(refreshCounter + 1);
-  // }
+  const onNext_From_Profile = (apUserProfileDisplay: TAPUserProfileDisplay) => {
+    const funcName = 'onNext_From_Profile';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    setManagedObject(APUsersDisplayService.set_ApUserProfileDisplay({ apUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay }));
+    setNextComponentState();
+  }
 
-  // const onSaveSuccess_EditOrganizationUserMemberOf = (apiCallState: TApiCallState) => {
-  //   props.onSaveSuccess(apiCallState);
-  //   setRefreshCounter(refreshCounter + 1);
-  // }
+  const onNext_From_RolesAndGroups = (x: string) => {
+    const funcName = 'onNext_From_RolesAndGroups';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    alert(`${logName}: do it ..`)
+    // TODO: set the values in managedObject
+    // setManagedObject(APUsersDisplayService.set_ApUserProfileDisplay({ apUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay }));
+    setNextComponentState();
+  }
 
-  const renderContent = () => {
+  const onNext_From_Credentials = (apUserCredentialsDisplay: TAPUserCredentialsDisplay) => {
+    const funcName = 'onNext_From_Profile';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    setManagedObject(APUsersDisplayService.set_ApUserCredentialsDisplay({ apUserDisplay: managedObject, apUserCredentialsDisplay: apUserCredentialsDisplay }));
+    setNextComponentState();
+  }
 
-    // map state to tabActiveIndex
-    // disable the tabs based on showxxxx
+  const onBack = () => {
+    setPreviousComponentState();
+  }
+
+  const onCreateSuccess = (apUserDisplay: TAPUserDisplay, apiCallState: TApiCallState) => {
+    props.onNewSuccess(apiCallState, apUserDisplay.apEntityId);
+  }
+
+  const renderComponent = (mo: TManagedObject) => {
 
     return (
       <React.Fragment>
-        {/* <div className="p-mt-4"><b>Activated</b>: {String(mo.apsUserResponse.isActivated)}</div> */}
-
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
-          <TabPanel header='Profile'>
+          <TabPanel header='Profile' disabled={!showProfile}>
             <React.Fragment>
-              <p>Create profile: email, first, last and next</p>
-              
-              {/* <EditOrganizationUserProfile
-                apUserDisplay={mo} 
-                onError={onError_SubComponent}
-                onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
-                onLoadingChange={props.onLoadingChange}
-              /> */}
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Roles & Groups' disabled>
-            <React.Fragment>
-              <p>Set the organization roles and group roles and back/next</p>
-              {/* <EditOrganizationUserMemberOfOrganizationRoles
-                key={`EditOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
+              <NewOrganizationUserProfile
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
-                onError={onError_EditOrganizationUserMemberOf}
+                onNext={onNext_From_Profile}
+                onBack={() => {}}
+                onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
-              {/* <EditOrganizationUserMemberOfBusinessGroups
-                key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
+              />
+              {/* DEBUG */}
+              <p><b>managedObject=</b></p>
+              <pre style={ { fontSize: '10px', width: '500px' }} >
+                {JSON.stringify(managedObject, null, 2)}
+              </pre>
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Roles & Groups' disabled={!showRolesAndGroups}>
+            <React.Fragment>
+              <NewOrganizationUserRolesAndGroups 
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
-                onError={onError_EditOrganizationUserMemberOf}
-                onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
-                onLoadingChange={props.onLoadingChange}
-              /> */}
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Credentials'>
-            <React.Fragment>
-              <p>set the password and back/next</p>
-              {/* <EditOrganizationUserCredentails
-                apUserDisplay={mo}
+                onNext={onNext_From_RolesAndGroups}
+                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Review'>
+          <TabPanel header='Credentials' disabled={!showCredentials}>
             <React.Fragment>
-              <p>review the user info and back or save</p>
-              {/* <EditOrganizationUserCredentails
+              <NewOrganizationUserCredentials
+                organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
+                onNext={onNext_From_Credentials}
+                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Review & Create' disabled={!showReview}>
+            <React.Fragment>
+              <NewOrganizationUserReviewAndCreate
+                organizationEntityId={props.organizationEntityId}
+                apUserDisplay={mo}
+                completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
+                onCreateSuccess={onCreateSuccess}
+                onBack={onBack}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onLoadingChange={props.onLoadingChange}
+              />
             </React.Fragment>
           </TabPanel>
         </TabView>
@@ -219,7 +297,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {renderContent()}
+      {managedObject && renderComponent(managedObject)}
 
     </div>
   );

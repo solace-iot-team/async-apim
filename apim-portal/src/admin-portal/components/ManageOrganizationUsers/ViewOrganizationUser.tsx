@@ -133,9 +133,8 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
 
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='Profile'>
-                  <APDisplayUserProfile 
-                    apsUserProfile={managedObject.apsUserResponse.profile}
-                    // header="Profile"
+                  <APDisplayUserProfile
+                    apUserProfileDisplay={APUsersDisplayService.get_ApUserProfileDisplay({ apUserDisplay: managedObject })}
                   />
                 </TabPanel>
                 <TabPanel header='Roles & Groups'>
@@ -153,7 +152,6 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                       })}
                       className="card p-mt-2"
                     />
-
                   </React.Fragment>
                 </TabPanel>
                 <TabPanel header='Assets'>

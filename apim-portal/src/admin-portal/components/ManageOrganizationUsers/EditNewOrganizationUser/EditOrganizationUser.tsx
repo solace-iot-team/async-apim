@@ -13,7 +13,7 @@ import APUsersDisplayService, {
 } from "../../../../displayServices/APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
-import { EditOrganizationUserCredentails } from "./EditOrganizationUserCredentials";
+import { EditOrganizationUserCredentials } from "./EditOrganizationUserCredentials";
 import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
 import { EditOrganizationUserMemberOfOrganizationRoles } from "./EditOrganizationUserMemberOfOrganizationRoles";
 
@@ -135,7 +135,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
           </TabPanel>
           <TabPanel header='Credentials'>
             <React.Fragment>
-              <EditOrganizationUserCredentails
+              <EditOrganizationUserCredentials
                 apUserDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}

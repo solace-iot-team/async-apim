@@ -51,6 +51,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
   const [removeBusinessGroupRolesObject, setRemoveBusinessGroupRolesObject] = React.useState<TEditBusinessGroupRoles>();
 
   // * Api Calls *
+
   const apiGetApUserDisplay = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
     const funcName = 'apiGetApUserDisplay';
     const logName = `${ComponentName}.${funcName}()`;

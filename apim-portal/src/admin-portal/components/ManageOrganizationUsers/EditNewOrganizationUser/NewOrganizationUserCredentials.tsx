@@ -18,17 +18,20 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 
-export interface IEditOrganizationUserCredentialsProps {
+export interface INewOrganizationUserCredentialsProps {
+  organizationEntityId: TAPEntityId;
   apUserDisplay: TAPUserDisplay;
-  onError: (apiCallState: TApiCallState) => void;
-  onSaveSuccess: (apiCallState: TApiCallState) => void;
+  onNext: (apUserCredentialsDisplay: TAPUserCredentialsDisplay) => void;
+  onBack: () => void;
   onCancel: () => void;
+  onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCredentialsProps> = (props: IEditOrganizationUserCredentialsProps) => {
-  const ComponentName = 'EditOrganizationUserCredentials';
+export const NewOrganizationUserCredentials: React.FC<INewOrganizationUserCredentialsProps> = (props: INewOrganizationUserCredentialsProps) => {
+  const ComponentName = 'NewOrganizationUserCredentials';
 
   type TManagedObject = TAPUserCredentialsDisplay;
   type TManagedObjectFormData = {
@@ -62,24 +65,6 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const formId = ComponentName;
 
-  // * Api Calls *
-
-  const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
-    const funcName = 'apiUpdateManagedObject';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_CREDENTIALS, `update credentials for user: ${mo.apEntityId.id}`);
-    try { 
-      await APUsersDisplayService.apsUpdate_ApUserCredentialsDisplay({
-        apUserCredentialsDisplay: mo
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
-
   const doInitialize = async () => {
     setManagedObject(APUsersDisplayService.get_ApUserCredentialsDisplay({
       apUserDisplay: props.apUserDisplay
@@ -103,18 +88,13 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else props.onSaveSuccess(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    props.onLoadingChange(true);
-    await apiUpdateManagedObject(mo);
-    props.onLoadingChange(false);
+    props.onNext(mo);
   }
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
@@ -131,22 +111,24 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
     // placeholder
   }
 
-  const onCancelManagedObjectForm = () => {
-    props.onCancel();
-  }
-
-  const managedObjectFormFooterRightToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-      </React.Fragment>
-    );
-  }
-
   const renderManagedObjectFormFooter = (): JSX.Element => {
+    const managedObjectFormFooterLeftToolbarTemplate = () => {
+      return (
+        <React.Fragment>
+          <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+          <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+        </React.Fragment>
+      );
+    }
+    const managedObjectFormFooterRightToolbarTemplate = () => {
+      return (
+        <React.Fragment>
+          <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+        </React.Fragment>
+      );
+    }  
     return (
-      <Toolbar className="p-mb-4" right={managedObjectFormFooterRightToolbarTemplate} />
+      <Toolbar className="p-mb-4" left={managedObjectFormFooterLeftToolbarTemplate} right={managedObjectFormFooterRightToolbarTemplate} />
     )
   }
 
@@ -174,6 +156,7 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
                           id={field.name}
                           toggleMask={true}
                           feedback={false}        
+                          autoFocus={true}
                           {...field}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />

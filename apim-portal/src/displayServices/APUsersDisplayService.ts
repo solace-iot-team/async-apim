@@ -28,6 +28,7 @@ import APRbacDisplayService from './APRbacDisplayService';
 import APAssetDisplayService, { TAPOrganizationAssetInfoDisplayList } from './APAssetsDisplayService';
 import { Globals } from '../utils/Globals';
 import { DataTableSortOrderType } from 'primereact/datatable';
+import { APSClientOpenApi } from '../utils/APSClientOpenApi';
 
 // TODO: create this type based on primereact TreeNode, replacing data:any with data: TAPMemberOfBusinessGroupDisplay
 export type TAPMemberOfBusinessGroupTreeNodeDisplay = {
@@ -95,6 +96,11 @@ export type TAPUserCredentialsDisplay = IAPEntityIdDisplay & {
 }
 export type TAPUserOrganizationRolesDisplay = IAPEntityIdDisplay & {
   apOrganizationAuthRoleEntityIdList: TAPEntityIdList;
+}
+
+export type TAPCheckOrganizationUserExistsResult = {
+  existsInOrganization: boolean;
+  exists: boolean;
 }
 
 export class APLegacyUserDisplayService {
@@ -201,19 +207,19 @@ class APUsersDisplayService {
   // END: TODO: re-work to do deep property names generically
 
 
-  private create_EmptyProfile(): APSUserProfile {
+  private create_Empty_ApsUserProfile(): APSUserProfile {
     return {
       first: '',
       last: '',
       email: ''
     };
   }
-  private create_EmptyApsUserResponse(): APSUserResponse {
+  private create_Empty_ApsUserResponse(): APSUserResponse {
     return {
       isActivated: false,
       userId: '',
       password: '',
-      profile: this.create_EmptyProfile(),
+      profile: this.create_Empty_ApsUserProfile(),
       systemRoles: [],
       memberOfOrganizations: [],
       memberOfOrganizationGroups: []
@@ -224,7 +230,7 @@ class APUsersDisplayService {
     organizationId: string | undefined
   }): Promise<TAPUserDisplay> {
 
-    const emptyApsUserResponse: APSUserResponse = this.create_EmptyApsUserResponse();
+    const emptyApsUserResponse: APSUserResponse = this.create_Empty_ApsUserResponse();
     const emptyApMemberOfOrganizationGroupDisplayList: TAPMemberOfOrganizationGroupsDisplayList = [];
     if(organizationId !== undefined) {
       const organizationEntityId: TAPEntityId = await APOrganizationsService.getOrganizationEntityId(organizationId);
@@ -255,6 +261,15 @@ class APUsersDisplayService {
     });
   }
 
+  public create_Empty_ApUserProfileDisplay(): TAPUserProfileDisplay {
+    return {
+      apEntityId: {
+        id: '',
+        displayName: ''
+      },
+      apsUserProfile: this.create_Empty_ApsUserProfile()
+    }
+  }
   public create_UserDisplayName(apsUserProfile: APSUserProfile): string {
     return `${apsUserProfile.first} ${apsUserProfile.last}`;
   }
@@ -398,6 +413,15 @@ class APUsersDisplayService {
     };
   }
 
+  public set_ApUserProfileDisplay({ apUserDisplay, apUserProfileDisplay }: {
+    apUserDisplay: TAPUserDisplay;
+    apUserProfileDisplay: TAPUserProfileDisplay;
+  }): TAPUserDisplay {
+    apUserDisplay.apEntityId = apUserProfileDisplay.apEntityId;
+    apUserDisplay.apsUserResponse.profile = apUserProfileDisplay.apsUserProfile;
+    return apUserDisplay;
+  }
+
   public get_ApUserCredentialsDisplay({ apUserDisplay}: {
     apUserDisplay: TAPUserDisplay;
   }): TAPUserCredentialsDisplay {
@@ -405,6 +429,28 @@ class APUsersDisplayService {
       apEntityId: apUserDisplay.apEntityId,
       password: apUserDisplay.apsUserResponse.password,
     };
+  }
+
+  public set_ApUserCredentialsDisplay({ apUserDisplay, apUserCredentialsDisplay }: {
+    apUserDisplay: TAPUserDisplay;
+    apUserCredentialsDisplay: TAPUserCredentialsDisplay
+  }): TAPUserDisplay {
+    apUserDisplay.apsUserResponse.password = apUserCredentialsDisplay.password;
+    return apUserDisplay;
+  }
+
+  public get_isActivated({ apUserDisplay }: {
+    apUserDisplay: TAPUserDisplay;
+  }): boolean {
+    return apUserDisplay.apsUserResponse.isActivated;
+  }
+
+  public set_isActivated({ apUserDisplay, isActivated }: {
+    apUserDisplay: TAPUserDisplay;
+    isActivated: boolean;
+  }): TAPUserDisplay {
+    apUserDisplay.apsUserResponse.isActivated = isActivated;
+    return apUserDisplay;
   }
 
   public get_ApUserOrganizationRolesDisplay({ organizationId, apUserDisplay}: {
@@ -496,6 +542,46 @@ class APUsersDisplayService {
       }      
     }
     return list;
+  }
+
+  public set_ApUserOrganizationRolesDisplay({organizationEntityId, apUserDisplay, apUserOrganizationRolesDisplay}:{
+    organizationEntityId: TAPEntityId;
+    apUserDisplay: TAPUserDisplay;
+    apUserOrganizationRolesDisplay: TAPUserOrganizationRolesDisplay;
+  }): TAPUserDisplay {
+
+    const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = this.apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay({
+      apUserDisplay: apUserDisplay,
+      apUserOrganizationRolesDisplay: apUserOrganizationRolesDisplay,
+      organizationId: organizationEntityId.id,
+    });
+    const apMemberOfOrganizationGroupsDisplayList: TAPMemberOfOrganizationGroupsDisplayList = this.apply_ApMemberOfOrganizationGroupDisplayList_To_ApsUserDisplay({
+      organizationEntityId: organizationEntityId,
+      apUserDisplay: apUserDisplay,
+      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
+    });
+    apUserDisplay.apMemberOfOrganizationGroupsDisplayList = apMemberOfOrganizationGroupsDisplayList;
+
+
+    // TODO: don't think this needs setting here
+    // if yes, go the full round trip: apsUpdate and apsGet
+    // apUserDisplay.apLegacy_MemberOfOrganizationRolesDisplayList = APLegacyUserDisplayService.create_ApLegacyMemberOfOrganizationRolesDisplayList_From_ApMemberOfOrganizationGroupsDisplayList({
+    // });
+    // update:
+    // const update: APSUserUpdate = {
+    //   memberOfOrganizationGroups: this.create_APSMemberOfOrganizationGroupsList_From_ApMemberOfOrganizationGroupsDisplayList(newList),
+    //   // LEGACY
+    //   memberOfOrganizations: APLegacyUserDisplayService.create_APSOrganizationRolesList_From_ApMemberOfOrganizationGroupsDisplayList({
+    //     apMemberOfOrganizationGroupsDisplayList: apUserDisplay.apMemberOfOrganizationGroupsDisplayList
+    //   })
+    // }
+    // return this.create_ApUserDisplay_From_ApiEntities({
+    //   apsUserResponse: apsUserResponse,
+    //   apOrganizationAssetInfoDisplayList: [],
+    //   apMemberOfOrganizationGroupsDisplayList: apMemberOfOrganizationGroupsDisplayList
+    // });
+
+    return apUserDisplay;
   }
 
   private apply_ApUserOrganiztionRolesDisplay_To_ApUserDisplay({organizationId, apUserDisplay, apUserOrganizationRolesDisplay}: {
@@ -633,6 +719,40 @@ class APUsersDisplayService {
     return apOrganizationAssetInfoDisplayList;
   }
 
+  private get_isApsUserMemberOfOrganization({ organizationId, apsUserResponse }: {
+    organizationId: string;
+    apsUserResponse: APSUserResponse;
+  }): boolean {
+    if(apsUserResponse.memberOfOrganizations === undefined) return false;
+    const found = apsUserResponse.memberOfOrganizations.find( (x) => {
+      return x.organizationId === organizationId;
+    });
+    return found !== undefined;
+  }
+
+  public async apsCheck_OrganizationUserIdExists({userId, organizationId}: {
+    organizationId: string;
+    userId: string;
+  }): Promise<TAPCheckOrganizationUserExistsResult> {
+    const funcName = 'apsCheck_OrganizationUserIdExists';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    try {
+      // throw new Error(`${logName}: test error handling upstream`);
+      const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
+        userId: userId
+      });
+      return {
+        exists: true,
+        existsInOrganization: this.get_isApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse})
+      }
+     } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return { exists: false, existsInOrganization: false };
+      }
+      throw e;
+    }
+  }
   public async apsGet_ApUserDisplay({ userId, organizationId, organization_ApBusinessGroupDisplayList }: {
     userId: string;
     organizationId?: string;
