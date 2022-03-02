@@ -9,7 +9,7 @@ import APUsersDisplayService, {
   TAPMemberOfBusinessGroupDisplayList, 
   TAPMemberOfBusinessGroupTreeNodeDisplay, 
   TAPMemberOfBusinessGroupTreeNodeDisplayList 
-} from "../../../displayServices/APUsersDisplayService";
+} from "../../../displayServices/old.APUsersDisplayService";
 import { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
 import { APDisplayOrganizationBusinessGroupRoles } from "./APDisplayOrganizationBusinessGroupRoles";
 

@@ -26,7 +26,7 @@ import APUsersDisplayService, {
   TAPUserDisplay, 
   TAPUserDisplayLazyLoadingTableParameters, 
   TAPUserDisplayListResponse 
-} from "../../../displayServices/APUsersDisplayService";
+} from "../../../displayServices/old.APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAssetsDisplayService from "../../../displayServices/APAssetsDisplayService";
 

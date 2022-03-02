@@ -11,10 +11,8 @@ import APEntityIdsService, {
 import APUsersDisplayService, { 
   TAPUserDisplay,
   TAPUserOrganizationRolesDisplay
-} from "../../../../displayServices/APUsersDisplayService";
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+} from "../../../../displayServices/old.APUsersDisplayService";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
   EditOrganizationUserOrganizationRoles, 
@@ -38,13 +36,12 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
 
   type TManagedObject = TAPUserOrganizationRolesDisplay;
 
-  // const [apUserDisplay, setApUserDisplay] = React.useState<TAPUserDisplay>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showEditDialog, setShowEditDialog] = React.useState<boolean>(false);
   const [showRemoveDialog, setShowRemoveDialog] = React.useState<boolean>(false);
 
-  const doInitialize = async () => {
+  const doInitialize = () => {
     setManagedObject(APUsersDisplayService.get_ApUserOrganizationRolesDisplay({
       organizationId: props.organizationEntityId.id,
       apUserDisplay: props.apUserDisplay
@@ -54,6 +51,9 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // const funcName = 'useEffect[]';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting, props.apUserDisplay.apMemberOfOrganizationGroupsDisplayList = ${JSON.stringify(props.apUserDisplay.apMemberOfOrganizationGroupsDisplayList, null, 2)}`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -106,6 +106,7 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
   }
   const onEditSuccess = (updatedApUserOrganizationRolesDisplay: TAPUserOrganizationRolesDisplay) => {
     setShowEditDialog(false);
+    // set own managedObject AND tell caller about updates
     setManagedObject(updatedApUserOrganizationRolesDisplay);    
     props.onEditSuccess(updatedApUserOrganizationRolesDisplay);
   }
@@ -172,14 +173,8 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
           onCancel={onRemoveCancel}
           onError={props.onError}
           onLoadingChange={props.onLoadingChange}
-
-          // apUserDisplay={apUserDisplay}
-          // onSaveSuccess={onRemoveSaveSuccess}
-          // onCancel={onRemoveCancel}
-          // onError={onRemoveError}
-          // onLoadingChange={props.onLoadingChange}
         />
-        <ApiCallStatusError apiCallStatus={apiCallStatus} />
+        {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
       </Dialog>
     );
   }

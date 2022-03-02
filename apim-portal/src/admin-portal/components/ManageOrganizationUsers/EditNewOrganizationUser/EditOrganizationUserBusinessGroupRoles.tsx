@@ -15,7 +15,7 @@ import APUsersDisplayService, {
   TAPMemberOfBusinessGroupDisplay, 
   TAPMemberOfBusinessGroupDisplayList, 
   TAPUserDisplay
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
 import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplayList, 

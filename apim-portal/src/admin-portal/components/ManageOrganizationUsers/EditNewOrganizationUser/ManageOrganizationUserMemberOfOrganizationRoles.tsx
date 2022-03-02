@@ -11,7 +11,7 @@ import APEntityIdsService, {
 import APUsersDisplayService, { 
   TAPUserDisplay,
   TAPUserOrganizationRolesDisplay
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";

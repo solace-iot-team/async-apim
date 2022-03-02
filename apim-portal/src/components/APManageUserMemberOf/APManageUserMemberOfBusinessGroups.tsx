@@ -25,7 +25,12 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../utils/AP
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';
-import APUsersDisplayService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationGroupsDisplay, TAPMemberOfOrganizationGroupsDisplayList } from "../../displayServices/APUsersDisplayService";
+import APUsersDisplayService, { 
+  TAPMemberOfBusinessGroupDisplay, 
+  TAPMemberOfBusinessGroupDisplayList, 
+  TAPMemberOfOrganizationGroupsDisplay, 
+  TAPMemberOfOrganizationGroupsDisplayList 
+} from "../../displayServices/old.APUsersDisplayService";
 import APRbacDisplayService from "../../displayServices/APRbacDisplayService";
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplayList } from "../../displayServices/APBusinessGroupsDisplayService";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";

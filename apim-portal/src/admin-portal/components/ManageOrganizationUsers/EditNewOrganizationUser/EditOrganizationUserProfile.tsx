@@ -14,7 +14,7 @@ import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import APUsersDisplayService, { 
   TAPUserDisplay, 
   TAPUserProfileDisplay 
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';

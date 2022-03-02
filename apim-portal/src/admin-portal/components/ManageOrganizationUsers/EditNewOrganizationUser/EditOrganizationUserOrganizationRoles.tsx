@@ -13,7 +13,7 @@ import APEntityIdsService, {
 import APUsersDisplayService, { 
   TAPUserDisplay,
   TAPUserOrganizationRolesDisplay
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
@@ -235,6 +235,8 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     const funcName = 'validate_UpdatedOrganizationUserOrganizationRoles';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // save a copy to restore in case validation fails
+    const savedOrganizationAuthRoleIdList: Array<string> = JSON.parse(JSON.stringify(organizationAuthRoleIdList));
     if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE || props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN) {
       organizationAuthRoleIdList = [];
     }
@@ -254,6 +256,8 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
       updateApUserOrganizationRolesDisplay: validationManagedObject
     });
     if(!areUserRolesValid) {
+      // restore original list
+      organizationAuthRoleIdList = savedOrganizationAuthRoleIdList;
       switch(props.action) {
         case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE:
           return `Specify at least 1 organization role. User is not a member of any business group. To remove user from organization, delete the user instead.`;    

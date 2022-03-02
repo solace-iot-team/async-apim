@@ -27,7 +27,11 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageUsersCommon";
 import { APManageUserOrganizations } from "../../../components/APManageUserMemberOf/APManageUserOrganizations";
-import APUsersDisplayService, { TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationGroupsDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import APUsersDisplayService, { 
+  TAPMemberOfBusinessGroupDisplayList, 
+  TAPMemberOfOrganizationGroupsDisplayList, 
+  TAPUserDisplay 
+} from "../../../displayServices/old.APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
 import { APManageUserMemberOfBusinessGroups } from "../../../components/APManageUserMemberOf/APManageUserMemberOfBusinessGroups";

@@ -13,7 +13,12 @@ import { AuthHelper } from "../../../auth/AuthHelper";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APUsersDisplayService, { APLegacyUserDisplayService, TAPLegacyMemberOfOrganizationRolesDisplay, TAPLegacyMemberOfOrganizationRolesDisplayList, TAPUserDisplay } from "../../../displayServices/APUsersDisplayService";
+import APUsersDisplayService, { 
+  APLegacyUserDisplayService, 
+  TAPLegacyMemberOfOrganizationRolesDisplay, 
+  TAPLegacyMemberOfOrganizationRolesDisplayList, 
+  TAPUserDisplay 
+} from "../../../displayServices/old.APUsersDisplayService";
 import APAssetDisplayService from "../../../displayServices/APAssetsDisplayService";
 import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";

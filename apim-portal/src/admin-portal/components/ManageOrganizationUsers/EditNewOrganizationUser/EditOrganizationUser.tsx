@@ -10,7 +10,7 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import APUsersDisplayService, { 
   TAPUserDisplay 
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
 import { EditOrganizationUserCredentials } from "./EditOrganizationUserCredentials";

@@ -5,7 +5,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
-import APUsersDisplayService from './APUsersDisplayService';
+import APUsersDisplayService from './old.APUsersDisplayService';
 
 export enum EAPAssetType {
   DEVELOPER_APP = "DEVELOPER_APP",

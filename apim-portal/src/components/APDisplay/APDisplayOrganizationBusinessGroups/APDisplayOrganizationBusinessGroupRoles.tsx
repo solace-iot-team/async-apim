@@ -4,7 +4,7 @@ import React from "react";
 import APEntityIdsService from "../../../utils/APEntityIdsService";
 import { 
   TAPMemberOfBusinessGroupTreeNodeDisplay, 
-} from "../../../displayServices/APUsersDisplayService";
+} from "../../../displayServices/old.APUsersDisplayService";
 
 import "../../APComponents.css";
 

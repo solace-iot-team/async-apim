@@ -21,14 +21,17 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPMemberOfBusinessGroupDisplayList, 
-  TAPUserDisplay, 
+import { 
   TAPUserDisplayLazyLoadingTableParameters, 
-  TAPUserDisplayListResponse 
-} from "../../../displayServices/APUsersDisplayService";
+} from "../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+
+
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAssetsDisplayService from "../../../displayServices/APAssetsDisplayService";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay, 
+  TAPOrganizationUserDisplayListResponse 
+} from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
@@ -51,7 +54,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   const MessageNoManagedObjectsFoundWithFilter = 'No Users found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
-  type TManagedObject = TAPUserDisplay;
+  type TManagedObject = TAPOrganizationUserDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
   const loginAsHistory = useHistory<TUserLoginCredentials>();
@@ -65,7 +68,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     first: 0, // index of the first row to be displayed
     rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
     page: 0,
-    sortField: APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('email'),
+    sortField: APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('email'),
     sortOrder: 1
   });
   const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
@@ -79,16 +82,25 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try {
-      const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.apsGetList_ApUserDisplayListResponse({
+
+      const apOrganizationUserDisplayListResponse: TAPOrganizationUserDisplayListResponse = await APOrganizationUsersDisplayService.apsGetList_ApOrganizationUserDisplayListResponse({
+        organizationEntityId: props.organizationEntityId,
         pageSize: pageSize,
         pageNumber: pageNumber,
         sortFieldName: sortFieldName,
         sortDirection: sortDirection,
         searchWordList: searchWordList,
-        searchOrganizationId: props.organizationEntityId.id
       });
-      setManagedObjectList(apUserDisplayListResponse.apUserDisplayList);
-      setLazyLoadingTableTotalRecords(apUserDisplayListResponse.meta.totalCount);
+      // const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.apsGetList_ApUserDisplayListResponse({
+      //   pageSize: pageSize,
+      //   pageNumber: pageNumber,
+      //   sortFieldName: sortFieldName,
+      //   sortDirection: sortDirection,
+      //   searchWordList: searchWordList,
+      //   searchOrganizationId: props.organizationEntityId.id
+      // });
+      setManagedObjectList(apOrganizationUserDisplayListResponse.apOrganizationUserDisplayList);
+      setLazyLoadingTableTotalRecords(apOrganizationUserDisplayListResponse.meta.totalCount);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -105,7 +117,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
-    const sortFieldName: string = APUsersDisplayService.map_nameOf_To_APSUser_nameOf(lazyLoadingTableParams.sortField);
+    const sortFieldName: string = APOrganizationUsersDisplayService.map_ApUserDisplayFieldName_To_APSUserFieldName(lazyLoadingTableParams.sortField);
     const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
     const searchWordList: string | undefined = globalFilter;
     await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
@@ -151,8 +163,8 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     loginAsHistory.push( { 
       pathname: EUICommonResourcePaths.Login,
       state: {
-        userId: mo.apsUserResponse.userId,
-        userPwd: mo.apsUserResponse.password
+        userId: mo.apEntityId.id,
+        userPwd: mo.apUserAuthenticationDisplay.password,
       }
     });
   }
@@ -171,15 +183,13 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     );
   }
 
-  const actionBodyTemplate = (managedObject: TManagedObject) => {
-    // const funcName = 'actionBodyTemplate';
-    // const logName = `${componentName}.${funcName}()`;
+  const actionBodyTemplate = (mo: TManagedObject) => {
     return (
         <React.Fragment>
-          {managedObject.apsUserResponse.isActivated &&
+          {mo.apUserAuthenticationDisplay.isActivated === true &&
             <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
               <Button tooltip="login as ..." icon="pi pi-sign-in" className="p-button-rounded p-button-outlined p-button-secondary" 
-                onClick={() => onLoginAs(managedObject)} 
+                onClick={() => onLoginAs(mo)} 
               />
             </RenderWithRbac>  
           } 
@@ -197,27 +207,13 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   }
 
   const businessGroupsBodyTemplate = (mo: TManagedObject) => {
-    const funcName = 'businessGroupsBodyTemplate';
-    const logName = `${componentName}.${funcName}()`;
-
-    if(mo.apMemberOfOrganizationGroupsDisplayList.length > 1) throw new Error(`${logName}: mo.apMemberOfOrganizationGroupsDisplayList.length > 1`);
-    const apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = APUsersDisplayService.find_ApMemberOfBusinessGroupDisplayList({
-      organizationId: props.organizationEntityId.id,
-      apUserDisplay: mo
-    });
-    return APEntityIdsService.create_DisplayNameList(APUsersDisplayService.create_ApBusinessGroupEntityIdList_From_ApMemberOfBusinessGroupDisplayList({
-      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList
+    return APEntityIdsService.create_DisplayNameList(APOrganizationUsersDisplayService.create_ApBusinessGroupEntityIdList_From_ApMemberOfBusinessGroupDisplayList({
+      apMemberOfBusinessGroupDisplayList: mo.apMemberOfOrganizationBusinessGroupsDisplay.apMemberOfBusinessGroupDisplayList
     })).join(', ');
   }
-  // const organizationsBodyTemplate = (mo: TManagedObject) => {
 
-  //   return 'mo.apMemberOfOrganizationGroupsDisplayList';
-  // }
-  // const systemRolesBodyTemplate = (mo: TManagedObject) => {
-  //   return APEntityIdsService.create_DisplayNameList(mo.apSystemRoleEntityIdList);
-  // }
   const isActiveBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    if(mo.apsUserResponse.isActivated) return (<span className="pi pi-check badge-active" />)
+    if(mo.apUserAuthenticationDisplay.isActivated) return (<span className="pi pi-check badge-active" />)
     else return (<span className="pi pi-times badge-active" />)
   }
 
@@ -241,11 +237,11 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
 
   const renderColumns = (): Array<JSX.Element> => {
     const cols: Array<JSX.Element> = [];
-    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APUsersDisplayService.nameOf_ApsUserResponse('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />);
-    cols.push(<Column key={Globals.getUUID()} header="E-Mail" field={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('email')}  sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APOrganizationUsersDisplayService.nameOf_ApUserAuthenticationDisplay('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="E-Mail" field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('email')}  sortable />);
     cols.push(<Column key={Globals.getUUID()} header="Business Groups" headerStyle={{width: '20em'}} body={businessGroupsBodyTemplate} />);  
-    cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('first')} sortable />);
-    cols.push(<Column key={Globals.getUUID()} header="Last Name" headerStyle={{width: '12em'}} field={APUsersDisplayService.nameOf_ApsUserResponse_ApsProfile('last')}  sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('first')} sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Last Name" headerStyle={{width: '12em'}} field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('last')}  sortable />);
     cols.push(<Column key={Globals.getUUID()} header="Assets" headerStyle={{width: '5em'}} body={assetsBodyTemplate} bodyStyle={{textAlign: 'center', verticalAling: 'top'}} />);
     cols.push(<Column key={Globals.getUUID()} headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
     return cols;

@@ -13,7 +13,7 @@ import APUsersDisplayService, {
   TAPLegacyMemberOfOrganizationRolesDisplayList,
   TAPUserCredentialsDisplay,
   TAPUserDisplay, 
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { APDisplayUserProfile } from "../../../../components/APDisplay/APDisplayUserProfile";
 import { AuthHelper } from "../../../../auth/AuthHelper";

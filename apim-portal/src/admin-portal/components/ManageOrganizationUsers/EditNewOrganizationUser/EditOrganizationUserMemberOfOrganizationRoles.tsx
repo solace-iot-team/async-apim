@@ -3,7 +3,7 @@ import React from "react";
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import { 
   TAPUserDisplay,
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ManageOrganizationUserMemberOfOrganizationRoles } from "./ManageOrganizationUserMemberOfOrganizationRoles";
 

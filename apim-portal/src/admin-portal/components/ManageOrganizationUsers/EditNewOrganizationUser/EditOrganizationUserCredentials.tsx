@@ -13,7 +13,7 @@ import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import APUsersDisplayService, { 
   TAPUserCredentialsDisplay, 
   TAPUserDisplay
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';
@@ -198,6 +198,7 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
       {managedObject && 
         renderManagedObjectForm(managedObject)
       }
+
     </div>
   );
 }

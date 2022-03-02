@@ -6,7 +6,7 @@ import {
 } from "../../../../utils/APEntityIdsService";
 import { 
   TAPUserDisplay
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import { ManageListOrganizationUserMemberOfBusinessGroups } from "./ManageListOrganizationUserMemberOfBusinessGroups";
 

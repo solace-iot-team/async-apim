@@ -12,7 +12,7 @@ import APUsersDisplayService, {
   TAPUserCredentialsDisplay,
   TAPUserDisplay, 
   TAPUserProfileDisplay 
-} from "../../../../displayServices/APUsersDisplayService";
+} from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
 import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
@@ -53,11 +53,23 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     });
   }
   const setPreviousComponentState = () => {
-    setComponentState({
-      previousState: componentState.currentState,
-      currentState: componentState.previousState
-    });
+    const funcName = 'setPreviousComponentState';
+    const logName = `${ComponentName}.${funcName}()`;
+    switch(componentState.currentState) {
+      case E_COMPONENT_STATE_NEW_USER.UNDEFINED:
+      case E_COMPONENT_STATE_NEW_USER.PROFILE:
+        return;
+      case E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
+      case E_COMPONENT_STATE_NEW_USER.CREDENTIALS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS);
+      case E_COMPONENT_STATE_NEW_USER.REVIEW:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.CREDENTIALS);
+      default:
+        Globals.assertNever(logName, componentState.currentState);
+    }
   }
+
   const setNextComponentState = () => {
     const funcName = 'setNextComponentState';
     const logName = `${ComponentName}.${funcName}()`;
@@ -196,11 +208,11 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     setNextComponentState();
   }
 
-  const onNext_From_RolesAndGroups = (x: string) => {
+  const onNext_From_RolesAndGroups = (updatedApUserDisplay: TAPUserDisplay) => {
     const funcName = 'onNext_From_RolesAndGroups';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    alert(`${logName}: do it ..`)
+    setManagedObject(updatedApUserDisplay);
     // TODO: set the values in managedObject
     // setManagedObject(APUsersDisplayService.set_ApUserProfileDisplay({ apUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay }));
     setNextComponentState();
@@ -238,11 +250,6 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
               />
-              {/* DEBUG */}
-              <p><b>managedObject=</b></p>
-              <pre style={ { fontSize: '10px', width: '500px' }} >
-                {JSON.stringify(managedObject, null, 2)}
-              </pre>
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Roles & Groups' disabled={!showRolesAndGroups}>
@@ -298,6 +305,30 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {managedObject && renderComponent(managedObject)}
+
+      {/* DEBUG */}
+      {managedObject && 
+        <React.Fragment>
+          <hr />
+          <p><b>{ComponentName}:</b></p>
+          <p><b>managedObject.apsUserResponse.profile=</b></p>
+          <pre style={ { fontSize: '10px', width: '500px' }} >
+            {JSON.stringify(managedObject.apsUserResponse.profile, null, 2)}
+          </pre>
+          <p><b>managedObject.apMemberOfOrganizationGroupsDisplayList=</b></p>
+          <pre style={ { fontSize: '10px', width: '500px' }} >
+            {JSON.stringify(managedObject.apMemberOfOrganizationGroupsDisplayList, null, 2)}
+          </pre>
+          <p><b>managedObject.apsUserResponse.memberOfOrganizationGroups=</b></p>
+          <pre style={ { fontSize: '10px', width: '500px' }} >
+            {JSON.stringify(managedObject.apsUserResponse.memberOfOrganizationGroups, null, 2)}
+          </pre>
+          <p><b>managedObject.apsUserResponse.password=</b></p>
+          <pre style={ { fontSize: '10px', width: '500px' }} >
+            {JSON.stringify(managedObject.apsUserResponse.password, null, 2)}
+          </pre>
+        </React.Fragment>
+      }
 
     </div>
   );
