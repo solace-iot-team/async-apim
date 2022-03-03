@@ -2,7 +2,7 @@
 import React from "react";
 import { useHistory } from 'react-router-dom';
 
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableSortOrderType } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
@@ -77,28 +77,25 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
-  const apiGetManagedObjectListPage = async(pageSize: number, pageNumber: number, sortFieldName: string, sortDirection: EAPSSortDirection, searchWordList?: string): Promise<TApiCallState> => {
+  const apiGetManagedObjectListPage = async({pageSize, pageNumber, sortFieldName, sortDirection, searchWordList}:{
+    pageSize: number;
+    pageNumber: number;
+    sortFieldName: string;
+    sortDirection: DataTableSortOrderType;
+    searchWordList?: string;
+  }): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectListPage';
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_LIST, 'retrieve list of users');
     try {
-
       const apOrganizationUserDisplayListResponse: TAPOrganizationUserDisplayListResponse = await APOrganizationUsersDisplayService.apsGetList_ApOrganizationUserDisplayListResponse({
         organizationEntityId: props.organizationEntityId,
         pageSize: pageSize,
         pageNumber: pageNumber,
-        sortFieldName: sortFieldName,
+        apSortFieldName: sortFieldName,
         sortDirection: sortDirection,
         searchWordList: searchWordList,
       });
-      // const apUserDisplayListResponse: TAPUserDisplayListResponse = await APUsersDisplayService.apsGetList_ApUserDisplayListResponse({
-      //   pageSize: pageSize,
-      //   pageNumber: pageNumber,
-      //   sortFieldName: sortFieldName,
-      //   sortDirection: sortDirection,
-      //   searchWordList: searchWordList,
-      //   searchOrganizationId: props.organizationEntityId.id
-      // });
       setManagedObjectList(apOrganizationUserDisplayListResponse.apOrganizationUserDisplayList);
       setLazyLoadingTableTotalRecords(apOrganizationUserDisplayListResponse.meta.totalCount);
     } catch(e: any) {
@@ -110,17 +107,20 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   }
 
   const doLoadPage = async () => {
-    // const funcName = 'doLoadPage';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: loading ...`);
     props.onLoadingChange(true);
     setLazyLoadingTableIsLoading(true);
     const pageNumber: number = lazyLoadingTableParams.page + 1;
     const pageSize: number = lazyLoadingTableParams.rows;
-    const sortFieldName: string = APOrganizationUsersDisplayService.map_ApUserDisplayFieldName_To_APSUserFieldName(lazyLoadingTableParams.sortField);
-    const sortDirection: EAPSSortDirection  = APComponentsCommon.transformTableSortDirectionToApiSortDirection(lazyLoadingTableParams.sortOrder);
+    const sortFieldName: string = lazyLoadingTableParams.sortField;
+    const sortDirection: DataTableSortOrderType = lazyLoadingTableParams.sortOrder;
     const searchWordList: string | undefined = globalFilter;
-    await apiGetManagedObjectListPage(pageSize, pageNumber, sortFieldName, sortDirection, searchWordList);
+    await apiGetManagedObjectListPage({
+      pageSize: pageSize, 
+      pageNumber: pageNumber, 
+      sortFieldName: sortFieldName, 
+      sortDirection: sortDirection, 
+      searchWordList: searchWordList
+    });
     setLazyLoadingTableIsLoading(false);
     props.onLoadingChange(false);
   }

@@ -1,9 +1,11 @@
+import { DataTableSortOrderType } from 'primereact/datatable';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
 import { APSListResponseMeta, APSMemberOfBusinessGroup, APSMemberOfOrganizationGroups, APSUserResponse, ApsUsersService, EAPSSortDirection, ListApsUsersResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APAssetDisplayService, { TAPOrganizationAssetInfoDisplayList } from '../APAssetsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
+import APDisplayUtils from '../APDisplayUtils';
 import APRbacDisplayService from '../APRbacDisplayService';
 import { 
   APUsersDisplayService, 
@@ -462,24 +464,27 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     organizationEntityId,
     pageSize = 20,
     pageNumber = 1,
-    sortFieldName,
+    apSortFieldName,
     sortDirection,
     searchWordList,
   }: {
     organizationEntityId: TAPEntityId;
-    pageSize?: number,
-    pageNumber?: number,
-    sortFieldName?: string,
-    sortDirection?: EAPSSortDirection,
-    searchWordList?: string,
+    pageSize?: number;
+    pageNumber?: number;
+    apSortFieldName?: string;
+    sortDirection?: DataTableSortOrderType;
+    searchWordList?: string;
   }): Promise<TAPOrganizationUserDisplayListResponse> {
   
     // change this call once aps has a the new organization user resource
+    // map UI sortField to 
+    const apsSortFieldName = this.map_ApFieldName_To_ApsFieldName(apSortFieldName);
+    const apsSortDirection = APDisplayUtils.transformTableSortDirectionToApiSortDirection(sortDirection);
     const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
       pageSize: pageSize,
       pageNumber: pageNumber,
-      sortFieldName: sortFieldName,
-      sortDirection: sortDirection,
+      sortFieldName: apsSortFieldName,
+      sortDirection: apsSortDirection,
       searchWordList: searchWordList ? Globals.encodeRFC5987ValueChars(searchWordList) : undefined,
       searchOrganizationId: organizationEntityId.id,
     });

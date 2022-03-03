@@ -530,6 +530,7 @@ export enum EFileExtension {
 
 export class APComponentsCommon {
 
+  // TODO: delete me: moved to APDisplayUtils.tsx
   public static transformTableSortDirectionToApiSortDirection = (tableSortDirection: DataTableSortOrderType): EAPSSortDirection => {
     return tableSortDirection === 1 ? EAPSSortDirection.ASC : EAPSSortDirection.DESC;
   }

@@ -146,6 +146,13 @@ export class APUsersDisplayService {
     return `apUserAuthenticationDisplay.${name}`;
   }
 
+  protected map_ApFieldName_To_ApsFieldName(apFieldName?: string): string | undefined {
+    if(apFieldName === undefined) return undefined;
+    if(apFieldName.startsWith('apUserProfileDisplay')) return apFieldName.replace('apUserProfileDisplay.', 'profile.');
+    else if(apFieldName.startsWith('apUserAuthenticationDisplay')) return apFieldName.replace('apUserAuthenticationDisplay.', '');
+    return apFieldName;
+  }
+
   public map_ApUserDisplayFieldName_To_APSUserFieldName(apUserDisplayFieldName: string): string {
     if(apUserDisplayFieldName.startsWith('apUserProfileDisplay')) return apUserDisplayFieldName.replace('apUserProfileDisplay.', 'profile.');
     else if(apUserDisplayFieldName.startsWith('apUserAuthenticationDisplay')) return apUserDisplayFieldName.replace('apUserAuthenticationDisplay.', '');
