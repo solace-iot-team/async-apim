@@ -86,14 +86,14 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
       if(existingIndex > -1) mo.splice(existingIndex, 1);  
     } else {
       // add/replace group
-      if(existingIndex > -1) mo[existingIndex].apConfiguredBusinessGroupRoleEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(fd.roles);
+      if(existingIndex > -1) mo[existingIndex].apConfiguredBusinessGroupRoleEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: fd.roles});
       else {
         mo.push({
           apBusinessGroupDisplay: APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_by_id({
             apBusinessGroupDisplayList: props.completeOrganizationApBusinessGroupDisplayList,
             businessGroupId: props.businessGroupEntityId.id
           }),
-          apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(fd.roles),
+          apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: fd.roles}),
           apCalculatedBusinessGroupRoleEntityIdList: []
         });
       }

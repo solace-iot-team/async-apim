@@ -1,5 +1,11 @@
 import APEntityIdsService, { TAPEntityIdList } from '../utils/APEntityIdsService';
-import { APRbac, EAPRbacRoleScope, EAPSCombinedAuthRole, TAPRbacRole, TAPRbacRoleList } from '../utils/APRbac';
+import { 
+  APRbac, 
+  EAPRbacRoleScope, 
+  EAPSCombinedAuthRole, 
+  TAPRbacRole, 
+  TAPRbacRoleList 
+} from '../utils/APRbac';
 import { 
   APSBusinessGroupAuthRoleList,
   APSOrganizationAuthRoleList,
@@ -81,7 +87,9 @@ class APRbacDisplayService {
     return this.create_Roles_SelectEntityIdList(rbacRoleList);
   }
 
-  public create_BusinessGroupRoles_EntityIdList(apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList): TAPEntityIdList {
+  public create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList}: {
+    apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList
+  }): TAPEntityIdList {
     const entityIdList: TAPEntityIdList = [];
     apsBusinessGroupAuthRoleList.forEach( (apsBusinessGroupAuthRole: EAPSBusinessGroupAuthRole) => {
       const apRbacRole: TAPRbacRole = APRbac.getByRole(apsBusinessGroupAuthRole);

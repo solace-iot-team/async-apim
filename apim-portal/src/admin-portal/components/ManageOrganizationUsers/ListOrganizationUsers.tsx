@@ -8,15 +8,10 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { MenuItem } from "primereact/api";
 
-import { 
-  EAPSSortDirection, 
-} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
-
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APComponentsCommon } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
@@ -24,7 +19,6 @@ import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationUsersCommon";
 import { 
   TAPUserDisplayLazyLoadingTableParameters, 
 } from "../../../displayServices/APUsersDisplayService/APUsersDisplayService";
-
 
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAssetsDisplayService from "../../../displayServices/APAssetsDisplayService";
@@ -197,7 +191,8 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     );
   }
 
-  const assetsBodyTemplate = (mo: TManagedObject) => {
+  const assetsBodyTemplate = (mo: TManagedObject): string => {
+    if(mo.apOrganizationAssetInfoDisplayList === undefined) return 'unknown';
     const numAssets = APAssetsDisplayService.getNumberOfAssetsForAllOrganizations(mo.apOrganizationAssetInfoDisplayList);
     if(numAssets > 0) {
       return (`${numAssets}`);
@@ -206,10 +201,12 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     }
   }
 
-  const businessGroupsBodyTemplate = (mo: TManagedObject) => {
-    return APEntityIdsService.create_DisplayNameList(APOrganizationUsersDisplayService.create_ApBusinessGroupEntityIdList_From_ApMemberOfBusinessGroupDisplayList({
-      apMemberOfBusinessGroupDisplayList: mo.apMemberOfOrganizationBusinessGroupsDisplay.apMemberOfBusinessGroupDisplayList
-    })).join(', ');
+  const businessGroupsBodyTemplate = (mo: TManagedObject): string => {
+    const businessGroupsEntityIdList: Array<string> = APEntityIdsService.create_DisplayNameList(APOrganizationUsersDisplayService.create_MemberOfBusinessGroupEntityIdList({
+      apOrganizationUserMemberOfOrganizationDisplay: mo.apOrganizationUserMemberOfOrganizationDisplay
+    }));
+    if(businessGroupsEntityIdList.length === 0) return '-';
+    return businessGroupsEntityIdList.join(', ');
   }
 
   const isActiveBodyTemplate = (mo: TManagedObject): JSX.Element => {

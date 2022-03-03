@@ -69,7 +69,7 @@ export const APManageUserMemberOfBusinessGroups: React.FC<IAPManageUserMemberOfB
     const funcName = 'transform_BusinessGroupRolesFormDataEnvelope_To_MemberOfBusinessGroupDisplay';
     const logName = `${ComponentName}.${funcName}()`;
 
-    const roleEntityIdList: TAPEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(bgrFde.formData.roles as APSBusinessGroupAuthRoleList);
+    const roleEntityIdList: TAPEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: bgrFde.formData.roles as APSBusinessGroupAuthRoleList});
 
     const found = props.completeOrganizationApBusinessGroupDisplayList.find( (apBusinessGroupDisplay: TAPBusinessGroupDisplay) => {
       return apBusinessGroupDisplay.apEntityId.id === bgrFde.formData.businessGroupId;

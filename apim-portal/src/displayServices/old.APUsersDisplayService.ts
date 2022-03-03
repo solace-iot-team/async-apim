@@ -324,7 +324,11 @@ class APUsersDisplayService {
       });
       // user may not have roles in every parent group
       const thisRolesEntityIdList: TAPEntityIdList = [];
-      if(thisMemberOfBusinessGroup !== undefined) thisRolesEntityIdList.push(...APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(thisMemberOfBusinessGroup.roles));
+      if(thisMemberOfBusinessGroup !== undefined) {
+        thisRolesEntityIdList.push(...APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({
+          apsBusinessGroupAuthRoleList: thisMemberOfBusinessGroup.roles
+        }));
+      }
       // collect the parent roles
       const apBusinessGroupDisplay: TAPBusinessGroupDisplay | undefined = apBusinessGroupDisplayList.find( (x) => {
         return x.apEntityId.id === businessGroupId;
@@ -655,7 +659,7 @@ class APUsersDisplayService {
       });
       apMemberOfBusinessGroupDisplayList.push({
         apBusinessGroupDisplay: apBusinessGroupDisplay,
-        apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList(apsMemberOfBusinessGroup.roles),
+        apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
         apCalculatedBusinessGroupRoleEntityIdList: this.create_CalculatedBusinessGroupRoles_EntityIdList({
           businessGroupId: apsMemberOfBusinessGroup.businessGroupId,
           apBusinessGroupDisplayList: organization_ApBusinessGroupDisplayList,
