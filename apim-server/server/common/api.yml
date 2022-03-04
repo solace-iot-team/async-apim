@@ -1884,6 +1884,9 @@ components:
           $ref: '#/components/schemas/APSOrganizationRolesResponseList'
         memberOfOrganizationGroups:
           $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
+      required:
+      - memberOfOrganizations
+      - memberOfOrganizationGroups
     APSUserResponseList:
       description: Array of APSUserResponses.
       type: array

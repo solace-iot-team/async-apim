@@ -50,7 +50,8 @@ const apsUserTemplate: APSUser = {
       organizationId: ReferenceOrg_1,
       roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
     }
-  ]
+  ],
+  memberOfOrganizationGroups: [],
 }
 const apsUserTemplate2: APSUser = {
   isActivated: true,
@@ -66,7 +67,8 @@ const apsUserTemplate2: APSUser = {
       organizationId: ReferenceOrg_2,
       roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
     }
-  ]
+  ],
+  memberOfOrganizationGroups: [],
 }
 
 describe(`${scriptName}`, () => {
@@ -331,17 +333,15 @@ describe(`${scriptName}`, () => {
       // expect organizationDisplayName in all memberOfOrganizations to be equal to organizationId
       let recreatedApsUser: APSUser = apsUserResponse;
       const recreatedMemberOfOrganizations: APSOrganizationRolesList = [];
-      if(apsUserResponse.memberOfOrganizations !== undefined) {
-        for(const memberOfOrganization of apsUserResponse.memberOfOrganizations) {
-          expect(memberOfOrganization.organizationId, TestLogger.createTestFailMessage('org displayname not equal org id')).to.deep.equal(memberOfOrganization.organizationDisplayName);
-          // also re-create the original data structure 
-          recreatedMemberOfOrganizations.push({
-            organizationId: memberOfOrganization.organizationId,
-            roles: memberOfOrganization.roles
-          });
-        }
-        recreatedApsUser.memberOfOrganizations = recreatedMemberOfOrganizations;
+      for(const memberOfOrganization of apsUserResponse.memberOfOrganizations) {
+        expect(memberOfOrganization.organizationId, TestLogger.createTestFailMessage('org displayname not equal org id')).to.deep.equal(memberOfOrganization.organizationDisplayName);
+        // also re-create the original data structure 
+        recreatedMemberOfOrganizations.push({
+          organizationId: memberOfOrganization.organizationId,
+          roles: memberOfOrganization.roles
+        });
       }
+      recreatedApsUser.memberOfOrganizations = recreatedMemberOfOrganizations;
       expect(recreatedApsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal(apsUserTemplate);
     });
 

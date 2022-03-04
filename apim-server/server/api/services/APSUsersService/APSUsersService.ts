@@ -487,6 +487,11 @@ export class APSUsersService {
         }
       }
       apsUserResponse.memberOfOrganizations = memberOfOrganizationResponse;
+    } else {
+      apsUserResponse.memberOfOrganizations = [];
+    }
+    if(apsUser.memberOfOrganizationGroups === undefined) {
+      apsUserResponse.memberOfOrganizationGroups = [];
     }
     return apsUserResponse;
   }
