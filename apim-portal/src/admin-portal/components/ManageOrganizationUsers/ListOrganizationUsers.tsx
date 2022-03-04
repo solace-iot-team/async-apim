@@ -192,8 +192,8 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   }
 
   const assetsBodyTemplate = (mo: TManagedObject): string => {
-    if(mo.apOrganizationAssetInfoDisplayList === undefined) return 'unknown';
-    const numAssets = APAssetsDisplayService.getNumberOfAssetsForAllOrganizations(mo.apOrganizationAssetInfoDisplayList);
+    if(mo.organizationAssetInfoDisplayList === undefined) return 'unknown';
+    const numAssets = APAssetsDisplayService.getNumberOfAssetsForAllOrganizations(mo.organizationAssetInfoDisplayList);
     if(numAssets > 0) {
       return (`${numAssets}`);
     } else {
@@ -203,7 +203,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
 
   const businessGroupsBodyTemplate = (mo: TManagedObject): string => {
     const businessGroupsEntityIdList: Array<string> = APEntityIdsService.create_DisplayNameList(APOrganizationUsersDisplayService.create_MemberOfBusinessGroupEntityIdList({
-      apOrganizationUserMemberOfOrganizationDisplay: mo.apOrganizationUserMemberOfOrganizationDisplay
+      apOrganizationUserMemberOfOrganizationDisplay: mo.memberOfOrganizationDisplay
     }));
     if(businessGroupsEntityIdList.length === 0) return '-';
     return businessGroupsEntityIdList.join(', ');
@@ -257,7 +257,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
             onRowDoubleClick={(e) => onManagedObjectOpen(e)}
             scrollable 
             scrollHeight="800px" 
-            dataKey="id"  
+            dataKey={APOrganizationUsersDisplayService.nameOf_ApEntityId('id')}
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // lazyLoading & pagination
             lazy={true}

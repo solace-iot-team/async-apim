@@ -1,6 +1,6 @@
 
 import React from "react";
-import APUsersDisplayService, { TAPUserProfileDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { TAPUserProfileDisplay } from "../../displayServices/old.APUsersDisplayService";
 import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 
 import "../APComponents.css";
@@ -22,11 +22,11 @@ export const APDisplayUserProfile: React.FC<IAPDisplayUserProfileProps> = (props
           <APComponentHeader header={props.header} />      
         }
 
-        <div><b>E-mail</b>: {props.apUserProfileDisplay.email}</div>
+        <div><b>E-mail</b>: {props.apUserProfileDisplay.apsUserProfile.email}</div>
 
-        <div><b>First</b>: {props.apUserProfileDisplay.first}</div>
+        <div><b>First</b>: {props.apUserProfileDisplay.apsUserProfile.first}</div>
 
-        <div><b>Last</b>: {props.apUserProfileDisplay.last}</div>
+        <div><b>Last</b>: {props.apUserProfileDisplay.apsUserProfile.last}</div>
 
       </React.Fragment>
     );

@@ -12,18 +12,17 @@ import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageOrganizationUse
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
-import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APUsersDisplayService, { 
-  APLegacyUserDisplayService, 
-  TAPLegacyMemberOfOrganizationRolesDisplay, 
-  TAPLegacyMemberOfOrganizationRolesDisplayList, 
-  TAPUserDisplay 
-} from "../../../displayServices/old.APUsersDisplayService";
+import APEntityIdsService, { 
+  TAPEntityId, 
+  TAPEntityIdList 
+} from "../../../utils/APEntityIdsService";
 import APAssetDisplayService from "../../../displayServices/APAssetsDisplayService";
 import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";
-import { APDisplayOrganizationBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationBusinessGroups";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../displayServices/APBusinessGroupsDisplayService";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay 
+} from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { APDisplayOrganizationUserBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationUserBusinessGroups";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
@@ -41,11 +40,11 @@ export interface IViewOrganizationUserProps {
 export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props: IViewOrganizationUserProps) => {
   const ComponentName = 'ViewOrganizationUser';
 
-  type TManagedObject = TAPUserDisplay;
+  type TManagedObject = TAPOrganizationUserDisplay;
 
   const [authContext] = React.useContext(AuthContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
+  // const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
 
@@ -55,9 +54,9 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${props.userEntityId.displayName}`);
     try { 
-      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
+      const apUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+        organizationEntityId: props.organizationEntityId,
         userId: props.userEntityId.id,
-        organizationId: props.organizationEntityId.id
       });
       setManagedObject(apUserDisplay);
     } catch(e: any) {
@@ -67,22 +66,22 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     setApiCallStatus(callState);
     return callState;
   }
-  const apiGetCompleteApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
-    const funcName = 'apiGetCompleteApBusinessGroupDisplayList';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
-    try {
-      const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-        organizationId: organizationId
-      });
-      setCompleteOrganizationApBusinessGroupDisplayList(list);
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiGetCompleteApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
+  //   const funcName = 'apiGetCompleteApBusinessGroupDisplayList';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
+  //   try {
+  //     const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+  //       organizationId: organizationId
+  //     });
+  //     setCompleteOrganizationApBusinessGroupDisplayList(list);
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const ViewUser_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.userEntityId);
@@ -91,7 +90,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    await apiGetCompleteApBusinessGroupDisplayList(props.organizationEntityId.id);
+    // await apiGetCompleteApBusinessGroupDisplayList(props.organizationEntityId.id);
     await apiGetManagedObject();
     props.onLoadingChange(false);
   }
@@ -115,31 +114,32 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
   }
 
-  const renderLegacyOrganzationRoles = (apLegacy_MemberOfOrganizationRolesDisplayList: TAPLegacyMemberOfOrganizationRolesDisplayList): string => {
-    const apLegacyMemberOfOrganizationRolesDisplay: TAPLegacyMemberOfOrganizationRolesDisplay = APLegacyUserDisplayService.find_LegacyMemberOfOrganizationRolesDisplay({ 
-      organizationId: props.organizationEntityId.id,
-      apLegacyMemberOfOrganizationRolesDisplayList: apLegacy_MemberOfOrganizationRolesDisplayList
-    });
-    return APEntityIdsService.getSortedDisplayNameList_As_String(apLegacyMemberOfOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList);
-  }
+  // const renderLegacyOrganzationRoles = (apLegacy_MemberOfOrganizationRolesDisplayList: TAPLegacyMemberOfOrganizationRolesDisplayList): string => {
+  //   const apLegacyMemberOfOrganizationRolesDisplay: TAPLegacyMemberOfOrganizationRolesDisplay = APLegacyUserDisplayService.find_LegacyMemberOfOrganizationRolesDisplay({ 
+  //     organizationId: props.organizationEntityId.id,
+  //     apLegacyMemberOfOrganizationRolesDisplayList: apLegacy_MemberOfOrganizationRolesDisplayList
+  //   });
+  //   return APEntityIdsService.getSortedDisplayNameList_As_String(apLegacyMemberOfOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList);
+  // }
 
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
     const logName = `${ComponentName}.${funcName}()`;
 
     if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-    
+    if(managedObject.organizationAssetInfoDisplayList === undefined) throw new Error(`${logName}: managedObject.organizationAssetInfoDisplayList`);
+
     return (
       <React.Fragment>
         <div className="p-col-12">
           <div className="user-view">
             <div className="detail-left">
-              <div><b>Activated</b>: {String(managedObject.apsUserResponse.isActivated)}</div>
+              <div><b>Activated</b>: {String(APOrganizationUsersDisplayService.get_isActivated({apUserDisplay: managedObject}))}</div>
 
               <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
                 <TabPanel header='Profile'>
                   <APDisplayUserProfile
-                    apUserProfileDisplay={APUsersDisplayService.get_ApUserProfileDisplay({ apUserDisplay: managedObject })}
+                    apUserProfileDisplay={APOrganizationUsersDisplayService.get_ApUserProfileDisplay({ apUserDisplay: managedObject })}
                   />
                 </TabPanel>
                 <TabPanel header='Roles & Groups'>
@@ -147,14 +147,9 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                     { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
                       <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
                     }
-                    <div className="p-mt-2"><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject.apLegacy_MemberOfOrganizationRolesDisplayList)}.</div>                    
-                    <APDisplayOrganizationBusinessGroups
-                      organizationEntityId={props.organizationEntityId}
-                      completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
-                      apMemberOfOrganizationGroupsDisplayList={APUsersDisplayService.find_ApMemberOfBusinessGroupDisplayList({
-                        organizationId: props.organizationEntityId.id,
-                        apUserDisplay: managedObject
-                      })}
+                    {/* <div className="p-mt-2"><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject.apLegacy_MemberOfOrganizationRolesDisplayList)}.</div>                     */}
+                    <APDisplayOrganizationUserBusinessGroups
+                      apOrganizationUserDisplay={managedObject}
                       className="card p-mt-2"
                     />
                   </React.Fragment>
@@ -164,7 +159,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                     <APDisplayOrganizationAssetInfoDisplayList
                       apOrganizationAssetInfoDisplay={APAssetDisplayService.find_ApOrganizationAssetInfoDisplay({
                         organizationId: props.organizationEntityId.id,
-                        apOrganizationAssetInfoDisplayList: managedObject.apOrganizationAssetInfoDisplayList
+                        apOrganizationAssetInfoDisplayList: managedObject.organizationAssetInfoDisplayList
                       })}
                       className="p-pt-2"
                     />
@@ -190,7 +185,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && completeOrganizationApBusinessGroupDisplayList.length > 0 && renderManagedObjectDisplay() }
+      {managedObject && renderManagedObjectDisplay() }
 
       {/* DEBUG */}
       {/* <pre style={ { fontSize: '12px' }} >

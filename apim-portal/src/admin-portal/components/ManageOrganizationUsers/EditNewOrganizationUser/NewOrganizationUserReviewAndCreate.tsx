@@ -15,7 +15,7 @@ import APUsersDisplayService, {
   TAPUserDisplay, 
 } from "../../../../displayServices/old.APUsersDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
-import { APDisplayUserProfile } from "../../../../components/APDisplay/APDisplayUserProfile";
+import { APDisplayUserProfile } from "../../../../components/APDisplay/deleteme.APDisplayUserProfile";
 import { AuthHelper } from "../../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";

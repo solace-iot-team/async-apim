@@ -177,7 +177,7 @@ export const EditNewUser: React.FC<IEditNewUserProps> = (props: IEditNewUserProp
     mo.apMemberOfOrganizationGroupsDisplayList = externalManagedBusinessGroupsFormData;
     mo.apsUserResponse = {
       ...orginalManagedObject.apsUserResponse,
-      memberOfOrganizations: externalFormData.memberOfOrganizations
+      memberOfOrganizations: externalFormData.memberOfOrganizations ? externalFormData.memberOfOrganizations : []
     };
     mo.apsUserResponse.profile = {
       email: fd.email,

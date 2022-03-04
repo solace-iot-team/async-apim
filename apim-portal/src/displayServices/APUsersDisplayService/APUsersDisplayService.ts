@@ -32,7 +32,7 @@ export type TAPUserAuthenticationDisplay = {
   password: string;
 }
 
-export interface IAPUserDisplay extends IAPEntityIdDisplay, IAPSearchContent {
+export interface IAPUserDisplay extends IAPEntityIdDisplay {
 
   apUserProfileDisplay: TAPUserProfileDisplay;
 
@@ -59,6 +59,9 @@ export class APUsersDisplayService {
   // TODO: re-work to do deep property names generically
   public nameOf(name: keyof IAPUserDisplay) {
     return name;
+  }
+  public nameOf_ApEntityId(name: keyof TAPEntityId) {
+    return `apEntityId.${name}`;
   }
   public nameOf_ApUserProfileDisplay(name: keyof TAPUserProfileDisplay) {
     return `apUserProfileDisplay.${name}`;
@@ -123,7 +126,6 @@ export class APUsersDisplayService {
       apUserProfileDisplay: this.create_Empty_ApUserProfileDisplay(),
       apUserAuthenticationDisplay: this.create_Empty_ApUserAutheticationDisplay(),
       apSystemRoleEntityIdList: [],
-      apSearchContent: '',
     };
     return apUserDisplay;
   }
@@ -168,7 +170,6 @@ export class APUsersDisplayService {
       apUserProfileDisplay: this.create_ApUserProfileDisplay({ userEntityId: userEntityId, apsUserProfile: apsUserResponse.profile}),
       apUserAuthenticationDisplay: this.create_ApUserAuthenticationDisplay({ apsUserResponse: apsUserResponse }),
       apSystemRoleEntityIdList: APRbacDisplayService.create_SystemRoles_EntityIdList(apsUserResponse.systemRoles),
-      apSearchContent: ''
     };
     return base;
   }
