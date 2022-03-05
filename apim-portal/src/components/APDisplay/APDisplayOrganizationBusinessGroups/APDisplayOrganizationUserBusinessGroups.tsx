@@ -30,10 +30,6 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
     );
   }
 
-  const nameBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode) => {
-    return node.label;
-  }
-
   // const keyBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode) => {
   //   return node.key;
   // }
@@ -42,6 +38,8 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
     if(treeTableNodeList.length === 0) return (
       <div><b>Business Groups</b>: None.</div>
     );
+    // this is in node.data
+    const field_Name = 'apBusinessGroupDisplay.apEntityId.displayName';
     return (
       <React.Fragment>
         <div className="p-mb-2"><b>Business Groups</b>:</div>
@@ -49,16 +47,16 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
           <TreeTable
             value={treeTableNodeList}
             autoLayout={true}
-            // sortMode='single'
-            // sortField={field_Name}
-            // sortOrder={1}
+            sortMode='single'
+            sortField={field_Name}
+            sortOrder={1}
             // selection
             // selectionMode='single'
             // selectionKeys={selectedManagedObjectTreeTableNodeKey}
             // onSelectionChange={e => setSelectedManagedObjectTreeTableNodeKey(e.value)}
             // onSelect={onManagedObjectTreeTableNodeSelect}
           >
-            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} expander />
+            <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
             <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             {/* <Column header="Key" body={keyBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
           </TreeTable>
