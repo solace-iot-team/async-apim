@@ -127,15 +127,18 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
         closable={true}
         onHide={()=> { onEditCancel(); }}
       >
-        <EditOrganizationUserOrganizationRoles
-          action={EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN}
-          organizationEntityId={props.organizationEntityId}
-          apUserDisplay={props.apUserDisplay}
-          onEditSuccess={onEditSuccess}
-          onCancel={onEditCancel}
-          onError={props.onError}
-          onLoadingChange={props.onLoadingChange}
-        />
+        <React.Fragment>
+          <p>TODO: EditOrganizationUserOrganizationRoles</p>
+          {/* <EditOrganizationUserOrganizationRoles
+            action={EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN}
+            organizationEntityId={props.organizationEntityId}
+            apUserDisplay={props.apUserDisplay}
+            onEditSuccess={onEditSuccess}
+            onCancel={onEditCancel}
+            onError={props.onError}
+            onLoadingChange={props.onLoadingChange}
+          /> */}
+        </React.Fragment>
       </Dialog>
     );
   }
@@ -165,15 +168,18 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
         closable={true}
         onHide={()=> { onRemoveCancel(); }}
       >
-        <EditOrganizationUserOrganizationRoles
-          action={EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN}
-          organizationEntityId={props.organizationEntityId}
-          apUserDisplay={props.apUserDisplay}
-          onEditSuccess={onRemoveSuccess}
-          onCancel={onRemoveCancel}
-          onError={props.onError}
-          onLoadingChange={props.onLoadingChange}
-        />
+        <React.Fragment>
+          <p>TODO: EditOrganizationUserOrganizationRoles</p>
+          {/* <EditOrganizationUserOrganizationRoles
+            action={EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN}
+            organizationEntityId={props.organizationEntityId}
+            apUserDisplay={props.apUserDisplay}
+            onEditSuccess={onRemoveSuccess}
+            onCancel={onRemoveCancel}
+            onError={props.onError}
+            onLoadingChange={props.onLoadingChange}
+          /> */}
+        </React.Fragment>
         {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
       </Dialog>
     );

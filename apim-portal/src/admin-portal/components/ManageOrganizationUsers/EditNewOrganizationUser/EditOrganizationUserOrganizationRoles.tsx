@@ -7,23 +7,19 @@ import { Button } from "primereact/button";
 import { MultiSelect } from "primereact/multiselect";
 import { Toolbar } from "primereact/toolbar";
 
-import APEntityIdsService, { 
-  TAPEntityId, 
-} from "../../../../utils/APEntityIdsService";
-import APUsersDisplayService, { 
-  TAPUserDisplay,
-  TAPUserOrganizationRolesDisplay
-} from "../../../../displayServices/old.APUsersDisplayService";
+import APEntityIdsService from "../../../../utils/APEntityIdsService";
 import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSOrganizationAuthRoleList } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { Globals } from "../../../../utils/Globals";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPMemberOfOrganizationDisplay } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { Globals } from "../../../../utils/Globals";
 
 export enum EEditOrganzationUserOrganizationRolesAction {
   EDIT_AND_SAVE = 'EDIT_AND_SAVE',
@@ -33,12 +29,12 @@ export enum EEditOrganzationUserOrganizationRolesAction {
 }
 
 export interface IEditOrganizationUserOrganizationRolesProps {
-  organizationEntityId: TAPEntityId;
+  // organizationEntityId: TAPEntityId;
   action: EEditOrganzationUserOrganizationRolesAction;
-  apUserDisplay: TAPUserDisplay;
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess?: (apiCallState: TApiCallState) => void;
-  onEditSuccess?: (updatedApUserOrganizationRolesDisplay: TAPUserOrganizationRolesDisplay) => void;
+  onEditSuccess?: (update_ApMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -46,7 +42,7 @@ export interface IEditOrganizationUserOrganizationRolesProps {
 export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUserOrganizationRolesProps> = (props: IEditOrganizationUserOrganizationRolesProps) => {
   const ComponentName = 'EditOrganizationUserOrganizationRoles';
 
-  type TManagedObject = TAPUserOrganizationRolesDisplay;
+  type TManagedObject = TAPMemberOfOrganizationDisplay;
   type TManagedObjectFormData = {
     organizationAuthRoleIdList: Array<string>;
   };
@@ -56,7 +52,7 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
 
   const create_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      organizationAuthRoleIdList: APEntityIdsService.create_IdList(mo.apOrganizationAuthRoleEntityIdList)
+      organizationAuthRoleIdList: APEntityIdsService.create_IdList(mo.apOrganizationRoleEntityIdList)
     };
     return {
       formData: fd
@@ -82,7 +78,7 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     }
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.apOrganizationAuthRoleEntityIdList = APRbacDisplayService.create_OrganizationRoles_EntityIdList(fd.organizationAuthRoleIdList as APSOrganizationAuthRoleList);
+    mo.apOrganizationRoleEntityIdList = APRbacDisplayService.create_OrganizationRoles_EntityIdList(fd.organizationAuthRoleIdList as APSOrganizationAuthRoleList);
     return mo;
   }
   
@@ -97,13 +93,12 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION_ROLES, `update organization roles for user: ${mo.apEntityId.id}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION_ROLES, `update organization roles for user: ${props.apOrganizationUserDisplay.apEntityId.id}`);
     try { 
       // throw new Error(`${logName}: testing error handling `);
-      await APUsersDisplayService.apsUpdate_ApUserOrganizationRolesDisplay({
-        organizationEntityId: props.organizationEntityId,
-        apUserDisplay: props.apUserDisplay,
-        apUserOrganizationRolesDisplay: mo
+      await APOrganizationUsersDisplayService.apsUpdate_ApMemberOfOrganizationDisplay({
+        apOrganizationUserDisplay: props.apOrganizationUserDisplay,
+        apMemberOfOrganizationDisplay: mo
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -114,10 +109,11 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
   }
 
   const doInitialize = async () => {
-    setManagedObject(APUsersDisplayService.get_ApUserOrganizationRolesDisplay({
-      organizationId: props.organizationEntityId.id,
-      apUserDisplay: props.apUserDisplay
-    }));
+    setManagedObject(
+      APOrganizationUsersDisplayService.get_ApOrganizationUserMemberOfOrganizationDisplay({
+        apOrganizationUserDisplay: props.apOrganizationUserDisplay,
+      })
+    );
   }
 
   // * useEffect Hooks *
@@ -204,19 +200,19 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     const funcName = 'doSubmitForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const updatedApUserOrganizationsRolesDisplay: TAPUserOrganizationRolesDisplay = create_ManagedObject_From_FormEntities({
+    const updated_apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = create_ManagedObject_From_FormEntities({
       orginalManagedObject: managedObject,
       formDataEnvelope: fde
     });
     switch(props.action) {
       case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE:
       case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE:
-        await apiUpdateManagedObject(updatedApUserOrganizationsRolesDisplay);
+        await apiUpdateManagedObject(updated_apMemberOfOrganizationDisplay);
         break;
       case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN:
       case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN:  
         if(props.onEditSuccess === undefined) throw new Error(`${logName}: props.onEditSuccess === undefined`);
-        props.onEditSuccess(updatedApUserOrganizationsRolesDisplay);
+        props.onEditSuccess(updated_apMemberOfOrganizationDisplay);
         break;
       default:
         Globals.assertNever(logName, props.action);  
@@ -250,14 +246,15 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
       orginalManagedObject: managedObject,
       formDataEnvelope: validation_fde
     });
-    const areUserRolesValid = APUsersDisplayService.validate_Update_OrganizationUser_With_OrganizationRoles({
-      organizationId: props.organizationEntityId.id,
-      currentApUserDisplay: props.apUserDisplay,
-      updateApUserOrganizationRolesDisplay: validationManagedObject
+
+    const areNewRolesValid = APOrganizationUsersDisplayService.validate_RequestedUpdateOf_ApOrganizationUserDisplay_With_ApMemberOfOrganizationDisplay({
+      current_ApOrganizationUserDisplay: props.apOrganizationUserDisplay,
+      requestedUpdateWith_apMemberOfOrganizationDisplay: validationManagedObject,
     });
-    if(!areUserRolesValid) {
+    if(!areNewRolesValid) {
       // restore original list
       organizationAuthRoleIdList = savedOrganizationAuthRoleIdList;
+      // create error message for user
       switch(props.action) {
         case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE:
           return `Specify at least 1 organization role. User is not a member of any business group. To remove user from organization, delete the user instead.`;    

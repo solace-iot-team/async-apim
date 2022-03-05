@@ -8,12 +8,10 @@ import APEntityIdsService, {
   TAPEntityIdList 
 } from '../../utils/APEntityIdsService';
 import { 
-  IAPSearchContent
- } from '../../utils/APSearchContentService';
-import { 
   APSListResponseMeta,
   APSUserProfile, 
-  APSUserResponse, 
+  APSUserResponse,
+  APSUserUpdate, 
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APRbacDisplayService from '../APRbacDisplayService';
 
@@ -53,7 +51,7 @@ export type TAPUserProfileDisplay = IAPEntityIdDisplay & APSUserProfile;
 //   exists: boolean;
 // }
 
-export class APUsersDisplayService {
+export abstract class APUsersDisplayService {
   private readonly BaseComponentName = "APUsersDisplayService";
 
   // TODO: re-work to do deep property names generically
@@ -236,6 +234,44 @@ export class APUsersDisplayService {
     return undefined;
   }
 
-}
+  protected abstract apsUpdate_ApsUserUpdate({ userId, apsUserUpdate }: {
+    userId: string;
+    apsUserUpdate: APSUserUpdate,
+  }): Promise<void>;
 
-export default new APUsersDisplayService();
+  public async apsUpdate_ApUserProfileDisplay({ apUserProfileDisplay }: {
+    apUserProfileDisplay: TAPUserProfileDisplay,
+  }): Promise<void> {
+    const funcName = 'apsUpdate_ApUserProfileDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const update: APSUserUpdate = {
+      profile: {
+        email: apUserProfileDisplay.email,
+        first: apUserProfileDisplay.first,
+        last: apUserProfileDisplay.last,
+      }
+    }
+    await this.apsUpdate_ApsUserUpdate({ 
+      userId: apUserProfileDisplay.apEntityId.id,
+      apsUserUpdate: update
+    });
+  }
+
+  public async apsUpdate_ApUserAuthenticationDisplay({ userId, apUserAuthenticationDisplay }: {
+    userId: string;
+    apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
+  }): Promise<void> {
+    const funcName = 'apsUpdate_ApUserAuthenticationDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const update: APSUserUpdate = {
+      password: apUserAuthenticationDisplay.password
+    }
+    await this.apsUpdate_ApsUserUpdate({ 
+      userId: userId,
+      apsUserUpdate: update
+    });
+  }
+
+}

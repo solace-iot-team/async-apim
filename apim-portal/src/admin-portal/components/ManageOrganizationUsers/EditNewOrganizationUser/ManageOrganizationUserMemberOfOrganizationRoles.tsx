@@ -8,10 +8,6 @@ import { Divider } from "primereact/divider";
 import APEntityIdsService, { 
   TAPEntityId,  
 } from "../../../../utils/APEntityIdsService";
-import APUsersDisplayService, { 
-  TAPUserDisplay,
-  TAPUserOrganizationRolesDisplay
-} from "../../../../displayServices/old.APUsersDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
@@ -20,6 +16,10 @@ import {
   EditOrganizationUserOrganizationRoles, 
   EEditOrganzationUserOrganizationRolesAction 
 } from "./EditOrganizationUserOrganizationRoles";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay, 
+  TAPOrganizationUserMemberOfOrganizationDisplay, 
+} from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -36,9 +36,9 @@ export interface IManageOrganizationUserMemberOfOrganizationRolesProps {
 export const ManageOrganizationUserMemberOfOrganizationRoles: React.FC<IManageOrganizationUserMemberOfOrganizationRolesProps> = (props: IManageOrganizationUserMemberOfOrganizationRolesProps) => {
   const ComponentName = 'ManageOrganizationUserMemberOfOrganizationRoles';
 
-  type TManagedObject = TAPUserOrganizationRolesDisplay;
+  type TManagedObject = TAPOrganizationUserMemberOfOrganizationDisplay;
 
-  const [apUserDisplay, setApUserDisplay] = React.useState<TAPUserDisplay>();
+  const [apUserDisplay, setApUserDisplay] = React.useState<TAPOrganizationUserDisplay>();
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showEditDialog, setShowEditDialog] = React.useState<boolean>(false);
@@ -50,14 +50,13 @@ export const ManageOrganizationUserMemberOfOrganizationRoles: React.FC<IManageOr
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.id}`);
     try { 
-      const apUserDisplay: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
-        userId: userEntityId.id
+      const apUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+        organizationEntityId: props.organizationEntityId,
+        userId: userEntityId.id,
+        fetch_ApOrganizationAssetInfoDisplayList: false,
       });
       setApUserDisplay(apUserDisplay);
-      setManagedObject(APUsersDisplayService.get_ApUserOrganizationRolesDisplay({
-        organizationId: props.organizationEntityId.id,
-        apUserDisplay: apUserDisplay
-      }));
+      setManagedObject(APOrganizationUsersDisplayService.get_ApOrganizationUserMemberOfOrganizationDisplay({ apOrganizationUserDisplay: apUserDisplay }));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -99,8 +98,8 @@ export const ManageOrganizationUserMemberOfOrganizationRoles: React.FC<IManageOr
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const orgRolesString = managedObject.apOrganizationAuthRoleEntityIdList.length > 0 ? APEntityIdsService.create_DisplayNameList(managedObject.apOrganizationAuthRoleEntityIdList).join(', ') : 'None.';
-    const isRemovePossible: boolean = managedObject.apOrganizationAuthRoleEntityIdList.length > 0;
+    const orgRolesString = managedObject.apOrganizationRoleEntityIdList.length > 0 ? APEntityIdsService.create_DisplayNameList(managedObject.apOrganizationRoleEntityIdList).join(', ') : 'None.';
+    const isRemovePossible: boolean = managedObject.apOrganizationRoleEntityIdList.length > 0;
     return (
       <React.Fragment>
         <div className="p-col-12"  style={{ padding: 'none' }}>
@@ -155,8 +154,7 @@ export const ManageOrganizationUserMemberOfOrganizationRoles: React.FC<IManageOr
       >
         <EditOrganizationUserOrganizationRoles
           action={EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE}
-          organizationEntityId={props.organizationEntityId}
-          apUserDisplay={apUserDisplay}
+          apOrganizationUserDisplay={apUserDisplay}
           onSaveSuccess={onEditSaveSuccess}
           onCancel={onEditCancel}
           onError={onEditError}
@@ -200,8 +198,7 @@ export const ManageOrganizationUserMemberOfOrganizationRoles: React.FC<IManageOr
       >
         <EditOrganizationUserOrganizationRoles
           action={EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE}
-          organizationEntityId={props.organizationEntityId}
-          apUserDisplay={apUserDisplay}
+          apOrganizationUserDisplay={apUserDisplay}
           onSaveSuccess={onRemoveSaveSuccess}
           onCancel={onRemoveCancel}
           onError={onRemoveError}

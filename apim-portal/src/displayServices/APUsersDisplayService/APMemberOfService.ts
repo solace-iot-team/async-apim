@@ -52,7 +52,6 @@ class APMemberOfService {
   //   return `node.${name}`;
   // }
 
-
   public create_Empty_ApMemberOfOrganizationDisplay({organizationEntityId}:{
     organizationEntityId: TAPEntityId;
   }): TAPMemberOfOrganizationDisplay {

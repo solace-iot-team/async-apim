@@ -1,18 +1,14 @@
 
 import React from "react";
 import { TApiCallState } from "../../../../utils/ApiCallState";
-import { 
-  TAPUserDisplay,
-} from "../../../../displayServices/old.APUsersDisplayService";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ManageOrganizationUserMemberOfOrganizationRoles } from "./ManageOrganizationUserMemberOfOrganizationRoles";
+import { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
 export interface IEditOrganizationUserMemberOfOrganizationRolesProps {
-  organizationEntityId: TAPEntityId;
-  apUserDisplay: TAPUserDisplay;
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -26,8 +22,8 @@ export const EditOrganizationUserMemberOfOrganizationRoles: React.FC<IEditOrgani
     return (
       <React.Fragment>
         <ManageOrganizationUserMemberOfOrganizationRoles
-          organizationEntityId={props.organizationEntityId}
-          userEntityId={props.apUserDisplay.apEntityId}
+          organizationEntityId={props.apOrganizationUserDisplay.organizationEntityId}
+          userEntityId={props.apOrganizationUserDisplay.apEntityId}
           onError={props.onError}
           onCancel={props.onCancel}
           onSaveSuccess={props.onSaveSuccess}

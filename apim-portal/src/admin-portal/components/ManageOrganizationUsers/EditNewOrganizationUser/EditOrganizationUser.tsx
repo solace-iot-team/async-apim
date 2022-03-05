@@ -8,14 +8,14 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPUserDisplay 
-} from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
-import { EditOrganizationUserCredentials } from "./EditOrganizationUserCredentials";
 import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
 import { EditOrganizationUserMemberOfOrganizationRoles } from "./EditOrganizationUserMemberOfOrganizationRoles";
+import { EditOrganizationUserAuthentication } from "./EditOrganizationUserAuthentication";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay 
+} from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -33,7 +33,7 @@ export interface IEditOrganizationUserProps {
 export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props: IEditOrganizationUserProps) => {
   const ComponentName = 'EditOrganizationUser';
 
-  type TManagedObject = TAPUserDisplay;
+  type TManagedObject = TAPOrganizationUserDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
@@ -46,10 +46,12 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.displayName}`);
     try { 
-      const object: TAPUserDisplay = await APUsersDisplayService.apsGet_ApUserDisplay({
-        userId: userEntityId.id
+      const apUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+        organizationEntityId: props.organizationEntityId,
+        userId: props.userEntityId.id,
+        fetch_ApOrganizationAssetInfoDisplayList: false
       });
-      setManagedObject(object);
+      setManagedObject(apUserDisplay);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -97,13 +99,13 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   const renderContent = (mo: TManagedObject) => {
     return (
       <React.Fragment>
-        <div className="p-mt-4"><b>Activated</b>: {String(mo.apsUserResponse.isActivated)}</div>
+        <div className="p-mt-4"><b>Activated</b>: {String(APOrganizationUsersDisplayService.get_isActivated({apUserDisplay: mo}))}</div>
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='Profile'>
             <React.Fragment>
               <EditOrganizationUserProfile
-                apUserDisplay={mo} 
+                apOrganizationUserDisplay={mo} 
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onSaveSuccess={props.onSaveSuccess}
@@ -115,14 +117,13 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
             <React.Fragment>
               <EditOrganizationUserMemberOfOrganizationRoles
                 key={`EditOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
+                apOrganizationUserDisplay={mo}
                 onError={onError_EditOrganizationUserMemberOf}
                 onCancel={props.onCancel}
                 onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
               />
-              <EditOrganizationUserMemberOfBusinessGroups
+              {/* <EditOrganizationUserMemberOfBusinessGroups
                 key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
@@ -130,13 +131,13 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
                 onCancel={props.onCancel}
                 onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
-              />
+              /> */}
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Credentials'>
+          <TabPanel header='Authentication'>
             <React.Fragment>
-              <EditOrganizationUserCredentials
-                apUserDisplay={mo}
+              <EditOrganizationUserAuthentication
+                apOrganizationUserDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onSaveSuccess={props.onSaveSuccess}

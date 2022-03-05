@@ -44,7 +44,6 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
 
   const [authContext] = React.useContext(AuthContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
-  // const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
 
@@ -57,6 +56,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
       const apUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
         organizationEntityId: props.organizationEntityId,
         userId: props.userEntityId.id,
+        fetch_ApOrganizationAssetInfoDisplayList: true
       });
       setManagedObject(apUserDisplay);
     } catch(e: any) {
@@ -66,22 +66,6 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     setApiCallStatus(callState);
     return callState;
   }
-  // const apiGetCompleteApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetCompleteApBusinessGroupDisplayList';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
-  //   try {
-  //     const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-  //       organizationId: organizationId
-  //     });
-  //     setCompleteOrganizationApBusinessGroupDisplayList(list);
-  //   } catch(e: any) {
-  //     APSClientOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
 
   const ViewUser_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.userEntityId);

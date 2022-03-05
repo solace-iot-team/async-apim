@@ -11,17 +11,17 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPUserDisplay, 
-  TAPUserProfileDisplay 
-} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay 
+} from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
 export interface IEditOrganizationUserProfileProps {
-  apUserDisplay: TAPUserDisplay;
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -42,9 +42,9 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   }
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      email: mo.apsUserProfile.email,
-      first: mo.apsUserProfile.first,
-      last: mo.apsUserProfile.last,
+      email: mo.email,
+      first: mo.first,
+      last: mo.last,
     };
     return {
       formData: fd
@@ -57,12 +57,10 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   }): TManagedObject => {
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.apsUserProfile = {
-      email: fd.email,
-      first: fd.first,
-      last: fd.last
-    };
-    mo.apEntityId.displayName = APUsersDisplayService.create_UserDisplayName(mo.apsUserProfile);
+    mo.email = fd.email;
+    mo.first = fd.first;
+    mo.last = fd.last;
+    mo.apEntityId.displayName = APOrganizationUsersDisplayService.create_UserDisplayName(mo);
     return mo;
   }
   
@@ -78,9 +76,9 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_PROFILE, `update profile for user: ${mo.apEntityId.id}`);
-    try { 
-      await APUsersDisplayService.apsUpdate_ApUserProfileDisplay({
-        apUserProfileDisplay: mo
+    try {
+      await APOrganizationUsersDisplayService.apsUpdate_ApUserProfileDisplay({
+        apUserProfileDisplay: mo,
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -93,8 +91,8 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   const doInitialize = async () => {
     const funcName = 'doInitialize';
     const logName = `${ComponentName}.${funcName}()`;
-    setManagedObject(APUsersDisplayService.get_ApUserProfileDisplay({
-      apUserDisplay: props.apUserDisplay
+    setManagedObject(APOrganizationUsersDisplayService.get_ApUserProfileDisplay({
+      apUserDisplay: props.apOrganizationUserDisplay
     }));
   }
 

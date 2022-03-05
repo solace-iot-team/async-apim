@@ -10,27 +10,25 @@ import { classNames } from 'primereact/utils';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPUserCredentialsDisplay, 
-  TAPUserDisplay
-} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPUserAuthenticationDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
-export interface IEditOrganizationUserCredentialsProps {
-  apUserDisplay: TAPUserDisplay;
+export interface IEditOrganizationUserAuthenticationProps {
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCredentialsProps> = (props: IEditOrganizationUserCredentialsProps) => {
-  const ComponentName = 'EditOrganizationUserCredentials';
+export const EditOrganizationUserAuthentication: React.FC<IEditOrganizationUserAuthenticationProps> = (props: IEditOrganizationUserAuthenticationProps) => {
+  const ComponentName = 'EditOrganizationUserAuthentication';
 
-  type TManagedObject = TAPUserCredentialsDisplay;
+  type TManagedObject = TAPUserAuthenticationDisplay;
   type TManagedObjectFormData = {
     password: string;
   };
@@ -67,10 +65,11 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_CREDENTIALS, `update credentials for user: ${mo.apEntityId.id}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_CREDENTIALS, `update credentials for user: ${props.apOrganizationUserDisplay.apEntityId.id}`);
     try { 
-      await APUsersDisplayService.apsUpdate_ApUserCredentialsDisplay({
-        apUserCredentialsDisplay: mo
+      await APOrganizationUsersDisplayService.apsUpdate_ApUserAuthenticationDisplay({
+        userId: props.apOrganizationUserDisplay.apEntityId.id,
+        apUserAuthenticationDisplay: mo
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -81,8 +80,8 @@ export const EditOrganizationUserCredentials: React.FC<IEditOrganizationUserCred
   }
 
   const doInitialize = async () => {
-    setManagedObject(APUsersDisplayService.get_ApUserCredentialsDisplay({
-      apUserDisplay: props.apUserDisplay
+    setManagedObject(APOrganizationUsersDisplayService.get_ApUserAuthenticationDisplay({
+      apUserDisplay: props.apOrganizationUserDisplay
     }));
   }
 
