@@ -222,6 +222,55 @@ class APMemberOfService {
     return thisTreeNode;
   }
 
+  /**
+   * Create a list without the groups user is not a member of.
+   */
+  private create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({apMemberOfBusinessGroupDisplayTreeNodeList, parent_apMemberOfBusinessGroupDisplayTreeNode}:{
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    parent_apMemberOfBusinessGroupDisplayTreeNode?: TAPMemberOfBusinessGroupDisplayTreeNode;
+  }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
+    const funcName = 'create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const thisList: TAPMemberOfBusinessGroupDisplayTreeNodeList = [];
+    for(const apMemberOfBusinessGroupDisplayTreeNode of apMemberOfBusinessGroupDisplayTreeNodeList) {
+      const children = apMemberOfBusinessGroupDisplayTreeNode.children;
+      apMemberOfBusinessGroupDisplayTreeNode.children = [];
+      if(children.length > 0) {
+        thisList.push(
+          ...this.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
+            apMemberOfBusinessGroupDisplayTreeNodeList: children,
+            parent_apMemberOfBusinessGroupDisplayTreeNode: apMemberOfBusinessGroupDisplayTreeNode,
+          })
+        );
+      }
+      // we are in a leaf node
+      if(apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) {
+        // alert(`${logName}: leaf group with roles: ${JSON.stringify({
+        //   name: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName,
+        //   configuredRoles: APEntityIdsService.create_DisplayNameList(apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList)
+        // })}`);
+        // thisList.push(apMemberOfBusinessGroupDisplayTreeNode);
+        // tell the parent we are their child
+        if(parent_apMemberOfBusinessGroupDisplayTreeNode !== undefined) {
+          // const parent = {
+          //   displayName: parent_apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName,
+          //   childrenLength: parent_apMemberOfBusinessGroupDisplayTreeNode.children.length
+          // }
+          // alert(`${logName}: parent=${JSON.stringify(parent, null, 2)}`);
+          parent_apMemberOfBusinessGroupDisplayTreeNode.children.push(apMemberOfBusinessGroupDisplayTreeNode);
+          const found = thisList.find( (x) => {
+            return x.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === parent_apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id;
+          });
+          if(found === undefined) thisList.push(parent_apMemberOfBusinessGroupDisplayTreeNode);
+        }
+      } 
+    }
+    // console.log(`${logName}: returning thisList=${JSON.stringify(thisList, null, 2)}`);
+    return thisList;
+  }
+
+
   /** 
    * Create the tree node list of business groups for an organization user.
    * Includes the calculated roles.
@@ -273,7 +322,11 @@ class APMemberOfService {
 
     // prune the tree - remove all entries without configured roles ==> not a member
     if(pruneBusinessGroupsNotAMemberOf) {
-      // alert(`${logName}: prune me`);
+      const prunedList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
+        apMemberOfBusinessGroupDisplayTreeNodeList: interimList,  
+      });
+      // console.log(`${logName}: prunedList = ${JSON.stringify(prunedList, null, 2)}`);
+      interimList = prunedList;
     }
     // calculate roles in all business groups
     const finalList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.calculate_BusinessGroupRoles({
@@ -283,6 +336,13 @@ class APMemberOfService {
     return finalList;
   }
   
+  /**
+   * Create the tree table node list for business groups the user is a member of.
+   *
+   * @param pruneBusinessGroupsNotAMemberOf - if true, the tree table node list is pruned to only contain the paths of groups where a user is actually memmber of. Otherwise the entire tree table node list.
+   * @returns TAPMemberOfBusinessGroupTreeTableNodeList - the tree table node list.
+   * 
+   */
   public create_ApMemberOfBusinessGroupTreeTableNodeList({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf}:{
     organizationEntityId: TAPEntityId;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;

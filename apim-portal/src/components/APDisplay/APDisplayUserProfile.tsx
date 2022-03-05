@@ -1,6 +1,6 @@
 
 import React from "react";
-import APUsersDisplayService, { TAPUserProfileDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { TAPUserProfileDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
 import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 
 import "../APComponents.css";
