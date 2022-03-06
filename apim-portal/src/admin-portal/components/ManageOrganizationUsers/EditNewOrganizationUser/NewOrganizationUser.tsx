@@ -109,7 +109,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showProfile, setShowProfile] = React.useState<boolean>(false);
   const [showRolesAndGroups, setShowRolesAndGroups] = React.useState<boolean>(false);
-  const [showCredentials, setShowCredentials] = React.useState<boolean>(false);
+  const [showAuthentication, setShowAuthentication] = React.useState<boolean>(false);
   const [showReview, setShowReview] = React.useState<boolean>(false);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
@@ -166,32 +166,32 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.UNDEFINED) {
       setShowProfile(false);
       setShowRolesAndGroups(false);
-      setShowCredentials(false);
+      setShowAuthentication(false);
       setShowReview(false);
       return;
     }
     if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.PROFILE) {
       setShowProfile(true);
       setShowRolesAndGroups(false);
-      setShowCredentials(false);
+      setShowAuthentication(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS) {
       setShowProfile(false);
       setShowRolesAndGroups(true);
-      setShowCredentials(false);
+      setShowAuthentication(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.AUTHENTICATION) {
       setShowProfile(false);
       setShowRolesAndGroups(false);
-      setShowCredentials(true);
+      setShowAuthentication(true);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.REVIEW) {
       setShowProfile(false);
       setShowRolesAndGroups(false);
-      setShowCredentials(false);
+      setShowAuthentication(false);
       setShowReview(true);
     }
     // set the tabIndex
@@ -255,7 +255,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Authentication' disabled={!showCredentials}>
+          <TabPanel header='Authentication' disabled={!showAuthentication}>
             <React.Fragment>
               <NewOrganizationUserAuthentication
                 apOrganizationUserDisplay={mo}
