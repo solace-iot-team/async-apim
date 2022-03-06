@@ -17,7 +17,7 @@ import {
   DevelopersService 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 export type TManagedObjectId = APSUserId;
 
@@ -70,7 +70,7 @@ export enum E_COMPONENT_STATE_NEW_USER {
   UNDEFINED = "UNDEFINED",
   PROFILE = "PROFILE",
   ROLES_AND_GROUPS = "ROLES_AND_GROUPS",
-  CREDENTIALS = "CREDENTIALS",
+  AUTHENTICATION = "AUTHENTICATION",
   REVIEW = "REVIEW"
 }
 

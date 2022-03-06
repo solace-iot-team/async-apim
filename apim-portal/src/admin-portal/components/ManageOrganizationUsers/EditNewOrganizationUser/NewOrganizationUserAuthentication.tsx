@@ -10,30 +10,26 @@ import { classNames } from 'primereact/utils';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPUserCredentialsDisplay, 
-  TAPUserDisplay
-} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import { TAPUserAuthenticationDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
-export interface INewOrganizationUserCredentialsProps {
-  organizationEntityId: TAPEntityId;
-  apUserDisplay: TAPUserDisplay;
-  onNext: (apUserCredentialsDisplay: TAPUserCredentialsDisplay) => void;
+export interface INewOrganizationUserAuthenticationProps {
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  onNext: (apUserAuthenticationDisplay: TAPUserAuthenticationDisplay) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewOrganizationUserCredentials: React.FC<INewOrganizationUserCredentialsProps> = (props: INewOrganizationUserCredentialsProps) => {
-  const ComponentName = 'NewOrganizationUserCredentials';
+export const NewOrganizationUserAuthentication: React.FC<INewOrganizationUserAuthenticationProps> = (props: INewOrganizationUserAuthenticationProps) => {
+  const ComponentName = 'NewOrganizationUserAuthentication';
 
-  type TManagedObject = TAPUserCredentialsDisplay;
+  type TManagedObject = TAPUserAuthenticationDisplay;
   type TManagedObjectFormData = {
     password: string;
   };
@@ -66,8 +62,8 @@ export const NewOrganizationUserCredentials: React.FC<INewOrganizationUserCreden
   const formId = ComponentName;
 
   const doInitialize = async () => {
-    setManagedObject(APUsersDisplayService.get_ApUserCredentialsDisplay({
-      apUserDisplay: props.apUserDisplay
+    setManagedObject(APOrganizationUsersDisplayService.get_ApUserAuthenticationDisplay({
+      apUserDisplay: props.apOrganizationUserDisplay
     }));
   }
 

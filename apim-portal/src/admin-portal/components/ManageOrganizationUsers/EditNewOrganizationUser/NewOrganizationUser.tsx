@@ -16,7 +16,6 @@ import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW_USER } from "../ManageOrgan
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
 import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
-import { NewOrganizationUserCredentials } from "./NewOrganizationUserCredentials";
 import { NewOrganizationUserReviewAndCreate } from "./NewOrganizationUserReviewAndCreate";
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
@@ -25,6 +24,7 @@ import { TAPUserAuthenticationDisplay, TAPUserProfileDisplay } from "../../../..
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import { NewOrganizationUserAuthentication } from "./NewOrganizationUserAuthentication";
 
 export interface INewOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -61,12 +61,12 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       case E_COMPONENT_STATE_NEW_USER.UNDEFINED:
       case E_COMPONENT_STATE_NEW_USER.PROFILE:
         return;
-      case E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS:
+      case E_COMPONENT_STATE_NEW_USER.AUTHENTICATION:
         return setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
-      case E_COMPONENT_STATE_NEW_USER.CREDENTIALS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS);
+      case E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.AUTHENTICATION);
       case E_COMPONENT_STATE_NEW_USER.REVIEW:
-        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.CREDENTIALS);
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS);
       default:
         Globals.assertNever(logName, componentState.currentState);
     }
@@ -79,10 +79,10 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       case E_COMPONENT_STATE_NEW_USER.UNDEFINED:
         return setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
       case E_COMPONENT_STATE_NEW_USER.PROFILE:
+        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.AUTHENTICATION);
+      case E_COMPONENT_STATE_NEW_USER.AUTHENTICATION:
         return setNewComponentState(E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS);
       case E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW_USER.CREDENTIALS);
-      case E_COMPONENT_STATE_NEW_USER.CREDENTIALS:
         return setNewComponentState(E_COMPONENT_STATE_NEW_USER.REVIEW);
       case E_COMPONENT_STATE_NEW_USER.REVIEW:
         return;
@@ -93,8 +93,8 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
 
   const ComponentState2TabIndexMap = new Map<E_COMPONENT_STATE_NEW_USER, number>([
     [E_COMPONENT_STATE_NEW_USER.PROFILE, 0],
-    [E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS, 1],
-    [E_COMPONENT_STATE_NEW_USER.CREDENTIALS, 2],
+    [E_COMPONENT_STATE_NEW_USER.AUTHENTICATION, 1],
+    [E_COMPONENT_STATE_NEW_USER.ROLES_AND_GROUPS, 2],
     [E_COMPONENT_STATE_NEW_USER.REVIEW, 3]
   ]);
 
@@ -182,7 +182,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       setShowCredentials(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.CREDENTIALS) {
+    else if(componentState.currentState === E_COMPONENT_STATE_NEW_USER.AUTHENTICATION) {
       setShowProfile(false);
       setShowRolesAndGroups(false);
       setShowCredentials(true);
@@ -211,22 +211,22 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     setNextComponentState();
   }
 
-  const onNext_From_RolesAndGroups = (updatedApUserDisplay: TAPOrganizationUserDisplay) => {
-    const funcName = 'onNext_From_RolesAndGroups';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(updatedApUserDisplay);
-    setNextComponentState();
-  }
-
-  const onNext_From_Credentials = (apUserAuthenticationDisplay: TAPUserAuthenticationDisplay) => {
-    const funcName = 'onNext_From_Credentials';
+  const onNext_From_Authentication = (apUserAuthenticationDisplay: TAPUserAuthenticationDisplay) => {
+    const funcName = 'onNext_From_Authentication';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     setManagedObject(APOrganizationUsersDisplayService.set_ApOrganizationUserAuthenticationDisplay({ 
       apOrganizationUserDisplay: managedObject, 
       apUserAuthenticationDisplay: apUserAuthenticationDisplay 
     }));
+    setNextComponentState();
+  }
+
+  const onNext_From_RolesAndGroups = (updatedApUserDisplay: TAPOrganizationUserDisplay) => {
+    const funcName = 'onNext_From_RolesAndGroups';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    setManagedObject(updatedApUserDisplay);
     setNextComponentState();
   }
 
@@ -255,6 +255,18 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
               />
             </React.Fragment>
           </TabPanel>
+          <TabPanel header='Authentication' disabled={!showCredentials}>
+            <React.Fragment>
+              <NewOrganizationUserAuthentication
+                apOrganizationUserDisplay={mo}
+                onNext={onNext_From_Authentication}
+                onBack={onBack}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onLoadingChange={props.onLoadingChange}
+              />
+            </React.Fragment>
+          </TabPanel>
           <TabPanel header='Roles & Groups' disabled={!showRolesAndGroups}>
             <React.Fragment>
               <p>implement me</p>
@@ -262,20 +274,6 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
                 onNext={onNext_From_RolesAndGroups}
-                onBack={onBack}
-                onError={onError_SubComponent}
-                onCancel={props.onCancel}
-                onLoadingChange={props.onLoadingChange}
-              /> */}
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Credentials' disabled={!showCredentials}>
-            <React.Fragment>
-              <p>implement me</p>
-              {/* <NewOrganizationUserCredentials
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
-                onNext={onNext_From_Credentials}
                 onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
