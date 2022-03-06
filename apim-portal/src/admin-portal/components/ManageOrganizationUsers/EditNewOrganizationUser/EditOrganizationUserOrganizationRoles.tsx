@@ -24,12 +24,11 @@ import "../ManageOrganizationUsers.css";
 export enum EEditOrganzationUserOrganizationRolesAction {
   EDIT_AND_SAVE = 'EDIT_AND_SAVE',
   REMOVE_AND_SAVE = 'REMOVE_AND_SAVE',
-  EDIT_AND_RETURN = 'EDIT_AND_RETURN',
-  REMOVE_AND_RETURN = "REMOVE_AND_RETURN",
+  EDIT_AND_RETURN_NO_VALIDATION = 'EDIT_AND_RETURN_NO_VALIDATION',
+  REMOVE_AND_RETURN_NO_VALIDATION = "REMOVE_AND_RETURN_NO_VALIDATION",
 }
 
 export interface IEditOrganizationUserOrganizationRolesProps {
-  // organizationEntityId: TAPEntityId;
   action: EEditOrganzationUserOrganizationRolesAction;
   apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -67,10 +66,10 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.action) {
       case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE:
-      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN:
+      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION:
         formDataEnvelope.formData.organizationAuthRoleIdList = [];
         break;
-      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN:
+      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN_NO_VALIDATION:
       case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE:  
         break;
       default:
@@ -154,7 +153,7 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.action) {
       case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE:
-      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN:
+      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN_NO_VALIDATION:
         return (
           <React.Fragment>
             <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
@@ -162,7 +161,7 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
           </React.Fragment>
         );
       case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE:
-      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN:
+      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION:
         return (
           <React.Fragment>
             <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
@@ -193,8 +192,8 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
       case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE:
         await apiUpdateManagedObject(updated_apMemberOfOrganizationDisplay);
         break;
-      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN:
-      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN:  
+      case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN_NO_VALIDATION:
+      case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION:  
         if(props.onEditSuccess === undefined) throw new Error(`${logName}: props.onEditSuccess === undefined`);
         props.onEditSuccess(updated_apMemberOfOrganizationDisplay);
         break;
@@ -211,13 +210,20 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
     // placeholder
   }
 
+  const is_NoValidation = (): boolean => {
+    if(props.action === EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN_NO_VALIDATION) return true;
+    if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION) return true;
+    return false;
+  }
+
   const validate_UpdatedOrganizationUserOrganizationRoles = (organizationAuthRoleIdList: Array<string>): string | boolean => {
     const funcName = 'validate_UpdatedOrganizationUserOrganizationRoles';
     const logName = `${ComponentName}.${funcName}()`;
+    if(is_NoValidation()) return true;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     // save a copy to restore in case validation fails
     const savedOrganizationAuthRoleIdList: Array<string> = JSON.parse(JSON.stringify(organizationAuthRoleIdList));
-    if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE || props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN) {
+    if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE) {
       organizationAuthRoleIdList = [];
     }
     if(organizationAuthRoleIdList.length > 0) return true;
@@ -244,9 +250,9 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
           return `Specify at least 1 organization role. User is not a member of any business group. To remove user from organization, delete the user instead.`;    
         case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE:
           return `Cannot remove organization role(s). User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;          
-        case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN:
-        case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN:
-          return `Specify at least 1 organization role if user is not a member of any business group.`;          
+        case EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN_NO_VALIDATION:
+        case EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION:
+          return true;
         default:
           Globals.assertNever(logName, props.action);      
       }
@@ -255,7 +261,7 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
   }
 
   const renderManagedObjectForm = () => {
-    const isRolesDisabled: boolean = (props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE || props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN);
+    const isRolesDisabled: boolean = (props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE || props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN_NO_VALIDATION);
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">

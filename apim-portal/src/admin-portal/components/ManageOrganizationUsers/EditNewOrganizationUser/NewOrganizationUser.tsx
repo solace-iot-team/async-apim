@@ -8,11 +8,6 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW_USER } from "../ManageOrganizationUsersCommon";
-// import APUsersDisplayService, { 
-//   TAPUserCredentialsDisplay,
-//   TAPUserDisplay, 
-//   TAPUserProfileDisplay 
-// } from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
 import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
@@ -21,10 +16,10 @@ import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { TAPUserAuthenticationDisplay, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { NewOrganizationUserAuthentication } from "./NewOrganizationUserAuthentication";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { NewOrganizationUserAuthentication } from "./NewOrganizationUserAuthentication";
 
 export interface INewOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -138,11 +133,16 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetCompleteApBusinessGroupDisplayList(props.organizationEntityId.id);
-    setManagedObject(await APOrganizationUsersDisplayService.create_Empty_ApOrganizationUserDisplay({ organizationEntityId: props.organizationEntityId }));
-    setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
     props.onLoadingChange(false);
   }
 
+  const doInitializeManagedObject = async() => {
+    setManagedObject(await APOrganizationUsersDisplayService.create_Empty_ApOrganizationUserDisplay({ 
+      organizationEntityId: props.organizationEntityId,
+      apCompleteBusinessGroupDisplayList: completeOrganizationApBusinessGroupDisplayList,
+     }));
+    setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);  
+  }
   // * useEffect Hooks *
 
   React.useEffect(() => {
@@ -151,6 +151,12 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     }]);
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(completeOrganizationApBusinessGroupDisplayList.length > 0) {
+      doInitializeManagedObject();
+    }
+  }, [completeOrganizationApBusinessGroupDisplayList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
@@ -269,16 +275,14 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
           </TabPanel>
           <TabPanel header='Roles & Groups' disabled={!showRolesAndGroups}>
             <React.Fragment>
-              <p>implement me</p>
-              {/* <NewOrganizationUserRolesAndGroups 
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
+              <NewOrganizationUserRolesAndGroups 
+                apOrganizationUserDisplay={mo}
                 onNext={onNext_From_RolesAndGroups}
                 onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Review & Create' disabled={!showReview}>

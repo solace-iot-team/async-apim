@@ -7,15 +7,13 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPUserAuthenticationDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { TAPUserAuthenticationDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 export interface INewOrganizationUserAuthenticationProps {
   apOrganizationUserDisplay: TAPOrganizationUserDisplay;

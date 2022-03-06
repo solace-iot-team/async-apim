@@ -22,6 +22,7 @@ import APAssetDisplayService, {
   TAPOrganizationAssetInfoDisplayList 
 } from '../APAssetsDisplayService';
 import APBusinessGroupsDisplayService, { 
+  TAPBusinessGroupDisplay,
   TAPBusinessGroupDisplayList 
 } from '../APBusinessGroupsDisplayService';
 import APDisplayUtils from '../APDisplayUtils';
@@ -44,7 +45,6 @@ import {
 export type TAPOrganizationUserMemberOfOrganizationDisplay = TAPMemberOfOrganizationDisplay & {
   /** source for view, create, update and for generating tree node lists */
   apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
-  // apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
 }
 export type TAPOrganizationUserDisplay = IAPUserDisplay & {
   organizationEntityId: TAPEntityId;
@@ -176,29 +176,48 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     });
   }
 
-  private create_Empty_ApOrganizationUserMemberOfOrganizationDisplay({organizationEntityId}:{
-    organizationEntityId: TAPEntityId;
+  /**
+   * Create empty business group list. Adds the root business group to the list with empty roles.
+   */
+  private create_Empty_ApMemberOfBusinessGroupDisplayList({ apCompleteBusinessGroupDisplayList }:{
+    apCompleteBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
+  }): TAPMemberOfBusinessGroupDisplayList {
+    const root: TAPBusinessGroupDisplay = APBusinessGroupsDisplayService.find_root_ApBusinessGroupDisplay({ completeApOrganizationBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList });
+    const list: TAPMemberOfBusinessGroupDisplayList = [{
+      apBusinessGroupDisplay: root,
+      apConfiguredBusinessGroupRoleEntityIdList: [],
+      apCalculatedBusinessGroupRoleEntityIdList: [],
+    }];
+    return list;
+  }
 
+  private create_Empty_ApOrganizationUserMemberOfOrganizationDisplay({ organizationEntityId, apCompleteBusinessGroupDisplayList }:{
+    organizationEntityId: TAPEntityId;
+    apCompleteBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   }): TAPOrganizationUserMemberOfOrganizationDisplay {
     const base = APMemberOfService.create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId: organizationEntityId });
     const apOrganizationUserMemberOfOrganizationDisplay: TAPOrganizationUserMemberOfOrganizationDisplay = {
       ...base,
-      // apMemberOfBusinessGroupDisplayTreeNodeList: [],
-      apMemberOfBusinessGroupDisplayList: [],
+      apMemberOfBusinessGroupDisplayList: this.create_Empty_ApMemberOfBusinessGroupDisplayList({
+        apCompleteBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList
+      })
     };
     return apOrganizationUserMemberOfOrganizationDisplay;
   }
 
   public async create_Empty_ApOrganizationUserDisplay({organizationEntityId, apCompleteBusinessGroupDisplayList}: {
     organizationEntityId: TAPEntityId;
-    apCompleteBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
+    apCompleteBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   }): Promise<TAPOrganizationUserDisplay> {
 
     const base: IAPUserDisplay = super.create_Empty_ApUserDisplay();
     const apOrganizationUserDisplay: TAPOrganizationUserDisplay = {
       ...base,
       organizationEntityId: organizationEntityId,
-      memberOfOrganizationDisplay: this.create_Empty_ApOrganizationUserMemberOfOrganizationDisplay({organizationEntityId: organizationEntityId}),
+      memberOfOrganizationDisplay: this.create_Empty_ApOrganizationUserMemberOfOrganizationDisplay({
+        organizationEntityId: organizationEntityId,
+        apCompleteBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList
+      }),
       completeOrganizationBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList === undefined ? await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: organizationEntityId.id
       }): apCompleteBusinessGroupDisplayList,
@@ -282,6 +301,12 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return apOrganizationUserDisplay.memberOfOrganizationDisplay;
   }
 
+  public get_ApOrganizationRoleEntityIdList({ apOrganizationUserDisplay }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): TAPEntityIdList {
+    return apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList;
+  }
+
   public validate_RequestedUpdateOf_ApOrganizationUserDisplay_With_ApMemberOfOrganizationDisplay({ current_ApOrganizationUserDisplay, requestedUpdateWith_apMemberOfOrganizationDisplay }: {
     current_ApOrganizationUserDisplay: TAPOrganizationUserDisplay;
     requestedUpdateWith_apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay;
@@ -324,6 +349,17 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return false;
   }
 
+  /** Validates if at least 1 roles is configured at organization level or any business group */
+  public validate_MemberOf_Roles({ apOrganizationUserDisplay }: {
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): boolean {
+    if(apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList.length > 0) return true;
+    for(const apMemberOfBusinessGroupDisplay of apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList) {
+      if(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) return true;
+    }
+    return false;    
+  }
+
   public set_ApOrganizationUserProfileDisplay({ apOrganizationUserDisplay, apUserProfileDisplay }: {
     apOrganizationUserDisplay: TAPOrganizationUserDisplay;
     apUserProfileDisplay: TAPUserProfileDisplay;
@@ -344,6 +380,15 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     }) as TAPOrganizationUserDisplay;
   }
 
+  public set_ApMemberOfOrganizationDisplay({ apOrganizationUserDisplay, apMemberOfOrganizationDisplay }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+    apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay;
+  }): TAPOrganizationUserDisplay {
+    return this.apply_ApMemberOfOrganizationDisplay({
+      apOrganizationUserDisplay: apOrganizationUserDisplay,
+      apMemberOfOrganizationDisplay: apMemberOfOrganizationDisplay,
+    });
+  }
   // ********************************************************************************************************************************
   // APS API calls
   // ********************************************************************************************************************************
