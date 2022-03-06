@@ -172,22 +172,6 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
       default:
         Globals.assertNever(logName, props.action);  
     }
-    // if(props.action === EEditOrganzationUserOrganizationRolesAction.EDIT_AND_SAVE || props.action === EEditOrganzationUserOrganizationRolesAction.EDIT_AND_RETURN) {
-    //   return (
-    //     <React.Fragment>
-    //       <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
-    //       <Button key={ComponentName+'submit'} label="Save" form={formId} type="submit" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-    //     </React.Fragment>
-    //   );
-    // }
-    // if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_SAVE) {
-    //   return (
-    //     <React.Fragment>
-    //       <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
-    //       <Button key={ComponentName+'submit'} label="Remove" form={formId} type="submit" className="p-button-text p-button-plain p-button-outlined" />
-    //     </React.Fragment>
-    //   );
-    // }
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -266,10 +250,6 @@ export const EditOrganizationUserOrganizationRoles: React.FC<IEditOrganizationUs
         default:
           Globals.assertNever(logName, props.action);      
       }
-      // if(props.action === EEditOrganzationUserOrganizationRolesAction.REMOVE) {
-      //   return `Cannot remove organization role(s). User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
-      // }
-      // return `Specify at least 1 organization role. User is not a member of any business group. To remove user from organization, delete the user instead.`;
     }
     return true;
   }

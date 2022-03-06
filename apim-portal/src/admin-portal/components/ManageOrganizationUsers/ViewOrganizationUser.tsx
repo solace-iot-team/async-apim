@@ -20,7 +20,7 @@ import APAssetDisplayService from "../../../displayServices/APAssetsDisplayServi
 import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";
 import APOrganizationUsersDisplayService, { 
-  TAPOrganizationUserDisplay 
+  TAPOrganizationUserDisplay, TAPOrganizationUserMemberOfOrganizationDisplay 
 } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { APDisplayOrganizationUserBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationUserBusinessGroups";
 
@@ -98,13 +98,9 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
   }
 
-  // const renderLegacyOrganzationRoles = (apLegacy_MemberOfOrganizationRolesDisplayList: TAPLegacyMemberOfOrganizationRolesDisplayList): string => {
-  //   const apLegacyMemberOfOrganizationRolesDisplay: TAPLegacyMemberOfOrganizationRolesDisplay = APLegacyUserDisplayService.find_LegacyMemberOfOrganizationRolesDisplay({ 
-  //     organizationId: props.organizationEntityId.id,
-  //     apLegacyMemberOfOrganizationRolesDisplayList: apLegacy_MemberOfOrganizationRolesDisplayList
-  //   });
-  //   return APEntityIdsService.getSortedDisplayNameList_As_String(apLegacyMemberOfOrganizationRolesDisplay.apOrganizationAuthRoleEntityIdList);
-  // }
+  const renderLegacyOrganzationRoles = (mo: TManagedObject): string => {
+    return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
+  }
 
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
@@ -131,7 +127,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                     { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
                       <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
                     }
-                    {/* <div className="p-mt-2"><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject.apLegacy_MemberOfOrganizationRolesDisplayList)}.</div>                     */}
+                    <div className="p-mt-2" style={{ color: 'lightgray'}}><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject)}.</div>                    
                     <APDisplayOrganizationUserBusinessGroups
                       apOrganizationUserDisplay={managedObject}
                       className="card p-mt-2"

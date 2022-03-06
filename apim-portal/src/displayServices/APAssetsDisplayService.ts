@@ -102,8 +102,8 @@ class APAssetDisplayService {
     userId: string;
     organizationEntityIdList: TAPEntityIdList;
   }): Promise<TAPOrganizationAssetInfoDisplayList> {
-    const funcName = 'getApAssetInfoListForUser';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'getApAssetInfoListForUser';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     if(organizationEntityIdList.length === 0) return [];
 

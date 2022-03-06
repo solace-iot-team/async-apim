@@ -1,5 +1,7 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
+
 import { MenuItem } from "primereact/api";
 import { TabPanel, TabView } from "primereact/tabview";
 
@@ -16,9 +18,12 @@ import { EditOrganizationUserAuthentication } from "./EditOrganizationUserAuthen
 import APOrganizationUsersDisplayService, { 
   TAPOrganizationUserDisplay 
 } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { UserContext } from "../../../../components/UserContextProvider/UserContextProvider";
+import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import { EUICommonResourcePaths } from "../../../../utils/Globals";
 
 export interface IEditOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -35,10 +40,18 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
 
   type TManagedObject = TAPOrganizationUserDisplay;
 
+  const EditingYourselfMessage = 'You are editing yourself. You will need to login again afterwards.';
+  const history = useHistory();
+
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+
+  const navigateTo = (path: string): void => { history.push(path); }
 
   // * Api Calls *
   const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
@@ -66,12 +79,18 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     props.onLoadingChange(false);
   }
 
+  const doLogout = () => {
+    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
+    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
+    navigateTo(EUICommonResourcePaths.Login);
+  }
   // * useEffect Hooks *
 
   React.useEffect(() => {
     props.setBreadCrumbItemList([{
       label: 'Edit'
     }]);
+    if(userContext.user.userId === props.userEntityId.id) setEditingYourself(true);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -92,13 +111,21 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   }
 
   const onSaveSuccess_EditOrganizationUserMemberOf = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
     setRefreshCounter(refreshCounter + 1);
+    onSaveSuccess(apiCallState);
+  }
+
+  const onSaveSuccess = (apiCallState: TApiCallState) => {
+    props.onSaveSuccess(apiCallState);
+    if(editingYourself) doLogout();
   }
 
   const renderContent = (mo: TManagedObject) => {
     return (
       <React.Fragment>
+        {editingYourself && 
+          <div className="p-mt-4" style={{ color: 'red'}}><b>Warning</b>: {EditingYourselfMessage}</div>
+        }
         <div className="p-mt-4"><b>Activated</b>: {String(APOrganizationUsersDisplayService.get_isActivated({apUserDisplay: mo}))}</div>
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
@@ -108,7 +135,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
                 apOrganizationUserDisplay={mo} 
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
+                onSaveSuccess={onSaveSuccess}
                 onLoadingChange={props.onLoadingChange}
               />
             </React.Fragment>
@@ -123,15 +150,14 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
                 onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
               />
-              {/* <EditOrganizationUserMemberOfBusinessGroups
+              <EditOrganizationUserMemberOfBusinessGroups
                 key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
+                apOrganizationUserDisplay={mo}
                 onError={onError_EditOrganizationUserMemberOf}
                 onCancel={props.onCancel}
                 onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Authentication'>
@@ -140,7 +166,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
                 apOrganizationUserDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onSaveSuccess={props.onSaveSuccess}
+                onSaveSuccess={onSaveSuccess}
                 onLoadingChange={props.onLoadingChange}
               />
             </React.Fragment>

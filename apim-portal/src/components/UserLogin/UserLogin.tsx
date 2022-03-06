@@ -9,7 +9,6 @@ import { classNames } from 'primereact/utils';
 import { Loading } from '../Loading/Loading';
 import { Divider } from 'primereact/divider';
 
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from '../AuthContextProvider/AuthContextProvider';
 import { UserContext } from '../UserContextProvider/UserContextProvider';
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
@@ -50,7 +49,6 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
 

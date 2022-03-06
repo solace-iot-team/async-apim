@@ -7,6 +7,7 @@ import APEntityIdsService, {
 import { 
   APSMemberOfBusinessGroup, 
   APSMemberOfOrganizationGroups, 
+  APSOrganizationRolesResponse, 
   APSUserResponse 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import APBusinessGroupsDisplayService, { 
@@ -21,6 +22,8 @@ import APRbacDisplayService from "../APRbacDisplayService";
 export type TAPMemberOfOrganizationDisplay =  IAPEntityIdDisplay & {
   /** list of organization roles, can be empty */
   apOrganizationRoleEntityIdList: TAPEntityIdList;
+  /** the legacy organization roles, will disappear in FUTURE */
+  apLegacyOrganizationRoleEntityIdList: TAPEntityIdList;
 }
 
 export type TAPMemberOfBusinessGroupDisplay =  {
@@ -57,7 +60,8 @@ class APMemberOfService {
   }): TAPMemberOfOrganizationDisplay {
     const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
       apEntityId: organizationEntityId,
-      apOrganizationRoleEntityIdList: []
+      apOrganizationRoleEntityIdList: [],
+      apLegacyOrganizationRoleEntityIdList: [],
     };
     return apMemberOfOrganizationDisplay;
   }
@@ -72,6 +76,12 @@ class APMemberOfService {
   }): TAPMemberOfOrganizationDisplay {
     const funcName = 'create_ApMemberOfOrganizationDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
+
+    // LEGACY: find the organizationId and get the legacy roles
+    const apsOrganizationRolesResponse: APSOrganizationRolesResponse | undefined = apsUserResponse.memberOfOrganizations.find( (x) => {
+      return x.organizationId === organizationEntityId.id;
+    });
+    if(apsOrganizationRolesResponse === undefined) throw new Error(`${logName}: apsOrganizationRolesResponse === undefined`);
 
     // find the root business group
     const rootApBusinesGroupDisplay: TAPBusinessGroupDisplay = APBusinessGroupsDisplayService.find_root_ApBusinessGroupDisplay({ completeApOrganizationBusinessGroupDisplayList: completeApOrganizationBusinessGroupDisplayList});
@@ -94,6 +104,7 @@ class APMemberOfService {
       const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
         apEntityId: organizationEntityId,
         apOrganizationRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
+        apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
       };
       return apMemberOfOrganizationDisplay;
 
@@ -102,7 +113,7 @@ class APMemberOfService {
     }
   }
 
-  /** Create flat list of business groups and roles */
+  /** Create flat list of business groups and roles from APSUserResponse */
   public create_ApMemberOfBusinessGroupDisplayList({organizationEntityId, apsUserResponse, completeApOrganizationBusinessGroupDisplayList}:{
     organizationEntityId: TAPEntityId;
     apsUserResponse: APSUserResponse;
@@ -143,13 +154,13 @@ class APMemberOfService {
    * - each child inherits all roles from parent in addition to organization level roles
    * @returns TAPMemberOfBusinessGroupDisplayTreeNodeList - same list with calculated roles set
    */
-   public calculate_BusinessGroupRoles({apMemberOfBusinessGroupDisplayTreeNodeList, apOrganizationRoleEntityIdList, parentCalculatedRoles}: {
+   private calculate_BusinessGroupRoles({apMemberOfBusinessGroupDisplayTreeNodeList, apOrganizationRoleEntityIdList, parentCalculatedRoles}: {
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     parentCalculatedRoles?: TAPEntityIdList;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
-    const funcName = 'calculate_BusinessGroupRoles';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'calculate_BusinessGroupRoles';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     for(const apMemberOfBusinessGroupDisplayTreeNode of apMemberOfBusinessGroupDisplayTreeNodeList) {
       const configuredRoles: TAPEntityIdList = apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList;
@@ -228,8 +239,8 @@ class APMemberOfService {
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     parent_apMemberOfBusinessGroupDisplayTreeNode?: TAPMemberOfBusinessGroupDisplayTreeNode;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
-    const funcName = 'create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const thisList: TAPMemberOfBusinessGroupDisplayTreeNodeList = [];
     for(const apMemberOfBusinessGroupDisplayTreeNode of apMemberOfBusinessGroupDisplayTreeNodeList) {
@@ -275,15 +286,15 @@ class APMemberOfService {
    * Includes the calculated roles.
    * @param pruneBusinessGroupsNotAMemberOf - prune the tree node list of groups user is not member of (has no roles)
    */
-  private create_ApMemberOfBusinessGroupDisplayTreeNodeList({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf}: {
+  public create_ApMemberOfBusinessGroupDisplayTreeNodeList({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf}: {
     organizationEntityId: TAPEntityId;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
     completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     pruneBusinessGroupsNotAMemberOf: boolean;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
-    const funcName = 'create_ApMemberOfBusinessGroupDisplayTreeNodeList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApMemberOfBusinessGroupDisplayTreeNodeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // // * BEGIN DEBUG *
     // const businessGroupConfiguredRoles = apMemberOfBusinessGroupDisplayList.map( (x) => {
     //   return {
@@ -349,8 +360,8 @@ class APMemberOfService {
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     pruneBusinessGroupsNotAMemberOf: boolean;
   }): TAPMemberOfBusinessGroupTreeTableNodeList {
-    const funcName = 'create_ApMemberOfBusinessGroupTreeTableNodeList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApMemberOfBusinessGroupTreeTableNodeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     // // * BEGIN DEBUG *
     // const businessGroupConfiguredRoles = apMemberOfBusinessGroupDisplayList.map( (x) => {
@@ -392,6 +403,12 @@ class APMemberOfService {
     // console.log(`${logName}: treeNodeList=${JSON.stringify(treeNodeList, null, 2)}`);
 
     return create_TreeTableNodeList(treeNodeList);
+  }
+
+  public clone_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList }: {
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  }): TAPMemberOfBusinessGroupDisplayList {
+    return JSON.parse(JSON.stringify(apMemberOfBusinessGroupDisplayList));
   }
 
 }

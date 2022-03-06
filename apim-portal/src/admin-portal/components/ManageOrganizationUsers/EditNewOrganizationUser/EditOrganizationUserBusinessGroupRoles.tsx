@@ -11,20 +11,20 @@ import APEntityIdsService, {
   TAPEntityId, 
   TAPEntityIdList 
 } from "../../../../utils/APEntityIdsService";
-import APUsersDisplayService, { 
-  TAPMemberOfBusinessGroupDisplay, 
-  TAPMemberOfBusinessGroupDisplayList, 
-  TAPUserDisplay
-} from "../../../../displayServices/old.APUsersDisplayService";
 import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
 import APBusinessGroupsDisplayService, { 
-  TAPBusinessGroupDisplayList, 
 } from "../../../../displayServices/APBusinessGroupsDisplayService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSBusinessGroupAuthRoleList } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import APMemberOfService, { 
+  TAPMemberOfBusinessGroupDisplay, 
+  TAPMemberOfBusinessGroupDisplayList 
+} from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
+import { Globals } from "../../../../utils/Globals";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -36,11 +36,9 @@ export enum EEditOrganzationUserBusinessGroupRolesAction {
 
 export interface IEditOrganizationUserBusinessGroupRolesProps {
   action: EEditOrganzationUserBusinessGroupRolesAction;
-  organizationEntityId: TAPEntityId;
-  apUserDisplay: TAPUserDisplay;
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   businessGroupEntityId: TAPEntityId;
   businessGroupRoleEntityIdList: TAPEntityIdList;
-  completeOrganizationApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -72,13 +70,17 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TBusinessGroupRolesFormDataEnvelope;
   }): TManagedObject => {
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
+
     if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
       formDataEnvelope.formData.roles = [];
     }
     // make a copy
-    const mo: TManagedObject = JSON.parse(JSON.stringify(orginalManagedObject));
+    const mo: TManagedObject = APMemberOfService.clone_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList: orginalManagedObject });
     const fd: TBusinessGroupRolesFormData = formDataEnvelope.formData;
-    const existingIndex = mo.findIndex( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay) => {
+    const existingIndex = mo.findIndex( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay ) => {
       return apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === props.businessGroupEntityId.id;
     });
     if(fd.roles.length === 0) {
@@ -90,7 +92,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
       else {
         mo.push({
           apBusinessGroupDisplay: APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_by_id({
-            apBusinessGroupDisplayList: props.completeOrganizationApBusinessGroupDisplayList,
+            apBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
             businessGroupId: props.businessGroupEntityId.id
           }),
           apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: fd.roles}),
@@ -112,14 +114,13 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_MEMBER_OF_BUSINESS_GROUPS, `update business groups for user: ${props.apUserDisplay.apEntityId.id}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_MEMBER_OF_BUSINESS_GROUPS, `update business groups for user: ${props.apOrganizationUserDisplay.apEntityId.id}`);
     try { 
-      await APUsersDisplayService.apsUpdate_ApMemberOfBusinessGroupDisplayList({
-        organizationEntityId: props.organizationEntityId,
-        apUserDisplay: props.apUserDisplay,
-        apMemberOfBusinessGroupDisplayList: mo
-      });
       // throw new Error(`${logName}: testing error handling`);
+      await APOrganizationUsersDisplayService.apsUpdate_ApMemberOfBusinessGroupDisplayList({
+        apOrganizationUserDisplay: props.apOrganizationUserDisplay,
+        apMemberOfBusinessGroupDisplayList: mo,
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -130,10 +131,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
 
   const doInitialize = async () => {
     setManagedObjectFormDataEnvelope(create_FormDataEnvelope());
-    setManagedObject(APUsersDisplayService.find_ApMemberOfBusinessGroupDisplayList({
-      organizationId: props.organizationEntityId.id,
-      apUserDisplay: props.apUserDisplay
-    }));
+    setManagedObject(props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList);
   }
 
   // * useEffect Hooks *
@@ -208,7 +206,9 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     const funcName = 'validate_UpdatedOrganizationUserBusinessGroupRoles';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    
     if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) rolesIdList = [];
+    
     if(rolesIdList.length > 0) return true;
 
     const validation_fde: TBusinessGroupRolesFormDataEnvelope = {
@@ -220,16 +220,21 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
       orginalManagedObject: managedObject,
       formDataEnvelope: validation_fde
     });
-    const areUserRolesValid: boolean = APUsersDisplayService.validate_Update_OrganizationUser_With_ApMemberOfBusinessGroupDisplayList({
-      organizationEntityId: props.organizationEntityId,
-      currentApUserDisplay: props.apUserDisplay,
-      updateApUserMemberOfBusinessGroupDisplayList: validationManagedObject
+
+    const areNewRolesValid = APOrganizationUsersDisplayService.validate_RequestedUpdateOf_ApOrganizationUserDisplay_With_ApMemberOfBusinessGroupDisplayList({
+      current_ApOrganizationUserDisplay: props.apOrganizationUserDisplay,
+      requestedUpdateWith_apMemberOfBusinessGroupDisplayList: validationManagedObject
     });
-    if(!areUserRolesValid) {
-      if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
-        return `Cannot remove user from business group. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
+
+    if(!areNewRolesValid) {
+      switch(props.action) {
+        case EEditOrganzationUserBusinessGroupRolesAction.REMOVE:
+          return `Cannot remove user from business group. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;          
+        case EEditOrganzationUserBusinessGroupRolesAction.EDIT:
+          return `Specify at least 1 business group role. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
+        default:
+          Globals.assertNever(logName, props.action);      
       }
-      return `Specify at least 1 business group role. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
     }
     return true;
   }
