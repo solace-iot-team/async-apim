@@ -89,8 +89,6 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   }
 
   const doInitialize = async () => {
-    const funcName = 'doInitialize';
-    const logName = `${ComponentName}.${funcName}()`;
     setManagedObject(APOrganizationUsersDisplayService.get_ApUserProfileDisplay({
       apUserDisplay: props.apOrganizationUserDisplay
     }));
@@ -120,8 +118,6 @@ export const EditOrganizationUserProfile: React.FC<IEditOrganizationUserProfileP
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    const funcName = 'doSubmitManagedObject';
-    const logName = `${ComponentName}.${funcName}()`;
     props.onLoadingChange(true);
     await apiUpdateManagedObject(mo);
     props.onLoadingChange(false);

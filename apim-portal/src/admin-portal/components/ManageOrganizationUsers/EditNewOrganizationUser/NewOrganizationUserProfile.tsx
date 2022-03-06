@@ -9,22 +9,17 @@ import { classNames } from 'primereact/utils';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
-import APUsersDisplayService, { 
-  TAPCheckOrganizationUserExistsResult,
-  TAPUserDisplay, 
-  TAPUserProfileDisplay 
-} from "../../../../displayServices/old.APUsersDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPCheckUserIdExistsResult, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
 export interface INewOrganizationUserProfileProps {
-  organizationEntityId: TAPEntityId;
-  apUserDisplay: TAPUserDisplay;
+  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   onNext: (apUserProfileDisplay: TAPUserProfileDisplay) => void;
   onBack: () => void;
   onCancel: () => void;
@@ -46,9 +41,9 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      email: mo.apsUserProfile.email,
-      first: mo.apsUserProfile.first,
-      last: mo.apsUserProfile.last,
+      email: mo.email,
+      first: mo.first,
+      last: mo.last,
     };
     return {
       formData: fd
@@ -61,15 +56,10 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }): TManagedObject => {
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.apsUserProfile = {
-      email: fd.email,
-      first: fd.first,
-      last: fd.last
-    };
-    mo.apEntityId = {
-      id: fd.email,
-      displayName: APUsersDisplayService.create_UserDisplayName(mo.apsUserProfile)
-    }
+    mo.email = fd.email;
+    mo.first = fd.first;
+    mo.last = fd.last;
+    mo.apEntityId.displayName = APOrganizationUsersDisplayService.create_UserDisplayName(mo);
     return mo;
   }
   
@@ -81,14 +71,14 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
 
   // * Api Calls *
 
-  const apiCheckOrganizationUserExists = async(userId: string): Promise<TAPCheckOrganizationUserExistsResult | undefined> => {
+  const apiCheckOrganizationUserExists = async(userId: string): Promise<TAPCheckUserIdExistsResult | undefined> => {
     const funcName = 'apiCheckOrganizationUserExists';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_ORGANIZATION_USER_EXISTS, `check organization user exists: ${userId}`);
-    let checkResult: TAPCheckOrganizationUserExistsResult | undefined = undefined;
+    let checkResult: TAPCheckUserIdExistsResult | undefined = undefined;
     try { 
-      checkResult = await APUsersDisplayService.apsCheck_OrganizationUserIdExists({
-        organizationId: props.organizationEntityId.id,
+      checkResult = await APOrganizationUsersDisplayService.apsCheck_UserIdExists({
+        organizationId: props.apOrganizationUserDisplay.organizationEntityId.id,
         userId: userId
       });
     } catch(e: any) {
@@ -100,10 +90,8 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }
 
   const doInitialize = async () => {
-    // const funcName = 'doInitialize';
-    // const logName = `${ComponentName}.${funcName}()`;
-    setManagedObject(APUsersDisplayService.get_ApUserProfileDisplay({
-      apUserDisplay: props.apUserDisplay
+    setManagedObject(APOrganizationUsersDisplayService.get_ApUserProfileDisplay({
+      apUserDisplay: props.apOrganizationUserDisplay
     }));
   }
 
@@ -170,7 +158,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }
 
   const validate_Email = async(email: string): Promise<string | boolean> => {
-    const checkResult: TAPCheckOrganizationUserExistsResult | undefined = await apiCheckOrganizationUserExists(email);
+    const checkResult: TAPCheckUserIdExistsResult | undefined = await apiCheckOrganizationUserExists(email);
     if(checkResult === undefined) return false;
     if(checkResult.existsInOrganization) return 'User is already a member of this organization.';
     if(checkResult.exists) return 'User already exists, add user to this organization instead.';

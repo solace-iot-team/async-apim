@@ -8,11 +8,9 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
-import { ManageUsers } from '../components/ManageUsers/ManageUsers';
-import { E_ManageUsers_Scope } from '../components/ManageUsers/ManageUsersCommon';
+import { ManageOrganizationUsers } from '../components/ManageOrganizationUsers/ManageOrganizationUsers';
 
 import "../../pages/Pages.css";
-import { ManageOrganizationUsers } from '../components/ManageOrganizationUsers/ManageOrganizationUsers';
 
 export const ManageOrgUsersPage: React.FC = () => {
   // const componentName="ManageOrgUsersPage";

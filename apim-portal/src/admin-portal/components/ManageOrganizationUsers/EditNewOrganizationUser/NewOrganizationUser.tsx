@@ -8,21 +8,23 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW_USER } from "../ManageOrganizationUsersCommon";
-import APUsersDisplayService, { 
-  TAPUserCredentialsDisplay,
-  TAPUserDisplay, 
-  TAPUserProfileDisplay 
-} from "../../../../displayServices/old.APUsersDisplayService";
+// import APUsersDisplayService, { 
+//   TAPUserCredentialsDisplay,
+//   TAPUserDisplay, 
+//   TAPUserProfileDisplay 
+// } from "../../../../displayServices/old.APUsersDisplayService";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
 import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
 import { NewOrganizationUserCredentials } from "./NewOrganizationUserCredentials";
 import { NewOrganizationUserReviewAndCreate } from "./NewOrganizationUserReviewAndCreate";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPUserAuthenticationDisplay, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 export interface INewOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -36,7 +38,7 @@ export interface INewOrganizationUserProps {
 export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: INewOrganizationUserProps) => {
   const ComponentName = 'NewOrganizationUser';
 
-  type TManagedObject = TAPUserDisplay;
+  type TManagedObject = TAPOrganizationUserDisplay;
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE_NEW_USER,
@@ -136,7 +138,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetCompleteApBusinessGroupDisplayList(props.organizationEntityId.id);
-    setManagedObject(await APUsersDisplayService.create_EmptyObject({ organizationId: props.organizationEntityId.id }));
+    setManagedObject(await APOrganizationUsersDisplayService.create_Empty_ApOrganizationUserDisplay({ organizationEntityId: props.organizationEntityId }));
     setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);
     props.onLoadingChange(false);
   }
@@ -204,25 +206,27 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     const funcName = 'onNext_From_Profile';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(APUsersDisplayService.set_ApUserProfileDisplay({ apUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay }));
+    const newMo: TAPOrganizationUserDisplay = APOrganizationUsersDisplayService.set_ApOrganizationUserProfileDisplay({ apOrganizationUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay });
+    setManagedObject(newMo);
     setNextComponentState();
   }
 
-  const onNext_From_RolesAndGroups = (updatedApUserDisplay: TAPUserDisplay) => {
+  const onNext_From_RolesAndGroups = (updatedApUserDisplay: TAPOrganizationUserDisplay) => {
     const funcName = 'onNext_From_RolesAndGroups';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     setManagedObject(updatedApUserDisplay);
-    // TODO: set the values in managedObject
-    // setManagedObject(APUsersDisplayService.set_ApUserProfileDisplay({ apUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay }));
     setNextComponentState();
   }
 
-  const onNext_From_Credentials = (apUserCredentialsDisplay: TAPUserCredentialsDisplay) => {
-    const funcName = 'onNext_From_Profile';
+  const onNext_From_Credentials = (apUserAuthenticationDisplay: TAPUserAuthenticationDisplay) => {
+    const funcName = 'onNext_From_Credentials';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(APUsersDisplayService.set_ApUserCredentialsDisplay({ apUserDisplay: managedObject, apUserCredentialsDisplay: apUserCredentialsDisplay }));
+    setManagedObject(APOrganizationUsersDisplayService.set_ApOrganizationUserAuthenticationDisplay({ 
+      apOrganizationUserDisplay: managedObject, 
+      apUserAuthenticationDisplay: apUserAuthenticationDisplay 
+    }));
     setNextComponentState();
   }
 
@@ -230,7 +234,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     setPreviousComponentState();
   }
 
-  const onCreateSuccess = (apUserDisplay: TAPUserDisplay, apiCallState: TApiCallState) => {
+  const onCreateSuccess = (apUserDisplay: TAPOrganizationUserDisplay, apiCallState: TApiCallState) => {
     props.onNewSuccess(apiCallState, apUserDisplay.apEntityId);
   }
 
@@ -242,8 +246,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
           <TabPanel header='Profile' disabled={!showProfile}>
             <React.Fragment>
               <NewOrganizationUserProfile
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
+                apOrganizationUserDisplay={mo}
                 onNext={onNext_From_Profile}
                 onBack={() => {}}
                 onError={onError_SubComponent}
@@ -254,7 +257,8 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
           </TabPanel>
           <TabPanel header='Roles & Groups' disabled={!showRolesAndGroups}>
             <React.Fragment>
-              <NewOrganizationUserRolesAndGroups 
+              <p>implement me</p>
+              {/* <NewOrganizationUserRolesAndGroups 
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
                 onNext={onNext_From_RolesAndGroups}
@@ -262,12 +266,13 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-              />
+              /> */}
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Credentials' disabled={!showCredentials}>
             <React.Fragment>
-              <NewOrganizationUserCredentials
+              <p>implement me</p>
+              {/* <NewOrganizationUserCredentials
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
                 onNext={onNext_From_Credentials}
@@ -275,12 +280,13 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-              />
+              /> */}
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Review & Create' disabled={!showReview}>
             <React.Fragment>
-              <NewOrganizationUserReviewAndCreate
+              <p>implement me</p>
+              {/* <NewOrganizationUserReviewAndCreate
                 organizationEntityId={props.organizationEntityId}
                 apUserDisplay={mo}
                 completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
@@ -289,7 +295,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-              />
+              /> */}
             </React.Fragment>
           </TabPanel>
         </TabView>
@@ -311,21 +317,21 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
         <React.Fragment>
           <hr />
           <p><b>{ComponentName}:</b></p>
-          <p><b>managedObject.apsUserResponse.profile=</b></p>
+          <p><b>managedObject.apUserProfileDisplay=</b></p>
           <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apsUserResponse.profile, null, 2)}
+            {JSON.stringify(managedObject.apUserProfileDisplay, null, 2)}
           </pre>
-          <p><b>managedObject.apMemberOfOrganizationGroupsDisplayList=</b></p>
+          <p><b>managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList=</b></p>
           <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apMemberOfOrganizationGroupsDisplayList, null, 2)}
+            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList, null, 2)}
           </pre>
-          <p><b>managedObject.apsUserResponse.memberOfOrganizationGroups=</b></p>
+          <p><b>managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList=</b></p>
           <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apsUserResponse.memberOfOrganizationGroups, null, 2)}
+            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList, null, 2)}
           </pre>
-          <p><b>managedObject.apsUserResponse.password=</b></p>
+          <p><b>managedObject.apUserAuthenticationDisplay.password=</b></p>
           <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apsUserResponse.password, null, 2)}
+            {JSON.stringify(managedObject.apUserAuthenticationDisplay.password, null, 2)}
           </pre>
         </React.Fragment>
       }

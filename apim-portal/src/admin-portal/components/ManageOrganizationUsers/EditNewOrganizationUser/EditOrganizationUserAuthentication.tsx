@@ -102,8 +102,6 @@ export const EditOrganizationUserAuthentication: React.FC<IEditOrganizationUserA
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else props.onSaveSuccess(apiCallStatus);

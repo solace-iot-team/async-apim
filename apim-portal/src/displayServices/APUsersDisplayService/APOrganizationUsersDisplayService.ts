@@ -34,6 +34,8 @@ import APMemberOfService, {
 import { 
   APUsersDisplayService, 
   IAPUserDisplay,
+  TAPUserAuthenticationDisplay,
+  TAPUserProfileDisplay,
 } from './APUsersDisplayService';
 
 /**
@@ -322,8 +324,28 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return false;
   }
 
+  public set_ApOrganizationUserProfileDisplay({ apOrganizationUserDisplay, apUserProfileDisplay }: {
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+    apUserProfileDisplay: TAPUserProfileDisplay;
+  }): TAPOrganizationUserDisplay {
+    return super.set_ApUserProfileDisplay({
+      apUserDisplay: apOrganizationUserDisplay,
+      apUserProfileDisplay: apUserProfileDisplay
+    }) as TAPOrganizationUserDisplay;
+  }
+
+  public set_ApOrganizationUserAuthenticationDisplay({ apOrganizationUserDisplay, apUserAuthenticationDisplay }: {
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+    apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
+  }): TAPOrganizationUserDisplay {
+    return super.set_ApUserAuthenticationDisplay({
+      apUserDisplay: apOrganizationUserDisplay,
+      apUserAuthenticationDisplay: apUserAuthenticationDisplay
+    }) as TAPOrganizationUserDisplay;
+  }
+
   // ********************************************************************************************************************************
-  // APS calls
+  // APS API calls
   // ********************************************************************************************************************************
   
   public async apsGet_ApOrganizationUserDisplay({ organizationEntityId, userId, fetch_ApOrganizationAssetInfoDisplayList }:{

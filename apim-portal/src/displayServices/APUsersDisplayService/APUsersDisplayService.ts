@@ -11,9 +11,11 @@ import {
   APSListResponseMeta,
   APSUserProfile, 
   APSUserResponse,
+  ApsUsersService,
   APSUserUpdate, 
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APRbacDisplayService from '../APRbacDisplayService';
+import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 
 export type TAPUserDisplayLazyLoadingTableParameters = {
   isInitialSetting: boolean; // differentiate between first time and subsequent times
@@ -46,10 +48,10 @@ export type TAPUserDisplayListResponse = APSListResponseMeta & {
 
 export type TAPUserProfileDisplay = IAPEntityIdDisplay & APSUserProfile;
 
-// export type TAPCheckOrganizationUserExistsResult = {
-//   existsInOrganization: boolean;
-//   exists: boolean;
-// }
+export type TAPCheckUserIdExistsResult = {
+  existsInOrganization: boolean;
+  exists: boolean;
+}
 
 export abstract class APUsersDisplayService {
   private readonly BaseComponentName = "APUsersDisplayService";
@@ -178,7 +180,7 @@ export abstract class APUsersDisplayService {
     return apUserDisplay.apUserProfileDisplay;
   }
 
-  public set_ApUserProfileDisplay({ apUserDisplay, apUserProfileDisplay }: {
+  protected set_ApUserProfileDisplay({ apUserDisplay, apUserProfileDisplay }: {
     apUserDisplay: IAPUserDisplay;
     apUserProfileDisplay: TAPUserProfileDisplay;
   }): IAPUserDisplay {
@@ -193,7 +195,7 @@ export abstract class APUsersDisplayService {
     return apUserDisplay.apUserAuthenticationDisplay;
   }
 
-  public set_ApUserAuthenticationDisplay({ apUserDisplay, apUserAuthenticationDisplay }: {
+  protected set_ApUserAuthenticationDisplay({ apUserDisplay, apUserAuthenticationDisplay }: {
     apUserDisplay: IAPUserDisplay;
     apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
   }): IAPUserDisplay {
@@ -213,6 +215,45 @@ export abstract class APUsersDisplayService {
   }): IAPUserDisplay {
     apUserDisplay.apUserAuthenticationDisplay.isActivated = isActivated;
     return apUserDisplay;
+  }
+
+  private is_ApsUserMemberOfOrganization({ organizationId, apsUserResponse }: {
+    organizationId: string;
+    apsUserResponse: APSUserResponse;
+  }): boolean {
+    if(apsUserResponse.memberOfOrganizations === undefined) return false;
+    const found = apsUserResponse.memberOfOrganizations.find( (x) => {
+      return x.organizationId === organizationId;
+    });
+    return found !== undefined;
+  }
+
+  // ********************************************************************************************************************************
+  // APS API calls
+  // ********************************************************************************************************************************
+
+  public async apsCheck_UserIdExists({userId, organizationId}: {
+    organizationId: string;
+    userId: string;
+  }): Promise<TAPCheckUserIdExistsResult> {
+    // const funcName = 'apsCheck_UserIdExists';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    try {
+      // throw new Error(`${logName}: test error handling upstream`);
+      const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
+        userId: userId
+      });
+      return {
+        exists: true,
+        existsInOrganization: this.is_ApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse})
+      }
+     } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return { exists: false, existsInOrganization: false };
+      }
+      throw e;
+    }
   }
 
   public async connectorGet_Developer({ organizationId, userId}: {

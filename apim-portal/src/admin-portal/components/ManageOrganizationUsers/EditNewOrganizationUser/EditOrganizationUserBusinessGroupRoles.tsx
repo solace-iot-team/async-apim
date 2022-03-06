@@ -193,8 +193,6 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
   }
   
   const onSubmitForm = (fde: TBusinessGroupRolesFormDataEnvelope) => {
-    const funcName = 'onSubmitForm';
-    const logName = `${ComponentName}.${funcName}()`;
     doSubmitForm(fde);
   }
 

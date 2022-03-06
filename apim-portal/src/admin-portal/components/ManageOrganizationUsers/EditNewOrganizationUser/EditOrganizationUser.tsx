@@ -45,6 +45,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
