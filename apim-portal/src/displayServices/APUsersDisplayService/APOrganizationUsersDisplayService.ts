@@ -205,10 +205,13 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return apOrganizationUserMemberOfOrganizationDisplay;
   }
 
-  public async create_Empty_ApOrganizationUserDisplay({organizationEntityId, apCompleteBusinessGroupDisplayList}: {
+  public async create_Empty_ApOrganizationUserDisplay({organizationEntityId}: {
     organizationEntityId: TAPEntityId;
-    apCompleteBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   }): Promise<TAPOrganizationUserDisplay> {
+
+    const apCompleteBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationEntityId.id,
+    });
 
     const base: IAPUserDisplay = super.create_Empty_ApUserDisplay();
     const apOrganizationUserDisplay: TAPOrganizationUserDisplay = {
@@ -218,9 +221,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
         organizationEntityId: organizationEntityId,
         apCompleteBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList
       }),
-      completeOrganizationBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList === undefined ? await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-        organizationId: organizationEntityId.id
-      }): apCompleteBusinessGroupDisplayList,
+      completeOrganizationBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList,
     }
     return apOrganizationUserDisplay;    
   }

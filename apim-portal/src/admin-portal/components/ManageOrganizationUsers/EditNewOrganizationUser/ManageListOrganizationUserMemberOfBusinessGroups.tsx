@@ -88,7 +88,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else {
         if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_USER) return;
-        if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST) return;
+        // if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST) return;
         props.onSaveSuccess(apiCallStatus);
       }
     }
