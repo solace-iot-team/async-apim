@@ -13,7 +13,7 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { EditOrganizationUserBusinessGroupRoles, EEditOrganzationUserBusinessGroupRolesAction } from "./EditOrganizationUserBusinessGroupRoles";
+import { EditOrganizationUserBusinessGroupRoles, EEditOrganzationUserBusinessGroupRolesAction } from "./refactor.EditOrganizationUserBusinessGroupRoles";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupTreeTableNode, 

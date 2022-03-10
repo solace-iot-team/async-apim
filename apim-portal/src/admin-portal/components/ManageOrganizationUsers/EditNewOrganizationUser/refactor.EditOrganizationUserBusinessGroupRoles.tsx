@@ -9,10 +9,16 @@ import { Toolbar } from "primereact/toolbar";
 
 import APEntityIdsService, { 
   TAPEntityId, 
+  TAPEntityIdList 
 } from "../../../../utils/APEntityIdsService";
 import APRbacDisplayService from "../../../../displayServices/APRbacDisplayService";
+import APBusinessGroupsDisplayService, { 
+} from "../../../../displayServices/APBusinessGroupsDisplayService";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
+import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSBusinessGroupAuthRoleList } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupDisplay, 
@@ -23,17 +29,20 @@ import { Globals } from "../../../../utils/Globals";
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
 
-export enum EEditOrganizationUserBusinessGroupRolesAction {
+export enum EEditOrganzationUserBusinessGroupRolesAction {
   EDIT = 'EDIT',
   REMOVE = 'REMOVE'
 }
 
 export interface IEditOrganizationUserBusinessGroupRolesProps {
-  action: EEditOrganizationUserBusinessGroupRolesAction;
+  action: EEditOrganzationUserBusinessGroupRolesAction;
   apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   businessGroupEntityId: TAPEntityId;
-  onSave: (updated_ApMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList) => void;
+  businessGroupRoleEntityIdList: TAPEntityIdList;
+  onError: (apiCallState: TApiCallState) => void;
+  onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
+  onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationUserBusinessGroupRolesProps> = (props: IEditOrganizationUserBusinessGroupRolesProps) => {
@@ -48,21 +57,16 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     formData: TBusinessGroupRolesFormData;
   };
 
-  const create_FormDataEnvelope = (mo: TManagedObject): TBusinessGroupRolesFormDataEnvelope => {
-    // find the roles of the business group
-    const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.find_ApMemberOfBusinessGroupDisplay({
-      apMemberOfBusinessGroupDisplayList: mo,
-      businessGroupEntityId: props.businessGroupEntityId,
-    });
+  const create_FormDataEnvelope = (): TBusinessGroupRolesFormDataEnvelope => {
     const fd: TBusinessGroupRolesFormData = {
-      roles: apMemberOfBusinessGroupDisplay !== undefined ? APEntityIdsService.create_IdList(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList) as APSBusinessGroupAuthRoleList : [],
+      roles: APEntityIdsService.create_IdList(props.businessGroupRoleEntityIdList) as APSBusinessGroupAuthRoleList
     }
     return {
       formData: fd
     };
   }
 
-  const create_ManagedObject_From_FormEntities = ({ orginalManagedObject, formDataEnvelope }: {
+  const create_ManagedObject_From_FormEntities = ({orginalManagedObject, formDataEnvelope}: {
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TBusinessGroupRolesFormDataEnvelope;
   }): TManagedObject => {
@@ -70,27 +74,63 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     const logName = `${ComponentName}.${funcName}()`;
     if(props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
 
-    if(props.action === EEditOrganizationUserBusinessGroupRolesAction.REMOVE) {
+    if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
       formDataEnvelope.formData.roles = [];
     }
-    // apply new roles to a clone of entire business group display list
-    const cloneOf_original_mo: TManagedObject = APMemberOfService.clone_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList: orginalManagedObject });
-    const newMo: TManagedObject = APMemberOfService.update_ApMemberOfBusinessGroupDisplayList({
-      apMemberOfBusinessGroupDisplayList: cloneOf_original_mo,
-      businessGroupEntityId: props.businessGroupEntityId,
-      completeApOrganizationBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
-      new_apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: formDataEnvelope.formData.roles }),
+    // make a copy
+    const mo: TManagedObject = APMemberOfService.clone_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList: orginalManagedObject });
+    const fd: TBusinessGroupRolesFormData = formDataEnvelope.formData;
+    const existingIndex = mo.findIndex( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay ) => {
+      return apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === props.businessGroupEntityId.id;
     });
-    return newMo;
+    if(fd.roles.length === 0) {
+      // remove group
+      if(existingIndex > -1) mo.splice(existingIndex, 1);  
+    } else {
+      // add/replace group
+      if(existingIndex > -1) mo[existingIndex].apConfiguredBusinessGroupRoleEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: fd.roles});
+      else {
+        mo.push({
+          apBusinessGroupDisplay: APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_by_id({
+            apBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
+            businessGroupId: props.businessGroupEntityId.id
+          }),
+          apConfiguredBusinessGroupRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: fd.roles}),
+          apCalculatedBusinessGroupRoleEntityIdList: []
+        });
+      }
+    }
+    return mo;
   }
 
-  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TBusinessGroupRolesFormDataEnvelope>();
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
   const businessGroupRolesUseForm = useForm<TBusinessGroupRolesFormDataEnvelope>();
   const formId = ComponentName;
 
+  // * Api Calls *
+  const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
+    const funcName = 'apiUpdateManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_USER_MEMBER_OF_BUSINESS_GROUPS, `update business groups for user: ${props.apOrganizationUserDisplay.apEntityId.id}`);
+    try { 
+      // throw new Error(`${logName}: testing error handling`);
+      await APOrganizationUsersDisplayService.apsUpdate_ApMemberOfBusinessGroupDisplayList({
+        apOrganizationUserDisplay: props.apOrganizationUserDisplay,
+        apMemberOfBusinessGroupDisplayList: mo,
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const doInitialize = async () => {
+    setManagedObjectFormDataEnvelope(create_FormDataEnvelope());
     setManagedObject(props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList);
   }
 
@@ -101,20 +141,24 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObject !== undefined) {
-      setManagedObjectFormDataEnvelope(create_FormDataEnvelope(managedObject));
-    }
-  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
     if(managedObjectFormDataEnvelope !== undefined) {
       businessGroupRolesUseForm.setValue('formData.roles', managedObjectFormDataEnvelope.formData.roles);
       setIsInitialized(true);
     }
   }, [managedObjectFormDataEnvelope]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const managedObjectFormFooterRightToolbarTemplate = () => {                        
-    if(props.action === EEditOrganizationUserBusinessGroupRolesAction.EDIT) {
+  
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      else {
+        if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_MEMBER_OF_BUSINESS_GROUPS) props.onSaveSuccess(apiCallStatus);
+      }
+    }
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  const managedObjectFormFooterRightToolbarTemplate = () => {
+    if(props.action === EEditOrganzationUserBusinessGroupRolesAction.EDIT) {
       return (
         <React.Fragment>
           <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
@@ -122,7 +166,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
         </React.Fragment>
       );
     }
-    if(props.action === EEditOrganizationUserBusinessGroupRolesAction.REMOVE) {
+    if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) {
       return (
         <React.Fragment>
           <Button label="Cancel" type="button" className="p-button-text p-button-plain p-button-outlined" onClick={props.onCancel} />
@@ -142,12 +186,10 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     const funcName = 'doSubmitForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-
-    const new_apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList = create_ManagedObject_From_FormEntities({
+    await apiUpdateManagedObject(create_ManagedObject_From_FormEntities({
       orginalManagedObject: managedObject,
       formDataEnvelope: fde
-    });
-    props.onSave(new_apMemberOfBusinessGroupDisplayList);
+    }));
   }
   
   const onSubmitForm = (fde: TBusinessGroupRolesFormDataEnvelope) => {
@@ -163,7 +205,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     
-    if(props.action === EEditOrganizationUserBusinessGroupRolesAction.REMOVE) rolesIdList = [];
+    if(props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE) rolesIdList = [];
     
     if(rolesIdList.length > 0) return true;
 
@@ -184,9 +226,9 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
 
     if(!areNewRolesValid) {
       switch(props.action) {
-        case EEditOrganizationUserBusinessGroupRolesAction.REMOVE:
+        case EEditOrganzationUserBusinessGroupRolesAction.REMOVE:
           return `Cannot remove user from business group. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;          
-        case EEditOrganizationUserBusinessGroupRolesAction.EDIT:
+        case EEditOrganzationUserBusinessGroupRolesAction.EDIT:
           return `Specify at least 1 business group role. User is not a member of any other group nor has any organization roles. To remove user from organization, delete the user instead.`;
         default:
           Globals.assertNever(logName, props.action);      
@@ -196,7 +238,7 @@ export const EditOrganizationUserBusinessGroupRoles: React.FC<IEditOrganizationU
   }
 
   const renderManagedObjectForm = () => {
-    const isRolesDisabled: boolean = (props.action === EEditOrganizationUserBusinessGroupRolesAction.REMOVE);
+    const isRolesDisabled: boolean = (props.action === EEditOrganzationUserBusinessGroupRolesAction.REMOVE);
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">

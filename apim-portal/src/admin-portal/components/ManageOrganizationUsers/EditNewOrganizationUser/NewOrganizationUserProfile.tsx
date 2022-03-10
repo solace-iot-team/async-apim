@@ -60,6 +60,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
     mo.first = fd.first;
     mo.last = fd.last;
     mo.apEntityId.displayName = APOrganizationUsersDisplayService.create_UserDisplayName(mo);
+    mo.apEntityId.id = mo.email;
     return mo;
   }
   

@@ -258,8 +258,8 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     setPreviousComponentState();
   }
 
-  const onCreateSuccess = (apUserDisplay: TAPOrganizationUserDisplay, apiCallState: TApiCallState) => {
-    props.onNewSuccess(apiCallState, apUserDisplay.apEntityId);
+  const onCreateSuccess = (userEntityId: TAPEntityId, apiCallState: TApiCallState) => {
+    props.onNewSuccess(apiCallState, userEntityId);
   }
 
   const renderComponent = (mo: TManagedObject) => {
@@ -305,17 +305,14 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
           </TabPanel>
           <TabPanel header='Review & Create' disabled={!showReview}>
             <React.Fragment>
-              <p>implement me</p>
-              {/* <NewOrganizationUserReviewAndCreate
-                organizationEntityId={props.organizationEntityId}
-                apUserDisplay={mo}
-                completeOrganizationApBusinessGroupDisplayList={completeOrganizationApBusinessGroupDisplayList}
+              <NewOrganizationUserReviewAndCreate
+                apOrganizationUserDisplay={mo}
                 onCreateSuccess={onCreateSuccess}
                 onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
             </React.Fragment>
           </TabPanel>
         </TabView>

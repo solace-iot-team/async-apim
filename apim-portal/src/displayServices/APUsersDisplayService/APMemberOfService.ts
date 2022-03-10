@@ -14,6 +14,7 @@ import APBusinessGroupsDisplayService, {
   TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList 
 } from "../APBusinessGroupsDisplayService";
 import APRbacDisplayService from "../APRbacDisplayService";
+import { TAPOrganizationUserMemberOfOrganizationDisplay } from "./APOrganizationUsersDisplayService";
 
 /**
  * Organization & organization roles for a user.
@@ -111,6 +112,21 @@ class APMemberOfService {
     } else {
       return this.create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId: organizationEntityId });
     }
+  }
+
+  public create_ApLegacyOrganizationRoleEntityIdList({ apOrganizationUserMemberOfOrganizationDisplay }:{
+    apOrganizationUserMemberOfOrganizationDisplay: TAPOrganizationUserMemberOfOrganizationDisplay;
+  }): TAPEntityIdList {
+
+    const combinedList: TAPEntityIdList = [];
+    // add all business group roles 
+    for(const apMemberOfBusinessGroupDisplay of apOrganizationUserMemberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList) {
+      combinedList.push(...apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList);
+    }
+    // add the organization roles
+    combinedList.push(...apOrganizationUserMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList);
+    // regturn de-duped list
+    return APEntityIdsService.create_deduped_EntityIdList(combinedList);
   }
 
   /** Create flat list of business groups and roles from APSUserResponse */
@@ -274,7 +290,17 @@ class APMemberOfService {
           });
           if(found === undefined) thisList.push(parent_apMemberOfBusinessGroupDisplayTreeNode);
         }
-      } 
+      } else {
+        if(parent_apMemberOfBusinessGroupDisplayTreeNode !== undefined) {
+          // check if parent needs to be pushed because it has roles itself
+          if(parent_apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) {
+            const found = thisList.find( (x) => {
+              return x.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === parent_apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id;
+            });
+            if(found === undefined) thisList.push(parent_apMemberOfBusinessGroupDisplayTreeNode);
+          }
+        }
+      }
     }
     // console.log(`${logName}: returning thisList=${JSON.stringify(thisList, null, 2)}`);
     return thisList;
@@ -332,6 +358,8 @@ class APMemberOfService {
 
     // prune the tree - remove all entries without configured roles ==> not a member
     if(pruneBusinessGroupsNotAMemberOf) {
+      // alert(`${logName}: check console for interimList & prunedList`);
+      // console.log(`${logName}: interimList = ${JSON.stringify(interimList, null, 2)}`);
       const prunedList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
         apMemberOfBusinessGroupDisplayTreeNodeList: interimList,  
       });
@@ -409,6 +437,69 @@ class APMemberOfService {
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
   }): TAPMemberOfBusinessGroupDisplayList {
     return JSON.parse(JSON.stringify(apMemberOfBusinessGroupDisplayList));
+  }
+
+  /** 
+   * Returns the found business group entity.
+   * @throws if not found
+   * 
+  */
+  public get_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayList, businessGroupEntityId }:{
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+    businessGroupEntityId: TAPEntityId;
+  }): TAPMemberOfBusinessGroupDisplay {
+    const funcName = 'get_ApMemberOfBusinessGroupDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    const found: TAPMemberOfBusinessGroupDisplay | undefined = this.find_ApMemberOfBusinessGroupDisplay({
+      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList,
+      businessGroupEntityId: businessGroupEntityId,
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    return found;
+  }
+
+  /**
+   * Returns the found business group entity or undefined if not found.
+   */
+  public find_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayList, businessGroupEntityId }:{
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+    businessGroupEntityId: TAPEntityId;
+  }): TAPMemberOfBusinessGroupDisplay | undefined {
+    const found: TAPMemberOfBusinessGroupDisplay | undefined = apMemberOfBusinessGroupDisplayList.find( (x) => {
+      return x.apBusinessGroupDisplay.apEntityId.id === businessGroupEntityId.id;
+    });
+    return found;
+  }
+
+  /** Updates existing apMemberOfBusinessGroupDisplayList and returns modified list */
+  public update_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList, businessGroupEntityId, new_apConfiguredBusinessGroupRoleEntityIdList, completeApOrganizationBusinessGroupDisplayList }:{
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+    businessGroupEntityId: TAPEntityId;
+    new_apConfiguredBusinessGroupRoleEntityIdList: TAPEntityIdList;
+    completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
+  }): TAPMemberOfBusinessGroupDisplayList {
+
+    const existingIndex = apMemberOfBusinessGroupDisplayList.findIndex( (apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay ) => {
+      return apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === businessGroupEntityId.id;
+    });
+    if(new_apConfiguredBusinessGroupRoleEntityIdList.length === 0) {
+      // remove group
+      if(existingIndex > -1) apMemberOfBusinessGroupDisplayList.splice(existingIndex, 1);  
+    } else {
+      // add/replace group
+      if(existingIndex > -1) apMemberOfBusinessGroupDisplayList[existingIndex].apConfiguredBusinessGroupRoleEntityIdList = new_apConfiguredBusinessGroupRoleEntityIdList;
+      else {
+        apMemberOfBusinessGroupDisplayList.push({
+          apBusinessGroupDisplay: APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_by_id({
+            apBusinessGroupDisplayList: completeApOrganizationBusinessGroupDisplayList,
+            businessGroupId: businessGroupEntityId.id
+          }),
+          apConfiguredBusinessGroupRoleEntityIdList: new_apConfiguredBusinessGroupRoleEntityIdList,
+          apCalculatedBusinessGroupRoleEntityIdList: []
+        });
+      }
+    }
+    return apMemberOfBusinessGroupDisplayList;
   }
 
 }

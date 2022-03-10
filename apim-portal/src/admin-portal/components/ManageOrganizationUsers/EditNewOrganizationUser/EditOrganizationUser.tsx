@@ -12,7 +12,7 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EditOrganizationUserProfile } from "./EditOrganizationUserProfile";
-import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
+import { EditOrganizationUserMemberOfBusinessGroups } from "./refactor.EditManageOrganizationUserMemberOfBusinessGroups";
 import { EditOrganizationUserMemberOfOrganizationRoles } from "./EditOrganizationUserMemberOfOrganizationRoles";
 import { EditOrganizationUserAuthentication } from "./EditOrganizationUserAuthentication";
 import APOrganizationUsersDisplayService, { 

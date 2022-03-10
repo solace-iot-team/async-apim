@@ -7,7 +7,8 @@ import { Toolbar } from 'primereact/toolbar';
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { NewManageOrganizationUserMemberOfOrganizationRoles } from "./NewManageOrganizationUserMemberOfOrganizationRoles";
-import { TAPMemberOfOrganizationDisplay } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
+import APMemberOfService, { TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationDisplay } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
+import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -26,7 +27,7 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
 
   type TManagedObject = TAPOrganizationUserDisplay;
 
-  const RolesNotValid_UserMessage = 'Define at least 1 role. Either organization role(s) or within 1 business group.';
+  const RolesNotValid_UserMessage = 'Specify at least 1 role. Either an organization role or a role within at least 1 business group.';
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
@@ -67,6 +68,10 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
     const funcName = 'onNext';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // calculate the legacy org roles for display 
+    managedObject.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList = APMemberOfService.create_ApLegacyOrganizationRoleEntityIdList({
+      apOrganizationUserMemberOfOrganizationDisplay: managedObject.memberOfOrganizationDisplay,
+    });
     if(!APOrganizationUsersDisplayService.validate_MemberOf_Roles({ apOrganizationUserDisplay: managedObject })) {
       setValidationMessage(RolesNotValid_UserMessage);
       return;
@@ -125,6 +130,22 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
     setRefreshCounter(refreshCounter + 1);
   }
 
+  const onEditSuccess_BusinessGroupRoles = (updated_ApMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList) => {
+    const funcName = 'onEditSuccess_BusinessGroupRoles';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    
+    setValidationMessage(undefined);
+
+    const newApUserDisplay: TAPOrganizationUserDisplay = APOrganizationUsersDisplayService.set_ApMemberOfBusinessGroupDisplayList({
+      apOrganizationUserDisplay: managedObject,
+      apMemberOfBusinessGroupDisplayList: updated_ApMemberOfBusinessGroupDisplayList
+    });
+
+    setManagedObject(newApUserDisplay);
+    setRefreshCounter(refreshCounter + 1);
+  }
+
   const renderValidationMessage = () => {
     if(validationMessage !== undefined) return(
       <div style={{ color: 'red' }}>
@@ -141,7 +162,9 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
         <p>Edit Organization Roles, then save in managed object (no validation)</p>
         <p>Edit Business Groups & Roles, then save in managed object (no validation)</p>
         <p>on Next: validate all together</p>
+
         {renderValidationMessage()}
+
         <NewManageOrganizationUserMemberOfOrganizationRoles
           key={`${ComponentName}_NewManageOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
           apOrganizationUserDisplay={managedObject}
@@ -151,15 +174,12 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
           onLoadingChange={props.onLoadingChange}
         />
 
-        {/* <EditOrganizationUserMemberOfBusinessGroups
-          key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
-          organizationEntityId={props.organizationEntityId}
-          apUserDisplay={mo}
-          onError={onError_EditOrganizationUserMemberOf}
+        <EditOrganizationUserMemberOfBusinessGroups
+          key={`${ComponentName}_EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
+          apOrganizationUserDisplay={managedObject}
+          onSave={onEditSuccess_BusinessGroupRoles}
           onCancel={props.onCancel}
-          onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
-          onLoadingChange={props.onLoadingChange}
-        /> */}
+        />
 
         {renderComponentFooter()}
 

@@ -23,7 +23,7 @@ export class APLegacyOrganizationRoles {
       userId: apOrganizationUserDisplay.apEntityId.id,
     });
     // create the new list excluding this org
-    const newList: APSOrganizationRolesList = []
+    const newList: APSOrganizationRolesList = [];
     for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
       if(apsOrganizationRolesResponse.organizationId !== apOrganizationUserDisplay.organizationEntityId.id) {
         newList.push({

@@ -11,8 +11,12 @@ import {
   APSMemberOfOrganizationGroups, 
   APSMemberOfOrganizationGroupsList, 
   APSOrganizationAuthRoleList, 
+  APSOrganizationRoles, 
   APSOrganizationRolesList, 
   APSOrganizationRolesResponse, 
+  APSSystemAuthRoleList, 
+  APSUser, 
+  APSUserProfile, 
   APSUserResponse, 
   ApsUsersService, 
   APSUserUpdate, 
@@ -83,6 +87,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList = apMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList;
     // set the organization roles 
     apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList = apMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList;
+
     return apOrganizationUserDisplay;
   }
 
@@ -112,13 +117,32 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return apOrganizationUserDisplay;
   }
 
+  private create_new_ApsMemberOfOrganizationGroupsList({ apOrganizationUserDisplay }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): APSMemberOfOrganizationGroupsList {
+
+    const apsMemberOfBusinessGroupList: Array<APSMemberOfBusinessGroup> = [];
+    for(const apMemberOfBusinessGroupDisplay of apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList) {
+      const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup = {
+        businessGroupId: apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id,
+        roles: APEntityIdsService.create_IdList(apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList) as APSBusinessGroupAuthRoleList,
+      };
+      apsMemberOfBusinessGroupList.push(apsMemberOfBusinessGroup);
+    }
+    const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups = {
+      organizationId: apOrganizationUserDisplay.organizationEntityId.id,
+      memberOfBusinessGroupList: apsMemberOfBusinessGroupList,
+    };
+    return [apsMemberOfOrganizationGroups];
+  }
+
   /**
    * @todo FUTURE: change to not async once API has changed to update roles for 1 organization
    */
-  private async create_ApsMemberOfOrganizationGroupsList({ apOrganizationUserDisplay }:{
+  private async create_update_ApsMemberOfOrganizationGroupsList({ apOrganizationUserDisplay }:{
     apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   }): Promise<APSMemberOfOrganizationGroupsList> {
-    const funcName = 'create_ApsMemberOfOrganizationGroupsList';
+    const funcName = 'create_update_ApsMemberOfOrganizationGroupsList';
     const logName = `${this.ComponentName}.${funcName}()`;
 
     // TODO: workaround: get the user with all the organizations
@@ -308,6 +332,16 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList;
   }
 
+  public get_ApMemberOfBusinessGroupDisplay({ apOrganizationUserDisplay, businessGroupEntityId }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+    businessGroupEntityId: TAPEntityId;
+  }): TAPMemberOfBusinessGroupDisplay {
+    return APMemberOfService.get_ApMemberOfBusinessGroupDisplay({ 
+      apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+      businessGroupEntityId: businessGroupEntityId,
+    });
+  }
+
   public validate_RequestedUpdateOf_ApOrganizationUserDisplay_With_ApMemberOfOrganizationDisplay({ current_ApOrganizationUserDisplay, requestedUpdateWith_apMemberOfOrganizationDisplay }: {
     current_ApOrganizationUserDisplay: TAPOrganizationUserDisplay;
     requestedUpdateWith_apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay;
@@ -390,6 +424,18 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       apMemberOfOrganizationDisplay: apMemberOfOrganizationDisplay,
     });
   }
+
+  public set_ApMemberOfBusinessGroupDisplayList({ apOrganizationUserDisplay, apMemberOfBusinessGroupDisplayList }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+    apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
+  }): TAPOrganizationUserDisplay {
+    return this.apply_ApMemberOfBusinessGroupDisplayList({
+      apOrganizationUserDisplay: apOrganizationUserDisplay,
+      apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList,
+    });
+  }
+
+
   // ********************************************************************************************************************************
   // APS API calls
   // ********************************************************************************************************************************
@@ -468,6 +514,50 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     return response;
   }
 
+  public async apsCreate_ApOrganizationUserDisplay({ apOrganizationUserDisplay }: {
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): Promise<void> {
+    const funcName = 'apsCreate_ApOrganizationUserDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apsProfile: APSUserProfile = {
+      email: apOrganizationUserDisplay.apUserProfileDisplay.email,
+      first: apOrganizationUserDisplay.apUserProfileDisplay.first,
+      last: apOrganizationUserDisplay.apUserProfileDisplay.last,
+    };
+
+    // new user: does not have existing memberships 
+    const apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = this.create_new_ApsMemberOfOrganizationGroupsList({
+      apOrganizationUserDisplay: apOrganizationUserDisplay,
+    });
+
+    // create the legacy memberOfOrganizations roles
+    // TODO: FUTURE: remove
+    const legacy_apOrganizationRolesList: TAPEntityIdList = APMemberOfService.create_ApLegacyOrganizationRoleEntityIdList({
+      apOrganizationUserMemberOfOrganizationDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay,
+    });
+    const legacy_apsOrganizationRoles: APSOrganizationRoles = {
+      organizationId: apOrganizationUserDisplay.organizationEntityId.id,
+      roles: APEntityIdsService.create_IdList(legacy_apOrganizationRolesList) as APSOrganizationAuthRoleList,
+    };
+    alert(`${logName}: legacy_apsOrganizationRoles = ${JSON.stringify(legacy_apsOrganizationRoles, null, 2)}`);
+      
+    const create: APSUser = {
+      userId: apOrganizationUserDisplay.apEntityId.id,
+      isActivated: apOrganizationUserDisplay.apUserAuthenticationDisplay.isActivated,
+      password: apOrganizationUserDisplay.apUserAuthenticationDisplay.password,
+      profile: apsProfile,
+      systemRoles: APEntityIdsService.create_IdList(apOrganizationUserDisplay.apSystemRoleEntityIdList) as APSSystemAuthRoleList,
+      memberOfOrganizationGroups: apsMemberOfOrganizationGroupsList,
+      // LEGACY
+      memberOfOrganizations: [legacy_apsOrganizationRoles],
+    };
+
+    await ApsUsersService.createApsUser({
+      requestBody: create
+    });
+  }
+  
   protected async apsUpdate_ApsUserUpdate({ userId, apsUserUpdate }: {
     userId: string;
     apsUserUpdate: APSUserUpdate,
@@ -488,7 +578,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     // const funcName = 'apsUpdate_ApMemberOf';
     // const logName = `${this.ComponentName}.${funcName}()`;
 
-    const updated_apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = await this.create_ApsMemberOfOrganizationGroupsList({
+    const updated_apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = await this.create_update_ApsMemberOfOrganizationGroupsList({
       apOrganizationUserDisplay: apOrganizationUserDisplay,
     });
 
