@@ -575,8 +575,8 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
   private async apsUpdate_ApMemberOf({ apOrganizationUserDisplay }: {
     apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   }): Promise<void> {
-    const funcName = 'apsUpdate_ApMemberOf';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apsUpdate_ApMemberOf';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const updated_apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = await this.create_update_ApsMemberOfOrganizationGroupsList({
       apOrganizationUserDisplay: apOrganizationUserDisplay,
@@ -592,14 +592,14 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       roles: APEntityIdsService.create_IdList(legacy_apOrganizationRolesList) as APSOrganizationAuthRoleList,
     };
 
-    alert(`${logName}: legacy_apsOrganizationRoles=${JSON.stringify(legacy_apsOrganizationRoles, null, 2)}`);
+    // alert(`${logName}: legacy_apsOrganizationRoles=${JSON.stringify(legacy_apsOrganizationRoles, null, 2)}`);
     // replace in existing list
     const legacy_updated_apsOrganizationRolesList: APSOrganizationRolesList = await APLegacyOrganizationRoles.update_ApsOrganizationRolesList({
       apOrganizationUserDisplay: apOrganizationUserDisplay,
       update_ApsOrganizationRoles: legacy_apsOrganizationRoles
     });
 
-    alert(`${logName}: legacy_updated_apsOrganizationRolesList=${JSON.stringify(legacy_updated_apsOrganizationRolesList, null, 2)}`);
+    // alert(`${logName}: legacy_updated_apsOrganizationRolesList=${JSON.stringify(legacy_updated_apsOrganizationRolesList, null, 2)}`);
 
     const update: APSUserUpdate = {
       memberOfOrganizations: legacy_updated_apsOrganizationRolesList,
@@ -642,6 +642,46 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     });
 
     await this.apsUpdate_ApMemberOf({ apOrganizationUserDisplay: updated_apOrganizationUserDisplay });
+
+  }
+
+  public async apsDelete_ApOrganizationUserDisplay({ apOrganizationUserDisplay }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): Promise<void> {
+    // const funcName = 'apsDelete_ApOrganizationUserDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
+      userId: apOrganizationUserDisplay.apEntityId.id
+    });
+
+    // create the new list 
+    const update_memberOfOrganizations: APSOrganizationRolesList = [];
+    for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
+      if(apsOrganizationRolesResponse.organizationId !== apOrganizationUserDisplay.organizationEntityId.id) {
+        update_memberOfOrganizations.push({
+          organizationId: apsOrganizationRolesResponse.organizationId,
+          roles: apsOrganizationRolesResponse.roles
+        });
+      }
+    }
+    
+    const update_apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList = [];
+    for(const apsMemberOfOrganizationGroups of apsUserResponse.memberOfOrganizationGroups) {
+      if(apsMemberOfOrganizationGroups.organizationId !== apOrganizationUserDisplay.organizationEntityId.id) {
+        update_apsMemberOfOrganizationGroupsList.push(apsMemberOfOrganizationGroups);
+      }
+    }
+
+    const update: APSUserUpdate = {
+      memberOfOrganizations: update_memberOfOrganizations,
+      memberOfOrganizationGroups: update_apsMemberOfOrganizationGroupsList,
+    }
+
+    await this.apsUpdate_ApsUserUpdate({
+      userId: apOrganizationUserDisplay.apEntityId.id,
+      apsUserUpdate: update
+    });
 
   }
 

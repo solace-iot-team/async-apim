@@ -14,13 +14,13 @@ import {
 import { ListOrganizationUsers } from "./ListOrganizationUsers";
 import { AddOrganizationUser } from "./AddOrganizationUser";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-
-import '../../../components/APComponents.css';
-import "./ManageOrganizationUsers.css";
 import { DeleteOrganizationUser } from "./DeleteOrganizationUser";
 import { ViewOrganizationUser } from "./ViewOrganizationUser";
 import { EditOrganizationUser } from "./EditNewOrganizationUser/EditOrganizationUser";
 import { NewOrganizationUser } from "./EditNewOrganizationUser/NewOrganizationUser";
+
+import '../../../components/APComponents.css';
+import "./ManageOrganizationUsers.css";
 
 export interface IManageOrganizationUsersProps {
   organizationEntityId: TAPEntityId;
@@ -88,11 +88,10 @@ export const ManageOrganizationUsers: React.FC<IManageOrganizationUsersProps> = 
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_DELETE_USER:
+          case E_CALL_STATE_ACTIONS.API_DELETE_USER_FROM_ORG:
           case E_CALL_STATE_ACTIONS.API_CREATE_USER:
           case E_CALL_STATE_ACTIONS.API_REPLACE_USER:
           case E_CALL_STATE_ACTIONS.API_ADD_USER_TO_ORG:
-          case E_CALL_STATE_ACTIONS.API_REMOVE_ORG:
             props.onSuccess(apiCallStatus);
             break;
           default:
