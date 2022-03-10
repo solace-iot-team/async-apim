@@ -98,7 +98,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
   }
 
-  const renderLegacyOrganzationRoles = (mo: TManagedObject): string => {
+  const renderLegacyOrganzationRoles = (mo: TManagedObject): string => { 
     return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
   }
 

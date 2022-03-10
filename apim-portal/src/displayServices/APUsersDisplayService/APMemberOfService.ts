@@ -56,13 +56,14 @@ class APMemberOfService {
   //   return `node.${name}`;
   // }
 
-  public create_Empty_ApMemberOfOrganizationDisplay({organizationEntityId}:{
+  public create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId , apsOrganizationRolesResponse }:{
     organizationEntityId: TAPEntityId;
+    apsOrganizationRolesResponse?: APSOrganizationRolesResponse;
   }): TAPMemberOfOrganizationDisplay {
     const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
       apEntityId: organizationEntityId,
       apOrganizationRoleEntityIdList: [],
-      apLegacyOrganizationRoleEntityIdList: [],
+      apLegacyOrganizationRoleEntityIdList: apsOrganizationRolesResponse !== undefined ? APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles) : [],
     };
     return apMemberOfOrganizationDisplay;
   }
@@ -83,6 +84,8 @@ class APMemberOfService {
       return x.organizationId === organizationEntityId.id;
     });
     if(apsOrganizationRolesResponse === undefined) throw new Error(`${logName}: apsOrganizationRolesResponse === undefined`);
+    if(apsOrganizationRolesResponse.roles.length === 0) throw new Error(`${logName}: apsOrganizationRolesResponse.roles.length === 0`);
+    // alert(`${logName}: apsOrganizationRolesResponse.roles = ${JSON.stringify(apsOrganizationRolesResponse.roles, null, 2)}`);
 
     // find the root business group
     const rootApBusinesGroupDisplay: TAPBusinessGroupDisplay = APBusinessGroupsDisplayService.find_root_ApBusinessGroupDisplay({ completeApOrganizationBusinessGroupDisplayList: completeApOrganizationBusinessGroupDisplayList});
@@ -100,7 +103,11 @@ class APMemberOfService {
       const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup | undefined = apsMemberOfOrganizationGroups.memberOfBusinessGroupList.find( (x) => {
         return x.businessGroupId === rootApBusinesGroupDisplay.apEntityId.id;
       });
-      if(apsMemberOfBusinessGroup === undefined || apsMemberOfBusinessGroup.roles.length === 0) return this.create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId: organizationEntityId });
+
+      if(apsMemberOfBusinessGroup === undefined || apsMemberOfBusinessGroup.roles.length === 0) return this.create_Empty_ApMemberOfOrganizationDisplay({ 
+        organizationEntityId: organizationEntityId,
+        apsOrganizationRolesResponse: apsOrganizationRolesResponse,
+      });
 
       const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
         apEntityId: organizationEntityId,
@@ -110,7 +117,10 @@ class APMemberOfService {
       return apMemberOfOrganizationDisplay;
 
     } else {
-      return this.create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId: organizationEntityId });
+      return this.create_Empty_ApMemberOfOrganizationDisplay({ 
+        organizationEntityId: organizationEntityId,
+        apsOrganizationRolesResponse: apsOrganizationRolesResponse, 
+      });
     }
   }
 
