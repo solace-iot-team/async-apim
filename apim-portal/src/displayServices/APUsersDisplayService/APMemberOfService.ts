@@ -26,6 +26,7 @@ export type TAPMemberOfOrganizationDisplay =  IAPEntityIdDisplay & {
   /** the legacy organization roles, will disappear in FUTURE */
   apLegacyOrganizationRoleEntityIdList: TAPEntityIdList;
 }
+export type TAPMemberOfOrganizationDisplayList = Array<TAPMemberOfOrganizationDisplay>;
 
 export type TAPMemberOfBusinessGroupDisplay =  {
   apBusinessGroupDisplay: TAPBusinessGroupDisplay;
@@ -122,6 +123,27 @@ class APMemberOfService {
         apsOrganizationRolesResponse: apsOrganizationRolesResponse, 
       });
     }
+  }
+
+  /**
+   * Create a list of organizations (with empty roles) user is member of
+   */
+  public create_ApMemberOfOrganizationDisplayList({ apsUserResponse }: {
+    apsUserResponse: APSUserResponse;
+  }): TAPMemberOfOrganizationDisplayList {
+    const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = [];
+    for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
+      apMemberOfOrganizationDisplayList.push({
+        apEntityId: {
+          id: apsOrganizationRolesResponse.organizationId,
+          displayName: apsOrganizationRolesResponse.organizationDisplayName,
+        },
+        apOrganizationRoleEntityIdList: [],
+        apLegacyOrganizationRoleEntityIdList: []
+        // apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
+      });
+    }
+    return apMemberOfOrganizationDisplayList;
   }
 
   public create_ApLegacyOrganizationRoleEntityIdList({ apOrganizationUserMemberOfOrganizationDisplay }:{

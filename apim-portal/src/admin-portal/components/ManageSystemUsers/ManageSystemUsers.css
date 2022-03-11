@@ -1,0 +1,60 @@
+.manage-users .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.manage-users .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.manage-users .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.manage-users .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.manage-users .ap-api-error {
+  border-color: #df2121;
+}
+.manage-users .badge-active {
+  background-color: transparent;
+}
+.manage-users .card form {
+  margin-top: 2rem;
+}
+.manage-users .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .manage-users .card {
+    width: 80%;
+  }
+}
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}
+
+.manage-users .user-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.manage-users .user-view .detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.manage-users .user-view .detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}

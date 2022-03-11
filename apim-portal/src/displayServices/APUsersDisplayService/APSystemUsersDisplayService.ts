@@ -7,13 +7,17 @@ import {
   APSUserUpdate, 
   ListApsUsersResponse
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
 import APDisplayUtils from '../APDisplayUtils';
+import APMemberOfService, { TAPMemberOfOrganizationDisplayList } from './APMemberOfService';
 import { 
   APUsersDisplayService, 
   IAPUserDisplay, 
 } from './APUsersDisplayService';
 
-export type TAPSystemUserDisplay = IAPUserDisplay & {};
+export type TAPSystemUserDisplay = IAPUserDisplay & {
+  apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
+};
 export type TAPSystemUserDisplayList = Array<TAPSystemUserDisplay>;
 export type TAPSystemUserDisplayListResponse = APSListResponseMeta & {
   apSystemUserDisplayList: TAPSystemUserDisplayList;
@@ -23,15 +27,18 @@ export type TAPSystemUserDisplayListResponse = APSListResponseMeta & {
 class APSystemUsersDisplayService extends APUsersDisplayService {
   private readonly ComponentName = "APSystemUsersDisplayService";
 
-  private async create_ApSystemUserDisplay_From_ApiEntities({ apsUserResponse }: {
+  private create_ApSystemUserDisplay_From_ApiEntities({ apsUserResponse }: {
     apsUserResponse: APSUserResponse;
-  }): Promise<TAPSystemUserDisplay> {
+  }): TAPSystemUserDisplay {
 
     const base: IAPUserDisplay = this.create_ApUserDisplay_From_ApiEntities({
       apsUserResponse: apsUserResponse,
     });
     const apSystemUserDisplay: TAPSystemUserDisplay = {
       ...base,
+      apMemberOfOrganizationDisplayList: APMemberOfService.create_ApMemberOfOrganizationDisplayList({
+        apsUserResponse: apsUserResponse,
+      })
     }
     return apSystemUserDisplay;
   }
@@ -88,7 +95,7 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     });
     const apSystemUserDisplayList: TAPSystemUserDisplayList = [];
     for(const apsUserResponse of listApsUsersResponse.list) {
-      const apSystemUserDisplay: TAPSystemUserDisplay = await this.create_ApSystemUserDisplay_From_ApiEntities({
+      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
         apsUserResponse: apsUserResponse,
       });
       apSystemUserDisplayList.push(apSystemUserDisplay);
@@ -100,6 +107,47 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     return response;
   }
 
+  /**
+   * Returns list of users in the system.
+   */
+  public async apsGetList_ApSystemUserDisplayListResponse({
+    pageSize = 20,
+    pageNumber = 1,
+    apSortFieldName,
+    sortDirection,
+    searchWordList,
+  }: {
+    pageSize?: number;
+    pageNumber?: number;
+    apSortFieldName?: string;
+    sortDirection?: DataTableSortOrderType;
+    searchWordList?: string;
+  }): Promise<TAPSystemUserDisplayListResponse> {
+  
+    // map UI sortField to 
+    const apsSortFieldName = this.map_ApFieldName_To_ApsFieldName(apSortFieldName);
+    const apsSortDirection = APDisplayUtils.transformTableSortDirectionToApiSortDirection(sortDirection);
+    const listApsUsersResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({
+      pageSize: pageSize,
+      pageNumber: pageNumber,
+      sortFieldName: apsSortFieldName,
+      sortDirection: apsSortDirection,
+      searchWordList: searchWordList
+    });
+
+    const apSystemUserDisplayList: TAPSystemUserDisplayList = [];
+    for(const apsUserResponse of listApsUsersResponse.list) {
+      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
+        apsUserResponse: apsUserResponse,
+      });
+      apSystemUserDisplayList.push(apSystemUserDisplay);
+    }
+    const response: TAPSystemUserDisplayListResponse = {
+      apSystemUserDisplayList: apSystemUserDisplayList,
+      meta: listApsUsersResponse.meta
+    };
+    return response;
+  }
 
   
 }

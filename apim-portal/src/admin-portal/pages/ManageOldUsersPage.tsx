@@ -36,9 +36,9 @@ export const ManageUsersPage: React.FC = () => {
         label: 'System'
       },
       { 
-        label: 'Users',
+        label: 'OLD Users',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOldUsers) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {

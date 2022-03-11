@@ -137,11 +137,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemUsers),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
-          // {
-          //   label: 'Teams',
-          //   disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemTeams),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemTeams); }
-          // },
+          {
+            label: 'OLD Users',
+            disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemOldUsers),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOldUsers); }
+          },
           {
             label: 'Organizations',
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
