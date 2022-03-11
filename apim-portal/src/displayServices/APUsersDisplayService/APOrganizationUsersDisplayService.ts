@@ -36,6 +36,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupDisplayList, 
   TAPMemberOfOrganizationDisplay 
 } from './APMemberOfService';
+import { TAPSystemUserDisplay } from './APSystemUsersDisplayService';
 import { 
   APUsersDisplayService, 
   IAPUserDisplay,
@@ -60,9 +61,6 @@ export type TAPOrganizationUserDisplayList = Array<TAPOrganizationUserDisplay>;
 export type TAPOrganizationUserDisplayListResponse = APSListResponseMeta & {
   apOrganizationUserDisplayList: TAPOrganizationUserDisplayList;
 }
-// export type TAPUserOrganizationRolesDisplay = IAPEntityIdDisplay & {
-//   apOrganizationAuthRoleEntityIdList: TAPEntityIdList;
-// }
 
 class APOrganizationUsersDisplayService extends APUsersDisplayService {
   private readonly ComponentName = "APOrganizationUsersDisplayService";
@@ -150,6 +148,13 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
       userId: apOrganizationUserDisplay.apEntityId.id,
     });
+    if(apsUserResponse.memberOfOrganizationGroups.length === 0) {
+      // user is not member of any organization
+      apsUserResponse.memberOfOrganizationGroups.push({
+        organizationId: apOrganizationUserDisplay.organizationEntityId.id,
+        memberOfBusinessGroupList: []
+      });
+    }
     // find by org 
     const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
       return x.organizationId === apOrganizationUserDisplay.organizationEntityId.id;
@@ -248,6 +253,23 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       completeOrganizationBusinessGroupDisplayList: apCompleteBusinessGroupDisplayList,
     }
     return apOrganizationUserDisplay;    
+  }
+
+  public async create_ApOrganizationUserDisplay_From_ApSystemUserDisplay({ organizationEntityId, apSystemUserDisplay }:{
+    organizationEntityId: TAPEntityId;
+    apSystemUserDisplay: TAPSystemUserDisplay;
+  }): Promise<TAPOrganizationUserDisplay> {
+    
+    const created: TAPOrganizationUserDisplay = await this.create_Empty_ApOrganizationUserDisplay({ 
+      organizationEntityId: organizationEntityId,
+    });
+
+    this.set_ApUserProfileDisplay({ 
+      apUserDisplay: created,
+      apUserProfileDisplay: apSystemUserDisplay.apUserProfileDisplay
+    });
+
+    return created;
   }
 
   /**
@@ -450,7 +472,6 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
       userId: userId
     });
-
     // get the organization business group list
     const completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
       organizationId: organizationEntityId.id
@@ -572,7 +593,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     });
   }
   
-  private async apsUpdate_ApMemberOf({ apOrganizationUserDisplay }: {
+  private async apsUpdate_internal_ApMemberOf({ apOrganizationUserDisplay }: {
     apOrganizationUserDisplay: TAPOrganizationUserDisplay;
   }): Promise<void> {
     // const funcName = 'apsUpdate_ApMemberOf';
@@ -613,6 +634,15 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
 
   }
 
+  public async apsUpdate_ApMemberOf({ apOrganizationUserDisplay }:{
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): Promise<void> {
+
+    await this.apsUpdate_internal_ApMemberOf({
+      apOrganizationUserDisplay: apOrganizationUserDisplay
+    });
+  }
+
   public async apsUpdate_ApMemberOfBusinessGroupDisplayList({ apOrganizationUserDisplay, apMemberOfBusinessGroupDisplayList }:{
     apOrganizationUserDisplay: TAPOrganizationUserDisplay;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList
@@ -625,7 +655,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList,
     });
 
-    await this.apsUpdate_ApMemberOf({ apOrganizationUserDisplay: updated_apOrganizationUserDisplay });
+    await this.apsUpdate_internal_ApMemberOf({ apOrganizationUserDisplay: updated_apOrganizationUserDisplay });
 
   }
 
@@ -641,7 +671,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       apMemberOfOrganizationDisplay: apMemberOfOrganizationDisplay,
     });
 
-    await this.apsUpdate_ApMemberOf({ apOrganizationUserDisplay: updated_apOrganizationUserDisplay });
+    await this.apsUpdate_internal_ApMemberOf({ apOrganizationUserDisplay: updated_apOrganizationUserDisplay });
 
   }
 

@@ -20,7 +20,7 @@ import APAssetDisplayService from "../../../displayServices/APAssetsDisplayServi
 import { APDisplayOrganizationAssetInfoDisplayList } from "../../../components/APDisplay/APDisplayOrganizationAssetInfoDisplayList";
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";
 import APOrganizationUsersDisplayService, { 
-  TAPOrganizationUserDisplay, TAPOrganizationUserMemberOfOrganizationDisplay 
+  TAPOrganizationUserDisplay 
 } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { APDisplayOrganizationUserBusinessGroups } from "../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationUserBusinessGroups";
 

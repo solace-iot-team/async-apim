@@ -92,13 +92,13 @@ class APMemberOfService {
 
     // find the business group entry for this organization - there must be at least a root business group with the organization roles.
     // NOTE: future: may not be member of any group. get it from a different field in APSUserResponse
-    if(apsUserResponse.memberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsUserResponse.memberOfOrganizationGroups === undefined`);
+    if(apsUserResponse.memberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsUserResponse.memberOfOrganizationGroups === undefined, userId=${apsUserResponse.userId}`);
 
     if(apsUserResponse.memberOfOrganizationGroups !== undefined) {
       const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
         return x.organizationId === organizationEntityId.id;
       });
-      if(apsMemberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsMemberOfOrganizationGroups === undefined`);
+      if(apsMemberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsMemberOfOrganizationGroups === undefined, userId=${apsUserResponse.userId}`);
       // find the roles for the root business group
       const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup | undefined = apsMemberOfOrganizationGroups.memberOfBusinessGroupList.find( (x) => {
         return x.businessGroupId === rootApBusinesGroupDisplay.apEntityId.id;

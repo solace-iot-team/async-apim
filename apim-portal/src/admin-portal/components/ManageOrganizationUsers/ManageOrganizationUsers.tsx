@@ -12,7 +12,7 @@ import {
   E_CALL_STATE_ACTIONS, 
 } from "./ManageOrganizationUsersCommon";
 import { ListOrganizationUsers } from "./ListOrganizationUsers";
-import { AddOrganizationUser } from "./AddOrganizationUser";
+import { AddOrganizationUser } from "./AddOrganizationUser/AddOrganizationUser";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { DeleteOrganizationUser } from "./DeleteOrganizationUser";
 import { ViewOrganizationUser } from "./ViewOrganizationUser";
@@ -74,9 +74,6 @@ export const ManageOrganizationUsers: React.FC<IManageOrganizationUsersProps> = 
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mounting ...`);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

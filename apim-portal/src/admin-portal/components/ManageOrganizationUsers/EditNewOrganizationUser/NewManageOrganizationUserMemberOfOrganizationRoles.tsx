@@ -32,36 +32,8 @@ export interface INewManageOrganizationUserMemberOfOrganizationRolesProps {
 export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewManageOrganizationUserMemberOfOrganizationRolesProps> = (props: INewManageOrganizationUserMemberOfOrganizationRolesProps) => {
   const ComponentName = 'NewManageOrganizationUserMemberOfOrganizationRoles';
 
-  // const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [showEditDialog, setShowEditDialog] = React.useState<boolean>(false);
   const [showRemoveDialog, setShowRemoveDialog] = React.useState<boolean>(false);
-
-  // const doInitialize = () => {
-  //   setManagedObject(APOrganizationUsersDisplayService.get_ApOrganizationUserMemberOfOrganizationDisplay({ apOrganizationUserDisplay: props.apOrganizationUserDisplay }));
-
-  //   setManagedObject(APUsersDisplayService.get_ApUserOrganizationRolesDisplay({
-  //     organizationId: props.organizationEntityId.id,
-  //     apUserDisplay: props.apUserDisplay
-  //   }));
-  // }
-
-  // * useEffect Hooks *
-
-  // React.useEffect(() => {
-  //   // const funcName = 'useEffect[]';
-  //   // const logName = `${ComponentName}.${funcName}()`;
-  //   // console.log(`${logName}: mounting, props.apUserDisplay.apMemberOfOrganizationGroupsDisplayList = ${JSON.stringify(props.apUserDisplay.apMemberOfOrganizationGroupsDisplayList, null, 2)}`);
-  //   doInitialize();
-  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if (apiCallStatus !== null) {
-  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
-  //     else {
-  //       if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION_ROLES) props.onSaveSuccess(apiCallStatus);
-  //     }
-  //   }
-  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onEdit = () => {
     setShowEditDialog(true);
@@ -104,8 +76,6 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
   }
   const onEditSuccess = (update_ApMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay) => {
     setShowEditDialog(false);
-    // // set own managedObject AND tell caller about updates
-    // setManagedObject(updatedApUserOrganizationRolesDisplay);    
     props.onEditSuccess(update_ApMemberOfOrganizationDisplay);
   }
 
@@ -142,7 +112,6 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
   }
   const onRemoveSuccess = (update_ApMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay) => {
     setShowRemoveDialog(false);
-    // setManagedObject(updatedApUserOrganizationRolesDisplay);
     props.onEditSuccess(update_ApMemberOfOrganizationDisplay);
   }
 
@@ -169,18 +138,7 @@ export const NewManageOrganizationUserMemberOfOrganizationRoles: React.FC<INewMa
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
           />
-
-          {/* <EditOrganizationUserOrganizationRoles
-            action={EEditOrganzationUserOrganizationRolesAction.REMOVE_AND_RETURN}
-            organizationEntityId={props.organizationEntityId}
-            apUserDisplay={props.apUserDisplay}
-            onEditSuccess={onRemoveSuccess}
-            onCancel={onRemoveCancel}
-            onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
-          /> */}
         </React.Fragment>
-        {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
       </Dialog>
     );
   }

@@ -3,27 +3,42 @@ import React from "react";
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
+import { MenuItem } from "primereact/api";
 
-import { TApiCallState } from "../../../../utils/ApiCallState";
-import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
-import { NewManageOrganizationUserMemberOfOrganizationRoles } from "./NewManageOrganizationUserMemberOfOrganizationRoles";
-import APMemberOfService, { TAPMemberOfBusinessGroupDisplayList, TAPMemberOfOrganizationDisplay } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
-import { EditOrganizationUserMemberOfBusinessGroups } from "./EditOrganizationUserMemberOfBusinessGroups";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
+import APOrganizationUsersDisplayService, { 
+  TAPOrganizationUserDisplay
+ } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import APMemberOfService, { 
+  TAPMemberOfBusinessGroupDisplayList, 
+  TAPMemberOfOrganizationDisplay
+ } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
+import { 
+  TAPSystemUserDisplay
+ } from "../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
+ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
+import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { NewManageOrganizationUserMemberOfOrganizationRoles } from "../EditNewOrganizationUser/NewManageOrganizationUserMemberOfOrganizationRoles";
+import { EditOrganizationUserMemberOfBusinessGroups } from "../EditNewOrganizationUser/EditOrganizationUserMemberOfBusinessGroups";
+import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 
-export interface INewOrganizationUserRolesAndGroupsProps {
-  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
-  onNext: (updated_ApOrganizationUserDisplay: TAPOrganizationUserDisplay) => void;
-  onBack: () => void;
-  onCancel: () => void;
+export interface IAddOrganizationUserRolesAndGroupsProps {
+  apSystemUserDisplay: TAPSystemUserDisplay;
+  organizationEntityId: TAPEntityId;
+  onSuccess: (apiCallState: TApiCallState, addedUserEntityId: TAPEntityId) => void;
   onError: (apiCallState: TApiCallState) => void;
+  onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRolesAndGroupsProps> = (props: INewOrganizationUserRolesAndGroupsProps) => {
-  const ComponentName = 'NewOrganizationUserRolesAndGroups';
+export const AddOrganizationUserRolesAndGroups: React.FC<IAddOrganizationUserRolesAndGroupsProps> = (props: IAddOrganizationUserRolesAndGroupsProps) => {
+  const ComponentName = 'AddOrganizationUserRolesAndGroups';
 
   type TManagedObject = TAPOrganizationUserDisplay;
 
@@ -32,40 +47,73 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
-  const [apiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [validationMessage, setValidationMessage] = React.useState<string>();
 
   // * Api Calls *
 
-  const doInitialize = () => {
-    // take a copy of apUserDisplay, since component changes it before finally returning it
-    setManagedObject(JSON.parse(JSON.stringify(props.apOrganizationUserDisplay)));
+  const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
+    const funcName = 'apiUpdateManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_ADD_USER_TO_ORG, `add user: ${mo.apEntityId.id}`);
+    try {
+      // console.log(`${logName}: mo.memberOfOrganizationDisplay = ${JSON.stringify(mo.memberOfOrganizationDisplay, null, 2)}`);
+      await APOrganizationUsersDisplayService.apsUpdate_ApMemberOf({ 
+        apOrganizationUserDisplay: mo,
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doInitialize = async () => {
+    const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.create_ApOrganizationUserDisplay_From_ApSystemUserDisplay({
+      organizationEntityId: props.organizationEntityId,
+      apSystemUserDisplay: props.apSystemUserDisplay,
+    });
+    setManagedObject(apOrganizationUserDisplay);
   }
 
   // * useEffect Hooks *
 
   React.useEffect(() => {
-    const funcName = 'useEffect[]';
-    const logName = `${ComponentName}.${funcName}()`;
-    console.log(`${logName}: mounting ...`);
+    // const funcName = 'useEffect[]';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
+    props.setBreadCrumbItemList([{
+      label: props.apSystemUserDisplay.apEntityId.id
+    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[managedObject]';
-    const logName = `${ComponentName}.${funcName}()`;
-    console.log(`${logName}: managedObject = ${JSON.stringify(managedObject, null, 2)}`);
+    // const funcName = 'useEffect[managedObject]';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: managedObject = ${JSON.stringify(managedObject, null, 2)}`);
     if(managedObject !== undefined) setIsInitialized(true);
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    const funcName = 'useEffect';
+    const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_ADD_USER_TO_ORG) {
+        if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+        props.onSuccess(apiCallStatus, managedObject.apEntityId);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onNext = () => {
-    const funcName = 'onNext';
+  const doAdd = async(mo: TManagedObject) => {
+    await apiUpdateManagedObject(mo);
+  }
+
+  const onAdd = () => {
+    const funcName = 'onAdd';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     // calculate the legacy org roles for display 
@@ -77,29 +125,21 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
       return;
     }
     setValidationMessage(undefined);
-    props.onNext(managedObject);
-  }
-
-  const componentFooterLeftToolbarTemplate = () => {
-    return (
-      <React.Fragment>
-        <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
-        <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
-      </React.Fragment>
-    );
+    doAdd(managedObject);
   }
 
   const componentFooterRightToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <Button key={ComponentName+'Next'} label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" onClick={onNext}/>
+        <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+        <Button key={ComponentName+'Add'} label="Add" icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onAdd}/>
       </React.Fragment>
     );
   }
 
   const renderComponentFooter = (): JSX.Element => {
     return (
-      <Toolbar className="p-mb-4" left={componentFooterLeftToolbarTemplate} right={componentFooterRightToolbarTemplate} />
+      <Toolbar className="p-mb-4" right={componentFooterRightToolbarTemplate} />
     )
   }
 
@@ -114,17 +154,6 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
       apOrganizationUserDisplay: managedObject,
       apMemberOfOrganizationDisplay: updated_ApMemberOfOrganizationDisplay
     });
-
-    // // DEBUG: check if root business group has new roles
-    // alert(`${logName}: updated_ApMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList=${JSON.stringify(updated_ApMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList, null, 2)}`);
-    // const found = newApUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList.find( (x) => {
-    //   return x.apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined;
-    // });
-    // if(found === undefined) throw new Error(`${logName}: found === undefined`);
-    // alert(`${logName}: applied org role list to newApUserDisplay: found.apConfiguredBusinessGroupRoleEntityIdList=${JSON.stringify(found.apConfiguredBusinessGroupRoleEntityIdList, null, 2)}`);
-
-    // alert(`${logName}: check console log for newApUserDisplay, legacy + roles + root group?`);
-    // console.log(`${logName}: newApUserDisplay = ${JSON.stringify(newApUserDisplay, null, 2)}`);
 
     setManagedObject(newApUserDisplay);
     setRefreshCounter(refreshCounter + 1);
@@ -148,7 +177,7 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
 
   const renderValidationMessage = () => {
     if(validationMessage !== undefined) return(
-      <div style={{ color: 'red' }}>
+      <div className="p-mt-4 p-ml-2" style={{ color: 'red' }}>
         <b>{validationMessage}</b>
       </div>
     );
@@ -171,12 +200,14 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
           onLoadingChange={props.onLoadingChange}
         />
 
-        <EditOrganizationUserMemberOfBusinessGroups
-          key={`${ComponentName}_EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
-          apOrganizationUserDisplay={managedObject}
-          onSave={onEditSuccess_BusinessGroupRoles}
-          onCancel={props.onCancel}
-        />
+        <div className="p-ml-2">
+          <EditOrganizationUserMemberOfBusinessGroups
+            key={`${ComponentName}_EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
+            apOrganizationUserDisplay={managedObject}
+            onSave={onEditSuccess_BusinessGroupRoles}
+            onCancel={props.onCancel}
+          />
+        </div>
 
         {renderComponentFooter()}
 
@@ -187,6 +218,12 @@ export const NewOrganizationUserRolesAndGroups: React.FC<INewOrganizationUserRol
   
   return (
     <div className="manage-users">
+
+      <div className="p-mb-4">
+        <APComponentHeader header={`Set Roles & Business Groups:`} />
+      </div>
+      
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { isInitialized && renderComponent() }
 

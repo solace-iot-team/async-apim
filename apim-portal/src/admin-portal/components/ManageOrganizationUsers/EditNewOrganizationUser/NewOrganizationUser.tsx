@@ -12,7 +12,6 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { NewOrganizationUserProfile } from "./NewOrganizationUserProfile";
 import { NewOrganizationUserRolesAndGroups } from "./NewOrganizationUserRolesAndGroups";
 import { NewOrganizationUserReviewAndCreate } from "./NewOrganizationUserReviewAndCreate";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from "../../../../displayServices/APBusinessGroupsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { TAPUserAuthenticationDisplay, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
@@ -109,26 +108,8 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [completeOrganizationApBusinessGroupDisplayList, setCompleteOrganizationApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>([]);
 
   // * Api Calls *
-
-  // const apiGetCompleteApBusinessGroupDisplayList = async(organizationId: string): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetCompleteApBusinessGroupDisplayList';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
-  //   try {
-  //     const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-  //       organizationId: organizationId
-  //     });
-  //     setCompleteOrganizationApBusinessGroupDisplayList(list);
-  //   } catch(e: any) {
-  //     APSClientOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
 
   const apiGetManagedObject = async(organizationId: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
@@ -154,13 +135,6 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);  
   }
 
-  // const doInitializeManagedObject = async() => {
-  //   setManagedObject(await APOrganizationUsersDisplayService.create_Empty_ApOrganizationUserDisplay({ 
-  //     organizationEntityId: props.organizationEntityId,
-  //     apCompleteBusinessGroupDisplayList: completeOrganizationApBusinessGroupDisplayList,
-  //    }));
-  //   setNewComponentState(E_COMPONENT_STATE_NEW_USER.PROFILE);  
-  // }
   // * useEffect Hooks *
 
   React.useEffect(() => {
@@ -169,12 +143,6 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
     }]);
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(completeOrganizationApBusinessGroupDisplayList.length > 0) {
-  //     doInitializeManagedObject();
-  //   }
-  // }, [completeOrganizationApBusinessGroupDisplayList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
@@ -330,7 +298,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
       {managedObject && renderComponent(managedObject)}
 
       {/* DEBUG */}
-      {managedObject && 
+      {/* {managedObject && 
         <React.Fragment>
           <hr />
           <p><b>{ComponentName}:</b></p>
@@ -351,7 +319,7 @@ export const NewOrganizationUser: React.FC<INewOrganizationUserProps> = (props: 
             {JSON.stringify(managedObject.apUserAuthenticationDisplay.password, null, 2)}
           </pre>
         </React.Fragment>
-      }
+      } */}
 
     </div>
   );

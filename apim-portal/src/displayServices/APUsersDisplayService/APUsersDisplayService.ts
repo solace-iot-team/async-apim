@@ -283,8 +283,8 @@ export abstract class APUsersDisplayService {
   public async apsUpdate_ApUserProfileDisplay({ apUserProfileDisplay }: {
     apUserProfileDisplay: TAPUserProfileDisplay,
   }): Promise<void> {
-    const funcName = 'apsUpdate_ApUserProfileDisplay';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'apsUpdate_ApUserProfileDisplay';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const update: APSUserUpdate = {
       profile: {
@@ -303,8 +303,8 @@ export abstract class APUsersDisplayService {
     userId: string;
     apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
   }): Promise<void> {
-    const funcName = 'apsUpdate_ApUserAuthenticationDisplay';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'apsUpdate_ApUserAuthenticationDisplay';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const update: APSUserUpdate = {
       password: apUserAuthenticationDisplay.password

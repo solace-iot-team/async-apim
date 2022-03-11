@@ -55,7 +55,6 @@ export const NewOrganizationUserAuthentication: React.FC<INewOrganizationUserAut
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const formId = ComponentName;
 
@@ -80,12 +79,6 @@ export const NewOrganizationUserAuthentication: React.FC<INewOrganizationUserAut
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onNext(mo);
