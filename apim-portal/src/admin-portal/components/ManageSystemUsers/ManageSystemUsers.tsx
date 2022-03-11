@@ -13,6 +13,7 @@ import { ListSystemUsers } from "./ListSystemUsers";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
+import { ViewSystemUser } from "./ViewSystemUser";
 
 export interface IManageSystemUsersProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -273,18 +274,17 @@ export const ManageSystemUsers: React.FC<IManageSystemUsersProps> = (props: IMan
           setBreadCrumbItemList={props.setBreadCrumbItemList}
         />
       }
-      {/* {showViewComponent && managedObjectEntityId &&
-        <ViewUser
-          key={refreshCounter}
-          userEntityId={ { id: managedObjectId, displayName: managedObjectDisplayName }}
-          organizationId={organizationId}
+      {showViewComponent && managedObjectEntityId &&
+        <ViewSystemUser
+          key={`${componentName}_ViewSystemUser_${refreshCounter}`}
+          userEntityId={managedObjectEntityId}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageUserComponentState}
         />      
-      } */}
+      }
       {/* {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
         <DeleteUser
           userId={managedObjectId}

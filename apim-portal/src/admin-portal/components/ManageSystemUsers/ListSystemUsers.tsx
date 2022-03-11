@@ -193,7 +193,7 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
 
   const systemRolesBodyTemplate = (mo: TManagedObject): string => {
     if(mo.apSystemRoleEntityIdList.length === 0) return 'None.';
-    return APEntityIdsService.create_DisplayNameList(mo.apSystemRoleEntityIdList).join(', ');
+    return APEntityIdsService.getSortedDisplayNameList_As_String(mo.apSystemRoleEntityIdList);
   }
 
   const organizationsBodyTemplate = (mo: TManagedObject): string => {

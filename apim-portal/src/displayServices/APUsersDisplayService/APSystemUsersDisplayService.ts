@@ -27,6 +27,25 @@ export type TAPSystemUserDisplayListResponse = APSListResponseMeta & {
 class APSystemUsersDisplayService extends APUsersDisplayService {
   private readonly ComponentName = "APSystemUsersDisplayService";
 
+  private create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({ apsUserResponse }: {
+    apsUserResponse: APSUserResponse;
+  }): TAPSystemUserDisplay {
+
+    const base: IAPUserDisplay = this.create_ApUserDisplay_From_ApiEntities({
+      apsUserResponse: apsUserResponse,
+    });
+    const apSystemUserDisplay: TAPSystemUserDisplay = {
+      ...base,
+      apMemberOfOrganizationDisplayList: APMemberOfService.create_ApMemberOfOrganizationDisplayList_EmptyRoles({
+        apsUserResponse: apsUserResponse,
+      })
+    }
+    return apSystemUserDisplay;
+  }
+
+  /**
+   * with roles
+   */
   private create_ApSystemUserDisplay_From_ApiEntities({ apsUserResponse }: {
     apsUserResponse: APSUserResponse;
   }): TAPSystemUserDisplay {
@@ -95,7 +114,7 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     });
     const apSystemUserDisplayList: TAPSystemUserDisplayList = [];
     for(const apsUserResponse of listApsUsersResponse.list) {
-      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
+      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({
         apsUserResponse: apsUserResponse,
       });
       apSystemUserDisplayList.push(apSystemUserDisplay);
@@ -137,7 +156,7 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
 
     const apSystemUserDisplayList: TAPSystemUserDisplayList = [];
     for(const apsUserResponse of listApsUsersResponse.list) {
-      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
+      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({
         apsUserResponse: apsUserResponse,
       });
       apSystemUserDisplayList.push(apSystemUserDisplay);
@@ -149,7 +168,20 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     return response;
   }
 
-  
+  public async apsGet_ApSystemUserDisplay({ userId }:{
+    userId: string;
+  }): Promise<TAPSystemUserDisplay> {
+
+    const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
+      userId: userId
+    });
+
+    const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
+      apsUserResponse: apsUserResponse,
+    });
+
+    return apSystemUserDisplay;
+  }
 }
 
 export default new APSystemUsersDisplayService();

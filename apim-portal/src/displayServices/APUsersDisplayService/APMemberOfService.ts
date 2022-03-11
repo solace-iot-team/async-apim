@@ -53,9 +53,13 @@ export type TAPMemberOfBusinessGroupTreeTableNodeList = Array<TAPMemberOfBusines
 class APMemberOfService {
   private readonly ComponentName = "APMemberOfService";
 
-  // public nameOf_ApMemberOfBusinessGroupTreeTableNode(name: keyof TAPMemberOfBusinessGroupTreeTableNode) {
-  //   return `node.${name}`;
-  // }
+  public nameOf_TAPMemberOfOrganizationDisplay(name: keyof TAPMemberOfOrganizationDisplay) {
+    return name;
+  }
+  public nameOf_TAPMemberOfOrganizationDisplay_Entity(name: keyof TAPEntityId) {
+    return `apEntityId.${name}`;
+  }
+
 
   public create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId , apsOrganizationRolesResponse }:{
     organizationEntityId: TAPEntityId;
@@ -128,7 +132,7 @@ class APMemberOfService {
   /**
    * Create a list of organizations (with empty roles) user is member of
    */
-  public create_ApMemberOfOrganizationDisplayList({ apsUserResponse }: {
+  public create_ApMemberOfOrganizationDisplayList_EmptyRoles({ apsUserResponse }: {
     apsUserResponse: APSUserResponse;
   }): TAPMemberOfOrganizationDisplayList {
     const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = [];
@@ -141,6 +145,33 @@ class APMemberOfService {
         apOrganizationRoleEntityIdList: [],
         apLegacyOrganizationRoleEntityIdList: []
         // apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
+      });
+    }
+    return apMemberOfOrganizationDisplayList;
+  }
+
+  /**
+   * with roles
+   */
+  public create_ApMemberOfOrganizationDisplayList({ apsUserResponse }: {
+    apsUserResponse: APSUserResponse;
+  }): TAPMemberOfOrganizationDisplayList {
+    const funcName = 'create_ApMemberOfOrganizationDisplayList';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = [];
+    for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
+
+      // TODO: get the complete business group list and use to calculate roles
+      alert(`${logName}: TODO: get the complete business group list and use to calculate roles`)
+
+      apMemberOfOrganizationDisplayList.push({
+        apEntityId: {
+          id: apsOrganizationRolesResponse.organizationId,
+          displayName: apsOrganizationRolesResponse.organizationDisplayName,
+        },
+        apOrganizationRoleEntityIdList: [],
+        apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
       });
     }
     return apMemberOfOrganizationDisplayList;
