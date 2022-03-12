@@ -9,19 +9,24 @@ import APMemberOfService, {
   TAPMemberOfOrganizationDisplay, 
   TAPMemberOfOrganizationDisplayList 
 } from "../../displayServices/APUsersDisplayService/APMemberOfService";
+import APEntityIdsService from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
-import APEntityIdsService from "../../utils/APEntityIdsService";
 
 export interface IAPDisplayUserOrganizationRolesProps {
   apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
   className?: string;
+  displayInPanel?: boolean;
 }
 
 export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganizationRolesProps> = (props: IAPDisplayUserOrganizationRolesProps) => {
-  const componentName='APDisplayUserOrganizationRoles';
+  // const ComponentName='APDisplayUserOrganizationRoles';
 
   const orgDataTableRef = React.useRef<any>(null);
+
+  React.useEffect( () => {
+    if(props.displayInPanel === undefined) props.displayInPanel = true;
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderOrganizationRoleList = (): JSX.Element => {
 
@@ -51,7 +56,7 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
           scrollable 
         >
           <Column header="Organization" field={APMemberOfService.nameOf_TAPMemberOfOrganizationDisplay_Entity('displayName')} sortable={_sortable} />
-          <Column header="Roles" body={rolesBodyTemplate} />
+          <Column header="Organization Roles" body={rolesBodyTemplate} />
           <Column header="Legacy Roles" body={legacyRolesBodyTemplate} />
         </DataTable>
         {/* DEBUG */}
@@ -62,7 +67,7 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
     );
   }
 
-  const renderOrganizations = (): JSX.Element => {
+  const renderOrganizationsInPanel = (): JSX.Element => {
 
     const numOrganizations: number = props.apMemberOfOrganizationDisplayList.length;
 
@@ -89,7 +94,6 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
           toggleable
           collapsed={false}
         >
-          <p>TODO: no panel required or make it an option as property</p>
           <div className="p-ml-2">{renderOrganizationRoleList()}</div>
           {/* DEBUG */}
           {/* <pre style={ { fontSize: '12px' }} >
@@ -100,18 +104,23 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
     );
   }
 
-  const renderComponent = (): JSX.Element => {
-    const funcName = 'renderComponent';
-    const logName = `${componentName}.${funcName}()`;
-    
-    if(props.apMemberOfOrganizationDisplayList.length === 0) return (
+  const renderOrganizations = (): JSX.Element => {
+    return (
       <React.Fragment>
-        <p>NOT A MEMBER OF ANY ORGANIZATION</p>
+        <div className="p-ml-2">{renderOrganizationRoleList()}</div>
       </React.Fragment>
     );
+  }
 
-    return renderOrganizations();
-
+  const renderComponent = (): JSX.Element => {
+    if(props.apMemberOfOrganizationDisplayList.length === 0) return (
+      <React.Fragment>
+        <p>Not a member of any organization.</p>
+      </React.Fragment>
+    );
+     
+    if(props.displayInPanel) return renderOrganizationsInPanel();
+    else return renderOrganizations();
   }
 
   return (

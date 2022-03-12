@@ -1,13 +1,15 @@
 import { DataTableSortOrderType } from 'primereact/datatable';
-import { TAPEntityId } from '../../utils/APEntityIdsService';
+import APEntityIdsService, { TAPEntityId } from '../../utils/APEntityIdsService';
 import { 
   APSListResponseMeta, 
+  APSSystemAuthRoleList, 
+  APSUser, 
+  APSUserProfile, 
   APSUserResponse, 
   ApsUsersService, 
   APSUserUpdate, 
   ListApsUsersResponse
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
 import APDisplayUtils from '../APDisplayUtils';
 import APMemberOfService, { TAPMemberOfOrganizationDisplayList } from './APMemberOfService';
 import { 
@@ -23,9 +25,18 @@ export type TAPSystemUserDisplayListResponse = APSListResponseMeta & {
   apSystemUserDisplayList: TAPSystemUserDisplayList;
 }
 
-
 class APSystemUsersDisplayService extends APUsersDisplayService {
   private readonly ComponentName = "APSystemUsersDisplayService";
+
+  public nameOf_ApSystemUserDisplay(name: keyof TAPSystemUserDisplay) {
+    return name;
+  }
+
+  protected map_ApFieldName_To_ApsFieldName(apFieldName?: string): string | undefined {
+    if(apFieldName === undefined) return undefined;
+    if(apFieldName.startsWith('apMemberOfOrganizationDisplayList')) return apFieldName.replace('apMemberOfOrganizationDisplayList', 'systemRoles');
+    return super.map_ApFieldName_To_ApsFieldName(apFieldName);
+  }
 
   private create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({ apsUserResponse }: {
     apsUserResponse: APSUserResponse;
@@ -60,6 +71,15 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
       })
     }
     return apSystemUserDisplay;
+  }
+
+  public async create_Empty_ApSystemUserDisplay(): Promise<TAPSystemUserDisplay> {
+    const base: IAPUserDisplay = super.create_Empty_ApUserDisplay();
+    const apSystemUserDisplay: TAPSystemUserDisplay = {
+      ...base,
+      apMemberOfOrganizationDisplayList: []
+    }
+    return apSystemUserDisplay;    
   }
 
   // ********************************************************************************************************************************
@@ -181,6 +201,40 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     });
 
     return apSystemUserDisplay;
+  }
+
+  public async apsCreate_ApSystemUserDisplay({ apSystemUserDisplay }: {
+    apSystemUserDisplay: TAPSystemUserDisplay;
+  }): Promise<void> {
+
+    const apsProfile: APSUserProfile = {
+      email: apSystemUserDisplay.apUserProfileDisplay.email,
+      first: apSystemUserDisplay.apUserProfileDisplay.first,
+      last: apSystemUserDisplay.apUserProfileDisplay.last,
+    };
+
+    const create: APSUser = {
+      userId: apSystemUserDisplay.apEntityId.id,
+      isActivated: apSystemUserDisplay.apUserActivationDisplay.isActivated,
+      password: apSystemUserDisplay.apUserAuthenticationDisplay.password,
+      profile: apsProfile,
+      systemRoles: APEntityIdsService.create_IdList(apSystemUserDisplay.apSystemRoleEntityIdList) as APSSystemAuthRoleList,
+      memberOfOrganizationGroups: [],
+      // LEGACY
+      memberOfOrganizations: [],
+    };
+
+    await ApsUsersService.createApsUser({
+      requestBody: create
+    });
+  }
+
+  public async apsDelete_ApSystemUserDisplay({ apSystemUserDisplay }:{
+    apSystemUserDisplay: TAPSystemUserDisplay;
+  }): Promise<void> {
+    await ApsUsersService.deleteApsUser({
+      userId: apSystemUserDisplay.apEntityId.id,
+    });
   }
 }
 

@@ -10,10 +10,13 @@ import { Loading } from "../../../components/Loading/Loading";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageSystemUsersCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { ListSystemUsers } from "./ListSystemUsers";
+import { ViewSystemUser } from "./ViewSystemUser";
+import { EditSystemUser } from "./EditNewSystemUser/EditSystemUser";
+import { NewSystemUser } from "./EditNewSystemUser/NewSystemUser";
+import { DeleteSystemUser } from "./DeleteSystemUser";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
-import { ViewSystemUser } from "./ViewSystemUser";
 
 export interface IManageSystemUsersProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -179,10 +182,9 @@ export const ManageSystemUsers: React.FC<IManageSystemUsersProps> = (props: IMan
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     }
   }
-  const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedUserEntityId: TAPEntityId) => {
+  const onEditManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectEntityId(updatedUserEntityId);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else {
@@ -285,42 +287,34 @@ export const ManageSystemUsers: React.FC<IManageSystemUsersProps> = (props: IMan
           onNavigateHere={onSetManageUserComponentState}
         />      
       }
-      {/* {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
-        <DeleteUser
-          userId={managedObjectId}
-          userDisplayName={managedObjectDisplayName}
-          scope={props.scope}
+      {showDeleteComponent && managedObjectEntityId &&
+        <DeleteSystemUser
+          userEntityId={managedObjectEntityId}
           onSuccess={onDeleteManagedObjectSuccess} 
-          onError={onSubComponentError}
+          onError={onSubComponentError} 
           onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
+          onLoadingChange={setIsLoading}    
         />
-      } */}
-      {/* { showNewComponent &&
-        <EditNewUser
-          action={EAction.NEW}
-          organizationId={organizationId}
-          onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
+      }
+      { showNewComponent &&
+        <NewSystemUser
+          onSaveSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
-      } */}
-      {/* {showEditComponent && managedObjectId && managedObjectDisplayName &&
-        <EditNewUser
-          action={EAction.EDIT}
-          userEntityId={{id: managedObjectId, displayName: managedObjectDisplayName }}
-          organizationId={organizationId}
-          onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
+      }
+      {showEditComponent && managedObjectEntityId &&
+        <EditSystemUser
+          userEntityId={managedObjectEntityId}
+          onSaveSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
-      } */}
+      }
     </div>
   );
 }

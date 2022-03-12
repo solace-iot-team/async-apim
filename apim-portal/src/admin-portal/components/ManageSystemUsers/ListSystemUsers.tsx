@@ -14,9 +14,6 @@ import APSystemUsersDisplayService, {
   TAPSystemUserDisplay, TAPSystemUserDisplayListResponse 
 } from "../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
-
-import '../../../components/APComponents.css';
-import "./ManageSystemUsers.css";
 import { TAPUserDisplayLazyLoadingTableParameters } from "../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageSystemUsersCommon";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -24,6 +21,9 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "../../../utils/Globals";
+
+import '../../../components/APComponents.css';
+import "./ManageSystemUsers.css";
 
 export interface IListSystemUsersProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -248,9 +248,9 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
           sortField={lazyLoadingTableParams.sortField} 
           sortOrder={lazyLoadingTableParams.sortOrder}
         >
-          <Column header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APSystemUsersDisplayService.nameOf_ApUserAuthenticationDisplay('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />
+          <Column header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APSystemUsersDisplayService.nameOf_ApUserActivationDisplay('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />
           <Column header="E-Mail" field={APSystemUsersDisplayService.nameOf_ApUserProfileDisplay('email')}  sortable />
-          <Column header="System Roles" headerStyle={{width: '12em'}} body={systemRolesBodyTemplate} />
+          <Column header="System Roles" headerStyle={{width: '12em'}} body={systemRolesBodyTemplate} field={APSystemUsersDisplayService.nameOf_ApSystemUserDisplay('apMemberOfOrganizationDisplayList')} sortable />
           <Column header="Organizations" headerStyle={{width: '20em'}} body={organizationsBodyTemplate} />
 
           <Column header="First Name" headerStyle={{width: '12em'}} field={APSystemUsersDisplayService.nameOf_ApUserProfileDisplay('first')} sortable />

@@ -20,10 +20,10 @@ import APOrganizationUsersDisplayService, {
 } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { UserContext } from "../../../../components/UserContextProvider/UserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { EUICommonResourcePaths } from "../../../../utils/Globals";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
-import { EUICommonResourcePaths } from "../../../../utils/Globals";
 
 export interface IEditOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -58,7 +58,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
   const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.id}`);
     try { 
       const apUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
         organizationEntityId: props.organizationEntityId,

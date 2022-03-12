@@ -18,10 +18,10 @@ import APEntityIdsService, {
 import { APDisplayUserProfile } from "../../../components/APDisplay/APDisplayUserProfile";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageSystemUsersCommon";
 import APSystemUsersDisplayService, { TAPSystemUserDisplay } from "../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
+import { APDisplayUserOrganizationRoles } from "../../../components/APDisplay/APDisplayUserOrganizationRoles";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
-import { APDisplayUserOrganizationRoles } from "../../../components/APDisplay/APDisplayUserOrganizationRoles";
 
 export interface IViewSystemUserProps {
   userEntityId: TAPEntityId;
@@ -40,7 +40,6 @@ export const ViewSystemUser: React.FC<IViewSystemUserProps> = (props: IViewSyste
   const [authContext] = React.useContext(AuthContext); 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -102,7 +101,7 @@ export const ViewSystemUser: React.FC<IViewSystemUserProps> = (props: IViewSyste
           <div className="user-view">
             <div className="detail-left">
 
-              <div><b>Activated</b>: {String(APSystemUsersDisplayService.get_isActivated({apUserDisplay: managedObject}))}</div>
+              <div><b>Activation Status</b>: {APSystemUsersDisplayService.get_ApUserActivationDisplay({apUserDisplay: managedObject}).activationStatusDisplayString}</div>
 
               <Divider />
 
@@ -116,9 +115,11 @@ export const ViewSystemUser: React.FC<IViewSystemUserProps> = (props: IViewSyste
                 <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
               }
 
+              <div><b>Organizations</b>:</div>
               <APDisplayUserOrganizationRoles
                 apMemberOfOrganizationDisplayList={managedObject.apMemberOfOrganizationDisplayList}
-                className="p-mt-4"
+                className="p-mt-2"
+                displayInPanel={false}
               />
 
             </div>

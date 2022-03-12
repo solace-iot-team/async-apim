@@ -9,6 +9,7 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { 
   APSListResponseMeta,
+  APSSystemAuthRoleList,
   APSUserProfile, 
   APSUserResponse,
   ApsUsersService,
@@ -28,8 +29,16 @@ export type TAPUserDisplayLazyLoadingTableParameters = {
 }
 
 export type TAPUserAuthenticationDisplay = {
-  isActivated: boolean;
   password: string;
+}
+
+enum EActivationStatusDisplayString {
+  ACTIVATED = 'activated',
+  DISABLED = 'disabled'
+}
+export type TAPUserActivationDisplay = {
+  isActivated: boolean;
+  activationStatusDisplayString: EActivationStatusDisplayString;
 }
 
 export interface IAPUserDisplay extends IAPEntityIdDisplay {
@@ -37,6 +46,8 @@ export interface IAPUserDisplay extends IAPEntityIdDisplay {
   apUserProfileDisplay: TAPUserProfileDisplay;
 
   apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
+
+  apUserActivationDisplay: TAPUserActivationDisplay;
 
   apSystemRoleEntityIdList: TAPEntityIdList;
 
@@ -49,7 +60,6 @@ export type TAPUserDisplayListResponse = APSListResponseMeta & {
 export type TAPUserProfileDisplay = IAPEntityIdDisplay & APSUserProfile;
 
 export type TAPCheckUserIdExistsResult = {
-  existsInOrganization: boolean;
   exists: boolean;
 }
 
@@ -69,17 +79,22 @@ export abstract class APUsersDisplayService {
   public nameOf_ApUserAuthenticationDisplay(name: keyof TAPUserAuthenticationDisplay) {
     return `apUserAuthenticationDisplay.${name}`;
   }
+  public nameOf_ApUserActivationDisplay(name: keyof TAPUserActivationDisplay) {
+    return `apUserActivationDisplay.${name}`;
+  }
 
   protected map_ApFieldName_To_ApsFieldName(apFieldName?: string): string | undefined {
     if(apFieldName === undefined) return undefined;
     if(apFieldName.startsWith('apUserProfileDisplay')) return apFieldName.replace('apUserProfileDisplay.', 'profile.');
     else if(apFieldName.startsWith('apUserAuthenticationDisplay')) return apFieldName.replace('apUserAuthenticationDisplay.', '');
+    else if(apFieldName.startsWith('apUserActivationDisplay')) return apFieldName.replace('apUserActivationDisplay.', '');
     return apFieldName;
   }
 
   public map_ApUserDisplayFieldName_To_APSUserFieldName(apUserDisplayFieldName: string): string {
     if(apUserDisplayFieldName.startsWith('apUserProfileDisplay')) return apUserDisplayFieldName.replace('apUserProfileDisplay.', 'profile.');
     else if(apUserDisplayFieldName.startsWith('apUserAuthenticationDisplay')) return apUserDisplayFieldName.replace('apUserAuthenticationDisplay.', '');
+    else if(apUserDisplayFieldName.startsWith('apUserActivationDisplay')) return apUserDisplayFieldName.replace('apUserActivationDisplay.', '');
     return apUserDisplayFieldName;
   }
 
@@ -115,8 +130,14 @@ export abstract class APUsersDisplayService {
 
   public create_Empty_ApUserAutheticationDisplay(): TAPUserAuthenticationDisplay {
     return {
-      isActivated: false,
       password: '',
+    };
+  }
+
+  public create_Empty_ApUserActivationDisplay(): TAPUserActivationDisplay {
+    return {
+      isActivated: false,
+      activationStatusDisplayString: EActivationStatusDisplayString.DISABLED, 
     };
   }
 
@@ -125,6 +146,7 @@ export abstract class APUsersDisplayService {
       apEntityId: APEntityIdsService.create_EmptyObject(),
       apUserProfileDisplay: this.create_Empty_ApUserProfileDisplay(),
       apUserAuthenticationDisplay: this.create_Empty_ApUserAutheticationDisplay(),
+      apUserActivationDisplay: this.create_Empty_ApUserActivationDisplay(),
       apSystemRoleEntityIdList: [],
     };
     return apUserDisplay;
@@ -152,15 +174,26 @@ export abstract class APUsersDisplayService {
     };
     return apUserProfileDisplay;
   }
+
   protected create_ApUserAuthenticationDisplay({apsUserResponse}:{
     apsUserResponse: APSUserResponse;
   }): TAPUserAuthenticationDisplay {
     const apUserAuthenticationDisplay: TAPUserAuthenticationDisplay = {
-      isActivated: apsUserResponse.isActivated,
       password: '***',
     };
     return apUserAuthenticationDisplay;
   }
+
+  protected create_ApUserActivationDisplay({apsUserResponse}:{
+    apsUserResponse: APSUserResponse;
+  }): TAPUserActivationDisplay {
+    const apUserActivationDisplay: TAPUserActivationDisplay = {
+      isActivated: apsUserResponse.isActivated,
+      activationStatusDisplayString: apsUserResponse.isActivated ? EActivationStatusDisplayString.ACTIVATED : EActivationStatusDisplayString.DISABLED, 
+    };
+    return apUserActivationDisplay;
+  }
+
   protected create_ApUserDisplay_From_ApiEntities({apsUserResponse}: {
     apsUserResponse: APSUserResponse;
   }): IAPUserDisplay {
@@ -169,9 +202,24 @@ export abstract class APUsersDisplayService {
       apEntityId: userEntityId,
       apUserProfileDisplay: this.create_ApUserProfileDisplay({ userEntityId: userEntityId, apsUserProfile: apsUserResponse.profile}),
       apUserAuthenticationDisplay: this.create_ApUserAuthenticationDisplay({ apsUserResponse: apsUserResponse }),
+      apUserActivationDisplay: this.create_ApUserActivationDisplay({ apsUserResponse: apsUserResponse }),
       apSystemRoleEntityIdList: APRbacDisplayService.create_SystemRoles_EntityIdList(apsUserResponse.systemRoles),
     };
     return base;
+  }
+
+  public get_ApSystemRoleEntityIdList({ apUserDisplay }:{
+    apUserDisplay: IAPUserDisplay;
+  }): TAPEntityIdList {
+    return apUserDisplay.apSystemRoleEntityIdList;
+  }
+
+  public set_ApSystemRoleEntityIdList({ apUserDisplay, apSystemRoleEntityIdList }:{
+    apUserDisplay: IAPUserDisplay;
+    apSystemRoleEntityIdList: TAPEntityIdList;
+  }): IAPUserDisplay {
+    apUserDisplay.apSystemRoleEntityIdList = apSystemRoleEntityIdList;
+    return apUserDisplay;
   }
 
   public get_ApUserProfileDisplay({apUserDisplay}: {
@@ -180,7 +228,7 @@ export abstract class APUsersDisplayService {
     return apUserDisplay.apUserProfileDisplay;
   }
 
-  protected set_ApUserProfileDisplay({ apUserDisplay, apUserProfileDisplay }: {
+  public set_ApUserProfileDisplay({ apUserDisplay, apUserProfileDisplay }: {
     apUserDisplay: IAPUserDisplay;
     apUserProfileDisplay: TAPUserProfileDisplay;
   }): IAPUserDisplay {
@@ -195,7 +243,7 @@ export abstract class APUsersDisplayService {
     return apUserDisplay.apUserAuthenticationDisplay;
   }
 
-  protected set_ApUserAuthenticationDisplay({ apUserDisplay, apUserAuthenticationDisplay }: {
+  public set_ApUserAuthenticationDisplay({ apUserDisplay, apUserAuthenticationDisplay }: {
     apUserDisplay: IAPUserDisplay;
     apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
   }): IAPUserDisplay {
@@ -203,37 +251,41 @@ export abstract class APUsersDisplayService {
     return apUserDisplay;
   }
 
+  public get_ApUserActivationDisplay({ apUserDisplay}: {
+    apUserDisplay: IAPUserDisplay;
+  }): TAPUserActivationDisplay {
+    return apUserDisplay.apUserActivationDisplay;
+  }
+
+  public set_ApUserActivationDisplay({ apUserDisplay, apUserActivationDisplay }: {
+    apUserDisplay: IAPUserDisplay;
+    apUserActivationDisplay: TAPUserActivationDisplay;
+  }): IAPUserDisplay {
+    if(apUserActivationDisplay.isActivated) apUserActivationDisplay.activationStatusDisplayString = EActivationStatusDisplayString.ACTIVATED;
+    else apUserActivationDisplay.activationStatusDisplayString = EActivationStatusDisplayString.DISABLED;
+    apUserDisplay.apUserActivationDisplay = apUserActivationDisplay;
+    return apUserDisplay;
+  }
+
   public get_isActivated({ apUserDisplay }: {
     apUserDisplay: IAPUserDisplay;
   }): boolean {
-    return apUserDisplay.apUserAuthenticationDisplay.isActivated;
+    return apUserDisplay.apUserActivationDisplay.isActivated;
   }
 
   public set_isActivated({ apUserDisplay, isActivated }: {
     apUserDisplay: IAPUserDisplay;
     isActivated: boolean;
   }): IAPUserDisplay {
-    apUserDisplay.apUserAuthenticationDisplay.isActivated = isActivated;
+    apUserDisplay.apUserActivationDisplay.isActivated = isActivated;
     return apUserDisplay;
-  }
-
-  private is_ApsUserMemberOfOrganization({ organizationId, apsUserResponse }: {
-    organizationId: string;
-    apsUserResponse: APSUserResponse;
-  }): boolean {
-    if(apsUserResponse.memberOfOrganizations === undefined) return false;
-    const found = apsUserResponse.memberOfOrganizations.find( (x) => {
-      return x.organizationId === organizationId;
-    });
-    return found !== undefined;
   }
 
   // ********************************************************************************************************************************
   // APS API calls
   // ********************************************************************************************************************************
 
-  public async apsCheck_UserIdExists({userId, organizationId}: {
-    organizationId: string;
+  public async apsCheck_UserIdExists({ userId }: {
     userId: string;
   }): Promise<TAPCheckUserIdExistsResult> {
     // const funcName = 'apsCheck_UserIdExists';
@@ -245,12 +297,11 @@ export abstract class APUsersDisplayService {
       });
       return {
         exists: true,
-        existsInOrganization: this.is_ApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse})
       }
      } catch(e: any) {
       if(APSClientOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
-        if(apiError.status === 404) return { exists: false, existsInOrganization: false };
+        if(apiError.status === 404) return { exists: false };
       }
       throw e;
     }
@@ -299,6 +350,19 @@ export abstract class APUsersDisplayService {
     });
   }
 
+  public async apsUpdate_ApUserActivationDisplay({ userId, apUserActivationDisplay }: {
+    userId: string;
+    apUserActivationDisplay: TAPUserActivationDisplay;
+  }): Promise<void> {
+    const update: APSUserUpdate = {
+      isActivated: apUserActivationDisplay.isActivated,
+    }
+    await this.apsUpdate_ApsUserUpdate({ 
+      userId: userId,
+      apsUserUpdate: update
+    });
+  }
+
   public async apsUpdate_ApUserAuthenticationDisplay({ userId, apUserAuthenticationDisplay }: {
     userId: string;
     apUserAuthenticationDisplay: TAPUserAuthenticationDisplay;
@@ -307,7 +371,20 @@ export abstract class APUsersDisplayService {
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const update: APSUserUpdate = {
-      password: apUserAuthenticationDisplay.password
+      password: apUserAuthenticationDisplay.password,
+    }
+    await this.apsUpdate_ApsUserUpdate({ 
+      userId: userId,
+      apsUserUpdate: update
+    });
+  }
+
+  public async apsUpdate_ApSystemRoleEntityIdList({ userId, apSystemRoleEntityIdList }: {
+    userId: string;
+    apSystemRoleEntityIdList: TAPEntityIdList;
+  }): Promise<void> {
+    const update: APSUserUpdate = {
+      systemRoles: APEntityIdsService.create_IdList(apSystemRoleEntityIdList) as APSSystemAuthRoleList,
     }
     await this.apsUpdate_ApsUserUpdate({ 
       userId: userId,

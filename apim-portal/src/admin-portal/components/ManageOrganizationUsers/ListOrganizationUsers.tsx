@@ -180,7 +180,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   const actionBodyTemplate = (mo: TManagedObject) => {
     return (
         <React.Fragment>
-          {mo.apUserAuthenticationDisplay.isActivated === true &&
+          {mo.apUserActivationDisplay.isActivated === true &&
             <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
               <Button tooltip="login as ..." icon="pi pi-sign-in" className="p-button-rounded p-button-outlined p-button-secondary" 
                 onClick={() => onLoginAs(mo)} 
@@ -210,7 +210,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   }
 
   const isActiveBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    if(mo.apUserAuthenticationDisplay.isActivated) return (<span className="pi pi-check badge-active" />)
+    if(mo.apUserActivationDisplay.isActivated) return (<span className="pi pi-check badge-active" />)
     else return (<span className="pi pi-times badge-active" />)
   }
 
@@ -234,7 +234,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
 
   const renderColumns = (): Array<JSX.Element> => {
     const cols: Array<JSX.Element> = [];
-    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APOrganizationUsersDisplayService.nameOf_ApUserAuthenticationDisplay('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />);
+    cols.push(<Column key={Globals.getUUID()} header="Activated?" headerStyle={{width: '9em', textAlign: 'center'}} field={APOrganizationUsersDisplayService.nameOf_ApUserActivationDisplay('isActivated')}  bodyStyle={{textAlign: 'center' }} body={isActiveBodyTemplate} sortable />);
     cols.push(<Column key={Globals.getUUID()} header="E-Mail" field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('email')}  sortable />);
     cols.push(<Column key={Globals.getUUID()} header="Business Groups" headerStyle={{width: '20em'}} body={businessGroupsBodyTemplate} />);  
     cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('first')} sortable />);

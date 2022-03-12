@@ -3,8 +3,10 @@ import APEntityIdsService, {
   TAPEntityId, 
   TAPEntityIdList 
 } from '../../utils/APEntityIdsService';
+import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { Globals } from '../../utils/Globals';
 import { 
+  ApiError,
   APSBusinessGroupAuthRoleList,
   APSListResponseMeta, 
   APSMemberOfBusinessGroup, 
@@ -60,6 +62,10 @@ export type TAPOrganizationUserDisplay = IAPUserDisplay & {
 export type TAPOrganizationUserDisplayList = Array<TAPOrganizationUserDisplay>;
 export type TAPOrganizationUserDisplayListResponse = APSListResponseMeta & {
   apOrganizationUserDisplayList: TAPOrganizationUserDisplayList;
+}
+export type TAPCheckOrganizationUserIdExistsResult = {
+  existsInOrganization: boolean;
+  exists: boolean;
 }
 
 class APOrganizationUsersDisplayService extends APUsersDisplayService {
@@ -462,6 +468,30 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
   // APS API calls
   // ********************************************************************************************************************************
   
+  public async apsCheck_OrganizationUserIdExists({userId, organizationId}: {
+    organizationId: string;
+    userId: string;
+  }): Promise<TAPCheckOrganizationUserIdExistsResult> {
+    // const funcName = 'apsCheck_OrganizationUserIdExists';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    try {
+      // throw new Error(`${logName}: test error handling upstream`);
+      const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
+        userId: userId
+      });
+      return {
+        exists: true,
+        existsInOrganization: APMemberOfService.is_ApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse})
+      }
+     } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return { exists: false, existsInOrganization: false };
+      }
+      throw e;
+    }
+  }
+
   public async apsGet_ApOrganizationUserDisplay({ organizationEntityId, userId, fetch_ApOrganizationAssetInfoDisplayList }:{
     organizationEntityId: TAPEntityId;
     userId: string;
@@ -565,7 +595,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       
     const create: APSUser = {
       userId: apOrganizationUserDisplay.apEntityId.id,
-      isActivated: apOrganizationUserDisplay.apUserAuthenticationDisplay.isActivated,
+      isActivated: apOrganizationUserDisplay.apUserActivationDisplay.isActivated,
       password: apOrganizationUserDisplay.apUserAuthenticationDisplay.password,
       profile: apsProfile,
       systemRoles: APEntityIdsService.create_IdList(apOrganizationUserDisplay.apSystemRoleEntityIdList) as APSSystemAuthRoleList,

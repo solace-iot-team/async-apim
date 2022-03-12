@@ -10,28 +10,24 @@ import { classNames } from 'primereact/utils';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationUsersCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APOrganizationUsersDisplayService, { 
-  TAPCheckOrganizationUserIdExistsResult, 
-  TAPOrganizationUserDisplay
- } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
-import { TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { TAPCheckUserIdExistsResult, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import APSystemUsersDisplayService, { TAPSystemUserDisplay } from "../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
+import { EAction, E_CALL_STATE_ACTIONS } from "../ManageSystemUsersCommon";
 
 import '../../../../components/APComponents.css';
-import "../ManageOrganizationUsers.css";
+import "../ManageSystemUsers.css";
 
-export interface INewOrganizationUserProfileProps {
-  apOrganizationUserDisplay: TAPOrganizationUserDisplay;
-  onNext: (apUserProfileDisplay: TAPUserProfileDisplay) => void;
-  onBack: () => void;
+export interface IEditNewSystemUserProfileProps {
+  action: EAction,
+  apSystemUserDisplay: TAPSystemUserDisplay;
+  onSave: (apUserProfileDisplay: TAPUserProfileDisplay) => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfileProps> = (props: INewOrganizationUserProfileProps) => {
-  const ComponentName = 'NewOrganizationUserProfile';
+export const EditNewSystemUserProfile: React.FC<IEditNewSystemUserProfileProps> = (props: IEditNewSystemUserProfileProps) => {
+  const ComponentName = 'EditNewSystemUserProfile';
 
   type TManagedObject = TAPUserProfileDisplay;
   type TManagedObjectFormData = {
@@ -62,7 +58,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
     mo.email = fd.email;
     mo.first = fd.first;
     mo.last = fd.last;
-    mo.apEntityId.displayName = APOrganizationUsersDisplayService.create_UserDisplayName(mo);
+    mo.apEntityId.displayName = APSystemUsersDisplayService.create_UserDisplayName(mo);
     mo.apEntityId.id = mo.email;
     return mo;
   }
@@ -75,14 +71,13 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
 
   // * Api Calls *
 
-  const apiCheckOrganizationUserExists = async(userId: string): Promise<TAPCheckOrganizationUserIdExistsResult | undefined> => {
-    const funcName = 'apiCheckOrganizationUserExists';
+  const apiCheckSystemUserExists = async(userId: string): Promise<TAPCheckUserIdExistsResult | undefined> => {
+    const funcName = 'apiCheckSystemUserExists';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_ORGANIZATION_USER_EXISTS, `check organization user exists: ${userId}`);
-    let checkResult: TAPCheckOrganizationUserIdExistsResult | undefined = undefined;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_USER_EXISTS, `check user exists: ${userId}`);
+    let checkResult: TAPCheckUserIdExistsResult | undefined = undefined;
     try { 
-      checkResult = await APOrganizationUsersDisplayService.apsCheck_OrganizationUserIdExists({
-        organizationId: props.apOrganizationUserDisplay.organizationEntityId.id,
+      checkResult = await APSystemUsersDisplayService.apsCheck_UserIdExists({
         userId: userId
       });
     } catch(e: any) {
@@ -94,8 +89,8 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }
 
   const doInitialize = async () => {
-    setManagedObject(APOrganizationUsersDisplayService.get_ApUserProfileDisplay({
-      apUserDisplay: props.apOrganizationUserDisplay
+    setManagedObject(APSystemUsersDisplayService.get_ApUserProfileDisplay({
+      apUserDisplay: props.apSystemUserDisplay
     }));
   }
 
@@ -122,9 +117,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    // const funcName = 'doSubmitManagedObject';
-    // const logName = `${ComponentName}.${funcName}()`;
-    props.onNext(mo);
+    props.onSave(mo);
   }
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
@@ -150,11 +143,19 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
       );
     }
     const managedObjectFormFooterRightToolbarTemplate = () => {
-      return (
-        <React.Fragment>
-          <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
-        </React.Fragment>
-      );
+      if(props.action === EAction.EDIT) {
+        return (
+          <React.Fragment>
+            <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+          </React.Fragment>
+        );  
+      } else {
+        return (
+          <React.Fragment>
+            <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          </React.Fragment>
+        );  
+      }
     }  
     return (
       <Toolbar className="p-mb-4" left={managedObjectFormFooterLeftToolbarTemplate} right={managedObjectFormFooterRightToolbarTemplate} />
@@ -162,14 +163,15 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
   }
 
   const validate_Email = async(email: string): Promise<string | boolean> => {
-    const checkResult: TAPCheckOrganizationUserIdExistsResult | undefined = await apiCheckOrganizationUserExists(email);
+    if(props.action === EAction.EDIT) return true;
+    const checkResult: TAPCheckUserIdExistsResult | undefined = await apiCheckSystemUserExists(email);
     if(checkResult === undefined) return false;
-    if(checkResult.existsInOrganization) return 'User is already a member of this organization.';
-    if(checkResult.exists) return 'User already exists, add user to this organization instead.';
+    if(checkResult.exists) return 'User already exists.';
     return true;
   }
 
-  const renderManagedObjectForm = (mo: TManagedObject) => {
+  const renderManagedObjectForm = () => {
+    const isNewUser: boolean = (props.action === EAction.NEW);
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -191,7 +193,8 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={true}
+                          autoFocus={isNewUser}
+                          disabled={!isNewUser}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}
@@ -213,6 +216,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
                         <InputText
                           id={field.name}
                           {...field}
+                          autoFocus={!isNewUser}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}
@@ -255,7 +259,7 @@ export const NewOrganizationUserProfile: React.FC<INewOrganizationUserProfilePro
     <div className="manage-users">
 
       {managedObject && 
-        renderManagedObjectForm(managedObject)
+        renderManagedObjectForm()
       }
     </div>
   );

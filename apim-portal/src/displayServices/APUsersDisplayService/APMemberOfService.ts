@@ -163,23 +163,38 @@ class APMemberOfService {
     for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
 
       // find the business groups entry for the organization id
-      const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
+      let apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
         return x.organizationId === apsOrganizationRolesResponse.organizationId;
       });
       // today: at least 1 business group (root business group) must exist, root business group contains the organization roles
-      if(apsMemberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsMemberOfOrganizationGroups === undefined`);
+      if(apsMemberOfOrganizationGroups === undefined) {
+        // to catch migration errors, show alert instead, convert to error in FUTURE
+        alert(`${logName}: MIGRATION ERROR: apsMemberOfOrganizationGroups === undefined`);
+        apsMemberOfOrganizationGroups = {
+          organizationId: apsOrganizationRolesResponse.organizationId,
+          memberOfBusinessGroupList: []
+        };
+        // throw new Error(`${logName}: apsMemberOfOrganizationGroups === undefined`);
+      }
       const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup | undefined = apsMemberOfOrganizationGroups.memberOfBusinessGroupList.find( (x) => {
         return x.businessGroupId === apsOrganizationRolesResponse.organizationId;
       });
       // today: at least 1 business group (root business group) must exist, root business group contains the organization roles
-      if(apsMemberOfBusinessGroup === undefined) throw new Error(`${logName}: apsMemberOfBusinessGroup === undefined`);
+      // to catch migration errors, show alert instead, convert to error in FUTURE
+      let apOrganizationRoleEntityIdList: TAPEntityIdList = [];
+      if(apsMemberOfBusinessGroup === undefined) {
+        alert(`${logName}: MIGRATION ERROR: apsMemberOfBusinessGroup === undefined`)
+        // throw new Error(`${logName}: apsMemberOfBusinessGroup === undefined`);
+      } else {
+        apOrganizationRoleEntityIdList = APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles});
+      }
 
       apMemberOfOrganizationDisplayList.push({
         apEntityId: {
           id: apsOrganizationRolesResponse.organizationId,
           displayName: apsOrganizationRolesResponse.organizationDisplayName,
         },
-        apOrganizationRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
+        apOrganizationRoleEntityIdList: apOrganizationRoleEntityIdList,
         apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
       });
     }
@@ -529,6 +544,18 @@ class APMemberOfService {
     if(found === undefined) throw new Error(`${logName}: found === undefined`);
     return found;
   }
+
+  public is_ApsUserMemberOfOrganization({ organizationId, apsUserResponse }: {
+    organizationId: string;
+    apsUserResponse: APSUserResponse;
+  }): boolean {
+    if(apsUserResponse.memberOfOrganizations === undefined) return false;
+    const found = apsUserResponse.memberOfOrganizations.find( (x) => {
+      return x.organizationId === organizationId;
+    });
+    return found !== undefined;
+  }
+
 
   /**
    * Returns the found business group entity or undefined if not found.
