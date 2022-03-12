@@ -291,10 +291,12 @@ export abstract class APUsersDisplayService {
     // const funcName = 'apsCheck_UserIdExists';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
     try {
-      // throw new Error(`${logName}: test error handling upstream`);
+      // throw new Error(`${ogName}: test error handling upstream`);
+      /* eslint-disable-next-line @typescript-eslint/no-unused-vars */      
       const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
         userId: userId
       });
+      // if(apsUserResponse) {} // keep assignment, avoid linter errors
       return {
         exists: true,
       }

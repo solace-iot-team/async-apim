@@ -5,7 +5,6 @@ import { ProtectedRouteWithRbac } from "../auth/ProtectedRouteWithRbac";
 import { ProtectedRouteWithRbacAndOrgAccess } from "../auth/ProtectedRouteWithRbacAndOrgAccess";
 import { EUIAdminPortalResourcePaths } from '../utils/Globals';
 import { AdminPortalUserHomePage } from "./pages/AdminPortalUserHomePage";
-import { ManageUsersPage } from './pages/ManageOldUsersPage';
 import { ManageOrganizationsPage } from "./pages/ManageOrganizationsPage";
 import { ManageConnectorsPage } from "./pages/ManageConnectorsPage";
 import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
@@ -32,11 +31,7 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         /* System */
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} component={ManageConnectorsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} component={ManageSystemSettingsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} />,
-        
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemUsers} component={ManageSystemUsersPage} exact key={EUIAdminPortalResourcePaths.ManageSystemUsers} />,
-
-        <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemOldUsers} component={ManageUsersPage} exact key={EUIAdminPortalResourcePaths.ManageSystemOldUsers} />,
-
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemOrganizations} component={ManageOrganizationsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemOrganizations} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.MonitorSystemHealth} component={MonitorSystemHealthPage} exact key={EUIAdminPortalResourcePaths.MonitorSystemHealth} />,
         /* Organization */

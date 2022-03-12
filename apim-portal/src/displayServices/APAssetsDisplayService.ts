@@ -5,7 +5,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
-import APUsersDisplayService from './old.APUsersDisplayService';
+import APOrganizationUsersDisplayService from './APUsersDisplayService/APOrganizationUsersDisplayService';
 
 export enum EAPAssetType {
   DEVELOPER_APP = "DEVELOPER_APP",
@@ -74,7 +74,7 @@ class APAssetDisplayService {
     userId: string;
   }): Promise<TAPAssetInfoDisplayList> {
 
-    const connectorDeveloper: Developer | undefined = await APUsersDisplayService.connectorGet_Developer({
+    const connectorDeveloper: Developer | undefined = await APOrganizationUsersDisplayService.connectorGet_Developer({
       organizationId: organizationId,
       userId: userId
     });

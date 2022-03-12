@@ -138,11 +138,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
           {
-            label: 'OLD Users',
-            disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemOldUsers),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOldUsers); }
-          },
-          {
             label: 'Organizations',
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
