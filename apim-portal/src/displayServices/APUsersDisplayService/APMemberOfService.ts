@@ -162,15 +162,24 @@ class APMemberOfService {
     const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = [];
     for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
 
-      // TODO: get the complete business group list and use to calculate roles
-      alert(`${logName}: TODO: get the complete business group list and use to calculate roles`)
+      // find the business groups entry for the organization id
+      const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
+        return x.organizationId === apsOrganizationRolesResponse.organizationId;
+      });
+      // today: at least 1 business group (root business group) must exist, root business group contains the organization roles
+      if(apsMemberOfOrganizationGroups === undefined) throw new Error(`${logName}: apsMemberOfOrganizationGroups === undefined`);
+      const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup | undefined = apsMemberOfOrganizationGroups.memberOfBusinessGroupList.find( (x) => {
+        return x.businessGroupId === apsOrganizationRolesResponse.organizationId;
+      });
+      // today: at least 1 business group (root business group) must exist, root business group contains the organization roles
+      if(apsMemberOfBusinessGroup === undefined) throw new Error(`${logName}: apsMemberOfBusinessGroup === undefined`);
 
       apMemberOfOrganizationDisplayList.push({
         apEntityId: {
           id: apsOrganizationRolesResponse.organizationId,
           displayName: apsOrganizationRolesResponse.organizationDisplayName,
         },
-        apOrganizationRoleEntityIdList: [],
+        apOrganizationRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
         apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
       });
     }
