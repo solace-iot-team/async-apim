@@ -23,7 +23,7 @@ export const UserLoginPage: React.FC = () => {
   const history = useHistory();
   const [showUserLogin, setShowUserLogin] = React.useState<boolean>(false);
   const [isLoginSuccess, setIsLoginSuccess] = React.useState<boolean | null>(null);
-  const [isOrganizationSelectFinished, setIsOrganizationSelectFinished] = React.useState<boolean>(false);
+  const [showSelectOrganizationDialog, setShowSelectOrganizationDialog] = React.useState<boolean>(false);
   const [isFinished, setIsFinished] = React.useState<boolean>(false);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [healthCheckContext] = React.useContext(APHealthCheckContext);
@@ -91,7 +91,10 @@ export const UserLoginPage: React.FC = () => {
   }, [location.state]);
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([isFinished, authContext.authorizedResourcePathsAsString])';
+    // const logName = `${componentName}.${funcName}()`;
     if(isFinished) {
+      // alert(`${logName}: isFinished, authContext.authorizedResourcePathsAsString = ${JSON.stringify(authContext.authorizedResourcePathsAsString)}`);
       successfulLoginSetup();
     }
   }, [isFinished, authContext.authorizedResourcePathsAsString]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,13 +102,14 @@ export const UserLoginPage: React.FC = () => {
   const onLoginSuccess = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(true);
     setShowUserLogin(false);
+    setShowSelectOrganizationDialog(true);
   }
   const onLoginError = (apiCallStatus: TApiCallState) => {
     setIsLoginSuccess(false);
   }
   
   const onSelectOrganizationSuccess = () => {
-    setIsOrganizationSelectFinished(true);
+    setShowSelectOrganizationDialog(false);
     setIsFinished(true);
   }
 
@@ -126,8 +130,8 @@ export const UserLoginPage: React.FC = () => {
         userAction: 'login',
         userMessage: userMessage
       }
-    }})
-    setIsOrganizationSelectFinished(true);
+    }});
+    setShowSelectOrganizationDialog(false);
     setIsFinished(true);
   }
 
@@ -139,7 +143,7 @@ export const UserLoginPage: React.FC = () => {
       {isLoginSuccess &&
         <Dialog 
           className="p-fluid"
-          visible={!isOrganizationSelectFinished}
+          visible={showSelectOrganizationDialog}
           style={{ width: '450px' }}
           modal
           onHide={() => {}}

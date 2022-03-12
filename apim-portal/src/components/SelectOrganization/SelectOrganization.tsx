@@ -78,6 +78,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
       const apOrganizationList: TAPOrganizationList = await APOrganizationsService.listOrganizations({});
       setSelectObjectList(transformAPOrganizationListToAPEntityIdList(apOrganizationList));
     } catch(e) {
+      // if getting organization list call fails, user still needs to be able to login
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -86,6 +87,8 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   }
 
   const doInitialize = async () => {
+    // const funcName = 'doInitialize';
+    // const logName = `${componentName}.${funcName}()`;
     // Notes:
     // - connector may not be configured yet
     // - connector may be unavailable
@@ -102,6 +105,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
     //   props.onError(callState);
     //   return;
     // }
+    // alert(`${logName}: userContext.user.memberOfOrganizations = ${JSON.stringify(userContext.user.memberOfOrganizations, null, 2)}`)
     if(!userContext.user.memberOfOrganizations || userContext.user.memberOfOrganizations.length === 0) {
       setIsFinished(true);
       return;
@@ -138,7 +142,11 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) {
-        // alert('apiCallStatus not success')
+        // still need to set the auth context
+        dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
+          isLoggedIn: true, 
+          authorizedResourcePathsAsString: AuthHelper.getAuthorizedResourcePathListAsString(configContext, userContext),
+        }});  
         props.onError(apiCallStatus);
       }
     }
@@ -147,6 +155,7 @@ export const SelectOrganization: React.FC<ISelectOrganizationProps> = (props: IS
   React.useEffect(() => {
     if(!selectObjectList) return;
     if(selectObjectList.length === 0) {
+      alert('selectObjectList.length === 0')
       setIsFinished(true);
       return;
     }
