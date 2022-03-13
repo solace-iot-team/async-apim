@@ -37,7 +37,7 @@ export class APSLoginService {
         throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.userId });
       }
     }
-    // check internal DB
+    // check internal DB 
     try {
       const loggedIn: APSUser = await this.persistenceService.byId({
         collectionDocumentId: apsUserLoginCredentials.userId
