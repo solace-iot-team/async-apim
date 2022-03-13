@@ -8,7 +8,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { GlobalElementStyles, Globals } from '../utils/Globals';
 import { TApiCallState } from "../utils/ApiCallState";
 import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
-import { UserContext } from '../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 
 

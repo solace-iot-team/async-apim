@@ -17,7 +17,7 @@ import { APClientConnectorRaw, APClientRawError, APClientServerRaw } from './APC
 import { APClientConnectorOpenApi, APConnectorClientOpenApiInfo } from './APClientConnectorOpenApi';
 import { EAppState, Globals, TAPConfigIssueList, TAPPortalAppAbout } from './Globals';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
-import { TUserContext } from '../components/UserContextProvider/UserContextProvider';
+import { TUserContext } from '../components/APContextProviders/APUserContextProvider';
 import { APConnectorApiHelper, TAPConnectorAbout } from './APConnectorApiCalls';
 import { APLogger } from './APLogger';
 import { ApiCallState, TApiCallState } from './ApiCallState';

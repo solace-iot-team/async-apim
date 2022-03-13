@@ -14,7 +14,7 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageUserAccountCommon, TApiCallResult, TManagedObject, TUpdateApiObject } from "./ManageUserAccountCommon";
 import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidationRules";
-import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
 
 import "../APComponents.css";
 import "./ManageUserAccount.css";
@@ -27,7 +27,7 @@ export interface IEditUserSettingsProps {
 }
 
 export const EditUserSettings: React.FC<IEditUserSettingsProps> = (props: IEditUserSettingsProps) => {
-  // const componentName = 'EditUserSettings';
+  const ComponentName = 'EditUserSettings';
 
   type TManagedObjectFormData = TManagedObject;
 
@@ -58,9 +58,12 @@ export const EditUserSettings: React.FC<IEditUserSettingsProps> = (props: IEditU
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.user.userId);
-    setApiCallStatus(apiCallResult.apiCallState);
-    setManagedObject(apiCallResult.managedObject);
+
+    alert(`${ComponentName}: refactor me`)
+
+    // const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.user.userId);
+    // setApiCallStatus(apiCallResult.apiCallState);
+    // setManagedObject(apiCallResult.managedObject);
     props.onLoadingChange(false);
   }
 
@@ -76,7 +79,9 @@ export const EditUserSettings: React.FC<IEditUserSettingsProps> = (props: IEditU
 
   React.useEffect(() => {
     if(updatedManagedObject) {
-      dispatchUserContextAction( { type: 'SET_USER', user: updatedManagedObject });
+      alert(`${ComponentName}: refactor me`)
+
+      // dispatchUserContextAction( { type: 'SET_USER', user: updatedManagedObject });
     }
   }, [updatedManagedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 

@@ -1,10 +1,8 @@
 import React from "react";
-import { 
-  APSUser 
-} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
 import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 export type TUserRunttimeSettings = {
   currentOrganizationEntityId?: TAPEntityId;
@@ -12,7 +10,7 @@ export type TUserRunttimeSettings = {
 }
 
 export type TUserContext = {
-  user: APSUser,
+  apLoginUserDisplay: TAPLoginUserDisplay,
   currentAppState: EAppState,
   originAppState: EAppState,
   runtimeSettings: TUserRunttimeSettings,
@@ -26,7 +24,7 @@ export interface IUserContextProviderProps {
 // const componentName: string = "UserContextProvider";
 
 type UserContextAction = 
-  | { type: 'SET_USER', user: APSUser }
+  | { type: 'SET_USER', apLoginUserDisplay: TAPLoginUserDisplay }
   | { type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: TAPEntityId }
   | { type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: TAPEntityIdList }
   | { type: 'SET_USER_MESSAGE', userMessage: TAPUserMessage }
@@ -47,7 +45,7 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
     }
     case 'SET_USER': {
       const newState: TUserContext = JSON.parse(JSON.stringify(state));
-      newState.user = JSON.parse(JSON.stringify(action.user));
+      newState.apLoginUserDisplay = JSON.parse(JSON.stringify(action.apLoginUserDisplay));
       return newState;
     }
     case 'SET_CURRENT_ORGANIZATION_ENTITY_ID': {
@@ -84,20 +82,8 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
       return state;  
   }
 }
-const emptyUser: APSUser = { 
-  isActivated: false,
-  userId: '',
-  password: '',
-  profile: {
-    first: '',
-    last: '',
-    email: ''
-  },
-  systemRoles: [],
-  memberOfOrganizations: []
-};
 const initialUserContext: TUserContext = {
-  user: emptyUser,
+  apLoginUserDisplay: APLoginUsersDisplayService.create_Empty_ApLoginUserDisplay(),
   currentAppState: EAppState.UNDEFINED,
   originAppState: EAppState.UNDEFINED,
   runtimeSettings: {}

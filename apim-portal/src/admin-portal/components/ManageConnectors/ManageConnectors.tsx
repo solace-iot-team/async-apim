@@ -9,7 +9,7 @@ import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";

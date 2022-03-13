@@ -13,7 +13,6 @@ import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "..
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationUsersCommon";
 import { 
@@ -26,6 +25,7 @@ import APOrganizationUsersDisplayService, {
   TAPOrganizationUserDisplay, 
   TAPOrganizationUserDisplayListResponse 
 } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
+import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
@@ -51,7 +51,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   type TManagedObject = TAPOrganizationUserDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const loginAsHistory = useHistory<TUserLoginCredentials>();
+  const loginAsHistory = useHistory<TAPUserLoginCredentials>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);

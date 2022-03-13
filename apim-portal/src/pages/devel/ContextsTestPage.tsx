@@ -3,7 +3,7 @@ import { OrganizationContext } from '../../components/APContextProviders/APOrgan
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 
 export const ContextsTestPage: React.FC = () => {
 

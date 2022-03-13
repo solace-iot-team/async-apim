@@ -14,7 +14,7 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageUserAccountCommon, TApiCallResult, TManagedObject, TUpdateApiObject } from "./ManageUserAccountCommon";
 import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidationRules";
-import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
 
 import "../APComponents.css";
 import "./ManageUserAccount.css";
@@ -27,7 +27,7 @@ export interface IEditUserCredentialsProps {
 }
 
 export const EditUserCredentials: React.FC<IEditUserCredentialsProps> = (props: IEditUserCredentialsProps) => {
-  // const componentName = 'EditUserCredentials';
+  const ComponentName = 'EditUserCredentials';
 
   type TManagedObjectFormData = TManagedObject;
 
@@ -58,7 +58,7 @@ export const EditUserCredentials: React.FC<IEditUserCredentialsProps> = (props: 
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.user.userId);
+    const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.apLoginUserDisplay.apEntityId.id);
     setApiCallStatus(apiCallResult.apiCallState);
     setManagedObject(apiCallResult.managedObject);
     props.onLoadingChange(false);
@@ -76,7 +76,8 @@ export const EditUserCredentials: React.FC<IEditUserCredentialsProps> = (props: 
 
   React.useEffect(() => {
     if(updatedManagedObject) {
-      dispatchUserContextAction( { type: 'SET_USER', user: updatedManagedObject });
+      alert(`${ComponentName}: refactor me`)
+      // dispatchUserContextAction( { type: 'SET_USER', user: updatedManagedObject });
     }
   }, [updatedManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

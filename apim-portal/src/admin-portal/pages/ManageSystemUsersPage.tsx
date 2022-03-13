@@ -7,9 +7,9 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
+import { ManageSystemUsers } from '../components/ManageSystemUsers/ManageSystemUsers';
 
 import "../../pages/Pages.css";
-import { ManageSystemUsers } from '../components/ManageSystemUsers/ManageSystemUsers';
 
 export const ManageSystemUsersPage: React.FC = () => {
   // const componentName="ManageSystemUsersPage";

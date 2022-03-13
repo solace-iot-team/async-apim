@@ -4,7 +4,7 @@ import React from "react";
 import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { ManageUserAccountCommon, TApiCallResult, TManagedObject } from "./ManageUserAccountCommon";
-import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
 
@@ -42,7 +42,7 @@ export const ShowUserInfo: React.FC<IShowUserInfoProps> = (props: IShowUserInfoP
   // * useEffect Hooks *
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.user.userId);
+    const apiCallResult: TApiCallResult = await ManageUserAccountCommon.apiGetManagedObject(userContext.apLoginUserDisplay.apEntityId.id);
     setApiCallStatus(apiCallResult.apiCallState);
     setManagedObject(apiCallResult.managedObject);
     props.onLoadingChange(false);

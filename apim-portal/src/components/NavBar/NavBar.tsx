@@ -8,12 +8,12 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { Divider } from 'primereact/divider';
 
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
-import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { DisplaySystemHealthCheck } from "./DisplaySystemHealthCheck";
-import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
+// import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
@@ -22,6 +22,7 @@ import { TAPEntityIdList } from "../../utils/APEntityIdsService";
 
 import '../APComponents.css';
 import './NavBar.css';
+import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 export interface INavBarProps {}
 
@@ -186,7 +187,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const renderUserOpInfo = () => {
     return (
       <React.Fragment>
-        <p>{userContext.user.profile?.email}</p>
+        <p>{userContext.apLoginUserDisplay.apUserProfileDisplay.email}</p>
       </React.Fragment>
     );   
   }
@@ -229,7 +230,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
             <Button 
               className="p-button-text p-button-plain" 
               icon="pi pi-fw pi-user" 
-              label={`${userContext.user.profile?.first} ${userContext.user.profile?.last}`}
+              label={APLoginUsersDisplayService.create_UserDisplayName(userContext.apLoginUserDisplay.apUserProfileDisplay)}
               aria-haspopup={true}
               aria-controls="user_overlay_panel"
               onClick={(e) => userOverlayPanel.current.toggle(e) } />
@@ -258,7 +259,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
               dismissable={true}
               showCloseIcon={false}
               >
-                <SelectOrganization onSuccess={onSelectOrganizationSuccess} onError={onSelectOrganizationError} />
+                {`${componentName}: refactor me`}
+                {/* <SelectOrganization onSuccess={onSelectOrganizationSuccess} onError={onSelectOrganizationError} /> */}
             </OverlayPanel>
 
           </React.Fragment>

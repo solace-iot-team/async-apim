@@ -545,6 +545,25 @@ class APMemberOfService {
     return found;
   }
 
+  public get_ApMemberOfOrganizationEntityIdList({ apMemberOfOrganizationDisplayList }:{
+    apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
+  }): TAPEntityIdList {
+    return APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(apMemberOfOrganizationDisplayList); 
+  }
+
+  public get_ApMemberOfOrganizationDisplay({ apMemberOfOrganizationDisplayList, organizationId }:{
+    apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
+    organizationId: string;
+  }): TAPMemberOfOrganizationDisplay {
+    const funcName = 'get_ApMemberOfOrganizationDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    const found: TAPMemberOfOrganizationDisplay | undefined = apMemberOfOrganizationDisplayList.find( (x) => {
+      return x.apEntityId.id === organizationId;
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    return found;
+  }
+
   public is_ApsUserMemberOfOrganization({ organizationId, apsUserResponse }: {
     organizationId: string;
     apsUserResponse: APSUserResponse;

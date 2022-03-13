@@ -19,7 +19,7 @@ import {
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
@@ -136,10 +136,11 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     }
     if(!anyError && !existApiDeveloper) {
       try { 
-        await DevelopersService.createDeveloper({
-          organizationName: props.organizationName, 
-          requestBody: transformAPSUserToApiDeveloper(userContext.user)
-        });
+        alert(`${componentName}: refactor me`)
+        // await DevelopersService.createDeveloper({
+        //   organizationName: props.organizationName, 
+        //   requestBody: transformAPSUserToApiDeveloper(userContext.user)
+        // });
       } catch(e: any) {
         anyError = e;
       }  

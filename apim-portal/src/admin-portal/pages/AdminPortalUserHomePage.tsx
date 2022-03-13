@@ -1,8 +1,9 @@
 import React from 'react';
 import { Divider } from 'primereact/divider';
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { EAPHealthCheckSuccess } from '../../utils/APHealthCheck';
+import APLoginUsersDisplayService from '../../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
 
 export const AdminPortalUserHomePage: React.FC = () => {
 
@@ -24,7 +25,7 @@ export const AdminPortalUserHomePage: React.FC = () => {
       <h1 style={{fontSize: 'xx-large'}}>Welcome to the Async API Admin Portal</h1>
       <Divider />
       <div className='card p-mt-6'>
-        <div className='p-mt-4'>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</div>
+        <div className='p-mt-4'>Hello {APLoginUsersDisplayService.create_UserDisplayName(userContext.apLoginUserDisplay.apUserProfileDisplay)}.</div>
       </div>
       {renderIssues()}
     </div>

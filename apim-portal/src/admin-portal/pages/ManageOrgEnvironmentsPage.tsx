@@ -7,7 +7,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { ManageEnvironments } from '../components/ManageEnvironments/ManageEnvironments';
 
 import "../../pages/Pages.css";

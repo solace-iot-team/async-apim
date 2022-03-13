@@ -10,14 +10,18 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
-import { UserContext } from "../../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { EUICommonResourcePaths } from "../../../../utils/Globals";
 import APSystemUsersDisplayService, { 
   TAPSystemUserDisplay 
 } from "../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageSystemUsersCommon";
-import { TAPUserActivationDisplay, TAPUserAuthenticationDisplay, TAPUserProfileDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { 
+  TAPUserActivationDisplay, 
+  TAPUserAuthenticationDisplay, 
+  TAPUserProfileDisplay 
+} from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 import { EditNewSystemUserProfile } from "./EditNewSystemUserProfile";
 import { EditNewSystemUserAuthentication } from "./EditNewSystemUserAuthentication";
 import { EditNewSystemUserActivationStatus } from "./EditNewSystemUserActivationStatus";
@@ -177,7 +181,7 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
     props.setBreadCrumbItemList([{
       label: 'Edit'
     }]);
-    if(userContext.user.userId === props.userEntityId.id) setEditingYourself(true);
+    if(userContext.apLoginUserDisplay.apEntityId.id === props.userEntityId.id) setEditingYourself(true);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

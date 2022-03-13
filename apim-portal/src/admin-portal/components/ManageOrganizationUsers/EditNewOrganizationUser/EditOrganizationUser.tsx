@@ -18,7 +18,7 @@ import { EditOrganizationUserAuthentication } from "./EditOrganizationUserAuthen
 import APOrganizationUsersDisplayService, { 
   TAPOrganizationUserDisplay 
 } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
-import { UserContext } from "../../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { EUICommonResourcePaths } from "../../../../utils/Globals";
 
@@ -91,7 +91,7 @@ export const EditOrganizationUser: React.FC<IEditOrganizationUserProps> = (props
     props.setBreadCrumbItemList([{
       label: 'Edit'
     }]);
-    if(userContext.user.userId === props.userEntityId.id) setEditingYourself(true);
+    if(userContext.apLoginUserDisplay.apEntityId.id === props.userEntityId.id) setEditingYourself(true);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { EAppState, TLocationStateAppState } from '../../utils/Globals';
 
 export const AdminPortalHomePage: React.FC = () => {

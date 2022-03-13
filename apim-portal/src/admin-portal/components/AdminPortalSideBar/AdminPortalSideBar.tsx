@@ -5,7 +5,7 @@ import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";

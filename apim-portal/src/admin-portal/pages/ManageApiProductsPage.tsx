@@ -8,7 +8,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
 
 import "../../pages/Pages.css";

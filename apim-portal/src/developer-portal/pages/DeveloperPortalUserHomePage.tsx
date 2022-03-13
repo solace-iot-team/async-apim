@@ -1,6 +1,7 @@
 import React from 'react';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
+import APLoginUsersDisplayService from '../../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
 
 export const DeveloperPortalUserHomePage: React.FC = () => {
 
@@ -28,11 +29,12 @@ export const DeveloperPortalUserHomePage: React.FC = () => {
     }
   }
 
+  
   return (
     <React.Fragment>
       <h1 style={{fontSize: 'xx-large'}}>Welcome to the Async API Developer Portal</h1>
       <hr />
-      <div className='p-mt-4'>Hello {userContext.user.profile?.first} {userContext.user.profile?.last}.</div>
+      <div className='p-mt-4'>Hello {APLoginUsersDisplayService.create_UserDisplayName(userContext.apLoginUserDisplay.apUserProfileDisplay)}.</div>
       {userContext && renderAccountIssues()}
     </React.Fragment>
   );

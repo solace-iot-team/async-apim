@@ -5,7 +5,7 @@ import { APHealthCheckContext } from '../components/APHealthCheckContextProvider
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 import { ConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
 import { DisplaySystemHealthInfo } from '../components/SystemHealth/DisplaySystemHealthInfo';
-import { UserContext } from '../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../components/APContextProviders/APUserContextProvider';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../utils/APHealthCheck';
 import { EAppState, EUICommonResourcePaths, Globals } from '../utils/Globals';
 

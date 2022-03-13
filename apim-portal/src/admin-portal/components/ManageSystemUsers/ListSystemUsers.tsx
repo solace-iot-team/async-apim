@@ -13,7 +13,6 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import APSystemUsersDisplayService, { 
   TAPSystemUserDisplay, TAPSystemUserDisplayListResponse 
 } from "../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
-import { TUserLoginCredentials } from "../../../components/UserLogin/UserLogin";
 import { TAPUserDisplayLazyLoadingTableParameters } from "../../../displayServices/APUsersDisplayService/APUsersDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageSystemUsersCommon";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -21,6 +20,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "../../../utils/Globals";
+import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
@@ -45,7 +45,7 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
   const MessageNoManagedObjectsFoundWithFilter = 'No Users found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
-  const loginAsHistory = useHistory<TUserLoginCredentials>();
+  const loginAsHistory = useHistory<TAPUserLoginCredentials>();
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);

@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import { Divider } from 'primereact/divider';
 
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { EAppState, TLocationStateAppState } from '../../utils/Globals';
 
 import "../../pages/Pages.css";
