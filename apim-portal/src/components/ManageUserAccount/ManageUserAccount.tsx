@@ -1,216 +1,184 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
-import { Toolbar } from 'primereact/toolbar';
-import { Button } from 'primereact/button';
+import { MenuItem } from "primereact/api";
+import { TabPanel, TabView } from "primereact/tabview";
 
-import { TApiCallState } from "../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
+import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
+import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { TAPEntityId } from "../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageUserAccountCommon";
+import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+import { EUICommonResourcePaths } from "../../utils/Globals";
+import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
+import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { Loading } from "../Loading/Loading";
-import { EditUserProfile } from "./EditUserProfile";
-import { EditUserCredentials } from "./EditUserCredentials";
-import { EditUserSettings } from "./EditUserSettings";
-import { ShowUserInfo } from "./ShowUserInfo";
+import { ShowInfo } from "./ShowInfo";
+import { EditProfile } from "./EditProfile";
+import { EditAuthentication } from "./EditAuthentication";
 
-import "../APComponents.css";
+import '../APComponents.css';
 import "./ManageUserAccount.css";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 
 export interface IManageUserAccountProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IManageUserAccountProps) => {
-  const componentName = 'ManageUserAccount';
+  const ComponentName = 'ManageUserAccount';
 
-  enum E_COMPONENT_STATE {
-    UNDEFINED = "UNDEFINED",
-    VIEW_USER_INFO = "VIEW_USER_INFO",
-    MANAGE_USER_PROFILE = "MANAGE_USER_PROFILE",
-    MANAGE_USER_CREDENTIALS = "MANAGE_USER_CREDENTIALS",
-    MANAGE_USER_SETTINGS = "MANAGE_USER_SETTINGS",
-  }
-  type TComponentState = {
-    previousState: E_COMPONENT_STATE,
-    currentState: E_COMPONENT_STATE
-  }
-  const initialComponentState: TComponentState = {
-    previousState: E_COMPONENT_STATE.UNDEFINED,
-    currentState: E_COMPONENT_STATE.UNDEFINED
-  }
-  const setNewComponentState = (newState: E_COMPONENT_STATE) => {
-    setComponentState({
-      previousState: componentState.currentState,
-      currentState: newState
-    });
-  }
-  // const setPreviousComponentState = () => {
-  //   setComponentState({
-  //     previousState: componentState.currentState,
-  //     currentState: componentState.previousState
-  //   });
-  // }
+  type TManagedObject = TAPLoginUserDisplay;
 
-  const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  // const EditingYourselfMessage = 'You are editing yourself. You will need to login again afterwards.';
+  const history = useHistory();
+
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [resetContexts, setResetContexts] = React.useState<boolean>(false);
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [showUserInfoComponent, setShowUserInfoComponent] = React.useState<boolean>(false);
-  const [showUserProfileComponent, setShowUserProfileComponent] = React.useState<boolean>(false);
-  const [showUserCredentialsComponent, setShowUserCredentialsComponent] = React.useState<boolean>(false);
-  const [showUserSettingsComponent, setShowUserSettingsComponent] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+
+  const navigateTo = (path: string): void => { history.push(path); }
+
+  // * Api Calls *
+  const apiGetManagedObject = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER, `retrieve details for user: ${userEntityId.id}`);
+    try { 
+      const apUserDisplay: TAPLoginUserDisplay = await APLoginUsersDisplayService.apsGet_ApLoginUserDisplay({
+        userId: userEntityId.id,
+      });
+      setManagedObject(apUserDisplay);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doInitialize = async () => {
+    setIsLoading(true);
+    await apiGetManagedObject(userContext.apLoginUserDisplay.apEntityId);
+    setIsLoading(false);
+  }
+
+  const doReloadContexts = async () => {
+    await doInitialize();
+    setResetContexts(true);
+      //   setRefreshCounter(refreshCounter + 1);????
+  }
+
+  const doLogout = () => {
+    APContextsDisplayService.clear_Contexts({
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+    });
+    navigateTo(EUICommonResourcePaths.Login);
+  }
 
   // * useEffect Hooks *
+
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.VIEW_USER_INFO);
+    props.setBreadCrumbItemList([{
+      label: 'My Account'
+    }]);
+    doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    calculateShowStates(componentState); 
-  }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-  
+    if(managedObject !== undefined && resetContexts) {
+      dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: managedObject });
+      setResetContexts(false);
+    }
+  }, [resetContexts]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   React.useEffect(() => {
     if (apiCallStatus !== null) {
-      if(apiCallStatus.success) {
-        switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_UPDATE_USER:
-              props.onSuccess(apiCallStatus);
-            break;
-          default:
-        }
-      } else props.onError(apiCallStatus);
+      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_PROFILE) props.onSuccess(apiCallStatus);
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_USER_CREDENTIALS) props.onSuccess(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-
-  const onViewUserInfo = (): void => {
-    setNewComponentState(E_COMPONENT_STATE.VIEW_USER_INFO);
+  const onError_SubComponent = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
   }
 
-  const onManageUserProfile = (): void => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_PROFILE);
+  const onSaveSuccess_EditProfile = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    doReloadContexts();
   }
 
-  const onManageUserCredentials = (): void => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_CREDENTIALS);
+  const onSaveSuccess_EditAuthentication = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    doLogout();
   }
 
-  // const onManageUserSettings = (): void => {
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGE_USER_SETTINGS);
-  // }
-
-  // * Toolbar *
-  const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    if(!componentState.currentState) return undefined;
-
+  const renderContent = (mo: TManagedObject) => {
     return (
       <React.Fragment>
-        <Button label="Info" icon="pi pi-fw pi-info-circle" className="p-button-text p-button-plain p-button-outlined" onClick={onViewUserInfo} />
-        <Button label="Profile" icon="pi pi-fw pi-user" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserProfile} />
-        <Button label="Credentials" icon="pi pi-fw pi-lock" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserCredentials} />
-        {/* <Button label="Settings" icon="pi pi-fw pi-cog" className="p-button-text p-button-plain p-button-outlined" onClick={onManageUserSettings} /> */}
+        <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+          <TabPanel header='Info'>
+            <React.Fragment>
+              <ShowInfo
+                apLoginUserDisplay={mo}
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Profile'>
+            <React.Fragment>
+              <EditProfile
+                apLoginUserDisplay={mo}
+                onSaveSuccess={onSaveSuccess_EditProfile}
+                onError={onError_SubComponent}
+                onLoadingChange={setIsLoading}
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Authentication'>
+            <React.Fragment>
+              <EditAuthentication
+                apLoginUserDisplay={mo}
+                onSaveSuccess={onSaveSuccess_EditAuthentication}
+                onError={onError_SubComponent}
+                onLoadingChange={setIsLoading}
+              />
+            </React.Fragment>
+          </TabPanel>
+        </TabView>
       </React.Fragment>
-    );
+    ); 
   }
-
-  const renderToolbar = (): JSX.Element => {
-    const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
-    if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
-    else return (<React.Fragment></React.Fragment>);
-  }
-
-  // * prop callbacks *
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    // setPreviousComponentState();
-  }
-  const onSubComponentError = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-  }
-
-  const onSubComponentCancel = () => {
-    props.onCancel();
-  }
-
-  const calculateShowStates = (componentState: TComponentState) => {
-    const funcName = 'calculateShowStates';
-    const logName = `${componentName}.${funcName}()`;
-    if(!componentState.currentState || componentState.currentState === E_COMPONENT_STATE.UNDEFINED) {
-      setShowUserProfileComponent(false);
-      setShowUserCredentialsComponent(false);
-      setShowUserSettingsComponent(false);
-      setShowUserInfoComponent(false);
-    }
-    else if(componentState.currentState === E_COMPONENT_STATE.VIEW_USER_INFO) {
-      setShowUserProfileComponent(false);
-      setShowUserCredentialsComponent(false);
-      setShowUserSettingsComponent(false);
-      setShowUserInfoComponent(true);
-    }
-    else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_PROFILE) {
-      setShowUserProfileComponent(true);
-      setShowUserCredentialsComponent(false);
-      setShowUserSettingsComponent(false);
-      setShowUserInfoComponent(false);
-    }
-    else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_CREDENTIALS) {
-      setShowUserProfileComponent(false);
-      setShowUserCredentialsComponent(true);
-      setShowUserSettingsComponent(false);
-      setShowUserInfoComponent(false);
-    }
-    else if(componentState.currentState === E_COMPONENT_STATE.MANAGE_USER_SETTINGS) {
-      setShowUserProfileComponent(false);
-      setShowUserCredentialsComponent(false);
-      setShowUserSettingsComponent(true);
-      setShowUserInfoComponent(false);
-    } else {
-      throw new Error(`${logName}: unhandled state combination. componentState=${JSON.stringify(componentState)}`);
-    }
-  }
-
+  
   return (
     <div className="manage-user-account">
 
       <Loading show={isLoading} />      
 
-      {!isLoading &&
-        renderToolbar()
-      }
+      <APComponentHeader header={`My Account`} />
 
-      {showUserInfoComponent && 
-        <ShowUserInfo
-          onSuccess={onSubComponentSuccess} 
-          onError={onSubComponentError} 
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading} 
-        />
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
+      {managedObject && 
+        renderContent(managedObject)
       }
-      {showUserProfileComponent && 
-        <EditUserProfile
-          onSuccess={onSubComponentSuccess} 
-          onError={onSubComponentError} 
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading} 
-        />
-      }
-      {showUserCredentialsComponent && 
-        <EditUserCredentials
-          onSuccess={onSubComponentSuccess} 
-          onError={onSubComponentError} 
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading} 
-        />
-      }
-      {showUserSettingsComponent && 
-        <EditUserSettings
-          onSuccess={onSubComponentSuccess} 
-          onError={onSubComponentError} 
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading} 
-        />
-      }
-    </div>  
+    </div>
   );
 }

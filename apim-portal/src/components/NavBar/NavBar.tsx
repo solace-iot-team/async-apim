@@ -26,6 +26,7 @@ import APContextsDisplayService from "../../displayServices/APContextsDisplaySer
 
 import '../APComponents.css';
 import './NavBar.css';
+import { Loading } from "../Loading/Loading";
 
 export interface INavBarProps {}
 
@@ -47,6 +48,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const organizationOverlayPanel = React.useRef<any>(null);
 
   const [showAbout, setShowAbout] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -67,10 +69,12 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const onLogout = () => {
-    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
-    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
+    APContextsDisplayService.clear_Contexts({
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+    });
     navigateTo(EUICommonResourcePaths.Home);
-    // navigateToOriginHome();
   }
 
   const onHideUserOverlayPanel = () => {
@@ -90,6 +94,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
       navigateTo: navigateToCurrentHome,
+      onLoadingChange: setIsLoading
     });
   }
 
@@ -302,6 +307,9 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   
   return (
     <React.Fragment>
+
+      <Loading show={isLoading} />
+
       <div className="card" >
         <Menubar model={getMenuItems()} start={menubarStartTemplate} end={menubarEndTemplate} />
       </div>

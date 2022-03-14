@@ -7,12 +7,12 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { GlobalElementStyles, Globals } from '../utils/Globals';
 import { TApiCallState } from "../utils/ApiCallState";
-import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
 import { UserContext } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
 
 
 import "./Pages.css";
+import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
 
 export const ManageUserAccountPage: React.FC = (props: any) => {
   // const componentName = 'ManageUserAccountPage';
@@ -20,14 +20,14 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
-  const history = useHistory();
+
   /* eslint-disable @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
-  
 
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
 
   const navigateToCurrentHome = (): void => {
@@ -46,10 +46,6 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
     navigateToCurrentHome();
   }
 
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
-  
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
@@ -57,13 +53,13 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateToCurrentHome(); }
       },
-      { 
-        label: 'Account'
-      }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -79,7 +75,7 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
         onSuccess={onSuccess} 
         onError={onError} 
         onCancel={onCancel}
-        onBreadCrumbLabelList={onBreadcrumbLabelList}
+        setBreadCrumbItemList={setBreadCrumbItemList}
       />
     </React.Fragment>
   );

@@ -114,6 +114,7 @@ class APContextsDisplayService {
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
     navigateTo,
+    onLoadingChange,
   }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
     organizationEntityId: TAPEntityId | undefined;
@@ -124,7 +125,15 @@ class APContextsDisplayService {
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
     navigateTo: (path: string) => void;
+    onLoadingChange: (isLoading: boolean) => void;
   }): Promise<void> {
+
+    const internalNavigateTo = (path: string) => {
+      onLoadingChange(false);
+      navigateTo(path);
+    }
+
+    onLoadingChange(true);
 
     const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
       apLoginUserDisplay: apLoginUserDisplay,
@@ -150,12 +159,26 @@ class APContextsDisplayService {
       userContextCurrentAppState: userContextCurrentAppState,
       userContextOriginAppState: userContextOriginAppState,
       dispatchUserContextAction: dispatchUserContextAction,
-      navigateTo: navigateTo
+      navigateTo: internalNavigateTo
     });
 
   }
 
+  public clear_Contexts({
+    dispatchAuthContextAction,
+    dispatchUserContextAction,
+    dispatchOrganizationContextAction,
+  }:{
+    dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
+    dispatchUserContextAction: React.Dispatch<UserContextAction>;
+    dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+  }): void {
 
+    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
+    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
+    dispatchOrganizationContextAction({ type: 'CLEAR_ORGANIZATION_CONTEXT' });
+
+  }
   
 }
 

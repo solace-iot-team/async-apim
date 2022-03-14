@@ -80,7 +80,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
   // APS API calls
   // ********************************************************************************************************************************
 
-  private async apsGet_ApLoginUserDisplay({ userId }:{
+  public async apsGet_ApLoginUserDisplay({ userId }:{
     userId: string;
   }): Promise<TAPLoginUserDisplay> {
 
@@ -129,6 +129,16 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       }
       throw e;
     }
+  }
+
+  public async apsLoginAs({ userId }:{
+    userId: string;
+  }): Promise<TAPLoginUserDisplay | undefined> {
+    const funcName = 'apsLoginAs';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    
+    throw new Error(`${logName}: implement me`);
+
   }
 
   protected async apsUpdate_ApsUserUpdate({

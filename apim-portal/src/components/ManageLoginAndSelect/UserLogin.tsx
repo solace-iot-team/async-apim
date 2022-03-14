@@ -22,9 +22,10 @@ import "../APComponents.css";
 import "./ManageLoginAndSelect.css";
 
 export interface IUserLoginProps {
+  userCredentials?: TAPUserLoginCredentials;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apLoginUserDisplay: TAPLoginUserDisplay) => void;
-  userCredentials?: TAPUserLoginCredentials;
+  onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => {
@@ -72,14 +73,22 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const formId = ComponentName;
 
-  const apiLogin = async(mo: TManagedObject): Promise<TApiCallState> => {
+  const apiLogin = async(mo: TManagedObject, isLoginAs: boolean = false): Promise<TApiCallState> => {
     const funcName = 'apiLogin';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, `login ${mo.userId}`);
+    const userMessage: string = isLoginAs ? `login as ${mo.userId}` : `login ${mo.userId}`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, userMessage);
     try { 
-      const apLoginUserDisplay: TAPLoginUserDisplay | undefined = await APLoginUsersDisplayService.apsLogin({
-        apUserLoginCredentials: mo
-      });
+      let apLoginUserDisplay: TAPLoginUserDisplay | undefined = undefined;
+      if(isLoginAs) {
+        apLoginUserDisplay = await APLoginUsersDisplayService.apsLoginAs({
+          userId: mo.userId
+        });  
+      } else {
+        apLoginUserDisplay = await APLoginUsersDisplayService.apsLogin({
+          apUserLoginCredentials: mo
+        });  
+      }
       setLoggedIn_ApLoginUserDisplay(apLoginUserDisplay);
       if(apLoginUserDisplay === undefined) {
         setLoginSuccess(false);
@@ -95,13 +104,17 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }
 
   const doAutoLogin = async(mo: TManagedObject) => {
-    await apiLogin(mo);
+    props.onLoadingChange(true);
+    await apiLogin(mo, true);
+    props.onLoadingChange(false);
     setIsAutoLogin(true);
     setLoginAttempts(loginAttempts + 1);
   }
 
   const doManualLogin = async(mo: TManagedObject) => {
+    props.onLoadingChange(true);
     await apiLogin(mo);
+    props.onLoadingChange(false);
     setLoginAttempts(loginAttempts + 1);
   }
 
@@ -124,20 +137,14 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     if(managedObject !== undefined && !isAutoLogin) {
       setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
     }
-  }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(managedObject !== undefined && isAutoLogin) {
-  //     alert(`do the auto login... with managedObject = ${JSON.stringify(managedObject, null, 2)}`);
-  //   }
-  // }, [isAutoLogin]) /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [managedObject, isAutoLogin]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if (apiCallStatus !== null) {
+    if(apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -147,9 +154,11 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
       props.onSuccess(loggedIn_ApLoginUserDisplay);
     } else if(isAutoLogin && !loginSuccess) {
       // simulate manual login
+      setIsAutoLogin(false);
+      setLoginAttempts(loginAttempts + 1);
       setManagedObject(APLoginUsersDisplayService.create_Empty_ApUserLoginCredentials());
     }
-  }, [loggedIn_ApLoginUserDisplay, loginSuccess]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [loggedIn_ApLoginUserDisplay, loginSuccess, isAutoLogin]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     const funcName = 'onSubmitManagedObjectForm';

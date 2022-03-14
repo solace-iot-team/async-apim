@@ -1,10 +1,11 @@
 
 import React from "react";
-import { useLocation, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageLoginAndSelectCommon";
+import { Dialog } from "primereact/dialog";
+
+import { E_COMPONENT_STATE } from "./ManageLoginAndSelectCommon";
 import { TApiCallState } from "../../utils/ApiCallState";
-import { Loading } from "../Loading/Loading";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
@@ -14,22 +15,18 @@ import { TAPLoginUserDisplay, TAPUserLoginCredentials } from "../../displayServi
 import { UserLogin } from "./UserLogin";
 import { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 import APMemberOfService from "../../displayServices/APUsersDisplayService/APMemberOfService";
-import APRbacDisplayService from "../../displayServices/APRbacDisplayService";
-import { APOrganizationsService } from "../../utils/APOrganizationsService";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
+import { APSelectOrganization } from "../APSelectOrganization";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 
 import '../APComponents.css';
 import "./ManageLoginAndSelect.css";
-import { AuthHelper } from "../../auth/AuthHelper";
-import { EAppState, EUICommonResourcePaths, Globals } from "../../utils/Globals";
-import { APSelectOrganization } from "../APSelectOrganization";
-import { Dialog } from "primereact/dialog";
-import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 
 export interface IManageLoginAndSelectProps {
+  userCredentials?: TAPUserLoginCredentials;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  userCredentials?: TAPUserLoginCredentials;
+  onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props: IManageLoginAndSelectProps) => {
@@ -51,15 +48,9 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
       currentState: newState
     });
   }
-  const setPreviousComponentState = () => {
-    setComponentState({
-      previousState: componentState.currentState,
-      currentState: componentState.previousState
-    });
-  }
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -77,8 +68,6 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   const navigateTo = (path: string): void => { history.push(path); }
 
   const doSetupLoggedInUser = async (mo: TManagedObject, organizationEntityId: TAPEntityId | undefined) => {
-    const funcName = 'doSetupLoggedInUser';
-    const logName = `${ComponentName}.${funcName}()`;
 
     dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo });
 
@@ -92,15 +81,16 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
       navigateTo: navigateTo,
+      onLoadingChange: props.onLoadingChange
     });
   }
 
   const doInitialize = async () => {
-
-    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
-    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
-    dispatchOrganizationContextAction({ type: 'CLEAR_ORGANIZATION_CONTEXT'});
-
+    APContextsDisplayService.clear_Contexts({
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+    });
     setNewComponentState(E_COMPONENT_STATE.LOGIN_SCREEN);
   }
 
@@ -133,11 +123,6 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
       setShowUserLogin(false);
       setShowSelectOrganization(true);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE.DONE) {
-      setShowUserLogin(false);
-      setShowSelectOrganization(false);
-      alert('DONE...')
-    }
   }
 
   const onLoginSuccess = (apLoginUserDisplay: TAPLoginUserDisplay) => {
@@ -169,13 +154,12 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   return (
     <div className="user-login">
 
-      <Loading show={isLoading} />      
-
       {showUserLogin &&
         <UserLogin
           onSuccess={onLoginSuccess}
           onError={onLoginError}
           userCredentials={props.userCredentials}
+          onLoadingChange={props.onLoadingChange} 
         />
       }
       {showSelectOrganization && managedObject &&
@@ -195,9 +179,6 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
           />
         </Dialog>
       }
-
-
-
 
     </div>
   );
