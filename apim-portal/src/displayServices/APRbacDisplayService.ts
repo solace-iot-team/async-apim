@@ -1,4 +1,4 @@
-import APEntityIdsService, { TAPEntityIdList } from '../utils/APEntityIdsService';
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import { 
   APRbac, 
   EAPRbacRoleScope, 
@@ -17,7 +17,11 @@ import {
   EAPSSystemAuthRole, 
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
-import APMemberOfService, { TAPMemberOfOrganizationDisplay } from './APUsersDisplayService/APMemberOfService';
+import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from './APUsersDisplayService/APOrganizationUsersDisplayService';
+import APMemberOfService, { 
+  TAPMemberOfBusinessGroupDisplay, 
+  TAPMemberOfBusinessGroupDisplayTreeNodeList, 
+} from './APUsersDisplayService/APMemberOfService';
 
 class APRbacDisplayService {
   private readonly BaseComponentName = "APRbacDisplayService";
@@ -105,9 +109,9 @@ class APRbacDisplayService {
     return entityIdList;
   }
 
-  public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, organizationId }:{
+  public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, apOrganizationEntityId }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
-    organizationId: string | undefined;
+    apOrganizationEntityId: TAPEntityId | undefined;
   }): Promise<string> {
     const funcName = 'create_AuthorizedResourcePathListAsString';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -130,23 +134,52 @@ class APRbacDisplayService {
     });
 
     // selected organization id if any
-    if(organizationId !== undefined) {
-      const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = APMemberOfService.get_ApMemberOfOrganizationDisplay({
-        apMemberOfOrganizationDisplayList: apLoginUserDisplay.apMemberOfOrganizationDisplayList,
-        organizationId: organizationId,
+    if(apOrganizationEntityId !== undefined) {
+
+      // get the Organization User to get the roles, the business groups and their roles
+      const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+        userId: apLoginUserDisplay.apEntityId.id,
+        organizationEntityId: apOrganizationEntityId,
+        fetch_ApOrganizationAssetInfoDisplayList: false,
       });
-      const legcayOrganizationRoles: APSOrganizationAuthRoleList = APEntityIdsService.create_IdList(apMemberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList) as APSOrganizationAuthRoleList;
-      const organizationRoles: APSOrganizationAuthRoleList = legcayOrganizationRoles.concat(APEntityIdsService.create_IdList(apMemberOfOrganizationDisplay.apOrganizationRoleEntityIdList) as APSOrganizationAuthRoleList);
+      if(apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
+
+      // unused legacy roles, keep as reference
+      // const legcayOrganizationRoles: APSOrganizationAuthRoleList = APEntityIdsService.create_IdList(apOrganizationUserDisplay.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList) as APSOrganizationAuthRoleList;
+      // alert(`${logName}: legcayOrganizationRoles = \n${JSON.stringify(legcayOrganizationRoles, null, 2)}`);
+      // const organizationRoles: APSOrganizationAuthRoleList = legcayOrganizationRoles.concat(APEntityIdsService.create_IdList(apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList) as APSOrganizationAuthRoleList);
+
+      const organizationRoles: APSOrganizationAuthRoleList = APEntityIdsService.create_IdList(apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList) as APSOrganizationAuthRoleList;
       organizationRoles.forEach((role: EAPSOrganizationAuthRole) => {
         const apRbacRole: TAPRbacRole = APRbac.getByRole(role);
         combinedUiResourcePathList.push(...apRbacRole.uiResourcePaths);
       });
-      // get the businessGroupId from last session in the organization (default to first one memberOf if not available)
-      // get the calculated roles of that businessGroupId 
-      alert(`${logName}: todo: add business group roles`);
+
+      const apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_ApMemberOfBusinessGroupDisplayTreeNodeList({
+        organizationEntityId: apOrganizationEntityId,
+        apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+        apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
+        completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
+        pruneBusinessGroupsNotAMemberOf: true,
+      });
+
+      // TODO: once the lastSession.businessGroupId is known, use that
+      // if not known, use the first group user has a role in, if any
+      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined= APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      });
+      if(apMemberOfBusinessGroupDisplay !== undefined) {
+        // add the calculated roles, not the configured ones
+        if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+        const businessGroupRoles: APSBusinessGroupAuthRoleList = APEntityIdsService.create_IdList(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList) as APSBusinessGroupAuthRoleList;
+        businessGroupRoles.forEach((role: EAPSBusinessGroupAuthRole) => {
+          const apRbacRole: TAPRbacRole = APRbac.getByRole(role);
+          combinedUiResourcePathList.push(...apRbacRole.uiResourcePaths);
+        });
+      }
     }
 
-    if(combinedUiResourcePathList.length === 0) throw new Error(`${logName}: cannot find any uiResourcePaths for any of the user roles in rbac roles. \nuser==${JSON.stringify(apLoginUserDisplay, null, 2)}\norganizationId=${organizationId}`);
+    if(combinedUiResourcePathList.length === 0) throw new Error(`${logName}: cannot find any uiResourcePaths for any of the user roles in rbac roles. \nuser==${JSON.stringify(apLoginUserDisplay, null, 2)}\npOrganizationEntityId=${apOrganizationEntityId}`);
     // de-dup resource paths
     const uniqueCombinedcResourcePathList: Array<EUICombinedResourcePaths> = Globals.deDuplicateStringList(combinedUiResourcePathList) as Array<EUICombinedResourcePaths>;
     // console.log(`${logName}: uniqueCombinedcResourcePathList = ${JSON.stringify(uniqueCombinedcResourcePathList)}`);
@@ -205,7 +238,7 @@ class APRbacDisplayService {
   // }
 
 
-  
+
 }
 
 export default new APRbacDisplayService();

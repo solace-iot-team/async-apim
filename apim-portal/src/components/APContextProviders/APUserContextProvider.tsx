@@ -1,12 +1,15 @@
 import React from "react";
 import { TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
-import { TAPEntityId } from '../../utils/APEntityIdsService';
+import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { TAPMemberOfBusinessGroupDisplayTreeNodeList } from "../../displayServices/APUsersDisplayService/APMemberOfService";
 
 export type TUserRunttimeSettings = {
   currentOrganizationEntityId?: TAPEntityId;
-  // availableOrganizationEntityIdList?: TAPEntityIdList;
+  currentBusinessGroupEntityId?: TAPEntityId;
+  currentRolesEntityIdList?: TAPEntityIdList;
+  apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
 }
 
 export type TUserContext = {
@@ -26,7 +29,11 @@ export interface IUserContextProviderProps {
 export type UserContextAction = 
   | { type: 'SET_USER', apLoginUserDisplay: TAPLoginUserDisplay }
   | { type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: TAPEntityId }
-  // | { type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: TAPEntityIdList }
+  | { type: 'SET_CURRENT_BUSINESS_GROUP_ENTITY_ID', currentBusinessGroupEntityId: TAPEntityId }
+  | { type: 'CLEAR_CURRENT_BUSINESS_GROUP_ENTITY_ID' }
+  | { type: 'SET_CURRENT_ROLES', currentRolesEntityIdList: TAPEntityIdList }
+  | { type: 'CLEAR_CURRENT_ROLES' }
+  | { type: 'SET_AP_MEMBER_OF_BUSINESS_GROUP_DISPLAY_TREE_NODE_LIST', apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList }
   | { type: 'SET_USER_MESSAGE', userMessage: TAPUserMessage }
   | { type: 'CLEAR_USER_MESSAGE' }
   | { type: 'CLEAR_USER_CONTEXT' }
@@ -51,6 +58,31 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
     case 'SET_CURRENT_ORGANIZATION_ENTITY_ID': {
       const newState: TUserContext = JSON.parse(JSON.stringify(state));
       newState.runtimeSettings.currentOrganizationEntityId = action.currentOrganizationEntityId;
+      return newState;
+    }
+    case 'SET_CURRENT_BUSINESS_GROUP_ENTITY_ID': {
+      const newState: TUserContext = JSON.parse(JSON.stringify(state));
+      newState.runtimeSettings.currentBusinessGroupEntityId = action.currentBusinessGroupEntityId;
+      return newState;
+    }
+    case 'CLEAR_CURRENT_BUSINESS_GROUP_ENTITY_ID': {
+      const newState: TUserContext = JSON.parse(JSON.stringify(state));
+      newState.runtimeSettings.currentBusinessGroupEntityId = undefined;
+      return newState;
+    }
+    case 'SET_CURRENT_ROLES': {
+      const newState: TUserContext = JSON.parse(JSON.stringify(state));
+      newState.runtimeSettings.currentRolesEntityIdList = action.currentRolesEntityIdList;
+      return newState;
+    }
+    case 'CLEAR_CURRENT_ROLES': {
+      const newState: TUserContext = JSON.parse(JSON.stringify(state));
+      newState.runtimeSettings.currentRolesEntityIdList = undefined;
+      return newState;
+    }
+    case 'SET_AP_MEMBER_OF_BUSINESS_GROUP_DISPLAY_TREE_NODE_LIST': {
+      const newState: TUserContext = JSON.parse(JSON.stringify(state));
+      newState.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList = action.apMemberOfBusinessGroupDisplayTreeNodeList;
       return newState;
     }
     case 'SET_USER_MESSAGE': {
@@ -86,7 +118,9 @@ const initialUserContext: TUserContext = {
   apLoginUserDisplay: APLoginUsersDisplayService.create_Empty_ApLoginUserDisplay(),
   currentAppState: EAppState.UNDEFINED,
   originAppState: EAppState.UNDEFINED,
-  runtimeSettings: {}
+  runtimeSettings: {
+    apMemberOfBusinessGroupDisplayTreeNodeList: []
+  }
 }
 const initialAction: React.Dispatch<UserContextAction> = (value: UserContextAction) => {};
 

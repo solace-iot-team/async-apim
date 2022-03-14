@@ -38,6 +38,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     return apUserLoginCredentials;
   }
 
+  /** create user with roles  */
   private create_ApLoginUserDisplay_From_ApiEntities({ apsUserResponse }: {
     apsUserResponse: APSUserResponse;
   }): TAPLoginUserDisplay {
@@ -47,7 +48,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     });
     const apLoginUserDisplay: TAPLoginUserDisplay = {
       ...base,
-      apMemberOfOrganizationDisplayList: APMemberOfService.create_ApMemberOfOrganizationDisplayList_EmptyRoles({
+      apMemberOfOrganizationDisplayList: APMemberOfService.create_ApMemberOfOrganizationDisplayList({
         apsUserResponse: apsUserResponse,
       })
     }

@@ -589,6 +589,27 @@ class APMemberOfService {
     return found;
   }
 
+  /** Return the first ApMemberOfBusinessGroupDisplay in the tree that has configured roles in it. */
+  public find_default_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayTreeNodeList }:{
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+  }): TAPMemberOfBusinessGroupDisplay | undefined {
+
+    const find_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode): TAPMemberOfBusinessGroupDisplay | undefined => {
+      if(treeNode.children.length > 0) return find_list_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(treeNode.children);
+      else return undefined;
+    }
+
+    const find_list_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles = (treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList): TAPMemberOfBusinessGroupDisplay | undefined => {
+      for(const treeNode of treeNodeList) {
+        if(treeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList && treeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) {
+          return treeNode.apMemberOfBusinessGroupDisplay;
+        }
+        return find_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(treeNode);
+      }
+    }
+    return find_list_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(apMemberOfBusinessGroupDisplayTreeNodeList);
+  }
+
   /** Updates existing apMemberOfBusinessGroupDisplayList and returns modified list */
   public update_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList, businessGroupEntityId, new_apConfiguredBusinessGroupRoleEntityIdList, completeApOrganizationBusinessGroupDisplayList }:{
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;

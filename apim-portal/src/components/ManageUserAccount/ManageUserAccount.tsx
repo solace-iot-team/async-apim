@@ -9,6 +9,7 @@ import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { TAPEntityId } from "../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageUserAccountCommon";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
@@ -19,11 +20,10 @@ import { Loading } from "../Loading/Loading";
 import { ShowInfo } from "./ShowInfo";
 import { EditProfile } from "./EditProfile";
 import { EditAuthentication } from "./EditAuthentication";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 
 import '../APComponents.css';
 import "./ManageUserAccount.css";
-import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
-import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 
 export interface IManageUserAccountProps {
   onError: (apiCallState: TApiCallState) => void;

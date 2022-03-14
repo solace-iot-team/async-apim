@@ -30,12 +30,14 @@ export const ShowInfo: React.FC<IShowInfoProps> = (props: IShowInfoProps) => {
     return (<>{currentOrganizationEntityId.displayName}</>);
   }
 
-  const renderCurrentBusinessGroup = (): JSX.Element => {
-    return (<>TODO: show business group </>);
+  const renderCurrentBusinessGroup = (currentBusinessGroupEntityId: TAPEntityId | undefined): JSX.Element => {
+    if(currentBusinessGroupEntityId === undefined) return (<>None.</>);
+    return (<>{currentBusinessGroupEntityId.displayName}</>);
   }
 
-  const renderCurrentRoles = (): JSX.Element => {
-    return (<>TODO: render current roles</>);
+  const renderCurrentRoles = (currentRolesEntityIdList: TAPEntityIdList | undefined): JSX.Element => {
+    if(currentRolesEntityIdList === undefined || currentRolesEntityIdList.length === 0) return (<>None.</>);
+    return (<>{APEntityIdsService.create_DisplayNameList(APEntityIdsService.sort_byDisplayName(currentRolesEntityIdList)).join(', ')}</>);
   }
 
   const renderComponent = () => {
@@ -56,8 +58,8 @@ export const ShowInfo: React.FC<IShowInfoProps> = (props: IShowInfoProps) => {
           <div><b>System Roles</b>: {renderSystemRoles(props.apLoginUserDisplay.apSystemRoleEntityIdList)}</div>
       
           <div><b>Current Organization</b>: {renderCurrentOrganization(userContext.runtimeSettings.currentOrganizationEntityId)}</div>
-          <div><b>Current Business Group</b>: {renderCurrentBusinessGroup()}</div>
-          <div><b>Current Roles</b>: {renderCurrentRoles()}</div>
+          <div><b>Current Business Group</b>: {renderCurrentBusinessGroup(userContext.runtimeSettings.currentBusinessGroupEntityId)}</div>
+          <div><b>Current Roles</b>: {renderCurrentRoles(userContext.runtimeSettings.currentRolesEntityIdList)}</div>
           
           <Divider />
 
