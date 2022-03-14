@@ -22,6 +22,9 @@ import '../APComponents.css';
 import "./ManageLoginAndSelect.css";
 import { AuthHelper } from "../../auth/AuthHelper";
 import { EAppState, EUICommonResourcePaths, Globals } from "../../utils/Globals";
+import { APSelectOrganization } from "../APSelectOrganization";
+import { Dialog } from "primereact/dialog";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 
 export interface IManageLoginAndSelectProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -78,62 +81,18 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
 
     dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo });
-    const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
-      apMemberOfOrganizationDisplayList: mo.apMemberOfOrganizationDisplayList,
-    });
-    dispatchUserContextAction({ type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: memberOfOrganizationEntityIdList});
 
-    const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
+    await APContextsDisplayService.setup_Contexts({
       apLoginUserDisplay: mo,
-      organizationId: organizationEntityId?.id
+      organizationEntityId: organizationEntityId,
+      isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      userContextCurrentAppState: userContext.currentAppState,
+      userContextOriginAppState: userContext.originAppState,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      navigateTo: navigateTo,
     });
-    dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
-      isLoggedIn: true, 
-      authorizedResourcePathsAsString: authorizedResourcePathsAsString,
-    }});
-
-    if(organizationEntityId !== undefined) {
-      dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: organizationEntityId });
-      // only if connector is defined & healthy
-      if(configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL) {
-        dispatchOrganizationContextAction({ type: 'SET_ORGANIZATION_CONTEXT', organizationContext: await APOrganizationsService.getOrganization(organizationEntityId.id)});
-      }
-    }
-
-    // setup the app
-    if(configContext.connector === undefined || healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL) {
-      // no access to admin portal ==> redirect to system unavailable
-      if(!AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)) {
-        navigateTo(EUICommonResourcePaths.HealthCheckView);
-        return;
-      }
-    }
-
-    let originAppState: EAppState = userContext.originAppState;
-    let newCurrentAppState: EAppState = userContext.currentAppState;
-
-    if(userContext.currentAppState !== EAppState.UNDEFINED) {
-      newCurrentAppState = userContext.currentAppState;
-      // catch state management errors
-      if(originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: orginAppState is undefined, currentAppState=${newCurrentAppState}`);
-    } else {
-      // came directly to /login url
-      // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> developer portal
-      if(AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)) {
-        originAppState = EAppState.ADMIN_PORTAL; 
-        newCurrentAppState = EAppState.ADMIN_PORTAL;
-      } else if(AuthHelper.isAuthorizedToAccessDeveloperPortal(authorizedResourcePathsAsString)) {
-        originAppState = EAppState.DEVELOPER_PORTAL; 
-        newCurrentAppState = EAppState.DEVELOPER_PORTAL;
-      } else {
-        originAppState = EAppState.DEVELOPER_PORTAL; 
-        newCurrentAppState = EAppState.DEVELOPER_PORTAL;
-        // throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
-      }
-    }
-    dispatchUserContextAction({ type: 'SET_ORIGIN_APP_STATE', appState: originAppState});
-    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: newCurrentAppState});
-    navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
   }
 
   const doInitialize = async () => {
@@ -155,15 +114,8 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect';
-    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      // else {
-      //   if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.xxxx) {
-      //     props.onSuccess(apiCallStatus);
-      //   }
-      // }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -207,6 +159,13 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     props.onError(apiCallStatus);
   }
 
+  const onSelectOrganizationSuccess = (organizationEntityId: TAPEntityId) => {
+    const funcName = 'onSelectOrganizationSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    doSetupLoggedInUser(managedObject, organizationEntityId);
+  }
+
   return (
     <div className="user-login">
 
@@ -220,13 +179,24 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
         />
       }
       {showSelectOrganization && managedObject &&
-        alert('showSelectOrganization')
-        // availableOrganizationEntityIdList = 
-        // const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
-        //   apMemberOfOrganizationDisplayList: apLoginUserDisplay.apMemberOfOrganizationDisplayList,
-        // });
-    
+        <Dialog 
+          className="p-fluid"
+          visible={showSelectOrganization}
+          style={{ width: '450px' }}
+          modal
+          onHide={() => {}}
+          closable={false}
+        >
+          <APSelectOrganization
+            apMemberOfOrganizationEntityIdList={APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+              apMemberOfOrganizationDisplayList: managedObject.apMemberOfOrganizationDisplayList,
+            })}
+            onSuccess={onSelectOrganizationSuccess} 
+          />
+        </Dialog>
       }
+
+
 
 
     </div>

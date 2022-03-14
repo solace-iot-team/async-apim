@@ -14,7 +14,7 @@ export type TAPAuthContext = {
   // roles?: TAPRbacRoleList
 }
 
-type AuthContextAction = 
+export type AuthContextAction = 
   | { type: 'SET_AUTH_CONTEXT', authContext: TAPAuthContext }
   | { type: 'SET_IS_LOGGED_IN' }
   | { type: 'CLEAR_AUTH_CONTEXT' }

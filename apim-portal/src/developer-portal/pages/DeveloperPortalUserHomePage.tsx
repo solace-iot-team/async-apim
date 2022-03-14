@@ -2,6 +2,8 @@ import React from 'react';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import APLoginUsersDisplayService from '../../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
+import { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APMemberOfService from '../../displayServices/APUsersDisplayService/APMemberOfService';
 
 export const DeveloperPortalUserHomePage: React.FC = () => {
 
@@ -9,8 +11,12 @@ export const DeveloperPortalUserHomePage: React.FC = () => {
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
 
   const renderAccountIssues = () => {
-    const orgList = userContext.runtimeSettings.availableOrganizationEntityIdList;
-    if(orgList && orgList.length === 0) {
+
+    const availableOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+      apMemberOfOrganizationDisplayList: userContext.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
+    });
+
+    if(availableOrganizationEntityIdList && availableOrganizationEntityIdList.length === 0) {
       const userMessage = 'You are not a member of any organization. Please contact your system administrator.';
       return (
           <div className="card p-mt-4 p-fluid">

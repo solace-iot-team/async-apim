@@ -7,7 +7,7 @@ export interface IOrganizationContextProviderProps {
   children: any
 }
 
-type TOrganizationContextAction = 
+export type TOrganizationContextAction = 
   | { type: 'SET_ORGANIZATION_CONTEXT', organizationContext: TAPOrganzationContext }
   | { type: 'CLEAR_ORGANIZATION_CONTEXT' }
   | { type: 'default'};

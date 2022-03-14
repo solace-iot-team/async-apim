@@ -10,24 +10,27 @@ import { Divider } from 'primereact/divider';
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
+import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";
 import { DisplaySystemHealthCheck } from "./DisplaySystemHealthCheck";
-// import { SelectOrganization } from "../SelectOrganization/SelectOrganization";
-import { TApiCallState } from "../../utils/ApiCallState";
 import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Globals } from "../../utils/Globals";
 import { Config } from '../../Config';
 import { APDisplayAbout } from "../APAbout/APDisplayAbout";
-import { TAPEntityIdList } from "../../utils/APEntityIdsService";
+import { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
+import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSelectOrganization } from "../APSelectOrganization";
+import APMemberOfService from "../../displayServices/APUsersDisplayService/APMemberOfService";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 
 import '../APComponents.css';
 import './NavBar.css';
-import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 export interface INavBarProps {}
 
 export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
-  const componentName = 'NavBar';
+  const ComponentName = 'NavBar';
 
   const UndefinedPortalLogoUrl = process.env.PUBLIC_URL + '/images/logo.png';
   const AdminPortalLogoUrl = process.env.PUBLIC_URL + '/admin-portal/images/logo.png';
@@ -35,7 +38,10 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
   const history = useHistory();
   const userOverlayPanel = React.useRef<any>(null);
   const organizationOverlayPanel = React.useRef<any>(null);
@@ -71,22 +77,38 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     organizationOverlayPanel.current.hide();
   }
 
-  const onSelectOrganizationSuccess = () => {
-    organizationOverlayPanel.current.hide();
-    userOverlayPanel.current.hide();
-    navigateToCurrentHome();
+  const doSetupOrganization = async (organizationEntityId: TAPEntityId) => {
+    // const funcName = 'doSetupOrganization';
+    // const logName = `${ComponentName}.${funcName}()`;
+    await APContextsDisplayService.setup_Contexts({
+      apLoginUserDisplay: userContext.apLoginUserDisplay,
+      organizationEntityId: organizationEntityId,
+      isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      userContextCurrentAppState: userContext.currentAppState,
+      userContextOriginAppState: userContext.originAppState,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      navigateTo: navigateToCurrentHome,
+    });
   }
 
-  const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
-    dispatchUserContextAction({ type: 'SET_USER_MESSAGE', userMessage: {
-      success: false,
-      context: {
-        internalAction: apiCallStatus.context.action,
-        userAction: 'select organization',
-        userMessage: apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error'
-      }
-    }})
+  const onSelectOrganizationSuccess = (organizationEntityId: TAPEntityId) => {
+    organizationOverlayPanel.current.hide();
+    userOverlayPanel.current.hide();
+    doSetupOrganization(organizationEntityId);
   }
+
+  // const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
+  //   dispatchUserContextAction({ type: 'SET_USER_MESSAGE', userMessage: {
+  //     success: false,
+  //     context: {
+  //       internalAction: apiCallStatus.context.action,
+  //       userAction: 'select organization',
+  //       userMessage: apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error'
+  //     }
+  //   }})
+  // }
 
   const getDevelMenuItem = (): MenuItem => {
     return {
@@ -154,7 +176,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
 
   const getLogoUrl = (appState: EAppState): string => {
     const funcName = 'getLogoUrl';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     switch(appState) {
       case EAppState.ADMIN_PORTAL:
         return AdminPortalLogoUrl;
@@ -192,7 +214,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     );   
   }
   const renderOpOrganization = () => {
-    const availableOrganizationEntityIdList: TAPEntityIdList = userContext.runtimeSettings.availableOrganizationEntityIdList || [];
+
+    const availableOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+      apMemberOfOrganizationDisplayList: userContext.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
+    });
+
     if(userContext.runtimeSettings.currentOrganizationEntityId) {
       const label: string = 'Organization: ' + userContext.runtimeSettings.currentOrganizationEntityId.displayName;
       if(availableOrganizationEntityIdList.length < 2) {
@@ -259,8 +285,12 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
               dismissable={true}
               showCloseIcon={false}
               >
-                {`${componentName}: refactor me`}
-                {/* <SelectOrganization onSuccess={onSelectOrganizationSuccess} onError={onSelectOrganizationError} /> */}
+                <APSelectOrganization
+                  apMemberOfOrganizationEntityIdList={APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+                    apMemberOfOrganizationDisplayList: userContext.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
+                  })}
+                  onSuccess={onSelectOrganizationSuccess} 
+                />
             </OverlayPanel>
 
           </React.Fragment>

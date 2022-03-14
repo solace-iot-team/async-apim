@@ -1,12 +1,12 @@
 import React from "react";
 import { TAPUserMessage } from "../APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
-import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
+import { TAPEntityId } from '../../utils/APEntityIdsService';
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 export type TUserRunttimeSettings = {
   currentOrganizationEntityId?: TAPEntityId;
-  availableOrganizationEntityIdList?: TAPEntityIdList;
+  // availableOrganizationEntityIdList?: TAPEntityIdList;
 }
 
 export type TUserContext = {
@@ -23,10 +23,10 @@ export interface IUserContextProviderProps {
 
 // const componentName: string = "UserContextProvider";
 
-type UserContextAction = 
+export type UserContextAction = 
   | { type: 'SET_USER', apLoginUserDisplay: TAPLoginUserDisplay }
   | { type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: TAPEntityId }
-  | { type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: TAPEntityIdList }
+  // | { type: 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST', availableOrganizationEntityIdList: TAPEntityIdList }
   | { type: 'SET_USER_MESSAGE', userMessage: TAPUserMessage }
   | { type: 'CLEAR_USER_MESSAGE' }
   | { type: 'CLEAR_USER_CONTEXT' }
@@ -63,11 +63,11 @@ const UserContextReducer = (state: TUserContext, action: UserContextAction): TUs
       newState.userMessage = undefined;
       return newState;
     }
-    case 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST': {
-      const newState: TUserContext = JSON.parse(JSON.stringify(state));
-      newState.runtimeSettings.availableOrganizationEntityIdList = action.availableOrganizationEntityIdList;
-      return newState;
-    }
+    // case 'SET_AVAILABLE_ORGANIZATION_ENTITY_ID_LIST': {
+    //   const newState: TUserContext = JSON.parse(JSON.stringify(state));
+    //   newState.runtimeSettings.availableOrganizationEntityIdList = action.availableOrganizationEntityIdList;
+    //   return newState;
+    // }
     case 'SET_ORIGIN_APP_STATE': {
       const newState: TUserContext = JSON.parse(JSON.stringify(state));
       newState.originAppState = action.appState;
