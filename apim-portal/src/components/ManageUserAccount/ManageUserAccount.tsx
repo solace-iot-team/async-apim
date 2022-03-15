@@ -85,7 +85,7 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
   }
 
   const doLogout = () => {
-    APContextsDisplayService.clear_Contexts({
+    APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,

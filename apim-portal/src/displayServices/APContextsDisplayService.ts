@@ -148,7 +148,8 @@ class APContextsDisplayService {
     navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
   }
 
-  public async setup_Contexts({
+  /** Setup the contexts after user login */
+  public async setup_LoginContexts({
     apLoginUserDisplay,
     organizationEntityId,
     isConnectorAvailable,
@@ -208,7 +209,8 @@ class APContextsDisplayService {
 
   }
 
-  public clear_Contexts({
+  /** Clear the contexts after user logout */
+  public clear_LoginContexts({
     dispatchAuthContextAction,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,

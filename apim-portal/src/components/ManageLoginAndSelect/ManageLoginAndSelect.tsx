@@ -71,7 +71,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
 
     dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo });
 
-    await APContextsDisplayService.setup_Contexts({
+    await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: mo,
       organizationEntityId: organizationEntityId,
       isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
@@ -86,7 +86,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   }
 
   const doInitialize = async () => {
-    APContextsDisplayService.clear_Contexts({
+    APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,

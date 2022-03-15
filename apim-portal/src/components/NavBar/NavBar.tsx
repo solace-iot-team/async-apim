@@ -69,7 +69,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const onLogout = () => {
-    APContextsDisplayService.clear_Contexts({
+    APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
@@ -84,7 +84,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const doSetupOrganization = async (organizationEntityId: TAPEntityId) => {
     // const funcName = 'doSetupOrganization';
     // const logName = `${ComponentName}.${funcName}()`;
-    await APContextsDisplayService.setup_Contexts({
+    await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: userContext.apLoginUserDisplay,
       organizationEntityId: organizationEntityId,
       isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
