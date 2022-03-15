@@ -19,9 +19,6 @@ export type TAPUserLoginCredentials = APSUserLoginCredentials;
 export type TAPLoginUserDisplay = IAPUserDisplay & {
   apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
 };
-// export type TAPSystemUserDisplayListResponse = APSListResponseMeta & {
-//   apSystemUserDisplayList: TAPSystemUserDisplayList;
-// }
 
 class APLoginUsersDisplayService extends APUsersDisplayService {
   private readonly ComponentName = "APLoginUsersDisplayService";
@@ -46,11 +43,14 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     const base: IAPUserDisplay = this.create_ApUserDisplay_From_ApiEntities({
       apsUserResponse: apsUserResponse,
     });
+
+    const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = APMemberOfService.create_ApMemberOfOrganizationDisplayList({
+      apsUserResponse: apsUserResponse,
+    });
+
     const apLoginUserDisplay: TAPLoginUserDisplay = {
       ...base,
-      apMemberOfOrganizationDisplayList: APMemberOfService.create_ApMemberOfOrganizationDisplayList({
-        apsUserResponse: apsUserResponse,
-      })
+      apMemberOfOrganizationDisplayList: apMemberOfOrganizationDisplayList,
     }
     return apLoginUserDisplay;
   }
@@ -72,7 +72,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     const base: IAPUserDisplay = super.create_Empty_ApUserDisplay();
     const apLoginUserDisplay: TAPLoginUserDisplay = {
       ...base,
-      apMemberOfOrganizationDisplayList: []
+      apMemberOfOrganizationDisplayList: [],
     }
     return apLoginUserDisplay;    
   }

@@ -47,6 +47,7 @@ export type TAPMemberOfBusinessGroupTreeTableNode = {
   label: string;
   data: TAPMemberOfBusinessGroupDisplay;
   children: TAPMemberOfBusinessGroupTreeTableNodeList;
+  selectable?: boolean;
 }
 export type TAPMemberOfBusinessGroupTreeTableNodeList = Array<TAPMemberOfBusinessGroupTreeTableNode>;
 
@@ -461,6 +462,38 @@ class APMemberOfService {
     return finalList;
   }
   
+  private create_TreeTableNode({ apMemberOfBusinessGroupDisplayTreeNode, includeBusinessGroupIsSelectable }: {
+    apMemberOfBusinessGroupDisplayTreeNode: TAPMemberOfBusinessGroupDisplayTreeNode;
+    includeBusinessGroupIsSelectable?: boolean;
+  }): TAPMemberOfBusinessGroupTreeTableNode {
+    const isSelectable: boolean = apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0;
+    return {
+      key: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id,
+      label: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName,
+      data: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay,
+      selectable: isSelectable,
+      children: this.create_TreeTableNodeList({
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNode.children,
+        includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable
+      })
+    };
+  }
+
+  private create_TreeTableNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable }: {
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    includeBusinessGroupIsSelectable?: boolean;
+  }): TAPMemberOfBusinessGroupTreeTableNodeList {
+    const treeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = [];
+    for(const treeNode of apMemberOfBusinessGroupDisplayTreeNodeList) {
+      const treeTableNode = this.create_TreeTableNode({
+        apMemberOfBusinessGroupDisplayTreeNode: treeNode,
+        includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable
+      });
+      treeTableNodeList.push(treeTableNode);
+    }
+    return treeTableNodeList;
+  }
+
   /**
    * Create the tree table node list for business groups the user is a member of.
    *
@@ -488,24 +521,6 @@ class APMemberOfService {
     // console.log(`${logName}: businessGroupConfiguredRoles=${JSON.stringify(businessGroupConfiguredRoles, null, 2)}`);
     // // * END DEBUG *
 
-    const create_TreeTableNode = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode): TAPMemberOfBusinessGroupTreeTableNode => {
-      return {
-        key: treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id,
-        label: treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName,
-        data: treeNode.apMemberOfBusinessGroupDisplay,
-        children: create_TreeTableNodeList(treeNode.children)
-      };
-    }
-
-    const create_TreeTableNodeList = (treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList): TAPMemberOfBusinessGroupTreeTableNodeList => {
-      const treeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = [];
-      for(const treeNode of treeNodeList) {
-        const treeTableNode = create_TreeTableNode(treeNode);
-        treeTableNodeList.push(treeTableNode);
-      }
-      return treeTableNodeList;
-    }
-
     const treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.create_ApMemberOfBusinessGroupDisplayTreeNodeList({
       organizationEntityId: organizationEntityId,
       apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList,
@@ -517,7 +532,21 @@ class APMemberOfService {
     // // * DEBUG *
     // console.log(`${logName}: treeNodeList=${JSON.stringify(treeNodeList, null, 2)}`);
 
-    return create_TreeTableNodeList(treeNodeList);
+    return this.create_TreeTableNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: treeNodeList
+    });
+  }
+
+  public create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable }:{
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    includeBusinessGroupIsSelectable: boolean;
+  }): TAPMemberOfBusinessGroupTreeTableNodeList {
+
+    return this.create_TreeTableNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable
+    });
+
   }
 
   public clone_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList }: {
@@ -539,6 +568,27 @@ class APMemberOfService {
     const logName = `${this.ComponentName}.${funcName}()`;
     const found: TAPMemberOfBusinessGroupDisplay | undefined = this.find_ApMemberOfBusinessGroupDisplay({
       apMemberOfBusinessGroupDisplayList: apMemberOfBusinessGroupDisplayList,
+      businessGroupEntityId: businessGroupEntityId,
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined`);
+    return found;
+  }
+
+  /** 
+   * Returns the found business group entity
+   * @throws if not found
+   */
+  public get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupEntityId }:{
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    businessGroupEntityId: TAPEntityId;
+  }): TAPMemberOfBusinessGroupDisplay {
+    const funcName = 'get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    console.log(`${logName}: looking for businessGroupEntityId=${JSON.stringify(businessGroupEntityId)}`);
+    console.log(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList, null, 2)}`);
+
+    const found: TAPMemberOfBusinessGroupDisplay | undefined = this.find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
       businessGroupEntityId: businessGroupEntityId,
     });
     if(found === undefined) throw new Error(`${logName}: found === undefined`);
@@ -589,6 +639,29 @@ class APMemberOfService {
     return found;
   }
 
+  public find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupEntityId }: {
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    businessGroupEntityId: TAPEntityId;
+  }): TAPMemberOfBusinessGroupDisplay | undefined {
+
+    const find = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode): TAPMemberOfBusinessGroupDisplay | undefined => {
+      if(treeNode.children.length > 0) return find_list(treeNode.children);
+      else return undefined;
+    }
+
+    const find_list = (treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList): TAPMemberOfBusinessGroupDisplay | undefined => {
+      for(const treeNode of treeNodeList) {
+        if(treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === businessGroupEntityId.id) {
+          return treeNode.apMemberOfBusinessGroupDisplay;
+        }
+        const found: TAPMemberOfBusinessGroupDisplay | undefined = find(treeNode);
+        if(found !== undefined) return found;
+      }
+      return undefined;
+    }
+    return find_list(apMemberOfBusinessGroupDisplayTreeNodeList);
+  } 
+
   /** Return the first ApMemberOfBusinessGroupDisplay in the tree that has configured roles in it. */
   public find_default_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayTreeNodeList }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
@@ -604,8 +677,10 @@ class APMemberOfService {
         if(treeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList && treeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0) {
           return treeNode.apMemberOfBusinessGroupDisplay;
         }
-        return find_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(treeNode);
+        const found: TAPMemberOfBusinessGroupDisplay | undefined = find_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(treeNode);
+        if(found !== undefined) return found;
       }
+      return undefined;
     }
     return find_list_ApMemberOfBusinessGroupDisplay_with_ConfiguredRoles(apMemberOfBusinessGroupDisplayTreeNodeList);
   }

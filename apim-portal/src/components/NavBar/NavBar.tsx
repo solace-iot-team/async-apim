@@ -5,6 +5,7 @@ import { Menubar } from 'primereact/menubar';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { Button } from 'primereact/button';
 import { OverlayPanel } from 'primereact/overlaypanel';
+import { Sidebar } from 'primereact/sidebar';
 import { Divider } from 'primereact/divider';
 
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
@@ -19,14 +20,14 @@ import { EAppState, EUICommonResourcePaths, EUIDeveloperToolsResourcePaths, Glob
 import { Config } from '../../Config';
 import { APDisplayAbout } from "../APAbout/APDisplayAbout";
 import { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
-import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSelectOrganization } from "../APSelectOrganization";
 import APMemberOfService from "../../displayServices/APUsersDisplayService/APMemberOfService";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
+import { Loading } from "../Loading/Loading";
+import { ManageBusinessGroupSelect } from "../ManageBusinessGroupSelect/ManageBusinessGroupSelect";
 
 import '../APComponents.css';
 import './NavBar.css';
-import { Loading } from "../Loading/Loading";
 
 export interface INavBarProps {}
 
@@ -48,7 +49,9 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const organizationOverlayPanel = React.useRef<any>(null);
 
   const [showAbout, setShowAbout] = React.useState<boolean>(false);
+  const [showBusinessGroupSideBar, setShowBusinessSideBar] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -103,17 +106,6 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     userOverlayPanel.current.hide();
     doSetupOrganization(organizationEntityId);
   }
-
-  // const onSelectOrganizationError = (apiCallStatus: TApiCallState) => {
-  //   dispatchUserContextAction({ type: 'SET_USER_MESSAGE', userMessage: {
-  //     success: false,
-  //     context: {
-  //       internalAction: apiCallStatus.context.action,
-  //       userAction: 'select organization',
-  //       userMessage: apiCallStatus.context.userDetail?apiCallStatus.context.userDetail:'unknown error'
-  //     }
-  //   }})
-  // }
 
   const getDevelMenuItem = (): MenuItem => {
     return {
@@ -245,6 +237,98 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     }
   }
 
+  const renderUserComponents = () => {
+    return (
+      <React.Fragment>
+        {/* user button */}
+        <Button 
+          className="p-button-text p-button-plain" 
+          icon="pi pi-fw pi-user" 
+          // label={APLoginUsersDisplayService.create_UserDisplayName(userContext.apLoginUserDisplay.apUserProfileDisplay)}
+          aria-haspopup={true}
+          aria-controls="user_overlay_panel"
+          onClick={(e) => userOverlayPanel.current.toggle(e) } 
+        />
+
+        {/* user overlay panel */}
+        <OverlayPanel 
+          className="ap-navbar user-overlay-panel" 
+          ref={userOverlayPanel} 
+          id="user_overlay_panel" 
+          style={{width: '650px'}}
+          onHide={onHideUserOverlayPanel}
+        >
+          {renderUserOpInfo()}
+          {renderOpOrganization()}
+          <RenderWithRbac resourcePath={EUICommonResourcePaths.ManageUserAccount} >
+            <Divider />
+            <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUICommonResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
+          </RenderWithRbac>
+          <Divider />
+          <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
+        </OverlayPanel>
+        
+        {/* organization select */}
+        <OverlayPanel   
+          className="ap-navbar organnization-overlay-panel" 
+          ref={organizationOverlayPanel} 
+          id="organization_overlay_panel" 
+          style={{width: '450px'}} 
+          dismissable={true}
+          showCloseIcon={false}
+        >
+          <APSelectOrganization
+            apMemberOfOrganizationEntityIdList={APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+              apMemberOfOrganizationDisplayList: userContext.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
+            })}
+            onSuccess={onSelectOrganizationSuccess} 
+          />
+        </OverlayPanel>
+    </React.Fragment>
+    );
+  }
+
+  const renderBusinessGroupComponents = () => {
+    // const funcName = 'renderBusinessGroupComponents';
+    // const logName = `${ComponentName}.${funcName}()`;
+
+    // not a member of any org ==> return empty
+    if(userContext.runtimeSettings.currentOrganizationEntityId === undefined) return (<></>);
+    // context may not be set up fully yet, wait for next re-render
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) return (<></>);
+    // no selection if only member of 1 business group
+    const isSelectDisabled: boolean = userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList.length < 2;
+    const businessGroupButtonLabel: string = userContext.runtimeSettings.currentBusinessGroupEntityId.displayName;
+
+    return (
+      <React.Fragment>
+        {/* business group button */}
+        <Button 
+          className="p-button-text p-button-plain" 
+          icon="pi pi-fw pi-list" 
+          label={businessGroupButtonLabel}
+          disabled={isSelectDisabled}
+          onClick={() => setShowBusinessSideBar(true)}
+        />
+        {/* the side bar */}
+        <Sidebar
+          visible={showBusinessGroupSideBar}
+          position="right"
+          onHide={() => setShowBusinessSideBar(false)}
+          style={{width:'45em'}}
+          // className="p-sidebar-lg"
+        >
+          <ManageBusinessGroupSelect
+            apLoginUserDisplay={userContext.apLoginUserDisplay}
+            apMemberOfBusinessGroupDisplayTreeNodeList={userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList}
+            currentBusinessGroupEntityId={userContext.runtimeSettings.currentBusinessGroupEntityId}
+            onSuccess={() => setShowBusinessSideBar(false)}
+            onLoadingChange={setIsLoading}
+          />
+        </Sidebar>
+      </React.Fragment>
+    );
+  }
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
@@ -258,49 +342,13 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
         }
         {authContext.isLoggedIn &&
           <React.Fragment>
-            <Button 
-              className="p-button-text p-button-plain" 
-              icon="pi pi-fw pi-user" 
-              label={APLoginUsersDisplayService.create_UserDisplayName(userContext.apLoginUserDisplay.apUserProfileDisplay)}
-              aria-haspopup={true}
-              aria-controls="user_overlay_panel"
-              onClick={(e) => userOverlayPanel.current.toggle(e) } />
-            <OverlayPanel 
-              className="ap-navbar user-overlay-panel" 
-              ref={userOverlayPanel} 
-              id="user_overlay_panel" 
-              style={{width: '650px'}}
-              onHide={onHideUserOverlayPanel}
-              >
-              {renderUserOpInfo()}
-              {renderOpOrganization()}
-              <RenderWithRbac resourcePath={EUICommonResourcePaths.ManageUserAccount} >
-                <Divider />
-                <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUICommonResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
-              </RenderWithRbac>
-              <Divider />
-              <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
-            </OverlayPanel>
-
-            <OverlayPanel 
-              className="ap-navbar organnization-overlay-panel" 
-              ref={organizationOverlayPanel} 
-              id="organization_overlay_panel" 
-              style={{width: '450px'}} 
-              dismissable={true}
-              showCloseIcon={false}
-              >
-                <APSelectOrganization
-                  apMemberOfOrganizationEntityIdList={APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
-                    apMemberOfOrganizationDisplayList: userContext.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
-                  })}
-                  onSuccess={onSelectOrganizationSuccess} 
-                />
-            </OverlayPanel>
-
+            {renderBusinessGroupComponents()}
+            {renderUserComponents()}
           </React.Fragment>
         }
-        <DisplaySystemHealthCheck />
+        <span className="p-ml-2">
+          <DisplaySystemHealthCheck />
+        </span>
       </React.Fragment>
     );
   }

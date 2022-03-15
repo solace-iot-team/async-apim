@@ -9,6 +9,9 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { 
   APSListResponseMeta,
+  APSMemberOfOrganizationGroupsList,
+  APSOrganizationRolesResponse,
+  APSOrganizationRolesResponseList,
   APSSystemAuthRoleList,
   APSUserProfile, 
   APSUserResponse,
@@ -17,6 +20,7 @@ import {
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APRbacDisplayService from '../APRbacDisplayService';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
+import { Globals } from '../../utils/Globals';
 
 export type TAPUserDisplayLazyLoadingTableParameters = {
   isInitialSetting: boolean; // differentiate between first time and subsequent times
@@ -41,6 +45,17 @@ export type TAPUserActivationDisplay = {
   activationStatusDisplayString: EActivationStatusDisplayString;
 }
 
+// last session info
+/** apEntityId is the organizationId */
+export type TAPUserOrganizationSession = {
+  businessGroupEntityId: TAPEntityId;  
+}
+export type TAPUserOrganizationSessionDisplay = {
+  organizationEntityId: TAPEntityId;
+  apUserOrganizationSession?: TAPUserOrganizationSession;
+}
+export type TAPUserOrganizationSessionDisplayList = Array<TAPUserOrganizationSessionDisplay>;
+
 export interface IAPUserDisplay extends IAPEntityIdDisplay {
 
   apUserProfileDisplay: TAPUserProfileDisplay;
@@ -50,6 +65,8 @@ export interface IAPUserDisplay extends IAPEntityIdDisplay {
   apUserActivationDisplay: TAPUserActivationDisplay;
 
   apSystemRoleEntityIdList: TAPEntityIdList;
+
+  apUserOrganizationSessionDisplayList: TAPUserOrganizationSessionDisplayList;
 
 }
 export type TAPUserDisplayList = Array<IAPUserDisplay>;
@@ -148,6 +165,7 @@ export abstract class APUsersDisplayService {
       apUserAuthenticationDisplay: this.create_Empty_ApUserAutheticationDisplay(),
       apUserActivationDisplay: this.create_Empty_ApUserActivationDisplay(),
       apSystemRoleEntityIdList: [],
+      apUserOrganizationSessionDisplayList: []
     };
     return apUserDisplay;
   }
@@ -194,6 +212,39 @@ export abstract class APUsersDisplayService {
     return apUserActivationDisplay;
   }
 
+  /**
+   * Returns the list of session info objects for every organization.
+   * Last session info could be empty.
+   * @todo implement properly once APS API caught up - Last session info could be empty
+   */
+  private create_ApUserOrganizationSessionDisplayList({ apsOrganizationRolesResponseList, apsMemberOfOrganizationGroupsList }:{
+    apsOrganizationRolesResponseList: APSOrganizationRolesResponseList;
+    apsMemberOfOrganizationGroupsList: APSMemberOfOrganizationGroupsList;
+  }): TAPUserOrganizationSessionDisplayList {
+    const funcName = 'create_ApUserOrganizationSessionDisplayList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const apUserOrganizationSessionDisplayList: TAPUserOrganizationSessionDisplayList = [];
+    for(const apsMemberOfOrganizationGroups of apsMemberOfOrganizationGroupsList) {
+      // find the organization entity id
+      const found: APSOrganizationRolesResponse | undefined = apsOrganizationRolesResponseList.find( (x) => {
+        return x.organizationId === apsMemberOfOrganizationGroups.organizationId;
+      });
+      if(found === undefined) throw new Error(`${logName}: found === undefined`);
+
+      // FUTURE: if in apsUserResponse, set apUserOrganizationSession from response
+      // if not found, set it as undefined
+      const apUserOrganizationSession: TAPUserOrganizationSession | undefined = undefined;
+
+      const apUserOrganizationSessionDisplay: TAPUserOrganizationSessionDisplay = {
+        organizationEntityId: { id: found.organizationId, displayName: found.organizationDisplayName },
+        apUserOrganizationSession: apUserOrganizationSession
+      };
+      apUserOrganizationSessionDisplayList.push(apUserOrganizationSessionDisplay);
+    }
+    return apUserOrganizationSessionDisplayList;
+  }
+
   protected create_ApUserDisplay_From_ApiEntities({apsUserResponse}: {
     apsUserResponse: APSUserResponse;
   }): IAPUserDisplay {
@@ -204,6 +255,10 @@ export abstract class APUsersDisplayService {
       apUserAuthenticationDisplay: this.create_ApUserAuthenticationDisplay({ apsUserResponse: apsUserResponse }),
       apUserActivationDisplay: this.create_ApUserActivationDisplay({ apsUserResponse: apsUserResponse }),
       apSystemRoleEntityIdList: APRbacDisplayService.create_SystemRoles_EntityIdList(apsUserResponse.systemRoles),
+      apUserOrganizationSessionDisplayList: this.create_ApUserOrganizationSessionDisplayList({
+        apsMemberOfOrganizationGroupsList: apsUserResponse.memberOfOrganizationGroups,
+        apsOrganizationRolesResponseList: apsUserResponse.memberOfOrganizations
+      })
     };
     return base;
   }
@@ -392,6 +447,20 @@ export abstract class APUsersDisplayService {
       userId: userId,
       apsUserUpdate: update
     });
+  }
+
+  public async apsUpdate_ApUserOrganizationSessionDisplay({ userEntityId, apUserOrganizationSessionDisplay }:{
+    userEntityId: TAPEntityId;
+    apUserOrganizationSessionDisplay: TAPUserOrganizationSessionDisplay;
+  }): Promise<void> {
+    const funcName = 'apsUpdate_ApUserOrganizationSessionDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    // TODO call new APS API
+    // throw new Error(`${logName}: implement me ...`);
+    await Globals.sleep(3000);
+    alert(`${logName}: implement me ...`)
+
   }
 
 }

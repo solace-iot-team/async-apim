@@ -14,6 +14,7 @@ import APRbacDisplayService from './APRbacDisplayService';
 import { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from './APUsersDisplayService/APOrganizationUsersDisplayService';
+import { TAPUserOrganizationSessionDisplay } from './APUsersDisplayService/APUsersDisplayService';
 
 class APContextsDisplayService {
   private readonly BaseComponentName = "APContextsDisplayService";
@@ -23,10 +24,10 @@ class APContextsDisplayService {
     return rbacRole.displayName;
   }
 
-  private async setup_AuthContext({ authorizedResourcePathsAsString, dispatchAuthContextAction }:{
+  private setup_AuthContext({ authorizedResourcePathsAsString, dispatchAuthContextAction }:{
     authorizedResourcePathsAsString: string;
     dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
-  }): Promise<void> {
+  }): void {
     dispatchAuthContextAction({ type: 'SET_AUTH_CONTEXT', authContext: { 
       isLoggedIn: true, 
       authorizedResourcePathsAsString: authorizedResourcePathsAsString,
@@ -34,13 +35,13 @@ class APContextsDisplayService {
   }
 
   private async setup_OrganizationContext({ 
-    userId,
+    apLoginUserDisplay,
     organizationEntityId, 
     isConnectorAvailable,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
   }:{
-    userId: string;
+    apLoginUserDisplay: TAPLoginUserDisplay;
     organizationEntityId: TAPEntityId | undefined;
     isConnectorAvailable: boolean;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
@@ -53,7 +54,7 @@ class APContextsDisplayService {
 
       // get the Organization User to get the business groups tree and current business group
       const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
-        userId: userId,
+        userId: apLoginUserDisplay.apEntityId.id,
         organizationEntityId: organizationEntityId,
         fetch_ApOrganizationAssetInfoDisplayList: false,
       });
@@ -68,12 +69,24 @@ class APContextsDisplayService {
         pruneBusinessGroupsNotAMemberOf: true,
       });
 
-      // TODO: once the lastSession.businessGroupId is known, use that
-      // if not known, use the first group user has a role in, if any
-      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
-        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      // set the business group id from last sesstion
+      const found: TAPUserOrganizationSessionDisplay | undefined = apLoginUserDisplay.apUserOrganizationSessionDisplayList.find( (x) => {
+        return x.organizationEntityId.id === organizationEntityId.id;
       });
-
+      if(found === undefined) throw new Error(`${logName}: found === undefined`);
+      let apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = undefined;
+      if(found.apUserOrganizationSession === undefined) {
+        // set the default one, could still be undefined
+        apMemberOfBusinessGroupDisplay = APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
+          apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        });
+      } else {
+        apMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+          apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+          businessGroupEntityId: found.apUserOrganizationSession.businessGroupEntityId
+        });
+      }
+      
       // dispatch to contexts
       dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: organizationEntityId });
       dispatchUserContextAction({ type: 'SET_AP_MEMBER_OF_BUSINESS_GROUP_DISPLAY_TREE_NODE_LIST', apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList });
@@ -185,13 +198,13 @@ class APContextsDisplayService {
       apOrganizationEntityId: organizationEntityId
     });
   
-    await this.setup_AuthContext({
+    this.setup_AuthContext({
       authorizedResourcePathsAsString: authorizedResourcePathsAsString,
       dispatchAuthContextAction: dispatchAuthContextAction
     });
 
     await this.setup_OrganizationContext({
-      userId: apLoginUserDisplay.apEntityId.id,
+      apLoginUserDisplay: apLoginUserDisplay,
       organizationEntityId: organizationEntityId,
       isConnectorAvailable: isConnectorAvailable,
       dispatchUserContextAction: dispatchUserContextAction,
@@ -226,6 +239,37 @@ class APContextsDisplayService {
 
   }
   
+  public setup_BusinessGroupContexts_For_LoggedInUser({ 
+    apLoginUserDisplay,
+    apMemberOfBusinessGroupDisplay, 
+    dispatchUserContextAction,
+    dispatchAuthContextAction,
+  }: {
+    apLoginUserDisplay: TAPLoginUserDisplay;
+    apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay;
+    dispatchUserContextAction: React.Dispatch<UserContextAction>;
+    dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
+  }): void {
+    const funcName = 'setup_BusinessGroupContexts_For_LoggedInUser';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined ) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+    if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList.length === 0) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList.length === 0`);
+
+    const authorizedResourcePathsAsString: string = APRbacDisplayService.create_AuthorizedResourcePathListAsString_For_BusinessGroupRoles({
+      apLoginUserDisplay: apLoginUserDisplay,
+      apBusinessGroupRoleEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList,
+    });
+  
+    this.setup_AuthContext({
+      authorizedResourcePathsAsString: authorizedResourcePathsAsString,
+      dispatchAuthContextAction: dispatchAuthContextAction
+    });
+
+    dispatchUserContextAction({ type: 'SET_CURRENT_BUSINESS_GROUP_ENTITY_ID', currentBusinessGroupEntityId: apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId });        
+    dispatchUserContextAction({ type: 'SET_CURRENT_ROLES', currentRolesEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList });
+
+  }
+
 }
 
 export default new APContextsDisplayService();
