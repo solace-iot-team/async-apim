@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -12,8 +13,8 @@ import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/
 
 import "../../pages/Pages.css";
 
-export const MonitorOrgStatusPage: React.FC = () => {
-  // const componentName = 'MonitorOrgStatusPage';
+export const ManageOrganizationSettingsPage: React.FC = () => {
+  // const componentName = 'ManageOrganizationSettingsPage';
 
   const [userContext] = React.useContext(UserContext);  
 
@@ -22,7 +23,7 @@ export const MonitorOrgStatusPage: React.FC = () => {
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -32,24 +33,23 @@ export const MonitorOrgStatusPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
-
-  const renderBreadcrumbs = (orgDisplayName: string) => {
+  const renderBreadcrumbs = (organizationDisplayName: string) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: `Organization: ${orgDisplayName}`
+        label: `Organization: ${organizationDisplayName}`
       },
       { 
-        label: 'Status',
+        label: 'Settings',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -63,10 +63,10 @@ export const MonitorOrgStatusPage: React.FC = () => {
       {userContext.runtimeSettings.currentOrganizationEntityId && renderBreadcrumbs(userContext.runtimeSettings.currentOrganizationEntityId.displayName)}
       {userContext.runtimeSettings.currentOrganizationEntityId &&
         <ManageOrganizations 
-          scope={{ type: E_ManageOrganizations_Scope.ORG_STATUS, organizationEntityId: userContext.runtimeSettings.currentOrganizationEntityId }}
+          scope={{ type: E_ManageOrganizations_Scope.ORG_SETTINGS, organizationEntityId: userContext.runtimeSettings.currentOrganizationEntityId }}
           onSuccess={onSuccess} 
           onError={onError}
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
+          setBreadCrumbItemList={setBreadCrumbItemList}
         />
       }
     </div>

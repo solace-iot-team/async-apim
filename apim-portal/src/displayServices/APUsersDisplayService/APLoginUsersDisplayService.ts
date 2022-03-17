@@ -142,6 +142,24 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
 
   }
 
+  public async apsLogout({ userId }:{
+    userId: string;
+  }): Promise<void> {
+    const funcName = 'apsLogout';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    alert(`${logName}: implement call to APS ...`);
+
+  }
+
+  public async apsLogoutAll(): Promise<void> {
+    const funcName = 'apsLogoutAll';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    alert(`${logName}: implement call to APS ...`);
+
+  }
+
   protected async apsUpdate_ApsUserUpdate({
     userId, apsUserUpdate
   }: {

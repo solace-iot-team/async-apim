@@ -28,6 +28,9 @@ import { ManageBusinessGroupSelect } from "../ManageBusinessGroupSelect/ManageBu
 
 import '../APComponents.css';
 import './NavBar.css';
+import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
+import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 
 export interface INavBarProps {}
 
@@ -52,6 +55,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const [showBusinessGroupSideBar, setShowBusinessSideBar] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -71,13 +76,38 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     return true;
   }
 
-  const onLogout = () => {
+  enum E_CALL_STATE_ACTIONS {
+    API_USER_LOGOUT = "API_USER_LOGOUT"
+  }
+  
+  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+    const funcName = 'apiLogout';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+    try { 
+      await APLoginUsersDisplayService.apsLogout({
+        userId: userEntityId.id
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doLogout = async() => {
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
     });
     navigateTo(EUICommonResourcePaths.Home);
+    await apiLogout(userContext.apLoginUserDisplay.apEntityId);
+  }
+
+  const onLogout = () => {
+    doLogout();
   }
 
   const onHideUserOverlayPanel = () => {

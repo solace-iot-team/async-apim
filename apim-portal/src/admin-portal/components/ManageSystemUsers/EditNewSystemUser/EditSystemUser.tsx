@@ -12,6 +12,8 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";
 import { EUICommonResourcePaths } from "../../../../utils/Globals";
 import APSystemUsersDisplayService, { 
   TAPSystemUserDisplay 
@@ -26,6 +28,7 @@ import { EditNewSystemUserProfile } from "./EditNewSystemUserProfile";
 import { EditNewSystemUserAuthentication } from "./EditNewSystemUserAuthentication";
 import { EditNewSystemUserActivationStatus } from "./EditNewSystemUserActivationStatus";
 import { EditNewSystemUserSystemRoles } from "./EditNewSystemUserSystemRoles";
+import APLoginUsersDisplayService from "../../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageSystemUsers.css";
@@ -51,6 +54,8 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
   const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -142,6 +147,34 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
     return callState;
   }
 
+  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+    const funcName = 'apiLogout';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+    try { 
+      await APLoginUsersDisplayService.apsLogout({
+        userId: userEntityId.id
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doLogoutEditedUser = async() => {
+    if(editingYourself) {
+      APContextsDisplayService.clear_LoginContexts({
+        dispatchAuthContextAction: dispatchAuthContextAction,
+        dispatchUserContextAction: dispatchUserContextAction,
+        dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      });
+      navigateTo(EUICommonResourcePaths.Login);
+    }
+    await apiLogout(props.userEntityId);
+  }
+
 
   const doInitialize = async () => {
     props.onLoadingChange(true);
@@ -149,30 +182,24 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
     props.onLoadingChange(false);
   }
 
-  const doLogout = () => {
-    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
-    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
-    navigateTo(EUICommonResourcePaths.Login);
-  }
-
   const doSaveUserProfile = async (apUserProfileDisplay: TAPUserProfileDisplay) => {
     await apiUpdateUserProfile(apUserProfileDisplay);
-    if(editingYourself) doLogout();
+    doLogoutEditedUser();
   }
 
   const doSaveUserAuthentication = async(apUserAuthenticationDisplay: TAPUserAuthenticationDisplay) => {
     await apiUpdateUserAuthentication(apUserAuthenticationDisplay);
-    if(editingYourself) doLogout();
+    doLogoutEditedUser();
   }
 
   const doSaveUserSystemRoles = async(apSystemRoleEntityIdList: TAPEntityIdList) => {
     await apiUpdateUserSystemRoles(apSystemRoleEntityIdList);
-    if(editingYourself) doLogout();
+    doLogoutEditedUser();
   }
 
   const doSaveUserActivationStatus = async(apUserActivationDisplay: TAPUserActivationDisplay) => {
     await apiUpdateUserActivationStatus(apUserActivationDisplay);
-    if(editingYourself) doLogout();
+    doLogoutEditedUser();
   }
 
   // * useEffect Hooks *

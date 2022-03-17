@@ -13,15 +13,18 @@ import {
   EAPBrokerServiceDiscoveryProvisioningType, 
   EAPOrganizationConfigType, 
   E_CALL_STATE_ACTIONS, 
+  E_COMPONENT_STATE, 
   ManageOrganizationsCommon, 
   TAPOrganizationConfig 
 } from "./ManageOrganizationsCommon";
 import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
 import { E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizations";
+import { Globals } from "../../../utils/Globals";
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { Globals } from "../../../utils/Globals";
 
 export interface IViewOrganizationProps {
   organizationId: CommonName;
@@ -30,6 +33,8 @@ export interface IViewOrganizationProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHere: (manageUsersComponentState: E_COMPONENT_STATE, organizationEntityId: TAPEntityId) => void;
 }
 
 export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewOrganizationProps) => {
@@ -39,6 +44,11 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+
+  const ManageOrganizations_ViewOrganization_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, { id: props.organizationId, displayName: props.organizationDisplayName });
+  }
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -64,8 +74,19 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   }
 
   React.useEffect(() => {
+    setBreadCrumbItemList([{
+      label: props.organizationDisplayName,
+      command: ManageOrganizations_ViewOrganization_onNavigateHereCommand
+    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    props.setBreadCrumbItemList([{
+      label: props.organizationDisplayName,
+      command: ManageOrganizations_ViewOrganization_onNavigateHereCommand
+    }]);
+  }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {

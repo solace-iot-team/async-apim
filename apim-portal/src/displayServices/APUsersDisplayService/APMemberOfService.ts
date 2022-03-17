@@ -118,7 +118,7 @@ class APMemberOfService {
       const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
         apEntityId: organizationEntityId,
         apOrganizationRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
-        apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
+        apLegacyOrganizationRoleEntityIdList: apsOrganizationRolesResponse !== undefined ? APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles) : [],
       };
       return apMemberOfOrganizationDisplay;
 

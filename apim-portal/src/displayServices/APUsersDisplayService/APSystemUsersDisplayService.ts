@@ -147,7 +147,7 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
   }
 
   /**
-   * Returns list of users in the system.
+   * Returns list of users in the system. Can be filtered by organization.
    */
   public async apsGetList_ApSystemUserDisplayListResponse({
     pageSize = 20,
@@ -155,12 +155,16 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
     apSortFieldName,
     sortDirection,
     searchWordList,
+    organizationEntityId,
+    includeOrganizationRoles = false,
   }: {
     pageSize?: number;
     pageNumber?: number;
     apSortFieldName?: string;
     sortDirection?: DataTableSortOrderType;
     searchWordList?: string;
+    organizationEntityId?: TAPEntityId;
+    includeOrganizationRoles?: boolean;
   }): Promise<TAPSystemUserDisplayListResponse> {
   
     // map UI sortField to 
@@ -171,14 +175,22 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
       pageNumber: pageNumber,
       sortFieldName: apsSortFieldName,
       sortDirection: apsSortDirection,
-      searchWordList: searchWordList
+      searchWordList: searchWordList,
+      searchOrganizationId: organizationEntityId ? organizationEntityId.id : undefined,
     });
 
     const apSystemUserDisplayList: TAPSystemUserDisplayList = [];
     for(const apsUserResponse of listApsUsersResponse.list) {
-      const apSystemUserDisplay: TAPSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({
-        apsUserResponse: apsUserResponse,
-      });
+      let apSystemUserDisplay: TAPSystemUserDisplay;
+      if(includeOrganizationRoles) {
+        apSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities({
+          apsUserResponse: apsUserResponse,
+        });
+      } else {
+        apSystemUserDisplay = this.create_ApSystemUserDisplay_From_ApiEntities_EmptyRoles({
+          apsUserResponse: apsUserResponse,
+        });
+      }
       apSystemUserDisplayList.push(apSystemUserDisplay);
     }
     const response: TAPSystemUserDisplayListResponse = {

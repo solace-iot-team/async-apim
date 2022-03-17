@@ -149,16 +149,29 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     const funcName = 'create_update_ApsMemberOfOrganizationGroupsList';
     const logName = `${this.ComponentName}.${funcName}()`;
 
+    // check that UI has set this correctly
+    // alert(`${logName}: apOrganizationUserDisplay.memberOfOrganizationDisplay = ${JSON.stringify(apOrganizationUserDisplay.memberOfOrganizationDisplay, null, 2)}`);
+    
     // TODO: workaround: get the user with all the organizations
     // FUTURE: API will provide a call to only update business group roles for 1 organization, so no need to get them all here
     const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
       userId: apOrganizationUserDisplay.apEntityId.id,
     });
-    if(apsUserResponse.memberOfOrganizationGroups.length === 0) {
-      // user is not member of any organization
+    // create artificial entry:
+    // - user may not be member of any org yet
+    // - user may not be member of this org yet
+    const x_apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUserResponse.memberOfOrganizationGroups.find( (x) => {
+      return x.organizationId === apOrganizationUserDisplay.organizationEntityId.id;
+    });
+    if(apsUserResponse.memberOfOrganizationGroups.length === 0 || x_apsMemberOfOrganizationGroups === undefined) {
+      // user is not member of any organization, create here the empty entry for this org
+      const apsMemberOfBusinessGroup: APSMemberOfBusinessGroup = {
+        businessGroupId: apOrganizationUserDisplay.organizationEntityId.id,
+        roles: [] 
+      };
       apsUserResponse.memberOfOrganizationGroups.push({
         organizationId: apOrganizationUserDisplay.organizationEntityId.id,
-        memberOfBusinessGroupList: []
+        memberOfBusinessGroupList: [apsMemberOfBusinessGroup]
       });
     }
     // find by org 
