@@ -11,6 +11,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../displayServices/APUsersDisplayService/APMemberOfService";
 import APEntityIdsService, { TAPEntityId } from "../../utils/APEntityIdsService";
+import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../displayServices/APBusinessGroupsDisplayService";
 
 import '../APComponents.css';
 import "./ManageBusinessGroupSelect.css";
@@ -24,34 +25,18 @@ export interface ISelectBusinessGroupProps {
 export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: ISelectBusinessGroupProps) => {
   const ComponentName = 'SelectBusinessGroup';
 
-  type TreeTableExpandedKeysType = {
-    [key: string]: boolean;
-  }
+  const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+    apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
+    includeBusinessGroupIsSelectable: true
+  });
 
-  const [apMemberOfBusinessGroupTreeTableNodeList] = React.useState<TAPMemberOfBusinessGroupTreeTableNodeList>(
-    APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
-      apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
-      includeBusinessGroupIsSelectable: true
-    })  
-  );
-  const [expandedKeys, setExpandedKeys] = React.useState<TreeTableExpandedKeysType>({});
+  const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>(APBusinessGroupsDisplayService.create_ApMemberOfBusinessGroupTreeTableNodeList_ExpandedKeys({
+    apMemberOfBusinessGroupTreeTableNodeList: apMemberOfBusinessGroupTreeTableNodeList
+  }));
+
   const [selectedBusinessGroupKey, setSelectedBusinessGroupKey] = React.useState<TreeTableSelectionKeys>(props.currentBusinessGroupEntityId.id);
 
-  const initializeExpandedKeys = () => {
-    const _expandedKeys: TreeTableExpandedKeysType = {};
-    apMemberOfBusinessGroupTreeTableNodeList.forEach( (x) => {
-      _expandedKeys[x.key] = true;
-    });
-    setExpandedKeys(_expandedKeys);
-  }
-
-  React.useEffect(() => {
-    initializeExpandedKeys();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const onBusinessGroupSelect = (e: TreeTableEventParams) => {
-    // const funcName = 'onBusinessGroupSelect';
-    // const logName = `${ComponentName}.${funcName}()`;
     const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = e.node.data;
     props.onSelect(apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId);
   }

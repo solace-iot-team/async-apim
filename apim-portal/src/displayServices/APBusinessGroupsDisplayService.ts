@@ -12,6 +12,7 @@ import {
   APSExternalSystemList,
   APSExternalSystem
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { TAPMemberOfBusinessGroupTreeTableNodeList } from './APUsersDisplayService/APMemberOfService';
 
 // TODO: create this type based on primereact TreeNode, replacing data:any with data: TAPBusinessGroupDisplay
 export type TAPBusinessGroupTreeNodeDisplay = {
@@ -21,6 +22,10 @@ export type TAPBusinessGroupTreeNodeDisplay = {
   children: TAPBusinessGroupTreeNodeDisplayList;
 }
 export type TAPBusinessGroupTreeNodeDisplayList = Array<TAPBusinessGroupTreeNodeDisplay>;
+
+export type TAPTreeTableExpandedKeysType = {
+  [key: string]: boolean;
+}
 
 export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsBusinessGroupResponse: APSBusinessGroupResponse;
@@ -57,6 +62,38 @@ class APBusinessGroupsDisplayService {
     });
   }
 
+  public create_ApBusinessGroupTreeNodeDisplayList_ExpandedKeys({ apBusinessGroupTreeNodeDisplayList }: {
+    apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
+  }): TAPTreeTableExpandedKeysType {
+    let expandedKeys: TAPTreeTableExpandedKeysType = {};
+    apBusinessGroupTreeNodeDisplayList.forEach( (x) => {
+      expandedKeys[x.key] = true;
+      const childrenExpandedKeys: TAPTreeTableExpandedKeysType = this.create_ApBusinessGroupTreeNodeDisplayList_ExpandedKeys({ apBusinessGroupTreeNodeDisplayList: x.children });
+      expandedKeys = {
+        ...expandedKeys,
+        ...childrenExpandedKeys
+      };
+    });
+    return expandedKeys;
+  }
+
+  public create_ApMemberOfBusinessGroupTreeTableNodeList_ExpandedKeys({ apMemberOfBusinessGroupTreeTableNodeList }: {
+    apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList;
+  }): TAPTreeTableExpandedKeysType {
+    // alert(`implement recursion`)
+    let expandedKeys: TAPTreeTableExpandedKeysType = {};
+    apMemberOfBusinessGroupTreeTableNodeList.forEach( (x) => {
+      expandedKeys[x.key] = true;
+      const childrenExpandedKeys: TAPTreeTableExpandedKeysType = this.create_ApMemberOfBusinessGroupTreeTableNodeList_ExpandedKeys({ apMemberOfBusinessGroupTreeTableNodeList: x.children });
+      expandedKeys = {
+        ...expandedKeys,
+        ...childrenExpandedKeys
+      };
+    });
+    return expandedKeys;
+  }
+
+
   public isDeleteAllowed(apBusinessGroupDisplay: TAPBusinessGroupDisplay): boolean {
     if(apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) return false; // this is the root
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return false;
@@ -76,7 +113,7 @@ class APBusinessGroupsDisplayService {
 
   public getSourceDisplayString(apBusinessGroupDisplay: TAPBusinessGroupDisplay): string {
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return apBusinessGroupDisplay.apExternalReference.externalSystemDisplayName;
-    else return '-';
+    else return 'Configured';
   }
 
   private create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay): TAPBusinessGroupTreeNodeDisplay {

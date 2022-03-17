@@ -246,9 +246,11 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
   }
 
   const renderManagedObjectForm = () => {
-    // const funcName = 'renderManagedObjectForm';
-    // const logName = `${componentName}.${funcName}()`;
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${componentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     const isNewObject: boolean = (props.action === EAction.NEW);
+    const isToplevelGroup: boolean = managedObject.apBusinessGroupParentEntityId === undefined;
     return (
       <div className="card p-mt-2">
         <div className="p-fluid">
@@ -290,7 +292,8 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={!isNewObject}
+                          autoFocus={!isNewObject && !isToplevelGroup}
+                          disabled={isToplevelGroup}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}
@@ -313,6 +316,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputTextarea
                           id={field.name}
                           {...field}
+                          autoFocus={!isNewObject && isToplevelGroup}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                       )}}

@@ -19,10 +19,10 @@ import { SelectBusinessGroup } from "./SelectBusinessGroup";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupSelectCommon";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+import { TAPUserOrganizationSessionDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../APComponents.css';
 import "./ManageBusinessGroupSelect.css";
-import { TAPUserOrganizationSessionDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 export interface IManageBusinessGroupSelectProps {
   apLoginUserDisplay: TAPLoginUserDisplay;

@@ -14,7 +14,7 @@ import APBusinessGroupsDisplayService, {
   TAPBusinessGroupDisplay, 
   TAPBusinessGroupDisplayList, 
   TAPBusinessGroupTreeNodeDisplay,
-  TAPBusinessGroupTreeNodeDisplayList, 
+  TAPTreeTableExpandedKeysType,
 } from "../../../displayServices/APBusinessGroupsDisplayService";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
@@ -43,21 +43,15 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   type TManagedObjectTreeTableNode = TAPBusinessGroupTreeNodeDisplay;
   type TManagedObjectTreeTableNodeList = Array<TManagedObjectTreeTableNode>;
 
-  const transformManagedObjectList_To_ManagedObjecTreeTableNodeList = (moList: TManagedObjectList): TManagedObjectTreeTableNodeList => {
-    // const funcName = 'transformManagedObjectList_To_ManagedObjecTreeTableNodeList';
-    // const logName = `${ComponentName}.${funcName}()`;
-    // console.log(`${logName}: moList = \n${JSON.stringify(moList, null, 2)}`);
-    const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(moList);
-    // console.log(`${logName}: apBusinessGroupTreeNodeDisplayList = \n${JSON.stringify(apBusinessGroupTreeNodeDisplayList, null, 2)}`);
-    return apBusinessGroupTreeNodeDisplayList;
-  }
-
-  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
+  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
+  const [managedObjectTreeTableNodeList, setManagedObjectTreeTableNodeList] = React.useState<TManagedObjectTreeTableNodeList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   const [selectedManagedObjectTreeTableNodeKey, setSelectedManagedObjectTreeTableNodeKey] = React.useState<TreeTableSelectionKeys>(null);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [selectedManagedObjectTreeTableNode, setSelectedManagedObjectTreeTableNode] = React.useState<TManagedObjectTreeTableNode>();
+  const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>();
+
 
   // * Api Calls *
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
@@ -68,7 +62,7 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     try {
       const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: props.organizationId
-      })
+      });
       setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -85,12 +79,27 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     props.onLoadingChange(false);
   }
 
+  const initializeExpandedKeys = (managedObjectTreeTableNodeList: TManagedObjectTreeTableNodeList) => {
+    const _expandedKeys: TAPTreeTableExpandedKeysType = APBusinessGroupsDisplayService.create_ApBusinessGroupTreeNodeDisplayList_ExpandedKeys({
+      apBusinessGroupTreeNodeDisplayList: managedObjectTreeTableNodeList
+    });
+    setExpandedKeys(_expandedKeys);
+  }
+
   React.useEffect(() => {
     // const funcName = 'useEffect([])';
     // const logName = `${componentName}.${funcName}()`;
     // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(managedObjectList !== undefined) {
+      const managedObjectTreeTableNodeList: TManagedObjectTreeTableNodeList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(managedObjectList);
+      setManagedObjectTreeTableNodeList(managedObjectTreeTableNodeList);
+      initializeExpandedKeys(managedObjectTreeTableNodeList);
+    }
+  }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -112,14 +121,14 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   const onManagedObjectTreeTableNodeView = (node: TManagedObjectTreeTableNode) => {
     props.onManagedObjectView(node.data.apEntityId);
   }
-  const onManagedObjectTreeTableNodeSelect = (eventParams: any) => {
-    // eventParams: TreeTableEventParams
-    setSelectedManagedObjectTreeTableNode(eventParams.node);
-  }
-  const referencesByBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
-    if(node.data.apsBusinessGroupResponse.businessGroupChildIds.length === 0) return (<>-</>);
-    return (<>{`Children: ${node.data.apsBusinessGroupResponse.businessGroupChildIds.length}`}</>);
-  }
+  // const onManagedObjectTreeTableNodeSelect = (eventParams: any) => {
+  //   // eventParams: TreeTableEventParams
+  //   setSelectedManagedObjectTreeTableNode(eventParams.node);
+  // }
+  // const referencesByBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
+  //   if(node.data.apsBusinessGroupResponse.businessGroupChildIds.length === 0) return (<>-</>);
+  //   return (<>{`Children: ${node.data.apsBusinessGroupResponse.businessGroupChildIds.length}`}</>);
+  // }
   const desriptionByBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
     return (<>{node.data.apsBusinessGroupResponse.description}</>);
   }
@@ -145,25 +154,28 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   const renderManagedObjectTreeTable = () => {
     // const funcName = 'renderManagedObjectTreeTable';
     // const logName = `${ComponentName}.${funcName}()`;
-    const managedObjectTreeTableNodeList: TManagedObjectTreeTableNodeList = transformManagedObjectList_To_ManagedObjecTreeTableNodeList(managedObjectList);
+
+    const field_Name = 'apEntityId.displayName';
     return (
       <div className="card">
         <TreeTable
           value={managedObjectTreeTableNodeList}
           autoLayout={true}
           sortMode='single'
-          sortField="apEntityId.displayName"
+          sortField={field_Name}
           sortOrder={1}
           // selection
           selectionMode='single'
           selectionKeys={selectedManagedObjectTreeTableNodeKey}
           onSelectionChange={e => setSelectedManagedObjectTreeTableNodeKey(e.value)}
-          onSelect={onManagedObjectTreeTableNodeSelect}
+          // onSelect={onManagedObjectTreeTableNodeSelect}
+          expandedKeys={expandedKeys}
+          onToggle={e => setExpandedKeys(e.value)}
         >
-          <Column header="Name" field="apEntityId.displayName" bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortable expander />
-          <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField="apExternalReference.externalSystemDisplayName" sortable />
+          <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortable expander />
+          <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} field="apExternalReference.externalSystemDisplayName" sortable />
           <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top' }} />
-          <Column header="References" body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+          {/* <Column header="References" body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
           <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
         </TreeTable>
       </div>
@@ -171,6 +183,9 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   }
 
   const renderContent = () => {
+    const funcName = 'renderContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
 
     if(managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
       return (<h3>{MessageNoManagedObjectsFoundCreateNew}</h3>);
@@ -187,9 +202,9 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      <div className="p-mt-4">
-        {renderContent()}
-      </div>
+      {managedObjectList && managedObjectTreeTableNodeList && expandedKeys &&
+        <div className="p-mt-4">{renderContent()}</div>
+      }
       
       {/* DEBUG */}
       {/* {selectedManagedObjectTreeTableNode &&
