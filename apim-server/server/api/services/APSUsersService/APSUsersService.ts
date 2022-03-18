@@ -37,6 +37,8 @@ import { APSUsersDBMigrate } from './APSUsersDBMigrate';
 import APSOrganizationsServiceEventEmitter from '../apsAdministration/APSOrganizationsServiceEvent';
 import { Mutex } from "async-mutex";
 import APSOrganizationsService from '../apsAdministration/APSOrganizationsService';
+import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
+import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
 
 type APSUserList = Array<APSUser>;
 
@@ -83,34 +85,56 @@ export class APSUsersService {
         organizationId: apsOrganizationId
       }}));
 
-      const mongoSearchInfo: TMongoSearchInfo = { 
+      // TODO: how to do an OR filter?
+      const mongoSearchInfo_memberOfOrganizations: TMongoSearchInfo = { 
         filter: {
           memberOfOrganizations: {
             $elemMatch: { organizationId: apsOrganizationId }
           }
         }
       };
-  
-      const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
-        searchInfo: mongoSearchInfo
+      const mongoAllReturn_memberOfOrganizations: TMongoAllReturn = await this.persistenceService.all({
+        searchInfo: mongoSearchInfo_memberOfOrganizations
       });
-  
-      const apsUserList: APSUserList = mongoAllReturn.documentList as APSUserList;
+
+      const mongoSearchInfo_organizationSessionInfoList: TMongoSearchInfo = { 
+        filter: {
+          organizationSessionInfoList: {
+            $elemMatch: { organizationId: apsOrganizationId }
+          }
+        }
+      };
+      const mongoAllReturn_organizationSessionInfoList: TMongoAllReturn = await this.persistenceService.all({
+        searchInfo: mongoSearchInfo_organizationSessionInfoList
+      });
+
+      const apsUserList: APSUserList = mongoAllReturn_memberOfOrganizations.documentList as APSUserList;
+      apsUserList.push(...(mongoAllReturn_organizationSessionInfoList.documentList as APSUserList));
+
       for(const apsUser of apsUserList) {
+        // memberOfOrganizations
         const memberOfOrganizationRolesList: APSOrganizationRolesList = apsUser.memberOfOrganizations ? apsUser.memberOfOrganizations : [];
         const idx = memberOfOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRoles) => {
           return organizationRoles.organizationId === apsOrganizationId;
         });
         if(idx > -1) memberOfOrganizationRolesList.splice(idx, 1);  
+        // last Session info
+        const apsOrganizationSessionInfoList: APSOrganizationSessionInfoList = apsUser.organizationSessionInfoList ? apsUser.organizationSessionInfoList : [];
+        const sessionInfoList_idx = apsOrganizationSessionInfoList.findIndex((x) => {
+          return x.organizationId === apsOrganizationId;
+        });
+        if(sessionInfoList_idx > -1) apsOrganizationSessionInfoList.splice(sessionInfoList_idx, 1);
+
         const update: APSUser = {
           ...apsUser,
-          memberOfOrganizations: memberOfOrganizationRolesList
-        }
+          memberOfOrganizations: memberOfOrganizationRolesList,
+          organizationSessionInfoList: apsOrganizationSessionInfoList,
+        };
         await this.persistenceService.update({
           collectionDocumentId: apsUser.userId,
           collectionDocument: update,
           collectionSchemaVersion: APSUsersService.collectionSchemaVersion
-        })
+        });
       }
 
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
@@ -454,7 +478,30 @@ export class APSUsersService {
         }
       }
     }
-
+    // check last session info
+    if(apsUserPartial.organizationSessionInfoList !== undefined) {
+      for(const organizationSessionInfo of apsUserPartial.organizationSessionInfoList) {
+        try {
+          await APSOrganizationsService.byId(organizationSessionInfo.organizationId);
+        } catch(e) {
+          invalidReferencesList.push({
+            referenceId: organizationSessionInfo.organizationId,
+            referenceType: 'APSOrganization'
+          });
+        }
+        try {
+          await APSBusinessGroupsService.byId({
+            apsOrganizationId: organizationSessionInfo.organizationId,
+            apsBusinessGroupId: organizationSessionInfo.lastSessionInfo.businessGroupId
+          });
+        } catch(e) {
+          invalidReferencesList.push({
+            referenceId: organizationSessionInfo.lastSessionInfo.businessGroupId,
+            referenceType: 'APSBusinessGroup'
+          });
+        }
+      }
+    }
     // create error 
     if(invalidReferencesList.length > 0) {
       throw new ApiInvalidObjectReferencesServerError(logName, 'invalid user references', { 
@@ -492,6 +539,10 @@ export class APSUsersService {
     }
     if(apsUser.memberOfOrganizationGroups === undefined) {
       apsUserResponse.memberOfOrganizationGroups = [];
+    }
+    // session info
+    if(apsUser.organizationSessionInfoList === undefined) {
+      apsUserResponse.organizationSessionInfoList = [];
     }
     return apsUserResponse;
   }
