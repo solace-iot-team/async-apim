@@ -298,7 +298,7 @@ export class APSBusinessGroupsService {
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'list ListAPSBusinessGroupsResponse', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'ListAPSBusinessGroupsResponse', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
@@ -318,16 +318,30 @@ export class APSBusinessGroupsService {
         filter: filter
       }
     });
-    const responseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
+    const apsBusinessGroupResponseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
     // collect all the children
-    for(const response of responseList) {
-      response.businessGroupChildIds = await this.listChildren(apsOrganizationId, response.businessGroupId);
+    for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
+      apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupResponse.businessGroupId);
     }
 
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'list ListAPSBusinessGroupsResponse', details: responseList }));
+    // // now get the top level organization group
+    // const topLevelApsBusinessGroupResponse: APSBusinessGroupResponse = await this.persistenceService.byId({
+    //   organizationId: apsOrganizationId,
+    //   documentId: apsOrganizationId
+    // });
+    // // find all the business groups that have the organization as the parent id
+    // topLevelApsBusinessGroupResponse.businessGroupChildIds = apsBusinessGroupResponseList.filter( (x) => {
+    //   return x.businessGroupParentId === topLevelApsBusinessGroupResponse.businessGroupId;
+    // }).map( (y) => {
+    //   return y.businessGroupId;
+    // });
+    // // add it to the list
+    // apsBusinessGroupResponseList.push(topLevelApsBusinessGroupResponse);
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponseList', details: apsBusinessGroupResponseList }));
 
     return {
-      list: responseList,
+      list: apsBusinessGroupResponseList,
       meta: {
         totalCount: mongoAllReturn.totalDocumentCount
       }
