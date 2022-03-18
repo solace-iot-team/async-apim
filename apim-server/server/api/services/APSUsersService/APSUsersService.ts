@@ -326,7 +326,7 @@ export class APSUsersService {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserResponse', details: apsUserId }));
 
     const apsUser: APSUser = await this.persistenceService.byId({
-      collectionDocumentId: apsUserId
+      documentId: apsUserId
     }) as APSUser;
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
@@ -427,7 +427,7 @@ export class APSUsersService {
     }}));
 
     const deletedUser: APSUser = (await this.persistenceService.delete({
-      collectionDocumentId: apsUserId
+      documentId: apsUserId
     }) as unknown) as APSUser;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSUser', details: deletedUser }));

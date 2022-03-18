@@ -16,8 +16,6 @@ import {
   APSExternalSystem,
   ListAPSExternalSystemsResponse,
   APSExternalSystemList,
-  ListAPSOrganizationResponse,
-  APSOrganizationList
  } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { 
   ApiDeleteNotAllowedForKeyServerError,
@@ -39,7 +37,6 @@ import APSOrganizationId = Components.Schemas.APSId;
 import APSBusinessGroupId = Components.Schemas.APSId;
 import APSExternalSystemId = Components.Schemas.APSId;
 import APSExternalReferenceId = Components.Schemas.APSId;
-import APSOrganizationsService from "../../apsAdministration/APSOrganizationsService";
 
 
 export class APSBusinessGroupsService {
@@ -128,7 +125,7 @@ export class APSBusinessGroupsService {
       for(const apsBusinessGroup of list) {
         await this.persistenceService.delete({
           organizationId: apsOrganizationId,
-          collectionDocumentId: apsBusinessGroup.businessGroupId
+          documentId: apsBusinessGroup.businessGroupId
         });
         this._emitDeletedEvent({ logName: logName, apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroup.businessGroupId });
       }
@@ -355,7 +352,7 @@ export class APSBusinessGroupsService {
 
     const apsBusinessGroupResponse: APSBusinessGroupResponse = await this.persistenceService.byId({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsBusinessGroupId 
+      documentId: apsBusinessGroupId 
     });
     apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupId);
 
@@ -535,7 +532,7 @@ export class APSBusinessGroupsService {
 
     const deleted: APSBusinessGroupResponse = (await this.persistenceService.delete({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsBusinessGroupId
+      documentId: apsBusinessGroupId
     }) as unknown) as APSBusinessGroupResponse;
 
     this._emitDeletedEvent({ logName: logName, apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupId });

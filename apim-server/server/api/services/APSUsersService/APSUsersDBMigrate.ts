@@ -120,7 +120,9 @@ export class APSUsersDBMigrate {
         collectionSchemaVersion: newSchemaVersion
       });
     }
-    const newRawDBDocument = await persistenceService.byIdRaw(userId);
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: userId
+    });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
       dbUser_1: dbUser_1,
       dbUser_2: newRawDBDocument
@@ -173,7 +175,9 @@ export class APSUsersDBMigrate {
       collectionDocument: dbUser_1, 
       collectionSchemaVersion: 1
     });
-    const newRawDBDocument = await persistenceService.byIdRaw(dbUser_1.userId);
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: dbUser_1.userId
+    });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, details: {
       newRawDBDocument: newRawDBDocument,
     } }));

@@ -77,7 +77,7 @@ export class ServerMonitor {
     let exists = true;
     try {
       await this.persistenceService.byId({
-        collectionDocumentId: ServerMonitor.name
+        documentId: ServerMonitor.name
       }); 
     } catch (e) {
       if(e instanceof ApiKeyNotFoundServerError) exists = false;

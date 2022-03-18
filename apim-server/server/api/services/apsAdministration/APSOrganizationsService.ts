@@ -88,7 +88,7 @@ export class APSOrganizationsService {
     }}));
 
     const apsOrganization: APSOrganization = await this.persistenceService.byId({
-      collectionDocumentId: apsOrganizationId
+      documentId: apsOrganizationId
     }) as APSOrganization;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSOrganization', details: apsOrganization }));
@@ -153,7 +153,7 @@ export class APSOrganizationsService {
     }}));
 
     const deleted = (await this.persistenceService.delete({
-      collectionDocumentId: apsOrganizationId
+      documentId: apsOrganizationId
     }) as unknown) as APSOrganization;
     
     // emit deleted event

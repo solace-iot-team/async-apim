@@ -5,7 +5,7 @@ import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
 import { 
-  TestContext, 
+  TestContext,  
   TestLogger 
 } from '../lib/test.helpers';
 import { 
@@ -46,10 +46,9 @@ const createOrganizationDisplayName = (orgId: APSId): APSDisplayName => {
 }
 
 const NumberOfExternalSystems = 3;
-const createExternalSystemId = (orgI: number, extSystemI: number): APSId => {
-  const orgIStr = createOrganizationId(orgI);
+const createExternalSystemId = (extSystemI: number): APSId => {
   const extSystemIStr = String(extSystemI).padStart(5, '0');
-  const extSystemId = `${orgIStr}-${extSystemIStr}`;
+  const extSystemId = `${extSystemIStr}`;
   return extSystemId;
 }
 const createExternalSystemDisplayName = (extSytemId: string): APSDisplayName => {
@@ -62,21 +61,21 @@ describe(`${scriptName}`, () => {
     TestContext.newItId();
   });
 
-  after(async() => {
-    TestContext.newItId();
-    try {
-      const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-      const orgList: APSOrganizationList = listOrgResponse.list;
-      for(const org of orgList) {
-        await ApsAdministrationService.deleteApsOrganization({
-          organizationId: org.organizationId
-        });
-      }
-    } catch (e) {
-      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
-      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
-    }
-  });
+  // after(async() => {
+  //   TestContext.newItId();
+  //   try {
+  //     const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+  //     const orgList: APSOrganizationList = listOrgResponse.list;
+  //     for(const org of orgList) {
+  //       await ApsAdministrationService.deleteApsOrganization({
+  //         organizationId: org.organizationId
+  //       });
+  //     }
+  //   } catch (e) {
+  //     expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+  //     expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+  //   }
+  // });
 
   // ****************************************************************************************************************
   // * OpenApi API Tests *
@@ -125,7 +124,7 @@ describe(`${scriptName}`, () => {
 
       // create external systems
       for(let extI=0; extI < NumberOfExternalSystems; extI++) {
-        const extSystemId = createExternalSystemId(orgI, extI);
+        const extSystemId = createExternalSystemId(extI);
         const extDisplayName = createExternalSystemDisplayName(extSystemId);
         const create: APSExternalSystemCreate = {
           externalSystemId: extSystemId,
@@ -191,7 +190,7 @@ describe(`${scriptName}`, () => {
       for(let orgI=0; orgI < NumberOfOrganizations; orgI++) {
         const orgId: APSId = createOrganizationId(orgI);
         for(let extI=0; extI < NumberOfExternalSystems; extI++) {
-          const extSystemId = createExternalSystemId(orgI, extI);
+          const extSystemId = createExternalSystemId(extI);
           const extDisplayName = createExternalSystemDisplayName(extSystemId);
           const create: APSExternalSystemCreate = {
             externalSystemId: extSystemId,
