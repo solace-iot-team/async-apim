@@ -94,6 +94,9 @@ class APExternalSystemsDisplayService {
     organizationId: string;
     externalSystemId: string;
   }): Promise<TAPExternalSystemDisplay> {
+    // const funcName = 'getApExternalSystemDisplay';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+
     const apsExternalSystem: APSExternalSystem = await ApsExternalSystemsService.getApsExternalSystem({
       organizationId: organizationId,
       externalSystemId: externalSystemId
@@ -102,6 +105,7 @@ class APExternalSystemsDisplayService {
       organizationId: organizationId,
       externalSystemId: apsExternalSystem.externalSystemId
     });
+    // alert(`${logName}: apBusinessGroupDisplayList = ${JSON.stringify(apBusinessGroupDisplayList)}`);
     return this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, apBusinessGroupDisplayList);
   }
 

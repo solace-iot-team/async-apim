@@ -11,11 +11,11 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { Globals } from "../../../utils/Globals";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APExternalSystemsDisplayService, { 
   TAPExternalSystemDisplay, 
   TAPExternalSystemDisplayList 
 } from "../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -80,7 +80,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
       })
       setManagedObjectList(list);
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -172,7 +172,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
           >
             <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
             <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column header="References" headerStyle={{width: '10em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="References" headerStyle={{width: '15em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>
     );

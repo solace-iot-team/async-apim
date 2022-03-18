@@ -8,7 +8,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
 
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -94,7 +94,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
       })
       setManagedObject(object);
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -113,7 +113,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
       setCreatedManagedObjectId(mo.apEntityId.id);
       setCreatedManagedObjectDisplayName(mo.apEntityId.displayName);      
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -131,7 +131,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
       });
       setUpdatedManagedObjectDisplayName(mo.apEntityId.displayName);
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);

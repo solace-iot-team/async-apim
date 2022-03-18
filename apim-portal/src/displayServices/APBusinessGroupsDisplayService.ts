@@ -129,16 +129,17 @@ class APBusinessGroupsDisplayService {
     return tnDisplay;
   }
 
+
   private generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay, referenceApBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPBusinessGroupTreeNodeDisplay {
     const funcName = 'generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
     const thisTreeNode: TAPBusinessGroupTreeNodeDisplay = this.create_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay);
-    for(const childId of apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds) {
+    for(const childEntityId of apBusinessGroupDisplay.apBusinessGroupChildrenEntityIdList) {
       // find it and add it
       const found: TAPBusinessGroupDisplay | undefined = referenceApBusinessGroupDisplayList.find( (x) => {
-        return x.apEntityId.id === childId;
+        return x.apEntityId.id === childEntityId.id;
       });
-      if(found === undefined) throw new Error(`${logName}: cannot find childId in apBusinessGroupDisplayList, childId=${childId}, apBusinessGroupDisplayList=${JSON.stringify(referenceApBusinessGroupDisplayList, null, 2)}`);
+      if(found === undefined) throw new Error(`${logName}: cannot find childId in apBusinessGroupDisplayList, groupId=${apBusinessGroupDisplay.apEntityId.id}, childId=${childEntityId.id}, apBusinessGroupDisplayList=${JSON.stringify(referenceApBusinessGroupDisplayList, null, 2)}`);
       // recurse into child
       const childTreeNodeDisplay: TAPBusinessGroupTreeNodeDisplay = this.generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(found, referenceApBusinessGroupDisplayList);
       thisTreeNode.children.push(childTreeNodeDisplay);
@@ -147,6 +148,15 @@ class APBusinessGroupsDisplayService {
   }
 
   public generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(referenceApBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPBusinessGroupTreeNodeDisplayList {
+    const funcName = 'generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    // get the toplevel group === organization
+    const topLevelGroup: TAPBusinessGroupDisplay | undefined = referenceApBusinessGroupDisplayList.find( (x) => {
+      return x.apBusinessGroupParentEntityId === undefined;
+    });
+    if(topLevelGroup === undefined) throw new Error(`${logName}: topLevelGroup === undefined`);
+
     const list: TAPBusinessGroupTreeNodeDisplayList = [];
     for(const apBusinessGroupDisplay of referenceApBusinessGroupDisplayList) {
       if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupParentId === undefined) {
@@ -161,7 +171,7 @@ class APBusinessGroupsDisplayService {
         //   // create child display list
         // masterTreeNode.children.push(this.create_ApBusinessGroupTreeNode_From_ApBusinessGroupDisplay(found));
         list.push(masterTreeNode);
-      }
+      } 
     }
     return list;
   }
@@ -217,15 +227,6 @@ class APBusinessGroupsDisplayService {
     }
     return APSearchContentService.add_SearchContent<TAPBusinessGroupDisplay>(base);
   }
-
-  // public generateGlobalSearchContent(apProductDisplay: TAPApiProductDisplay): string {
-  //   return Globals.generateDeepObjectValuesString(apProductDisplay).toLowerCase();
-  // }
-
-  // public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
-  //   if(displayNameList.length > 0) return displayNameList.join(', ');
-  //   else return '';
-  // }
 
   private getExternalSystemDisplayName = (apsExternalSystemList: APSExternalSystemList, externalReference?: APSExternalReference): string | undefined => {
     if(externalReference === undefined) return undefined;
@@ -293,7 +294,7 @@ class APBusinessGroupsDisplayService {
     externalSystemId: string;
   }): Promise<TAPBusinessGroupDisplayList> {
 
-    // const funcName = 'listApBusinessGroupSystemDisplay';
+    // const funcName = 'listApBusinessGroupSystemDisplayByExternalSystem';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
@@ -309,6 +310,21 @@ class APBusinessGroupsDisplayService {
         apBusinessGroupChildrenEntityIdList: await this.getApBusinessGroupEntityIdList(organizationId, apsBusinessGroupResponse.businessGroupChildIds)
       }));
     }
+    // get the top level business group === organization id
+    const topLevelBusinessGroup: TAPBusinessGroupDisplay = await this.getRootApBusinessGroupDisplay({ 
+      organizationId: organizationId,
+    });
+    // alert(`${logName}: \nBEFORE: topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = ${JSON.stringify(topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList, null, 2)}`);
+    topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = list.filter( (x) => {
+      if(x.apBusinessGroupParentEntityId) return x.apBusinessGroupParentEntityId.id === organizationId;
+      return false;
+    }).map( (y) => {
+      return y.apEntityId;
+    })
+    // alert(`${logName}: \nAFTER: topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = ${JSON.stringify(topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList, null, 2)}`);
+    // add it to the list
+    list.push(topLevelBusinessGroup);
+
     return list;
   }
 

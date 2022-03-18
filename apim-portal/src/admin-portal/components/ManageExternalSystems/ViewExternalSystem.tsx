@@ -7,9 +7,9 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplay } from "../../../displayServices/APExternalSystemsDisplayService";
 import { APDisplayApBusinessGroupDisplayList } from "../../../components/APDisplay/APDisplayApBusinessGroupDisplayList";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -40,10 +40,11 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
       const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.getApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
-      })
+      });
+      // alert(`${logName}: object.apsBusinessGroupExternalDisplayList = ${JSON.stringify(object.apsBusinessGroupExternalDisplayList, null, 2)}`);
       setManagedObject(object);
-    } catch(e) {
-      APClientConnectorOpenApi.logError(logName, e);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
