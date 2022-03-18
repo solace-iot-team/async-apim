@@ -9,7 +9,7 @@ import { ApiCallStatusError } from '../../components/ApiCallStatusError/ApiCallS
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
-import { APSBusinessGroupCreate, ApsBusinessGroupsService } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { APSBusinessGroupCreate, ApsBusinessGroupsService, APSExternalReference } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APEntityIdsService from "../../utils/APEntityIdsService";
 
 export const BusinessGroupsTestPage: React.FC = () => {
@@ -29,18 +29,30 @@ export const BusinessGroupsTestPage: React.FC = () => {
     const IStr: string = String(num).padStart(2,'0');
     return `domain-${IStr}`;
   }
+  const createExternalDomainId = (num: number) => {
+    const domainId = createDomainId(num);
+    return `ext-${domainId}`;
+  }
   const createProductLineId = (domainNum: number, num: number) => {
     const domainStr: string = String(domainNum).padStart(2,'0');
     const productLineStr: string = String(num).padStart(2,'0');
     return `product-line-${domainStr}_${productLineStr}`;
+  }
+  const createExternalProductLineId = (domainNum: number, num: number) => {
+    const productLineId = createProductLineId(domainNum, num);
+    return `ext-${productLineId}`;
   }
   const createProductId = (domainNum: number, productLineNum: number, num: number) => {
     const domainStr: string = String(domainNum).padStart(2,'0');
     const productLineStr: string = String(productLineNum).padStart(2,'0');
     const productStr: string = String(num).padStart(2,'0');
     return `product-${domainStr}_${productLineStr}_${productStr}`;
-
   }
+  const createExternalProductId = (domainNum: number, productLineNum: number, num: number) => {
+    const productId = createProductId(domainNum, productLineNum, num);
+    return `ext-${productId}`;
+  }
+ 
 
   const [userContext] = React.useContext(UserContext);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -65,7 +77,12 @@ export const BusinessGroupsTestPage: React.FC = () => {
     return callState;
   }
 
-  const apiCreateBusinessGroup = async(organizationId: string, businessGroupId: string, businessGroupParentId?: string) => {
+  const apiCreateBusinessGroup = async({ organizationId, businessGroupId, businessGroupParentId, externalReference }:{
+    organizationId: string;
+    businessGroupId: string;
+    businessGroupParentId?: string;
+    externalReference?: APSExternalReference;
+  }) => {
     const funcName = 'apiCreateBusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_INTERNAL_BUSINESS_GROUPS, 'generate internal business groups');
@@ -75,6 +92,7 @@ export const BusinessGroupsTestPage: React.FC = () => {
         businessGroupId: businessGroupId,
         displayName: businessGroupId,
         description: businessGroupId,
+        externalReference: externalReference
       };
       try {
         await ApsBusinessGroupsService.getApsBusinessGroup({
@@ -101,15 +119,26 @@ export const BusinessGroupsTestPage: React.FC = () => {
     try {
       for(let domainI=0; domainI < NumDomains; domainI++) {
         const domainBusinessGroupId = createDomainId(domainI);
-        await apiCreateBusinessGroup(organizationId, domainBusinessGroupId);
+        await apiCreateBusinessGroup({
+          organizationId: organizationId, 
+          businessGroupId: domainBusinessGroupId
+        });
         // add product lines 
         for(let productLineI=0; productLineI < NumProductLines; productLineI++) {
           const productLineBusinessGroupId = createProductLineId(domainI, productLineI);
-          await apiCreateBusinessGroup(organizationId, productLineBusinessGroupId, domainBusinessGroupId);
+          await apiCreateBusinessGroup({
+            organizationId: organizationId, 
+            businessGroupId: productLineBusinessGroupId, 
+            businessGroupParentId: domainBusinessGroupId
+          });
           // add products
           for(let productI=0; productI < NumProducts; productI++) {
             const productBusinessGroupId = createProductId(domainI, productLineI, productI);
-            await apiCreateBusinessGroup(organizationId, productBusinessGroupId, productLineBusinessGroupId);
+            await apiCreateBusinessGroup({
+              organizationId: organizationId, 
+              businessGroupId: productBusinessGroupId, 
+              businessGroupParentId: productLineBusinessGroupId
+            });
           }
         }
       }    
@@ -121,74 +150,64 @@ export const BusinessGroupsTestPage: React.FC = () => {
     return callState;
   }
 
-
- // const apiGenerateBusinessGroups = async(organizationId: string, externalSystemsDisplayList: TAPExternalSystemDisplayList): Promise<TApiCallState> => {
-  //   const funcName = 'apiGenerateBusinessGroups';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_BUSINESS_GROUPS, 'generate business groups');
-  //   try {
-  //     // external
-  //     for(const externalSystemDisplay of externalSystemsDisplayList) {
-  //       const externalSystemId = externalSystemDisplay.apEntityId.id;
-  //       for(let parentI=0; parentI < NumParentBusinessGroups; parentI++) {
-  //         const parentBusinessGroupId = createExternalParentBusinessGroupId(externalSystemId, parentI);
-  //         const create: APSBusinessGroupCreate = {
-  //           businessGroupParentId: organizationId,
-  //           businessGroupId: parentBusinessGroupId,
-  //           displayName: parentBusinessGroupId,
-  //           description: parentBusinessGroupId,
-  //           externalReference: {
-  //             externalId: parentBusinessGroupId,
-  //             displayName: parentBusinessGroupId,
-  //             externalSystemId: externalSystemId
-  //           }
-  //         }
-  //         try {
-  //           await ApsBusinessGroupsService.getApsBusinessGroup({
-  //             organizationId: organizationId,
-  //             businessgroupId: parentBusinessGroupId
-  //           });
-  //         } catch(e) {
-  //           await ApsBusinessGroupsService.createApsBusinessGroup({
-  //             organizationId: organizationId,
-  //             requestBody: create
-  //           });
-  //         }  
-  //         // add children 
-  //         for(let childI=0; childI < NumChildrenBusinessGroups; childI++) {
-  //           const childBusinessGroupId = createExternalChildBusinessGroupId(externalSystemId, parentI, childI);
-  //           const create: APSBusinessGroupCreate = {
-  //             businessGroupId: childBusinessGroupId,
-  //             displayName: childBusinessGroupId,
-  //             description: childBusinessGroupId,
-  //             businessGroupParentId: parentBusinessGroupId,
-  //             externalReference: {
-  //               externalId: childBusinessGroupId,
-  //               displayName: childBusinessGroupId,
-  //               externalSystemId: externalSystemId  
-  //             }
-  //           }
-  //           try {
-  //             await ApsBusinessGroupsService.getApsBusinessGroup({
-  //               organizationId: organizationId,
-  //               businessgroupId: childBusinessGroupId
-  //             });
-  //           } catch(e) {
-  //             await ApsBusinessGroupsService.createApsBusinessGroup({
-  //               organizationId: organizationId,
-  //               requestBody: create
-  //             });
-  //           }  
-  //         }
-  //       }  
-  //     }
-  //   } catch(e: any) {
-  //     APClientConnectorOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
+  const apiGenerateExternalBusinessGroups = async(organizationId: string, externalSystemsDisplayList: TAPExternalSystemDisplayList): Promise<TApiCallState> => {
+    const funcName = 'apiGenerateExternalBusinessGroups';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_EXTERNAL_BUSINESS_GROUPS, 'generate external business groups');
+    try {
+      for(const externalSystemDisplay of externalSystemsDisplayList) {
+        const externalSystemId = externalSystemDisplay.apEntityId.id;
+        for(let domainI=0; domainI < NumDomains; domainI++) {
+          const domainBusinessGroupId = createExternalDomainId(domainI);
+          const externalReference: APSExternalReference = {
+            externalId: domainBusinessGroupId,
+            displayName: domainBusinessGroupId,
+            externalSystemId: externalSystemId
+          };
+          await apiCreateBusinessGroup({
+            organizationId: organizationId, 
+            businessGroupId: domainBusinessGroupId, 
+            externalReference: externalReference
+          });
+          // add product lines 
+          for(let productLineI=0; productLineI < NumProductLines; productLineI++) {
+            const productLineBusinessGroupId = createExternalProductLineId(domainI, productLineI);
+            const externalReference: APSExternalReference = {
+              externalId: productLineBusinessGroupId,
+              displayName: productLineBusinessGroupId,
+              externalSystemId: externalSystemId
+            };
+            await apiCreateBusinessGroup({
+              organizationId: organizationId, 
+              businessGroupId: productLineBusinessGroupId, 
+              businessGroupParentId: domainBusinessGroupId,
+              externalReference: externalReference
+            });
+            // add products
+            for(let productI=0; productI < NumProducts; productI++) {
+              const productBusinessGroupId = createExternalProductId(domainI, productLineI, productI);
+              const externalReference: APSExternalReference = {
+                externalId: productBusinessGroupId,
+                displayName: productBusinessGroupId,
+                externalSystemId: externalSystemId
+              };  
+              await apiCreateBusinessGroup({
+                organizationId: organizationId, 
+                businessGroupId: productBusinessGroupId, 
+                businessGroupParentId: productLineBusinessGroupId,
+                externalReference: externalReference
+              });
+            }
+          }
+        }      
+      }
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
 
   const doInitialize = async (organizationId: string) => {
     setIsLoading(true);
@@ -218,15 +237,14 @@ export const BusinessGroupsTestPage: React.FC = () => {
     doGenerateInternalBusinessGroups();
   }
 
-  // const doGenerateExternalBusinessGroups = async() => {
-  //   setIsLoading(true);
-  //   await apiGenerateExternalBusinessGroups(organizationId, externalSystemsDisplayList);
-  //   setIsLoading(false);
-  // }
+  const doGenerateExternalBusinessGroups = async() => {
+    setIsLoading(true);
+    await apiGenerateExternalBusinessGroups(organizationId, externalSystemsDisplayList);
+    setIsLoading(false);
+  }
 
   const onGenerateExternalBusinessGroups = () => {
-    alert('implement me ...')
-    // doGenerateExternalBusinessGroups();
+    doGenerateExternalBusinessGroups();
   }
 
   const renderLeftToolbarContent = (): JSX.Element => {

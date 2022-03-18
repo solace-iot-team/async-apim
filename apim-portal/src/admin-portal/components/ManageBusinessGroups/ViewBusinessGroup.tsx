@@ -7,9 +7,9 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../displayServices/APBusinessGroupsDisplayService";
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
@@ -41,8 +41,8 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
         businessGroupId: props.businessGroupEntityId.id
       });
       setManagedObject(object);
-    } catch(e) {
-      APClientConnectorOpenApi.logError(logName, e);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);

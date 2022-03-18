@@ -4,8 +4,8 @@ import { useHistory } from 'react-router-dom';
 
 import { Dialog } from "primereact/dialog";
 
-import { E_COMPONENT_STATE } from "./ManageLoginAndSelectCommon";
-import { TApiCallState } from "../../utils/ApiCallState";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageLoginAndSelectCommon";
+import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
@@ -18,6 +18,8 @@ import APMemberOfService from "../../displayServices/APUsersDisplayService/APMem
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { APSelectOrganization } from "../APSelectOrganization";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
+import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 
 import '../APComponents.css';
 import "./ManageLoginAndSelect.css";
@@ -67,22 +69,36 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
 
+  const apiSetupLoginContexts = async(mo: TManagedObject, organizationEntityId: TAPEntityId | undefined): Promise<TApiCallState> => {
+    const funcName = 'apiSetupLoginContexts';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SETUP_LOGIN_CONTEXTS, `setup user: ${mo.apEntityId.id}`);
+    try { 
+      await APContextsDisplayService.setup_LoginContexts({
+        apLoginUserDisplay: mo,
+        organizationEntityId: organizationEntityId,
+        isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
+        dispatchAuthContextAction: dispatchAuthContextAction,
+        userContextCurrentAppState: userContext.currentAppState,
+        userContextOriginAppState: userContext.originAppState,
+        dispatchUserContextAction: dispatchUserContextAction,
+        dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        navigateTo: navigateTo,
+        onLoadingChange: props.onLoadingChange
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const doSetupLoggedInUser = async (mo: TManagedObject, organizationEntityId: TAPEntityId | undefined) => {
 
     dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo });
 
-    await APContextsDisplayService.setup_LoginContexts({
-      apLoginUserDisplay: mo,
-      organizationEntityId: organizationEntityId,
-      isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
-      dispatchAuthContextAction: dispatchAuthContextAction,
-      userContextCurrentAppState: userContext.currentAppState,
-      userContextOriginAppState: userContext.originAppState,
-      dispatchUserContextAction: dispatchUserContextAction,
-      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
-      navigateTo: navigateTo,
-      onLoadingChange: props.onLoadingChange
-    });
+    await apiSetupLoginContexts(mo, organizationEntityId);
   }
 
   const doInitialize = async () => {
@@ -99,13 +115,18 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      if(!apiCallStatus.success) {
+        setNewComponentState(E_COMPONENT_STATE.UNDEFINED);
+        props.onLoadingChange(false);
+        props.onError(apiCallStatus);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -154,6 +175,8 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   return (
     <div className="user-login">
 
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
       {showUserLogin &&
         <UserLogin
           onSuccess={onLoginSuccess}
@@ -162,6 +185,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
           onLoadingChange={props.onLoadingChange} 
         />
       }
+
       {showSelectOrganization && managedObject &&
         <Dialog 
           className="p-fluid"
