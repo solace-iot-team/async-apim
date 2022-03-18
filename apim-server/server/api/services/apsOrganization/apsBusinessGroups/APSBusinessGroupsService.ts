@@ -324,20 +324,6 @@ export class APSBusinessGroupsService {
       apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupResponse.businessGroupId);
     }
 
-    // // now get the top level organization group
-    // const topLevelApsBusinessGroupResponse: APSBusinessGroupResponse = await this.persistenceService.byId({
-    //   organizationId: apsOrganizationId,
-    //   documentId: apsOrganizationId
-    // });
-    // // find all the business groups that have the organization as the parent id
-    // topLevelApsBusinessGroupResponse.businessGroupChildIds = apsBusinessGroupResponseList.filter( (x) => {
-    //   return x.businessGroupParentId === topLevelApsBusinessGroupResponse.businessGroupId;
-    // }).map( (y) => {
-    //   return y.businessGroupId;
-    // });
-    // // add it to the list
-    // apsBusinessGroupResponseList.push(topLevelApsBusinessGroupResponse);
-
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponseList', details: apsBusinessGroupResponseList }));
 
     return {
