@@ -876,6 +876,30 @@ paths:
                 $ref: "#/components/schemas/APSError"
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /apsBusinessGroups/{organization_id}/{businessgroup_id}/members:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    - $ref: '#/components/parameters/businessgroup_id'
+    get:
+      operationId: listApsBusinessGroupMembers
+      description: Get a list of members (userIds).
+      tags:
+      - APSBusinessGroups
+      responses:
+        '200':
+          description: The userId list. Empty list if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSUserIdList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsBusinessGroups/{organization_id}/externalReference/{external_reference_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -915,14 +939,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/APSUser'
+              $ref: '#/components/schemas/APSUserCreate'
       responses:
         '201':
           description: Successful creation of new APSUser.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSUser'
+                $ref: '#/components/schemas/APSUserResponse'
         '422':
           description: "User with userId already exists or invalid object reference"
           content:
@@ -1015,7 +1039,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSUser'
+                $ref: '#/components/schemas/APSUserResponse'
         '422':
           description: "Invalid object reference"
           content:
@@ -1049,7 +1073,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSUser'
+                $ref: '#/components/schemas/APSUserResponse'
         '422':
           description: "Invalid object reference"
           content:
@@ -1103,7 +1127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSUser'
+                $ref: '#/components/schemas/APSUserResponse'
         '400':
           description: "Bad Request."
           content:
@@ -1144,7 +1168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSUser'
+                $ref: '#/components/schemas/APSUserResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1159,6 +1183,27 @@ paths:
     post:
       operationId: logoutAll
       description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
+      tags:
+      - APSLogin
+      responses:
+        '204':
+          description: Successful logout.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsLogin/{organization_id}/logoutAll:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    post:
+      operationId: logoutOrganizationAll
+      description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
       tags:
       - APSLogin
       responses:
@@ -1378,6 +1423,10 @@ components:
       minLength: 4
       maxLength: 64
       pattern: ^\S*$
+    APSUserIdList:
+      type: array
+      items:
+        $ref: '#/components/schemas/APSUserId'
     APSExternalReference:
       type: object
       additionalProperties: false
@@ -1949,8 +1998,6 @@ components:
           type: boolean
         userId:
           $ref: "#/components/schemas/APSUserId"
-        password:
-          type: string
         profile:
           $ref: "#/components/schemas/APSUserProfile"
         systemRoles:
@@ -1960,9 +2007,8 @@ components:
       required:
         - isActivated
         - userId
-        - password
         - profile
-    APSUser:
+    APSUserCreate:
       description: "A user."
       type: object
       allOf:
@@ -1974,6 +2020,8 @@ components:
           $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
         organizationSessionInfoList:
           $ref: '#/components/schemas/APSOrganizationSessionInfoList'
+        password:
+          type: string
       required:
         - isActivated
         - userId
@@ -2070,11 +2118,14 @@ components:
           $ref: '#/components/schemas/APSExternalReference'
         businessGroupChildIds:
           $ref: "#/components/schemas/APSIdList"
+        members:
+          $ref: '#/components/schemas/APSUserIdList'
       required:
       - businessGroupId
       - displayName
       - description
       - businessGroupChildIds
+      - members
     APSBusinessGroupResponseList:
       description: Array of APSBusinessGroupResponse objects.
       type: array

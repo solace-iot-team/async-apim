@@ -129,7 +129,8 @@ describe(`${scriptName}`, () => {
         expect(createdApsBusinessGroup.businessGroupChildIds.length, TestLogger.createTestFailMessage('businessGroupChildIds length not 0')).to.equal(0);
         const expectedResponse: APSBusinessGroupResponse = {
           ...apsBusinessGroup,
-          businessGroupChildIds: []
+          businessGroupChildIds: [],
+          members: []
         }
         expect(createdApsBusinessGroup, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         // create children
@@ -242,7 +243,8 @@ describe(`${scriptName}`, () => {
         });
         const expectedResponse: APSBusinessGroupResponse = {
           ...apsBusinessGroup,
-          businessGroupChildIds: []
+          businessGroupChildIds: [],
+          members: []
         }
         expect(createdApsBusinessGroup, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         // get it
@@ -280,7 +282,8 @@ describe(`${scriptName}`, () => {
           });
           const expectedResponse: APSBusinessGroupResponse = {
             ...apsBusinessGroup,
-            businessGroupChildIds: []
+            businessGroupChildIds: [],
+            members: []
           }
           expect(createdApsBusinessGroupResponse, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         }

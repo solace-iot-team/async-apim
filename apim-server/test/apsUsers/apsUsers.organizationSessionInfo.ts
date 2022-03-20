@@ -14,12 +14,12 @@ import {
   APSOrganization, 
   APSOrganizationCreate, 
   APSOrganizationList, 
-  APSOrganizationRoles, 
-  APSUser, 
+  APSUserCreate, 
   APSUserId, 
+  APSUserResponse, 
+  APSUserResponseList, 
   ApsUsersService, 
   APSUserUpdate, 
-  EAPSOrganizationAuthRole, 
   ListAPSOrganizationResponse,
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
@@ -33,7 +33,7 @@ const NumberOfOrganizations: number = 5;
 const OrganizationIdTemplate: APSId = 'test_user_organization';
 const OrganizationDisplayNamePrefix: string = 'displayName for ';
 const NumberOfUsersPerOrganization: number = 2;
-const apsUserTemplate: APSUser = {
+const apsUserCreateTemplate: APSUserCreate = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
@@ -110,10 +110,10 @@ describe(`${scriptName}`, () => {
 // ****************************************************************************************************************
 
     it(`${scriptName}: should delete all users`, async () => {
-      let finalApsUserList: Array<APSUser>;
+      let finalApsUserList: APSUserResponseList;
       let finalMeta: APSListResponseMeta;
       try {
-        let apsUserList: Array<APSUser> = [];
+        let apsUserList: APSUserResponseList = [];
         const pageSize = 100;
         let pageNumber = 1;
         let hasNextPage = true;
@@ -194,18 +194,18 @@ describe(`${scriptName}`, () => {
           const orgId: APSId = createOrganizationId(orgI);
           for(let userI=0; userI < NumberOfUsersPerOrganization; userI++) {
             const userId = createUserId(orgId, userI);
-            const apsUser: APSUser = {
-              ...apsUserTemplate,
+            const apsUserCreate: APSUserCreate = {
+              ...apsUserCreateTemplate,
               isActivated: true,
               userId: userId,
               profile: {
                 email: userId,
-                first: apsUserTemplate.profile.first,
-                last: apsUserTemplate.profile.last
+                first: apsUserCreateTemplate.profile.first,
+                last: apsUserCreateTemplate.profile.last
               },
             }
-            const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
-              requestBody: apsUser
+            const apsUserResponse: APSUserResponse = await ApsUsersService.createApsUser({
+              requestBody: apsUserCreate
             });
           }
         }
@@ -230,7 +230,7 @@ describe(`${scriptName}`, () => {
             const apsUserUpdate: APSUserUpdate = {
               organizationSessionInfoList: [ organizationSessionInfo]
             }
-            const apsUser: APSUser = await ApsUsersService.updateApsUser({
+            const apsUser: APSUserResponse = await ApsUsersService.updateApsUser({
               userId: userId,
               requestBody: apsUserUpdate
             });

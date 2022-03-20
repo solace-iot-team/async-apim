@@ -11,7 +11,8 @@ import {
   APSError, 
   APSErrorIds, 
   APSOrganizationRolesList, 
-  APSUser, 
+  APSUserCreate, 
+  APSUserResponse, 
   APSUserResponseList, 
   ApsUsersService, 
   EAPSOrganizationAuthRole, 
@@ -48,7 +49,7 @@ const commonOrgRolesList: APSOrganizationRolesList = [
 type TUserBatchList = Array<
   {
     batchNumber: number;
-    userList: Array<APSUser>;
+    userList: Array<APSUserCreate>;
   }
 >;
 
@@ -76,11 +77,11 @@ const createUserBatches = (numberOfBatches: number, numberUsersPerBatch: number)
     // const batchNumberStr: string = getNumberStr(batchNumber);
     const orgId = getOrgIdFromNum(batchNumber);
     
-    const userList: Array<APSUser> = [];
+    const userList: Array<APSUserCreate> = [];
 
     for(let userNumber=0; userNumber < numberUsersPerBatch; userNumber++) {
       const userId = getUserIdFromNumbers(batchNumber, userNumber);
-      const apsUser: APSUser = {
+      const apsUserCreate: APSUserCreate = {
         isActivated: getIsActivated(userNumber),
         userId: userId,
         password: 'password',
@@ -98,7 +99,7 @@ const createUserBatches = (numberOfBatches: number, numberUsersPerBatch: number)
           },
         ]
       }
-      userList.push(apsUser);
+      userList.push(apsUserCreate);
     }
 
     userBatchList.push( {
@@ -181,7 +182,7 @@ describe(`${scriptName}`, () => {
 
         for(const user of userBatch.userList) {
 
-          const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
+          const apsUserResponse: APSUserResponse = await ApsUsersService.createApsUser({
             requestBody: user
           });
 

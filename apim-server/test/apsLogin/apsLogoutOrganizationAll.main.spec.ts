@@ -4,10 +4,13 @@ import path from 'path';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
+  ApsAdministrationService, 
   APSError, 
   APSErrorIds, 
   APSListResponseMeta, 
   ApsLoginService, 
+  APSOrganization, 
+  APSOrganizationCreate, 
   APSUserCreate, 
   APSUserResponse, 
   APSUserResponseList, 
@@ -35,6 +38,12 @@ const apsUserCreateLoginTemplate: APSUserCreate = {
   //   }
   // ]
 }
+
+const apsOrganizationCreate: APSOrganizationCreate = {
+  organizationId: 'logoutAllOrganization',
+  displayName: 'logoutAllOrganization',
+}
+
 
 describe(`${scriptName}`, () => {
 
@@ -80,26 +89,36 @@ describe(`${scriptName}`, () => {
     expect(finalMeta.meta.totalCount, TestLogger.createTestFailMessage('totalCount not zero')).equal(0);
   });
 
+  it(`${scriptName}: should create organization`, async() => {
+    try {
+      const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
+        requestBody: apsOrganizationCreate
+      });
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+  });
+
   it(`${scriptName}: should create login user`, async() => {
     try {
-      const created: APSUserResponse = await ApsUsersService.createApsUser({
+      const created = await ApsUsersService.createApsUser({
         requestBody: apsUserCreateLoginTemplate
       });
-      // const target: Partial<APSUserCreate> = apsUserCreateLoginTemplate;
-      // delete target.password;
-      // expect(created, 'user not created correctly').to.deep.equal(target);
+      // expect(created, 'user not created correctly').to.deep.equal(apsUserCreateLoginTemplate);
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
       expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
   });
 
-  it(`${scriptName}: should loginAs user`, async() => {
+  it(`${scriptName}: should login as user`, async() => {
     const loginUserId: string = apsUserCreateLoginTemplate.userId;
+    const loginPwd: string = apsUserCreateLoginTemplate.password;
     let loggedIn: APSUserResponse;
     try {
-      loggedIn = await ApsLoginService.loginAs({
-        requestBody: { userId: loginUserId }
+      loggedIn = await ApsLoginService.login({
+        requestBody: { userId: loginUserId, userPwd: loginPwd }
       });
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -107,6 +126,52 @@ describe(`${scriptName}`, () => {
     }
   });
 
+  it(`${scriptName}: should logout all users from organization`, async() => {
+    try {
+      await ApsLoginService.logoutOrganizationAll({
+        organizationId: apsOrganizationCreate.organizationId
+      });
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('log:')).to.be.true;
+    }
+  });
+
+  xit(`${scriptName}: should return not authorized error for users after logout all`, async() => {
+    // TODO: access a resource ==> not authorized
+  });
+
+  it(`${scriptName}: should delete org`, async() => {
+    try {
+      await ApsAdministrationService.deleteApsOrganization({
+        organizationId: apsOrganizationCreate.organizationId
+      });
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+  });
+
+  xit(`${scriptName}: should return not authorized error after org deleted`, async() => {
+    // TODO: access a resource ==> not authorized
+  });
+
+  it(`${scriptName}: should fail logging out from non-existing organization`, async() => {
+    const NonExistentOrgName = 'non-existent-org';
+    try {
+      await ApsLoginService.logoutOrganizationAll({
+        organizationId: NonExistentOrgName
+      });
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('fail')).equal(404);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('fail')).equal(APSErrorIds.ORGANIZATION_NOT_FOUND);
+      expect(JSON.stringify(apsError), TestLogger.createTestFailMessage('fail')).contains(NonExistentOrgName);
+      return;
+    }
+    expect(false, `${TestLogger.createTestFailMessage('should not get here')}`).to.be.true;
+  });
 
 });
-

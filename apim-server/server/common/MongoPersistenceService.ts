@@ -145,10 +145,10 @@ export class MongoPersistenceService {
   }
   
   public allByOrganizationIdRaw = async(organizationId: string): Promise<any> => {
-    const funcName = 'allByOrganizationIdRaw';
-    const logName = `${MongoPersistenceService.name}.${funcName}()`;
+    // const funcName = 'allByOrganizationIdRaw';
+    // const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const collection: mongodb.Collection = this.getCollection();
-    let filter: Filter<any> = {};
+    const filter: Filter<any> = {};
     filter[MongoPersistenceService.organizationIdFieldName] = organizationId;
     const findCursor: mongodb.FindCursor = collection.find(filter);
     const documentList: Array<Document> = await findCursor.toArray();

@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
-  APSUser, 
+  APSUserResponseList, 
   ApsUsersService, 
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
@@ -28,7 +28,7 @@ describe(`${scriptName}`, () => {
 
   after(async() => {
     TestContext.newItId();
-    let apsUserList: Array<APSUser> = [];
+    let apsUserList: APSUserResponseList = [];
     try {
       const pageSize = 100;
       let pageNumber = 1;

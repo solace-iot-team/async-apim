@@ -13,7 +13,9 @@ import {
   APSListResponseMeta, 
   APSOrganizationRoles, 
   APSOrganizationRolesList, 
-  APSUser, 
+  APSOrganizationRolesResponse, 
+  APSOrganizationRolesResponseList, 
+  APSUserCreate, 
   APSUserReplace, 
   APSUserResponse, 
   APSUserResponseList, 
@@ -35,7 +37,7 @@ const ReferenceOrg_2 = 'org_2';
 const ReferenceOrg_Updated = 'updated_org';
 const ReferenceOrg_Replaced = 'replaced_org';
 const numberOfUsers: number = 50;
-const apsUserTemplate: APSUser = {
+const apsUserCreateTemplate: APSUserCreate = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
@@ -53,7 +55,7 @@ const apsUserTemplate: APSUser = {
   ],
   memberOfOrganizationGroups: [],
 }
-const apsUserTemplate2: APSUser = {
+const apsUserCreateTemplate2: APSUserCreate = {
   isActivated: true,
   userId: 'userId2',
   password: 'password2',
@@ -79,22 +81,22 @@ describe(`${scriptName}`, () => {
       TestContext.newItId();
     });
 
-    after(`${scriptName}: AFTER: delete all users`, async() => {
-      TestContext.newItId();
-      try {
-        const apsUserResponseList: APSUserResponseList = await ApsUsersHelper.deleteAllUsers()
-      } catch (e) {
-        expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-        expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-      }
-    });
+    // after(`${scriptName}: AFTER: delete all users`, async() => {
+    //   TestContext.newItId();
+    //   try {
+    //     const apsUserResponseList: APSUserResponseList = await ApsUsersHelper.deleteAllUsers()
+    //   } catch (e) {
+    //     expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
+    //     expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+    //   }
+    // });
   
 // ****************************************************************************************************************
 // * OpenApi API Tests *
 // ****************************************************************************************************************
 
     it(`${scriptName}: should list users with paging`, async () => {
-      let apsUserList: Array<APSUser> = [];
+      let apsUserList: APSUserResponseList = [];
       let receivedTotalCount: number = 0;
       let reportedTotalCount: number;
       try {
@@ -121,10 +123,10 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should delete all users`, async () => {
-      let finalApsUserList: Array<APSUser>;
+      let finalApsUserList: APSUserResponseList;
       let finalMeta: APSListResponseMeta;
       try {
-        let apsUserList: Array<APSUser> = [];
+        let apsUserList: APSUserResponseList = [];
         const pageSize = 100;
         let pageNumber = 1;
         let hasNextPage = true;
@@ -190,33 +192,33 @@ describe(`${scriptName}`, () => {
       try {
         for (let i=0; i < numberOfUsers; i++) {
           const iStr: string = String(i).padStart(5, '0');
-          const userId = `x-${iStr}_${apsUserTemplate.userId}@aps.com`;
-          const apsUser: APSUser = {
-            ...apsUserTemplate,
+          const userId = `x-${iStr}_${apsUserCreateTemplate.userId}@aps.com`;
+          const apsUserCreate: APSUserCreate = {
+            ...apsUserCreateTemplate,
             isActivated: (i % 2 === 0),
             userId: userId,
             profile: {
               email: userId,
-              first: apsUserTemplate.profile.first,
-              last: apsUserTemplate.profile.last
+              first: apsUserCreateTemplate.profile.first,
+              last: apsUserCreateTemplate.profile.last
             }
           }
-          const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
-            requestBody: apsUser
+          const apsUserResponse: APSUserResponse = await ApsUsersService.createApsUser({
+            requestBody: apsUserCreate
           });
-          const userId2 = `x-${iStr}_${apsUserTemplate2.userId}@aps.com`;
-          const apsUser2: APSUser = {
-            ...apsUserTemplate2,
+          const userId2 = `x-${iStr}_${apsUserCreateTemplate2.userId}@aps.com`;
+          const apsUserCreate2: APSUserCreate = {
+            ...apsUserCreateTemplate2,
             userId: userId2,
             isActivated: (i % 2 === 0),
             profile: {
               email: userId2,
-              first: apsUserTemplate.profile.first,
-              last: apsUserTemplate.profile.last
+              first: apsUserCreateTemplate.profile.first,
+              last: apsUserCreateTemplate.profile.last
             }
           }
-          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser({
-            requestBody: apsUser2
+          const apsUserResponse2: APSUserResponse = await ApsUsersService.createApsUser({
+            requestBody: apsUserCreate2
           });
         }  
       } catch (e) {
@@ -227,14 +229,14 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should list users with paging`, async () => {
-      let apsUserList: Array<APSUser> = [];
+      let apsUserList: APSUserResponseList = [];
       let receivedTotalCount: number = 0;
       try {
         const pageSize = 2;
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             pageSize: pageSize, 
             pageNumber: pageNumber
           });
@@ -256,7 +258,7 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'profile.email';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             sortFieldName: sortFieldName, 
             sortDirection: sortDirection
           });
@@ -270,7 +272,7 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'isActivated';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             sortFieldName: sortFieldName, 
             sortDirection: sortDirection
           });
@@ -284,7 +286,7 @@ describe(`${scriptName}`, () => {
       const sortFieldName: string = 'rubbish';
       const sortDirection: EAPSSortDirection = EAPSSortDirection.ASC;
       try {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             sortFieldName: sortFieldName, 
             sortDirection: sortDirection
           });
@@ -302,13 +304,13 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should return duplicate key error`, async() => {
-      let response: APSUser;
+      let response: APSUserResponse;
       try {
         response = await ApsUsersService.createApsUser({
-          requestBody: apsUserTemplate
+          requestBody: apsUserCreateTemplate
         });
         response = await ApsUsersService.createApsUser({
-          requestBody: apsUserTemplate
+          requestBody: apsUserCreateTemplate
         });
       } catch (e) {
         expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -323,7 +325,7 @@ describe(`${scriptName}`, () => {
       let apsUserResponse: APSUserResponse;
       try {
         apsUserResponse = await ApsUsersService.getApsUser({
-          userId: apsUserTemplate.userId
+          userId: apsUserCreateTemplate.userId
         });
       } catch (e) {
         expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
@@ -331,22 +333,30 @@ describe(`${scriptName}`, () => {
         expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
       }
       // expect organizationDisplayName in all memberOfOrganizations to be equal to organizationId
-      let recreatedApsUser: APSUser = apsUserResponse;
-      const recreatedMemberOfOrganizations: APSOrganizationRolesList = [];
+      let recreatedApsUser: APSUserResponse = apsUserResponse;
+      const recreatedMemberOfOrganizations: APSOrganizationRolesResponseList = [];
       for(const memberOfOrganization of apsUserResponse.memberOfOrganizations) {
         expect(memberOfOrganization.organizationId, TestLogger.createTestFailMessage('org displayname not equal org id')).to.deep.equal(memberOfOrganization.organizationDisplayName);
         // also re-create the original data structure 
-        recreatedMemberOfOrganizations.push({
+        const apsOrganizationRolesResponse: APSOrganizationRolesResponse = {
           organizationId: memberOfOrganization.organizationId,
+          organizationDisplayName: memberOfOrganization.organizationDisplayName,
           roles: memberOfOrganization.roles
-        });
+        }
+        recreatedMemberOfOrganizations.push(apsOrganizationRolesResponse);
       }
       recreatedApsUser.memberOfOrganizations = recreatedMemberOfOrganizations;
-      expect(recreatedApsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal(apsUserTemplate);
+      const target: Partial<APSUserCreate> = JSON.parse(JSON.stringify(apsUserCreateTemplate));
+      delete target.password;
+      expect(recreatedApsUser, TestLogger.createTestFailMessage('response equals request')).to.deep.equal({
+        ...target, 
+        organizationSessionInfoList: [],
+        memberOfOrganizations: recreatedMemberOfOrganizations
+      });
     });
 
     it(`${scriptName}: should not find user`, async() => {
-      let apsUser: APSUser;
+      let apsUser: APSUserResponse;
       try {
         apsUser = await ApsUsersService.getApsUser({
           userId: "unknown_user_id"
@@ -361,8 +371,8 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should update user`, async() => {
-      let updatedApsUser: APSUser;
-      const userId = apsUserTemplate.userId;
+      let updatedApsUser: APSUserResponse;
+      const userId = apsUserCreateTemplate.userId;
       const updateRequest: APSUserUpdate = {
         isActivated: false,
         password: 'updated',        
@@ -383,7 +393,7 @@ describe(`${scriptName}`, () => {
         // if(_.isArray(originalValue)) return originalValue.concat(updateValue);
         // else return undefined;
       }
-      const targetApsUser = _.mergeWith(apsUserTemplate, updateRequest, updateCustomizer);
+      const targetApsUser = _.mergeWith(JSON.parse(JSON.stringify(apsUserCreateTemplate)), updateRequest, updateCustomizer);
       try {
         updatedApsUser = await ApsUsersService.updateApsUser({
           userId: userId, 
@@ -394,13 +404,28 @@ describe(`${scriptName}`, () => {
         let message = `ApsUsersService.updateApsUser()`;
         expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
       }
+      // memberOfOrganizations has display name in response
+      // password is not in response
+      //  organizationSessionInfoList is in response
+      delete targetApsUser.password;
+      targetApsUser.organizationSessionInfoList = [];
+      // organizationDisplayName is same as the id
+      const newMemberOfOrganizations = targetApsUser.memberOfOrganizations.map( (x) => {
+        return {
+          organizationDisplayName: x.organizationId,
+          organizationId: x.organizationId,
+          roles: x.roles
+        }
+      });
+      targetApsUser.memberOfOrganizations = newMemberOfOrganizations;
+      // console.log(`targetApsUser = ${JSON.stringify(targetApsUser, null, 2)}`);
       expect(updatedApsUser, 'user not updated correctly').to.deep.equal(targetApsUser);
     });
 
     it(`${scriptName}: should handle update user without any data`, async() => {
-      let updatedApsUser: APSUser;
+      let updatedApsUser: APSUserResponse;
       let existingApsUser: APSUserResponse;
-      const userId = apsUserTemplate.userId;
+      const userId = apsUserCreateTemplate.userId;
       try {
         existingApsUser = await ApsUsersService.getApsUser({
           userId: userId
@@ -415,12 +440,13 @@ describe(`${scriptName}`, () => {
         expect(false, `${TestLogger.createTestFailMessage(message)}`).to.be.true;
       }
       // delete all the organizationDisplayNames
-      let recreatedExistingApsUser: APSUser = existingApsUser;
+      let recreatedExistingApsUser: APSUserResponse = existingApsUser;
       if(existingApsUser.memberOfOrganizations !== undefined) {
-        const newMemberOfOrganizations: APSOrganizationRolesList = [];
+        const newMemberOfOrganizations: APSOrganizationRolesResponseList = [];
         for(const memberOfOrganization of recreatedExistingApsUser.memberOfOrganizations) {
-          const newMemberOfOrganization: APSOrganizationRoles = {
+          const newMemberOfOrganization: APSOrganizationRolesResponse = {
             organizationId: memberOfOrganization.organizationId,
+            organizationDisplayName: memberOfOrganization.organizationDisplayName,
             roles: memberOfOrganization.roles
           }
           newMemberOfOrganizations.push(newMemberOfOrganization);
@@ -446,44 +472,44 @@ describe(`${scriptName}`, () => {
       }
     });
 
-    it(`${scriptName}: should replace user`, async() => {
-      let replacedApsUser: APSUser;
-      const userId = apsUserTemplate.userId;
-      const replaceRequest: APSUserReplace = {
-        isActivated: true,
-        password: 'replaced',
-        memberOfOrganizations: [ 
-          {
-            organizationId: ReferenceOrg_Replaced,
-            roles: [EAPSOrganizationAuthRole.API_TEAM]
-          }
-        ],
-        profile: {
-          email: 'replaced@aps.test',
-          first: 'replaced',
-          last: 'replaced'
-        }
-      }
-      const targetApsUser: APSUser = {
-        ...replaceRequest,
-        userId: userId
-      }
-      try {
-        replacedApsUser = await ApsUsersService.replaceApsUser({
-          userId: userId, 
-          requestBody: replaceRequest
-        });
-      } catch (e) {
-        expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
-        let message = `ApsUsersService.updateApsUser()`;
-        expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
-      }
-      expect(replacedApsUser, TestLogger.createTestFailMessage('user not replaced correctly')).to.deep.equal(targetApsUser);
-    });
+    // it(`${scriptName}: should replace user`, async() => {
+    //   let replacedApsUser: APSUserResponse;
+    //   const userId = apsUserCreateTemplate.userId;
+    //   const replaceRequest: APSUserReplace = {
+    //     isActivated: true,
+    //     password: 'replaced',
+    //     memberOfOrganizations: [ 
+    //       {
+    //         organizationId: ReferenceOrg_Replaced,
+    //         roles: [EAPSOrganizationAuthRole.API_TEAM]
+    //       }
+    //     ],
+    //     profile: {
+    //       email: 'replaced@aps.test',
+    //       first: 'replaced',
+    //       last: 'replaced'
+    //     }
+    //   }
+    //   const targetApsUser: APSUserResponse = {
+    //     ...replaceRequest,
+    //     userId: userId
+    //   }
+    //   try {
+    //     replacedApsUser = await ApsUsersService.replaceApsUser({
+    //       userId: userId, 
+    //       requestBody: replaceRequest
+    //     });
+    //   } catch (e) {
+    //     expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+    //     let message = `ApsUsersService.updateApsUser()`;
+    //     expect(false, TestLogger.createTestFailMessage(message)).to.be.true;
+    //   }
+    //   expect(replacedApsUser, TestLogger.createTestFailMessage('user not replaced correctly')).to.deep.equal(targetApsUser);
+    // });
 
     it(`${scriptName}: should not allow empty userId`, async() => {
-      const toCreate: APSUser = {
-        ...apsUserTemplate,
+      const toCreate: APSUserCreate = {
+        ...apsUserCreateTemplate,
         userId: ''
       }
       try {
@@ -503,8 +529,8 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should not allow whitespace in userId`, async() => {
-      const toCreate: APSUser = {
-        ...apsUserTemplate,
+      const toCreate: APSUserCreate = {
+        ...apsUserCreateTemplate,
         userId: ' sdssdsd '
       }
       try {
@@ -524,8 +550,8 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should validate email pattern`, async() => {
-      let replacedApsUser: APSUser;
-      const userId = apsUserTemplate.userId;
+      let replacedApsUser: APSUserResponse;
+      const userId = apsUserCreateTemplate.userId;
       const replaceRequest: APSUserReplace = {
         isActivated: true,
         password: 'replaced',
@@ -562,7 +588,7 @@ describe(`${scriptName}`, () => {
     // * Open API Tests: searchPhrase *
     // ****************************************************************************************************************
 
-    const apsUserSearchTemplate: APSUser = {
+    const apsUserSearchTemplate: APSUserCreate = {
       isActivated: true,
       userId: '@aps.test',
       password: 'password',
@@ -581,10 +607,10 @@ describe(`${scriptName}`, () => {
     }
     
     it(`${scriptName}: should delete all users`, async () => {
-      let finalApsUserList: Array<APSUser>;
+      let finalApsUserList: APSUserResponseList;
       let finalMeta: APSListResponseMeta;
       try {
-        let apsUserList: Array<APSUser> = [];
+        let apsUserList: APSUserResponseList = [];
         const pageSize = 100;
         let pageNumber = 1;
         let hasNextPage = true;
@@ -621,7 +647,7 @@ describe(`${scriptName}`, () => {
           const first = `${iStr}-first`;
           const email = `${first}.${apsUserSearchTemplate.profile.last}@aps.com`;
           const userId = email;
-          const apsUser: APSUser = {
+          const apsUserCreate: APSUserCreate = {
             ...apsUserSearchTemplate,
             isActivated: (i % 2 === 0),
             userId: userId,
@@ -631,19 +657,19 @@ describe(`${scriptName}`, () => {
               last: 'last1'
             }
           }
-          const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
-            requestBody: apsUser
+          const apsUserResponse: APSUserResponse = await ApsUsersService.createApsUser({
+            requestBody: apsUserCreate
           });
-          const apsUser2: APSUser = {
-            ...apsUser,
-            userId: `${apsUser.userId}-2`,
+          const apsUserCreate2: APSUserCreate = {
+            ...apsUserCreate,
+            userId: `${apsUserCreate.userId}-2`,
             profile: {
-              ...apsUser.profile,
+              ...apsUserCreate.profile,
               last: 'last2'
             }
           }
-          const apsUserResponse2: APSUser = await ApsUsersService.createApsUser({
-            requestBody: apsUser2
+          const apsUserResponse2: APSUserResponse = await ApsUsersService.createApsUser({
+            requestBody: apsUserCreate2
           });
         }  
       } catch (e) {
@@ -653,7 +679,7 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should list users with paging & searchWordList=last1, last2`, async () => {
-      let apsUserList: Array<APSUser> = [];
+      let apsUserList: APSUserResponseList = [];
       let receivedTotalCount: number = 0;
       try {
         receivedTotalCount = 0;
@@ -661,7 +687,7 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             pageSize: pageSize, 
             pageNumber: pageNumber, 
             searchWordList: 'last1'
@@ -683,7 +709,7 @@ describe(`${scriptName}`, () => {
         let pageNumber = 1;
         let hasNextPage = true;
         while (hasNextPage) {
-          const resultListApsUsers: APSListResponseMeta & { list: Array<APSUser> }  = await ApsUsersService.listApsUsers({
+          const resultListApsUsers: APSListResponseMeta & { list: APSUserResponseList }  = await ApsUsersService.listApsUsers({
             pageSize: pageSize, 
             pageNumber: pageNumber, 
             searchWordList: 'last2'
@@ -705,8 +731,9 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should return invalid reference error for unknown org when creating user`, async () => {
       const NonExistentOrgName = 'org-does-not-exist';
       try {
-        const apsUser: APSUser = {
-          ...apsUserTemplate,
+        const apsUserCreate: APSUserCreate = {
+          ...apsUserCreateTemplate,
+          // password: 'password',
           memberOfOrganizations: [
             {
               organizationId: NonExistentOrgName,
@@ -715,7 +742,7 @@ describe(`${scriptName}`, () => {
           ]
         }
         await ApsUsersService.createApsUser({
-          requestBody: apsUser
+          requestBody: apsUserCreate
         });
       } catch (e) {
         expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
 import APSUsersService from '../../services/APSUsersService/APSUsersService';
 import { ApiMissingParameterServerError } from '../../../common/ServerError';
-import { APSUser, ListApsUsersResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSUserResponse, ListApsUsersResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 
 export class ApsUsersController {
   private static className = 'ApsUsersController';
@@ -25,7 +25,7 @@ export class ApsUsersController {
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
     APSUsersService.byId(userId)
-    .then( (r: APSUser) => {
+    .then( (r: APSUserResponse) => {
       res.status(200).json(r);
     })
     .catch( (e) => {
@@ -35,7 +35,7 @@ export class ApsUsersController {
 
   public static create = (req: Request, res: Response, next: NextFunction): void => {
     APSUsersService.create(req.body)
-    .then((r) => {
+    .then((r: APSUserResponse) => {
       res.status(201).json(r);
     })
     .catch( (e) => {
@@ -49,7 +49,7 @@ export class ApsUsersController {
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
     APSUsersService.update(userId, req.body)
-    .then((r) => {
+    .then((r: APSUserResponse) => {
       res.status(200).json(r);
     })
     .catch( (e) => {
@@ -63,7 +63,7 @@ export class ApsUsersController {
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
     APSUsersService.replace(userId, req.body)
-    .then((r) => {
+    .then((r: APSUserResponse) => {
       res.status(200).json(r);
     })
     .catch( (e) => {

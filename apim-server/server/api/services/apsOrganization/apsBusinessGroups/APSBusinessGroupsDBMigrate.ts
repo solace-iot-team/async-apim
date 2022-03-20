@@ -1,4 +1,11 @@
-import { APSBusinessGroupCreate, APSBusinessGroupResponse, APSBusinessGroupResponseList, APSBusinessGroupUpdate, APSOrganizationList, ListAPSBusinessGroupsResponse, ListAPSOrganizationResponse } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { 
+  APSBusinessGroupCreate, 
+  APSBusinessGroupResponse, 
+  APSBusinessGroupResponseList, 
+  APSOrganizationList, 
+  ListAPSBusinessGroupsResponse, 
+  ListAPSOrganizationResponse
+ } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { EServerStatusCodes, ServerLogger } from '../../../../common/ServerLogger';
 import { APSOptional } from '../../../../common/ServerUtils';
 import APSOrganizationsService from '../../apsAdministration/APSOrganizationsService';
@@ -48,6 +55,7 @@ export class APSBusinessGroupsDBMigrate {
           apsOrganizationId: apsOrganization.organizationId,
           apsBusinessGroupCreate: create
         });      
+        ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'APSBusinessGroupResponse', details: { created: created} }));
       }
     }
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, message: 'created root business group for all orgs (backwards compatibility)' }));
@@ -85,9 +93,9 @@ export class APSBusinessGroupsDBMigrate {
 
 
   public static migrate = async(apsBusinessGroupsService: APSBusinessGroupsService): Promise<number> => {
-    const funcName = 'migrate';
-    const logName = `${APSBusinessGroupsDBMigrate.name}.${funcName}()`;
-    const targetDBSchemaVersion = apsBusinessGroupsService.getDBObjectSchemaVersion();
+    // const funcName = 'migrate';
+    // const logName = `${APSBusinessGroupsDBMigrate.name}.${funcName}()`;
+    // const targetDBSchemaVersion = apsBusinessGroupsService.getDBObjectSchemaVersion();
 
     await APSBusinessGroupsDBMigrate.initializeRootGroups4AllOrgs(apsBusinessGroupsService);
     await APSBusinessGroupsDBMigrate.migrateParentLessGroupsToRootParent(apsBusinessGroupsService);

@@ -4,11 +4,10 @@ import {
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
   APSSystemAuthRoleList,
-  APSUser,
+  APSUserCreate,
   EAPSOrganizationAuthRole,
   EAPSSystemAuthRole,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { MigrateServerError } from '../../../common/ServerError';
 import { APSUsersService } from './APSUsersService';
 
 // capture all the schema versions over time here
@@ -114,11 +113,14 @@ export class APSUsersDBMigrate {
         _schemaVersion: newSchemaVersion,
         memberOfOrganizationGroups: memberOfOrganizationGroupsList
       }
-      const replaced: APSUser = await persistenceService.replace({
+      const replaced: APSUserCreate = await persistenceService.replace({
         collectionDocumentId: userId, 
         collectionDocument: dbUser_2, 
         collectionSchemaVersion: newSchemaVersion
       });
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+        apsUser: replaced,
+      }}));  
     }
     const newRawDBDocument = await persistenceService.byIdRaw({
       documentId: userId
