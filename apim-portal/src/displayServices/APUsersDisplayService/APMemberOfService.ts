@@ -8,6 +8,8 @@ import {
   APSMemberOfBusinessGroup, 
   APSMemberOfOrganizationGroups, 
   APSOrganizationRolesResponse, 
+  APSOrganizationSessionInfo, 
+  APSOrganizationSessionInfoList, 
   APSUserResponse 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import APBusinessGroupsDisplayService, { 
@@ -16,13 +18,23 @@ import APBusinessGroupsDisplayService, {
 import APRbacDisplayService from "../APRbacDisplayService";
 import { TAPOrganizationUserMemberOfOrganizationDisplay } from "./APOrganizationUsersDisplayService";
 
+
+export type TAPSessionInfoDisplay = {
+  // organizationEntityId: TAPEntityId;
+  /** if undefined, no business group selected */
+  businessGroupId?: string;  
+}
+// export type TAPOrganizationSessionInfoDisplayList = Array<TAPOrganizationSessionInfoDisplay>;
+
 /**
- * Organization & organization roles for a user.
+ * Organization roles and session info for a user.
  * @property {TAPEntityId} apEntityId - the organization
  */
 export type TAPMemberOfOrganizationDisplay =  IAPEntityIdDisplay & {
   /** list of organization roles, can be empty */
   apOrganizationRoleEntityIdList: TAPEntityIdList;
+  /** session info for this organization */
+  apOrganizationSessionInfoDisplay: TAPSessionInfoDisplay;
   /** the legacy organization roles, will disappear in FUTURE */
   apLegacyOrganizationRoleEntityIdList: TAPEntityIdList;
 }
@@ -61,17 +73,42 @@ class APMemberOfService {
     return `apEntityId.${name}`;
   }
 
+  private create_Empty_ApSessionInfoDisplay(): TAPSessionInfoDisplay {
+    return {
+      businessGroupId: undefined
+    }
+  }
 
-  public create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId , apsOrganizationRolesResponse }:{
+  public create_Empty_ApMemberOfOrganizationDisplay({ organizationEntityId , apsOrganizationRolesResponse, apsOrganizationSessionInfoList }:{
     organizationEntityId: TAPEntityId;
     apsOrganizationRolesResponse?: APSOrganizationRolesResponse;
+    apsOrganizationSessionInfoList?: APSOrganizationSessionInfoList;
   }): TAPMemberOfOrganizationDisplay {
     const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
       apEntityId: organizationEntityId,
       apOrganizationRoleEntityIdList: [],
       apLegacyOrganizationRoleEntityIdList: apsOrganizationRolesResponse !== undefined ? APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles) : [],
+      apOrganizationSessionInfoDisplay: apsOrganizationSessionInfoList ? this.create_ApSessionInfoDisplay({ organizationId: organizationEntityId.id, apsOrganizationSessionInfoList: apsOrganizationSessionInfoList }): this.create_Empty_ApSessionInfoDisplay(),
     };
     return apMemberOfOrganizationDisplay;
+  }
+
+  /** Create session info for an organization from APSUserResponse */
+  private create_ApSessionInfoDisplay({ organizationId, apsOrganizationSessionInfoList }:{
+    organizationId: string;
+    apsOrganizationSessionInfoList: APSOrganizationSessionInfoList;
+  }): TAPSessionInfoDisplay {
+    // const funcName = 'create_ApSessionInfoDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // alert(`${logName}: apsOrganizationSessionInfoList = ${JSON.stringify(apsOrganizationSessionInfoList, null, 2)}`);
+
+    const apsOrganizationSessionInfo: APSOrganizationSessionInfo | undefined = apsOrganizationSessionInfoList.find( (x) => {
+      return x.organizationId === organizationId;
+    });
+    const apSessionInfoDisplay: TAPSessionInfoDisplay = {
+      businessGroupId: apsOrganizationSessionInfo ? apsOrganizationSessionInfo.lastSessionInfo.businessGroupId : undefined
+    };
+    return apSessionInfoDisplay;
   }
 
   /**
@@ -113,12 +150,14 @@ class APMemberOfService {
       if(apsMemberOfBusinessGroup === undefined || apsMemberOfBusinessGroup.roles.length === 0) return this.create_Empty_ApMemberOfOrganizationDisplay({ 
         organizationEntityId: organizationEntityId,
         apsOrganizationRolesResponse: apsOrganizationRolesResponse,
+        apsOrganizationSessionInfoList: apsUserResponse.organizationSessionInfoList,
       });
 
       const apMemberOfOrganizationDisplay: TAPMemberOfOrganizationDisplay = {
         apEntityId: organizationEntityId,
         apOrganizationRoleEntityIdList: APRbacDisplayService.create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList: apsMemberOfBusinessGroup.roles}),
         apLegacyOrganizationRoleEntityIdList: apsOrganizationRolesResponse !== undefined ? APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles) : [],
+        apOrganizationSessionInfoDisplay: this.create_ApSessionInfoDisplay({ organizationId: organizationEntityId.id, apsOrganizationSessionInfoList: apsUserResponse.organizationSessionInfoList }),
       };
       return apMemberOfOrganizationDisplay;
 
@@ -126,6 +165,7 @@ class APMemberOfService {
       return this.create_Empty_ApMemberOfOrganizationDisplay({ 
         organizationEntityId: organizationEntityId,
         apsOrganizationRolesResponse: apsOrganizationRolesResponse, 
+        apsOrganizationSessionInfoList: apsUserResponse.organizationSessionInfoList,
       });
     }
   }
@@ -144,8 +184,10 @@ class APMemberOfService {
           displayName: apsOrganizationRolesResponse.organizationDisplayName,
         },
         apOrganizationRoleEntityIdList: [],
-        apLegacyOrganizationRoleEntityIdList: []
-        // apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
+        apLegacyOrganizationRoleEntityIdList: [],
+        apOrganizationSessionInfoDisplay: {
+          businessGroupId: undefined
+        }
       });
     }
     return apMemberOfOrganizationDisplayList;
@@ -161,6 +203,8 @@ class APMemberOfService {
     const logName = `${this.ComponentName}.${funcName}()`;
 
     const apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList = [];
+
+    // REFACTOR_OUT_LEGACY: iterate over apsUserResponse.memberOfOrganizationGroups instead of apsUserResponse.memberOfOrganizations
     for(const apsOrganizationRolesResponse of apsUserResponse.memberOfOrganizations) {
 
       // find the business groups entry for the organization id
@@ -197,6 +241,7 @@ class APMemberOfService {
         },
         apOrganizationRoleEntityIdList: apOrganizationRoleEntityIdList,
         apLegacyOrganizationRoleEntityIdList: APRbacDisplayService.create_OrganizationRoles_EntityIdList(apsOrganizationRolesResponse.roles),
+        apOrganizationSessionInfoDisplay: this.create_ApSessionInfoDisplay({ organizationId: apsOrganizationRolesResponse.organizationId, apsOrganizationSessionInfoList: apsUserResponse.organizationSessionInfoList }),
       });
     }
     return apMemberOfOrganizationDisplayList;
@@ -603,24 +648,50 @@ class APMemberOfService {
   }
 
   /** 
-   * Returns the found business group entity
+   * Returns the found business group display object within the tree.
    * @throws if not found
    */
-  public get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupEntityId }:{
+  public get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupId }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
-    businessGroupEntityId: TAPEntityId;
+    businessGroupId: string;
   }): TAPMemberOfBusinessGroupDisplay {
     const funcName = 'get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList';
     const logName = `${this.ComponentName}.${funcName}()`;
-    console.log(`${logName}: looking for businessGroupEntityId=${JSON.stringify(businessGroupEntityId)}`);
-    console.log(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList, null, 2)}`);
+    // console.log(`${logName}: looking for businessGroupId=${JSON.stringify(businessGroupId)}`);
+    // console.log(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList, null, 2)}`);
 
     const found: TAPMemberOfBusinessGroupDisplay | undefined = this.find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
       apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-      businessGroupEntityId: businessGroupEntityId,
+      businessGroupId: businessGroupId,
     });
     if(found === undefined) throw new Error(`${logName}: found === undefined`);
     return found;
+  }
+
+  /**
+   * Returns the business group display object from last session or tries to figure out a default one.
+   */
+  public get_ApMemberOfBusinessGroupDisplay_For_Session({ apMemberOfBusinessGroupDisplayTreeNodeList, apOrganizationSessionInfoDisplay }:{
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    apOrganizationSessionInfoDisplay: TAPSessionInfoDisplay;
+  }): TAPMemberOfBusinessGroupDisplay | undefined {
+
+    // const funcName = 'get_ApMemberOfBusinessGroupDisplay_For_Session';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // alert(`${logName}: apOrganizationSessionInfoDisplay.businessGroupId = ${apOrganizationSessionInfoDisplay.businessGroupId}`);
+
+    // check if we have a business group id from last session
+    if(apOrganizationSessionInfoDisplay.businessGroupId !== undefined) {
+      return this.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+          apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+          businessGroupId: apOrganizationSessionInfoDisplay.businessGroupId
+        });
+    }
+    // try find a default one
+    return this.find_default_ApMemberOfBusinessGroupDisplay({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+    });
+
   }
 
   public get_ApMemberOfOrganizationEntityIdList({ apMemberOfOrganizationDisplayList }:{
@@ -667,9 +738,9 @@ class APMemberOfService {
     return found;
   }
 
-  public find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupEntityId }: {
+  public find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupId }: {
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
-    businessGroupEntityId: TAPEntityId;
+    businessGroupId: string;
   }): TAPMemberOfBusinessGroupDisplay | undefined {
 
     const find = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode): TAPMemberOfBusinessGroupDisplay | undefined => {
@@ -679,7 +750,7 @@ class APMemberOfService {
 
     const find_list = (treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList): TAPMemberOfBusinessGroupDisplay | undefined => {
       for(const treeNode of treeNodeList) {
-        if(treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === businessGroupEntityId.id) {
+        if(treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === businessGroupId) {
           return treeNode.apMemberOfBusinessGroupDisplay;
         }
         const found: TAPMemberOfBusinessGroupDisplay | undefined = find(treeNode);

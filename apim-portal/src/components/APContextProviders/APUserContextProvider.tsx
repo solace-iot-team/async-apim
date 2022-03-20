@@ -17,7 +17,8 @@ export type TUserContext = {
   currentAppState: EAppState,
   originAppState: EAppState,
   runtimeSettings: TUserRunttimeSettings,
-  userMessage?: TAPUserMessage
+  userMessage?: TAPUserMessage,
+  showIsLoading?: boolean,
 }
   
 export interface IUserContextProviderProps {

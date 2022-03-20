@@ -61,6 +61,8 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
   type TManagedObject = TAPOrganizationConfig;
   type TManagedObjectFormData = TManagedObject;
 
+  const LogoutAllOrganizationUsersMsg = 'All users currently logged into this organization will have to login again after saving any changes.';
+
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<CommonName>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
   const [updatedManagedObjectDisplayName, setUpdatedManagedObjectDisplayName] = React.useState<CommonDisplayName>();
@@ -795,6 +797,15 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
     );
   }
   
+  const renderEditHeader = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        <APComponentHeader header={`Edit Organization: ${props.organizationDisplayName}`} />
+        <div className="p-mt-4 p-mb-4" style={{ color: 'red'}}>{LogoutAllOrganizationUsersMsg}</div>
+      </React.Fragment>
+    );
+  }
+
   return (
     <div className="manage-organizations">
 
@@ -803,7 +814,7 @@ export const EditNewOrganziation: React.FC<IEditNewOrganizationProps> = (props: 
       }
 
       {props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit Organization: ${props.organizationDisplayName}`} />
+        renderEditHeader()
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />

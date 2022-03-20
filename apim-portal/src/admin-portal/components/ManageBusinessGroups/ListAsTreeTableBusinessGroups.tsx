@@ -121,21 +121,18 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   const onManagedObjectTreeTableNodeView = (node: TManagedObjectTreeTableNode) => {
     props.onManagedObjectView(node.data.apEntityId);
   }
-  // const onManagedObjectTreeTableNodeSelect = (eventParams: any) => {
-  //   // eventParams: TreeTableEventParams
-  //   setSelectedManagedObjectTreeTableNode(eventParams.node);
+  // const desriptionBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
+  //   return (<>{node.data.apsBusinessGroupResponse.description}</>);
   // }
-  // const referencesByBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
-  //   if(node.data.apsBusinessGroupResponse.businessGroupChildIds.length === 0) return (<>-</>);
-  //   return (<>{`Children: ${node.data.apsBusinessGroupResponse.businessGroupChildIds.length}`}</>);
-  // }
-  const desriptionByBodyTemplate = (node: TManagedObjectTreeTableNode): JSX.Element => {
-    return (<>{node.data.apsBusinessGroupResponse.description}</>);
-  }
   const sourceByBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
     return APBusinessGroupsDisplayService.getSourceDisplayString(node.data);
   }
-
+  const membersBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
+    return String(node.data.apMemberUserEntityIdList.length);
+  }
+  const assetsBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
+    return 'TBD';
+  }
   const actionBodyTemplate = (node: TManagedObjectTreeTableNode) => {
     const isDeleteAllowed: boolean = APBusinessGroupsDisplayService.isDeleteAllowed(node.data);
     const isAddChildAllowed: boolean = APBusinessGroupsDisplayService.isAddChildAllowed(node.data);
@@ -174,7 +171,9 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
         >
           <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortable expander />
           <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} field="apExternalReference.externalSystemDisplayName" sortable />
-          <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top' }} />
+          {/* <Column header="Description" body={desriptionBodyTemplate} bodyStyle={{verticalAlign: 'top' }} /> */}
+          <Column header="Members" body={membersBodyTemplate} bodyStyle={{verticalAlign: 'top' }} />
+          <Column header="Assets" body={assetsBodyTemplate} bodyStyle={{verticalAlign: 'top' }} />
           {/* <Column header="References" body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
           <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />
         </TreeTable>

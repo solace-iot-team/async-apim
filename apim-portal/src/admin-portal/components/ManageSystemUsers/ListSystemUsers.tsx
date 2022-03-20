@@ -21,6 +21,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "../../../utils/Globals";
 import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
@@ -49,6 +50,7 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPUserDisplayLazyLoadingTableParameters>({
@@ -202,12 +204,17 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
   }
 
   const actionBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
     return (
       <React.Fragment>
         {APSystemUsersDisplayService.get_isActivated({ apUserDisplay: mo }) &&
           <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
-            <Button tooltip="login as ..." icon="pi pi-sign-in" className="p-button-rounded p-button-outlined p-button-secondary" 
+            <Button 
+              tooltip="login as ..." 
+              icon="pi pi-sign-in" 
+              className="p-button-rounded p-button-outlined p-button-secondary" 
               onClick={() => onLoginAs(mo)} 
+              disabled={!isLoginAsEnabled}
             />
           </RenderWithRbac>  
         } 

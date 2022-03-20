@@ -26,6 +26,7 @@ import APOrganizationUsersDisplayService, {
   TAPOrganizationUserDisplayListResponse 
 } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
@@ -55,6 +56,8 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
+
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPUserDisplayLazyLoadingTableParameters>({
@@ -178,12 +181,17 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   }
 
   const actionBodyTemplate = (mo: TManagedObject) => {
+    const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
     return (
         <React.Fragment>
           {mo.apUserActivationDisplay.isActivated === true &&
             <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
-              <Button tooltip="login as ..." icon="pi pi-sign-in" className="p-button-rounded p-button-outlined p-button-secondary" 
+              <Button 
+                tooltip="login as ..." 
+                icon="pi pi-sign-in" 
+                className="p-button-rounded p-button-outlined p-button-secondary" 
                 onClick={() => onLoginAs(mo)} 
+                disabled={!isLoginAsEnabled}
               />
             </RenderWithRbac>  
           } 

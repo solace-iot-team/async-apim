@@ -17,7 +17,7 @@ import {
   APSOrganizationRolesList, 
   APSOrganizationRolesResponse, 
   APSSystemAuthRoleList, 
-  APSUser, 
+  APSUserCreate, 
   APSUserProfile, 
   APSUserResponse, 
   ApsUsersService, 
@@ -606,7 +606,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     };
     // alert(`${logName}: legacy_apsOrganizationRoles = ${JSON.stringify(legacy_apsOrganizationRoles, null, 2)}`);
       
-    const create: APSUser = {
+    const create: APSUserCreate = {
       userId: apOrganizationUserDisplay.apEntityId.id,
       isActivated: apOrganizationUserDisplay.apUserActivationDisplay.isActivated,
       password: apOrganizationUserDisplay.apUserAuthenticationDisplay.password,
@@ -647,7 +647,7 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     });
 
     // create the legacy memberOfOrganizations roles
-    // TODO: FUTURE: remove
+    // REFACTOR_OUT_LEGACY: legacy_apOrganizationRolesList
     const legacy_apOrganizationRolesList: TAPEntityIdList = APMemberOfService.create_ApLegacyOrganizationRoleEntityIdList({
       apOrganizationUserMemberOfOrganizationDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay,
     });

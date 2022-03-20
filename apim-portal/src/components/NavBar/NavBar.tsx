@@ -25,12 +25,12 @@ import APMemberOfService from "../../displayServices/APUsersDisplayService/APMem
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 import { Loading } from "../Loading/Loading";
 import { ManageBusinessGroupSelect } from "../ManageBusinessGroupSelect/ManageBusinessGroupSelect";
-
-import '../APComponents.css';
-import './NavBar.css';
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+
+import '../APComponents.css';
+import './NavBar.css';
 
 export interface INavBarProps {}
 
@@ -117,6 +117,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const doSetupOrganization = async (organizationEntityId: TAPEntityId) => {
     // const funcName = 'doSetupOrganization';
     // const logName = `${ComponentName}.${funcName}()`;
+    setIsLoading(true);
     await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: userContext.apLoginUserDisplay,
       organizationEntityId: organizationEntityId,
@@ -127,8 +128,9 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
       navigateTo: navigateToCurrentHome,
-      onLoadingChange: setIsLoading
+      // onLoadingChange: setIsLoading
     });
+    setIsLoading(false);
   }
 
   const onSelectOrganizationSuccess = (organizationEntityId: TAPEntityId) => {

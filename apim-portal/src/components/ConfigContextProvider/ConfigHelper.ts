@@ -6,7 +6,7 @@ import {
   APSConnector, 
   ApiError as APSApiError,
   EAPSSystemAuthRole,
-  APSUser,
+  APSUserResponse,
   APSSystemAuthRoleList,
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
@@ -99,7 +99,7 @@ export class ConfigHelper {
     return orgRolesDisplayNameList;
   }
 
-  public static getAuthorizedRolesDisplayNameList = (configContext: TAPConfigContext, apsUser: APSUser, orgId: string | undefined): Array<string> => {
+  public static getAuthorizedRolesDisplayNameList = (configContext: TAPConfigContext, apsUser: APSUserResponse, orgId: string | undefined): Array<string> => {
     const funcName = 'getAuthorizedRolesDisplayNameList';
     const logName = `${ConfigHelper.name}.${funcName}()`;
     

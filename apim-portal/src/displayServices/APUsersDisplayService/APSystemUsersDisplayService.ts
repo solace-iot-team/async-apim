@@ -3,7 +3,7 @@ import APEntityIdsService, { TAPEntityId } from '../../utils/APEntityIdsService'
 import { 
   APSListResponseMeta, 
   APSSystemAuthRoleList, 
-  APSUser, 
+  APSUserCreate, 
   APSUserProfile, 
   APSUserResponse, 
   ApsUsersService, 
@@ -225,7 +225,7 @@ class APSystemUsersDisplayService extends APUsersDisplayService {
       last: apSystemUserDisplay.apUserProfileDisplay.last,
     };
 
-    const create: APSUser = {
+    const create: APSUserCreate = {
       userId: apSystemUserDisplay.apEntityId.id,
       isActivated: apSystemUserDisplay.apUserActivationDisplay.isActivated,
       password: apSystemUserDisplay.apUserAuthenticationDisplay.password,

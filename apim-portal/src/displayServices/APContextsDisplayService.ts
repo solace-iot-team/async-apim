@@ -14,7 +14,6 @@ import APRbacDisplayService from './APRbacDisplayService';
 import { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from './APUsersDisplayService/APOrganizationUsersDisplayService';
-import { TAPUserOrganizationSessionDisplay } from './APUsersDisplayService/APUsersDisplayService';
 
 class APContextsDisplayService {
   private readonly BaseComponentName = "APContextsDisplayService";
@@ -50,6 +49,9 @@ class APContextsDisplayService {
     const funcName = 'setup_OrganizationContext';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
+    // alert(`${logName}: organizationEntityId=${JSON.stringify(organizationEntityId)}`);
+    // alert(`${logName}: apLoginUserDisplay.apMemberOfOrganizationDisplayList = ${JSON.stringify(apLoginUserDisplay.apMemberOfOrganizationDisplayList, null, 2)}`);
+
     if(organizationEntityId !== undefined) {
 
       // get the Organization User to get the business groups tree and current business group
@@ -69,23 +71,12 @@ class APContextsDisplayService {
         pruneBusinessGroupsNotAMemberOf: true,
       });
 
-      // set the business group id from last sesstion
-      const found: TAPUserOrganizationSessionDisplay | undefined = apLoginUserDisplay.apUserOrganizationSessionDisplayList.find( (x) => {
-        return x.organizationEntityId.id === organizationEntityId.id;
+      // get the business group (from last sesstion, default, or undefined)
+      // alert(`${logName}: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay = ${JSON.stringify(apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay, null, 2)}`);
+      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_For_Session({
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay
       });
-      if(found === undefined) throw new Error(`${logName}: found === undefined`);
-      let apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = undefined;
-      if(found.apUserOrganizationSession === undefined) {
-        // set the default one, could still be undefined
-        apMemberOfBusinessGroupDisplay = APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
-          apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-        });
-      } else {
-        apMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
-          apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-          businessGroupEntityId: found.apUserOrganizationSession.businessGroupEntityId
-        });
-      }
       
       // dispatch to contexts
       dispatchUserContextAction({ type: 'SET_CURRENT_ORGANIZATION_ENTITY_ID', currentOrganizationEntityId: organizationEntityId });
@@ -172,7 +163,6 @@ class APContextsDisplayService {
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
     navigateTo,
-    onLoadingChange,
   }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
     organizationEntityId: TAPEntityId | undefined;
@@ -183,15 +173,11 @@ class APContextsDisplayService {
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
     navigateTo: (path: string) => void;
-    onLoadingChange: (isLoading: boolean) => void;
+    // onLoadingChange: (isLoading: boolean) => void;
   }): Promise<void> {
 
-    const internalNavigateTo = (path: string) => {
-      onLoadingChange(false);
-      navigateTo(path);
-    }
-
-    onLoadingChange(true);
+    // test show loading
+    // await Globals.sleep(5000);
 
     const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
       apLoginUserDisplay: apLoginUserDisplay,
@@ -217,7 +203,7 @@ class APContextsDisplayService {
       userContextCurrentAppState: userContextCurrentAppState,
       userContextOriginAppState: userContextOriginAppState,
       dispatchUserContextAction: dispatchUserContextAction,
-      navigateTo: internalNavigateTo
+      navigateTo: navigateTo
     });
 
   }

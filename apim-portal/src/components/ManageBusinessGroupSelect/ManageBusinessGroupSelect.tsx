@@ -12,14 +12,14 @@ import APLoginUsersDisplayService, {
 import { TAPEntityId } from "../../utils/APEntityIdsService";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupDisplay, 
-  TAPMemberOfBusinessGroupDisplayTreeNodeList
+  TAPMemberOfBusinessGroupDisplayTreeNodeList,
+  TAPSessionInfoDisplay
  } from "../../displayServices/APUsersDisplayService/APMemberOfService";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 import { SelectBusinessGroup } from "./SelectBusinessGroup";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupSelectCommon";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
-import { TAPUserOrganizationSessionDisplay } from "../../displayServices/APUsersDisplayService/APUsersDisplayService";
 
 import '../APComponents.css';
 import "./ManageBusinessGroupSelect.css";
@@ -50,15 +50,13 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_SESSION, `update session for user: ${userEntityId.id}`);
     try {
-      const apUserOrganizationSessionDisplay: TAPUserOrganizationSessionDisplay = {
-        organizationEntityId: organizationEntityId,
-        apUserOrganizationSession: {
-          businessGroupEntityId: businessGroupEntityId
-        }
-      };
-      await APLoginUsersDisplayService.apsUpdate_ApUserOrganizationSessionDisplay({
-        userEntityId: userEntityId,
-        apUserOrganizationSessionDisplay: apUserOrganizationSessionDisplay
+      const apSessionInfoDisplay: TAPSessionInfoDisplay = {
+        businessGroupId: businessGroupEntityId.id
+      }
+      await APLoginUsersDisplayService.apsUpdate_ApOrganizationSessionInfoDisplay({
+        userId: userEntityId.id,
+        organizationId: organizationEntityId.id,
+        apOrganizationSessionInfoDisplay: apSessionInfoDisplay
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -76,7 +74,7 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
 
     const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
       apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
-      businessGroupEntityId: businessGroupEntityId
+      businessGroupId: businessGroupEntityId.id
     });
 
     // save session info

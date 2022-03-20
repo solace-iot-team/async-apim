@@ -20,6 +20,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
 import { APDisplayOrganizationUserBusinessGroupRoles } from "../../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationUserBusinessGroupRoles";
+import { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -46,6 +47,8 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
   const [editBusinessGroupRolesObject, setEditBusinessGroupsRolesObject] = React.useState<TEditBusinessGroupRoles>();
   const [removeBusinessGroupRolesObject, setRemoveBusinessGroupRolesObject] = React.useState<TEditBusinessGroupRoles>();
+  const [apMemberOfBusinessGroupTreeTableNodeList, setApMemberOfBusinessGroupTreeTableNodeList] = React.useState<TAPMemberOfBusinessGroupTreeTableNodeList>();
+  const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>();
 
   // * Api Calls *
 
@@ -72,6 +75,22 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     await apiGetApUserDisplay();
   }
 
+  const initializeExpandedKeys = (apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList) => {
+    const expandNode = (node: TAPMemberOfBusinessGroupTreeTableNode, _expandedKeys: TAPTreeTableExpandedKeysType) => {
+      if (node.children && node.children.length) {
+        _expandedKeys[node.key] = true;  
+        for (let child of node.children) {
+            expandNode(child, _expandedKeys);
+        }
+      }
+    }
+    let _expandedKeys = {};
+    for(let node of apMemberOfBusinessGroupTreeTableNodeList) {
+      expandNode(node, _expandedKeys);
+    }
+    setExpandedKeys(_expandedKeys);
+  }
+
   // * useEffect Hooks *
 
   React.useEffect(() => {
@@ -79,9 +98,33 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(apUserDisplay !== undefined) setIsInitialized(true);
+    const funcName = 'useEffect[apUserDisplay]';
+    const logName = `${ComponentName}.${funcName}()`;
+
+    if(apUserDisplay !== undefined) {
+      if(apUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apUserDisplay.completeOrganizationBusinessGroupDisplayList`);
+      const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
+        organizationEntityId: apUserDisplay.organizationEntityId,
+        apMemberOfBusinessGroupDisplayList: apUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+        apOrganizationRoleEntityIdList: apUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
+        completeApOrganizationBusinessGroupDisplayList: apUserDisplay.completeOrganizationBusinessGroupDisplayList,
+        pruneBusinessGroupsNotAMemberOf: false
+      });  
+      setApMemberOfBusinessGroupTreeTableNodeList(apMemberOfBusinessGroupTreeTableNodeList);
+    }
   }, [apUserDisplay]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(()=> {
+    if(apMemberOfBusinessGroupTreeTableNodeList !== undefined) {
+      initializeExpandedKeys(apMemberOfBusinessGroupTreeTableNodeList);
+    }
+  },[apMemberOfBusinessGroupTreeTableNodeList]);
+
+  React.useEffect(() => {
+    if(expandedKeys !== undefined) {
+      setIsInitialized(true);
+    }
+  }, [expandedKeys]);
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -150,6 +193,8 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
             sortMode='single'
             sortField={field_Name}
             sortOrder={1}
+            expandedKeys={expandedKeys}
+            onToggle={e => setExpandedKeys(e.value)}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
@@ -171,16 +216,8 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
   const renderComponent = (): JSX.Element => {
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
-    if(apUserDisplay === undefined) throw new Error(`${logName}: apUserDisplay === undefined`);
-    if(apUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apUserDisplay.completeOrganizationBusinessGroupDisplayList`);
         
-    const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
-      organizationEntityId: apUserDisplay.organizationEntityId,
-      apMemberOfBusinessGroupDisplayList: apUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
-      apOrganizationRoleEntityIdList: apUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
-      completeApOrganizationBusinessGroupDisplayList: apUserDisplay.completeOrganizationBusinessGroupDisplayList,
-      pruneBusinessGroupsNotAMemberOf: false
-    });
+    if(apMemberOfBusinessGroupTreeTableNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList === undefined`);
 
     return (
       <React.Fragment>

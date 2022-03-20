@@ -18,7 +18,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { 
-  APSUser, 
+  APSUserResponse,
   ApsUsersService 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -69,7 +69,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
   type TManagedObject = {
     apiAppResponse: AppResponse;
     apiProductList: TApiProductList;
-    apsUser: APSUser;
+    apsUser: APSUserResponse;
     consolidatedApiProductAttributeValueListList: TAPApiProductAttributeValueListList;
     modifiedAppAttributeList: TAPConnectorAttributeList
   }
@@ -159,7 +159,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
     return _attributeValueListList;
   }
 
-  const transformGetApiObjectsToManagedObject = (apiAppResponse: AppResponse, apiProductList: TApiProductList, apsUser: APSUser): TManagedObject => {
+  const transformGetApiObjectsToManagedObject = (apiAppResponse: AppResponse, apiProductList: TApiProductList, apsUser: APSUserResponse): TManagedObject => {
     // const appAttributeList: TAPAttributeList = apiAppResponse.attributes ? apiAppResponse.attributes : [];
     const _managedObject: TManagedObject = {
       apiAppResponse: apiAppResponse,
@@ -230,7 +230,7 @@ export const EditAppAttributes: React.FC<IEditAppAttributesProps> = (props: IEdi
         });
         _apiProductList.push(apiApiProduct);
       }
-      let _apsUser: APSUser | undefined = undefined;
+      let _apsUser: APSUserResponse | undefined = undefined;
       try {
         _apsUser = await ApsUsersService.getApsUser({
           userId: props.appOwnerId

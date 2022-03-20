@@ -6,7 +6,6 @@ import { Toast } from 'primereact/toast';
 import { TApiCallState } from '../utils/ApiCallState';
 import { ManageLoginAndSelect } from '../components/ManageLoginAndSelect/ManageLoginAndSelect';
 import { TAPUserLoginCredentials } from '../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
-import { Loading } from '../components/Loading/Loading';
 
 import "./Pages.css";
 
@@ -19,8 +18,6 @@ export const UserLoginPage: React.FC = () => {
 
   const location = useLocation<TAPUserLoginCredentials>();
   
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
   }
@@ -35,13 +32,10 @@ export const UserLoginPage: React.FC = () => {
       
       <Toast ref={toast} />
       
-      <Loading show={isLoading} />
-
       <ManageLoginAndSelect
         onSuccess={onSuccess} 
         onError={onError} 
         userCredentials={location.state}
-        onLoadingChange={setIsLoading}
       />
     </div>
   );

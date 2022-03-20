@@ -10,7 +10,8 @@ import {
   ApsExternalSystemsService,
   ListAPSExternalSystemsResponse,
   APSExternalSystemList,
-  APSExternalSystem
+  APSExternalSystem,
+  APSUserIdList
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { TAPMemberOfBusinessGroupTreeTableNodeList } from './APUsersDisplayService/APMemberOfService';
 
@@ -34,6 +35,7 @@ export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   },
   apBusinessGroupParentEntityId?: TAPEntityId;
   apBusinessGroupChildrenEntityIdList: TAPEntityIdList;
+  apMemberUserEntityIdList: TAPEntityIdList;
 }
 export type TAPBusinessGroupDisplayList = Array<TAPBusinessGroupDisplay>;
 
@@ -46,6 +48,7 @@ class APBusinessGroupsDisplayService {
       displayName: '',
       description: '',
       businessGroupChildIds: [],
+      members: []
     };
     if(apBusinessGroupParentEntityId !== undefined) {
       bg.businessGroupParentId = apBusinessGroupParentEntityId.id
@@ -98,6 +101,7 @@ class APBusinessGroupsDisplayService {
     if(apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) return false; // this is the root
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return false;
     if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds.length > 0) return false;
+    if(apBusinessGroupDisplay.apMemberUserEntityIdList.length > 0) return false;
     return true;
   }
 
@@ -203,6 +207,17 @@ class APBusinessGroupsDisplayService {
     return found;
   }
 
+  private create_ApMemberUserEntityIdList_From_ApiEntities({ apsMemberUserIdList }: {
+    apsMemberUserIdList: APSUserIdList;
+  }): TAPEntityIdList {
+    return apsMemberUserIdList.map( (userId: string) => {
+      return {
+        id: userId,
+        displayName: userId
+      };
+    });
+  }
+
   protected create_ApBusinessGroupDisplay_From_ApiEntities({apsBusinessGroupResponse, externalSystemDisplayName, apParentBusinessGroupEntityId, apBusinessGroupChildrenEntityIdList}: {
     apsBusinessGroupResponse: APSBusinessGroupResponse;
     externalSystemDisplayName?: string;
@@ -217,7 +232,8 @@ class APBusinessGroupsDisplayService {
       apsBusinessGroupResponse: apsBusinessGroupResponse,
       apSearchContent: '',
       apBusinessGroupParentEntityId: apParentBusinessGroupEntityId,
-      apBusinessGroupChildrenEntityIdList: APEntityIdsService.sort_byDisplayName(apBusinessGroupChildrenEntityIdList)
+      apBusinessGroupChildrenEntityIdList: APEntityIdsService.sort_byDisplayName(apBusinessGroupChildrenEntityIdList),
+      apMemberUserEntityIdList: this.create_ApMemberUserEntityIdList_From_ApiEntities({ apsMemberUserIdList: apsBusinessGroupResponse.members }),
     };
     if(apsBusinessGroupResponse.externalReference !== undefined && externalSystemDisplayName !== undefined) {
       base.apExternalReference = {

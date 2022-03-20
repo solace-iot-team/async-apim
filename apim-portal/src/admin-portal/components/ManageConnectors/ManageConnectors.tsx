@@ -105,6 +105,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
 
   const navigateTo = (path: string): void => { history.push(path); }
   
+  // * Api Calls *
   const apiLogoutAll = async(): Promise<TApiCallState> => {
     const funcName = 'apiLogoutAll';
     const logName = `${ComponentName}.${funcName}()`;
@@ -290,6 +291,13 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     setConfigContextActiveConnector();
     doLogoutAllUsers();
   }
+  const onEditConnectorSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    if(connectorIsActive) {
+      doLogoutAllUsers();
+    }
+    setPreviousComponentState();
+  }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
@@ -463,7 +471,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
           action={EAction.EDIT}
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
-          onEditSuccess={onSubComponentSuccess} 
+          onEditSuccess={onEditConnectorSuccess} 
           onNewSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}

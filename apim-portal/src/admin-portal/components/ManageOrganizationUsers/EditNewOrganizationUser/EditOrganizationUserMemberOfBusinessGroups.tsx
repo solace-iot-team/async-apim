@@ -15,6 +15,7 @@ import { APDisplayOrganizationUserBusinessGroupRoles } from "../../../../compone
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { Dialog } from "primereact/dialog";
 import { EditOrganizationUserBusinessGroupRoles, EEditOrganizationUserBusinessGroupRolesAction } from "./EditOrganizationUserBusinessGroupRoles";
+import { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -35,6 +36,53 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
 
   const [editBusinessGroupRolesObject, setEditBusinessGroupsRolesObject] = React.useState<TEditBusinessGroupRoles>();
   const [removeBusinessGroupRolesObject, setRemoveBusinessGroupRolesObject] = React.useState<TEditBusinessGroupRoles>();
+  const [apMemberOfBusinessGroupTreeTableNodeList, setApMemberOfBusinessGroupTreeTableNodeList] = React.useState<TAPMemberOfBusinessGroupTreeTableNodeList>();
+  const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>();
+  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
+
+
+  const initializeExpandedKeys = (apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList) => {
+    const expandNode = (node: TAPMemberOfBusinessGroupTreeTableNode, _expandedKeys: TAPTreeTableExpandedKeysType) => {
+      if (node.children && node.children.length) {
+        _expandedKeys[node.key] = true;  
+        for (let child of node.children) {
+            expandNode(child, _expandedKeys);
+        }
+      }
+    }
+    let _expandedKeys = {};
+    for(let node of apMemberOfBusinessGroupTreeTableNodeList) {
+      expandNode(node, _expandedKeys);
+    }
+    setExpandedKeys(_expandedKeys);
+  }
+
+  React.useEffect(() => {
+    const funcName = 'useEffect[]';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
+        
+    const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
+      organizationEntityId: props.apOrganizationUserDisplay.organizationEntityId,
+      apMemberOfBusinessGroupDisplayList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+      apOrganizationRoleEntityIdList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
+      completeApOrganizationBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
+      pruneBusinessGroupsNotAMemberOf: false
+    });
+    setApMemberOfBusinessGroupTreeTableNodeList(apMemberOfBusinessGroupTreeTableNodeList);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(()=> {
+    if(apMemberOfBusinessGroupTreeTableNodeList !== undefined) {
+      initializeExpandedKeys(apMemberOfBusinessGroupTreeTableNodeList);
+    }
+  },[apMemberOfBusinessGroupTreeTableNodeList]);
+
+  React.useEffect(() => {
+    if(expandedKeys !== undefined) {
+      setIsInitialized(true);
+    }
+  }, [expandedKeys]);
 
   const onBusinessGroupEdit = (node: TAPMemberOfBusinessGroupTreeTableNode) => {
     setEditBusinessGroupsRolesObject({
@@ -87,6 +135,8 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
             sortMode='single'
             sortField={field_Name}
             sortOrder={1}
+            expandedKeys={expandedKeys}
+            onToggle={e => setExpandedKeys(e.value)}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
@@ -108,15 +158,7 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
   const renderComponent = (): JSX.Element => {
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
-    if(props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
-        
-    const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
-      organizationEntityId: props.apOrganizationUserDisplay.organizationEntityId,
-      apMemberOfBusinessGroupDisplayList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
-      apOrganizationRoleEntityIdList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
-      completeApOrganizationBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
-      pruneBusinessGroupsNotAMemberOf: false
-    });
+    if(apMemberOfBusinessGroupTreeTableNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList === undefined`);
 
     return (
       <React.Fragment>
@@ -194,7 +236,7 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
   return (
     <div className="manage-users">
 
-      { renderComponent() }
+      { isInitialized && renderComponent() }
 
       {editBusinessGroupRolesObject &&
         renderEditBusinessGroupRolesDialog(editBusinessGroupRolesObject)

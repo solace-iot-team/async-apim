@@ -1,12 +1,13 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { E_CALL_STATE_ACTIONS, E_CALL_STATE_ACTIONS_USERS, E_COMPONENT_STATE } from "./ManageOrganizationsCommon";
@@ -14,13 +15,19 @@ import { ListOrganizations } from "./ListOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { EAction, EditNewOrganziation } from "./EditNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
-import { Globals } from "../../../utils/Globals";
+import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
 import { MonitorOrganization } from "./MonitorOrganization";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
+import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_ManageOrganizations_Scope {
   ALL_ORGS = "ALL_ORGS",
@@ -52,7 +59,7 @@ export interface IManageOrganizationsProps {
 }
 
 export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: IManageOrganizationsProps) => {
-  const componentName = 'ManageOrganizations';
+  const ComponentName = 'ManageOrganizations';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -94,11 +101,53 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
   const [showManageOrganizationUsersComponent, setShowManageOrganizationUsersComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   
+  const history = useHistory();
+
+  const navigateTo = (path: string): void => { history.push(path); }
+
+  
+  // * Api Calls *
+  const apiLogoutOrganizationAll = async(organizationId: string): Promise<TApiCallState> => {
+    const funcName = 'apiLogoutOrganizationAll';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGOUT_ORGANIZATION_ALL, `logout all users from this organization`);
+    try { 
+      await APLoginUsersDisplayService.apsLogoutOrganizationAll({
+        organizationId: organizationId
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doLogoutAllOrganizationUsers = async(organizationId: string) => {
+    if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
+      if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
+        // logout this user as well
+        APContextsDisplayService.clear_LoginContexts({
+          dispatchAuthContextAction: dispatchAuthContextAction,
+          dispatchUserContextAction: dispatchUserContextAction,
+          dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        });
+        navigateTo(EUICommonResourcePaths.Home);    
+      }
+    }
+    await apiLogoutOrganizationAll(organizationId);
+  }
+
   // * useEffect Hooks *
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     // console.log(`${logName}: mounting ...`);
     const _type = props.scope.type;
     switch(_type) {
@@ -182,7 +231,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
@@ -196,7 +245,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
@@ -210,7 +259,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Manage Organization Users *
   const onManageOrganizationUsersFromToolbar = () => {
     const funcName = 'onManageOrganizationUsersFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onManageOrganizationUsers(managedObjectId, managedObjectDisplayName);
@@ -231,7 +280,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderLeftToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
@@ -269,7 +318,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderRightToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {
       const _type = props.scope.type;
@@ -310,11 +359,19 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
+  
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
+    const funcName = 'onDeleteManagedObjectSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectId === undefined) throw new Error(`${logName}: managedObjectId === undefined`);
+
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
+
+    doLogoutAllOrganizationUsers(managedObjectId);
   }
+
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: CommonName, newDisplayName: CommonDisplayName) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
@@ -325,12 +382,20 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: CommonDisplayName) => {
+    const funcName = 'onEditManagedObjectSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectId === undefined) throw new Error(`${logName}: managedObjectId === undefined`);
+    
     setApiCallStatus(apiCallState);
+
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectDisplayName(updatedDisplayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+
+    doLogoutAllOrganizationUsers(managedObjectId);
+
   }
   const onSubComponentSuccessKeepState = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
