@@ -10,11 +10,12 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupTreeTableNode, 
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../displayServices/APUsersDisplayService/APMemberOfService";
-import APEntityIdsService, { TAPEntityId } from "../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../displayServices/APBusinessGroupsDisplayService";
 
 import '../APComponents.css';
 import "./ManageBusinessGroupSelect.css";
+import APRbacDisplayService from "../../displayServices/APRbacDisplayService";
 
 export interface ISelectBusinessGroupProps {
   apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
@@ -25,6 +26,7 @@ export interface ISelectBusinessGroupProps {
 export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: ISelectBusinessGroupProps) => {
   const ComponentName = 'SelectBusinessGroup';
 
+  // here: make the decision based on calculated roles including a business group role
   const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
     apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
     includeBusinessGroupIsSelectable: true
@@ -41,9 +43,22 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
     props.onSelect(apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId);
   }
 
-  const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
-    const configured = node.data.apConfiguredBusinessGroupRoleEntityIdList.length > 0 ? APEntityIdsService.getSortedDisplayNameList_As_String(node.data.apConfiguredBusinessGroupRoleEntityIdList) : 'None.';
-    return configured;
+  // const configuredRolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
+  //   const configured = node.data.apConfiguredBusinessGroupRoleEntityIdList.length > 0 ? APEntityIdsService.getSortedDisplayNameList_As_String(node.data.apConfiguredBusinessGroupRoleEntityIdList) : 'None.';
+  //   return configured;
+  // }
+
+  const calculatedRolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
+    const funcName = 'calculatedRolesBodyTemplate';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(node.data.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: node.data.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+    if(node.data.apCalculatedBusinessGroupRoleEntityIdList.length > 0) {
+      // TODO: filter for business group roles only
+      const calculatedBusinesGroupRoles: TAPEntityIdList = APRbacDisplayService.filter_RolesEntityIdList_By_BusinessGroupRoles({
+        combinedRoles: node.data.apCalculatedBusinessGroupRoleEntityIdList
+      });
+      return APEntityIdsService.getSortedDisplayNameList_As_String(calculatedBusinesGroupRoles);
+    } else return 'None.';
   }
 
   const renderBusinessGroupsTreeTable = (): JSX.Element => {
@@ -72,8 +87,8 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
           >
             <Column header="Business Group" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
-            <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            {/* <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} /> */}
+            {/* <Column header="Confed-Roles" body={configuredRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+            <Column header="Roles" body={calculatedRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           </TreeTable>
         </div>
 

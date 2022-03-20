@@ -25,6 +25,11 @@ import APMemberOfService, {
 
 class APRbacDisplayService {
   private readonly BaseComponentName = "APRbacDisplayService";
+  private readonly businessGroupRbacRoleList: TAPRbacRoleList;
+
+  constructor() {
+    this.businessGroupRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP]);
+  }
 
   private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
@@ -96,7 +101,7 @@ class APRbacDisplayService {
   }
 
   public create_BusinessGroupRoles_EntityIdList({apsBusinessGroupAuthRoleList}: {
-    apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList
+    apsBusinessGroupAuthRoleList: APSBusinessGroupAuthRoleList;
   }): TAPEntityIdList {
     const entityIdList: TAPEntityIdList = [];
     apsBusinessGroupAuthRoleList.forEach( (apsBusinessGroupAuthRole: EAPSBusinessGroupAuthRole) => {
@@ -107,6 +112,19 @@ class APRbacDisplayService {
       });
     });
     return entityIdList;
+  }
+
+  public filter_RolesEntityIdList_By_BusinessGroupRoles({ combinedRoles }: {
+    combinedRoles: TAPEntityIdList;
+  }): TAPEntityIdList {
+    const result: TAPEntityIdList = [];
+    combinedRoles.forEach( (combinedRole: TAPEntityId) => {
+      const isBusinessGroupRole = this.businessGroupRbacRoleList.find( (x) => {
+        return x.id === combinedRole.id;
+      })
+      if(isBusinessGroupRole) result.push(combinedRole);
+    });
+    return result;
   }
 
   public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, apOrganizationEntityId }:{

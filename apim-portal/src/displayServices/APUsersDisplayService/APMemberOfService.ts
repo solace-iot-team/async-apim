@@ -539,7 +539,15 @@ class APMemberOfService {
     apMemberOfBusinessGroupDisplayTreeNode: TAPMemberOfBusinessGroupDisplayTreeNode;
     includeBusinessGroupIsSelectable?: boolean;
   }): TAPMemberOfBusinessGroupTreeTableNode {
-    const isSelectable: boolean = apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0;
+    const funcName = 'create_TreeTableNode';
+    const logName = `${this.ComponentName}.${funcName}()`;  
+
+    // const isSelectable: boolean = apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apConfiguredBusinessGroupRoleEntityIdList.length > 0;
+    if(apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+    const isSelectable: boolean = APRbacDisplayService.filter_RolesEntityIdList_By_BusinessGroupRoles({
+      combinedRoles: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList
+    }).length > 0;
+
     return {
       key: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id,
       label: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.displayName,
