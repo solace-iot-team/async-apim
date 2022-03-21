@@ -2,6 +2,42 @@
 
 Solace Async API Management.
 
+## Version 0.0.37
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.37
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.19
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.0.13
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.5
+
+#### API-M Admin & Developer Portal
+
+**New Features:**
+- **Organization/Business Groups**
+  - manage business groups within an organization including import from external systems
+  - assign organization users to be members of business groups with roles in that group
+  - user select business group to work in
+  - top level business group is the organization
+  - user roles are inherited by all children of business group
+  - business groups can be imported via API from external systems using the external system id and external system business group id
+- **User Selection of Business Group**
+  - user can select the business group they are working in from toolbar based on calculated roles
+  - roles are adjusted to settings for that business group
+  - last business group is saved and on new login automatically selected for the user. On first login, system will assign a default business group).
+- **Organization/External Systems**
+  - define external systems for integration - e.g. import of business groups
+- **Organization/Users**
+  - assign users to business groups with roles per business group
+  - roles flow down from parent business groups to all children
+- **System/Users**
+  - separated organization users from system user management
+- **System/Organization/Manage Users**
+  - allows for setting organization roles by organization on users
+- **User Session Management**
+  - API calls for session management in case of re-configuration of system and/or organization:
+    - logout,
+    - logout all users,
+    - logout all users logged into an organization,
+  - API call to login on behalf of a user (loginAs)
+
 ## Version 0.0.36
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.36
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.18
