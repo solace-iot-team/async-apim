@@ -12,7 +12,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import APAdminPortalApisService from "../../utils/APAdminPortalApisService";
 
@@ -37,8 +37,9 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
-  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPApiDisplayList>([]);
-  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPApiDisplayList>([]);
+  const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPApiDisplayList>();
+  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPApiDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -72,10 +73,19 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(!managedObjectTableDataList) return;
-    setSelectedManagedObjectTableDataList(APAdminPortalApisService.create_ApApiDisplayList_FilteredBy_EntityIdList(managedObjectTableDataList, props.currentSelectedApiItemList));
+    if(managedObjectTableDataList === undefined) return;
+    setSelectedManagedObjectTableDataList(
+      APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPApiDisplay>({
+        apDisplayObjectList: managedObjectTableDataList,
+        filterByEntityIdList: props.currentSelectedApiItemList
+      })
+    );
   }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
+  React.useEffect(() => {
+    if(selectedManagedObjectTableDataList === undefined) return;
+    setIsInitialized(true);
+  }, [selectedManagedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -86,8 +96,9 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   // * UI Controls *
 
   const onSaveSelectedApis = () => {
-    // const funcName = ' onSaveSelectedApis';
-    // const logName = `${componentName}.${funcName}()`;
+    const funcName = 'onSaveSelectedApis';
+    const logName = `${componentName}.${funcName}()`;
+    if(selectedManagedObjectTableDataList === undefined) throw new Error(`${logName}: selectedManagedObjectTableDataList === undefined`);
     // console.log(`${logName}: selectedManagedObjectTableDataList=${JSON.stringify(selectedManagedObjectTableDataList, null, 2)}`);
     props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_APIS, `select apis`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPApiDisplay>(selectedManagedObjectTableDataList));
   }
@@ -99,10 +110,14 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   }
  
   const renderDataTableHeader = (): JSX.Element => {
+    const funcName = 'renderDataTableHeader';
+    const logName = `${componentName}.${funcName}()`;
+    if(selectedManagedObjectTableDataList === undefined) throw new Error(`${logName}: selectedManagedObjectTableDataList === undefined`);
+    const isSaveDisabled: boolean = selectedManagedObjectTableDataList.length === 0;
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
-          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedApis} disabled={selectedManagedObjectTableDataList.length === 0} />
+          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedApis} disabled={isSaveDisabled} />
           <Button type="button" label="Cancel" className="p-button-text p-button-plain p-mr-2" onClick={props.onCancel} />
         </div>        
         <div style={{ alignContent: "right"}}>
@@ -142,7 +157,8 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   //   );
   // }
   const renderManagedObjectDataTable = (): JSX.Element => {
-     return (
+    const dataKey = APApisService.nameOf_Entity('id');
+    return (
       <div className="card">
           <DataTable
             ref={dt}
@@ -152,7 +168,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
             globalFilter={globalFilter}
             scrollable 
             scrollHeight="800px" 
-            dataKey="apEntityId.id"  
+            dataKey={dataKey}
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // selection
             selection={selectedManagedObjectTableDataList}
@@ -182,7 +198,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      { renderManagedObjectDataTable() }
+      { isInitialialized && renderManagedObjectDataTable() }
 
       {/* DEBUG selected managedObjects */}
       {/* {managedProductList.length > 0 && tableSelectedApiProductList && 

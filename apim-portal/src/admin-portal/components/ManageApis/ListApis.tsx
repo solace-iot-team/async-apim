@@ -221,19 +221,19 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     } 
   }
 
-  const renderDebugSelectedManagedObject = (): JSX.Element => {
-    if(managedObjectList.length > 0 && selectedManagedObject) {
-      const _d = {
-        ...selectedManagedObject,
-        globalSearch: 'not shown...'
-      }
-      return (
-        <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(_d, null, 2)}
-        </pre>
-      );
-    } else return (<></>);
-  }
+  // const renderDebugSelectedManagedObject = (): JSX.Element => {
+  //   if(managedObjectList.length > 0 && selectedManagedObject) {
+  //     const _d = {
+  //       ...selectedManagedObject,
+  //       globalSearch: 'not shown...'
+  //     }
+  //     return (
+  //       <pre style={ { fontSize: '10px' }} >
+  //         {JSON.stringify(_d, null, 2)}
+  //       </pre>
+  //     );
+  //   } else return (<></>);
+  // }
 
   return (
     <div className="manage-apis">
@@ -245,7 +245,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
       {renderContent()}
       
       {/* DEBUG OUTPUT         */}
-      {Config.getUseDevelTools() && renderDebugSelectedManagedObject()}
+      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
 
     </div>
   );

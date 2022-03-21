@@ -4,7 +4,7 @@ import {
   EnvironmentsService,
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityIdList } from './APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
 import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
 import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 
@@ -18,6 +18,10 @@ export type TAPEnvironmentDisplayList = Array<TAPEnvironmentDisplay>;
 
 class APEnvironmentsService {
   private readonly BaseComponentName = "APEnvironmentsService";
+
+  public nameOf_Entity(name: keyof TAPEntityId) {
+    return `apEntityId.${name}`;
+  }
 
   private create_DisplayString(envResponse: EnvironmentResponse): string {
     return `${envResponse.displayName} (${envResponse.datacenterProvider}:${envResponse.datacenterId})`;
@@ -73,17 +77,6 @@ class APEnvironmentsService {
       apDisplayString: '',
       apSearchContent: ''
     };
-  }
-
-  public create_ApEnvironmentDisplayList_FilteredBy_EntityIdList(apEnvironmentDisplayList: TAPEnvironmentDisplayList, filterByEntityIdList: TAPEntityIdList): TAPEnvironmentDisplayList {
-    if(apEnvironmentDisplayList.length === 0) return [];
-    if(filterByEntityIdList.length === 0) return JSON.parse(JSON.stringify(apEnvironmentDisplayList));
-    return apEnvironmentDisplayList.filter( (x) => {
-      const idx = filterByEntityIdList.findIndex( (y) => {
-        return x.apEntityId.id === y.id;
-      });
-      return (idx > -1);
-    });
   }
 
   public async listApEnvironmentDisplay({ organizationId }: {
