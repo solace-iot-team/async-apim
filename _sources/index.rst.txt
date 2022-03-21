@@ -7,6 +7,7 @@ Solace Async API Management
   :caption: Guides
 
   quickstart
+  connector
 
 .. toctree::
   :maxdepth: 2
