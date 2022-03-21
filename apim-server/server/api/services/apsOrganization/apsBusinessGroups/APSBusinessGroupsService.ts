@@ -15,9 +15,16 @@ import {
   APSExternalReference,
   APSExternalSystem,
   ListAPSExternalSystemsResponse,
-  APSExternalSystemList
+  APSExternalSystemList,
+  APSOrganization,
+  APSMemberOfOrganizationGroups,
+  ListApsUsersResponse,
+  APSUserResponseList,
+  APSUserResponse,
+  APSUserIdList,
  } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { 
+  ApiDeleteNotAllowedForKeyServerError,
   ApiDependantsReferencesServerError,
   ApiDuplicateKeyServerError,
   ApiInternalServerError, 
@@ -31,11 +38,8 @@ import { APSBusinessGroupsDBMigrate } from './APSBusinessGroupsDBMigrate';
 import APSBusinessGroupsServiceEventEmitter from "./APSBusinessGroupsServiceEvent";
 import APSExternalSystemsService from "../apsExternalSystems/APSExternalSystemsService";
 import { ValidationUtils } from "../../../utils/ValidationUtils";
-import { ServerUtils } from "../../../../common/ServerUtils";
-import APSOrganizationId = Components.Schemas.APSId;
-import APSBusinessGroupId = Components.Schemas.APSId;
-import APSExternalSystemId = Components.Schemas.APSId;
-import APSExternalReferenceId = Components.Schemas.APSId;
+import { APSOptional, ServerUtils } from "../../../../common/ServerUtils";
+import APSUsersService from "../../APSUsersService/APSUsersService";
 
 
 export class APSBusinessGroupsService {
@@ -49,6 +53,8 @@ export class APSBusinessGroupsService {
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSBusinessGroupsService.collectionName, false);
     APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
+    APSOrganizationsServiceEventEmitter.on('created', this.onOrganizationCreated);
+    APSOrganizationsServiceEventEmitter.on('updated', this.onOrganizationUpdated);
     // APSExternalSystemsServiceEventEmitter.on('await_request_delete', this.on_AwaitRequestDelete_ExternalSystem);
   }
 
@@ -56,14 +62,92 @@ export class APSBusinessGroupsService {
   public wait4CollectionUnlock = async() => {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
-    
-    await this.collectionMutex.waitForUnlock();
-    // const releaser = await this.collectionMutex.acquire();
-    // releaser();
+    // await this.collectionMutex.waitForUnlock();
+    const releaser = await this.collectionMutex.acquire();
+    releaser();
     if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
-
   }
-  private onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  private onOrganizationCreated = async(organizationId: string, apsOrganization: APSOrganization): Promise<void> => {
+    const x = async(): Promise<void> => {
+      await this._onOrganizationCreated(organizationId, apsOrganization);
+    }
+    await this.collectionMutex.runExclusive(x);
+  }
+  private _onOrganizationCreated = async(organizationId: string, apsOrganization: APSOrganization): Promise<void> => {
+    const funcName = '_onOrganizationCreated';
+    const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_CREATED, message: 'APSOrganization', details: {
+        organizationId: organizationId,
+        apsOrganization: apsOrganization
+      }}));
+
+      // create same business group
+      const create: APSOptional<APSBusinessGroupCreate, 'businessGroupParentId'> = {
+        businessGroupId: organizationId,
+        description: `Root for ${apsOrganization.displayName}`,
+        displayName: apsOrganization.displayName,
+      }
+      const created: APSBusinessGroupResponse = await this._create({
+        apsOrganizationId: organizationId,
+        apsBusinessGroupCreate: create
+      });
+
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_CREATED, message: 'created: APSBusinessGroupResponse', details: {
+        APSBusinessGroupResponse: created
+      }}));
+  
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_CREATED, message: ex.message , details: ex.toObject() }));
+    } 
+  }
+  private onOrganizationUpdated = async(organizationId: string, apsOrganization: APSOrganization): Promise<void> => {
+    const x = async(): Promise<void> => {
+      await this._onOrganizationUpdated(organizationId, apsOrganization);
+    }
+    await this.collectionMutex.runExclusive(x);
+  }
+  private _onOrganizationUpdated = async(apsOrganizationId: string, apsOrganization: APSOrganization): Promise<void> => {
+    const funcName = '_onOrganizationUpdated';
+    const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: 'APSOrganization', details: {
+        organizationId: apsOrganizationId,
+        apsOrganization: apsOrganization
+      }}));
+
+      // find the root business group and update it's display name if changed
+      const apsBusinessGroupResponse: APSBusinessGroupResponse = await this.persistenceService.byId({
+        organizationId: apsOrganizationId,
+        documentId: apsOrganizationId 
+      });
+      if(apsBusinessGroupResponse.displayName !== apsOrganization.displayName) {
+        // update display name
+        const apsBusinessGroupUpdate: APSBusinessGroupUpdate = {
+          displayName: apsOrganization.displayName
+        };
+        const updated: APSBusinessGroupResponse = await this.persistenceService.update({
+          organizationId: apsOrganizationId,
+          collectionDocumentId: apsOrganizationId,
+          collectionDocument: apsBusinessGroupUpdate,
+          collectionSchemaVersion: APSBusinessGroupsService.collectionSchemaVersion
+        });
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_UPDATED, message: 'updated: APSBusinessGroupResponse', details: {
+          APSBusinessGroupResponse: updated
+        }}));
+      } else {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_UPDATED, message: 'nothing to do' }));  
+      }
+  
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: ex.message , details: ex.toObject() }));
+    } 
+  }
+  private onOrganizationDeleted = async(apsOrganizationId: string): Promise<void> => {
     // TODO: test without arrow function
     // await this.collectionMutex.runExclusive(async () => {
     //   await this._onOrganizationDeleted(apsOrganizationId);
@@ -73,7 +157,7 @@ export class APSBusinessGroupsService {
     }
     await this.collectionMutex.runExclusive(x);
   }
-  private _onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  private _onOrganizationDeleted = async(apsOrganizationId: string): Promise<void> => {
     const funcName = '_onOrganizationDeleted';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
@@ -89,8 +173,9 @@ export class APSBusinessGroupsService {
       for(const apsBusinessGroup of list) {
         await this.persistenceService.delete({
           organizationId: apsOrganizationId,
-          collectionDocumentId: apsBusinessGroup.businessGroupId
+          documentId: apsBusinessGroup.businessGroupId
         });
+        this._emitDeletedEvent({ logName: logName, apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroup.businessGroupId });
       }
 
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_DELETED, message: 'APSOrganizationId', details: {
@@ -99,7 +184,7 @@ export class APSBusinessGroupsService {
   
     } catch(e) {
       const ex = new ServerErrorFromError(e, logName);
-      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: ex.message , details: ex.toObject() }));
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_DELETED, message: ex.message , details: ex.toObject() }));
     } 
   }
   // TODO: revisit at a later date
@@ -189,6 +274,7 @@ export class APSBusinessGroupsService {
   public getDBObjectSchemaVersion = (): number => {
     return APSBusinessGroupsService.collectionSchemaVersion;
   }
+
   public initialize = async() => {
     const funcName = 'initialize';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
@@ -198,16 +284,6 @@ export class APSBusinessGroupsService {
     // await this.persistenceService.dropCollection();
     
     await this.persistenceService.initialize();
-    
-    // probably not required
-    // APSBusinessGroupsService.rootApsBusinessGroup = {
-    //   businessGroupId: '_aps_root_business_group_',
-    //   businessGroupDisplayName: 'Root Business Group',
-    //   ownerId: APSUsersService.getRootApsUser().userId,
-    // }
-
-    // custom, one time maintenance
-    // await this.persistenceService.delete("master.user@aps.com");
 
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
@@ -229,7 +305,7 @@ export class APSBusinessGroupsService {
   }
 
   public all = async({ apsOrganizationId }: {
-    apsOrganizationId: APSOrganizationId
+    apsOrganizationId: string;
   }): Promise<ListAPSBusinessGroupsResponse> => {
     const funcName = 'all';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
@@ -249,6 +325,7 @@ export class APSBusinessGroupsService {
     // collect all the children
     for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
       apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupResponse.businessGroupId);
+      apsBusinessGroupResponse.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupResponse.businessGroupId});
     }
     
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponseList', details: apsBusinessGroupResponseList }));
@@ -262,15 +339,15 @@ export class APSBusinessGroupsService {
   }
 
   public allByExternalSystemId = async({ apsOrganizationId, apsExternalSystemId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsExternalSystemId: APSExternalSystemId;
+    apsOrganizationId: string;
+    apsExternalSystemId: string;
   }): Promise<ListAPSBusinessGroupsResponse> => {
     const funcName = 'allByExternalSystemId';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'list ListAPSBusinessGroupsResponse', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'ListAPSBusinessGroupsResponse', details: {
       apsOrganizationId: apsOrganizationId,
       apsExternalSystemId: apsExternalSystemId
     }}));
@@ -290,16 +367,17 @@ export class APSBusinessGroupsService {
         filter: filter
       }
     });
-    const responseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
+    const apsBusinessGroupResponseList: APSBusinessGroupResponseList = mongoAllReturn.documentList;
     // collect all the children
-    for(const response of responseList) {
-      response.businessGroupChildIds = await this.listChildren(apsOrganizationId, response.businessGroupId);
+    for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
+      apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupResponse.businessGroupId);
+      apsBusinessGroupResponse.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupResponse.businessGroupId});
     }
 
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'list ListAPSBusinessGroupsResponse', details: responseList }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponseList', details: apsBusinessGroupResponseList }));
 
     return {
-      list: responseList,
+      list: apsBusinessGroupResponseList,
       meta: {
         totalCount: mongoAllReturn.totalDocumentCount
       }
@@ -307,8 +385,8 @@ export class APSBusinessGroupsService {
   }
 
   public byId = async({ apsOrganizationId, apsBusinessGroupId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsBusinessGroupId: APSBusinessGroupId;    
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;    
   }): Promise<APSBusinessGroupResponse> => {
     const funcName = 'byId';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
@@ -324,18 +402,71 @@ export class APSBusinessGroupsService {
 
     const apsBusinessGroupResponse: APSBusinessGroupResponse = await this.persistenceService.byId({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsBusinessGroupId 
+      documentId: apsBusinessGroupId 
     });
     apsBusinessGroupResponse.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupId);
+    apsBusinessGroupResponse.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupResponse.businessGroupId});
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponse', details: apsBusinessGroupResponse }));
 
     return apsBusinessGroupResponse;
   }
 
+  private _allMembers = async({apsOrganizationId, apsBusinessGroupId }:{
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;    
+  }): Promise<APSUserIdList> => {
+    const funcName = '_allMembers';
+    const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserIdList', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    }}));
+
+    const listApsUsersResponse: ListApsUsersResponse = await APSUsersService.allByOrganizationId({
+      apsOrganizationId: apsOrganizationId
+    });
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'apsOrganizationUserList', details: {
+      apsOrganizationUserList: listApsUsersResponse,
+    }}));
+    const apsUserResponseList: APSUserResponseList = listApsUsersResponse.list;
+
+    // create the reference list
+    const apsUserIdList: APSUserIdList = [];
+    apsUserResponseList.forEach( (apsUser: APSUserResponse) => {
+      const apsMemberOfOrganizationGroups: APSMemberOfOrganizationGroups | undefined = apsUser.memberOfOrganizationGroups?.find( (x) => {
+        return x.organizationId === apsOrganizationId;
+      });
+      // discard not found
+      if(apsMemberOfOrganizationGroups !== undefined) {
+        apsMemberOfOrganizationGroups.memberOfBusinessGroupList.forEach( (x) => {
+          if(x.businessGroupId === apsBusinessGroupId) apsUserIdList.push(apsUser.userId);
+        });
+      }
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserIdList', details: { apsUserIdList: apsUserIdList} }));
+
+    return apsUserIdList; 
+  }
+  
+  public allMembers = async({ apsOrganizationId, apsBusinessGroupId }:{
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;    
+  }): Promise<APSUserIdList> => {
+    // const funcName = 'allMembers';
+    // const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    return await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupId });
+  }
+
+
   public byExternalReferenceId = async({ apsOrganizationId, apsExternalReferenceId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsExternalReferenceId: APSExternalReferenceId;    
+    apsOrganizationId: string;
+    apsExternalReferenceId: string;    
   }): Promise<APSBusinessGroupResponse> => {
     const funcName = 'byExternalReferenceId';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
@@ -377,47 +508,66 @@ export class APSBusinessGroupsService {
     const responseGroup: APSBusinessGroupResponse = responseList[0];
     // collect all the children
     responseGroup.businessGroupChildIds = await this.listChildren(apsOrganizationId, responseGroup.businessGroupId);
+    // collect all the members
+    responseGroup.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: responseGroup.businessGroupId});
 
     ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponse', details: responseGroup }));
     
     return responseGroup;
   }
 
-  public create = async({ apsOrganizationId, apsBusinessGroup }: {
-    apsOrganizationId: APSOrganizationId;
-    apsBusinessGroup: APSBusinessGroupCreate;
+  public _create = async({ apsOrganizationId, apsBusinessGroupCreate }: {
+    apsOrganizationId: string;
+    apsBusinessGroupCreate: APSOptional<APSBusinessGroupCreate, 'businessGroupParentId'>;
   }): Promise<APSBusinessGroupResponse> => {
-    const funcName = 'create';
+    const funcName = '_create';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
-
-    await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSBusinessGroupCreate', details: {
       apsOrganizationId: apsOrganizationId,
-      apsBusinessGroup: apsBusinessGroup
+      apsBusinessGroupCreate: apsBusinessGroupCreate
     } }));
 
+    // if group doesn't have a parent, assign the root group as parent. except for the root group.
+    if(apsBusinessGroupCreate.businessGroupParentId === undefined && apsBusinessGroupCreate.businessGroupId !== apsOrganizationId) {
+      apsBusinessGroupCreate.businessGroupParentId = apsOrganizationId;
+    }
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
-    await this.validateUniqueConstraints(apsOrganizationId, apsBusinessGroup);
-    await this.validateReferences(apsOrganizationId, apsBusinessGroup);
+    await this.validateUniqueConstraints(apsOrganizationId, apsBusinessGroupCreate);
+    await this.validateReferences(apsOrganizationId, apsBusinessGroupCreate);
 
     const created: APSBusinessGroupResponse = await this.persistenceService.create({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsBusinessGroup.businessGroupId,
-      collectionDocument: apsBusinessGroup,
+      collectionDocumentId: apsBusinessGroupCreate.businessGroupId,
+      collectionDocument: apsBusinessGroupCreate,
       collectionSchemaVersion: APSBusinessGroupsService.collectionSchemaVersion
     });
 
-    created.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroup.businessGroupId);
+    created.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupCreate.businessGroupId);
+    created.members = [];
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSBusinessGroupResponse', details: created }));
     
     return created;
   }
+  public create = async({ apsOrganizationId, apsBusinessGroupCreate }: {
+    apsOrganizationId: string;
+    apsBusinessGroupCreate: APSBusinessGroupCreate;
+  }): Promise<APSBusinessGroupResponse> => {
+    // const funcName = 'create';
+    // const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    return await this._create({
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupCreate: apsBusinessGroupCreate
+    });
+  }
 
   public update = async({ apsOrganizationId, apsBusinessGroupId, apsBusinessGroupUpdate }: {
-    apsOrganizationId: APSOrganizationId;
-    apsBusinessGroupId: APSBusinessGroupId;
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;
     apsBusinessGroupUpdate: APSBusinessGroupUpdate;
   }): Promise<APSBusinessGroupResponse> => {
     const funcName = 'update';
@@ -442,20 +592,35 @@ export class APSBusinessGroupsService {
       collectionSchemaVersion: APSBusinessGroupsService.collectionSchemaVersion
     });
     updated.businessGroupChildIds = await this.listChildren(apsOrganizationId, apsBusinessGroupId);
+    updated.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: updated.businessGroupId});
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSBusinessGroupResponse', details: updated }));
 
     return updated;
   }
 
-  public delete = async({apsOrganizationId, apsBusinessGroupId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsBusinessGroupId: APSBusinessGroupId;
+  private _emitDeletedEvent = ({logName, apsOrganizationId, apsBusinessGroupId }: {
+    logName: string;
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;
+  }) => {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    }}));
+    APSBusinessGroupsServiceEventEmitter.emit('deleted', apsOrganizationId, apsBusinessGroupId);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    }}));    
+  }
+
+  private _delete = async({apsOrganizationId, apsBusinessGroupId }: {
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;
   }): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
-
-    await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, message: 'keys', details: {
       apsOrganizationId: apsOrganizationId,
@@ -463,26 +628,44 @@ export class APSBusinessGroupsService {
     }}));
 
     await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+    // check group is not root
+    if(apsOrganizationId === apsBusinessGroupId) {
+      throw new ApiDeleteNotAllowedForKeyServerError(logName, 'cannot delete root APSBusinessGroup', { 
+        organizationId: apsOrganizationId, 
+        id: apsBusinessGroupId,
+        collectionName: APSBusinessGroupsService.collectionName 
+      });
+    }
     await this.validateNoChildReferences(apsOrganizationId, apsBusinessGroupId);
 
     const deleted: APSBusinessGroupResponse = (await this.persistenceService.delete({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsBusinessGroupId
+      documentId: apsBusinessGroupId
     }) as unknown) as APSBusinessGroupResponse;
 
-    // emit deleted event
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
-      apsOrganizationId: apsOrganizationId,
-    }}));
-    APSBusinessGroupsServiceEventEmitter.emit('deleted', apsOrganizationId, apsBusinessGroupId);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
-      apsOrganizationId: apsOrganizationId,
-    }}));
+    this._emitDeletedEvent({ logName: logName, apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupId });
     
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSBusinessGroupResponse', details: deleted }));
   }
 
-  private listChildren = async(apsOrganizationId: APSOrganizationId, apsBusinessGroupId: APSBusinessGroupId): Promise<APSIdList> => {
+  public delete = async({apsOrganizationId, apsBusinessGroupId }: {
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;
+  }): Promise<void> => {
+    // const funcName = 'delete';
+    // const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    await this.validateReferences_For_DeleteRequest({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupId });
+
+    await this._delete({
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    });
+  }
+
+  private listChildren = async(apsOrganizationId: string, apsBusinessGroupId: string): Promise<APSIdList> => {
 
     const filter: Filter<APSBusinessGroupResponse> = {
       businessGroupParentId: apsBusinessGroupId
@@ -500,7 +683,7 @@ export class APSBusinessGroupsService {
 
   }
 
-  private validateUniqueConstraints = async(apsOrganizationId: APSOrganizationId, apsBusinessGroup: APSBusinessGroupCreate | APSBusinessGroupUpdate): Promise<void> => {
+  private validateUniqueConstraints = async(apsOrganizationId: string, apsBusinessGroup: APSBusinessGroupCreate | APSBusinessGroupUpdate): Promise<void> => {
     const funcName = 'validateUniqueConstraints';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
@@ -509,6 +692,7 @@ export class APSBusinessGroupsService {
       apsBusinessGroup: apsBusinessGroup
     }}));
 
+    // * validate external reference *
     if(apsBusinessGroup.externalReference === undefined) return;
 
     // construct key
@@ -535,7 +719,7 @@ export class APSBusinessGroupsService {
     } 
   }
 
-  private validateNoChildReferences = async(apsOrganizationId: APSOrganizationId, apsBusinessGroupId: APSBusinessGroupId): Promise<void> => {
+  private validateNoChildReferences = async(apsOrganizationId: string, apsBusinessGroupId: string): Promise<void> => {
     const funcName = 'validateNoChildReferences';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
@@ -578,7 +762,7 @@ export class APSBusinessGroupsService {
     }
   }
 
-  private validateReferences = async(apsOrganizationId: APSOrganizationId, apsBusinessGroup: Partial<APSBusinessGroupCreate>): Promise<void> => {
+  private validateReferences = async(apsOrganizationId: string, apsBusinessGroup: Partial<APSBusinessGroupCreate>): Promise<void> => {
     const funcName = 'validateReferences';
     const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
 
@@ -629,6 +813,43 @@ export class APSBusinessGroupsService {
       });      
     }
   }
+
+  private validateReferences_For_DeleteRequest = async({ apsOrganizationId, apsBusinessGroupId }:{ 
+    apsOrganizationId: string;
+    apsBusinessGroupId: string;
+   }): Promise<void> => {
+    const funcName = 'validateReferences_For_DeleteRequest';
+    const logName = `${APSBusinessGroupsService.name}.${funcName}()`;
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.VALIDATING_DEPENDANTS, message: 'members', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    }}));
+
+    const apsUserIdList: APSUserIdList = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: apsBusinessGroupId });
+
+    const invalidReferencesList: Array<TApiInvalidObjectReferenceError> = [];
+    apsUserIdList.forEach( (userId) => {
+      invalidReferencesList.push({
+        referenceType: 'userId',
+        referenceId: userId
+      });
+    });
+    // create error 
+    if(invalidReferencesList.length > 0) {
+      throw new ApiInvalidObjectReferencesServerError(logName, 'business group has members', { 
+        id: `${apsOrganizationId}.${apsBusinessGroupId}`,
+        collectionName: APSBusinessGroupsService.collectionName,
+        invalidReferenceList: invalidReferencesList
+      });      
+    }
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.VALIDATED_DEPENDANTS, message: 'members', details: {
+      apsOrganizationId: apsOrganizationId,
+      apsBusinessGroupId: apsBusinessGroupId
+    }}));
+
+  }
+
 }
 
 export default new APSBusinessGroupsService();

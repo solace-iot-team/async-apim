@@ -10,7 +10,6 @@ import {
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsServiceEventEmitter from './APSOrganizationsServiceEvent';
 import { APSOrganizationsDBMigrate } from './APSOrganizationsDBMigrate';
-import APSOrganizationId = Components.Schemas.APSId;
 
 export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
@@ -88,7 +87,7 @@ export class APSOrganizationsService {
     }}));
 
     const apsOrganization: APSOrganization = await this.persistenceService.byId({
-      collectionDocumentId: apsOrganizationId
+      documentId: apsOrganizationId
     }) as APSOrganization;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSOrganization', details: apsOrganization }));
@@ -96,24 +95,31 @@ export class APSOrganizationsService {
     return apsOrganization;
   }
 
-  public create = async(apsOrganizationCreateRequest: APSOrganizationCreate): Promise<APSOrganization> => {
+  public create = async(apsOrganizationCreate: APSOrganizationCreate): Promise<APSOrganization> => {
     const funcName = 'create';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSOrganizationCreate', details: apsOrganizationCreateRequest }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSOrganizationCreate', details: apsOrganizationCreate }));
 
     const created: APSOrganization = await this.persistenceService.create({
-      collectionDocumentId: apsOrganizationCreateRequest.organizationId,
-      collectionDocument: apsOrganizationCreateRequest,
+      collectionDocumentId: apsOrganizationCreate.organizationId,
+      collectionDocument: apsOrganizationCreate,
       collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
+    // emit created event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'created', details: {
+      apsOrganizationId: apsOrganizationCreate.organizationId,
+      APSOrganization: created
+    }}));
+    APSOrganizationsServiceEventEmitter.emit('created', apsOrganizationCreate.organizationId, created);
+    
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATED, message: 'APSOrganization', details: created}));
 
     return created;
   }
 
-  public update = async(apsOrganizationId: APSId, apsOrganizationUpdateRequest: APSOrganizationUpdate): Promise<APSOrganization> => {
+  public update = async(apsOrganizationId: string, apsOrganizationUpdateRequest: APSOrganizationUpdate): Promise<APSOrganization> => {
     const funcName = 'update';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
@@ -128,12 +134,19 @@ export class APSOrganizationsService {
       collectionSchemaVersion: APSOrganizationsService.collectionSchemaVersion
     });
 
+    // emit updated event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'updated', details: {
+      apsOrganizationId: apsOrganizationId,
+      APSOrganization: updated
+    }}));
+    APSOrganizationsServiceEventEmitter.emit('updated', apsOrganizationId, updated);
+
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSOrganization', details: updated }));
 
     return updated;
   }
 
-  public delete = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  public delete = async(apsOrganizationId: string): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSOrganizationsService.name}.${funcName}()`;
 
@@ -142,7 +155,7 @@ export class APSOrganizationsService {
     }}));
 
     const deleted = (await this.persistenceService.delete({
-      collectionDocumentId: apsOrganizationId
+      documentId: apsOrganizationId
     }) as unknown) as APSOrganization;
     
     // emit deleted event
@@ -150,9 +163,6 @@ export class APSOrganizationsService {
       apsOrganizationId: apsOrganizationId,
     }}));
     APSOrganizationsServiceEventEmitter.emit('deleted', apsOrganizationId);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTED_EVENT, message: 'deleted', details: {
-      apsOrganizationId: apsOrganizationId,
-    }}));
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSOrganization', details: deleted }));
 

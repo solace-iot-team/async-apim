@@ -1,7 +1,7 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { TMongoAllReturn } from '../../../common/MongoPersistenceService';
 import { 
-  APSOrganizationList, APSUser,
+  APSOrganizationList, APSUserCreate,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import { ApiDuplicateKeyServerError, MigrateServerError } from '../../../common/ServerError';
 import { APSOrganizationsService } from './APSOrganizationsService';
@@ -26,7 +26,7 @@ export class APSOrganizationsDBMigrate {
       const userOrgList: APSOrganizationList = [];
       const res: TMongoAllReturn = await APSUsersService.getPersistenceService().all({});
       for (const apsDoc of res.documentList) {
-        const apsUser: APSUser = apsDoc as APSUser;
+        const apsUser: APSUserCreate = apsDoc as APSUserCreate;
         if(apsUser.memberOfOrganizations !== undefined) {
           for(const memberOfOrganization of apsUser.memberOfOrganizations) {
             const found = userOrgList.find( (x) => {

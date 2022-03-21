@@ -16,7 +16,8 @@ import {
   CommonName,
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
-  APSUser, ApsUsersService
+  APSUserResponse,
+  ApsUsersService
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
@@ -120,7 +121,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         });
         _apiProductList.push(apiApiProduct);
       }
-      let _apsUser: APSUser | undefined = undefined;
+      let _apsUser: APSUserResponse | undefined = undefined;
       try {
         _apsUser = await ApsUsersService.getApsUser({
           userId: props.appOwnerId

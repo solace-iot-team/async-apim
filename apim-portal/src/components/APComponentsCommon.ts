@@ -1,6 +1,6 @@
 import { DataTableSortOrderType } from 'primereact/datatable';
 import { 
-  APSUser, 
+  APSUserResponse, 
   EAPSSortDirection 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
@@ -178,7 +178,7 @@ export type TAPDeveloperPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
 };
 export type TAPAdminPortalUserAppDisplay = TAPManagedUserAppDisplay_Base & {
   apPortalDisplayType: EAPPortalDisplay_Type;
-  apsUser: APSUser;
+  apsUser: APSUserResponse;
 }
 
 export class APManagedUserAppDisplay {
@@ -298,7 +298,7 @@ export class APManagedUserAppDisplay {
     apiAppResponse_mqtt: AppResponse, 
     apiProductList: Array<APIProduct>,
     apiAppConnectionStatus: AppConnectionStatus,
-    apsUser: APSUser
+    apsUser: APSUserResponse
     ): TAPAdminPortalUserAppDisplay => {
 
       const _base = APManagedUserAppDisplay.createAPManagedUserAppDisplay_Base_From_ApiEntities(apiAppResponse_smf, apiProductList, apiAppConnectionStatus, apiAppResponse_mqtt);
@@ -530,6 +530,7 @@ export enum EFileExtension {
 
 export class APComponentsCommon {
 
+  // TODO: delete me: moved to APDisplayUtils.tsx
   public static transformTableSortDirectionToApiSortDirection = (tableSortDirection: DataTableSortOrderType): EAPSSortDirection => {
     return tableSortDirection === 1 ? EAPSSortDirection.ASC : EAPSSortDirection.DESC;
   }

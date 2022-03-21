@@ -117,6 +117,7 @@ describe(`${scriptName}`, () => {
         const masterBusinessGroupId = createBusinessGroupId(masterI, BusinessGroupMasterName);
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: masterBusinessGroupId,
+          businessGroupParentId: orgId,
           displayName: masterBusinessGroupId,
           description: DefaultDescription,
         }
@@ -128,7 +129,8 @@ describe(`${scriptName}`, () => {
         expect(createdApsBusinessGroup.businessGroupChildIds.length, TestLogger.createTestFailMessage('businessGroupChildIds length not 0')).to.equal(0);
         const expectedResponse: APSBusinessGroupResponse = {
           ...apsBusinessGroup,
-          businessGroupChildIds: []
+          businessGroupChildIds: [],
+          members: []
         }
         expect(createdApsBusinessGroup, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         // create children
@@ -136,6 +138,7 @@ describe(`${scriptName}`, () => {
           const childBusinessGroupId = createChildBusinessGroupId(orgI, masterI, childI, BusinessGroupChildName, masterBusinessGroupId);
           const childBusinessGroup: APSBusinessGroupCreate = {
             businessGroupId: childBusinessGroupId,
+            businessGroupParentId: masterBusinessGroupId,
             displayName: childBusinessGroupId,
             description: DefaultDescription,
             }
@@ -207,10 +210,13 @@ describe(`${scriptName}`, () => {
         const meta = listResponse.meta;
         const totalCount: number = meta.totalCount;
         for(const group of groupList) {
-          await ApsBusinessGroupsService.deleteApsBusinessGroup({
-            organizationId: organizationId,
-            businessgroupId: group.businessGroupId
-          });
+            // cannot delete root
+            if(group.businessGroupParentId !== undefined) {
+            await ApsBusinessGroupsService.deleteApsBusinessGroup({
+              organizationId: organizationId,
+              businessgroupId: group.businessGroupId
+            });
+          }
         }
       }
     } catch (e) {
@@ -227,6 +233,7 @@ describe(`${scriptName}`, () => {
         const businessGroupDisplayName = createBusinessGroupDisplayName(businessGroupId);
         const apsBusinessGroup: APSBusinessGroupCreate = {
           businessGroupId: businessGroupId,
+          businessGroupParentId: organizationId,
           displayName: businessGroupDisplayName,
           description: DefaultDescription,
         }
@@ -236,7 +243,8 @@ describe(`${scriptName}`, () => {
         });
         const expectedResponse: APSBusinessGroupResponse = {
           ...apsBusinessGroup,
-          businessGroupChildIds: []
+          businessGroupChildIds: [],
+          members: []
         }
         expect(createdApsBusinessGroup, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         // get it
@@ -274,13 +282,14 @@ describe(`${scriptName}`, () => {
           });
           const expectedResponse: APSBusinessGroupResponse = {
             ...apsBusinessGroup,
-            businessGroupChildIds: []
+            businessGroupChildIds: [],
+            members: []
           }
           expect(createdApsBusinessGroupResponse, TestLogger.createTestFailMessage('created response does not equal request')).to.deep.equal(expectedResponse);
         }
       }
       // now we should have 1 master & NumberOfChildrenGroups in each org
-      const expectedNumberOfGroupsPerOrg = 1 + NumberOfChildrenGroups;
+      const expectedNumberOfGroupsPerOrg = 1 + NumberOfChildrenGroups + 1;
       for(let orgI=0; orgI < NumberOfOrganizations; orgI++) {
         const organizationId = createOrganizationId(orgI);
         const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroups({
@@ -291,7 +300,7 @@ describe(`${scriptName}`, () => {
         const totalCount: number = meta.totalCount;
         expect(totalCount, TestLogger.createTestFailMessage('totalCount does not equal expectedNumberOfGroupsPerOrg')).to.equal(expectedNumberOfGroupsPerOrg);
         for(const group of groupList) {
-          if(!group.businessGroupParentId) {
+          if(group.businessGroupParentId !== undefined && group.businessGroupParentId === organizationId) {
             expect(group.businessGroupChildIds.length, TestLogger.createTestFailMessage('group.businessGroupChildIds.length does not equal 3')).to.equal(3);
           }
         }
@@ -504,6 +513,7 @@ describe(`${scriptName}`, () => {
     const NonExistOrganizationId = createOrganizationId(11111);
     const create: APSBusinessGroupCreate = {
       businessGroupId: 'any-id',
+      businessGroupParentId: NonExistOrganizationId,
       displayName: 'any',
       description: DefaultDescription,
     }

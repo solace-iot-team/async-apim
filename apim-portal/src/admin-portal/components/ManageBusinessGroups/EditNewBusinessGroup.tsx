@@ -15,9 +15,9 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { E_CALL_STATE_ACTIONS } from "././ManageBusinessGroupsCommon";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplay 
-} from "../../../services/APBusinessGroupsService";
+} from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
@@ -46,7 +46,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
   type TManagedObjectFormData = TManagedObject & {
   }
   
-  const EmptyManagedObject: TManagedObject = APBusinessGroupsService.create_EmptyObject(props.businessGroupParentEntityId);
+  const EmptyManagedObject: TManagedObject = APBusinessGroupsDisplayService.create_EmptyObject(props.businessGroupParentEntityId);
 
   const [createdManagedObjectId, setCreatedManagedObjectId] = React.useState<string>();
   const [createdManagedObjectDisplayName, setCreatedManagedObjectDisplayName] = React.useState<string>();
@@ -92,7 +92,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${managedObjectDisplayName}`);
     try {
-      const object: TAPBusinessGroupDisplay = await APBusinessGroupsService.getApBusinessGroupDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: managedObjectId
       })
@@ -110,7 +110,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_BUSINESS_GROUP, `create business group: ${mo.apEntityId.displayName}`);
     try { 
-      await APBusinessGroupsService.createApBusinessGroupDisplay({
+      await APBusinessGroupsDisplayService.createApBusinessGroupDisplay({
         organizationId: props.organizationId,
         apBusinessGroupDisplay: mo
       })
@@ -129,7 +129,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_BUSINESS_GROUP, `update business group: ${mo.apEntityId.displayName}`);
     try { 
-      await APBusinessGroupsService.updateApBusinessGroupDisplay({
+      await APBusinessGroupsDisplayService.updateApBusinessGroupDisplay({
         organizationId: props.organizationId,
         apBusinessGroupDisplay: mo
       })
@@ -246,9 +246,11 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
   }
 
   const renderManagedObjectForm = () => {
-    // const funcName = 'renderManagedObjectForm';
-    // const logName = `${componentName}.${funcName}()`;
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${componentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     const isNewObject: boolean = (props.action === EAction.NEW);
+    const isToplevelGroup: boolean = managedObject.apBusinessGroupParentEntityId === undefined;
     return (
       <div className="card p-mt-2">
         <div className="p-fluid">
@@ -290,7 +292,8 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={!isNewObject}
+                          autoFocus={!isNewObject && !isToplevelGroup}
+                          disabled={isToplevelGroup}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}
@@ -313,6 +316,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputTextarea
                           id={field.name}
                           {...field}
+                          autoFocus={!isNewObject && isToplevelGroup}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                       )}}

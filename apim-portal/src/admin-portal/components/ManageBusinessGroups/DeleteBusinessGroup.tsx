@@ -9,7 +9,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APBusinessGroupsService from "../../../services/APBusinessGroupsService";
+import APBusinessGroupsDisplayService from "../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
@@ -37,7 +37,7 @@ export const DeleteBusinessGroup: React.FC<IDeleteBusinessGroupProps> = (props: 
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_BUSINESS_GROUP, `delete business group: ${props.businessGroupEntityId.displayName}`);
     try { 
-      await APBusinessGroupsService.deleteApBusinessGroupDisplay({
+      await APBusinessGroupsDisplayService.deleteApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: props.businessGroupEntityId.id
       });

@@ -8,6 +8,7 @@ import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton"
 import { MenuItem } from "primereact/api";
 
 import { 
+  ApiError,
   ApiProductsService,
   App,
   AppConnectionStatus,
@@ -15,6 +16,7 @@ import {
   AppsService,
   CommonDisplayName,
   CommonName,
+  DevelopersService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { 
@@ -118,45 +120,76 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const managedObjectListDataTableRef = React.useRef<any>(null);
 
   // * Api Calls *
+  const apiCheck_DeveloperExists = async(): Promise<boolean> => {
+    const funcName = 'apiCheck_DeveloperExists';
+    const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: starting...`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_DEVELOPER_EXISTS, `check developer exists: ${props.userId}`);
+    let anyError: any = undefined;
+    try {
+      await DevelopersService.getDeveloper({
+        organizationName: props.organizationId, 
+        developerUsername: props.userId
+      });
+      return true;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+        else anyError = e;
+      } else anyError = e;
+    }
+    if(anyError) {
+      APClientConnectorOpenApi.logError(logName, anyError);
+      callState = ApiCallState.addErrorToApiCallState(anyError, callState);
+    }    
+    setApiCallStatus(callState);
+    return false;
+  }
+
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP_LIST, `retrieve list of apps for ${props.userId}`);
     try { 
-      const apiAppList: Array<App> = await AppsService.listDeveloperApps({
-        organizationName: props.organizationId, 
-        developerUsername: props.userId
-      });
-      // get details for each App
       let _appDisplayList: Array<TAPDeveloperPortalUserAppDisplay> = [];
-      for(const apiApp of apiAppList) {
-        const _apiAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
-          organizationName: props.organizationId,
-          developerUsername: props.userId,
-          appName: apiApp.name,
-          topicSyntax: 'smf'
+      // if developer does not exist, list is empty
+      const developerExists: boolean = await apiCheck_DeveloperExists();
+      if(developerExists) {
+        const apiAppList: Array<App> = await AppsService.listDeveloperApps({
+          organizationName: props.organizationId, 
+          developerUsername: props.userId
         });
-        // not required for list
-        const _apiAppConnectionStatus: AppConnectionStatus = {};
-        // let _apiAppConnectionStatus: AppConnectionStatus = {};
-        // try {
-        //   _apiAppConnectionStatus = await AppsService.getAppStatus({
-        //     organizationName: props.organizationId,
-        //     appName: apiApp.name
-        //   });  
-        // } catch (e:any) {
-        //   APClientConnectorOpenApi.logError(logName, e);
-        // }
-        let _apiAppProductList: TApiProductList = [];
-        for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
-          const apiApiProduct = await ApiProductsService.getApiProduct({
+        // get details for each App
+        for(const apiApp of apiAppList) {
+          const _apiAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
             organizationName: props.organizationId,
-            apiProductName: apiAppProductId
+            developerUsername: props.userId,
+            appName: apiApp.name,
+            topicSyntax: 'smf'
           });
-          _apiAppProductList.push(apiApiProduct);
+          // not required for list
+          const _apiAppConnectionStatus: AppConnectionStatus = {};
+          // let _apiAppConnectionStatus: AppConnectionStatus = {};
+          // try {
+          //   _apiAppConnectionStatus = await AppsService.getAppStatus({
+          //     organizationName: props.organizationId,
+          //     appName: apiApp.name
+          //   });  
+          // } catch (e:any) {
+          //   APClientConnectorOpenApi.logError(logName, e);
+          // }
+          let _apiAppProductList: TApiProductList = [];
+          for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
+            const apiApiProduct = await ApiProductsService.getApiProduct({
+              organizationName: props.organizationId,
+              apiProductName: apiAppProductId
+            });
+            _apiAppProductList.push(apiApiProduct);
+          }
+          _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppProductList, _apiAppConnectionStatus, undefined))
         }
-        _appDisplayList.push(APManagedUserAppDisplay.createAPDeveloperPortalAppDisplayFromApiEntities(_apiAppResponse_smf, _apiAppProductList, _apiAppConnectionStatus, undefined))
       }
       setManagedObjectList(_appDisplayList);
     } catch(e: any) {

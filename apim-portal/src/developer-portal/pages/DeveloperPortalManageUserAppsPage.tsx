@@ -7,7 +7,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { UserContext } from "../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserApps';
 import { TAPDeveloperPortalApiProductCompositeId } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon';
@@ -86,7 +86,7 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
       {organizationName &&
         <DeveloperPortalManageUserApps
           organizationName={organizationName}
-          userId={userContext.user.userId}
+          userId={userContext.apLoginUserDisplay.apEntityId.id}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}

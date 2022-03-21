@@ -4,10 +4,10 @@ import {
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
   APSSystemAuthRoleList,
+  APSUserCreate,
   EAPSOrganizationAuthRole,
   EAPSSystemAuthRole,
  } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { MigrateServerError } from '../../../common/ServerError';
 import { APSUsersService } from './APSUsersService';
 
 // capture all the schema versions over time here
@@ -33,6 +33,26 @@ export type APSOrganizationRoles_DB_1 = {
 }
 export type APSUser_DB_1 = {
   _id: string;
+  isActivated: boolean;
+  userId: string;
+  password: string;
+  profile: any;
+  systemRoles: Array<string>;
+  memberOfOrganizations?: Array<APSOrganizationRoles_DB_1>;
+}
+
+// * Schema 2 *
+export type EAPSBusinessGroupAuthRole_DB_2 = "loginAs" | "organizationAdmin" | "apiTeam" | "apiConsumer";
+export type APSMemberOfBusinessGroup_DB_2 = {
+  businessGroupId: string;
+  roles: Array<string>;
+}
+export type APSMemberOfOrganizationGroups_DB_2 = {
+  organizationId: string;
+  memberOfBusinessGroupList: Array<APSMemberOfBusinessGroup_DB_2>;
+}
+export type APSUser_DB_2 = {
+  _id: string;
   _schemaVersion: number;
   isActivated: boolean;
   userId: string;
@@ -40,6 +60,7 @@ export type APSUser_DB_1 = {
   profile: any;
   systemRoles: Array<string>;
   memberOfOrganizations?: Array<APSOrganizationRoles_DB_1>;
+  memberOfOrganizationGroups?: Array<APSMemberOfOrganizationGroups_DB_2>;
 }
 
 export class APSUsersDBMigrate {
@@ -50,21 +71,69 @@ export class APSUsersDBMigrate {
     const targetDBSchemaVersion = apsUsersService.getDBObjectSchemaVersion();
 
     const currentDBRawUserListToMigrate = await apsUsersService.getPersistenceService().allRawLessThanTargetSchemaVersion(targetDBSchemaVersion);
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'migrating users', details: { 
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'migrating users', details: { 
       targetDBSchemaVersion: targetDBSchemaVersion,
       currentDBRawUserListToMigrate: currentDBRawUserListToMigrate 
     }}));
-    for(const currentDBRawUser of currentDBRawUserListToMigrate) {
-      const currentDBSchemaVersion = currentDBRawUser._schemaVersion ? currentDBRawUser._schemaVersion : 0;
-      if(targetDBSchemaVersion === 1) {
-        if(currentDBSchemaVersion === 0) await APSUsersDBMigrate.migrate_0_to_1(apsUsersService.getPersistenceService(), currentDBRawUser);
-        else throw new MigrateServerError(logName, 'no migration path for schema versions found', apsUsersService.getCollectionName(), currentDBSchemaVersion, targetDBSchemaVersion);
+    for(let currentDBRawUser of currentDBRawUserListToMigrate) {
+      let currentDBSchemaVersion = currentDBRawUser._schemaVersion ? currentDBRawUser._schemaVersion : 0;
+      if(currentDBSchemaVersion === 0) {
+        currentDBRawUser = await APSUsersDBMigrate.migrate_0_to_1(apsUsersService.getPersistenceService(), currentDBRawUser);
+        currentDBSchemaVersion = 1;
+      }
+      if(currentDBSchemaVersion === 1) {
+        currentDBRawUser = await APSUsersDBMigrate.migrate_1_to_2(apsUsersService.getPersistenceService(), currentDBRawUser);
       }
     }
     return currentDBRawUserListToMigrate.length;
   }
 
-  private static migrate_0_to_1 = async(persistenceService: MongoPersistenceService, dbUser_0: APSUser_DB_0): Promise<void> => {
+  private static migrate_1_to_2 = async(persistenceService: MongoPersistenceService, dbUser_1: APSUser_DB_1): Promise<APSUser_DB_2> => {
+    const funcName = 'migrate_1_to_2';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    const newSchemaVersion = 2;
+    const userId = dbUser_1.userId;
+
+    if(dbUser_1.memberOfOrganizations !== undefined) {
+      const memberOfOrganizationGroupsList: Array<APSMemberOfOrganizationGroups_DB_2> = [];
+      for(const apsOrganizationRoles_DB_1 of dbUser_1.memberOfOrganizations) {
+        const memberOfBusinessGroup: APSMemberOfBusinessGroup_DB_2 = {
+          businessGroupId: apsOrganizationRoles_DB_1.organizationId,
+          roles: apsOrganizationRoles_DB_1.roles
+        }
+        const memberOfOrganizationGroups: APSMemberOfOrganizationGroups_DB_2 = {
+          organizationId: apsOrganizationRoles_DB_1.organizationId,
+          memberOfBusinessGroupList: [memberOfBusinessGroup]          
+        }
+        memberOfOrganizationGroupsList.push(memberOfOrganizationGroups);
+      }
+      const dbUser_2: APSUser_DB_2 = {
+        ...dbUser_1,
+        _schemaVersion: newSchemaVersion,
+        memberOfOrganizationGroups: memberOfOrganizationGroupsList
+      }
+      const replaced: APSUserCreate = await persistenceService.replace({
+        collectionDocumentId: userId, 
+        collectionDocument: dbUser_2, 
+        collectionSchemaVersion: newSchemaVersion
+      });
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+        apsUser: replaced,
+      }}));  
+    }
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: userId
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
+      dbUser_1: dbUser_1,
+      dbUser_2: newRawDBDocument
+    }}));
+    return newRawDBDocument;
+  }
+
+
+  private static migrate_0_to_1 = async(persistenceService: MongoPersistenceService, dbUser_0: APSUser_DB_0): Promise<APSUser_DB_1> => {
     const funcName = 'migrate_0_to_1';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
@@ -90,7 +159,6 @@ export class APSUsersDBMigrate {
 
     const dbUser_1: APSUser_DB_1 = {
       _id: dbUser_0._id,
-      _schemaVersion: 1,
       isActivated: dbUser_0.isActivated,
       userId: dbUser_0.userId,
       password: dbUser_0.password,
@@ -109,10 +177,13 @@ export class APSUsersDBMigrate {
       collectionDocument: dbUser_1, 
       collectionSchemaVersion: 1
     });
-    const newRawDBDocument = await persistenceService.byIdRaw(dbUser_1.userId);
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: dbUser_1.userId
+    });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, details: {
       newRawDBDocument: newRawDBDocument,
     } }));
+    return newRawDBDocument;
   }
 
 

@@ -2,7 +2,7 @@ import React from "react";
 import { useHistory, Route, Switch } from 'react-router-dom';
 
 import { Config } from "./Config";
-import { UserContext } from './components/UserContextProvider/UserContextProvider';
+import { UserContext } from './components/APContextProviders/APUserContextProvider';
 import { AuthContext } from "./components/AuthContextProvider/AuthContextProvider";
 
 // * Admin Portal *

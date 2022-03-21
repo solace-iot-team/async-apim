@@ -13,7 +13,7 @@ import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { APLogger } from "../../utils/APLogger";
 import { EAppState, Globals, TAPPortalAppAbout } from "../../utils/Globals";
-import { UserContext } from '../UserContextProvider/UserContextProvider';
+import { UserContext } from '../APContextProviders/APUserContextProvider';
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from "../../utils/APortalApiCalls";

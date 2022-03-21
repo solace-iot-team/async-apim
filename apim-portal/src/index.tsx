@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from "react-router-dom";
 import { ConfigContextProvider } from './components/ConfigContextProvider/ConfigContextProvider';
 import { AuthContextProvider } from './components/AuthContextProvider/AuthContextProvider';
-import { UserContextProvider } from './components/UserContextProvider/UserContextProvider';
+import { UserContextProvider } from './components/APContextProviders/APUserContextProvider';
 import { OrganizationContextProvider } from './components/APContextProviders/APOrganizationContextProvider';
 import { APHealthCheckContextProvider } from './components/APHealthCheckContextProvider';
 import { APHealthCheckSummaryContextProvider } from './components/APHealthCheckSummaryContextProvider';

@@ -14,7 +14,7 @@ import { ListAsTreeTableBusinessGroups } from "./ListAsTreeTableBusinessGroups";
 import { EAction, EditNewBusinessGroups } from "./EditNewBusinessGroup";
 import { DeleteBusinessGroup } from "./DeleteBusinessGroup";
 import { ViewBusinessGroup } from "./ViewBusinessGroup";
-import APExternalSystemsService, { TAPExternalSystemDisplayList } from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from "../../../displayServices/APExternalSystemsDisplayService";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 import '../../../components/APComponents.css';
@@ -60,7 +60,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New';
+  // const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarButtonLabelImportBusinessGroup = 'Import';
 
   // /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -77,6 +77,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [externalSystemDisplayListCapableOfImport, setExternalSystemDisplayListCapableOfImport] = React.useState<TAPExternalSystemDisplayList>([]);
+  // const [rootGroupEntityId, setRootGroupEntityId] = React.useState<TAPEntityId>();
 
   //  * Api Calls *
   const apiGetApExternalSystemsCapableOfInteractiveImportBusinessGroups = async(): Promise<TApiCallState> => {
@@ -84,7 +85,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST_CAPABLE_OF_INTERACTIVE_IMPORT_OF_BUSINESS_GRAOUPS, `retrieve external systems`);
     try { 
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({
         organizationId: props.organizationEntityId.id
       });
       setExternalSystemDisplayListCapableOfImport(list);
@@ -96,11 +97,28 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
     return callState;
   }
 
+  // const apiGetRootApBusinessGroupEntityId = async(): Promise<TApiCallState> => {
+  //   const funcName = 'apiGetRootApBusinessGroupEntityId';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ROOT_BUSINESS_GROUP, `retrieve root business group`);
+  //   try { 
+  //     const rootEntityId: TAPEntityId = await APBusinessGroupsDisplayService.getRootApBusinessGroupEntityId({
+  //       organizationId: props.organizationEntityId.id
+  //     });
+  //     setRootGroupEntityId(rootEntityId);
+  //   } catch(e) {
+  //     APClientConnectorOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   // * useEffect Hooks *
   const doInitialize = async () => {
     setIsLoading(true);
     await apiGetApExternalSystemsCapableOfInteractiveImportBusinessGroups();
+    // await apiGetRootApBusinessGroupEntityId();
     setIsLoading(false);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
@@ -120,6 +138,7 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
           case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST:
           case E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP:
           case E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST_CAPABLE_OF_INTERACTIVE_IMPORT_OF_BUSINESS_GRAOUPS:
+          case E_CALL_STATE_ACTIONS.API_GET_ROOT_BUSINESS_GROUP:
             break;
           default:
             props.onSuccess(apiCallStatus);
@@ -137,15 +156,18 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
   }  
 
   // * New Object *
-  const onNewManagedObject = (parentBusinessGroupEntityId: TAPEntityId | undefined) => {
+  const onNewManagedObject = (parentBusinessGroupEntityId: TAPEntityId) => {
     // alert(`new business group, parentBusinessGroupEntityId=${JSON.stringify(parentBusinessGroupEntityId)}`);
     setManagedObjectParentEntityId(parentBusinessGroupEntityId);
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
-  const onNewManagedObjectFromToolbar = () => {
-    onNewManagedObject(undefined);
-  }
+  // const onNewManagedObjectFromToolbar = () => {
+  //   const funcName = 'onNewManagedObjectFromToolbar';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(rootGroupEntityId === undefined) throw new Error(`${logName}: rootGroupEntityId === undefined`);
+  //   onNewManagedObject(rootGroupEntityId);
+  // }
 
   // * Import *
   const onImportBusinessGroup = () => {
@@ -176,18 +198,15 @@ export const ManageBusinessGroups: React.FC<IManageBusinessGroupsProps> = (props
 
     const showImportBusinessGroupButton: boolean = externalSystemDisplayListCapableOfImport.length > 0;
 
-    if(showListComponent) return (
+    if(showListComponent && showImportBusinessGroupButton) return (
       <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
+        {/* <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/> */}
         {showImportBusinessGroupButton && 
           <Button label={ToolbarButtonLabelImportBusinessGroup} icon="pi pi-cloud-download" onClick={onImportBusinessGroup} className="p-button-text p-button-plain p-button-outlined"/>
         }
       </React.Fragment>
     );
-    if(showViewComponent) return undefined;
-    if(showEditComponent) return undefined;
-    if(showDeleteComponent) return undefined;
-    if(showNewComponent) return undefined;
+    return undefined;
   }
   const renderToolbar = (): JSX.Element => {
     const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();

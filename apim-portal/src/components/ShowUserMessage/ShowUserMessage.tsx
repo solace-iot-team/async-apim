@@ -1,6 +1,6 @@
 import React from 'react';
 import { Toast } from 'primereact/toast';
-import { UserContext } from '../UserContextProvider/UserContextProvider';
+import { UserContext } from '../APContextProviders/APUserContextProvider';
 
 export interface IShowUserMessageProps {}
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { 
   ListAPSBusinessGroupsResponse, 
   APSBusinessGroupResponse,
+  APSUserIdList,
 } from '../../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../../services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { ControllerUtils } from '../../ControllerUtils';
@@ -74,6 +75,25 @@ export class ApsBusinessGroupsController {
     }
   }
 
+  public static allMembers = (req: Request<ById_Params>, res: Response, next: NextFunction): void => {
+    const funcName = 'allMembers';
+    const logName = `${ApsBusinessGroupsController.name}.${funcName}()`;
+    try {
+      APSBusinessGroupsService.allMembers({
+        apsOrganizationId: ControllerUtils.getParamValue<ById_Params>(logName, req.params, 'organization_id'),
+        apsBusinessGroupId: ControllerUtils.getParamValue<ById_Params>(logName, req.params, 'businessgroup_id')
+      })
+      .then( (r: APSUserIdList) => {
+        res.status(200).json(r);
+      })
+      .catch( (e) => {
+        next(e);
+      });
+    } catch(e) {
+      next(e);
+    }
+  }
+  
   public static byExternalReferenceId = (req: Request<ByExternalReferenceId_Params>, res: Response, next: NextFunction): void => {
     const funcName = 'byExternalReferenceId';
     const logName = `${ApsBusinessGroupsController.name}.${funcName}()`;
@@ -100,7 +120,7 @@ export class ApsBusinessGroupsController {
     try {
       APSBusinessGroupsService.create({
         apsOrganizationId: ControllerUtils.getParamValue<Create_Params>(logName, req.params, 'organization_id'),
-        apsBusinessGroup: req.body
+        apsBusinessGroupCreate: req.body
       })
       .then((r: APSBusinessGroupResponse) => {
         res.status(201).json(r);

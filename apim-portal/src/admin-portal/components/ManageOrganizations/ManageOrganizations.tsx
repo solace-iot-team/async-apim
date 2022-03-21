@@ -1,24 +1,33 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
+import { MenuItem } from "primereact/api";
 
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
+import { E_CALL_STATE_ACTIONS, E_CALL_STATE_ACTIONS_USERS, E_COMPONENT_STATE } from "./ManageOrganizationsCommon";
 import { ListOrganizations } from "./ListOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { EAction, EditNewOrganziation } from "./EditNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
-import { Globals } from "../../../utils/Globals";
+import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
 import { MonitorOrganization } from "./MonitorOrganization";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
+import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_ManageOrganizations_Scope {
   ALL_ORGS = "ALL_ORGS",
@@ -46,21 +55,12 @@ export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: IManageOrganizationsProps) => {
-  const componentName = 'ManageOrganizations';
+  const ComponentName = 'ManageOrganizations';
 
-  enum E_COMPONENT_STATE {
-    UNDEFINED = "UNDEFINED",
-    MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
-    MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
-    MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
-    MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-    MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
-    MONITOR_OBJECT = "MONITOR_OBJECT",
-  }
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
     currentState: E_COMPONENT_STATE
@@ -85,8 +85,10 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
+  const ToolbarManagedOrganizationUsersButtonLabel = 'Manage Users';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedObjectId, setManagedObjectId] = React.useState<CommonName>();
@@ -97,12 +99,55 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
+  const [showManageOrganizationUsersComponent, setShowManageOrganizationUsersComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   
+  const history = useHistory();
+
+  const navigateTo = (path: string): void => { history.push(path); }
+
+  
+  // * Api Calls *
+  const apiLogoutOrganizationAll = async(organizationId: string): Promise<TApiCallState> => {
+    const funcName = 'apiLogoutOrganizationAll';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGOUT_ORGANIZATION_ALL, `logout all users from this organization`);
+    try { 
+      await APLoginUsersDisplayService.apsLogoutOrganizationAll({
+        organizationId: organizationId
+      });
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doLogoutAllOrganizationUsers = async(organizationId: string) => {
+    if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
+      if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
+        // logout this user as well
+        APContextsDisplayService.clear_LoginContexts({
+          dispatchAuthContextAction: dispatchAuthContextAction,
+          dispatchUserContextAction: dispatchUserContextAction,
+          dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        });
+        navigateTo(EUICommonResourcePaths.Home);    
+      }
+    }
+    await apiLogoutOrganizationAll(organizationId);
+  }
+
   // * useEffect Hooks *
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     // console.log(`${logName}: mounting ...`);
     const _type = props.scope.type;
     switch(_type) {
@@ -126,19 +171,25 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    // const funcName = 'useEffect([componentState, managedObjectDisplayName])';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: componentState.currentState=${componentState.currentState}, managedObjectDisplayName=${managedObjectDisplayName}`);
+  // React.useEffect(() => {
+  //   // const funcName = 'useEffect([componentState, managedObjectDisplayName])';
+  //   // const logName = `${componentName}.${funcName}()`;
+  //   // console.log(`${logName}: componentState.currentState=${componentState.currentState}, managedObjectDisplayName=${managedObjectDisplayName}`);
 
-    if(!managedObjectDisplayName) return;
-    if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
-      if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-          componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-        ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
-      else props.onBreadCrumbLabelList([]);
-    }
-  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  //   if(!managedObjectDisplayName) return;
+  //   if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
+  //     // if( 
+  //     //   // componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
+  //     //     componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT ||
+  //     //     componentState.currentState === E_COMPONENT_STATE.MANAGE_ORGANIZATION_USERS
+  //     //   ) {
+  //     //     onSubComponentSetBreadCrumbItemList([{
+  //     //       label: managedObjectDisplayName,
+  //     //     }]);         
+  //     // } 
+  //     // else onSubComponentSetBreadCrumbItemList([]);
+  //   }
+  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -147,7 +198,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           case E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION:
           case E_CALL_STATE_ACTIONS.API_CREATE_ORGANIZATION:
           case E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION:
-              props.onSuccess(apiCallStatus);
+          case E_CALL_STATE_ACTIONS_USERS.API_UPDATE_USER_ROLES:
+            props.onSuccess(apiCallStatus);
             break;
           default:
         }
@@ -179,7 +231,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
@@ -193,7 +245,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
@@ -204,10 +256,31 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
+  // * Manage Organization Users *
+  const onManageOrganizationUsersFromToolbar = () => {
+    const funcName = 'onManageOrganizationUsersFromToolbar';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
+    onManageOrganizationUsers(managedObjectId, managedObjectDisplayName);
+  }
+  const onManageOrganizationUsers = (id: CommonName, displayName: CommonDisplayName): void => {
+    setApiCallStatus(null);
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
+    setNewComponentState(E_COMPONENT_STATE.MANAGE_ORGANIZATION_USERS);
+  }
+  const onSetManageUsersComponentState = (manageUsersComponentState: E_COMPONENT_STATE, organizationEntityId: TAPEntityId) => {
+    setManagedObjectId(organizationEntityId.id);
+    setManagedObjectDisplayName(organizationEntityId.displayName);
+    setNewComponentState(manageUsersComponentState);
+    setRefreshCounter(refreshCounter + 1);
+  }
+
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderLeftToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
@@ -222,6 +295,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
             <React.Fragment>
               <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
               <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+              <Button label={ToolbarManagedOrganizationUsersButtonLabel} onClick={onManageOrganizationUsersFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
               {/* <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
             </React.Fragment>
           );    
@@ -244,7 +318,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderRightToolbarContent';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {
       const _type = props.scope.type;
@@ -274,14 +348,30 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }
   
   // * prop callbacks *
+  const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+    setBreadCrumbItemList(itemList);
+    props.setBreadCrumbItemList(itemList);
+  }
+  const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+    const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
+    props.setBreadCrumbItemList(newItemList);
+  }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
+  
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
+    const funcName = 'onDeleteManagedObjectSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectId === undefined) throw new Error(`${logName}: managedObjectId === undefined`);
+
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
+
+    doLogoutAllOrganizationUsers(managedObjectId);
   }
+
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newId: CommonName, newDisplayName: CommonDisplayName) => {
     setApiCallStatus(apiCallState);
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
@@ -292,12 +382,23 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName: CommonDisplayName) => {
+    const funcName = 'onEditManagedObjectSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectId === undefined) throw new Error(`${logName}: managedObjectId === undefined`);
+    
     setApiCallStatus(apiCallState);
+
     if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setManagedObjectDisplayName(updatedDisplayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     }
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+
+    doLogoutAllOrganizationUsers(managedObjectId);
+
+  }
+  const onSubComponentSuccessKeepState = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -318,6 +419,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false);
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -326,6 +428,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false);
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -335,6 +438,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(true);
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -343,15 +447,17 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false)
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
-      componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -360,6 +466,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false);
       setShowNewComponent(false);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -368,6 +475,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false);
       setShowNewComponent(true);
       setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MONITOR_OBJECT) {
       setShowListComponent(false);
@@ -376,6 +484,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowDeleteComponent(false);
       setShowNewComponent(false);
       setShowMonitorComponent(true);
+      setShowManageOrganizationUsersComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGE_ORGANIZATION_USERS) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(true);
     }
   }
 
@@ -412,6 +530,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageUsersComponentState}
         />      
       }
       {showDeleteComponent && managedObjectId && managedObjectDisplayName &&
@@ -453,6 +573,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
         />      
+      }
+      {showManageOrganizationUsersComponent && managedObjectId && managedObjectDisplayName &&
+        <ManageSystemOrganizationUsers
+          organizationEntityId={{ id: managedObjectId, displayName: managedObjectDisplayName }}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          onSuccess={onSubComponentSuccessKeepState}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
+          // onNavigateHere={onSetManageUsersComponentState}
+        />
       }
     </div>
   );

@@ -30,7 +30,7 @@ export interface IViewApiProductProps {
 }
 
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
-  const componentName = 'ViewApiProduct';
+  const ComponentName = 'ViewApiProduct';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
@@ -38,11 +38,12 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductDisplayName}`);
     try { 
       const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsService.getAdminPortalApApiProductDisplay({
@@ -60,7 +61,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
   const apiGetApiSpec = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
     const funcName = 'apiGetApiSpec';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
       const apiProductApiSpec: TAPApiSpecDisplay = await APAdminPortalApiProductsService.getApiSpec({
@@ -96,6 +97,11 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    if(apiSpec === undefined) return;
+    setShowApiSpecRefreshCounter(showApiSpecRefreshCounter + 1);
+  }, [apiSpec]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   const doFetchApiSpec = async (apiId: string) => {
     props.onLoadingChange(true);
     await apiGetApiSpec(apiId, apiId);
@@ -103,13 +109,14 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   }
 
   React.useEffect(() => {
-    if(showApiId) doFetchApiSpec(showApiId);
+    if(showApiId === undefined) return;
+    doFetchApiSpec(showApiId);
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderShowApiButtons = () => {
     const funcName = 'renderShowApiButtons';
-    const logName = `${componentName}.${funcName}()`;
-    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
 
     const onShowApi = (event: any): void => {
       setShowApiId(event.currentTarget.dataset.id);
@@ -159,8 +166,8 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
     return (
       <React.Fragment>
         <div className="p-col-12">
@@ -210,6 +217,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
           <React.Fragment>
             <Divider/>        
             <APDisplayAsyncApiSpec 
+              key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
               schema={apiSpec.spec} 
               schemaId={showApiId} 
               onDownloadSuccess={props.onSuccess}

@@ -3,48 +3,56 @@ import React from 'react';
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from 'primereact/button';
 
-import { UserContext } from '../../components/UserContextProvider/UserContextProvider';
+import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { Loading } from '../../components/Loading/Loading';
 import { ApiCallStatusError } from '../../components/ApiCallStatusError/ApiCallStatusError';
 import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
-import APExternalSystemsService, { TAPExternalSystemDisplayList } from '../../services/APExternalSystemsService';
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
-import { APSBusinessGroupCreate, ApsBusinessGroupsService } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
-
-// Toolbar with button: Create Business Groups
-// - create internal hierarchy
-// - create external hierarchy for each external system
-
+import { APSBusinessGroupCreate, ApsBusinessGroupsService, APSExternalReference } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import APEntityIdsService from "../../utils/APEntityIdsService";
 
 export const BusinessGroupsTestPage: React.FC = () => {
   const ComponentName = 'BusinessGroupsTestPage';
 
   enum E_CALL_STATE_ACTIONS {
     API_GET_EXTERNAL_SYSTEMS_LIST = "API_GET_EXTERNAL_SYSTEMS_LIST",
-    API_GENERATE_BUSINESS_GROUPS = "API_GENERATE_BUSINESS_GROUPS"
+    API_GENERATE_INTERNAL_BUSINESS_GROUPS = "API_GENERATE_INTERNAL_BUSINESS_GROUPS",
+    API_GENERATE_EXTERNAL_BUSINESS_GROUPS = "API_GENERATE_EXTERNAL_BUSINESS_GROUPS"
   }
   
-  const NumParentBusinessGroups = 3;
-  const createInternalParentBusinessGroupId = (pbgI: number) => {
-    const IStr: string = String(pbgI).padStart(5,'0');
-    return `internal-parent-${IStr}`;
-  }
-  const createExternalParentBusinessGroupId = (extId: string, parentI: number) => {
-    const parentIStr: string = String(parentI).padStart(5,'0');
-    return `external-parent-${parentIStr}`;
-  }
-  const NumChildrenBusinessGroups = 3;
-  const createInternalChildBusinessGroupId = (parentI: number, childI: number) => {
-    const parentIStr: string = String(parentI).padStart(5,'0');
-    const childIStr: string = String(childI).padStart(5,'0');    
-    return `internal-child-${parentIStr}-${childIStr}`;
-  }
-  const createExternalChildBusinessGroupId = (externalSystemId: string, parentI: number, childI: number) => {
-    const parentIStr: string = String(parentI).padStart(5,'0');
-    const childIStr: string = String(childI).padStart(5,'0');    
-    return `external-child-${parentIStr}-${childIStr}`;
-  }
+  const NumDomains = 2;
+  const NumProductLines = 2;
+  const NumProducts = 2;
 
+  const createDomainId = (num: number) => {
+    const IStr: string = String(num).padStart(2,'0');
+    return `domain-${IStr}`;
+  }
+  const createExternalDomainId = (num: number) => {
+    const domainId = createDomainId(num);
+    return `ext-${domainId}`;
+  }
+  const createProductLineId = (domainNum: number, num: number) => {
+    const domainStr: string = String(domainNum).padStart(2,'0');
+    const productLineStr: string = String(num).padStart(2,'0');
+    return `product-line-${domainStr}_${productLineStr}`;
+  }
+  const createExternalProductLineId = (domainNum: number, num: number) => {
+    const productLineId = createProductLineId(domainNum, num);
+    return `ext-${productLineId}`;
+  }
+  const createProductId = (domainNum: number, productLineNum: number, num: number) => {
+    const domainStr: string = String(domainNum).padStart(2,'0');
+    const productLineStr: string = String(productLineNum).padStart(2,'0');
+    const productStr: string = String(num).padStart(2,'0');
+    return `product-${domainStr}_${productLineStr}_${productStr}`;
+  }
+  const createExternalProductId = (domainNum: number, productLineNum: number, num: number) => {
+    const productId = createProductId(domainNum, productLineNum, num);
+    return `ext-${productId}`;
+  }
+ 
 
   const [userContext] = React.useContext(UserContext);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -57,7 +65,7 @@ export const BusinessGroupsTestPage: React.FC = () => {
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEMS_LIST, 'retrieve list of external systems');
     try {
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay({
         organizationId: organizationId
       });
       setExternalSystemsDisplayList(list);
@@ -69,105 +77,129 @@ export const BusinessGroupsTestPage: React.FC = () => {
     return callState;
   }
 
-  const apiGenerateBusinessGroups = async(organizationId: string, externalSystemsDisplayList: TAPExternalSystemDisplayList): Promise<TApiCallState> => {
-    const funcName = 'apiGenerateBusinessGroups';
+  const apiCreateBusinessGroup = async({ organizationId, businessGroupId, businessGroupParentId, externalReference }:{
+    organizationId: string;
+    businessGroupId: string;
+    businessGroupParentId?: string;
+    externalReference?: APSExternalReference;
+  }) => {
+    const funcName = 'apiCreateBusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_BUSINESS_GROUPS, 'generate business groups');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_INTERNAL_BUSINESS_GROUPS, 'generate internal business groups');
     try {
-      // internal
-      for(let parentI=0; parentI < NumParentBusinessGroups; parentI++) {
-        const parentBusinessGroupId = createInternalParentBusinessGroupId(parentI);
-        const create: APSBusinessGroupCreate = {
-          businessGroupId: parentBusinessGroupId,
-          displayName: parentBusinessGroupId,
-          description: parentBusinessGroupId,
-        }
-        try {
-          await ApsBusinessGroupsService.getApsBusinessGroup({
-            organizationId: organizationId,
-            businessgroupId: parentBusinessGroupId
+      const create: APSBusinessGroupCreate = {
+        businessGroupParentId: businessGroupParentId ? businessGroupParentId : organizationId,
+        businessGroupId: businessGroupId,
+        displayName: businessGroupId,
+        description: businessGroupId,
+        externalReference: externalReference
+      };
+      try {
+        await ApsBusinessGroupsService.getApsBusinessGroup({
+          organizationId: organizationId,
+          businessgroupId: businessGroupId
+        });
+      } catch(e) {
+        await ApsBusinessGroupsService.createApsBusinessGroup({
+          organizationId: organizationId,
+          requestBody: create
+        });
+      }  
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+  const apiGenerateInternalBusinessGroups = async(organizationId: string): Promise<TApiCallState> => {
+    const funcName = 'apiGenerateInternalBusinessGroups';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_INTERNAL_BUSINESS_GROUPS, 'generate internal business groups');
+    try {
+      for(let domainI=0; domainI < NumDomains; domainI++) {
+        const domainBusinessGroupId = createDomainId(domainI);
+        await apiCreateBusinessGroup({
+          organizationId: organizationId, 
+          businessGroupId: domainBusinessGroupId
+        });
+        // add product lines 
+        for(let productLineI=0; productLineI < NumProductLines; productLineI++) {
+          const productLineBusinessGroupId = createProductLineId(domainI, productLineI);
+          await apiCreateBusinessGroup({
+            organizationId: organizationId, 
+            businessGroupId: productLineBusinessGroupId, 
+            businessGroupParentId: domainBusinessGroupId
           });
-        } catch(e) {
-          await ApsBusinessGroupsService.createApsBusinessGroup({
-            organizationId: organizationId,
-            requestBody: create
-          });
-        }  
-        // add children 
-        for(let childI=0; childI < NumChildrenBusinessGroups; childI++) {
-          const childBusinessGroupId = createInternalChildBusinessGroupId(parentI, childI);
-          const create: APSBusinessGroupCreate = {
-            businessGroupId: childBusinessGroupId,
-            displayName: childBusinessGroupId,
-            description: childBusinessGroupId,
-            businessGroupParentId: parentBusinessGroupId
+          // add products
+          for(let productI=0; productI < NumProducts; productI++) {
+            const productBusinessGroupId = createProductId(domainI, productLineI, productI);
+            await apiCreateBusinessGroup({
+              organizationId: organizationId, 
+              businessGroupId: productBusinessGroupId, 
+              businessGroupParentId: productLineBusinessGroupId
+            });
           }
-          try {
-            await ApsBusinessGroupsService.getApsBusinessGroup({
-              organizationId: organizationId,
-              businessgroupId: childBusinessGroupId
-            });
-          } catch(e) {
-            await ApsBusinessGroupsService.createApsBusinessGroup({
-              organizationId: organizationId,
-              requestBody: create
-            });
-          }  
         }
-      }
-      // external
+      }    
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const apiGenerateExternalBusinessGroups = async(organizationId: string, externalSystemsDisplayList: TAPExternalSystemDisplayList): Promise<TApiCallState> => {
+    const funcName = 'apiGenerateExternalBusinessGroups';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GENERATE_EXTERNAL_BUSINESS_GROUPS, 'generate external business groups');
+    try {
       for(const externalSystemDisplay of externalSystemsDisplayList) {
         const externalSystemId = externalSystemDisplay.apEntityId.id;
-        for(let parentI=0; parentI < NumParentBusinessGroups; parentI++) {
-          const parentBusinessGroupId = createExternalParentBusinessGroupId(externalSystemId, parentI);
-          const create: APSBusinessGroupCreate = {
-            businessGroupId: parentBusinessGroupId,
-            displayName: parentBusinessGroupId,
-            description: parentBusinessGroupId,
-            externalReference: {
-              externalId: parentBusinessGroupId,
-              displayName: parentBusinessGroupId,
+        for(let domainI=0; domainI < NumDomains; domainI++) {
+          const domainBusinessGroupId = createExternalDomainId(domainI);
+          const externalReference: APSExternalReference = {
+            externalId: domainBusinessGroupId,
+            displayName: domainBusinessGroupId,
+            externalSystemId: externalSystemId
+          };
+          await apiCreateBusinessGroup({
+            organizationId: organizationId, 
+            businessGroupId: domainBusinessGroupId, 
+            externalReference: externalReference
+          });
+          // add product lines 
+          for(let productLineI=0; productLineI < NumProductLines; productLineI++) {
+            const productLineBusinessGroupId = createExternalProductLineId(domainI, productLineI);
+            const externalReference: APSExternalReference = {
+              externalId: productLineBusinessGroupId,
+              displayName: productLineBusinessGroupId,
               externalSystemId: externalSystemId
+            };
+            await apiCreateBusinessGroup({
+              organizationId: organizationId, 
+              businessGroupId: productLineBusinessGroupId, 
+              businessGroupParentId: domainBusinessGroupId,
+              externalReference: externalReference
+            });
+            // add products
+            for(let productI=0; productI < NumProducts; productI++) {
+              const productBusinessGroupId = createExternalProductId(domainI, productLineI, productI);
+              const externalReference: APSExternalReference = {
+                externalId: productBusinessGroupId,
+                displayName: productBusinessGroupId,
+                externalSystemId: externalSystemId
+              };  
+              await apiCreateBusinessGroup({
+                organizationId: organizationId, 
+                businessGroupId: productBusinessGroupId, 
+                businessGroupParentId: productLineBusinessGroupId,
+                externalReference: externalReference
+              });
             }
           }
-          try {
-            await ApsBusinessGroupsService.getApsBusinessGroup({
-              organizationId: organizationId,
-              businessgroupId: parentBusinessGroupId
-            });
-          } catch(e) {
-            await ApsBusinessGroupsService.createApsBusinessGroup({
-              organizationId: organizationId,
-              requestBody: create
-            });
-          }  
-          // add children 
-          for(let childI=0; childI < NumChildrenBusinessGroups; childI++) {
-            const childBusinessGroupId = createExternalChildBusinessGroupId(externalSystemId, parentI, childI);
-            const create: APSBusinessGroupCreate = {
-              businessGroupId: childBusinessGroupId,
-              displayName: childBusinessGroupId,
-              description: childBusinessGroupId,
-              businessGroupParentId: parentBusinessGroupId,
-              externalReference: {
-                externalId: childBusinessGroupId,
-                displayName: childBusinessGroupId,
-                externalSystemId: externalSystemId  
-              }
-            }
-            try {
-              await ApsBusinessGroupsService.getApsBusinessGroup({
-                organizationId: organizationId,
-                businessgroupId: childBusinessGroupId
-              });
-            } catch(e) {
-              await ApsBusinessGroupsService.createApsBusinessGroup({
-                organizationId: organizationId,
-                requestBody: create
-              });
-            }  
-          }
-        }  
+        }      
       }
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -195,23 +227,39 @@ export const BusinessGroupsTestPage: React.FC = () => {
     }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const doGenerateBusinessGroups = async() => {
+  const doGenerateInternalBusinessGroups = async() => {
     setIsLoading(true);
-    await apiGenerateBusinessGroups(organizationId, externalSystemsDisplayList);
+    await apiGenerateInternalBusinessGroups(organizationId);
     setIsLoading(false);
   }
 
-  const onGenerateBusinessGroups = () => {
-    doGenerateBusinessGroups();
+  const onGenerateInternalBusinessGroups = () => {
+    doGenerateInternalBusinessGroups();
+  }
+
+  const doGenerateExternalBusinessGroups = async() => {
+    setIsLoading(true);
+    await apiGenerateExternalBusinessGroups(organizationId, externalSystemsDisplayList);
+    setIsLoading(false);
+  }
+
+  const onGenerateExternalBusinessGroups = () => {
+    doGenerateExternalBusinessGroups();
   }
 
   const renderLeftToolbarContent = (): JSX.Element => {
     return (
       <React.Fragment>
         <Button 
-          label="Generate Business Groups"
+          label="Generate Internal Business Groups"
           icon="pi pi-plus" 
-          onClick={onGenerateBusinessGroups} 
+          onClick={onGenerateInternalBusinessGroups} 
+          className="p-button-text p-button-plain p-button-outlined"
+        />
+        <Button 
+          label="Generate Extternal Business Groups"
+          icon="pi pi-plus" 
+          onClick={onGenerateExternalBusinessGroups} 
           className="p-button-text p-button-plain p-button-outlined"
         />
       </React.Fragment>
@@ -219,6 +267,19 @@ export const BusinessGroupsTestPage: React.FC = () => {
   }
   const renderToolbar = (): JSX.Element => {
     return (<Toolbar className="p-mb-4" left={renderLeftToolbarContent()} />);
+  }
+
+  const renderExternalSystems = (): JSX.Element => {
+    if(externalSystemsDisplayList.length === 0) {
+      return (
+        <p>External Systems: None. <b>Setup at least 1 External System first.</b></p>
+      );
+    } else {
+      const s: string =  APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(externalSystemsDisplayList).join(', ');
+      return (
+        <p>External Systems: {s}</p>
+      );
+    }
   }
 
   return (
@@ -229,6 +290,8 @@ export const BusinessGroupsTestPage: React.FC = () => {
       <Loading show={isLoading} />      
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
+      {organizationId && renderExternalSystems()}
 
       {organizationId && renderToolbar()}
       

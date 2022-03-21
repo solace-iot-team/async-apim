@@ -9,12 +9,13 @@ import {
   ApiError, 
   APSStatus,
   ApsMonitorService,
-  APSUser,
   ApsUsersService,
   APSError,
   APSErrorIds,
   EAPSSystemAuthRole,
   EAPSOrganizationAuthRole,
+  APSUserCreate,
+  APSUserResponse,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import ServerMonitor from '../../server/common/ServerMonitor';
 import { MongoDatabaseAccess } from '../../server/common/MongoDatabaseAccess';
@@ -27,7 +28,7 @@ import { TestEnv } from '../setup.spec';
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
-const apsUserTemplate: APSUser = {
+const apsUserCreateTemplate: APSUserCreate = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
@@ -189,10 +190,10 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should fail creating a user`, async () => {
-      let created: APSUser;
+      let created: APSUserResponse;
       try {
         created = await ApsUsersService.createApsUser({
-          requestBody: apsUserTemplate
+          requestBody: apsUserCreateTemplate
         });
         expect(false, `${TestLogger.createTestFailMessage('test failed')}`).to.be.true;
       } catch (e) {

@@ -4,7 +4,7 @@ import request from 'supertest';
 import Server from '../../server/index';
 import path from 'path';
 import _ from 'lodash';
-import { TestContext, testHelperSleep, TestLogger } from '../lib/test.helpers';
+import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
   ApsAdministrationService, 
@@ -15,8 +15,10 @@ import {
   APSOrganizationCreate, 
   APSOrganizationList, 
   APSOrganizationRoles, 
-  APSUser, 
+  APSUserCreate, 
   APSUserId, 
+  APSUserResponse, 
+  APSUserResponseList, 
   ApsUsersService, 
   EAPSOrganizationAuthRole, 
   ListAPSOrganizationResponse,
@@ -31,7 +33,7 @@ const NumberOfOrganizations: number = 5;
 const OrganizationIdTemplate: APSId = 'test_user_organization';
 const OrganizationDisplayNamePrefix: string = 'displayName for ';
 const NumberOfUsersPerOrganization: number = 10;
-const apsUserTemplate: APSUser = {
+const apsUserCreateTemplate: APSUserCreate = {
   isActivated: true,
   userId: 'userId',
   password: 'password',
@@ -69,7 +71,7 @@ describe(`${scriptName}`, () => {
     after(async() => {
       TestContext.newItId();
       // delete all users
-      let apsUserList: Array<APSUser> = [];
+      let apsUserList: APSUserResponseList = [];
       try {
         const pageSize = 100;
         let pageNumber = 1;
@@ -113,10 +115,10 @@ describe(`${scriptName}`, () => {
 // ****************************************************************************************************************
 
     it(`${scriptName}: should delete all users`, async () => {
-      let finalApsUserList: Array<APSUser>;
+      let finalApsUserList: APSUserResponseList;
       let finalMeta: APSListResponseMeta;
       try {
-        let apsUserList: Array<APSUser> = [];
+        let apsUserList: APSUserResponseList = [];
         const pageSize = 100;
         let pageNumber = 1;
         let hasNextPage = true;
@@ -197,14 +199,14 @@ describe(`${scriptName}`, () => {
           const orgId: APSId = createOrganizationId(orgI);
           for(let userI=0; userI < NumberOfUsersPerOrganization; userI++) {
             const userId = createUserId(orgId, userI);
-            const apsUser: APSUser = {
-              ...apsUserTemplate,
+            const apsUserCreate: APSUserCreate = {
+              ...apsUserCreateTemplate,
               isActivated: true,
               userId: userId,
               profile: {
                 email: userId,
-                first: apsUserTemplate.profile.first,
-                last: apsUserTemplate.profile.last
+                first: apsUserCreateTemplate.profile.first,
+                last: apsUserCreateTemplate.profile.last
               },
               memberOfOrganizations: [
                 {
@@ -216,8 +218,8 @@ describe(`${scriptName}`, () => {
                 }
               ]
             }
-            const apsUserResponse: APSUser = await ApsUsersService.createApsUser({
-              requestBody: apsUser
+            const apsUserResponse: APSUserResponse = await ApsUsersService.createApsUser({
+              requestBody: apsUserCreate
             });
           }
         }

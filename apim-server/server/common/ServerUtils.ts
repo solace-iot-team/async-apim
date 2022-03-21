@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+export type APSOptional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
 export class ServerUtils {
 
   public static sleep = async(millis = 500) => {

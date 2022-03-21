@@ -6,7 +6,7 @@ import { Dialog } from "primereact/dialog";
 import { Divider } from "primereact/divider";
 
 import { 
-  APSUser 
+  APSUserResponse 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from "../../utils/Globals";
 
@@ -16,7 +16,7 @@ export interface IAPDisplayOwnerProps {
   label: string;
   ownerId: string;
   ownerType: 'apsUser' | 'apsTeam';
-  apsUser?: APSUser;
+  apsUser?: APSUserResponse;
   className?: string;
   buttonStyle?: React.CSSProperties;
 }
@@ -71,7 +71,7 @@ export const APDisplayOwner: React.FC<IAPDisplayOwnerProps> = (props: IAPDisplay
     return '';
   }
 
-  const renderApsUserDetails = (apsUser: APSUser): JSX.Element => {
+  const renderApsUserDetails = (apsUser: APSUserResponse): JSX.Element => {
     return(
       <Dialog 
         header={`User Id: ${getOwnerDisplayStr()}`} 

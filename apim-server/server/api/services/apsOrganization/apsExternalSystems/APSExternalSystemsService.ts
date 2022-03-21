@@ -73,7 +73,7 @@ export class APSExternalSystemsService {
       for(const element of list) {
         await this.persistenceService.delete({
           organizationId: apsOrganizationId,
-          collectionDocumentId: element.externalSystemId
+          documentId: element.externalSystemId
         });
       }
   
@@ -171,7 +171,7 @@ export class APSExternalSystemsService {
 
     const response: APSExternalSystem = await this.persistenceService.byId({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsExternalSystemId 
+      documentId: apsExternalSystemId 
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSExternalSystem', details: response }));
@@ -197,6 +197,7 @@ export class APSExternalSystemsService {
 
     const created: APSExternalSystem = await this.persistenceService.create({
       organizationId: apsOrganizationId,
+      // collectionDocumentId: this.generateDocumentId(apsOrganizationId, apsExternalSystemCreate.externalSystemId),
       collectionDocumentId: apsExternalSystemCreate.externalSystemId,
       collectionDocument: apsExternalSystemCreate,
       collectionSchemaVersion: APSExternalSystemsService.collectionSchemaVersion
@@ -277,7 +278,7 @@ export class APSExternalSystemsService {
 
     const deleted: APSExternalSystem = (await this.persistenceService.delete({
       organizationId: apsOrganizationId,
-      collectionDocumentId: apsExternalSystemId
+      documentId: apsExternalSystemId
     }) as unknown) as APSExternalSystem;
 
     // emit deleted event

@@ -36,7 +36,7 @@ export APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION="true"
 # export APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION="false"
 export APIM_SERVER_LOGGER_APP_ID="test-apim-server"
 export APIM_SERVER_LOGGER_LOG_LEVEL="trace"
-export APIM_SERVER_ROOT_USER="root.admin@aps.com"
+export APIM_SERVER_ROOT_USER="root.admin@async-apim.dev"
 export APIM_SERVER_ROOT_USER_PWD="admin123!"
 
 # ENV vars for tests

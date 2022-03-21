@@ -5,7 +5,7 @@ import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
@@ -96,14 +96,14 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEnvironments); }
           },
           {
-            label: 'Business Groups',
-            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
-          },
-          {
             label: 'Users',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationUsers),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationUsers); }
+          },
+          {
+            label: 'Business Groups',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
           },
           {
             label: 'Settings',
@@ -137,11 +137,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemUsers),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
-          // {
-          //   label: 'Teams',
-          //   disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemTeams),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemTeams); }
-          // },
           {
             label: 'Organizations',
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),

@@ -1,6 +1,7 @@
 import { 
   EAPSSystemAuthRole,
   EAPSOrganizationAuthRole,
+  EAPSBusinessGroupAuthRole,
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EUIDeveloperPortalResourcePaths, EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "./Globals"
 
@@ -9,12 +10,13 @@ export const CAPSAuthRoleNone = '';
 export enum EAPSDefaultAuthRole {
   DEFAULT = 'default',
 }
-export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EAPSOrganizationAuthRole;
+export type EAPSCombinedAuthRole = EAPSDefaultAuthRole | EAPSSystemAuthRole | EAPSOrganizationAuthRole | EAPSBusinessGroupAuthRole;
 
 export enum  EAPRbacRoleScope {
   NEVER = "NEVER",
   SYSTEM = "SYSTEM",
-  ORG = "ORG",
+  ORGANIZATION = "ORGANIZATION",
+  BUSINESS_GROUP = "BUSINESS_GROUP",
 }
 export type TAPRbacRole = {
   id: EAPSCombinedAuthRole;
@@ -55,7 +57,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSSystemAuthRole.LOGIN_AS,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
     displayName: 'Login As',
     description: 'Login as any User.',
     uiResourcePaths: [
@@ -72,16 +74,16 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageSystemUsers,
-      EUIAdminPortalResourcePaths.ManageSystemTeams,
       EUIAdminPortalResourcePaths.ManageSystemOrganizations,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
+      EUIAdminPortalResourcePaths.LoginAs,
     ]
   },
   {
     id: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.ORGANIZATION],
     displayName: 'Organization Admin',
     description: 'Administrate the Organization.',
     uiResourcePaths: [
@@ -99,7 +101,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_TEAM,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
@@ -113,7 +115,7 @@ const rbacRoleList: TAPRbacRoleList = [
   },
   {
     id: EAPSOrganizationAuthRole.API_CONSUMER,
-    scopeList: [EAPRbacRoleScope.ORG],
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Consumer',
     description: 'Consume APIs, manage individual and team Apps.',
     uiResourcePaths: [
@@ -131,7 +133,7 @@ const rbacRoleList: TAPRbacRoleList = [
 
 export class APRbac {
 
-  private static checkRoleDefinitions = () => {
+  public static checkRoleDefinitions = () => {
     const funcName: string = `checkRoleDefinitions`;
     const logName: string = `${APRbac.name}.${funcName}()`;
 
@@ -155,7 +157,6 @@ export class APRbac {
   }
 
   public static getAPRbacRoleList = (): TAPRbacRoleList => {
-    APRbac.checkRoleDefinitions();
     return rbacRoleList;
   }
 

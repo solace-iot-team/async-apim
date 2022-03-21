@@ -18,6 +18,8 @@ const patch_update = `/:${ControllerUtils.getParamName<Update_Params>('organizat
 const delete_delete = `/:${ControllerUtils.getParamName<Delete_Params>('organization_id')}/:${ControllerUtils.getParamName<Delete_Params>('businessgroup_id')}`;
 const get_allByExternalSystemId = `/:${ControllerUtils.getParamName<AllByExternalSystemId_Params>('organization_id')}/externalSystem/:${ControllerUtils.getParamName<AllByExternalSystemId_Params>('external_system_id')}`;
 const get_byExternalReferenceId = `/:${ControllerUtils.getParamName<ByExternalReferenceId_Params>('organization_id')}/externalReference/:${ControllerUtils.getParamName<ByExternalReferenceId_Params>('external_reference_id')}`;
+const get_allMembers = `/:${ControllerUtils.getParamName<ById_Params>('organization_id')}/:${ControllerUtils.getParamName<ById_Params>('businessgroup_id')}/members`;
+
 
 export default express
   .Router()
@@ -28,3 +30,4 @@ export default express
   .delete(delete_delete, ApsBusinessGroupsController.delete)
   .get(get_allByExternalSystemId, ApsBusinessGroupsController.allByExternalSystemId)
   .get(get_byExternalReferenceId, ApsBusinessGroupsController.byExternalReferenceId)
+  .get(get_allMembers, ApsBusinessGroupsController.allMembers)

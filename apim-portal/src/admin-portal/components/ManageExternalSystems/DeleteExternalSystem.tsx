@@ -4,11 +4,11 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import APExternalSystemsService from "../../../services/APExternalSystemsService";
+import APExternalSystemsDisplayService from "../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -37,12 +37,12 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_EXTERNAL_SYSTEM, `delete external system: ${props.externalSystemDisplayName}`);
     try { 
-      await APExternalSystemsService.deleteApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.deleteApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
       });
-    } catch(e) {
-      APClientConnectorOpenApi.logError(logName, e);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);

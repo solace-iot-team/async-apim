@@ -7,12 +7,13 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APBusinessGroupsService, { TAPBusinessGroupDisplay } from "../../../services/APBusinessGroupsService";
-import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../displayServices/APBusinessGroupsDisplayService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export interface IViewBusinessGroupProps {
   organizationId: string,
@@ -36,13 +37,13 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${props.businessGroupEntityId.displayName}`);
     try { 
-      const object: TAPBusinessGroupDisplay = await APBusinessGroupsService.getApBusinessGroupDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: props.businessGroupEntityId.id
       });
       setManagedObject(object);
-    } catch(e) {
-      APClientConnectorOpenApi.logError(logName, e);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -80,17 +81,27 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
   }
   const renderSourceDisplayName = (mo: TManagedObject): JSX.Element => {
     return (
-      <div><b>Source</b>: {APBusinessGroupsService.getSourceDisplayString(mo)}</div>
+      <div><b>Source</b>: {APBusinessGroupsDisplayService.getSourceDisplayString(mo)}</div>
     );
   }
-  const renderReferences = (mo: TManagedObject): JSX.Element => {
-    if(mo.apsBusinessGroupResponse.businessGroupChildIds.length > 0) {
+  const renderChildren = (apChildrenEntityIdList: TAPEntityIdList): JSX.Element => {
+    if(apChildrenEntityIdList.length > 0) {
       return(
-        <div><b>Children</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(mo.apBusinessGroupChildrenEntityIdList)}</div>
+        <div><b>Children</b>: {APEntityIdsService.getSortedDisplayNameList_As_String(apChildrenEntityIdList)}</div>
       );
     }
     return (
       <div><b>Children</b>: None.</div>    
+    );
+  }
+  const renderMembers = (apUserEntityIdList: TAPEntityIdList): JSX.Element => {
+    return (
+      <React.Fragment>
+        <div><b>Members:</b></div>
+        <div className="p-ml-2">
+          {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_DisplayNameList(apUserEntityIdList))}
+        </div>
+      </React.Fragment>
     );
   }
 
@@ -110,8 +121,10 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
               <div className="p-ml-2">{managedObject.apsBusinessGroupResponse.description}</div>
 
               <Divider />
+              {renderChildren(managedObject.apBusinessGroupChildrenEntityIdList)}
 
-              {renderReferences(managedObject)}
+              <Divider />
+              {renderMembers(managedObject.apMemberUserEntityIdList)}
 
             </div>
             <div className="view-detail-right">

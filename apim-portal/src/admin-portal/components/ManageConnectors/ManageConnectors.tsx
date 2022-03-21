@@ -5,12 +5,13 @@ import { useHistory } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { EUICommonResourcePaths } from "../../../utils/Globals";
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 import { ListConnectors } from "./ListConnectors";
@@ -22,6 +23,9 @@ import { EAction, EditNewConnector } from "./EditNewConnector";
 import { 
   APSId 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
+import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageConnectors.css";
@@ -33,7 +37,7 @@ export interface IManageConnectorsProps {
 }
 
 export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManageConnectorsProps) => {
-  const componentName = 'ManageConnectors';
+  const ComponentName = 'ManageConnectors';
 
   enum E_COMPONENT_STATE {
     UNDEFINED = "UNDEFINED",
@@ -94,15 +98,38 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+
   const history = useHistory();
 
   const navigateTo = (path: string): void => { history.push(path); }
   
-  const doLogout = () => {
-    dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
-    dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
-    navigateTo(EUIAdminPortalResourcePaths.Home);
+  // * Api Calls *
+  const apiLogoutAll = async(): Promise<TApiCallState> => {
+    const funcName = 'apiLogoutAll';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout all users`);
+    try { 
+      await APLoginUsersDisplayService.apsLogoutAll();
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
   }
+
+  const doLogoutAllUsers = async() => {
+    APContextsDisplayService.clear_LoginContexts({
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+    });
+    navigateTo(EUICommonResourcePaths.Home);
+    await apiLogoutAll();
+  }
+
   // * Config Context *
   const setConfigContextActiveConnector = async() => {
     dispatchConfigContextAction({ type: 'SET_CONFIG_CONNECTOR', connector: await ConfigHelper.apiGetActiveConnectorInstance()});
@@ -156,7 +183,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onEditManagedObject(managedObjectId, managedObjectDisplayName);
@@ -176,7 +203,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   }   
   const onSetConnectorActiveFromToolbar = () => {
     const funcName = 'onSetConnectorActiveFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onSetConnectorActive(managedObjectId, managedObjectDisplayName);
@@ -190,7 +217,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   }   
   const onTestConnectorFromToolbar = () => {
     const funcName = 'onTestConnectorFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onTestConnector(managedObjectId, managedObjectDisplayName);
@@ -198,7 +225,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined for componentState=${componentState}`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined for componentState=${componentState}`);
     onDeleteManagedObject(managedObjectId, managedObjectDisplayName);
@@ -261,8 +288,15 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
     else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onSetConnectorActiveSuccess = (apiCallState: TApiCallState) => {
-    doLogout();
     setConfigContextActiveConnector();
+    doLogoutAllUsers();
+  }
+  const onEditConnectorSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    if(connectorIsActive) {
+      doLogoutAllUsers();
+    }
+    setPreviousComponentState();
   }
   const onSubComponentSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -437,7 +471,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
           action={EAction.EDIT}
           connectorId={managedObjectId}
           connectorDisplayName={managedObjectDisplayName}
-          onEditSuccess={onSubComponentSuccess} 
+          onEditSuccess={onEditConnectorSuccess} 
           onNewSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}

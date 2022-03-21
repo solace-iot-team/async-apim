@@ -24,7 +24,7 @@
 .manage-user-account .view-user-info {
   display: flex;
   align-items: left;
-  padding: 1rem;
+  padding-top: 1rem;
   width: 100%;
   flex-direction: column;
 }

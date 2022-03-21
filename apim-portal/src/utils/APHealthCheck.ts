@@ -17,7 +17,7 @@ import { APClientConnectorRaw, APClientRawError, APClientServerRaw } from './APC
 import { APClientConnectorOpenApi, APConnectorClientOpenApiInfo } from './APClientConnectorOpenApi';
 import { EAppState, Globals, TAPConfigIssueList, TAPPortalAppAbout } from './Globals';
 import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
-import { TUserContext } from '../components/UserContextProvider/UserContextProvider';
+import { TUserContext } from '../components/APContextProviders/APUserContextProvider';
 import { APConnectorApiHelper, TAPConnectorAbout } from './APConnectorApiCalls';
 import { APLogger } from './APLogger';
 import { ApiCallState, TApiCallState } from './ApiCallState';
@@ -222,6 +222,10 @@ export class APPortalAppHealthCheck {
       const checkConfigurationLogEntry: TAPPortalAppHealthCheckLogEntry_CheckConfiguration = APPortalAppHealthCheck.checkConfiguration(configContext, apiGetAboutLogEntry.apPortalAppAbout);
       healthCheckResult.healthCheckLog.push(checkConfigurationLogEntry);
       
+    } catch (e) {
+      APLogger.error(APLogger.createLogEntry(logName, e));
+      throw e;
+    } finally {
       // set overall summary
       let _summarySuccess: EAPHealthCheckSuccess = EAPHealthCheckSuccess.PASS;
       healthCheckResult.healthCheckLog.forEach( (logEntry: TAPPortalAppHealthCheckLogEntry) => {
@@ -229,11 +233,6 @@ export class APPortalAppHealthCheck {
         else if(_summarySuccess !== EAPHealthCheckSuccess.FAIL && logEntry.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES ) _summarySuccess = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
       });
       healthCheckResult.summary.success = _summarySuccess;
-
-    } catch (e) {
-      APLogger.error(APLogger.createLogEntry(logName, e));
-      throw e;
-    } finally {
       return healthCheckResult;
     }
   }  
@@ -441,6 +440,10 @@ export class APServerHealthCheck {
       const checkConfigurationLogEntry: TAPServerHealthCheckLogEntry_CheckConfiguration = APServerHealthCheck.checkConfiguration(configContext, apiGetAboutLogEntry.apsAbout);
       healthCheckResult.healthCheckLog.push(checkConfigurationLogEntry);
 
+    } catch (e) {
+      APLogger.error(APLogger.createLogEntry(logName, e));
+      throw e;
+    } finally {
       // set overall summary
       let _summarySuccess: EAPHealthCheckSuccess = EAPHealthCheckSuccess.PASS;
       healthCheckResult.healthCheckLog.forEach( (logEntry: TAPServerHealthCheckLogEntry) => {
@@ -448,11 +451,6 @@ export class APServerHealthCheck {
         else if(_summarySuccess !== EAPHealthCheckSuccess.FAIL && logEntry.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES ) _summarySuccess = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
       });
       healthCheckResult.summary.success = _summarySuccess;
-
-    } catch (e) {
-      APLogger.error(APLogger.createLogEntry(logName, e));
-      throw e;
-    } finally {
       return healthCheckResult;
     }
   }  
@@ -554,6 +552,7 @@ export class APConnectorHealthCheck {
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
+      // alert(`${logName}: api error, callState=${JSON.stringify(callState, null, 2)}`);
     }
     const logEntry: TAPConnectorHealthCheckLogEntry_HealthCheckEndpoint = {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_HEALTH_CHECK_ENDPOINT,
@@ -704,6 +703,11 @@ export class APConnectorHealthCheck {
       // healthcheck endpoint
       const apiGetHealthCheckLogEntry = await APConnectorHealthCheck.apiGetHealthCheckEndpoint();
       healthCheckResult.healthCheckLog.push(apiGetHealthCheckLogEntry);
+      if(apiGetHealthCheckLogEntry.success !== EAPHealthCheckSuccess.PASS) {
+        healthCheckResult.summary.success = apiGetHealthCheckLogEntry.success;
+        // abort check
+        throw new APError(logName, 'health endpoint check failed');
+      }
 
       // configuration check
       if(!apiGetAboutLogEntry.about) throw new APError(logName, 'apiGetAboutLogEntry.about is undefined');
@@ -718,6 +722,10 @@ export class APConnectorHealthCheck {
       const checkOrgAdminLogEntry: TAPConnectorHealthCheckLogEntry_CheckOrgAdminCreds = await APConnectorHealthCheck.checkOrgAdminCredentials();
       healthCheckResult.healthCheckLog.push(checkOrgAdminLogEntry);
 
+    } catch (e) {
+      APLogger.error(APLogger.createLogEntry(logName, e));
+      throw e;
+    } finally {
       // set overall summary
       let _summarySuccess: EAPHealthCheckSuccess = EAPHealthCheckSuccess.PASS;
       healthCheckResult.healthCheckLog.forEach( (logEntry: TAPConnectorHealthCheckLogEntry) => {
@@ -725,11 +733,6 @@ export class APConnectorHealthCheck {
         else if(_summarySuccess !== EAPHealthCheckSuccess.FAIL && logEntry.success === EAPHealthCheckSuccess.PASS_WITH_ISSUES ) _summarySuccess = EAPHealthCheckSuccess.PASS_WITH_ISSUES;
       });
       healthCheckResult.summary.success = _summarySuccess;
-
-    } catch (e) {
-      APLogger.error(APLogger.createLogEntry(logName, e));
-      throw e;
-    } finally {
       await APClientConnectorOpenApi.tmpUninitialize();
       await APClientConnectorRaw.unInitialize();
       return healthCheckResult;

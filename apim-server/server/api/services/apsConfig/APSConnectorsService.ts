@@ -170,7 +170,7 @@ export class APSConnectorsService {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnectorId', details: apsConnectorId}));
 
     const apsConnector: APSConnector = await this.persistenceService.byId({
-      collectionDocumentId: apsConnectorId
+      documentId: apsConnectorId
     }) as APSConnector;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnector', details: apsConnector}));
@@ -223,7 +223,7 @@ export class APSConnectorsService {
     const funcName = 'replace';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     const current: APSConnector = await this.persistenceService.byId({
-      collectionDocumentId: apsConnectorId
+      documentId: apsConnectorId
     }) as APSConnector;
     const replace: APSConnector = {
       ...apsConnectorReplaceRequest,
@@ -245,7 +245,7 @@ export class APSConnectorsService {
     const funcName = 'setActive';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     const newActive: APSConnector = await this.persistenceService.byId({
-      collectionDocumentId: apsConnectorId
+      documentId: apsConnectorId
     }) as APSConnector;
     let oldActive: APSConnector | undefined = undefined;
     try {
@@ -281,7 +281,7 @@ export class APSConnectorsService {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnectorId', details: apsConnectorId }));
 
     const deletedConnector: APSConnector = (await this.persistenceService.delete({
-      collectionDocumentId: apsConnectorId
+      documentId: apsConnectorId
     }) as unknown) as APSConnector;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedConnector', details: deletedConnector }));

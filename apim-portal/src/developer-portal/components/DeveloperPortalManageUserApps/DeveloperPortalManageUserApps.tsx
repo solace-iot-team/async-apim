@@ -6,36 +6,31 @@ import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
 import {
-  ApiError,
   AppListItem,
   CommonDisplayName,
   CommonName,
-  Developer, 
-  DevelopersService 
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { 
-  APSUser, 
   APSUserId 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { UserContext } from "../../../components/UserContextProvider/UserContextProvider";
+import { TApiCallState } from "../../../utils/ApiCallState";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./DeveloperPortalManageUserAppsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 import { DeveloperPortalNewEditUserApp, EAction } from "./DeveloperPortalNewEditUserApp";
 import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 import { TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { DeveloperPortalManageUserAppWebhooks } from "./DeveloperPortalManageUserAppWebhooks/DeveloperPortalManageUserAppWebhooks";
 import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationName: TAPOrganizationId;
@@ -71,14 +66,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     });
   }
   
-  const transformAPSUserToApiDeveloper = (apsUser: APSUser): Developer => {
-    return {
-      email: apsUser.profile.email,
-      firstName: apsUser.profile.first,
-      lastName: apsUser.profile.last,
-      userName: apsUser.userId
-    }
-  }
   const transformApiProductCompositeIdToSelectItemIdList = (apiProductCompositeId: TAPDeveloperPortalApiProductCompositeId): TApiEntitySelectItemList => {
     return [
       {
@@ -87,7 +74,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       }
     ];
   }
-
+  
   const ToolbarNewManagedObjectButtonLabel = 'New App';
   const ToolbarEditManagedObjectButtonLabel = 'Edit App';
   const ToolbarManageWebhooksManagedObjectButtonLabel = 'Manage Webhooks';
@@ -97,7 +84,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  const [isDeveloperCreated, setIsDeveloperCreated] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -114,66 +100,14 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [presetApiProductSelectItemList, setPresetApiProductSelectItemList] = React.useState<TApiEntitySelectItemList>([]);
 
-  // * Api Calls *  
-  const apiCreateDeveloper = async(): Promise<TApiCallState> => {
-    const funcName = 'apiCreateDeveloper';
-    const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: starting...`);
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_DEVELOPER, `create developer: ${props.userId}`);
-    let existApiDeveloper: boolean = true;
-    let anyError: any = undefined;
-    try {
-      await DevelopersService.getDeveloper({
-        organizationName: props.organizationName, 
-        developerUsername: props.userId
-      });
-    } catch(e: any) {
-      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
-        const apiError: ApiError = e;
-        if(apiError.status === 404) existApiDeveloper = false;
-        else anyError = e;
-      } else anyError = e;
-    }
-    if(!anyError && !existApiDeveloper) {
-      try { 
-        await DevelopersService.createDeveloper({
-          organizationName: props.organizationName, 
-          requestBody: transformAPSUserToApiDeveloper(userContext.user)
-        });
-      } catch(e: any) {
-        anyError = e;
-      }  
-    }
-    if(anyError) {
-      APClientConnectorOpenApi.logError(logName, anyError);
-      callState = ApiCallState.addErrorToApiCallState(anyError, callState);
-    }    
-    setApiCallStatus(callState);
-    return callState;
-  }
-
-  const createDeveloper = async() => {
-    setIsLoading(true);
-    const apiCallState: TApiCallState = await apiCreateDeveloper();
-    setIsDeveloperCreated(apiCallState.success);
-    setIsLoading(false);
-  }
-
-  // * useEffect Hooks *
   React.useEffect(() => {    
-    createDeveloper();
+    if(props.createAppWithApiProductCompositeId) {
+      setPresetApiProductSelectItemList(transformApiProductCompositeIdToSelectItemIdList(props.createAppWithApiProductCompositeId));
+      setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+    } else {
+      setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    }    
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if(isDeveloperCreated) {
-      if(props.createAppWithApiProductCompositeId) {
-        setPresetApiProductSelectItemList(transformApiProductCompositeIdToSelectItemIdList(props.createAppWithApiProductCompositeId));
-        setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
-      } else {
-        setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-      }
-    }
-  }, [isDeveloperCreated]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);

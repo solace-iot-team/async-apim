@@ -15,6 +15,10 @@ export type TAPApiDisplayList = Array<TAPApiDisplay>;
 export class APApisService {
   private readonly BaseComponentName = "APApisService";
 
+  public nameOf_Entity(name: keyof TAPEntityId) {
+    return `apEntityId.${name}`;
+  }
+
   private create_ApApiDisplay_From_ApiEntities = (connectorApiInfo: APIInfo, apApiProductEntityIdList: TAPEntityIdList): TAPApiDisplay => {
     const _base: TAPApiDisplay = {
       apEntityId: {
@@ -102,17 +106,6 @@ export class APApisService {
       }
     }
     return this.sort_ApApiParameterList(apApiParameterList);
-  }
-
-  public create_ApApiDisplayList_FilteredBy_EntityIdList(apApiDisplayList: TAPApiDisplayList, filterByEntityIdList: TAPEntityIdList): TAPApiDisplayList {
-    if(apApiDisplayList.length === 0) return [];
-    if(filterByEntityIdList.length === 0) return JSON.parse(JSON.stringify(apApiDisplayList));
-    return apApiDisplayList.filter( (x) => {
-      const idx = filterByEntityIdList.findIndex( (y) => {
-        return x.apEntityId.id === y.id;
-      });
-      return (idx > -1);
-    });
   }
 
   public async listApApiDisplayForApiIdList({organizationId, apiIdList}: {

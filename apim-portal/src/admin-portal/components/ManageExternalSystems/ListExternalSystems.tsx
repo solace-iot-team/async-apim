@@ -11,11 +11,11 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { Globals } from "../../../utils/Globals";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageExternalSystemsCommon";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APExternalSystemsService, { 
+import APExternalSystemsDisplayService, { 
   TAPExternalSystemDisplay, 
   TAPExternalSystemDisplayList 
-} from "../../../services/APExternalSystemsService";
+} from "../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 
 import '../../../components/APComponents.css';
 import "./ManageExternalSystems.css";
@@ -75,12 +75,12 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST, 'retrieve list of external systems');
     try {
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsService.listApExternalSystemDisplay({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay({
         organizationId: props.organizationId
       })
       setManagedObjectList(list);
     } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
+      APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -172,7 +172,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
           >
             <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
             <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column header="References" headerStyle={{width: '10em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="References" headerStyle={{width: '15em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>
     );

@@ -1,0 +1,20 @@
+.user-login .card {
+  min-width: 450px;
+}
+.user-login .card form {
+  margin-top: 2rem;
+}
+.user-login .card .p-field {
+  margin-bottom: 1.5rem;
+}
+@media screen and (max-width: 960px) {
+  .user-login .card {
+    width: 80%;
+  }
+}
+@media screen and (max-width: 640px) {
+  .user-login .card {
+    width: 100%;
+    min-width: 0;
+  }
+}

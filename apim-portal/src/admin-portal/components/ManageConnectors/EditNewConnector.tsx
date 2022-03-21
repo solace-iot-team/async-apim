@@ -70,6 +70,8 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
   }
   type TManagedObjectFormDataProtocolSelectItems = Array<{ label: string, value: EAPSClientProtocol }>;
 
+  const LoginAgainAfterMessage = 'You are editing the active connector. You will have to login again after saving any changes.';
+
   const managedObjectFormDataProtocolSelectItems:TManagedObjectFormDataProtocolSelectItems = [
     { label: 'http', value: EAPSClientProtocol.HTTP },
     { label: 'https', value: EAPSClientProtocol.HTTPS }
@@ -597,6 +599,18 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
       </div>
     );
   }
+
+  const renderEditHeader = (mo: TManagedObject): JSX.Element => {
+    const msg: string | undefined = (mo.isActive ? LoginAgainAfterMessage : undefined);
+    return (
+      <React.Fragment>
+        <APComponentHeader header={`Edit Connector: ${props.connectorDisplayName}`} />
+        {msg &&
+          <div className="p-mt-4 p-mb-4" style={{ color: 'red'}}>{msg}</div>
+        }
+      </React.Fragment>
+    );
+  }
   
   return (
     <div className="manage-connectors">
@@ -606,7 +620,7 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
       }
 
       {managedObject && props.action === EAction.EDIT && 
-        <APComponentHeader header={`Edit Connector: ${props.connectorDisplayName}`} />
+        renderEditHeader(managedObject)
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />

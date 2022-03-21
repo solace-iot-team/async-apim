@@ -3,10 +3,12 @@ import React from "react";
 
 import { Tree } from 'primereact/tree';
 
-import APBusinessGroupsService, { 
+import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplayList, 
-  TAPBusinessGroupTreeNodeDisplayList 
-} from "../../services/APBusinessGroupsService";
+  TAPBusinessGroupTreeNodeDisplay, 
+  TAPBusinessGroupTreeNodeDisplayList, 
+  TAPTreeTableExpandedKeysType
+} from "../../displayServices/APBusinessGroupsDisplayService";
 
 import "../APComponents.css";
 
@@ -19,19 +21,51 @@ export interface IAPDisplayApBusinessGroupDisplayListProps {
 export const APDisplayApBusinessGroupDisplayList: React.FC<IAPDisplayApBusinessGroupDisplayListProps> = (props: IAPDisplayApBusinessGroupDisplayListProps) => {
   // const componentName='APDisplayApBusinessGroupDisplayList';
 
+  const [treeTableNodeList] = React.useState<TAPBusinessGroupTreeNodeDisplayList>(APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(props.apBusinessGroupDisplayList));
+  const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>({});
+
+ 
+  const initializeExpandedKeys = () => {
+    const expandNode = (node: TAPBusinessGroupTreeNodeDisplay, _expandedKeys: TAPTreeTableExpandedKeysType) => {
+      if (node.children && node.children.length) {
+        _expandedKeys[node.key] = true;  
+        for (let child of node.children) {
+            expandNode(child, _expandedKeys);
+        }
+      }
+    }
+    let _expandedKeys = {};
+    for(let node of treeTableNodeList) {
+      expandNode(node, _expandedKeys);
+    }
+    setExpandedKeys(_expandedKeys);
+  }
+
+  React.useEffect(() => {
+    initializeExpandedKeys()
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+
   const renderComponent = (apBusinessGroupDisplayList: TAPBusinessGroupDisplayList): JSX.Element => {
 
-    const treeTableNodeList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
+    const treeTableNodeList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
 
     return (
       <React.Fragment>
         <Tree 
           style={{ border: 'none' }}
           value={treeTableNodeList}
+          expandedKeys={expandedKeys}
+          onToggle={e => setExpandedKeys(e.value)}
         />
         {/* DEBUG */}
-        {/* <pre style={ { fontSize: '10px' }} >
+        {/* <p>treeTableNodeList=</p>
+        <pre style={ { fontSize: '10px' }} >
           {JSON.stringify(treeTableNodeList, null, 2)}
+        </pre>
+        <p>apBusinessGroupDisplayList=</p>
+        <pre style={ { fontSize: '10px' }} >
+          {JSON.stringify(apBusinessGroupDisplayList, null, 2)}
         </pre> */}
       </React.Fragment>
     );

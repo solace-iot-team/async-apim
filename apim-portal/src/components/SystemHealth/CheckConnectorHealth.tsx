@@ -2,7 +2,7 @@
 import React from "react";
 import { useHistory } from 'react-router-dom';
 
-import { UserContext } from "../UserContextProvider/UserContextProvider";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { 
   EAPHealthCheckSuccess, 

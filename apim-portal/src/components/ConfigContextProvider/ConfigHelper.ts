@@ -6,7 +6,7 @@ import {
   APSConnector, 
   ApiError as APSApiError,
   EAPSSystemAuthRole,
-  APSUser,
+  APSUserResponse,
   APSSystemAuthRoleList,
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
@@ -23,7 +23,7 @@ export type TRoleSelectItemList = Array<TRoleSelectItem>;
 export class ConfigHelper {
 
   public static createOrganizationRolesSelectItems = (configContext: TAPConfigContext): TRoleSelectItemList => {
-    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORG];
+    const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORGANIZATION];
     const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);
     const selectItems: TRoleSelectItemList = [];
     rbacRoleList.forEach( (rbacRole: TAPRbacRole) => {
@@ -99,7 +99,7 @@ export class ConfigHelper {
     return orgRolesDisplayNameList;
   }
 
-  public static getAuthorizedRolesDisplayNameList = (configContext: TAPConfigContext, apsUser: APSUser, orgId: string | undefined): Array<string> => {
+  public static getAuthorizedRolesDisplayNameList = (configContext: TAPConfigContext, apsUser: APSUserResponse, orgId: string | undefined): Array<string> => {
     const funcName = 'getAuthorizedRolesDisplayNameList';
     const logName = `${ConfigHelper.name}.${funcName}()`;
     
@@ -154,6 +154,7 @@ export class ConfigHelper {
   }
 
   private static getConfigRbacRoleList = async(): Promise<TAPRbacRoleList> => {
+    APRbac.checkRoleDefinitions();
     const configRbacRoleList: TAPRbacRoleList = APRbac.getAPRbacRoleList();
     return configRbacRoleList;
   }
