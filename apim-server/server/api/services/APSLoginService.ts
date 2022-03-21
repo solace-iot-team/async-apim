@@ -208,17 +208,18 @@ export class APSLoginService {
 
   }
 
+  /**
+   * Invalidates all user sessions for this organization.
+   */
   private _logoutOrganizationAll = async({ apsOrganizationId }:{
     apsOrganizationId: string;
   }): Promise<void> => {
     const funcName = '_logoutOrganizationAll';
     const logName = `${APSLoginService.name}.${funcName}()`;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGED_OUT_ORGANIZATION_ALL, message: 'apsOrganizationId', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_OUT_ORGANIZATION_ALL, message: 'apsOrganizationId', details: {
       apsOrganizationId: apsOrganizationId
     } }));
-
-    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
 
     // FUTURE: invalidate all user token currently logged into this organization
 
@@ -227,13 +228,20 @@ export class APSLoginService {
     } }));
 
   } 
+
+  /**
+   * Invalidates all user sessions for this organzation, forcing them to login again.
+   * Checks if organization exists.
+   */
   public logoutOrganizationAll = async({ apsOrganizationId }:{
     apsOrganizationId: string;
   }): Promise<void> => {
-    // const funcName = 'logoutOrganizationAll';
-    // const logName = `${APSLoginService.name}.${funcName}()`;
+    const funcName = 'logoutOrganizationAll';
+    const logName = `${APSLoginService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
 
     await this._logoutOrganizationAll({ apsOrganizationId: apsOrganizationId });
 
