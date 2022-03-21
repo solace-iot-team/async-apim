@@ -4,7 +4,7 @@ import {
   EnvironmentsService,
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from './APEntityIdsService';
 import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
 import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 

@@ -11,7 +11,6 @@ import {
   ApisService,
   CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { Config } from '../../../Config';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
