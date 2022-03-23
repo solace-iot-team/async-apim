@@ -15,7 +15,7 @@ import { APDisplayOrganizationUserBusinessGroupRoles } from "../../../../compone
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { Dialog } from "primereact/dialog";
 import { EditOrganizationUserBusinessGroupRoles, EEditOrganizationUserBusinessGroupRolesAction } from "./EditOrganizationUserBusinessGroupRoles";
-import { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -112,6 +112,10 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
     );
   }
 
+  const sourceByBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
+    return APBusinessGroupsDisplayService.getSourceDisplayString(node.data.apBusinessGroupDisplay);
+  }
+
   const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): JSX.Element => {
     return (
       <APDisplayOrganizationUserBusinessGroupRoles 
@@ -139,6 +143,7 @@ export const EditOrganizationUserMemberOfBusinessGroups: React.FC<IEditOrganizat
             onToggle={e => setExpandedKeys(e.value)}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
+            <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />

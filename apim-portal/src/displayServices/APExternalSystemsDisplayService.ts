@@ -81,7 +81,7 @@ class APExternalSystemsDisplayService {
     });
     const list: TAPExternalSystemDisplayList = [];
     for(const apsExternalSystem of response.list) {
-      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplayByExternalSystem({
+      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({
         organizationId: organizationId,
         externalSystemId: apsExternalSystem.externalSystemId
       });
@@ -101,7 +101,7 @@ class APExternalSystemsDisplayService {
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
-    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.listApBusinessGroupSystemDisplayByExternalSystem({
+    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({
       organizationId: organizationId,
       externalSystemId: apsExternalSystem.externalSystemId
     });

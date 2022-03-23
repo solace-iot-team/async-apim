@@ -11,7 +11,8 @@ import {
   ListAPSExternalSystemsResponse,
   APSExternalSystemList,
   APSExternalSystem,
-  APSUserIdList
+  APSUserIdList,
+  APSBusinessGroupResponseList
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { TAPMemberOfBusinessGroupTreeTableNodeList } from './APUsersDisplayService/APMemberOfService';
 
@@ -116,6 +117,7 @@ class APBusinessGroupsDisplayService {
   }
 
   public getSourceDisplayString(apBusinessGroupDisplay: TAPBusinessGroupDisplay): string {
+    if(apBusinessGroupDisplay.apBusinessGroupParentEntityId === undefined) return  'Organization';
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return apBusinessGroupDisplay.apExternalReference.externalSystemDisplayName;
     else return 'Configured';
   }
@@ -279,33 +281,77 @@ class APBusinessGroupsDisplayService {
     return entityIdList;
   }
 
+  private get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList({ apsBusinessGroupResponseList, businessGroupId }: {
+    apsBusinessGroupResponseList: APSBusinessGroupResponseList;
+    businessGroupId: string;
+  }): TAPEntityId {
+    const funcName = 'get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    const found: APSBusinessGroupResponse | undefined = apsBusinessGroupResponseList.find( (apsBusinessGroupResponse: APSBusinessGroupResponse) => {
+      return apsBusinessGroupResponse.businessGroupId === businessGroupId;
+    });
+    if(found === undefined) throw new Error(`${logName}: found === undefined, searching for businessGroupId=${businessGroupId}`);
+    return {
+      id: found.businessGroupId,
+      displayName: found.displayName
+    };
+  }
+
+  private get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({ apsBusinessGroupResponseList, businessGroupIdList }:{
+    apsBusinessGroupResponseList: APSBusinessGroupResponseList;
+    businessGroupIdList: Array<string>;
+  }): TAPEntityIdList {
+    const result: TAPEntityIdList = [];
+    businessGroupIdList.forEach( (x) => {
+      result.push(this.get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList({
+        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+        businessGroupId: x
+      }));
+    });
+    return result;
+  }
+
   public async apsGetList_ApBusinessGroupSystemDisplayList({ organizationId}: {
     organizationId: string;
   }): Promise<TAPBusinessGroupDisplayList> {
 
-    // const funcName = 'listApBusinessGroupSystemDisplay';
+    // const funcName = 'apsGetList_ApBusinessGroupSystemDisplayList';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroups({
       organizationId: organizationId
     });
+    const apsBusinessGroupResponseList: APSBusinessGroupResponseList = listResponse.list;
     // get all external systems
     const extSystemsListResponse: ListAPSExternalSystemsResponse = await ApsExternalSystemsService.listApsExternalSystems({
       organizationId: organizationId
     });
+
     const list: TAPBusinessGroupDisplayList = [];
-    for(const apsBusinessGroupResponse of listResponse.list) {
+
+    for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
+
+      const parentBusinessGroupEntityId: TAPEntityId | undefined = apsBusinessGroupResponse.businessGroupParentId !== undefined ? this.get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList({
+        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+        businessGroupId: apsBusinessGroupResponse.businessGroupParentId
+      }) : undefined;
+      
+      const childrenEntityIdList: TAPEntityIdList = this.get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({
+        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+        businessGroupIdList: apsBusinessGroupResponse.businessGroupChildIds
+      });
+
       list.push(this.create_ApBusinessGroupDisplay_From_ApiEntities({
         apsBusinessGroupResponse: apsBusinessGroupResponse,
         externalSystemDisplayName: this.getExternalSystemDisplayName(extSystemsListResponse.list, apsBusinessGroupResponse.externalReference),
-        apParentBusinessGroupEntityId: apsBusinessGroupResponse.businessGroupParentId !== undefined ? await this.getApBusinessGroupEntityId(organizationId, apsBusinessGroupResponse.businessGroupParentId) : undefined,
-        apBusinessGroupChildrenEntityIdList: await this.getApBusinessGroupEntityIdList(organizationId, apsBusinessGroupResponse.businessGroupChildIds)
+        apParentBusinessGroupEntityId: parentBusinessGroupEntityId,
+        apBusinessGroupChildrenEntityIdList: childrenEntityIdList
       }));
     }
     return list;
   }
 
-  public async listApBusinessGroupSystemDisplayByExternalSystem({ organizationId, externalSystemId }: {
+  public async apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({ organizationId, externalSystemId }: {
     organizationId: string;
     externalSystemId: string;
   }): Promise<TAPBusinessGroupDisplayList> {
@@ -317,13 +363,33 @@ class APBusinessGroupsDisplayService {
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
+    const apsBusinessGroupResponseList: APSBusinessGroupResponseList = listResponse.list;
+    // add the organization/root business group to the list as well
+    const root_apsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroup({
+      organizationId: organizationId,
+      businessgroupId: organizationId
+    });
+    apsBusinessGroupResponseList.push(root_apsBusinessGroupResponse);
+
     const list: TAPBusinessGroupDisplayList = [];
-    for(const apsBusinessGroupResponse of listResponse.list) {
+    
+    for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
+
+      const parentBusinessGroupEntityId: TAPEntityId | undefined = apsBusinessGroupResponse.businessGroupParentId !== undefined ? this.get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList({
+        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+        businessGroupId: apsBusinessGroupResponse.businessGroupParentId
+      }) : undefined;
+      
+      const childrenEntityIdList: TAPEntityIdList = this.get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({
+        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+        businessGroupIdList: apsBusinessGroupResponse.businessGroupChildIds
+      });
+
       list.push(this.create_ApBusinessGroupDisplay_From_ApiEntities({
         apsBusinessGroupResponse: apsBusinessGroupResponse,
         externalSystemDisplayName: undefined,
-        apParentBusinessGroupEntityId: apsBusinessGroupResponse.businessGroupParentId !== undefined ? await this.getApBusinessGroupEntityId(organizationId, apsBusinessGroupResponse.businessGroupParentId) : undefined,
-        apBusinessGroupChildrenEntityIdList: await this.getApBusinessGroupEntityIdList(organizationId, apsBusinessGroupResponse.businessGroupChildIds)
+        apParentBusinessGroupEntityId: parentBusinessGroupEntityId,
+        apBusinessGroupChildrenEntityIdList: childrenEntityIdList
       }));
     }
     // get the top level business group === organization id

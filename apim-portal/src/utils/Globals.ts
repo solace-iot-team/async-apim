@@ -70,9 +70,9 @@ export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
   LoginAs = '/admin-portal/loginas',
-  ManageOrganizationApps = '/admin-portal/manage/organization/apps',
-  ManageOrganizationApiProducts = '/admin-portal/manage/organization/apiproducts',
-  ManageOrganizationApis = '/admin-portal/manage/organization/apis',
+  ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
+  ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
+  ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
 
   ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',

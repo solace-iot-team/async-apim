@@ -70,11 +70,13 @@ export const AddOrganizationUserRolesAndGroups: React.FC<IAddOrganizationUserRol
   }
 
   const doInitialize = async () => {
+    props.onLoadingChange(true);
     const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.create_ApOrganizationUserDisplay_From_ApSystemUserDisplay({
       organizationEntityId: props.organizationEntityId,
       apSystemUserDisplay: props.apSystemUserDisplay,
     });
     setManagedObject(apOrganizationUserDisplay);
+    props.onLoadingChange(false);
   }
 
   // * useEffect Hooks *

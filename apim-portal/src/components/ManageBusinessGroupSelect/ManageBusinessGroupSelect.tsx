@@ -26,7 +26,7 @@ import "./ManageBusinessGroupSelect.css";
 
 export interface IManageBusinessGroupSelectProps {
   apLoginUserDisplay: TAPLoginUserDisplay;
-  apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+  apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList; /** not pruned */
   currentBusinessGroupEntityId: TAPEntityId;
   onSuccess: () => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -36,11 +36,12 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
   const ComponentName = 'ManageBusinessGroupSelect';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [selectedBusinessGroupEntityId, setSelectedBusinessGroupEntityId] = React.useState<TAPEntityId>();
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
-  /* eslint-enable @typescript-eslint/no-unused-vars */
-  
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+
   const apiUpdateSession = async({ organizationEntityId, userEntityId, businessGroupEntityId }: {
     organizationEntityId: TAPEntityId;
     userEntityId: TAPEntityId;
@@ -66,6 +67,11 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
     return callState;
   }
 
+  React.useEffect(() => {
+    if(selectedBusinessGroupEntityId !== undefined) doSelectBusinessGroup(selectedBusinessGroupEntityId);
+  }, [selectedBusinessGroupEntityId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+
   const doApplyNewBusinessGroup = async(businessGroupEntityId: TAPEntityId) => {
     const funcName = 'doApplyNewBusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
@@ -77,8 +83,8 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
       businessGroupId: businessGroupEntityId.id
     });
 
-    // save session info
     if(userContext.runtimeSettings.currentOrganizationEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId === undefined`);
+    // save session info
     await apiUpdateSession({
       organizationEntityId: userContext.runtimeSettings.currentOrganizationEntityId,
       userEntityId: props.apLoginUserDisplay.apEntityId,
@@ -97,12 +103,16 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
     props.onSuccess();
   }
 
-  const onSelectBusinessGroup = (businessGroupEntityId: TAPEntityId) => {
+  const doSelectBusinessGroup = (businessGroupEntityId: TAPEntityId) => {
     if(businessGroupEntityId.id === props.currentBusinessGroupEntityId.id) {
       // nothing to do, close me
       return props.onSuccess();
     }
     doApplyNewBusinessGroup(businessGroupEntityId);
+  }
+
+  const onSelectBusinessGroup = (businessGroupEntityId: TAPEntityId) => {
+    setSelectedBusinessGroupEntityId(businessGroupEntityId);
   }
 
   const renderComponent = () => {
@@ -125,7 +135,7 @@ export const ManageBusinessGroupSelect: React.FC<IManageBusinessGroupSelectProps
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {renderComponent()}
+      {selectedBusinessGroupEntityId === undefined && renderComponent()}
 
     </div>
   );
