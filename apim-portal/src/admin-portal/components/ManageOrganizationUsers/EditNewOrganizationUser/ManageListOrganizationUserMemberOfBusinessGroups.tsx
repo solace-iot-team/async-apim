@@ -20,7 +20,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
 import { APDisplayOrganizationUserBusinessGroupRoles } from "../../../../components/APDisplay/APDisplayOrganizationBusinessGroups/APDisplayOrganizationUserBusinessGroupRoles";
-import { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizationUsers.css";
@@ -103,14 +103,14 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
 
     if(apUserDisplay !== undefined) {
       if(apUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apUserDisplay.completeOrganizationBusinessGroupDisplayList`);
-      const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
+      const _apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
         organizationEntityId: apUserDisplay.organizationEntityId,
         apMemberOfBusinessGroupDisplayList: apUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
         apOrganizationRoleEntityIdList: apUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
         completeApOrganizationBusinessGroupDisplayList: apUserDisplay.completeOrganizationBusinessGroupDisplayList,
         pruneBusinessGroupsNotAMemberOf: false
       });  
-      setApMemberOfBusinessGroupTreeTableNodeList(apMemberOfBusinessGroupTreeTableNodeList);
+      setApMemberOfBusinessGroupTreeTableNodeList(_apMemberOfBusinessGroupTreeTableNodeList);
     }
   }, [apUserDisplay]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -151,6 +151,10 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
     });
   }
 
+  const sourceByBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
+    return APBusinessGroupsDisplayService.getSourceDisplayString(node.data.apBusinessGroupDisplay);
+  }
+
   const rolesBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): JSX.Element => {
     return (
       <APDisplayOrganizationUserBusinessGroupRoles 
@@ -179,6 +183,10 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
   }
 
   const renderOrganizationBusinessGroupsTreeTable = (apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList): JSX.Element => {
+    // const funcName = 'renderOrganizationBusinessGroupsTreeTable';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: rendering ...`)
+
     if(apMemberOfBusinessGroupTreeTableNodeList.length === 0) return (
       <div><b>Business Groups</b>: None.</div>
     );
@@ -197,6 +205,7 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
             onToggle={e => setExpandedKeys(e.value)}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
+            <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} />

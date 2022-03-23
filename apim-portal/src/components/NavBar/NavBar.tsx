@@ -52,7 +52,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const organizationOverlayPanel = React.useRef<any>(null);
 
   const [showAbout, setShowAbout] = React.useState<boolean>(false);
-  const [showBusinessGroupSideBar, setShowBusinessSideBar] = React.useState<boolean>(false);
+  const [showBusinessGroupsSideBar, setShowBusinessGroupsSideBar] = React.useState<boolean>(false);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
@@ -305,7 +305,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           className="ap-navbar organnization-overlay-panel" 
           ref={organizationOverlayPanel} 
           id="organization_overlay_panel" 
-          style={{width: '450px'}} 
+          style={{width: '450px'}}
           dismissable={true}
           showCloseIcon={false}
         >
@@ -320,6 +320,9 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     );
   }
 
+  const onBusinessGroupSelectSuccess = () => {
+    setShowBusinessGroupsSideBar(false);
+  }
   const renderBusinessGroupComponents = () => {
     // const funcName = 'renderBusinessGroupComponents';
     // const logName = `${ComponentName}.${funcName}()`;
@@ -328,8 +331,13 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     if(userContext.runtimeSettings.currentOrganizationEntityId === undefined) return (<></>);
     // context may not be set up fully yet, wait for next re-render
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) return (<></>);
-    // no selection if only member of 1 business group
-    const isSelectDisabled: boolean = userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList.length < 2;
+    
+    // no selection if only access of 1 business group
+     // const isSelectDisabled: boolean = userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList.length < 2;
+
+    // probably no need to disable the button.
+    const isSelectDisabled: boolean = false;
+
     const businessGroupButtonLabel: string = userContext.runtimeSettings.currentBusinessGroupEntityId.displayName;
 
     return (
@@ -340,24 +348,26 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           icon="pi pi-fw pi-list" 
           label={businessGroupButtonLabel}
           disabled={isSelectDisabled}
-          onClick={() => setShowBusinessSideBar(true)}
+          onClick={() => setShowBusinessGroupsSideBar(true)}
         />
         {/* the side bar */}
-        <Sidebar
-          visible={showBusinessGroupSideBar}
-          position="right"
-          onHide={() => setShowBusinessSideBar(false)}
-          style={{width:'45em'}}
-          // className="p-sidebar-lg"
-        >
-          <ManageBusinessGroupSelect
-            apLoginUserDisplay={userContext.apLoginUserDisplay}
-            apMemberOfBusinessGroupDisplayTreeNodeList={userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList}
-            currentBusinessGroupEntityId={userContext.runtimeSettings.currentBusinessGroupEntityId}
-            onSuccess={() => setShowBusinessSideBar(false)}
-            onLoadingChange={setIsLoading}
-          />
-        </Sidebar>
+        { showBusinessGroupsSideBar && 
+          <Sidebar
+            visible={showBusinessGroupsSideBar}
+            position="right"
+            onHide={() => setShowBusinessGroupsSideBar(false)}
+            style={{width:'60em'}}
+            // className="p-sidebar-lg"
+          >
+            <ManageBusinessGroupSelect
+              apLoginUserDisplay={userContext.apLoginUserDisplay}
+              apMemberOfBusinessGroupDisplayTreeNodeList={userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList}
+              currentBusinessGroupEntityId={userContext.runtimeSettings.currentBusinessGroupEntityId}
+              onSuccess={onBusinessGroupSelectSuccess}
+              onLoadingChange={setIsLoading}
+            />
+          </Sidebar>
+        }
       </React.Fragment>
     );
   }

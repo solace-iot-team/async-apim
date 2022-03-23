@@ -12,10 +12,10 @@ import APMemberOfService, {
 } from "../../displayServices/APUsersDisplayService/APMemberOfService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../displayServices/APBusinessGroupsDisplayService";
+import APRbacDisplayService from "../../displayServices/APRbacDisplayService";
 
 import '../APComponents.css';
 import "./ManageBusinessGroupSelect.css";
-import APRbacDisplayService from "../../displayServices/APRbacDisplayService";
 
 export interface ISelectBusinessGroupProps {
   apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
@@ -26,9 +26,13 @@ export interface ISelectBusinessGroupProps {
 export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: ISelectBusinessGroupProps) => {
   const ComponentName = 'SelectBusinessGroup';
 
-  // here: make the decision based on calculated roles including a business group role
+  // prune the list
+  const pruned_apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
+    apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList
+  });
+  // create the tree table node list from pruned list
   const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
-    apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
+    apMemberOfBusinessGroupDisplayTreeNodeList: pruned_apMemberOfBusinessGroupDisplayTreeNodeList,
     includeBusinessGroupIsSelectable: true
   });
 
@@ -53,7 +57,7 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     if(node.data.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: node.data.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
     if(node.data.apCalculatedBusinessGroupRoleEntityIdList.length > 0) {
-      // TODO: filter for business group roles only
+      // filter for business group roles only
       const calculatedBusinesGroupRoles: TAPEntityIdList = APRbacDisplayService.filter_RolesEntityIdList_By_BusinessGroupRoles({
         combinedRoles: node.data.apCalculatedBusinessGroupRoleEntityIdList
       });
@@ -64,7 +68,7 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
   const renderBusinessGroupsTreeTable = (): JSX.Element => {
     const funcName = 'renderBusinessGroupsTreeTable';
     const logName = `${ComponentName}.${funcName}()`;
-
+    // alert(`${logName}: render ...`)
     if(apMemberOfBusinessGroupTreeTableNodeList.length === 0) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList.length === 0`);
 
     const field_Name = 'apBusinessGroupDisplay.apEntityId.displayName';
@@ -87,7 +91,8 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
           >
             <Column header="Business Group" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
             {/* <Column header="isToplevel?" body={topLevelBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
-            {/* <Column header="Confed-Roles" body={configuredRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+            {/* <Column header="Conf'ed Roles" body={configuredRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Calc'ed Roles" body={calculatedRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             <Column header="Roles" body={calculatedRolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           </TreeTable>
         </div>

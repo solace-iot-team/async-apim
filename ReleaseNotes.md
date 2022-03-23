@@ -2,6 +2,18 @@
 
 Solace Async API Management.
 
+## Version 0.1.0
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.0
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.6.5
+
+#### API-M Admin & Developer Portal
+
+**Fixes:**
+- **Business Groups / login / member calculation**
+  - various fixes in roles calculation & business group display
+
 ## Version 0.0.37
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.0.37
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.0.19

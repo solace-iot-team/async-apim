@@ -165,14 +165,18 @@ class APRbacDisplayService {
         apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
         apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
         completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
-        pruneBusinessGroupsNotAMemberOf: true,
+        // pruneBusinessGroupsNotAMemberOf: true,
+        pruneBusinessGroupsNotAMemberOf: false,
       });
 
-      // TODO: once the lastSession.businessGroupId is known, use that
-      // if not known, use the first group user has a role in, if any
-      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined= APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
+      // get the business group from last session or find a default one
+      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_For_Session({
         apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay
       });
+      // const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined= APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
+      //   apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      // });
       if(apMemberOfBusinessGroupDisplay !== undefined) {
         // add the calculated roles, not the configured ones
         if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);

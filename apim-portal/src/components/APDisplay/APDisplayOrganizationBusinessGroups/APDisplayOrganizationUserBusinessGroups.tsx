@@ -4,14 +4,13 @@ import React from "react";
 import { TreeTable } from "primereact/treetable";
 import { Column } from "primereact/column";
 
-import APEntityIdsService from "../../../utils/APEntityIdsService";
 import { APDisplayOrganizationUserBusinessGroupRoles } from "./APDisplayOrganizationUserBusinessGroupRoles";
 import { TAPOrganizationUserDisplay } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupTreeTableNode, 
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../../displayServices/APUsersDisplayService/APMemberOfService";
-import { TAPTreeTableExpandedKeysType } from "../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPTreeTableExpandedKeysType } from "../../../displayServices/APBusinessGroupsDisplayService";
  
 import "../../APComponents.css";
 
@@ -48,14 +47,15 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
     const logName = `${ComponentName}.${funcName}()`;
 
     if(props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apUserDisplay.completeOrganizationBusinessGroupDisplayList`);
-    const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
+    const _apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList({
       organizationEntityId: props.apOrganizationUserDisplay.organizationEntityId,
       apMemberOfBusinessGroupDisplayList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
       apOrganizationRoleEntityIdList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
       completeApOrganizationBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
-      pruneBusinessGroupsNotAMemberOf: true
+      // pruneBusinessGroupsNotAMemberOf: true
+      pruneBusinessGroupsNotAMemberOf: false
     });  
-    setApMemberOfBusinessGroupTreeTableNodeList(apMemberOfBusinessGroupTreeTableNodeList);
+    setApMemberOfBusinessGroupTreeTableNodeList(_apMemberOfBusinessGroupTreeTableNodeList);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(()=> {
@@ -76,6 +76,9 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
         apMemberOfBusinessGroupTreeTableNode={node}
       />
     );
+  }
+  const sourceByBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode): string => {
+    return APBusinessGroupsDisplayService.getSourceDisplayString(node.data.apBusinessGroupDisplay);
   }
 
   // const keyBodyTemplate = (node: TAPMemberOfBusinessGroupTreeTableNode) => {
@@ -102,31 +105,34 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
             onToggle={e => setExpandedKeys(e.value)}
           >
             <Column header="Name" field={field_Name} bodyStyle={{ verticalAlign: 'top' }} sortable expander />
+            {/* <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} field="apExternalReference.externalSystemDisplayName" sortable /> */}
+            <Column header="Source" body={sourceByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column header="Roles" body={rolesBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             {/* <Column header="Key" body={keyBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
           </TreeTable>
         </div>
 
         {/* DEBUG */}
-        {/* <p><b>apMemberOfBusinessGroupTreeNodeDisplayList=</b></p>
+        {/* <p><b>treeTableNodeList=</b></p>
         <pre style={ { fontSize: '10px' }} >
-          {JSON.stringify(apMemberOfBusinessGroupTreeNodeDisplayList, null, 2)}
+          {JSON.stringify(treeTableNodeList, null, 2)}
         </pre> */}
 
       </React.Fragment>
     );
   }
 
-  const renderOrganizationRoles = (): JSX.Element => {
-    const organizationRolesDisplayString = props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList.length > 0 
-      ? APEntityIdsService.getSortedDisplayNameList_As_String(props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList) 
-      : 'None.';
-    return (
-      <React.Fragment>
-        <div><b>Organization Roles</b>: {organizationRolesDisplayString}</div>
-      </React.Fragment>
-    );
-  }
+  // now the root business group
+  // const renderOrganizationRoles = (): JSX.Element => {
+  //   const organizationRolesDisplayString = props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList.length > 0 
+  //     ? APEntityIdsService.getSortedDisplayNameList_As_String(props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList) 
+  //     : 'None.';
+  //   return (
+  //     <React.Fragment>
+  //       <div><b>Organization Roles</b>: {organizationRolesDisplayString}</div>
+  //     </React.Fragment>
+  //   );
+  // }
 
   const renderComponent = (): JSX.Element => {
     const funcName = 'renderComponent';
@@ -136,9 +142,9 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
 
     return (
       <React.Fragment>
-        <div className="p-mt-2">
+        {/* <div className="p-mt-2">
           {renderOrganizationRoles()}
-        </div>
+        </div> */}
         <div className="p-mt-2">{renderOrganizationBusinessGroupsTreeTable(apMemberOfBusinessGroupTreeTableNodeList)}</div>
       </React.Fragment>
     );
