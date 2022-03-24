@@ -9,12 +9,12 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
-import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
-import { TAPApiSpecDisplay } from "../../../utils/APApiSpecsService";
+import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
+import { TAPApiSpecDisplay } from "../../../utils/deleteme.APApiSpecsService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';

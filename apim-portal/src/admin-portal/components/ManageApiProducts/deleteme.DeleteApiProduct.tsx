@@ -7,8 +7,8 @@ import { Dialog } from 'primereact/dialog';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APAdminPortalApiProductsService from "../../utils/APAdminPortalApiProductsService";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
+import APAdminPortalApiProductsService from "../../utils/deleteme.APAdminPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

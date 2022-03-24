@@ -7,10 +7,10 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from './APEntityIdsService';
 import { Globals } from './Globals';
-import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/APAttributesService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/deleteme.APAttributesService";
 import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsService';
-import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './APApisService';
-import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './deleteme.APApisService';
+import { EAPApiSpecFormat, TAPApiSpecDisplay } from './deleteme.APApiSpecsService';
 import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
 import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 

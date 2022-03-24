@@ -31,7 +31,7 @@ import { TAPOrganizationId } from "../../../components/APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APManageConnectorAttributes } from "../../../components/APManageAttributes/APManageConnectorAttributes";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
-import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../../utils/APAttributes/APAttributesService";
+import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../../utils/APAttributes/deleteme.APAttributesService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";

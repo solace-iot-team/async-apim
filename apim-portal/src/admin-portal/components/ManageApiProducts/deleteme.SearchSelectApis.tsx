@@ -10,34 +10,36 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/deleteme.APApisService";
+import { APRenderUtils } from "../../../utils/APRenderUtils";
+import APAdminPortalApisService from "../../utils/APAdminPortalApisService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
-export interface ISearchSelectEnvironmentsProps {
-  organizationId: string;
-  currentSelectedEnvironmentEntityIdList: TAPEntityIdList,
+export interface ISearchSelectApisProps {
+  organizationId: string,
+  currentSelectedApiItemList: TAPEntityIdList,
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, selectedEnvironmentEntityIdList: TAPEntityIdList) => void;
+  onSave: (apiCallState: TApiCallState, selectedApis: TAPEntityIdList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> = (props: ISearchSelectEnvironmentsProps) => {
-  const componentName = 'SearchSelectEnvironments';
+export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearchSelectApisProps) => {
+  const componentName = 'SearchSelectApis';
 
-  const DialogHeader = 'Search & Select Environment(s):';
-  const MessageNoManagedObjectsFound = "No Environments found."
-  const MessageNoManagedObjectsFoundWithFilter = 'No Environments found for filter';
+  const DialogHeader = 'Search & Select API(s):';
+  const MessageNoManagedObjectsFound = "No APIs found."
+  const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
-  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
-  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
+  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPApiDisplayList>();
+  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPApiDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -46,12 +48,12 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, 'retrieve list of environments');
-    try {
-      const apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplay({ 
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, 'retrieve list of apis');
+    try { 
+      const list: TAPApiDisplayList = await APAdminPortalApisService.listApApiDisplay({
         organizationId: props.organizationId
-      })
-      setManagedObjectTableDataList(apEnvironmentDisplayList);
+      });
+      setManagedObjectTableDataList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -73,9 +75,9 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   React.useEffect(() => {
     if(managedObjectTableDataList === undefined) return;
     setSelectedManagedObjectTableDataList(
-      APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPEnvironmentDisplay>({
+      APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPApiDisplay>({
         apDisplayObjectList: managedObjectTableDataList,
-        filterByEntityIdList: props.currentSelectedEnvironmentEntityIdList
+        filterByEntityIdList: props.currentSelectedApiItemList
       })
     );
   }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -93,11 +95,12 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   
   // * UI Controls *
 
-  const onSaveSelectedEnvironments = () => {
-    const funcName = 'onSaveSelectedEnvironments';
+  const onSaveSelectedApis = () => {
+    const funcName = 'onSaveSelectedApis';
     const logName = `${componentName}.${funcName}()`;
     if(selectedManagedObjectTableDataList === undefined) throw new Error(`${logName}: selectedManagedObjectTableDataList === undefined`);
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selectedManagedObjectTableDataList));
+    // console.log(`${logName}: selectedManagedObjectTableDataList=${JSON.stringify(selectedManagedObjectTableDataList, null, 2)}`);
+    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_APIS, `select apis`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPApiDisplay>(selectedManagedObjectTableDataList));
   }
 
   // * Data Table *
@@ -114,7 +117,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
-          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedEnvironments} disabled={isSaveDisabled} />
+          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedApis} disabled={isSaveDisabled} />
           <Button type="button" label="Cancel" className="p-button-text p-button-plain p-mr-2" onClick={props.onCancel} />
         </div>        
         <div style={{ alignContent: "right"}}>
@@ -141,18 +144,25 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     else return MessageNoManagedObjectsFound;
   }
 
+  const usedByApiProductsBodyTemplate = (mo: TAPApiDisplay): JSX.Element => {
+    if(mo.apApiProductReferenceEntityIdList.length === 0) return (<>-</>);
+    return APRenderUtils.renderStringListAsDivList(APEntityIdsService.create_DisplayNameList(mo.apApiProductReferenceEntityIdList));
+  }
+
+  // const develSearchContentTemplate = (mo: TAPApiDisplay): JSX.Element => {
+  //   return (
+  //     <pre style={ { fontSize: '10px' }} >
+  //       {JSON.stringify(mo.apSearchContent.split(','), null, 2)}
+  //     </pre>
+  //   );
+  // }
   const renderManagedObjectDataTable = (): JSX.Element => {
-    const dataKey = APEnvironmentsService.nameOf_Entity('id');
-    const sortField = APEnvironmentsService.nameOf_Entity('displayName');
+    const dataKey = APApisService.nameOf_Entity('id');
     return (
       <div className="card">
           <DataTable
             ref={dt}
             className="p-datatable-sm"
-            autoLayout={true}
-            resizableColumns 
-            columnResizeMode="expand"
-            showGridlines
             header={renderDataTableHeader()}
             value={managedObjectTableDataList}
             globalFilter={globalFilter}
@@ -165,15 +175,17 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             onSelectionChange={onSelectionChange}
             // sorting
             sortMode='single'
-            sortField={sortField}
+            sortField="apEntityId.displayName"
             sortOrder={1}
           >
             <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
-            <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
-            <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
-            <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
-            {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
+            <Column header="Name" field="apEntityId.displayName" filterField="apSearchContent" sortable />
+            <Column header="Source" headerStyle={{width: '12em'}} field="connectorApiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
+            <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+
+            {/* <Column header="devel:apSearchContent" body={develSearchContentTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+
+            {/* <Column header="Description" field="connectorApiInfo.description"  /> */}
         </DataTable>
       </div>
     );
@@ -188,10 +200,10 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
       { isInitialialized && renderManagedObjectDataTable() }
 
-      {/* DEBUG */}
-      {/* {managedObjectTableDataList.length > 0 && selectedManagedObjectTableDataList && 
+      {/* DEBUG selected managedObjects */}
+      {/* {managedProductList.length > 0 && tableSelectedApiProductList && 
         <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedObjectTableDataList, null, 2)}
+          {JSON.stringify(tableSelectedApiProductList, null, 2)}
         </pre>
       } */}
 

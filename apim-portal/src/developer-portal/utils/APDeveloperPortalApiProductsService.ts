@@ -1,7 +1,7 @@
 import { 
   APIProductAccessLevel,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPApiProductDisplay, APApiProductsService } from '../../utils/APApiProductsService';
+import { TAPApiProductDisplay, APApiProductsService } from '../../utils/deleteme.APApiProductsService';
 
 export type TAPDeveloperPortalApiProductDisplay = TAPApiProductDisplay; 
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;

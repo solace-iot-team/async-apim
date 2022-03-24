@@ -7,10 +7,9 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
+import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
-// import { ManageApiProducts } from '../components/ManageApiProducts/deleteme.ManageApiProducts';
-import { TAPEntityId } from '../../utils/APEntityIdsService';
-import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
+import { ManageApiProducts } from '../components/ManageApiProducts/deleteme.ManageApiProducts';
 
 import "../../pages/Pages.css";
 
@@ -23,12 +22,9 @@ export const ManageApiProductsPage: React.FC = () => {
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
-
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-
-  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
+  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -38,20 +34,21 @@ export const ManageApiProductsPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
+  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
+    setBreadCrumbLabelList(newBreadCrumbLableList);
+  }
+
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'API Products',
+        label: 'OLD API Products',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts) }
       }
     ];
-    breadCrumbItemList.forEach( (item: MenuItem) => {
-      breadcrumbItems.push({
-        ...item,
-        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
-      });
-    });
+    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
+      breadcrumbItems.push({ label: breadCrumbLabel });
+    })
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -59,26 +56,28 @@ export const ManageApiProductsPage: React.FC = () => {
     )
   }
 
+  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
+
   React.useEffect(() => {
     const funcName = 'useEffect([])';
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  }, []);
+    setOrganizationId(userContext.runtimeSettings.currentOrganizationEntityId.id);
+  }, [userContext]);
 
   return (
-    <div className="ap-pages">
+    <React.Fragment>
       <Toast ref={toast} />
-      {organizationEntityId && renderBreadcrumbs()}
-      {organizationEntityId && 
+      {renderBreadcrumbs()}
+      {organizationId && 
         <ManageApiProducts
-          organizationEntityId={organizationEntityId}
+          organizationId={organizationId}
           onSuccess={onSuccess} 
           onError={onError} 
-          setBreadCrumbItemList={setBreadCrumbItemList}
+          onBreadCrumbLabelList={onBreadcrumbLabelList}
         />
       }
-    </div>
+    </React.Fragment>
   );
 
 }

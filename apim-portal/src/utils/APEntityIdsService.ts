@@ -62,6 +62,10 @@ class APEntityIdsService {
     });
   }
 
+  public create_SortedDisplayNameList(list: TAPEntityIdList): Array<string> {
+    return this.create_DisplayNameList(this.sort_byDisplayName(list));
+  }
+
   public create_IdList(list: TAPEntityIdList): Array<string> {
     return list.map( (x) => {
       return x.id;

@@ -10,7 +10,6 @@ import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
 import { MonitorSystemHealthPage } from "./pages/MonitorSystemHealthPage";
 import { ManageOrgEnvironmentsPage } from "./pages/ManageOrgEnvironmentsPage";
 import { ManageApisPage } from "./pages/ManageApisPage";
-import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 import { ManageAppsPage } from './pages/ManageAppsPage';
 import { AdminPortalHealthCheckViewPage } from "./pages/AdminPortalHealthCheckViewPage";
 import { ManageOrgUsersPage } from "./pages/ManageOrgUsersPage";
@@ -20,6 +19,11 @@ import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
 import { ManageOrganizationSettingsPage } from "./pages/ManageOrganizationSettingsPage";
 import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
 import { MonitorOrganizationStatusPage } from "./pages/MonitorOrganizationStatusPage";
+import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
+
+import { ManageApiProductsPage as deleteme_ManageApiProductsPage} from "./pages/deleteme.ManageApiProductsPage";
+
+
 
 export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
   // const componentName = 'AdminPortalAppRoutes';
@@ -44,6 +48,10 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         /* API Team*/
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
+
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} component={deleteme_ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} />,
+
+
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
     ]
   );

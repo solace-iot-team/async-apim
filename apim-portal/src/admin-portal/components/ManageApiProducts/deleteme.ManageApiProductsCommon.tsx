@@ -1,3 +1,5 @@
+export type TManagedObjectId = string;
+
 export enum E_CALL_STATE_ACTIONS {
   API_GET_API_INFO_LIST = "API_GET_API_INFO_LIST",
   API_GET_API_PRODUCT_LIST = "API_GET_API_PRODUCT_LIST",

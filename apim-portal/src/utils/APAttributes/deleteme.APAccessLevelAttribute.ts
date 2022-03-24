@@ -1,4 +1,4 @@
-import { APCustomAttribute } from "./APCustomAttribute";
+import { APCustomAttribute } from "./deleteme.APCustomAttribute";
 
 export enum TAPAccessLevelValues {
   PRIVATE = 'private',

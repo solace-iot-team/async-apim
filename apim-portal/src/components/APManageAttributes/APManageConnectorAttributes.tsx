@@ -10,7 +10,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import { APConnectorFormValidationRules } from "../../utils/APConnectorOpenApiFormValidationRules";
-import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../utils/APAttributes/APAttributesService";
+import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../utils/APAttributes/deleteme.APAttributesService";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';

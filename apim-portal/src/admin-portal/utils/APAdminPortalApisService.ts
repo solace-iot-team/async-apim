@@ -2,7 +2,7 @@ import {
   APIInfo, 
   APIInfoList, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APApisService } from '../../utils/APApisService';
+import { APApisService } from '../../utils/deleteme.APApisService';
 
 class APAdminPortalApisService extends APApisService {
   private readonly ComponentName = "APAdminPortalApisService";

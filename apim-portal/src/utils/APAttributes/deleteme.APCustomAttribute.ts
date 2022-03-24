@@ -1,4 +1,4 @@
-import { TAPConnectorAttribute } from "./APAttributesService";
+import { TAPConnectorAttribute } from "./deleteme.APAttributesService";
 
 
 export abstract class APCustomAttribute {

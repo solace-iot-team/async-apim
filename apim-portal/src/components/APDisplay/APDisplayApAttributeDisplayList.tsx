@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { TAPAttributeDisplayList } from "../../utils/APAttributes/APAttributesService";
+import { TAPAttributeDisplayList } from "../../utils/APAttributes/deleteme.APAttributesService";
 
 import "../APComponents.css";
 
