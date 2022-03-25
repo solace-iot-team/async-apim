@@ -1,56 +1,50 @@
 import { 
   APIProduct,
   APIProductAccessLevel,
-  APIProductPatch,
-  ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
-  attributes as ConnectorAttributes,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
-import { Globals } from '../utils/Globals';
-// import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/APAttributesService";
-// import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsService';
-// import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './APApisService';
-// import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
-// import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
-import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
-import APApisDisplayService, { TAPApiDisplayList } from './APApisDisplayService';
+import APEntityIdsService, { 
+  IAPEntityIdDisplay, 
+} from '../utils/APEntityIdsService';
+import APApisDisplayService, { 
+  TAPApiChannelParameter, 
+  TAPApiChannelParameterList, 
+  TAPApiDisplayList 
+} from './APApisDisplayService';
+import APAttributesDisplayService, { 
+  TAPAttributeDisplayList, 
+} from './APAttributesDisplayService/APAttributesDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsDisplayService';
+import { APManagedAssetDisplayService, IAPManagedAssetDisplay } from './APManagedAssetDisplayService';
+import { TAPProtocolDisplayList } from './APProtocolsDisplayService';
 
+export type TAPControlledChannelParameter = IAPEntityIdDisplay & {
+  value: string;
+};
+export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 
-
-export interface IAPApiProductDisplay extends IAPEntityIdDisplay, IAPSearchContent {
+export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // remove this after
   connectorApiProduct: APIProduct;
+  apApiProductCategoryDisplayName: string;
   apIsGuaranteedMessagingEnabled: boolean;
   apApiDisplayList: TAPApiDisplayList;
-
-  // // todo: the name list is not required
-  // apEnvironmentDisplayList: TAPEnvironmentDisplayList;
-  // apEnvironmentDisplayNameList: Array<string>;
-    
-  // // todo the name list is not required
-  // apProtocolDisplayList: TAPProtocolDisplayList;
-  // apProtocolDisplayNameList: Array<string>;
-
-  // // TODO: separate Ap Special Attributes & attributes
-  // apAttributeDisplayList: TAPAttributeDisplayList;
-  // apAttributeDisplayNameList: Array<string>;
-  
+  apControlledChannelParameterList: TAPControlledChannelParameterList;
+  apEnvironmentDisplayList: TAPEnvironmentDisplayList;
+  /** the consolidated protocol list across all environments */
+  apProtocolDisplayList: TAPProtocolDisplayList;  
 }
 export type TAPApiProductDisplayList = Array<IAPApiProductDisplay>;
 
-export abstract class APApiProductsDisplayService {
-  private readonly BaseComponentName = "APApiProductsDisplayService";
+export abstract class APApiProductsDisplayService extends APManagedAssetDisplayService {
+  private readonly MiddleComponentName = "APApiProductsDisplayService";
 
   private readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
   private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
-  public nameOf(name: keyof IAPApiProductDisplay) {
+  public nameOf<IAPApiProductDisplay>(name: keyof IAPApiProductDisplay) {
     return name;
-  }
-  public nameOf_ApEntityId(name: keyof TAPEntityId) {
-    return `${this.nameOf('apEntityId')}.${name}`;
   }
   public nameOf_ConnectorApiProduct(name: keyof APIProduct) {
     return `${this.nameOf('connectorApiProduct')}.${name}`;
@@ -83,11 +77,14 @@ export abstract class APApiProductsDisplayService {
 
   protected create_Empty_ApApiProductDisplay(): IAPApiProductDisplay {
     const apApiProductDisplay: IAPApiProductDisplay = {
-      apEntityId: APEntityIdsService.create_EmptyObject(),
+      ...this.create_Empty_ApManagedAssetDisplay(),
       connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
       apIsGuaranteedMessagingEnabled: false,
       apApiDisplayList: [],
-      apSearchContent: ''
+      apControlledChannelParameterList: [],
+      apEnvironmentDisplayList: [],
+      apProtocolDisplayList: [],
+      apApiProductCategoryDisplayName: '',
     };
     return apApiProductDisplay;
   }
@@ -98,45 +95,80 @@ export abstract class APApiProductsDisplayService {
     if(clientOptions.guaranteedMessaging.requireQueue === undefined) return false;
     return clientOptions.guaranteedMessaging.requireQueue;
   }
+
+  private extract_ApControlledChannelParameterList({ apAttributeDisplayList, apCombinedApiChannelParameterList }:{
+    apAttributeDisplayList: TAPAttributeDisplayList;
+    apCombinedApiChannelParameterList: TAPApiChannelParameterList;
+  }): TAPControlledChannelParameterList {
+    const apControlledChannelParameterList: TAPControlledChannelParameterList = APAttributesDisplayService.extract_ByEntityIdList({
+      apAttributeDisplayList: apAttributeDisplayList,
+      idList_To_extract: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiChannelParameter>(apCombinedApiChannelParameterList)
+    });
+    return apControlledChannelParameterList;
+  }
+
+
+  //   return apControlledChannelParameterList;
+  // }
   /**
    * Does not create search content.
    */
-  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct }:{
+  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
+    completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): Promise<IAPApiProductDisplay> {
-    // const apProtocolDisplayList: TAPProtocolDisplayList = APProtocolsService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList(connectorApiProduct.protocols);
-    // const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesService.create_SortedApAttributeDisplayList_From_ConnectorAttributeList(connectorApiProduct.attributes);
+    const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    // APApisAttributesDisplayService.create_Api_AttributeEntities({
-    //   connectorAttributes: connectorApiInfo.a
-    // })
-
-    create the controlledChannelParameters:
-    // - create the combined paramter list using ApisDisplayService
-    // - check which ones are in the API product ==> these are the controllerChannelParameters
-
-
-
-    const _base: IAPApiProductDisplay = {
+    const _base = this.create_ApManagedAssetDisplay({
       apEntityId: {
         id: connectorApiProduct.name,
         displayName: connectorApiProduct.displayName
       },
+      complete_ApAttributeDisplayList: APAttributesDisplayService.create_ApAttributeDisplayList({
+        apRawAttributeList: connectorApiProduct.attributes
+      })
+    });
+    // get the used Apis
+    const apApiDisplayList: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });
+    // create the combined channel parameter list across all apis
+    const apCombinedApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
+      apApiDisplayList: apApiDisplayList
+    });
+    const apControlledChannelParameterList: TAPControlledChannelParameterList = this.extract_ApControlledChannelParameterList({
+      apAttributeDisplayList: _base.external_ApAttributeDisplayList,
+      apCombinedApiChannelParameterList: apCombinedApiChannelParameterList
+    });
+
+    // get environments
+    const apEnvironmentDisplayList: TAPEnvironmentDisplayList = [];
+    if(connectorApiProduct.environments !== undefined) {
+      connectorApiProduct.environments.forEach( (envId: string) => {
+        const found: TAPEnvironmentDisplay | undefined = completeApEnvironmentDisplayList.find( (apEnvironmentDisplay: TAPEnvironmentDisplay) => {
+          return apEnvironmentDisplay.apEntityId.id === envId;
+        });
+        if(found === undefined) throw new Error(`${logName}: found === undefined`);
+        apEnvironmentDisplayList.push(found);
+      });
+    }
+    // get combined protocols
+    const consolidated_ApProtocolDisplayList: TAPProtocolDisplayList = APEnvironmentsDisplayService.create_ConsolidatedApProtocolDisplayList({
+      apEnvironmentDisplayList: apEnvironmentDisplayList
+    });
+
+    const apApiProductDisplay: IAPApiProductDisplay = {
+      ..._base,
+      apApiProductCategoryDisplayName: this.CDefaultApiProductCategory,
       connectorApiProduct: connectorApiProduct,
       apIsGuaranteedMessagingEnabled: this.get_IsGuaranteedMessagingEnabled(connectorApiProduct.clientOptions),
-      apApiDisplayList:  await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis }),
-      // apEnvironmentDisplayList: apEnvironmentDisplayList,
-      // apEnvironmentDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(apEnvironmentDisplayList),
-      // apProtocolDisplayList: apProtocolDisplayList,
-      // apProtocolDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPProtocolDisplay>(apProtocolDisplayList),
-      // apAttributeDisplayList: apAttributeDisplayList,
-      // apAttributeDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPAttributeDisplay>(apAttributeDisplayList), 
-      // apApiProductCategory: this.CDefaultApiProductCategory,
+      apApiDisplayList:  apApiDisplayList,
+      apControlledChannelParameterList: apControlledChannelParameterList,
+      apEnvironmentDisplayList: apEnvironmentDisplayList,
+      apProtocolDisplayList: consolidated_ApProtocolDisplayList,
       // apApiProductImageUrl: this.CDefaultApiProductImageUrl,
-      apSearchContent: ''
     };
-    return _base;
+    return apApiProductDisplay;
   }
 
   // protected create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPApiProductDisplay {

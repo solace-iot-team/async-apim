@@ -12,7 +12,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/deleteme.APEnvironmentsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

@@ -8,19 +8,18 @@ import { MenuItem } from "primereact/api";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { Globals } from "../../../utils/Globals";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplayList } from "../../displayServices/APAdminPortalApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService, { 
+  TAPAdminPortalApiProductDisplay, 
+  TAPAdminPortalApiProductDisplayList 
+} from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { TAPApiDisplay } from "../../../displayServices/APApisDisplayService";
-import { APIParameter } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IListApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -121,19 +120,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   const controlledChannelParametersBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return(
-      <div>TBD</div>
-    )
-    // if(rowData.apAttributeDisplayList.length === 0) return (<div>-</div>);
-    // return APRenderUtils.renderStringListAsDivList(rowData.apAttributeDisplayNameList);
-    // if(rowData.connectorApiProduct.attributes.length === 0) return (<div>-</div>);
-    // return APRenderUtils.renderStringListAsDivList(APAttributesService.create_SortedAttributeNameList(rowData.connectorApiProduct.attributes));
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apControlledChannelParameterList));
+  }
+  const originalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.original_ApAttributeDisplayList));
+  }
+  const customAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apCustomAttributeDisplayList));
+  }
+  const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
   }
   const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return(
-      <div>TBD</div>
-    )
-    // return APRenderUtils.renderStringListAsDivList(rowData.apEnvironmentDisplayNameList);
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
   }
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
@@ -155,6 +154,17 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const approvalTypeTemplate = (row: TManagedObject): string => {
     return row.connectorApiProduct.approvalType ? row.connectorApiProduct.approvalType : '?';
   }
+  const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
+    if(row.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
+      <div style={{ color: 'red' }}>None.</div>
+    );
+    return (
+      <div>
+        {row.apBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}
+      </div>
+    );
+  }
+
   // const accessLevelTemplate = (rowData: TManagedObjectTableDataRow): string => {
   //   return rowData.connectorApiProduct.accessLevel ? rowData.connectorApiProduct.accessLevel : '?';
   // }
@@ -167,6 +177,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const filterField = APAdminPortalApiProductsDisplayService.nameOf('apSearchContent');
     const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf_ConnectorApiProduct('approvalType');
     const gmSortField = APAdminPortalApiProductsDisplayService.nameOf('apIsGuaranteedMessagingEnabled');
+    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
     return (
       <div className="card">
         <DataTable
@@ -193,9 +204,22 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         >
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
           <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable />
+          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
           {/* <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField="connectorApiProduct.accessLevel" sortable /> */}
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
+
+
+          <Column header="Orginal Attributes" body={originalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+
           <Column header="Controlled Channel Parameters" body={controlledChannelParametersBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+
+          {/* <Column header="Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
+
+          <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+          <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+
+
+
           <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
           {/* <Column header="Protocols" body={protocolsTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
           <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField={gmSortField} />

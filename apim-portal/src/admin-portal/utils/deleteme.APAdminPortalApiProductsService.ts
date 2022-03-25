@@ -7,7 +7,7 @@ import {
 import { TAPApiProductDisplay, APApiProductsService, TAPApiProductDisplayList } from '../../utils/deleteme.APApiProductsService';
 import { TAPApiDisplayList } from '../../utils/deleteme.APApisService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
-import { TAPEnvironmentDisplayList } from '../../utils/APEnvironmentsService';
+import { TAPEnvironmentDisplayList } from '../../utils/deleteme.APEnvironmentsService';
 
 export type TAPAdminPortalApiProductDisplay = TAPApiProductDisplay & {
   apAppReferenceEntityIdList: TAPEntityIdList

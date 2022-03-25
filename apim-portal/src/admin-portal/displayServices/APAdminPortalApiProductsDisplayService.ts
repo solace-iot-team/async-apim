@@ -1,13 +1,14 @@
 import { 
   APIProduct,
   ApiProductsService, 
-  CommonEntityNameList, 
+  CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APApiProductsDisplayService, IAPApiProductDisplay } from '../../displayServices/APApiProductsDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
-import APSearchContentService from '../../utils/APSearchContentService';
+import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 
-export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & {
+export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
   apAppReferenceEntityIdList: TAPEntityIdList;
 }; 
 export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProductDisplay>;
@@ -15,37 +16,34 @@ export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProduct
 class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
 
+  public create_Empty_ApAdminPortalApiProductDisplay(): TAPAdminPortalApiProductDisplay {
+    const _base = this.create_Empty_ApApiProductDisplay();
+    return {
+      ...this.create_Empty_ApApiProductDisplay(),
+      apAppReferenceEntityIdList: [],
+      apSearchContent: '',
+    };
+  }
 
-  // public create_EmptyObject(): TAPAdminPortalApiProductDisplay {
-  //   const base = super.create_EmptyObject();
-  //   return {
-  //     ...base,
-  //     apAppReferenceEntityIdList: []
-  //   };
-  // }
-
-  // public create_ApAdminPortalApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPAdminPortalApiProductDisplay {
-  //   const base = super.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, apEnvironmentDisplayList, apApiDisplayList);
-  //   return {
-  //     ...base,
-  //     apAppReferenceEntityIdList: []
-  //   };
-  // }
-
-  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct }:{
+  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
+    completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): Promise<TAPAdminPortalApiProductDisplay> {
-    const base: IAPApiProductDisplay = await super.create_ApApiProductDisplay_From_ApiEntities({
+    
+    const base: IAPApiProductDisplay = await this.create_ApApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
-      connectorApiProduct: connectorApiProduct
+      connectorApiProduct: connectorApiProduct,
+      completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
     });
+
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = {
       ...base,
       apAppReferenceEntityIdList: await this.apiGetList_AppReferenceEntityIdList({ 
         organizationId: organizationId,
         apiProductId: connectorApiProduct.name
       }),
+      apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<TAPAdminPortalApiProductDisplay>(apAdminPortalApiProductDisplay);
   }
@@ -71,12 +69,13 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     organizationId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
 
-    // const funcName = 'listAdminPortalApiProductDisplay';
-    // const logName = `${this.APDeveloperPortalApiProductsService_ComponentName}.${funcName}()`;
-    // console.log(`${logName}: starting ...`)
-
     const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId
+    });
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
     });
 
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
@@ -84,6 +83,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
         organizationId: organizationId,
         connectorApiProduct: connectorApiProduct,
+        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       });
       apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
     }

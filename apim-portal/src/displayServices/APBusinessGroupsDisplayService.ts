@@ -29,6 +29,11 @@ export type TAPTreeTableExpandedKeysType = {
   [key: string]: boolean;
 }
 
+/** Id & display names for referencing in UI */
+export type TAPBusinessGroupDisplayReference = IAPEntityIdDisplay & {
+  apExternalBusinessGroupReference?: TAPEntityId;
+}
+
 export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsBusinessGroupResponse: APSBusinessGroupResponse;
   apExternalReference?: APSExternalReference & {
@@ -43,6 +48,13 @@ export type TAPBusinessGroupDisplayList = Array<TAPBusinessGroupDisplay>;
 class APBusinessGroupsDisplayService {
   private readonly BaseComponentName = "APBusinessGroupsDisplayService";
 
+  public nameOf(name: keyof TAPBusinessGroupDisplay) {
+    return name;
+  }
+  public nameOf_ApEntityId(name: keyof TAPEntityId) {
+    return `${this.nameOf('apEntityId')}.${name}`;
+  }
+
   private create_EmptyApsBusinessGroup(apBusinessGroupParentEntityId: TAPEntityId | undefined): APSBusinessGroupResponse {
     const bg: APSBusinessGroupResponse = {
       businessGroupId: '',
@@ -55,6 +67,16 @@ class APBusinessGroupsDisplayService {
       bg.businessGroupParentId = apBusinessGroupParentEntityId.id
     }
     return bg;
+  }
+
+  public create_ApBusinessGroupDisplayReference({ businessGroupEntityId, externalBusinessGroupEntityId }:{
+    businessGroupEntityId: TAPEntityId;
+    externalBusinessGroupEntityId?: TAPEntityId;
+  }): TAPBusinessGroupDisplayReference {
+    return {
+      apEntityId: businessGroupEntityId,
+      apExternalBusinessGroupReference: externalBusinessGroupEntityId
+    };
   }
 
   public create_EmptyObject(apBusinessGroupParentEntityId: TAPEntityId | undefined): TAPBusinessGroupDisplay {
@@ -310,6 +332,34 @@ class APBusinessGroupsDisplayService {
     });
     return result;
   }
+
+  // ********************************************************************************************************************************
+  // API calls
+  // ********************************************************************************************************************************
+
+  // public async apsGet_ApBusinessGroupDisplay({ organizationId, businessGroupId }: {
+  //   organizationId: string;
+  //   businessGroupId: string;
+  // }): Promise<TAPBusinessGroupDisplay> {
+
+  //   const apsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroup({
+  //     organizationId: organizationId,
+  //     businessgroupId: businessGroupId
+  //   });
+
+  //   // get external system for displayname
+  //   // get all children groups for displayName
+  //   // get parent group for displayName
+
+  //   const apBusinessGroupDisplay: TAPBusinessGroupDisplay = this.create_ApBusinessGroupDisplay_From_ApiEntities({
+  //     apsBusinessGroupResponse: apsBusinessGroupResponse,
+  //     externalSystemDisplayName: this.getExternalSystemDisplayName(extSystemsListResponse.list, apsBusinessGroupResponse.externalReference),
+  //     apParentBusinessGroupEntityId: parentBusinessGroupEntityId,
+  //     apBusinessGroupChildrenEntityIdList: childrenEntityIdList
+  //   });
+
+  //   return apBusinessGroupDisplay;
+  // }
 
   public async apsGetList_ApBusinessGroupSystemDisplayList({ organizationId}: {
     organizationId: string;

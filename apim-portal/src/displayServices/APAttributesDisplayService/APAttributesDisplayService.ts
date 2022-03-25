@@ -1,77 +1,119 @@
-import { attributes } from "@solace-iot-team/apim-connector-openapi-browser";
-import { IAPEntityIdDisplay } from "../../utils/APEntityIdsService";
-import { TAPAttributeType } from "./APAttributesCommon";
+import { IAPEntityIdDisplay, TAPEntityIdList } from "../../utils/APEntityIdsService";
 
-// TODO: design this properly
-
-
-
-// not defined in connector api
-export type TAPConnectorAttribute = {
-  name: string,
-  value: string
+/** not defined in connector API */
+export type TAPRawAttribute = {
+  name: string;
+  value: string;
 }
-export type TAPConnectorAttributeList = Array<TAPConnectorAttribute>;
+export type TAPRawAttributeList = Array<TAPRawAttribute>;
 
-export type TAPAttributeDisplay = IAPEntityIdDisplay & {
-  apAttributeType: TAPAttributeType;
-  connectorAttribute: TAPConnectorAttribute;
+
+/**
+ * apEntityId.id === apEntityId.displayName === attribute name
+ */
+export interface IAPAttributeDisplay extends IAPEntityIdDisplay {
+  value: string;
 }
-export type TAPAttributeDisplayList = Array<TAPAttributeDisplay>;
+export type TAPAttributeDisplayList = Array<IAPAttributeDisplay>;
+
+export type TAPExtractEntities_From_ApConnectorAttributeList_Result = {
+  extractedList: TAPAttributeDisplayList;
+  remainingList: TAPAttributeDisplayList;
+}
 
 class APAttributesDisplayService {
   private readonly BaseComponentName = "APAttributesDisplayService";
 
- 
-  // private create_ConnectorAttribute_From_ApAttributeDisplay(apAttributeDisplay: TAPAttributeDisplay): TAPConnectorAttribute {
-  //   return apAttributeDisplay.connectorAttribute;
-  // }
 
-  // public create_EmptyObject(): TAPAttributeDisplay {
-  //   return this.create_ApAttributeDisplay_From_ConnnectorAttribute({ name: '', value: ''});
-  // }
-
-  public is_EmptyObject(apAttributeDisplay: TAPAttributeDisplay): boolean {
-    return (apAttributeDisplay.connectorAttribute.name === '' && apAttributeDisplay.connectorAttribute.value === '' );
+  private create_ApAttributeDisplay(apRawAttribute: TAPRawAttribute): IAPAttributeDisplay {
+    return {
+      apEntityId: {
+        id: apRawAttribute.name,
+        displayName: apRawAttribute.name
+      },
+      value: apRawAttribute.value
+    };
   }
 
-  // public create_ApAttributeDisplay_From_ConnnectorAttribute(connectorAttribute: TAPConnectorAttribute): TAPAttributeDisplay {
-  //   return {
-  //     apEntityId: {
-  //       id: connectorAttribute.name,
-  //       displayName: connectorAttribute.name
-  //     },
-  //     connectorAttribute: connectorAttribute,
-  //     apAttributeType: EAPAttributeType.
-  //   }
-  // }
+  public create_ApAttributeDisplayList({ apRawAttributeList }:{
+    apRawAttributeList: TAPRawAttributeList;
+  }): TAPAttributeDisplayList {
+    const apAttributeDisplayList: TAPAttributeDisplayList = [];
+    apRawAttributeList.forEach( (x) => {
+      apAttributeDisplayList.push(this.create_ApAttributeDisplay(x));
+    });
+    return apAttributeDisplayList;
+  }
 
-  // public create_SortedApAttributeDisplayList_From_ConnectorAttributeList(connectorAttributeList: attributes): TAPAttributeDisplayList {
-  //   const list: TAPAttributeDisplayList = [];
-  //   for(const connectorAttribute of connectorAttributeList) {
-  //     list.push(this.create_ApAttributeDisplay_From_ConnnectorAttribute(connectorAttribute));
-  //   }
-  //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPAttributeDisplay>(list);
-  // }
+  /**
+   * Extracts attribute names NOT prefixed with prefix.
+   * 
+   * @param apAttributeDisplayList - modified without the extracted attributes 
+   * @returns 
+   */
+  public extract_Not_Prefixed_With({ not_prefixed_with, apAttributeDisplayList }:{
+    not_prefixed_with: string;
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPAttributeDisplayList {
+    const funcName = 'extract_Not_Prefixed_With';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
-  // public create_ConnectorAttributeList_From_ApAttributeDisplayList(apAttributeDisplayList: TAPAttributeDisplayList): attributes {
-  //   return apAttributeDisplayList.map( (x) => {
-  //     return x.connectorAttribute;
-  //   });
-  // }
+    const not_prefixed_list: TAPAttributeDisplayList = [];
+    // alert(`${logName}: before deleting, apAttributeDisplayList=${JSON.stringify(apAttributeDisplayList)}`);
+    for(let idx=0; idx<apAttributeDisplayList.length; idx++) {
+      if(!apAttributeDisplayList[idx].apEntityId.id.startsWith(not_prefixed_with)) {
+        not_prefixed_list.push(apAttributeDisplayList[idx]);
+        apAttributeDisplayList.splice(idx, 1);
+        idx--;
+      }
+    }
+    // alert(`${logName}: after deleting idxList, apAttributeDisplayList=${JSON.stringify(apAttributeDisplayList)}`);
+    return not_prefixed_list;
+  }
 
-  // public add_ApAttributeDisplay_To_ApAttributeDisplayList(apAttributeDisplayList: TAPAttributeDisplayList, addApAttributeDisplay: TAPAttributeDisplay): TAPAttributeDisplayList {
-  //   apAttributeDisplayList.push(addApAttributeDisplay);
-  //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPAttributeDisplay>(apAttributeDisplayList);
-  // }
+  /**
+   * Extracts attribute names prefixed with prefix.
+   * 
+   * @param apAttributeDisplayList - modified without the extracted attributes 
+   * @returns 
+   */
+     public extract_Prefixed_With({ prefixed_with, apAttributeDisplayList }:{
+      prefixed_with: string;
+      apAttributeDisplayList: TAPAttributeDisplayList;
+    }): TAPAttributeDisplayList {
+      const prefixed_list: TAPAttributeDisplayList = [];
+      for(let idx=0; idx<apAttributeDisplayList.length; idx++) {
+        if(apAttributeDisplayList[idx].apEntityId.id.startsWith(prefixed_with)) {
+          prefixed_list.push(apAttributeDisplayList[idx]);
+          apAttributeDisplayList.splice(idx, 1);
+          idx--;
+        }
+      }
+      return prefixed_list;
+    }
+  
+  /**
+   * Returns the extracted list.
+   * @param apAttributeDisplayList - the list is modified and reflects the remaining list
+   */
+  public extract_ByEntityIdList({ idList_To_extract, apAttributeDisplayList }: {
+    idList_To_extract: Array<string>;
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPAttributeDisplayList {
 
-  // public remove_ApAttributeDisplay_From_ApAttributeDisplayList(apAttributeDisplayList: TAPAttributeDisplayList, removeApAttributeDisplay: TAPAttributeDisplay): TAPAttributeDisplayList {
-  //   const idx = apAttributeDisplayList.findIndex( (x) => {
-  //     return x.apEntityId.id === removeApAttributeDisplay.apEntityId.id;
-  //   });
-  //   if(idx > -1) apAttributeDisplayList.splice(idx, 1);
-  //   return apAttributeDisplayList;
-  // }
+    const extractedList: TAPAttributeDisplayList = [];
+
+    for(const id of idList_To_extract) {
+      const idx: number = apAttributeDisplayList.findIndex( (apAttributeDisplay: IAPAttributeDisplay) => {
+        return apAttributeDisplay.apEntityId.id === id;
+      });
+      if(idx > -1) {
+        extractedList.push(apAttributeDisplayList[idx]);
+        apAttributeDisplayList.splice(idx, 1);
+      }
+    }
+    return extractedList;
+  }
 
 }
 

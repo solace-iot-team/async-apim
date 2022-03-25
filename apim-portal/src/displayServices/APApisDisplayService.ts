@@ -7,17 +7,18 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
+import { Globals } from '../utils/Globals';
 
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
-export type TAPApiParameter = IAPEntityIdDisplay & {
+export type TAPApiChannelParameter = IAPEntityIdDisplay & {
   valueList: Array<string>;
 }
-export type TAPApiParameterList = Array<TAPApiParameter>;
+export type TAPApiChannelParameterList = Array<TAPApiChannelParameter>;
 
 export type TAPApiDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
-  apApiParameterList: TAPApiParameterList;
+  apApiChannelParameterList: TAPApiChannelParameterList;
   apVersion: string; /** in SemVer format */
   connectorApiInfo: APIInfo;
 }
@@ -36,22 +37,22 @@ export class APApisDisplayService {
     return `${this.nameOf('connectorApiInfo')}.${name}`;
   }
 
-  private create_ApApiParameterList({ connectorParameters }:{
+  private create_ApApiChannelParameterList({ connectorParameters }:{
     connectorParameters?: Array<APIParameter>;
-  }): TAPApiParameterList {
+  }): TAPApiChannelParameterList {
     if(connectorParameters === undefined) return [];
-    const apApiParameterList: TAPApiParameterList = [];
+    const apApiChannelParameterList: TAPApiChannelParameterList = [];
     connectorParameters.forEach( (x) => {
-      const apApiParamter: TAPApiParameter = {
+      const apApiChannelParameter: TAPApiChannelParameter = {
         apEntityId: {
           id: x.name, 
           displayName: x.name
         },
         valueList: x.enum ? x.enum : []
       };
-      apApiParameterList.push(apApiParamter);
+      apApiChannelParameterList.push(apApiChannelParameter);
     });
-    return apApiParameterList;
+    return apApiChannelParameterList;
   }
 
   private create_ApApiDisplay_From_ApiEntities = ({ connectorApiInfo, apApiProductReferenceEntityIdList }:{
@@ -66,11 +67,44 @@ export class APApisDisplayService {
       },
       connectorApiInfo: connectorApiInfo,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
-      apApiParameterList: this.create_ApApiParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
+      apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
       apVersion: connectorApiInfo.version,
       apSearchContent: ''
     };
     return APSearchContentService.add_SearchContent<TAPApiDisplay>(_base);
+  }
+
+  public create_Combined_ApiChannelParameterList({ apApiDisplayList }:{
+    apApiDisplayList: TAPApiDisplayList;
+  }): TAPApiChannelParameterList {
+    // const funcName = 'create_Combined_ApiChannelParameterList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const mergeValueLists = (one: Array<string>, two: Array<string>): Array<string> => {
+      return Globals.deDuplicateStringList(one.concat(two));
+    }
+
+    const apComginedApiChannelParameterList: TAPApiChannelParameterList = [];
+    
+    for(const apApiDisplay of apApiDisplayList) {
+      for(const newApiParameter of apApiDisplay.apApiChannelParameterList) {
+        // alert(`${logName}: checking parameter: apApiDisplay=${apApiDisplay.apEntityId.displayName}, parameter=${JSON.stringify(newApiParameter, null, 2)}`);
+        // get the index if already in list
+        const existing_idx = apComginedApiChannelParameterList.findIndex( (existing: TAPApiChannelParameter) => {
+          return existing.apEntityId.id === newApiParameter.apEntityId.id;
+        });
+        if(existing_idx > -1) {
+          // alert(`${logName}: merging parameters, existing=${JSON.stringify(apComginedApiChannelParameterList[existing_idx], null, 2)}, newApiParameter=${JSON.stringify(newApiParameter, null, 2)}`);
+          const newValueList: Array<string> = mergeValueLists(apComginedApiChannelParameterList[existing_idx].valueList, newApiParameter.valueList);
+          apComginedApiChannelParameterList[existing_idx].valueList = newValueList;
+        } else {
+          // add parameter to list
+          // alert(`${logName}: adding parameter=${JSON.stringify(newApiParameter, null, 2)}`);
+          apComginedApiChannelParameterList.push(newApiParameter);            
+        }
+      }
+    }
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiChannelParameter>(apComginedApiChannelParameterList);  
   }
 
   // ********************************************************************************************************************************

@@ -30,10 +30,10 @@ import { SelectEnvironments } from "./deleteme.SelectEnvironments";
 import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/APManageApAttributeDisplayList";
 import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
 import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/deleteme.APAttributesService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/deleteme.APEnvironmentsService";
 import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/deleteme.APApisService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/APProtocolsService";
+import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/deleteme.APProtocolsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
