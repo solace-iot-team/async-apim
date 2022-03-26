@@ -5,7 +5,6 @@ import {
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, 
 } from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -13,15 +12,14 @@ import APApisDisplayService, {
   TAPApiDisplayList 
 } from './APApisDisplayService';
 import APAttributesDisplayService, { 
+  IAPAttributeDisplay,
   TAPAttributeDisplayList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsDisplayService';
 import { APManagedAssetDisplayService, IAPManagedAssetDisplay } from './APManagedAssetDisplayService';
 import { TAPProtocolDisplayList } from './APProtocolsDisplayService';
 
-export type TAPControlledChannelParameter = IAPEntityIdDisplay & {
-  value: string;
-};
+export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
@@ -279,31 +277,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<IAPApiProductDisplay>(list);    
   // }
   
-  // protected async getApApiProductDisplay({ organizationId, apiProductId }: {
-  //   organizationId: string;
-  //   apiProductId: string;
-  // }): Promise<TAPApiProductDisplay> {
-
-  //   const funcName = 'getApApiProductDisplay';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
-
-  //   const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
-  //     organizationName: organizationId,
-  //     apiProductName: apiProductId
-  //   });
-
-  //   if(!connectorApiProduct.environments) throw new Error(`${logName}: connectorApiProduct.environments is undefined`);
-  //   const apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplayForEnvIdList({
-  //     organizationId: organizationId,
-  //     envIdList: connectorApiProduct.environments
-  //   });
-  //   const apApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
-  //     organizationId: organizationId,
-  //     apiIdList: connectorApiProduct.apis
-  //   });
-  //   return this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, apEnvironmentDisplayList, apApiDisplayList);
-  // }
-
   // protected async createApApiProductDisplay({ organizationId, apApiProductDisplay}: {
   //   organizationId: string;
   //   apApiProductDisplay: TAPApiProductDisplay;

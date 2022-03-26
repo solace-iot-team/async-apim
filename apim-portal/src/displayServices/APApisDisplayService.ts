@@ -1,6 +1,5 @@
 import { 
   APIInfo, 
-  APIInfoList, 
   APIParameter, 
   ApisService, 
   CommonEntityNameList,
@@ -145,8 +144,8 @@ export class APApisDisplayService {
     organizationId: string;
     apiId: string;
   }): Promise<TAPApiDisplay> {
-    const funcName = 'apiGet_ApApiDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGet_ApApiDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const connectorApiInfo: APIInfo = await ApisService.getApiInfo({
       organizationName: organizationId,

@@ -18,6 +18,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 import { ListApiProducts } from "./ListApiProducts";
+import { ViewApiProduct } from "./ViewApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -307,15 +308,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         />
       }
       {showViewComponent && managedObjectEntityId &&
-        <p>ViewApiProduct</p>
-        // <ViewApiProduct
-        //   organizationId={props.organizationId}
-        //   apiProductId={managedObjectId}
-        //   apiProductDisplayName={managedObjectDisplayName}
-        //   onSuccess={onSubComponentSuccessNoChange} 
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading}
-        // />      
+        <ViewApiProduct
+          organizationId={props.organizationEntityId.id}
+          apiProductEntityId={managedObjectEntityId}
+          onSuccess={onSubComponentSuccessNoChange} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+        />      
       }
       {showDeleteComponent && managedObjectEntityId &&
         <p>DeleteApiProduct</p>

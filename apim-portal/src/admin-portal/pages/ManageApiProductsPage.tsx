@@ -64,7 +64,7 @@ export const ManageApiProductsPage: React.FC = () => {
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
     setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  }, []);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <div className="ap-pages">

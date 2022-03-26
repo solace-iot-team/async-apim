@@ -4,22 +4,23 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
+import APAttributesDisplayService from "../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
+import { TAPControlledChannelParameterList } from "../../displayServices/APApiProductsDisplayService";
 
 import "../APComponents.css";
 
-export interface IAPDisplayApAttributeDisplayListProps {
-  apAttributeDisplayList: TAPAttributeDisplayList;
+export interface IAPDisplayApControlledChannelParametersProps {
+  apControlledChannelParameterList: TAPControlledChannelParameterList;
   emptyMessage: string;
   className?: string;
 }
 
-export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisplayListProps> = (props: IAPDisplayApAttributeDisplayListProps) => {
-  // const componentName='APDisplayApAttributeDisplayList';
+export const APDisplayApControlledChannelParameters: React.FC<IAPDisplayApControlledChannelParametersProps> = (props: IAPDisplayApControlledChannelParametersProps) => {
+  // const componentName='APDisplayApControlledChannelParameters';
 
   const dataTableRef = React.useRef<any>(null);
 
-  const renderComponent = (apAttributeDisplayList: TAPAttributeDisplayList): JSX.Element => {
+  const renderComponent = (apControlledChannelParameterList: TAPControlledChannelParameterList): JSX.Element => {
     const dataKey = APAttributesDisplayService.nameOf_ApEntityId('id');
     const sortField = APAttributesDisplayService.nameOf_ApEntityId('displayName');
     const valueField = APAttributesDisplayService.nameOf('value');
@@ -29,26 +30,24 @@ export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisp
         <DataTable
           className="p-datatable-sm"
           ref={dataTableRef}
-          value={apAttributeDisplayList}
+          value={apControlledChannelParameterList}
           dataKey={dataKey}
           sortMode="single" 
           sortField={sortField} 
           sortOrder={1}
           scrollable 
           // scrollHeight="200px" 
-          resizableColumns 
-          columnResizeMode="fit"
         >
           <Column 
             field={sortField}
-            header="Attribute Name" 
+            header="Controlled Channel Parameter" 
             bodyStyle={{ verticalAlign: 'top' }}
-            style={{width: '20%'}}
+            style={{width: '25%'}}
             sortable    
           />
           <Column 
             field={valueField} 
-            header="Attribute Values"
+            header="Available Values"
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
         </DataTable>
@@ -62,10 +61,10 @@ export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisp
 
   return (
     <div className={props.className ? props.className : 'card'}>
-    {props.apAttributeDisplayList.length > 0 &&
-      renderComponent(props.apAttributeDisplayList)
+    {props.apControlledChannelParameterList.length > 0 &&
+      renderComponent(props.apControlledChannelParameterList)
     }
-    {(props.apAttributeDisplayList.length === 0) && 
+    {(props.apControlledChannelParameterList.length === 0) && 
       <span>{props.emptyMessage}</span>
     }
   </div>

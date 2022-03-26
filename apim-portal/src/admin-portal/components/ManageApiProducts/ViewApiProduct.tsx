@@ -9,21 +9,22 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
-import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/deleteme.APDisplayApAttributeDisplayList";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
-import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
-import { TAPApiSpecDisplay } from "../../../utils/deleteme.APApiSpecsService";
-import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
+import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
 export interface IViewApiProductProps {
-  organizationId: string,
-  apiProductId: string;
-  apiProductDisplayName: string;
+  organizationId: string;
+  apiProductEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -44,11 +45,11 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductEntityId.displayName}`);
     try { 
-      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsService.getAdminPortalApApiProductDisplay({
+      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
-        apiProductId: props.apiProductId
+        apiProductId: props.apiProductEntityId.id
       });
       setManagedObject(object);
     } catch(e) {
@@ -64,9 +65,9 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
     try { 
-      const apiProductApiSpec: TAPApiSpecDisplay = await APAdminPortalApiProductsService.getApiSpec({
+      const apiProductApiSpec: TAPApiSpecDisplay = await APApiSpecsDisplayService.apiGet_ApiSpec({
         organizationId: props.organizationId, 
-        apiProductId: props.apiProductId,
+        apiProductId: props.apiProductEntityId.id,
         apiEntityId: { id: apiId, displayName: apiDisplayName }
       });
       // console.log(`${logName}: apiProductApiSpec=\n${JSON.stringify(apiProductApiSpec, null, 2)}`)
@@ -155,6 +156,17 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     );
   }
 
+  const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
+    if(apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
+      <span style={{ color: 'red' }}>None.</span>
+    );
+    return (
+      <span>
+        {apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}
+      </span>
+    );
+  }
+
   const renderUsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
     if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
     return (
@@ -167,7 +179,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     return (
       <React.Fragment>
         <div className="p-col-12">
@@ -178,24 +190,30 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
 
               <div><b>Approval type</b>: {managedObject.connectorApiProduct.approvalType}</div>
-              <div><b>Access level</b>: {managedObject.connectorApiProduct.accessLevel}</div>
+              <div><b>Business Group</b>: {renderBusinessGroup(managedObject.apBusinessGroupInfo)}</div>
 
+              <Divider />
               <div className="p-text-bold">APIs:</div>
-              {renderShowApiButtons()}
+              <div>
+                {renderShowApiButtons()}
+                <APDisplayApControlledChannelParameters
+                  apControlledChannelParameterList={managedObject.apControlledChannelParameterList}
+                  emptyMessage="No controlled channel parameters defined"
+                  className="p-ml-4"
+                />
+              </div>
+              <Divider />
 
               <div className="p-text-bold">Environments:</div>
-              {/* <div className="p-ml-2">{managedObjectDisplay.apiProduct.environments?.join(', ')}</div> */}
-              <div className="p-ml-2">{managedObject.apEnvironmentDisplayNameList.join(', ')}</div>
+              <div className="p-ml-2">
+                {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apEnvironmentDisplayList).join(', ')}
+              </div>
+              
 
               <div className="p-text-bold">Protocols:</div>
-              <div className="p-ml-2">{managedObject.apProtocolDisplayNameList.join(', ')}</div>
-
-              <div className="p-text-bold">Attributes:</div>
-              <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.apAttributeDisplayList}
-                emptyMessage="No attributes defined"
-                className="p-ml-4"
-              />
+              <div className="p-ml-2">
+                {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apProtocolDisplayList).join(', ')}
+              </div>
 
               <div className="p-text-bold">Client Options:</div>
               <APDisplayClientOptions
@@ -204,6 +222,23 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               />
 
               <Divider />
+              
+              <div className="p-text-bold">Custom Attributes:</div>
+              <APDisplayApAttributeDisplayList
+                apAttributeDisplayList={managedObject.apCustomAttributeDisplayList}
+                emptyMessage="No attributes defined"
+                className="p-ml-4"
+              />
+              
+              <div className="p-text-bold">General Attributes:</div>
+              <APDisplayApAttributeDisplayList
+                apAttributeDisplayList={managedObject.external_ApAttributeDisplayList}
+                emptyMessage="No attributes defined"
+                className="p-ml-4"
+              />
+
+              <Divider />
+              
               <div className="p-text-bold">Used by Apps:</div>
               <div className="p-ml-2">{renderUsedByApps(managedObject.apAppReferenceEntityIdList)}</div>
 
@@ -233,7 +268,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     <React.Fragment>
       <div className="manage-api-products">
 
-        <APComponentHeader header={`API Product: ${props.apiProductDisplayName}`} />
+        <APComponentHeader header={`API Product: ${props.apiProductEntityId.displayName}`} />
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

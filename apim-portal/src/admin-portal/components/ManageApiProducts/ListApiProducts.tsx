@@ -46,7 +46,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
@@ -119,18 +118,18 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     );
   }
 
-  const controlledChannelParametersBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apControlledChannelParameterList));
-  }
-  const originalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.original_ApAttributeDisplayList));
-  }
-  const customAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apCustomAttributeDisplayList));
-  }
-  const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
-  }
+  // const controlledChannelParametersBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apControlledChannelParameterList));
+  // }
+  // const originalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.original_ApAttributeDisplayList));
+  // }
+  // const customAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apCustomAttributeDisplayList));
+  // }
+  // const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
+  // }
   const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
   }
@@ -209,16 +208,12 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
 
 
-          <Column header="Orginal Attributes" body={originalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+          {/* <Column header="Orginal Attributes" body={originalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
-          <Column header="Controlled Channel Parameters" body={controlledChannelParametersBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+          {/* <Column header="Controlled Channel Parameters" body={controlledChannelParametersBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
-          {/* <Column header="Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
-          <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
-
-
+          {/* <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
+          <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
           <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
           {/* <Column header="Protocols" body={protocolsTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}

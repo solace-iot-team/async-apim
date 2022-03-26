@@ -1,4 +1,4 @@
-import { IAPEntityIdDisplay, TAPEntityIdList } from "../../utils/APEntityIdsService";
+import { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 /** not defined in connector API */
 export type TAPRawAttribute = {
@@ -24,6 +24,12 @@ export type TAPExtractEntities_From_ApConnectorAttributeList_Result = {
 class APAttributesDisplayService {
   private readonly BaseComponentName = "APAttributesDisplayService";
 
+  public nameOf<T extends IAPAttributeDisplay>(name: keyof T) {
+    return name;
+  }
+  public nameOf_ApEntityId(name: keyof TAPEntityId) {
+    return `${this.nameOf('apEntityId')}.${name}`;
+  }
 
   private create_ApAttributeDisplay(apRawAttribute: TAPRawAttribute): IAPAttributeDisplay {
     return {
@@ -55,8 +61,8 @@ class APAttributesDisplayService {
     not_prefixed_with: string;
     apAttributeDisplayList: TAPAttributeDisplayList;
   }): TAPAttributeDisplayList {
-    const funcName = 'extract_Not_Prefixed_With';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'extract_Not_Prefixed_With';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const not_prefixed_list: TAPAttributeDisplayList = [];
     // alert(`${logName}: before deleting, apAttributeDisplayList=${JSON.stringify(apAttributeDisplayList)}`);

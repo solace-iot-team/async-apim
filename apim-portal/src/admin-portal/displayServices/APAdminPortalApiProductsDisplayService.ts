@@ -17,7 +17,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
 
   public create_Empty_ApAdminPortalApiProductDisplay(): TAPAdminPortalApiProductDisplay {
-    const _base = this.create_Empty_ApApiProductDisplay();
     return {
       ...this.create_Empty_ApApiProductDisplay(),
       apAppReferenceEntityIdList: [],
@@ -90,25 +89,28 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return apAdminPortalApiProductDisplayList;
   }
 
-  // public getAdminPortalApApiProductDisplay = async({ organizationId, apiProductId }: {
-  //   organizationId: string;
-  //   apiProductId: string;
-  // }): Promise<TAPAdminPortalApiProductDisplay> => {
+  public apiGet_AdminPortalApApiProductDisplay = async({ organizationId, apiProductId }: {
+    organizationId: string;
+    apiProductId: string;
+  }): Promise<TAPAdminPortalApiProductDisplay> => {
 
-  //   const base = await this.getApApiProductDisplay({
-  //     organizationId: organizationId,
-  //     apiProductId: apiProductId
-  //   });
+    const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
+      organizationName: organizationId,
+      apiProductName: apiProductId
+    });
 
-  //   const adminPortalObject: TAPAdminPortalApiProductDisplay = {
-  //     ...base,
-  //     apAppReferenceEntityIdList: await this.listAppReferencesToApiProducts({
-  //       organizationId: organizationId,
-  //       apiProductId: apiProductId
-  //     })
-  //   }
-  //   return adminPortalObject;
-  // }
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
+    const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
+      organizationId: organizationId,
+      connectorApiProduct: connectorApiProduct,
+      completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+    });
+    return apAdminPortalApiProductDisplay;
+  }
 
   // public async createAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
   //   organizationId: string;

@@ -1,6 +1,3 @@
-import { 
-  APIProduct,
-} from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
@@ -14,14 +11,11 @@ import APBusinessGroupsDisplayService, {
 
 
 const CAPManagedAssetAttribute_Prefix = "AP";
-enum EAPManagedAssetAttribute_Type {
-  CUSTOM = "CUSTOM",
-  INTERNAL = "INTERNAL"
-}
-enum EAPManagedAssetAttribute_Realm {
+enum EAPManagedAssetAttribute_Scope {
   BUSINESS_GROUP = "BUSINESS_GROUP",
   CLASSIFICATION = "CLASSIFICATION",
-  LIFECYLE = "LIFECYLE"
+  LIFECYLE = "LIFECYLE",
+  CUSTOM = "CUSTOM",
 }
 enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   ID = "ID",
@@ -38,11 +32,11 @@ enum EAPManagedAssetAttribute_Classification_Tag {
 enum EAPManagedAssetAttribute_Lifecycle_Tag {
   STATE = "STATE",
 }
-enum EAPManagedAssetAttribute_Lifecycle_StateValues {
-  IN_DEVELOPMENT = "IN_DEVELOPMENT",
-  PUBLISHED = "PUBLISHED",
-  DEPRECATED = "DEPRECATED"
-}
+// enum EAPManagedAssetAttribute_Lifecycle_StateValues {
+//   IN_DEVELOPMENT = "IN_DEVELOPMENT",
+//   PUBLISHED = "PUBLISHED",
+//   DEPRECATED = "DEPRECATED"
+// }
 type TManagedAssetAttribute_Tag = 
 EAPManagedAssetAttribute_BusinessGroup_Tag
 | EAPManagedAssetAttribute_Classification_Tag
@@ -94,14 +88,12 @@ export abstract class APManagedAssetDisplayService {
   protected create_ManagedAssetAttribute_Prefix = (): string => {
     return `_${CAPManagedAssetAttribute_Prefix}_`;
   }
-  protected create_ManagedAssetAttribute_Name = ({ type, realm, tag }: {
-    type: EAPManagedAssetAttribute_Type;
-    realm?: EAPManagedAssetAttribute_Realm;
+  protected create_ManagedAssetAttribute_Name = ({ scope, tag }: {
+    scope: EAPManagedAssetAttribute_Scope;
     tag?: TManagedAssetAttribute_Tag;
   }): string => {
-    if(realm !== undefined && tag !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${type}_${realm}_${tag}_`;
-    if(realm !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${type}_${realm}_`;
-    return `_${CAPManagedAssetAttribute_Prefix}_${type}_`;
+    if(tag !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${CAPManagedAssetAttribute_Prefix}_${scope}_`;
   }
   
   protected create_Empty_ApManagedAssetDisplay(): IAPManagedAssetDisplay {
@@ -132,7 +124,7 @@ export abstract class APManagedAssetDisplayService {
 
     // extract business group attributes
     const apBusinessGroupAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-      prefixed_with: this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.INTERNAL, realm: EAPManagedAssetAttribute_Realm.BUSINESS_GROUP }),
+      prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP }),
       apAttributeDisplayList: apAttributeDisplayList
     });
     // alert(`${logName}: apBusinessGroupAttributeDisplayList=${JSON.stringify(apBusinessGroupAttributeDisplayList)}`);
@@ -147,7 +139,7 @@ export abstract class APManagedAssetDisplayService {
       };
       // id
       const businessGroupId_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-        prefixed_with: this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.INTERNAL, realm: EAPManagedAssetAttribute_Realm.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID }),
+        prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID }),
         apAttributeDisplayList: apBusinessGroupAttributeDisplayList
       });
       if(businessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: businessGroupId_apAttributeDisplayList.length > 1`);
@@ -155,7 +147,7 @@ export abstract class APManagedAssetDisplayService {
       if(businessGroupId_apAttributeDisplayList.length === 1) {
         const businessGroupId: string = businessGroupId_apAttributeDisplayList[0].value;
         // displayName
-        const businessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.INTERNAL, realm: EAPManagedAssetAttribute_Realm.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.DISPLAY_NAME });
+        const businessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.DISPLAY_NAME });
         const businessGroupDisplayName_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
           prefixed_with: businessGroupDisplayName_Name,
           apAttributeDisplayList: apBusinessGroupAttributeDisplayList
@@ -172,13 +164,13 @@ export abstract class APManagedAssetDisplayService {
 
         // external business group id & displayName, may be undefined
         const externalBusinessGroupId_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-          prefixed_with: this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.INTERNAL, realm: EAPManagedAssetAttribute_Realm.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_ID }),
+          prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_ID }),
           apAttributeDisplayList: apBusinessGroupAttributeDisplayList
         });
         if(externalBusinessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: externalBusinessGroupId_apAttributeDisplayList.length > 1`);
         if(externalBusinessGroupId_apAttributeDisplayList.length === 1) {
           const externalBusinessGroupId: string = externalBusinessGroupId_apAttributeDisplayList[0].value;
-          const externalBusinessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.INTERNAL, realm: EAPManagedAssetAttribute_Realm.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_DISPLAY_NAME });
+          const externalBusinessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_DISPLAY_NAME });
           const externalBusinessGroupDisplayName_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
             prefixed_with: externalBusinessGroupDisplayName_Name,
             apAttributeDisplayList: apBusinessGroupAttributeDisplayList
@@ -220,7 +212,7 @@ export abstract class APManagedAssetDisplayService {
     // alert(`${logName}: after external attributes, working_ApAttributeDisplayList=${JSON.stringify(working_ApAttributeDisplayList, null, 2)}`);
     // extract custom attributes
     const apCustomAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-      prefixed_with: this.create_ManagedAssetAttribute_Name({ type: EAPManagedAssetAttribute_Type.CUSTOM }),
+      prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.CUSTOM }),
       apAttributeDisplayList: working_ApAttributeDisplayList
     });
     // working_ApAttributeDisplayList now contains only the AP standard attributes
