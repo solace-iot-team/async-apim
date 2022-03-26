@@ -4,6 +4,7 @@ import React from "react";
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 import { Divider } from "primereact/divider";
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -13,7 +14,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageApiProductsCommon";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
@@ -28,6 +29,8 @@ export interface IViewApiProductProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHere: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
 }
 
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
@@ -63,7 +66,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const apiGetApiSpec = async(apiId: string, apiDisplayName: string): Promise<TApiCallState> => {
     const funcName = 'apiGetApiSpec';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve api spec: ${apiDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_SPEC, `retrieve api spec: ${apiDisplayName}`);
     try { 
       const apiProductApiSpec: TAPApiSpecDisplay = await APApiSpecsDisplayService.apiGet_ApiSpec({
         organizationId: props.organizationId, 
@@ -81,16 +84,35 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     return callState;
   }
 
-  // * useEffect Hooks *
+  const ViewApiProduct_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.apiProductEntityId);
+  }
+
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
+  const setBreadCrumbItemList = (moDisplayName: string) => {
+    props.setBreadCrumbItemList([
+      {
+        label: moDisplayName,
+        command: ViewApiProduct_onNavigateHereCommand
+      }
+    ]);
+  }
+
+  // * useEffect Hooks *
+
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(managedObject === undefined) return;
+    setBreadCrumbItemList(managedObject.apEntityId.displayName);
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -237,6 +259,13 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
                 className="p-ml-4"
               />
 
+              <div className="p-text-bold">DEVEL: ALL ATTRIBUTES:</div>
+              <APDisplayApAttributeDisplayList
+                apAttributeDisplayList={managedObject.original_ApAttributeDisplayList}
+                emptyMessage="No attributes defined"
+                className="p-ml-4"
+              />
+
               <Divider />
               
               <div className="p-text-bold">Used by Apps:</div>
@@ -268,7 +297,9 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     <React.Fragment>
       <div className="manage-api-products">
 
-        <APComponentHeader header={`API Product: ${props.apiProductEntityId.displayName}`} />
+        {managedObject && 
+          <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} />
+        }
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

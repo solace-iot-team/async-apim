@@ -1,5 +1,6 @@
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
+import { Globals } from '../utils/Globals';
 import { 
   APSBusinessGroupResponse,
   ApsBusinessGroupsService,
@@ -55,9 +56,9 @@ class APBusinessGroupsDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
 
-  private create_EmptyApsBusinessGroup(apBusinessGroupParentEntityId: TAPEntityId | undefined): APSBusinessGroupResponse {
+  private create_EmptyApsBusinessGroupResponse(apBusinessGroupParentEntityId: TAPEntityId | undefined): APSBusinessGroupResponse {
     const bg: APSBusinessGroupResponse = {
-      businessGroupId: '',
+      businessGroupId: Globals.getUUID(),
       displayName: '',
       description: '',
       businessGroupChildIds: [],
@@ -81,7 +82,7 @@ class APBusinessGroupsDisplayService {
 
   public create_EmptyObject(apBusinessGroupParentEntityId: TAPEntityId | undefined): TAPBusinessGroupDisplay {
     return this.create_ApBusinessGroupDisplay_From_ApiEntities({
-      apsBusinessGroupResponse: this.create_EmptyApsBusinessGroup(apBusinessGroupParentEntityId),
+      apsBusinessGroupResponse: this.create_EmptyApsBusinessGroupResponse(apBusinessGroupParentEntityId),
       externalSystemDisplayName: undefined,
       apParentBusinessGroupEntityId: apBusinessGroupParentEntityId,
       apBusinessGroupChildrenEntityIdList: []

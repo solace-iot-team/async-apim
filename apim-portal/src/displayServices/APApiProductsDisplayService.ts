@@ -1,11 +1,12 @@
 import { 
   APIProduct,
   APIProductAccessLevel,
+  APIProductPatch,
+  ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { 
-} from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
@@ -22,10 +23,17 @@ import { TAPProtocolDisplayList } from './APProtocolsDisplayService';
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 
+export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
+  description: string;
+}
+
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // remove this after
   connectorApiProduct: APIProduct;
+
+  apDescription: string;
   apApiProductCategoryDisplayName: string;
+
   apIsGuaranteedMessagingEnabled: boolean;
   apApiDisplayList: TAPApiDisplayList;
   apControlledChannelParameterList: TAPControlledChannelParameterList;
@@ -77,6 +85,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const apApiProductDisplay: IAPApiProductDisplay = {
       ...this.create_Empty_ApManagedAssetDisplay(),
       connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
+
+      apDescription: '',
       apIsGuaranteedMessagingEnabled: false,
       apApiDisplayList: [],
       apControlledChannelParameterList: [],
@@ -157,8 +167,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     const apApiProductDisplay: IAPApiProductDisplay = {
       ..._base,
-      apApiProductCategoryDisplayName: this.CDefaultApiProductCategory,
+
       connectorApiProduct: connectorApiProduct,
+
+      apDescription: connectorApiProduct.description ? connectorApiProduct.description : '',
+      apApiProductCategoryDisplayName: this.CDefaultApiProductCategory,
       apIsGuaranteedMessagingEnabled: this.get_IsGuaranteedMessagingEnabled(connectorApiProduct.clientOptions),
       apApiDisplayList:  apApiDisplayList,
       apControlledChannelParameterList: apControlledChannelParameterList,
@@ -220,7 +233,22 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // API calls
   // ********************************************************************************************************************************
 
+  protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate }:{
+    organizationId: string;
+    apiProductId: string;
+    apiProductUpdate: APIProductPatch;
+  }): Promise<void> {
+
+    await ApiProductsService.updateApiProduct({
+      organizationName: organizationId,
+      apiProductName: apiProductId,
+      requestBody: apiProductUpdate
+    });  
   
+  }
+
+
+
 
   // protected async apsGetList_ApApiProductDisplayList({ organizationId }: {
   //   organizationId: string;

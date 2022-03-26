@@ -1,4 +1,5 @@
 import { CommonEntityNameList, CommonEntityNames } from "@solace-iot-team/apim-connector-openapi-browser";
+import { Globals } from "./Globals";
 
 export interface IAPEntityIdDisplay {
   apEntityId: TAPEntityId;
@@ -23,7 +24,7 @@ class APEntityIdsService {
 
   public create_EmptyObject = (): TAPEntityId => {
     return {
-      id: '',
+      id: Globals.getUUID(),
       displayName: ''
     };
   }
