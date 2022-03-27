@@ -211,7 +211,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               <div className="p-text-bold">Description:</div>
               <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
 
-              <div><b>Approval type</b>: {managedObject.connectorApiProduct.approvalType}</div>
+              <div><b>Approval type</b>: {managedObject.apApprovalType}</div>
               <div><b>Business Group</b>: {renderBusinessGroup(managedObject.apBusinessGroupInfo)}</div>
 
               <Divider />

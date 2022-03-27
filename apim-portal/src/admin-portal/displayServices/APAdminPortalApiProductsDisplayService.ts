@@ -4,12 +4,13 @@ import {
   ApiProductsService, 
   CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APApiProductsDisplayService, IAPApiProductDisplay, TAPApiProductDisplay_General } from '../../displayServices/APApiProductsDisplayService';
+import { 
+  APApiProductsDisplayService, 
+  IAPApiProductDisplay, 
+} from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
-import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
-
-export type TAPAdminPortalApiProductDisplay_General = TAPApiProductDisplay_General;
 
 export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
   apAppReferenceEntityIdList: TAPEntityIdList;
@@ -48,16 +49,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<TAPAdminPortalApiProductDisplay>(apAdminPortalApiProductDisplay);
-  }
-
-  public get_ApAdminPortalApiProductDisplay_General({ apAdminPortalApiProductDisplay }:{
-    apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  }): TAPAdminPortalApiProductDisplay_General {
-    const apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General = {
-      apEntityId: apAdminPortalApiProductDisplay.apEntityId,
-      description: apAdminPortalApiProductDisplay.apDescription
-    };
-    return apAdminPortalApiProductDisplay_General;
   }
 
   // ********************************************************************************************************************************
@@ -124,44 +115,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     });
     return apAdminPortalApiProductDisplay;
   }
-
-  public async apiUpdate_ApAdminPortalApiProductDisplay_General({ organizationId, apAdminPortalApiProductDisplay_General }:{
-    organizationId: string;
-    apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General;
-  }): Promise<void> {
-    
-    const update: APIProductPatch = {
-      displayName: apAdminPortalApiProductDisplay_General.apEntityId.displayName,
-      description: apAdminPortalApiProductDisplay_General.description
-    };
-
-    await this.apiUpdate({
-      organizationId: organizationId,
-      apiProductId: apAdminPortalApiProductDisplay_General.apEntityId.id,
-      apiProductUpdate: update
-    });
-
-  }
-
-  // const patch: APIProductPatch = {
-  //   displayName: apiProduct.displayName,
-  //   description: apiProduct.description,
-  //   approvalType: apiProduct.approvalType,
-  //   attributes: apiProduct.attributes,
-  //   clientOptions: apiProduct.clientOptions,
-  //   environments: apiProduct.environments,
-  //   protocols: apiProduct.protocols,
-  //   pubResources: apiProduct.pubResources,
-  //   subResources: apiProduct.subResources,
-  //   apis: apiProduct.apis,
-  //   accessLevel: apiProduct.accessLevel
-  // };
-
-  // await ApiProductsService.updateApiProduct({
-  //   organizationName: organizationId,
-  //   apiProductName: apApiProductDisplay.apEntityId.id,
-  //   requestBody: patch
-  // });  
 
 
   // public async createAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {

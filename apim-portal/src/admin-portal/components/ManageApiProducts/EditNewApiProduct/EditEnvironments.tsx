@@ -1,6 +1,5 @@
 
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -8,34 +7,35 @@ import { Toolbar } from 'primereact/toolbar';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APAdminPortalApiProductsDisplayService, { 
-  TAPAdminPortalApiProductDisplay 
+  TAPAdminPortalApiProductDisplay, 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
-import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPApiProductDisplay_Environments } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewEnvironmentsForm } from "./EditNewEnvironmentsForm";
+import { TAPEnvironmentDisplayList } from "../../../../displayServices/APEnvironmentsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APEntityIdsService from "../../../../utils/APEntityIdsService";
 
-export interface IEditGeneralProps {
+export interface IEditEnvironmentsProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onError: (apiCallState: TApiCallState) => void;
-  onSaveSuccess: (apiCallState: TApiCallState, updatedDisplayName: string) => void;
+  onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProps) => {
-  const ComponentName = 'EditGeneral';
+export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditEnvironmentsProps) => {
+  const ComponentName = 'EditEnvironments';
 
-  type TManagedObject = TAPApiProductDisplay_General;
+  type TManagedObject = TAPApiProductDisplay_Environments;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
-
 
   // * Api Calls *
 
@@ -44,9 +44,9 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_General({
+      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Environments({
         organizationId: props.organizationId,
-        apApiProductDisplay_General: mo,
+        apApiProductDisplay_Environments: mo,
       });
       setUpdatedManagedObject(mo);
     } catch(e: any) {
@@ -58,7 +58,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApiProductDisplay_General({
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Environments({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
@@ -70,14 +70,14 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus';
+    const funcName = 'useEffect[apiCallStatus]';
     const logName = `${ComponentName}.${funcName}()`;
 
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else {
         if(updatedManagedObject === undefined) throw new Error(`${logName}: updatedManagedObject === undefined`);
-        props.onSaveSuccess(apiCallStatus, updatedManagedObject.apEntityId.displayName);
+        props.onSaveSuccess(apiCallStatus);
       }
     }
   }, [apiCallStatus, updatedManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -89,6 +89,9 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }
 
   const onSubmit = (mo: TManagedObject) => {
+    // const funcName = 'onSubmit';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // // alert(`${logName}: mo.apProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apProtocolDisplayList)}`)
     doSubmitManagedObject(mo);
   }
 
@@ -111,14 +114,20 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     )
   }
 
+  // const onSave_ApEnvironmentDisplayList = (apEnvironmentDisplayList: TAPEnvironmentDisplayList) => {
+  //   const funcName = 'onSave_ApEnvironmentDisplayList';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   alert(`${logName}: apEnvironmentDisplayList=${JSON.stringify(apEnvironmentDisplayList, null, 2)}`);
+  // }
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewGeneralForm
+          <EditNewEnvironmentsForm
             formId={formId}
             action={EAction.EDIT}
-            apApiProductDisplay_General={mo}
+            organizationId={props.organizationId}
+            apApiProductDisplay_Environments={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

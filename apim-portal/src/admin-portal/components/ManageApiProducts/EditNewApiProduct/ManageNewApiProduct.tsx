@@ -10,12 +10,15 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApiProductsCommon";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplay_General } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService, { 
+  TAPAdminPortalApiProductDisplay 
+} from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { NewGeneral } from "./NewGeneral";
 import { NewApis } from "./NewApis";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
 export interface IManageNewApiProductProps {
   organizationId: string;
@@ -189,16 +192,15 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     setApiCallStatus(apiCallState);
   }
 
-  const onNext_From_General = (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => {
+  const onNext_From_General = (apApiProductDisplay_General: TAPApiProductDisplay_General) => {
     const funcName = 'onNext_From_General';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
 
-    // TODO: implement here
-    // const newMo: TManagedObject = APAdminPortalApiProductsDisplayService.set_ApAdminPortalApiProductDisplay_General({ apOrganizationUserDisplay: managedObject, apUserProfileDisplay: apUserProfileDisplay });
-
-    alert(`${logName}: set in object apAdminPortalApiProductDisplay_General=${JSON.stringify(apAdminPortalApiProductDisplay_General, null, 2)}`);
-    const newMo: TManagedObject = APAdminPortalApiProductsDisplayService.create_Empty_ApAdminPortalApiProductDisplay();
+    const newMo: TManagedObject = APAdminPortalApiProductsDisplayService.set_ApiProductDisplay_General({ 
+      apApiProductDisplay: managedObject,
+      apApiProductDisplay_General: apApiProductDisplay_General
+    }) as TManagedObject;
 
     setManagedObject(newMo);
     setNextComponentState();
@@ -267,9 +269,9 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
                 />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Other' disabled={!showOther}>
+          <TabPanel header='Policies' disabled={!showOther}>
             <React.Fragment>
-              <p>TODO: NewOther</p>
+              <p>TODO: Policies</p>
               {/* <NewOrganizationUserRolesAndGroups 
                 apOrganizationUserDisplay={mo}
                 onNext={onNext_From_RolesAndGroups}

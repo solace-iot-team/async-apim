@@ -11,11 +11,13 @@ import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "../ManageApiProductsCom
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { EditGeneral } from "./EditGeneral";
+import { EditPolicies } from "./EditPolicies";
+import { EditEnvironments } from "./EditEnvironments";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface IManagedEditApiProductProps {
+export interface IManageEditApiProductProps {
   organizationId: string;
   apiProductEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
@@ -26,8 +28,8 @@ export interface IManagedEditApiProductProps {
   onNavigateToCommand: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
 }
 
-export const ManagedEditApiProduct: React.FC<IManagedEditApiProductProps> = (props: IManagedEditApiProductProps) => {
-  const ComponentName = 'ManagedEditApiProduct';
+export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props: IManageEditApiProductProps) => {
+  const ComponentName = 'ManageEditApiProduct';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
@@ -114,6 +116,15 @@ export const ManagedEditApiProduct: React.FC<IManagedEditApiProductProps> = (pro
       <React.Fragment>
         {/* <div className="p-mt-4"><b>Activated</b>: {String(APOrganizationUsersDisplayService.get_isActivated({apUserDisplay: mo}))}</div> */}
 
+
+        <div className="p-mt-2">
+          <div>TBD: Select Owner Business Group</div>
+          <div>TBD: Select Classification</div>
+          <div>TBD: TBD: Select Category?</div>
+          <div>TBD: manage lifecycle </div>
+          <div>TBD: manage version </div>
+        </div>              
+
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General'>
             <React.Fragment>
@@ -130,7 +141,8 @@ export const ManagedEditApiProduct: React.FC<IManagedEditApiProductProps> = (pro
           </TabPanel>
           <TabPanel header='APIs'>
             <React.Fragment>
-              <p>TBD</p>
+              <p>TBD: select APIs (note restriction in org setting: 1:1 or 1:n)</p>
+              <p>TBD: controlled channel parameters</p>
               {/* <EditOrganizationUserMemberOfOrganizationRoles
                 key={`EditOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
                 apOrganizationUserDisplay={mo}
@@ -149,14 +161,40 @@ export const ManagedEditApiProduct: React.FC<IManagedEditApiProductProps> = (pro
               /> */}
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='what next?'>
+          <TabPanel header='Policies'>
             <React.Fragment>
-              <p>TBD</p>
-              {/* <EditOrganizationUserAuthentication
-                apOrganizationUserDisplay={mo}
-                onError={onError_SubComponent}
+              <EditPolicies
+                organizationId={props.organizationId}
+                apAdminPortalApiProductDisplay={managedObject}
                 onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess}
+                onError={props.onError}
+                onSaveSuccess={onEdit_SaveSuccess}
+                onLoadingChange={props.onLoadingChange}
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Environments'>
+            <React.Fragment>
+              <EditEnvironments
+                organizationId={props.organizationId}
+                apAdminPortalApiProductDisplay={managedObject}
+                onCancel={props.onCancel}
+                onError={props.onError}
+                onSaveSuccess={onEdit_SaveSuccess}
+                onLoadingChange={props.onLoadingChange}
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Attributes'>
+            <React.Fragment>
+              <p>TBD: user defined attributes</p>
+              <p>TBD: organization (custom) defined attributes</p>
+              {/* <EditEnvironments
+                organizationId={props.organizationId}
+                apAdminPortalApiProductDisplay={managedObject}
+                onCancel={props.onCancel}
+                onError={props.onError}
+                onSaveSuccess={onEdit_SaveSuccess}
                 onLoadingChange={props.onLoadingChange}
               /> */}
             </React.Fragment>

@@ -1,7 +1,7 @@
 import { 
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 
 export type TAPProtocolDisplay = IAPEntityIdDisplay & {
   connectorProtocol: Protocol;
@@ -10,6 +10,16 @@ export type TAPProtocolDisplayList = Array<TAPProtocolDisplay>;
 
 class APProtocolsDisplayService {
   private readonly BaseComponentName = "APProtocolsDisplayService";
+
+  public nameOf<TAPProtocolDisplay>(name: keyof TAPProtocolDisplay) {
+    return name;
+  }
+  public nameOf_ApEntityId(name: keyof TAPEntityId) {
+    return `${this.nameOf('apEntityId')}.${name}`;
+  }
+  public nameOf_connectorProtocol(name: keyof Protocol) {
+    return `${this.nameOf('connectorProtocol')}.${name}`;
+  }
 
   private create_DisplayName(connectorProtocol: Protocol): string {
     return connectorProtocol.version ? `${connectorProtocol.name} (${connectorProtocol.version })` : connectorProtocol.name;

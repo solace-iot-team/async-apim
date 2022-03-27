@@ -55,6 +55,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     try {
+      alert(`${logName}: only get the api products which are in the business groups user has APITeam role in ...`);
       const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
         organizationId: props.organizationEntityId.id
       });
@@ -136,9 +137,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
   }
-  const guaranteedMessagingBodyTemplate = (row: TManagedObject): string => {
-    return row.apIsGuaranteedMessagingEnabled.toString();
-  }
   const usedByBodyTemplate = (row: TManagedObject): JSX.Element => {
     if(row.apAppReferenceEntityIdList.length === 0) return (<>-</>);
     return (
@@ -151,7 +149,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return row.apEntityId.displayName;
   }
   const approvalTypeTemplate = (row: TManagedObject): string => {
-    return row.connectorApiProduct.approvalType ? row.connectorApiProduct.approvalType : '?';
+    return row.apApprovalType;
   }
   const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
     if(row.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
@@ -217,7 +215,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
 
           <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
           {/* <Column header="Protocols" body={protocolsTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-          <Column header="GM?" headerStyle={{ width: '5em' }} body={guaranteedMessagingBodyTemplate} bodyStyle={{ textAlign: 'center', verticalAlign: 'top' }} sortable sortField={gmSortField} />
           <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>

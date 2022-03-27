@@ -12,11 +12,11 @@ import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from './ManageApiProductsComm
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { ListApiProducts } from "./ListApiProducts";
 import { ViewApiProduct } from "./ViewApiProduct";
-import { ManagedEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
+import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
+import { ManagedNewApiProduct } from "./EditNewApiProduct/ManageNewApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { ManagedNewApiProduct } from "./EditNewApiProduct/ManageNewApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -352,7 +352,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         // />
       }
       {showEditComponent && managedObjectEntityId &&
-        <ManagedEditApiProduct
+        <ManageEditApiProduct
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
           onSaveSuccess={onEditSaveManagedObjectSuccess} 

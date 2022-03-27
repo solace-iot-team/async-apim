@@ -7,7 +7,9 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplay_General } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService, { 
+  TAPAdminPortalApiProductDisplay 
+} from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { EditNewGeneralForm } from "./EditNewGeneralForm";
 
@@ -27,7 +29,7 @@ export interface INewApisProps {
 export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   const ComponentName = 'NewApis';
 
-  type TManagedObject = TAPAdminPortalApiProductDisplay_General;
+  type TManagedObject = string;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
@@ -35,31 +37,12 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
 
-  // * Api Calls *
-
-  // const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
-  //   const funcName = 'apiUpdateManagedObject';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
-  //   try {
-  //     await APAdminPortalApiProductsDisplayService.apiUpdate_ApAdminPortalApiProductDisplay_General({
-  //       organizationId: props.organizationId,
-  //       apAdminPortalApiProductDisplay_General: mo,
-  //     });
-  //     setUpdatedManagedObject(mo);
-  //   } catch(e: any) {
-  //     APSClientOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
-
   const doInitialize = async () => {
     // get the right one
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApAdminPortalApiProductDisplay_General({
-      apAdminPortalApiProductDisplay: props.apAdminPortalApiProductDisplay
-    }));
+    setManagedObject('implement me');
+    // setManagedObject(APAdminPortalApiProductsDisplayService.get_ApAdminPortalApiProductDisplay_General({
+    //   apAdminPortalApiProductDisplay: props.apAdminPortalApiProductDisplay
+    // }));
   }
 
   // * useEffect Hooks *
@@ -67,16 +50,6 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(managedObject) {
-  //     setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
-  //   }
-  // }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
-  // }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     const funcName = 'useEffect[apiCallStatus';
@@ -91,12 +64,8 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     props.onNext('todo: set the api info...');
   }
 
-  const onSubmit = (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => {
-    doSubmitManagedObject(apAdminPortalApiProductDisplay_General);
-  }
-
-  // const onCancelManagedObjectForm = () => {
-  //   props.onCancel();
+  // const onSubmit = (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => {
+  //   doSubmitManagedObject(apAdminPortalApiProductDisplay_General);
   // }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -120,34 +89,11 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     )
   }
 
-  // const managedObjectFormFooterRightToolbarTemplate = () => {
-  //   return (
-  //     <React.Fragment>
-  //       <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-  //       <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-  //     </React.Fragment>
-  //   );
-  // }
-
-  // const renderManagedObjectFormFooter = (): JSX.Element => {
-  //   return (
-  //     <Toolbar className="p-mb-4" right={managedObjectFormFooterRightToolbarTemplate} />
-  //   )
-  // }
-
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
           <p>TODO: api stuff here ...</p>
-          <EditNewGeneralForm
-            action={EAction.NEW}
-            apAdminPortalApiProductDisplay_General={mo}
-            formId={formId}
-            onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
-            onSubmit={onSubmit}
-          />
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

@@ -7,9 +7,12 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplay_General } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService, { 
+  TAPAdminPortalApiProductDisplay 
+} from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { EditNewGeneralForm } from "./EditNewGeneralForm";
+import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -17,7 +20,7 @@ import "../ManageApiProducts.css";
 export interface INewGeneralProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => void;
+  onNext: (apApiProductDisplay_General: TAPApiProductDisplay_General) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
@@ -27,7 +30,7 @@ export interface INewGeneralProps {
 export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) => {
   const ComponentName = 'NewGeneral';
 
-  type TManagedObject = TAPAdminPortalApiProductDisplay_General;
+  type TManagedObject = TAPApiProductDisplay_General;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
@@ -56,8 +59,8 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
   // }
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApAdminPortalApiProductDisplay_General({
-      apAdminPortalApiProductDisplay: props.apAdminPortalApiProductDisplay
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApiProductDisplay_General({
+      apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
 
@@ -90,13 +93,9 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
     props.onNext(mo);
   }
 
-  const onSubmit = (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => {
-    doSubmitManagedObject(apAdminPortalApiProductDisplay_General);
+  const onSubmit = (mo: TManagedObject) => {
+    doSubmitManagedObject(mo);
   }
-
-  // const onCancelManagedObjectForm = () => {
-  //   props.onCancel();
-  // }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
@@ -118,29 +117,14 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
     )
   }
 
-  // const managedObjectFormFooterRightToolbarTemplate = () => {
-  //   return (
-  //     <React.Fragment>
-  //       <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-  //       <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-  //     </React.Fragment>
-  //   );
-  // }
-
-  // const renderManagedObjectFormFooter = (): JSX.Element => {
-  //   return (
-  //     <Toolbar className="p-mb-4" right={managedObjectFormFooterRightToolbarTemplate} />
-  //   )
-  // }
-
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
           <EditNewGeneralForm
-            action={EAction.NEW}
-            apAdminPortalApiProductDisplay_General={mo}
             formId={formId}
+            action={EAction.NEW}
+            apApiProductDisplay_General={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

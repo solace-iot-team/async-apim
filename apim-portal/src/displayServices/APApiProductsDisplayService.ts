@@ -5,8 +5,9 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
+  Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
@@ -18,25 +19,50 @@ import APAttributesDisplayService, {
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsDisplayService';
 import { APManagedAssetDisplayService, IAPManagedAssetDisplay } from './APManagedAssetDisplayService';
-import { TAPProtocolDisplayList } from './APProtocolsDisplayService';
+import APProtocolsDisplayService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsDisplayService';
 
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 
 export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
-  description: string;
+  apDescription: string;
+  apApiProductCategoryDisplayName: string;  
+}
+export type TAPApiProductDisplay_Policies = IAPEntityIdDisplay & {
+  apApprovalType: APIProduct.approvalType;
+  apClientOptionsDisplay: TAPClientOptionsDisplay;
+}
+export type TAPApiProductDisplay_Environments = IAPEntityIdDisplay & {
+  apEnvironmentDisplayList: TAPEnvironmentDisplayList;
+  apProtocolDisplayList: TAPProtocolDisplayList;  
 }
 
+export type TAPClientOptionsGuaranteedMessagingDisplay = {
+  requireQueue: boolean;
+  accessType: ClientOptionsGuaranteedMessaging.accessType;
+  maxTtl: number;
+  maxMsgSpoolUsage: number;
+}
+export type TAPClientOptionsDisplay = {
+  apGuaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay;  
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // remove this after
   connectorApiProduct: APIProduct;
 
+  // General
   apDescription: string;
   apApiProductCategoryDisplayName: string;
 
-  apIsGuaranteedMessagingEnabled: boolean;
+  // Policies
+  apApprovalType: APIProduct.approvalType;
+  apClientOptionsDisplay: TAPClientOptionsDisplay;
+
+  // Apis
   apApiDisplayList: TAPApiDisplayList;
   apControlledChannelParameterList: TAPControlledChannelParameterList;
+  
+  // Environments
   apEnvironmentDisplayList: TAPEnvironmentDisplayList;
   /** the consolidated protocol list across all environments */
   apProtocolDisplayList: TAPProtocolDisplayList;  
@@ -69,6 +95,56 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   //   return connectorApiProductList;
   // }
 
+  private create_ApApprovalType(approvalType?: APIProduct.approvalType): APIProduct.approvalType {
+    if(approvalType === undefined) return APIProduct.approvalType.MANUAL;
+    return approvalType;
+  }
+
+  private check_IsGuaranteedMessagingEnabled(connectorClientOptions: ClientOptions | undefined): boolean {
+    if(connectorClientOptions === undefined) return false;
+    if(connectorClientOptions.guaranteedMessaging === undefined) return false;
+    if(connectorClientOptions.guaranteedMessaging.requireQueue === undefined) return false;
+    return connectorClientOptions.guaranteedMessaging.requireQueue;
+  }
+
+  protected create_Empty_ApClientOptionsDisplay(): TAPClientOptionsDisplay {
+    return {
+      apGuaranteedMessaging: {
+        requireQueue: false,
+        accessType: ClientOptionsGuaranteedMessaging.accessType.EXCLUSIVE,
+        maxMsgSpoolUsage: 0,
+        maxTtl: 1
+      }
+    };
+  }
+
+  private create_ApClientOptionsDisplay(connectorClientOptions?: ClientOptions): TAPClientOptionsDisplay {
+    const funcName = 'create_ApClientOptionsDisplay';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    if(!this.check_IsGuaranteedMessagingEnabled(connectorClientOptions)) return this.create_Empty_ApClientOptionsDisplay();
+    if(connectorClientOptions === undefined) throw new Error(`${logName}: connectorClientOptions === undefined`);
+    if(connectorClientOptions.guaranteedMessaging === undefined) throw new Error(`${logName}: connectorClientOptions.guaranteedMessaging === undefined`);
+    const apGuaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay = {
+      accessType: connectorClientOptions.guaranteedMessaging.accessType,
+      maxMsgSpoolUsage: connectorClientOptions.guaranteedMessaging.maxMsgSpoolUsage,
+      maxTtl: connectorClientOptions.guaranteedMessaging.maxTtl,
+      requireQueue: connectorClientOptions.guaranteedMessaging.requireQueue ? connectorClientOptions.guaranteedMessaging.requireQueue : false
+    }
+    const apClientOptionsDisplay: TAPClientOptionsDisplay = {
+      apGuaranteedMessaging: apGuaranteedMessaging,
+    };
+    return apClientOptionsDisplay;
+  }
+
+  private create_ConnectorClientOptions(apClientOptionsDisplay: TAPClientOptionsDisplay): ClientOptions {
+    const clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging | undefined = apClientOptionsDisplay.apGuaranteedMessaging;
+    const connectorClientOptions: ClientOptions = {
+      guaranteedMessaging: clientOptionsGuaranteedMessaging,
+    }
+    return connectorClientOptions;
+  }
+
   private create_Empty_ConnectorApiProduct(): APIProduct {
     return {
       apis: [],
@@ -87,7 +163,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
 
       apDescription: '',
-      apIsGuaranteedMessagingEnabled: false,
+      apApprovalType: this.create_ApApprovalType(),
+      apClientOptionsDisplay: this.create_Empty_ApClientOptionsDisplay(),
       apApiDisplayList: [],
       apControlledChannelParameterList: [],
       apEnvironmentDisplayList: [],
@@ -95,13 +172,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apApiProductCategoryDisplayName: '',
     };
     return apApiProductDisplay;
-  }
-
-  private get_IsGuaranteedMessagingEnabled(clientOptions: ClientOptions | undefined): boolean {
-    if(clientOptions === undefined) return false;
-    if(clientOptions.guaranteedMessaging === undefined) return false;
-    if(clientOptions.guaranteedMessaging.requireQueue === undefined) return false;
-    return clientOptions.guaranteedMessaging.requireQueue;
   }
 
   private extract_ApControlledChannelParameterList({ apAttributeDisplayList, apCombinedApiChannelParameterList }:{
@@ -116,11 +186,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }
 
 
-  //   return apControlledChannelParameterList;
-  // }
-  /**
-   * Does not create search content.
-   */
+
   protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
@@ -161,83 +227,147 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       });
     }
     // get combined protocols
-    const consolidated_ApProtocolDisplayList: TAPProtocolDisplayList = APEnvironmentsDisplayService.create_ConsolidatedApProtocolDisplayList({
-      apEnvironmentDisplayList: apEnvironmentDisplayList
+    const apProtocolDisplayList: TAPProtocolDisplayList = APProtocolsDisplayService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList({
+      connectorProtocolList: connectorApiProduct.protocols
     });
-
+   
     const apApiProductDisplay: IAPApiProductDisplay = {
       ..._base,
 
       connectorApiProduct: connectorApiProduct,
 
+      apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
+      apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
       apDescription: connectorApiProduct.description ? connectorApiProduct.description : '',
       apApiProductCategoryDisplayName: this.CDefaultApiProductCategory,
-      apIsGuaranteedMessagingEnabled: this.get_IsGuaranteedMessagingEnabled(connectorApiProduct.clientOptions),
       apApiDisplayList:  apApiDisplayList,
       apControlledChannelParameterList: apControlledChannelParameterList,
       apEnvironmentDisplayList: apEnvironmentDisplayList,
-      apProtocolDisplayList: consolidated_ApProtocolDisplayList,
+      apProtocolDisplayList: apProtocolDisplayList,
       // apApiProductImageUrl: this.CDefaultApiProductImageUrl,
     };
     return apApiProductDisplay;
   }
 
-  // protected create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct: APIProduct, apEnvironmentDisplayList: TAPEnvironmentDisplayList, apApiDisplayList: TAPApiDisplayList): TAPApiProductDisplay {
-  //   const apProtocolDisplayList: TAPProtocolDisplayList = APProtocolsService.create_SortedApProtocolDisplayList_From_ConnectorProtocolList(connectorApiProduct.protocols);
-  //   const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesService.create_SortedApAttributeDisplayList_From_ConnectorAttributeList(connectorApiProduct.attributes);
-  //   const _base: TAPApiProductDisplay = {
-  //     apEntityId: {
-  //       id: connectorApiProduct.name,
-  //       displayName: connectorApiProduct.displayName
-  //     },
-  //     connectorApiProduct: {
-  //       ...connectorApiProduct,
-  //       accessLevel: connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APIProductAccessLevel.PRIVATE
-  //     },
-  //     apEnvironmentDisplayList: apEnvironmentDisplayList,
-  //     apEnvironmentDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(apEnvironmentDisplayList),
-  //     apApiDisplayList: apApiDisplayList,
-  //     apApiDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPApiDisplay>(apApiDisplayList),
-  //     apProtocolDisplayList: apProtocolDisplayList,
-  //     apProtocolDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPProtocolDisplay>(apProtocolDisplayList),
-  //     apAttributeDisplayList: apAttributeDisplayList,
-  //     apAttributeDisplayNameList: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList<TAPAttributeDisplay>(apAttributeDisplayList), 
-  //     apApiProductCategory: this.CDefaultApiProductCategory,
-  //     apApiProductImageUrl: this.CDefaultApiProductImageUrl,
-  //     apSearchContent: ''
-  //   };
-  //   return APSearchContentService.add_SearchContent<TAPApiProductDisplay>(_base);
-  // }
-
-  public create_SelectList_From_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
+  public get_SelectList_For_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
     const e: any = ClientOptionsGuaranteedMessaging.accessType;
     return Object.keys(e).map(k => e[k]);
   }
 
-  public create_SelectList_From_ApprovalType(): Array<APIProduct.approvalType> {
+  public get_SelectList_For_ApprovalType(): Array<APIProduct.approvalType> {
     const e: any = APIProduct.approvalType;
     return Object.keys(e).map(k => e[k]);
   }  
 
-  public create_SelectList_From_AccessLevel(): Array<APIProductAccessLevel> {
+  public get_SelectList_For_AccessLevel(): Array<APIProductAccessLevel> {
     const e: any = APIProductAccessLevel;
     return Object.keys(e).map(k => e[k]);
   }  
 
-  public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
-    if(displayNameList.length > 0) return displayNameList.join(', ');
-    else return '';
+  public get_ApiProductDisplay_General({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_General {
+    const apApiProductDisplay_General: TAPApiProductDisplay_General = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apDescription: apApiProductDisplay.apDescription,
+      apApiProductCategoryDisplayName: apApiProductDisplay.apApiProductCategoryDisplayName,
+    };
+    return apApiProductDisplay_General;
   }
+
+  /** 
+   * Set the general properties. 
+   * Sets the apEntity as well. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+  public set_ApiProductDisplay_General({ apApiProductDisplay, apApiProductDisplay_General }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_General: TAPApiProductDisplay_General
+  }): IAPApiProductDisplay {
+    apApiProductDisplay.apDescription = apApiProductDisplay_General.apDescription;
+    apApiProductDisplay.apApiProductCategoryDisplayName = apApiProductDisplay_General.apApiProductCategoryDisplayName;
+    apApiProductDisplay.apEntityId = apApiProductDisplay_General.apEntityId;
+    return apApiProductDisplay;
+  }
+
+  public get_ApApiProductDisplay_Policies({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_Policies {
+    const apApiProductDisplay_Policies: TAPApiProductDisplay_Policies = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apApprovalType: apApiProductDisplay.apApprovalType,
+      apClientOptionsDisplay: apApiProductDisplay.apClientOptionsDisplay,
+    };
+    return apApiProductDisplay_Policies;
+  }
+
+  /** 
+   * Set the policy properties. 
+   * Does NOT set the apEntityId. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+   public set_ApApiProductDisplay_Policies({ apApiProductDisplay, apApiProductDisplay_Policies }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_Policies: TAPApiProductDisplay_Policies;
+  }): IAPApiProductDisplay {
+    apApiProductDisplay.apApprovalType = apApiProductDisplay_Policies.apApprovalType;
+    apApiProductDisplay.apClientOptionsDisplay = apApiProductDisplay_Policies.apClientOptionsDisplay;
+    return apApiProductDisplay;
+  }
+
+  public get_ApApiProductDisplay_Environments({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_Environments {
+    const apApiProductDisplay_Environments: TAPApiProductDisplay_Environments = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apEnvironmentDisplayList: apApiProductDisplay.apEnvironmentDisplayList,
+      apProtocolDisplayList: apApiProductDisplay.apProtocolDisplayList
+    };
+    return apApiProductDisplay_Environments;
+  }
+
+  /** 
+   * Set the environment properties. 
+   * Does NOT set the apEntityId. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+   public set_ApApiProductDisplay_Environments({ apApiProductDisplay, apApiProductDisplay_Environments }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_Environments: TAPApiProductDisplay_Environments;
+  }): IAPApiProductDisplay {
+    apApiProductDisplay.apEnvironmentDisplayList = apApiProductDisplay_Environments.apEnvironmentDisplayList;
+    apApiProductDisplay.apProtocolDisplayList = apApiProductDisplay_Environments.apProtocolDisplayList;
+    return apApiProductDisplay;
+  }
+
 
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+    // const patch: APIProductPatch = {
+  //   displayName: apiProduct.displayName,
+  //   description: apiProduct.description,
+  //   approvalType: apiProduct.approvalType,
+  //   attributes: apiProduct.attributes,
+  //   clientOptions: apiProduct.clientOptions,
+  //   environments: apiProduct.environments,
+  //   protocols: apiProduct.protocols,
+  //   pubResources: apiProduct.pubResources,
+  //   subResources: apiProduct.subResources,
+  //   apis: apiProduct.apis,
+  //   accessLevel: apiProduct.accessLevel
+  // };
+
 
   protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate }:{
     organizationId: string;
     apiProductId: string;
     apiProductUpdate: APIProductPatch;
   }): Promise<void> {
+    // const funcName = 'apiUpdate';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
 
     await ApiProductsService.updateApiProduct({
       organizationName: organizationId,
@@ -247,8 +377,64 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   
   }
 
+  public async apiUpdate_ApApiProductDisplay_General({ organizationId, apApiProductDisplay_General }:{
+    organizationId: string;
+    apApiProductDisplay_General: TAPApiProductDisplay_General;
+  }): Promise<void> {
+    
+    // create mechanism for Api Product category when required
+    // use APIProduct attributes
 
+    const update: APIProductPatch = {
+      displayName: apApiProductDisplay_General.apEntityId.displayName,
+      description: apApiProductDisplay_General.apDescription,
+    };
 
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apApiProductDisplay_General.apEntityId.id,
+      apiProductUpdate: update
+    });
+
+  }
+
+  public async apiUpdate_ApApiProductDisplay_Policies({ organizationId, apApiProductDisplay_Policies }:{
+    organizationId: string;
+    apApiProductDisplay_Policies: TAPApiProductDisplay_Policies;
+  }): Promise<void> {
+
+    const update: APIProductPatch = {
+      approvalType: apApiProductDisplay_Policies.apApprovalType,
+      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay_Policies.apClientOptionsDisplay)
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apApiProductDisplay_Policies.apEntityId.id,
+      apiProductUpdate: update
+    });
+
+  }
+
+  public async apiUpdate_ApApiProductDisplay_Environments({ organizationId, apApiProductDisplay_Environments }:{
+    organizationId: string;
+    apApiProductDisplay_Environments: TAPApiProductDisplay_Environments;
+  }): Promise<void> {
+
+    const update: APIProductPatch = {
+      environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay_Environments.apEnvironmentDisplayList),
+      protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
+        apProtocolDisplayList: apApiProductDisplay_Environments.apProtocolDisplayList
+      })
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apApiProductDisplay_Environments.apEntityId.id,
+      apiProductUpdate: update
+    });
+
+  }
 
   // protected async apsGetList_ApApiProductDisplayList({ organizationId }: {
   //   organizationId: string;

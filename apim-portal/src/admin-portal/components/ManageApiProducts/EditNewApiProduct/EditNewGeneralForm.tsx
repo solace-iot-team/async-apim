@@ -8,27 +8,26 @@ import { classNames } from 'primereact/utils';
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { TAPAdminPortalApiProductDisplay_General } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction} from "../ManageApiProductsCommon";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
+import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
-  apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General;
+  apApiProductDisplay_General: TAPApiProductDisplay_General;
   formId: string;
-  onSubmit: (apAdminPortalApiProductDisplay_General: TAPAdminPortalApiProductDisplay_General) => void;
+  onSubmit: (apAdminPortalApiProductDisplay_General: TAPApiProductDisplay_General) => void;
   onError: (apiCallState: TApiCallState) => void;
-  // onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IEditNewGeneralFormProps) => {
   const ComponentName = 'EditNewGeneralForm';
 
-  type TManagedObject = TAPAdminPortalApiProductDisplay_General;
+  type TManagedObject = TAPApiProductDisplay_General;
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
@@ -46,7 +45,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
-      description: mo.description,
+      description: mo.apDescription,
     };
     return {
       formData: fd
@@ -56,15 +55,15 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   const create_ManagedObject_From_FormEntities = ({formDataEnvelope}: {
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
-    const mo: TManagedObject = props.apAdminPortalApiProductDisplay_General;
+    const mo: TManagedObject = props.apApiProductDisplay_General;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
-    mo.description = fd.description;
+    mo.apDescription = fd.description;
     return mo;
   }
   
-  const [managedObject] = React.useState<TManagedObject>(props.apAdminPortalApiProductDisplay_General);
+  const [managedObject] = React.useState<TManagedObject>(props.apApiProductDisplay_General);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
@@ -120,30 +119,6 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   const onInvalidSubmitManagedObjectForm = () => {
     // placeholder
   }
-
-  // const onCancelManagedObjectForm = () => {
-  //   props.onCancel();
-  // }
-
-  // const managedObjectFormFooterRightToolbarTemplate = () => {
-  //   return (
-  //     <React.Fragment>
-  //       <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-  //       {isNew() && 
-  //         <Button key={ComponentName+'New'} form={formId} type="submit" label="Create" icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" />
-  //       }
-  //       {!isNew() &&
-  //         <Button key={ComponentName+'Save'} form={formId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-  //       }
-  //     </React.Fragment>
-  //   );
-  // }
-
-  // const renderManagedObjectFormFooter = (): JSX.Element => {
-  //   return (
-  //     <Toolbar className="p-mb-4" right={managedObjectFormFooterRightToolbarTemplate} />
-  //   )
-  // }
 
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
@@ -223,8 +198,6 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.description)}
             </div>
           </form>  
-          {/* footer */}
-          {/* { renderManagedObjectFormFooter() } */}
         </div>
       </div>
     );
