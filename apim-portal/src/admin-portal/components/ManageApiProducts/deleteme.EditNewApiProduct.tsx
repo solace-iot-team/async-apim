@@ -27,7 +27,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./deleteme.ManageApiProductsCommon";
 import { SelectApis } from "./deleteme.SelectApis";
 import { SelectEnvironments } from "./deleteme.SelectEnvironments";
-import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/APManageApAttributeDisplayList";
+import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/deleteme.APManageApAttributeDisplayList";
 import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
 import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/deleteme.APAttributesService";
 import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/deleteme.APEnvironmentsService";

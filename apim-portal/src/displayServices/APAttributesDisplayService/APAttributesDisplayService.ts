@@ -1,4 +1,4 @@
-import { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 /** not defined in connector API */
 export type TAPRawAttribute = {
@@ -31,7 +31,14 @@ class APAttributesDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
 
-  private create_ApAttributeDisplay(apRawAttribute: TAPRawAttribute): IAPAttributeDisplay {
+  public create_Empty_ApAttributeDisplay(): IAPAttributeDisplay {
+    return {
+      apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      value: ''
+    };
+  }
+  
+  public create_ApAttributeDisplay(apRawAttribute: TAPRawAttribute): IAPAttributeDisplay {
     return {
       apEntityId: {
         id: apRawAttribute.name,
@@ -49,6 +56,56 @@ class APAttributesDisplayService {
       apAttributeDisplayList.push(this.create_ApAttributeDisplay(x));
     });
     return apAttributeDisplayList;
+  }
+
+  public create_ApRawAttribute(apAttributeDisplay: IAPAttributeDisplay): TAPRawAttribute {
+    return {
+      name: apAttributeDisplay.apEntityId.id,
+      value: apAttributeDisplay.value
+    };    
+  }
+
+  public create_ApRawAttributeList({ apAttributeDisplayList }:{
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPRawAttributeList {
+    const apRawAttributeList: TAPRawAttributeList = [];
+    apAttributeDisplayList.forEach( (x) => {
+      apRawAttributeList.push(this.create_ApRawAttribute(x));
+    });
+    return apRawAttributeList;
+  }
+
+  public add_ApAttributeDisplay_To_ApAttributeDisplayList({ apAttributeDisplay, apAttributeDisplayList }:{
+    apAttributeDisplay: IAPAttributeDisplay;
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPAttributeDisplayList {
+    apAttributeDisplayList.push(apAttributeDisplay);
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(apAttributeDisplayList);
+  }
+
+  public remove_ApAttributeDisplay_From_ApAttributeDisplayList({ apAttributeDisplay, apAttributeDisplayList }:{
+    apAttributeDisplay: IAPAttributeDisplay;
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPAttributeDisplayList {
+    const idx = apAttributeDisplayList.findIndex( (x) => {
+      return x.apEntityId.id === apAttributeDisplay.apEntityId.id;
+    });
+    if(idx > -1) apAttributeDisplayList.splice(idx, 1);
+    return apAttributeDisplayList;
+  }
+
+  public is_Empty_ApAttributeDisplay(apAttributeDisplay: IAPAttributeDisplay): boolean {
+    return (apAttributeDisplay.apEntityId.id === '');
+  }
+
+  public exists_ApAttributeDisplayId_In_ApAttributeDisplayList({ id, apAttributeDisplayList }:{
+    id: string;
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): boolean {
+    const found: IAPAttributeDisplay | undefined = apAttributeDisplayList.find( (x) => {
+      return x.apEntityId.id === id;
+    });
+    return (found !== undefined);
   }
 
   /**

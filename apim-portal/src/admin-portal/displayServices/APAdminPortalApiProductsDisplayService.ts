@@ -9,7 +9,8 @@ import {
   IAPApiProductDisplay, 
 } from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
-import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
+import { TAPManagedAssetDisplay_Attributes } from '../../displayServices/APManagedAssetDisplayService';
+import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 
 export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
@@ -115,7 +116,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     });
     return apAdminPortalApiProductDisplay;
   }
-
 
   // public async createAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
   //   organizationId: string;

@@ -5,9 +5,10 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
-  Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
+import APEntityIdsService, { 
+  IAPEntityIdDisplay, 
+} from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
@@ -17,9 +18,18 @@ import APAttributesDisplayService, {
   IAPAttributeDisplay,
   TAPAttributeDisplayList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
-import APEnvironmentsDisplayService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsDisplayService';
-import { APManagedAssetDisplayService, IAPManagedAssetDisplay } from './APManagedAssetDisplayService';
-import APProtocolsDisplayService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsDisplayService';
+import { 
+  TAPEnvironmentDisplay, 
+  TAPEnvironmentDisplayList 
+} from './APEnvironmentsDisplayService';
+import { 
+  APManagedAssetDisplayService, 
+  IAPManagedAssetDisplay, 
+  TAPManagedAssetDisplay_Attributes
+} from './APManagedAssetDisplayService';
+import APProtocolsDisplayService, { 
+  TAPProtocolDisplayList 
+} from './APProtocolsDisplayService';
 
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
@@ -211,7 +221,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apApiDisplayList: apApiDisplayList
     });
     const apControlledChannelParameterList: TAPControlledChannelParameterList = this.extract_ApControlledChannelParameterList({
-      apAttributeDisplayList: _base.external_ApAttributeDisplayList,
+      apAttributeDisplayList: _base.apExternal_ApAttributeDisplayList,
       apCombinedApiChannelParameterList: apCombinedApiChannelParameterList
     });
 
@@ -393,6 +403,28 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_General.apEntityId.id,
+      apiProductUpdate: update
+    });
+
+  }
+
+  /**
+   * Updates the attributes. Relies on the complete attributes having been update previously with setter method.
+   */
+  public async apiUpdate_ApManagedAssetDisplay_Attributes({ organizationId, apManagedAssetDisplay_Attributes }:{
+    organizationId: string;
+    apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
+  }): Promise<void> {
+    
+    const update: APIProductPatch = {
+      attributes: APAttributesDisplayService.create_ApRawAttributeList({
+        apAttributeDisplayList: apManagedAssetDisplay_Attributes.internalReference.apComplete_ApAttributeDisplayList
+      })
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apManagedAssetDisplay_Attributes.apEntityId.id,
       apiProductUpdate: update
     });
 

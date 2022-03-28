@@ -3,6 +3,7 @@ import APEntityIdsService, {
   TAPEntityId
 } from '../utils/APEntityIdsService';
 import APAttributesDisplayService, { 
+  IAPAttributeDisplay,
   TAPAttributeDisplayList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import APBusinessGroupsDisplayService, { 
@@ -42,14 +43,25 @@ EAPManagedAssetAttribute_BusinessGroup_Tag
 | EAPManagedAssetAttribute_Classification_Tag
 | EAPManagedAssetAttribute_Lifecycle_Tag;
 
+/**
+ * Do not update internalReference.
+ * Use getter and setter methods instead.
+ */
+export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
+  internalReference: {
+    apComplete_ApAttributeDisplayList: TAPAttributeDisplayList;
+  }
+  apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
+}
 
 export type TAPManagedAssetBusinessGroupInfo = {
   apBusinessGroupDisplayReference?: TAPBusinessGroupDisplayReference;
 }
 export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
-  original_ApAttributeDisplayList: TAPAttributeDisplayList;
-  external_ApAttributeDisplayList: TAPAttributeDisplayList;
-  apCustomAttributeDisplayList: TAPAttributeDisplayList;
+  apComplete_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
   // lifecyle
   // classification
@@ -99,9 +111,9 @@ export abstract class APManagedAssetDisplayService {
   protected create_Empty_ApManagedAssetDisplay(): IAPManagedAssetDisplay {
     const apManagedAssetDisplay: IAPManagedAssetDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject(),
-      original_ApAttributeDisplayList: [],
-      external_ApAttributeDisplayList: [],
-      apCustomAttributeDisplayList: [],
+      apComplete_ApAttributeDisplayList: [],
+      apExternal_ApAttributeDisplayList: [],
+      apCustom_ApAttributeDisplayList: [],
       apBusinessGroupInfo: {
         apBusinessGroupDisplayReference: APBusinessGroupsDisplayService.create_EmptyObject(undefined),
       }
@@ -224,12 +236,69 @@ export abstract class APManagedAssetDisplayService {
 
     const result: IAPManagedAssetDisplay = {
       apEntityId: apEntityId,
-      external_ApAttributeDisplayList: external_ApAttributeDisplayList,
-      apCustomAttributeDisplayList: apCustomAttributeDisplayList,
+      apComplete_ApAttributeDisplayList: complete_ApAttributeDisplayList,
+      apExternal_ApAttributeDisplayList: external_ApAttributeDisplayList,
+      apCustom_ApAttributeDisplayList: apCustomAttributeDisplayList,
       apBusinessGroupInfo: apBusinessGroupInfo,
-      original_ApAttributeDisplayList: complete_ApAttributeDisplayList
     };
     return result;
   }
+
+  public get_ApManagedAssetDisplay_Attributes({ apManagedAssetDisplay }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+  }): TAPManagedAssetDisplay_Attributes {
+    const apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes = {
+      apEntityId: apManagedAssetDisplay.apEntityId,
+      internalReference: {
+        apComplete_ApAttributeDisplayList: apManagedAssetDisplay.apComplete_ApAttributeDisplayList,
+      },
+      apExternal_ApAttributeDisplayList: apManagedAssetDisplay.apExternal_ApAttributeDisplayList,
+      apCustom_ApAttributeDisplayList: apManagedAssetDisplay.apCustom_ApAttributeDisplayList
+    };
+    return apManagedAssetDisplay_Attributes;
+  }
+
+  /** 
+   * Set the attribute properties.
+   * Calculates the new complete attribute list. 
+   * Does NOT set the apEntity. 
+   * 
+   * @param apManagedAssetDisplay - updated with input & new complete list
+   * @param apManagedAssetDisplay_Attributes - updated with new complete list
+   * @returns the modified apManagedAssetDisplay (not a copy) and updates the apManagedAssetDisplay_Attributes
+  */
+  public set_ApManagedAssetDisplay_Attributes({ apManagedAssetDisplay, apManagedAssetDisplay_Attributes }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+    apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
+  }): IAPManagedAssetDisplay {
+
+    // calculate the new complete list 
+    const new_complete_ApAttributeDisplayList: TAPAttributeDisplayList = apManagedAssetDisplay_Attributes.apExternal_ApAttributeDisplayList.concat(apManagedAssetDisplay_Attributes.apCustom_ApAttributeDisplayList);
+    // add any attributes not in list yet
+    apManagedAssetDisplay_Attributes.internalReference.apComplete_ApAttributeDisplayList.forEach( (from_complete: IAPAttributeDisplay) => {
+      const found = new_complete_ApAttributeDisplayList.find( (x) => {
+        return x.apEntityId.id === from_complete.apEntityId.id;
+      });
+      if(found === undefined) new_complete_ApAttributeDisplayList.push(from_complete);
+    });
+    
+    apManagedAssetDisplay.apExternal_ApAttributeDisplayList = apManagedAssetDisplay_Attributes.apExternal_ApAttributeDisplayList;
+    apManagedAssetDisplay.apCustom_ApAttributeDisplayList = apManagedAssetDisplay_Attributes.apCustom_ApAttributeDisplayList;
+    apManagedAssetDisplay.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
+
+    // set it also in the param
+    apManagedAssetDisplay_Attributes.internalReference.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
+
+    return apManagedAssetDisplay;
+  }
+
+  // ********************************************************************************************************************************
+  // API calls
+  // ********************************************************************************************************************************
+
+  public abstract apiUpdate_ApManagedAssetDisplay_Attributes({ organizationId, apManagedAssetDisplay_Attributes }:{
+    organizationId: string;
+    apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
+  }): Promise<void>;
 
 }

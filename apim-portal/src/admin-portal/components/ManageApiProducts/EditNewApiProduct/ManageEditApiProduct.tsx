@@ -16,6 +16,8 @@ import { EditEnvironments } from "./EditEnvironments";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import { EditAppAttributes } from "../../ManageApps/EditAppAttributes";
+import { EditAttributes } from "./EditAttributes";
 
 export interface IManageEditApiProductProps {
   organizationId: string;
@@ -187,16 +189,15 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
           </TabPanel>
           <TabPanel header='Attributes'>
             <React.Fragment>
-              <p>TBD: user defined attributes</p>
-              <p>TBD: organization (custom) defined attributes</p>
-              {/* <EditEnvironments
+              <p>TBD: organization defined attributes?</p>
+              <EditAttributes
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={managedObject}
                 onCancel={props.onCancel}
                 onError={props.onError}
                 onSaveSuccess={onEdit_SaveSuccess}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+              />
             </React.Fragment>
           </TabPanel>
         </TabView>
@@ -206,7 +207,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
 
   const getEditNotes = (mo: TManagedObject): string => {
     if(mo.apAppReferenceEntityIdList.length === 0) return 'Not used by any Apps.';
-    return `Used by ${mo.apAppReferenceEntityIdList.length} Apps.`;
+    return `Used by ${mo.apAppReferenceEntityIdList.length} APP(s).`;
   }
 
   return (

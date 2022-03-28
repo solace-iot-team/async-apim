@@ -22,6 +22,13 @@ class APEntityIdsService {
     return `apEntityId.${name}`;
   }
 
+  public create_EmptyObject_NoId = (): TAPEntityId => {
+    return {
+      id: '',
+      displayName: ''
+    };
+  }
+
   public create_EmptyObject = (): TAPEntityId => {
     return {
       id: Globals.getUUID(),

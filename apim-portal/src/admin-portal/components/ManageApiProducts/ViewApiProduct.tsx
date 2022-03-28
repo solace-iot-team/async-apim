@@ -247,21 +247,21 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
               
               <div className="p-text-bold">Custom Attributes:</div>
               <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.apCustomAttributeDisplayList}
+                apAttributeDisplayList={managedObject.apCustom_ApAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
               
               <div className="p-text-bold">General Attributes:</div>
               <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.external_ApAttributeDisplayList}
+                apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
 
               <div className="p-text-bold">DEVEL: ALL ATTRIBUTES:</div>
               <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.original_ApAttributeDisplayList}
+                apAttributeDisplayList={managedObject.apComplete_ApAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />

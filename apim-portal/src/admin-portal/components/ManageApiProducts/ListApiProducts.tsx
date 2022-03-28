@@ -55,7 +55,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     try {
-      alert(`${logName}: only get the api products which are in the business groups user has APITeam role in ...`);
+      // alert(`${logName}: only get the api products which are in the business groups user has APITeam role in ...`);
       const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
         organizationId: props.organizationEntityId.id
       });
@@ -173,7 +173,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APAdminPortalApiProductsDisplayService.nameOf('apSearchContent');
     const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf_ConnectorApiProduct('approvalType');
-    const gmSortField = APAdminPortalApiProductsDisplayService.nameOf('apIsGuaranteedMessagingEnabled');
+    // const gmSortField = APAdminPortalApiProductsDisplayService.nameOf('apIsGuaranteedMessagingEnabled');
     const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
     return (
       <div className="card">
@@ -251,7 +251,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header='API Products:' />
+      <APComponentHeader header='API Products:' notes="TODO: filter by current, selected business group"/>
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
