@@ -1,7 +1,10 @@
 import { 
   APIInfo, 
+  APIInfoList, 
+  APIList, 
   APIParameter, 
   ApisService, 
+  APISummaryList, 
   CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
@@ -24,12 +27,12 @@ export type TAPApiDisplay = IAPEntityIdDisplay & IAPSearchContent & {
 export type TAPApiDisplayList = Array<TAPApiDisplay>;
 
 export class APApisDisplayService {
-  private readonly ComponentName = "APApisDisplayService";
+  private readonly BaseComponentName = "APApisDisplayService";
 
   public nameOf(name: keyof TAPApiDisplay) {
     return name;
   }
-  public nameOf_Entity(name: keyof TAPEntityId) {
+  public nameOf_ApEntityId(name: keyof TAPEntityId) {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
   public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
@@ -156,11 +159,55 @@ export class APApisDisplayService {
       organizationId: organizationId, 
       apiId: apiId
     });
+
     return this.create_ApApiDisplay_From_ApiEntities({
       connectorApiInfo: connectorApiInfo, 
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList
     });
   }
+
+  public async apiGetList_ApApiDisplayList({ organizationId }:{
+    organizationId: string;
+  }): Promise<TAPApiDisplayList> {
+    const result: APIList | APISummaryList | APIInfoList = await ApisService.listApis({
+      organizationName: organizationId,
+      format: 'extended'
+    });
+    const apiInfoList: APIInfoList = result as APIInfoList;
+    const list: TAPApiDisplayList = [];
+    // TODO: PARALLELIZE
+    for(const apiInfo of apiInfoList) {
+      const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
+        organizationId: organizationId, 
+        apiId: apiInfo.name
+      });
+      list.push(this.create_ApApiDisplay_From_ApiEntities({
+        connectorApiInfo: apiInfo,
+        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList
+      }));
+    }
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
+  }
+
+  // public async listApApiDisplay({ organizationId }:{
+  //   organizationId: string;
+  // }): Promise<TAPApiDisplayList> {
+  //   const result = await ApisService.listApis({
+  //     organizationName: organizationId,
+  //     format: 'extended'
+  //   });
+  //   const apiInfoList: APIInfoList = result as APIInfoList;
+  //   const list: TAPApiDisplayList = [];
+  //   // TODO: PARALLELIZE
+  //   for(const apiInfo of apiInfoList) {
+  //     const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.listApiProductReferencesToApi({
+  //       organizationId: organizationId, 
+  //       apiId: apiInfo.name
+  //     });
+  //     list.push(this.create_ApApiDisplay_From_ApiEntities(apiInfo, apApiProductReferenceEntityIdList));
+  //   }
+  //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiDisplay>(list);    
+  // }
 
   // private sort_ApApiParameterList(list: TAPApiParameterList): TAPApiParameterList {
   //   return list.sort( (e1: APIParameter, e2: APIParameter) => {
@@ -226,25 +273,6 @@ export class APApisDisplayService {
   //   return this.sort_ApApiParameterList(apApiParameterList);
   // }
 
-  // public async listApApiDisplay({ organizationId }:{
-  //   organizationId: string;
-  // }): Promise<TAPApiDisplayList> {
-  //   const result = await ApisService.listApis({
-  //     organizationName: organizationId,
-  //     format: 'extended'
-  //   });
-  //   const apiInfoList: APIInfoList = result as APIInfoList;
-  //   const list: TAPApiDisplayList = [];
-  //   // TODO: PARALLELIZE
-  //   for(const apiInfo of apiInfoList) {
-  //     const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.listApiProductReferencesToApi({
-  //       organizationId: organizationId, 
-  //       apiId: apiInfo.name
-  //     });
-  //     list.push(this.create_ApApiDisplay_From_ApiEntities(apiInfo, apApiProductReferenceEntityIdList));
-  //   }
-  //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPApiDisplay>(list);    
-  // }
   
   // public async getApApiDisplay({ organizationId, apiId}: {
   //   organizationId: string;

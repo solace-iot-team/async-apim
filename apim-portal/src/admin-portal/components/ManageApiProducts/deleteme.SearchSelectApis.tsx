@@ -14,7 +14,7 @@ import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/deleteme.APApisService";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
-import APAdminPortalApisService from "../../utils/APAdminPortalApisService";
+import APAdminPortalApisService from "../../utils/deleteme.APAdminPortalApisService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

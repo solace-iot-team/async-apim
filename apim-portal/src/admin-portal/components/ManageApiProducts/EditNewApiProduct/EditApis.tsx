@@ -10,13 +10,13 @@ import APAdminPortalApiProductsDisplayService, {
   TAPAdminPortalApiProductDisplay, 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
-import { TAPApiProductDisplay_Environments } from "../../../../displayServices/APApiProductsDisplayService";
-import { EditNewEnvironmentsForm } from "./EditNewEnvironmentsForm";
+import { TAPApiProductDisplay_Apis } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewApisForm } from "./EditNewApisForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface IEditEnvironmentsProps {
+export interface IEditApisProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -25,10 +25,10 @@ export interface IEditEnvironmentsProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditEnvironmentsProps) => {
-  const ComponentName = 'EditEnvironments';
+export const EditApis: React.FC<IEditApisProps> = (props: IEditApisProps) => {
+  const ComponentName = 'EditApis';
 
-  type TManagedObject = TAPApiProductDisplay_Environments;
+  type TManagedObject = TAPApiProductDisplay_Apis;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
@@ -42,9 +42,9 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Environments({
+      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Apis({
         organizationId: props.organizationId,
-        apApiProductDisplay_Environments: mo,
+        apApiProductDisplay_Apis: mo
       });
       setUpdatedManagedObject(mo);
     } catch(e: any) {
@@ -56,7 +56,7 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
   }
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Environments({
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Apis({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
@@ -112,20 +112,15 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
     )
   }
 
-  // const onSave_ApEnvironmentDisplayList = (apEnvironmentDisplayList: TAPEnvironmentDisplayList) => {
-  //   const funcName = 'onSave_ApEnvironmentDisplayList';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   alert(`${logName}: apEnvironmentDisplayList=${JSON.stringify(apEnvironmentDisplayList, null, 2)}`);
-  // }
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewEnvironmentsForm
+          <EditNewApisForm
             formId={formId}
             action={EAction.EDIT}
             organizationId={props.organizationId}
-            apApiProductDisplay_Environments={mo}
+            apApiProductDisplay_Apis={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

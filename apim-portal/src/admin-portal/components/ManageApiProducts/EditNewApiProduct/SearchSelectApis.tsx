@@ -8,46 +8,43 @@ import { Button } from 'primereact/button';
 
 import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import APEnvironmentsDisplayService, { 
-  TAPEnvironmentDisplay, 
-  TAPEnvironmentDisplayList
-} from "../../../../displayServices/APEnvironmentsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import { 
+  TAPApiDisplay, 
+  TAPApiDisplayList 
+} from "../../../../displayServices/APApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface ISearchSelectEnvironmentsProps {
+export interface ISearchSelectApisProps {
   organizationId: string;
-  selectedEnvironmentEntityIdList: TAPEntityIdList;
+  selectedApiEntityIdList: TAPEntityIdList;
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apEnvironmentDisplayList: TAPEnvironmentDisplayList) => void;
+  onSave: (apApiDisplayList: TAPApiDisplayList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> = (props: ISearchSelectEnvironmentsProps) => {
-  const ComponentName = 'SearchSelectEnvironments';
+export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearchSelectApisProps) => {
+  const ComponentName = 'SearchSelectApis';
 
-  type TManagedObject = TAPEnvironmentDisplay;
+  type TManagedObject = TAPApiDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const DialogHeader = 'Search & Select Environment(s):';
-  const MessageNoManagedObjectsFound = "No Environments found."
-  const MessageNoManagedObjectsFoundWithFilter = 'No Environments found for filter';
+  const DialogHeader = 'Search & Select API(s):';
+  const MessageNoManagedObjectsFound = "No APIs found."
+  const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
-
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [selectedManagedObjectList, setSelectedManagedObjectList] = React.useState<TManagedObjectList>();
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
-  
-  // const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
-  // const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -56,11 +53,11 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, 'retrieve list of environments');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, 'retrieve list of apis');
     try {
-      const list: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      const list = await APAdminPortalApisDisplayService.apiGetList_ApApiDisplayList({
         organizationId: props.organizationId
-      });
+      })
       setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -82,12 +79,10 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   React.useEffect(() => {
     if(managedObjectList === undefined) return;
-    setSelectedManagedObjectList(
-      APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPEnvironmentDisplay>({
-        apDisplayObjectList: managedObjectList,
-        filterByEntityIdList: props.selectedEnvironmentEntityIdList
-      })
-    );
+    setSelectedManagedObjectList(APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList({
+      apDisplayObjectList: managedObjectList,
+      filterByEntityIdList: props.selectedApiEntityIdList
+    }));
   }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
@@ -103,8 +98,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   
   // * UI Controls *
 
-  const onSaveSelectedEnvironments = () => {
-    const funcName = 'onSaveSelectedEnvironments';
+  const onSaveSelectedApis = () => {
+    const funcName = 'onSaveSelectedApis';
     const logName = `${ComponentName}.${funcName}()`;
     if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
     props.onSave(selectedManagedObjectList);
@@ -124,7 +119,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
-          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedEnvironments} disabled={isSaveDisabled} />
+          <Button type="button" label="Save" className="p-button-text p-button-plain p-button-outlined p-mr-2" onClick={onSaveSelectedApis} disabled={isSaveDisabled} />
           <Button type="button" label="Cancel" className="p-button-text p-button-plain p-mr-2" onClick={props.onCancel} />
         </div>        
         <div style={{ alignContent: "right"}}>
@@ -152,8 +147,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-    const dataKey = APEnvironmentsDisplayService.nameOf_ApEntityId('id');
-    const sortField = APEnvironmentsDisplayService.nameOf_ApEntityId('displayName');
+    const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
     return (
       <div className="card">
           <DataTable

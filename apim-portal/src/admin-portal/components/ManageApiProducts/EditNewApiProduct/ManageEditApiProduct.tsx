@@ -18,6 +18,7 @@ import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 import { EditAppAttributes } from "../../ManageApps/EditAppAttributes";
 import { EditAttributes } from "./EditAttributes";
+import { EditApis } from "./EditApis";
 
 export interface IManageEditApiProductProps {
   organizationId: string;
@@ -145,22 +146,14 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
             <React.Fragment>
               <p>TBD: select APIs (note restriction in org setting: 1:1 or 1:n)</p>
               <p>TBD: controlled channel parameters</p>
-              {/* <EditOrganizationUserMemberOfOrganizationRoles
-                key={`EditOrganizationUserMemberOfOrganizationRoles_${refreshCounter}`}
-                apOrganizationUserDisplay={mo}
-                onError={onError_EditOrganizationUserMemberOf}
+              <EditApis
+                organizationId={props.organizationId}
+                apAdminPortalApiProductDisplay={managedObject}
                 onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
+                onError={props.onError}
+                onSaveSuccess={onEdit_SaveSuccess}
                 onLoadingChange={props.onLoadingChange}
               />
-              <EditOrganizationUserMemberOfBusinessGroups
-                key={`EditOrganizationUserMemberOfBusinessGroups_${refreshCounter}`}
-                apOrganizationUserDisplay={mo}
-                onError={onError_EditOrganizationUserMemberOf}
-                onCancel={props.onCancel}
-                onSaveSuccess={onSaveSuccess_EditOrganizationUserMemberOf}
-                onLoadingChange={props.onLoadingChange}
-              /> */}
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Policies'>

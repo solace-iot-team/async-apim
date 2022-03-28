@@ -46,6 +46,13 @@ export type TAPApiProductDisplay_Environments = IAPEntityIdDisplay & {
   apEnvironmentDisplayList: TAPEnvironmentDisplayList;
   apProtocolDisplayList: TAPProtocolDisplayList;  
 }
+export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
+  apApiDisplayList: TAPApiDisplayList;
+  apControlledChannelParameterList: TAPControlledChannelParameterList;
+  internalReference: {
+    apComplete_ApAttributeDisplayList: TAPAttributeDisplayList;
+  }
+}
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
   requireQueue: boolean;
@@ -194,8 +201,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     });
     return apControlledChannelParameterList;
   }
-
-
 
   protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
     organizationId: string;
@@ -350,6 +355,49 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay;
   }
 
+  public get_ApApiProductDisplay_Apis({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_Apis {
+    const apApiProductDisplay_Apis: TAPApiProductDisplay_Apis = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apApiDisplayList: apApiProductDisplay.apApiDisplayList,
+      apControlledChannelParameterList: apApiProductDisplay.apControlledChannelParameterList,
+      internalReference: {
+        apComplete_ApAttributeDisplayList: apApiProductDisplay.apComplete_ApAttributeDisplayList,
+      },
+    };
+    return apApiProductDisplay_Apis;
+  }
+
+  /** 
+   * Set the api properties. 
+   * Does NOT set the apEntityId. 
+   * Calculates the new complete attribute list. 
+   * @param apApiProductDisplay - updated with input & new complete attribute list
+   * @param apApiProductDisplay_Apis - updated with new complete attribute list
+   * @returns the modified apApiProductDisplay (not a copy) and updates to the apApiProductDisplay_Apis
+  */
+   public set_ApApiProductDisplay_Apis({ apApiProductDisplay, apApiProductDisplay_Apis }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
+  }): IAPApiProductDisplay {
+
+    // calculate the new complete list 
+    const new_complete_ApAttributeDisplayList: TAPAttributeDisplayList = apApiProductDisplay_Apis.apControlledChannelParameterList;
+    // add any attributes not in list yet
+    apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList.forEach( (from_complete: IAPAttributeDisplay) => {
+      const found = new_complete_ApAttributeDisplayList.find( (x) => {
+        return x.apEntityId.id === from_complete.apEntityId.id;
+      });
+      if(found === undefined) new_complete_ApAttributeDisplayList.push(from_complete);
+    });
+
+    apApiProductDisplay.apApiDisplayList = apApiProductDisplay_Apis.apApiDisplayList;
+    apApiProductDisplay.apControlledChannelParameterList = apApiProductDisplay_Apis.apControlledChannelParameterList;
+    apApiProductDisplay.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
+
+    return apApiProductDisplay;
+  }
 
   // ********************************************************************************************************************************
   // API calls
@@ -463,6 +511,26 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_Environments.apEntityId.id,
+      apiProductUpdate: update
+    });
+
+  }
+
+  public async apiUpdate_ApApiProductDisplay_Apis({ organizationId, apApiProductDisplay_Apis }:{
+    organizationId: string;
+    apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
+  }): Promise<void> {
+
+    const update: APIProductPatch = {
+      apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay_Apis.apApiDisplayList),
+      attributes: APAttributesDisplayService.create_ApRawAttributeList({
+        apAttributeDisplayList: apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList
+      })
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apApiProductDisplay_Apis.apEntityId.id,
       apiProductUpdate: update
     });
 
