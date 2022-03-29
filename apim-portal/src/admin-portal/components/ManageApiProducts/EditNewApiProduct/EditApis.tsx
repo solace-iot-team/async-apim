@@ -42,6 +42,12 @@ export const EditApis: React.FC<IEditApisProps> = (props: IEditApisProps) => {
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
+
+      APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_Apis({
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+        apApiProductDisplay_Apis: mo
+      });  
+
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Apis({
         organizationId: props.organizationId,
         apApiProductDisplay_Apis: mo
@@ -89,7 +95,8 @@ export const EditApis: React.FC<IEditApisProps> = (props: IEditApisProps) => {
   const onSubmit = (mo: TManagedObject) => {
     // const funcName = 'onSubmit';
     // const logName = `${ComponentName}.${funcName}()`;
-    // // alert(`${logName}: mo.apProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apProtocolDisplayList)}`)
+    // alert(`${logName}: mo.apProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apProtocolDisplayList)}`)
+    // alert(`${logName}: mo.apControlledChannelParameterList=${JSON.stringify(mo.apControlledChannelParameterList, null, 2)}`);
     doSubmitManagedObject(mo);
   }
 

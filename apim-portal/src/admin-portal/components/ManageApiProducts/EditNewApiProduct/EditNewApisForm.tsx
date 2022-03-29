@@ -21,6 +21,10 @@ import {
 } from "../../../../displayServices/APApisDisplayService";
 import { ManageSelectApis } from "./ManageSelectApis";
 import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
+import { APDisplayApApiListChannelParameterList } from "../../../../components/APDisplay/APDisplayApApiListApChannelParameterList";
+import { EditControlledChannelParameters } from "./EditControlledChannelParameters";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -40,53 +44,101 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   const ComponentName = 'EditNewApisForm';
 
   type TManagedObject = TAPApiProductDisplay_Apis;
-  type TManagedObjectFormData = {
+  type TManagedObjectUseFormData = {
     apisDisplay: string;
   };
+  type TManagedObjectExtFormData = {
+    selected_ApApiDisplayList: TAPApiDisplayList;
+    selectedApis_combined_ApApiChannelParameterList: TAPApiChannelParameterList;
+    selected_ApControlledChannelParamterList: TAPControlledChannelParameterList;
+  }
   type TManagedObjectFormDataEnvelope = {
-    formData: TManagedObjectFormData;
+    useFormData: TManagedObjectUseFormData;
+    extFormData: TManagedObjectExtFormData;
   }
   
   const ButtonLabelSelectApis = 'Select API(s)';
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
-    const fd: TManagedObjectFormData = {
+    const ufd: TManagedObjectUseFormData = {
       apisDisplay: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apApiDisplayList).join(', '),
     };
+    const efd: TManagedObjectExtFormData = {
+      selected_ApApiDisplayList: mo.apApiDisplayList,
+      selectedApis_combined_ApApiChannelParameterList: APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+        apApiDisplayList: mo.apApiDisplayList,
+      }),
+      selected_ApControlledChannelParamterList: mo.apControlledChannelParameterList,
+    }
     return {
-      formData: fd
+      useFormData: ufd,
+      extFormData: efd
     };
   }
-  
-  const create_ManagedObject_From_FormEntities = ({ formDataEnvelope, selected_ApApiDisplayList, selected_ApControlledChannelParamterList }: {
-    formDataEnvelope: TManagedObjectFormDataEnvelope;
-    selected_ApApiDisplayList: TAPApiDisplayList;
-    selected_ApControlledChannelParamterList: TAPControlledChannelParameterList;
-  }): TManagedObject => {
-    // const funcName = 'create_ManagedObject_From_FormEntities';
-    // const logName = `${ComponentName}.${funcName}()`;
 
-    // nothing to set from formData
-    const mo: TManagedObject = props.apApiProductDisplay_Apis;
-    // const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    // alert(`${logName}: fd.selected_ApProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(fd.selected_ApProtocolDisplayList)}`);
-    mo.apApiDisplayList = selected_ApApiDisplayList;
-    mo.apControlledChannelParameterList = selected_ApControlledChannelParamterList;
+  const update_FormDataEnvelope_With_Ext_ApApiDisplayList = ({ update_selected_apApiDisplayList }:{
+    update_selected_apApiDisplayList: TAPApiDisplayList;
+  }): TManagedObjectFormDataEnvelope => {
+    const funcName = 'update_FormDataEnvelope_With_ApControlledChannelParameterList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+
+    const ufd: TManagedObjectUseFormData = {
+      apisDisplay: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(update_selected_apApiDisplayList).join(', '),
+    };
+    const available_combined_ApApiChannelParameterList: TAPApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+      apApiDisplayList: update_selected_apApiDisplayList,
+    });    
+    // alert(`${logName}: available_combined_ApApiChannelParameterList = ${JSON.stringify(available_combined_ApApiChannelParameterList, null, 2)}`);
+    const filtered_selected_ApControlledChannelParamterList: TAPControlledChannelParameterList = APAdminPortalApiProductsDisplayService.filter_ApControlledChannelParameterList({
+      apControlledChannelParameterList: managedObjectFormDataEnvelope.extFormData.selected_ApControlledChannelParamterList,
+      available_ApApiChannelParameterList: available_combined_ApApiChannelParameterList,
+    });
+    const efd: TManagedObjectExtFormData = {
+      selected_ApApiDisplayList: update_selected_apApiDisplayList,
+      selectedApis_combined_ApApiChannelParameterList: available_combined_ApApiChannelParameterList,
+      selected_ApControlledChannelParamterList: filtered_selected_ApControlledChannelParamterList,
+    }
+    return {
+      useFormData: ufd,
+      extFormData: efd
+    };
+  }
+
+  const update_FormDataEnvelope_With_Ext_ApControlledChannelParameterList = ({ update_selected_apControlledChannelParamterList }:{
+    update_selected_apControlledChannelParamterList: TAPControlledChannelParameterList;
+  }): TManagedObjectFormDataEnvelope => {
+    const funcName = 'update_FormDataEnvelope_With_ApControlledChannelParameterList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+
+    const efd: TManagedObjectExtFormData = managedObjectFormDataEnvelope.extFormData;
+    efd.selected_ApControlledChannelParamterList = update_selected_apControlledChannelParamterList;
+    return {
+      useFormData: managedObjectFormDataEnvelope.useFormData,
+      extFormData: efd
+    };
+  }
+
+  const create_ManagedObject_From_FormEntities = ({ formDataEnvelope }: {
+    formDataEnvelope: TManagedObjectFormDataEnvelope;
+  }): TManagedObject => {
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    const mo: TManagedObject = managedObject;
+    mo.apApiDisplayList = formDataEnvelope.extFormData.selected_ApApiDisplayList;
+    mo.apControlledChannelParameterList = formDataEnvelope.extFormData.selected_ApControlledChannelParamterList;
     return mo;
   }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [selected_ApApiDisplayList, setSelected_ApApiDisplayList] = React.useState<TAPApiDisplayList>([]);
-  const [selectedApis_combined_ApApiChannelParameterList, setSelectedApis_combined_ApApiChannelParameterList] = React.useState<TAPApiChannelParameterList>([]);
-
-  // const [complete_ApControlledChannelParameterList, setComplete_ApControlledChannelParameterList] = React.useState<TAPControlledChannelParameterList>([]);
-  
-  const [selected_ApControlledChannelParamterList, setSelected_ApControlledChannelParamterList] = React.useState<TAPControlledChannelParameterList>([]);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApis, setShowSelectApis] = React.useState<boolean>(false);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
+  const [selectedApis_RefreshCounter, setSelectedApis_RefreshCounter] = React.useState<number>(0);
 
   const doInitialize = async () => {
     setManagedObject(props.apApiProductDisplay_Apis);
@@ -100,71 +152,17 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
-    setSelected_ApApiDisplayList(managedObject.apApiDisplayList);
-    setSelected_ApControlledChannelParamterList(managedObject.apControlledChannelParameterList);
+    const fde: TManagedObjectFormDataEnvelope = transform_ManagedObject_To_FormDataEnvelope(managedObject);
+    setManagedObjectFormDataEnvelope(fde);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
-    managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    // set the use form states
+    // useFormData is directly modified by the form itself
+    managedObjectUseForm.setValue('useFormData', managedObjectFormDataEnvelope.useFormData);
+    setSelectedApis_RefreshCounter(selectedApis_RefreshCounter + 1);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    const funcName = 'useEffect[selected_ApApiDisplayList]';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    if(managedObject === undefined) return;
-    if(selected_ApApiDisplayList === undefined) return;
-    if(selected_ApControlledChannelParamterList === undefined) return;
-
-    const _selectedApis_combined_ApApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
-      apApiDisplayList: selected_ApApiDisplayList,
-    });
-    setSelectedApis_combined_ApApiChannelParameterList(_selectedApis_combined_ApApiChannelParameterList);    
-    alert(`${logName}: TODO: remove channel parameters if they are not available any more?`);
-    // // remove any protocols from selected protocols if they are not available any more
-    // const _selected_ApProtocolDisplayList: TAPProtocolDisplayList = selected_ApProtocolDisplayList;
-    // for(let idx=0; idx<_selected_ApProtocolDisplayList.length; idx++) {
-    //   const isAvailable = _complete_apProtocolDisplayList.find( (x) => {
-    //     return x.apEntityId.id === _selected_ApProtocolDisplayList[idx].apEntityId.id;
-    //   });
-    //   if(isAvailable === undefined) {
-    //     _selected_ApProtocolDisplayList.splice(idx, 1);
-    //     idx--;
-    //   }
-    // }
-    // setSelected_ApProtocolDisplayList(_selected_ApProtocolDisplayList);
-    setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope({
-      apEntityId: managedObject.apEntityId,
-      apApiDisplayList: selected_ApApiDisplayList,
-      apControlledChannelParameterList: selected_ApControlledChannelParamterList,
-      internalReference: managedObject.internalReference,
-    }));
-
-
-    // const _complete_apProtocolDisplayList: TAPProtocolDisplayList = APEnvironmentsDisplayService.create_ConsolidatedApProtocolDisplayList({
-    //   apEnvironmentDisplayList: selected_ApEnvironmentDisplayList
-    // });
-    // setComplete_ApProtocolDisplayList(_complete_apProtocolDisplayList);
-    // // remove any protocols from selected protocols if they are not available any more
-    // const _selected_ApProtocolDisplayList: TAPProtocolDisplayList = selected_ApProtocolDisplayList;
-    // for(let idx=0; idx<_selected_ApProtocolDisplayList.length; idx++) {
-    //   const isAvailable = _complete_apProtocolDisplayList.find( (x) => {
-    //     return x.apEntityId.id === _selected_ApProtocolDisplayList[idx].apEntityId.id;
-    //   });
-    //   if(isAvailable === undefined) {
-    //     _selected_ApProtocolDisplayList.splice(idx, 1);
-    //     idx--;
-    //   }
-    // }
-    // setSelected_ApProtocolDisplayList(_selected_ApProtocolDisplayList);
-    // setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope({
-    //   apEntityId: managedObject.apEntityId,
-    //   apEnvironmentDisplayList: selected_ApEnvironmentDisplayList,
-    //   apProtocolDisplayList: _complete_apProtocolDisplayList
-    // }));
-  }, [selected_ApApiDisplayList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -173,23 +171,32 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const isSelected_ControlledChannelParameterListValid = (): boolean => {
-    const funcName = 'isSelected_ControlledChannelParameterListValid';
-    const logName = `${ComponentName}.${funcName}()`;
-    alert(`${logName}: anything to validate here?`);
+    // const funcName = 'isSelected_ControlledChannelParameterListValid';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: anything to validate here?`);
+    // the selected list should already be correct
+    // if not, validate here again against available parameters
     return true;
-    // return selected_ApProtocolDisplayList.length > 0;
   }
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    // newMofde: only carries the useFormData
+    // add the extFormData from state
+    const complete_mofde: TManagedObjectFormDataEnvelope = managedObjectFormDataEnvelope;
+    complete_mofde.useFormData = newMofde.useFormData;
+
     setIsFormSubmitted(true);
     if(!isSelected_ControlledChannelParameterListValid()) return false;
+
+    // alert(`${logName}: see console for complete_mofde.extFormData`);
+    // console.log(`${logName}: complete_mofde.extFormData.selected_ApControlledChannelParamterList=${JSON.stringify(complete_mofde.extFormData.selected_ApControlledChannelParamterList, null, 2)}`);
+    // console.log(`${logName}: ${JSON.stringify(complete_mofde.extFormData, null, 2)}`);
+
     props.onSubmit(create_ManagedObject_From_FormEntities({
-      formDataEnvelope: newMofde,
-      selected_ApApiDisplayList: selected_ApApiDisplayList,
-      selected_ApControlledChannelParamterList: selected_ApControlledChannelParamterList,
+      formDataEnvelope: complete_mofde,
     }));
   }
 
@@ -202,7 +209,9 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   }
 
   const onSelectApisSuccess = (apApiDisplayList: TAPApiDisplayList) => {
-    setSelected_ApApiDisplayList(apApiDisplayList);
+    setManagedObjectFormDataEnvelope(update_FormDataEnvelope_With_Ext_ApApiDisplayList({
+      update_selected_apApiDisplayList: apApiDisplayList,
+    }));
     setShowSelectApis(false);
   }
 
@@ -210,52 +219,34 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     setShowSelectApis(false);
   }
 
-  const onControlledChannelParameterListSelectionChange = (apControlledChannelParameterList: TAPControlledChannelParameterList) => {
-    const funcName = 'onControlledChannelParameterListSelectionChange';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    // alert(`${logName}: apProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(apProtocolDisplayList)}`);
-    setSelected_ApControlledChannelParamterList(apControlledChannelParameterList);
+  const onChange_ControlledChannelParameterList = (apControlledChannelParameterList: TAPControlledChannelParameterList) => {
+    // const funcName = 'onChange_ControlledChannelParameterList';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: apControlledChannelParameterList=${JSON.stringify(apControlledChannelParameterList, null, 2)}`);
+
+    // update form data envelope
+    setManagedObjectFormDataEnvelope(update_FormDataEnvelope_With_Ext_ApControlledChannelParameterList({
+      update_selected_apControlledChannelParamterList: apControlledChannelParameterList,
+    }));    
+
   }
 
   const displaySelectedControlledChannelParametersErrorMessage = () => {
     if(isFormSubmitted && !isSelected_ControlledChannelParameterListValid()) return <p className="p-error">Validation error ???</p>;
   }
 
-  // const renderSelectProtocols = (complete_apProtocolDisplayList: TAPProtocolDisplayList, selected_apProtocolDisplayList: TAPProtocolDisplayList) => {
-  //   return (
-  //     <React.Fragment>
-  //       <SelectProtocols
-  //         complete_apProtocolDisplayList={complete_apProtocolDisplayList}
-  //         selected_apProtocolDisplayList={selected_apProtocolDisplayList}
-  //         onSelectionChange={onProtocolSelectionChange}
-  //       />
-  //     </React.Fragment>
-  //   );
-  // }
-
-  const renderSelect_ControlledChannelParameters = (): JSX.Element => {
-    const funcName = 'renderSelect_ControlledChannelParameters';
+  const renderEdit_ControlledChannelParametersForm = (mofde: TManagedObjectFormDataEnvelope): JSX.Element => {
+    const funcName = 'renderEdit_ControlledChannelParametersForm';
     const logName = `${ComponentName}.${funcName}()`;
-    if(selected_ApApiDisplayList === undefined) throw new Error(`${logName}: selected_ApApiDisplayList === undefined`);
-    return(
+    // if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    return (
       <React.Fragment>
-        <p><b>Render each Api's channel parameter list individually as well?:</b></p>        
-        <hr/>
-        <p><b>selected_ApControlledChannelParamterList:</b></p>
-        <pre>
-          {JSON.stringify(selected_ApControlledChannelParamterList, null, 2)};
-        </pre>
-        <hr/>
-        <p><b>selectedApis_combined_ApApiChannelParameterList:</b></p>
-        <pre>
-          {JSON.stringify(selectedApis_combined_ApApiChannelParameterList, null, 2)};
-        </pre>
-        <hr/>
-        <p><b>selected_ApApiDisplayList:</b></p>
-        <pre>
-          {JSON.stringify(selected_ApApiDisplayList, null, 2)};
-        </pre>
+        <EditControlledChannelParameters
+          key={`${ComponentName}_EditControlledChannelParameters_${selectedApis_RefreshCounter}`}
+          apApiDisplayList={mofde.extFormData.selected_ApApiDisplayList}
+          selected_ApControlledChannelParameterList={mofde.extFormData.selected_ApControlledChannelParamterList}
+          onChange={onChange_ControlledChannelParameterList}
+        />
       </React.Fragment>
     );
   }
@@ -269,11 +260,47 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     );
   }
 
-  const renderManagedObjectForm = () => {
-    const funcName = 'renderManagedObjectForm';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+  const renderApisDetails = (mofde: TManagedObjectFormDataEnvelope): JSX.Element => {
+    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+      const className = `${options.className} p-jc-start`;
+      const titleClassName = `${options.titleClassName} p-pl-1`;
+      return (
+        <div className={className} style={{ justifyContent: 'left'}} >
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
+            <span className={toggleIcon}></span>
+          </button>
+          <span className={titleClassName}>
+            Channel Parameter Details
+          </span>
+        </div>
+      );
+    }  
+    return (
+      <React.Fragment>
+        <div className="p-ml-3">
+          <Panel 
+            headerTemplate={panelHeaderTemplate} 
+            toggleable={true}
+            collapsed={true}
+          >
+            <APDisplayApApiListChannelParameterList
+              key={`${ComponentName}_APDisplayApApiListChannelParameterList_${selectedApis_RefreshCounter}`}
+              apApiDisplayList={mofde.extFormData.selected_ApApiDisplayList}
+              emptyApiDisplayListMessage="No API(s) selected"
+              emptyChannelParameterListMessage="No Channel Parameters defined"
+            />
+        </Panel>
+      </div> 
+    </React.Fragment>
+    )
+  }
+
+  const renderManagedObjectForm = (mofde: TManagedObjectFormDataEnvelope) => {
+    // const funcName = 'renderManagedObjectForm';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
 
     return (
       <div className="card p-mt-4">
@@ -286,11 +313,12 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
-                  name="formData.apisDisplay"
+                  name="useFormData.apisDisplay"
                   rules={{
                     required: "Choose at least 1 API."
                   }}
                   render={( { field, fieldState }) => {
+                    // alert(`field = ${JSON.stringify(field, null, 2)}`)
                     return(
                       <InputText
                         id={field.name}
@@ -304,12 +332,17 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
                 />
                 {/* <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.environmentDisplay })}>Environment(s)*</label> */}
               </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.apisDisplay)}
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.apisDisplay)}
               { renderApisToolbar() }
-              <div>{displaySelectedControlledChannelParametersErrorMessage()}</div>
-              { renderSelect_ControlledChannelParameters()}
+              { renderApisDetails(mofde)}
             </div>
           </form>  
+          {/* Controlled Channel Parameters */}
+          <div>
+            <div className="p-text-bold p-mb-3">Controlled Channel Parameter(s):</div>
+            <div>{displaySelectedControlledChannelParametersErrorMessage()}</div>
+            { renderEdit_ControlledChannelParametersForm(mofde)}
+          </div>
         </div>
       </div>
     );
@@ -319,12 +352,14 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   return (
     <div className="manage-api-products">
 
-      { managedObjectFormDataEnvelope && renderManagedObjectForm() }
+      {/* { isInitialized && renderManagedObjectForm() } */}
 
-      {showSelectApis && selected_ApApiDisplayList && 
+      { managedObjectFormDataEnvelope && renderManagedObjectForm(managedObjectFormDataEnvelope) }
+
+      {showSelectApis && managedObjectFormDataEnvelope && 
         <ManageSelectApis 
           organizationId={props.organizationId}
-          selectedApiEntityIdList={APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(selected_ApApiDisplayList)}
+          selectedApiEntityIdList={APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(managedObjectFormDataEnvelope.extFormData.selected_ApApiDisplayList)}
           onSave={onSelectApisSuccess}
           onError={props.onError}          
           onCancel={onManagedObjectFormSelectApisCancel}

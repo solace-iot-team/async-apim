@@ -126,8 +126,8 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
             formId={formId}
             action={EAction.EDIT}
             apManagedAssetDisplay_Attributes={mo}
-            onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
+            // onError={props.onError}
+            // onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
           />
           {/* footer */}

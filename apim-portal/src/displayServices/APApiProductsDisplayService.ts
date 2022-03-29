@@ -7,7 +7,7 @@ import {
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, 
+  IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -264,6 +264,19 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay;
   }
 
+  public filter_ApControlledChannelParameterList({ apControlledChannelParameterList, available_ApApiChannelParameterList }:{
+    apControlledChannelParameterList: TAPControlledChannelParameterList;
+    available_ApApiChannelParameterList: TAPApiChannelParameterList;
+  }): TAPControlledChannelParameterList {
+    const filtered_list: TAPControlledChannelParameterList = apControlledChannelParameterList.filter( (x: TAPControlledChannelParameter) => {
+      const is_available = available_ApApiChannelParameterList.find((y) => {
+        return y.apEntityId.id === x.apEntityId.id;
+      });
+      if(is_available) return x;
+    });
+    return filtered_list;
+  }
+
   public get_SelectList_For_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
     const e: any = ClientOptionsGuaranteedMessaging.accessType;
     return Object.keys(e).map(k => e[k]);
@@ -381,16 +394,27 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
   }): IAPApiProductDisplay {
+    // const funcName = 'set_ApApiProductDisplay_Apis';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    // calculate the new complete list 
-    const new_complete_ApAttributeDisplayList: TAPAttributeDisplayList = apApiProductDisplay_Apis.apControlledChannelParameterList;
-    // add any attributes not in list yet
-    apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList.forEach( (from_complete: IAPAttributeDisplay) => {
-      const found = new_complete_ApAttributeDisplayList.find( (x) => {
-        return x.apEntityId.id === from_complete.apEntityId.id;
-      });
-      if(found === undefined) new_complete_ApAttributeDisplayList.push(from_complete);
+    // create the complete available channel parameter attribute list for APIs in 
+    const apCombinedApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
+      apApiDisplayList: apApiProductDisplay.apApiDisplayList
     });
+    // calculate the new complete list 
+    const new_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(apApiProductDisplay_Apis.apControlledChannelParameterList));
+    // add any attributes not in list yet and do not add if they are not available
+    apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList.forEach( (previous: IAPAttributeDisplay) => {
+      // if previous is in combined list ==> do not add
+      const isPreviousInCombinedList = apCombinedApiChannelParameterList.find( (x) => {
+        return x.apEntityId.id === previous.apEntityId.id;
+      });
+      if(isPreviousInCombinedList === undefined) {
+        new_complete_ApAttributeDisplayList.push(previous);
+      }
+    });
+
+    apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
 
     apApiProductDisplay.apApiDisplayList = apApiProductDisplay_Apis.apApiDisplayList;
     apApiProductDisplay.apControlledChannelParameterList = apApiProductDisplay_Apis.apControlledChannelParameterList;
@@ -516,6 +540,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   }
 
+  /**
+   * Update Apis sections.
+   * Assumes apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList is correctly set
+   */
   public async apiUpdate_ApApiProductDisplay_Apis({ organizationId, apApiProductDisplay_Apis }:{
     organizationId: string;
     apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;

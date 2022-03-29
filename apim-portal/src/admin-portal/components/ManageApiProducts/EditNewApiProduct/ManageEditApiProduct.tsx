@@ -121,11 +121,11 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
 
 
         <div className="p-mt-2">
-          <div>TBD: Select Owner Business Group</div>
-          <div>TBD: Select Classification</div>
-          <div>TBD: TBD: Select Category?</div>
-          <div>TBD: manage lifecycle </div>
-          <div>TBD: manage version </div>
+          <div>TBD: Set Owning Business Group to current or assign to any other?</div>
+          <div>TBD: manage version: create a new semVer to edit (validate it is correct and greater than current) </div>
+          <div>TBD: manage lifecycle: any new version is created as 'in-development' </div>
+          <div>TBD: Select Classification?</div>
+          <div>TBD: Select Category?</div>
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
@@ -144,8 +144,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
           </TabPanel>
           <TabPanel header='APIs'>
             <React.Fragment>
-              <p>TBD: select APIs (note restriction in org setting: 1:1 or 1:n)</p>
-              <p>TBD: controlled channel parameters</p>
+              <p>TBD: select APIs: apply restriction in org setting: 1:1 or 1:n)</p>
               <EditApis
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={managedObject}
@@ -182,7 +181,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
           </TabPanel>
           <TabPanel header='Attributes'>
             <React.Fragment>
-              <p>TBD: organization defined attributes?</p>
+              {/* <p>TBD: organization defined attributes?</p> */}
               <EditAttributes
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={managedObject}

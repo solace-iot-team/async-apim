@@ -38,6 +38,9 @@ export class APApisDisplayService {
   public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
     return `${this.nameOf('connectorApiInfo')}.${name}`;
   }
+  public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
+    return name;
+  }
 
   private create_ApApiChannelParameterList({ connectorParameters }:{
     connectorParameters?: Array<APIParameter>;
@@ -169,6 +172,9 @@ export class APApisDisplayService {
   public async apiGetList_ApApiDisplayList({ organizationId }:{
     organizationId: string;
   }): Promise<TAPApiDisplayList> {
+    const funcName = 'apiGetList_ApApiDisplayList';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
     const result: APIList | APISummaryList | APIInfoList = await ApisService.listApis({
       organizationName: organizationId,
       format: 'extended'

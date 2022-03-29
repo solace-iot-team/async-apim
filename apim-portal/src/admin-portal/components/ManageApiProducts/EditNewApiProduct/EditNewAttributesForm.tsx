@@ -16,8 +16,8 @@ export interface IEditNewAttributesFormProps {
   formId: string;
   apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
   onSubmit: (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => void;
-  onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  // onError: (apiCallState: TApiCallState) => void;
+  // onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (props: IEditNewAttributesFormProps) => {
@@ -54,7 +54,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
   
   const [managedObject] = React.useState<TManagedObject>(props.apManagedAssetDisplay_Attributes);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doInitialize = async () => {
@@ -71,11 +71,11 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // React.useEffect(() => {
+  //   if (apiCallStatus !== null) {
+  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
+  //   }
+  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     // const funcName = 'onSubmitManagedObjectForm'; 
@@ -107,7 +107,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
-    const uniqueKey_ExternalAttributes = ComponentName+'EditNewApAttributeListForm'+'mo.apExternal_ApAttributeDisplayList';
+    const uniqueKey_ExternalAttributes = ComponentName+'_EditNewApAttributeListForm'+'_mo.apExternal_ApAttributeDisplayList';
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -122,8 +122,8 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
               key={uniqueKey_ExternalAttributes}
               uniqueKeyPrefix={uniqueKey_ExternalAttributes}
               apAttributeDisplayList={managedObjectFormDataEnvelope.formData.external_attribute_list}
-              tableNameFieldHeader="Attribute Name"
-              tableValueFieldHeader="Attribute Value"
+              attributeName_Name="Attribute Name"
+              attributeValue_Name="Value"
               onChange={onChange_ExternalAttributes}
             />
           </div>
