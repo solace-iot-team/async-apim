@@ -18,7 +18,7 @@ export type TAPDeveloperAppAssetInfoDisplay = IAPEntityIdDisplay & {
 export type TAPAssetInfoDisplay = TAPDeveloperAppAssetInfoDisplay;
 export type TAPAssetInfoDisplayList = Array<TAPAssetInfoDisplay>;
 
-export type TAPOrganizationAssetInfoDisplay = IAPEntityIdDisplay & IAPSearchContent & {
+export type TAPOrganizationAssetInfoDisplay = IAPEntityIdDisplay & {
   apAssetInfoDisplayList: TAPAssetInfoDisplayList;
 }
 export type TAPOrganizationAssetInfoDisplayList = Array<TAPOrganizationAssetInfoDisplay>;
@@ -64,9 +64,8 @@ class APAssetDisplayService {
     const base: TAPOrganizationAssetInfoDisplay = {
       apEntityId: apOrganizationEntityId,
       apAssetInfoDisplayList: apAssetInfoDisplayList,
-      apSearchContent: ''
     };
-    return APSearchContentService.add_SearchContent<TAPOrganizationAssetInfoDisplay>(base);
+    return base;
   }
 
   private async getDeveloperApp({ organizationId, userId }: {

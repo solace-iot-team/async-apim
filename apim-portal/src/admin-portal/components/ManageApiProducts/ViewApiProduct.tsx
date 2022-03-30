@@ -20,10 +20,10 @@ import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APMan
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
+import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
 
 export interface IViewApiProductProps {
   organizationId: string;
