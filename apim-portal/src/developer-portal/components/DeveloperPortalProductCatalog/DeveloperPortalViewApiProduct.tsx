@@ -14,7 +14,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalProductCatalogCommon";
 import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDisplayConnectorAttributes";
-import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
+import { APDisplayClientOptions } from "../../../components/APDisplay/deleteme.APDisplayClientOptions";
 import { APDisplayApiProductAsyncApis } from "../../../components/APDisplay/APDisplayApiProductAsyncApis";
 import APDeveloperPortalApiProductsService, { 
   TAPDeveloperPortalApiProductDisplay,

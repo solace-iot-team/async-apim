@@ -3,7 +3,7 @@ import React from "react";
 
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
-import { Divider } from "primereact/divider";
+import { TabPanel, TabView } from "primereact/tabview";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -19,9 +19,11 @@ import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displaySer
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
+import { Config } from "../../../Config";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
 
 export interface IViewApiProductProps {
   organizationId: string;
@@ -43,6 +45,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
+  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -154,7 +157,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
           data-id={apApiDisplay.apEntityId.id} 
           // icon="pi pi-folder-open" 
           // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-          className="p-button-text p-button-plain" 
+          className="p-button-text p-button-plain p-button-outlined" 
           style={{ whiteSpace: 'nowrap' }}          
           onClick={onShowApi}
         />        
@@ -204,91 +207,103 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     return (
       <React.Fragment>
-        <div className="p-col-12">
-          <div className="api-product-view">
-            <div className="api-product-view-detail-left">
-              
-              <div className="p-text-bold">Description:</div>
-              <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
+        <div className="p-mt-2">
+          <div>TBD: Version with dropdown box to select</div>
+          <div><b>Business Group</b>: {renderBusinessGroup(managedObject.apBusinessGroupInfo)}</div>
+          <div>TBD: Show Lifecycle status </div>
+        </div>              
 
-              <div><b>Approval type</b>: {managedObject.apApprovalType}</div>
-              <div><b>Business Group</b>: {renderBusinessGroup(managedObject.apBusinessGroupInfo)}</div>
+        <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+          <TabPanel header='General'>
+            <React.Fragment>
+            <div className="p-col-12">
+              <div className="api-product-view">
+                <div className="api-product-view-detail-left">
+                  <div className="p-text-bold">Description:</div>
+                  <div className="p-ml-2">{managedObject.connectorApiProduct.description}</div>
 
-              <Divider />
-              <div className="p-text-bold">APIs:</div>
+                  <div className="p-text-bold">Used by Apps:</div>
+                  <div className="p-ml-2">{renderUsedByApps(managedObject.apAppReferenceEntityIdList)}</div>                  
+                </div>
+                <div className="api-product-view-detail-right">
+                  <div>Id: {managedObject.apEntityId.id}</div>
+                </div>            
+              </div>
+            </div>  
+          </React.Fragment>
+          </TabPanel>
+          <TabPanel header='APIs'>
+            <React.Fragment>
               <div>
                 {renderShowApiButtons()}
+                <APDisplayApisDetails 
+                  apApiDisplayList={managedObject.apApiDisplayList}
+                  className="p-ml-4"
+                />
                 <APDisplayApControlledChannelParameters
                   apControlledChannelParameterList={managedObject.apControlledChannelParameterList}
                   emptyMessage="No controlled channel parameters defined"
-                  className="p-ml-4"
+                  className="p-ml-4 p-mt-4"
                 />
               </div>
-              <Divider />
-
+              {apiSpec && showApiId &&
+                <React.Fragment>
+                  <APDisplayAsyncApiSpec 
+                    key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
+                    schema={apiSpec.spec} 
+                    schemaId={showApiId} 
+                    onDownloadSuccess={props.onSuccess}
+                    onDownloadError={props.onError}
+                  />
+                </React.Fragment>  
+              }
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Policies'>
+            <React.Fragment>
+              <div><b>Approval type</b>: {managedObject.apApprovalType}</div>
+              {/* <div className="p-text-bold">Client Options:</div> */}
+              <APDisplayClientOptions
+                apClientOptionsDisplay={managedObject.apClientOptionsDisplay}
+                className="p-mt-2"
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Environments'>
+            <React.Fragment>
               <div className="p-text-bold">Environments:</div>
               <div className="p-ml-2">
                 {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apEnvironmentDisplayList).join(', ')}
               </div>
-              
-
               <div className="p-text-bold">Protocols:</div>
               <div className="p-ml-2">
                 {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apProtocolDisplayList).join(', ')}
               </div>
-
-              <div className="p-text-bold">Client Options:</div>
-              <APDisplayClientOptions
-                clientOptions={managedObject.connectorApiProduct.clientOptions}
-                className="p-ml-4"
-              />
-
-              <Divider />
-              
-              <div className="p-text-bold">Custom Attributes:</div>
-              <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.apCustom_ApAttributeDisplayList}
-                emptyMessage="No attributes defined"
-                className="p-ml-4"
-              />
-              
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Attributes'>
+            <React.Fragment>
               <div className="p-text-bold">General Attributes:</div>
               <APDisplayApAttributeDisplayList
                 apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
-
-              <div className="p-text-bold">DEVEL: ALL ATTRIBUTES:</div>
+            </React.Fragment>
+          </TabPanel>
+          {Config.getUseDevelTools() && 
+          <TabPanel header='DEVEL: Raw Attributes'>
+            <React.Fragment>
+              <div className="p-text-bold">General Attributes:</div>
               <APDisplayApAttributeDisplayList
                 apAttributeDisplayList={managedObject.apComplete_ApAttributeDisplayList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
-
-              <Divider />
-              
-              <div className="p-text-bold">Used by Apps:</div>
-              <div className="p-ml-2">{renderUsedByApps(managedObject.apAppReferenceEntityIdList)}</div>
-
-            </div>
-            <div className="api-product-view-detail-right">
-              <div>Id: {managedObject.apEntityId.id}</div>
-            </div>            
-          </div>
-        </div>  
-        {apiSpec && showApiId &&
-          <React.Fragment>
-            <Divider/>        
-            <APDisplayAsyncApiSpec 
-              key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
-              schema={apiSpec.spec} 
-              schemaId={showApiId} 
-              onDownloadSuccess={props.onSuccess}
-              onDownloadError={props.onError}
-            />
-          </React.Fragment>  
-        }
+            </React.Fragment>
+          </TabPanel>
+          }
+        </TabView> 
       </React.Fragment>
     ); 
   }

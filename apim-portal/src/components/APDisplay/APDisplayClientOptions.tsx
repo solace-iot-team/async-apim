@@ -1,70 +1,65 @@
 
 import React from "react";
 
-import { ClientOptions, ClientOptionsGuaranteedMessaging } from "@solace-iot-team/apim-connector-openapi-browser";
+import { TAPClientOptionsDisplay } from "../../displayServices/APApiProductsDisplayService";
 
 import "../APComponents.css";
 
 export interface IAPDisplayClientOptionsProps {
-  clientOptions?: ClientOptions;
+  apClientOptionsDisplay: TAPClientOptionsDisplay;
   className?: string;
 }
 
 export const APDisplayClientOptions: React.FC<IAPDisplayClientOptionsProps> = (props: IAPDisplayClientOptionsProps) => {
   // const componentName='APDisplayClientOptions';
 
-  const NoClientOptionsMessage = 'Not defined';
-  const [jsxElement, setJsxElement] = React.useState<JSX.Element>();
-
-  const createJsxElement = (content: JSX.Element): JSX.Element => {
+  const renderGuaranteedMessaging = (): JSX.Element => {
+    const renderNotEnabled = (): JSX.Element => {
+      return (<>'Not enabled.'</>);
+    }
+    const renderRow = (name: string, value: string | number): JSX.Element => {
+      return (
+        <div className="p-field p-grid p-ml-2 p-mb-1">
+          <label className="p-col-fixed" style={{ width: "200px"}}>{name}:</label>
+          <div className="p-col">{value}</div>
+        </div>
+      );      
+    }
+    const renderEnabled = (): JSX.Element => {
+      return (
+        <React.Fragment>
+          {renderRow('Enabled', String(props.apClientOptionsDisplay.apGuaranteedMessaging.requireQueue))}
+          {renderRow('AccessType', props.apClientOptionsDisplay.apGuaranteedMessaging.accessType)}
+          {renderRow('Max Spool Usage', `${props.apClientOptionsDisplay.apGuaranteedMessaging.maxMsgSpoolUsage} MB`)}
+          {renderRow('Max TTL', `${props.apClientOptionsDisplay.apGuaranteedMessaging.maxTtl} seconds`)}
+        </React.Fragment>
+      );
+    }
+    const isEnabled: boolean = props.apClientOptionsDisplay.apGuaranteedMessaging.requireQueue;
     return (
-      <div className={props.className ? props.className : 'card'}>
-        {content}
-      </div>
+      <React.Fragment>
+        <div className="p-text-bold p-mb-2">Guaranteed Messaging:</div>
+        {!isEnabled &&
+          renderNotEnabled()
+        }
+        {isEnabled && 
+          renderEnabled()
+        }
+      </React.Fragment>
     );
   }
 
-  const createGuaranteedMessagingJsxElement = (cogm?: ClientOptionsGuaranteedMessaging): JSX.Element => {
-    const createGMString = (cogm: ClientOptionsGuaranteedMessaging): string => {
-      let s: string = `${cogm.requireQueue ? 'enabled' : 'Not available.'}`;
-      if(cogm.requireQueue) {
-        s += ` (queue access=${cogm.accessType}, max TTL (secs)=${cogm.maxTtl}, max spool (MB)=${cogm.maxMsgSpoolUsage})`;
-      }
-      return s;
-    }
-    if(cogm) {
-      return(
-        <li>
-          <b>Guaranteed Messaging: </b>
-          {createGMString(cogm)}
-        </li>
-      );
-    } else {
-      return (
-        <li>
-          <b>Guaranteed Messaging: </b>
-          Not available.
-        </li>
-      );
-    }
+  const renderComponent = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        {renderGuaranteedMessaging()}
+      </React.Fragment>
+    );
   }
-  const doInitialize = () => {
-    if(props.clientOptions) {
-      setJsxElement(createGuaranteedMessagingJsxElement(props.clientOptions.guaranteedMessaging));
-    } else {
-      setJsxElement(createJsxElement(<p>{NoClientOptionsMessage}</p>));
-    }
-  }
-
-  React.useEffect(() => {
-    doInitialize();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <div className={props.className ? props.className : 'card'}>
-      <ul style={{ "listStyle": "disc" }}>
-        { jsxElement }
-      </ul>
+      {renderComponent()}
     </div>
   );
 }

@@ -124,8 +124,6 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
           <div>TBD: Set Owning Business Group to current or assign to any other?</div>
           <div>TBD: manage version: create a new semVer to edit (validate it is correct and greater than current) </div>
           <div>TBD: manage lifecycle: any new version is created as 'in-development' </div>
-          <div>TBD: Select Classification?</div>
-          <div>TBD: Select Category?</div>
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>

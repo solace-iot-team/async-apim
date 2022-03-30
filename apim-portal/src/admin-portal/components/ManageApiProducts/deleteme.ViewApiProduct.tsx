@@ -12,7 +12,7 @@ import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec
 import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/deleteme.APDisplayApAttributeDisplayList";
-import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
+import { APDisplayClientOptions } from "../../../components/APDisplay/deleteme.APDisplayClientOptions";
 import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
 import { TAPApiSpecDisplay } from "../../../utils/deleteme.APApiSpecsService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";

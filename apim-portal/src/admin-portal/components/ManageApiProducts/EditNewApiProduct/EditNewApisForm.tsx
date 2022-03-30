@@ -28,6 +28,7 @@ import { EditControlledChannelParameters } from "./EditControlledChannelParamete
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import { APDisplayApisDetails } from "../../../../components/APDisplay/APDisplayApisDetails";
 
 export interface IEditNewApisFormProps {
   formId: string;
@@ -261,39 +262,13 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   }
 
   const renderApisDetails = (mofde: TManagedObjectFormDataEnvelope): JSX.Element => {
-    const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
-      const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
-      const className = `${options.className} p-jc-start`;
-      const titleClassName = `${options.titleClassName} p-pl-1`;
-      return (
-        <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
-            <span className={toggleIcon}></span>
-          </button>
-          <span className={titleClassName}>
-            Channel Parameter Details
-          </span>
-        </div>
-      );
-    }  
     return (
       <React.Fragment>
-        <div className="p-ml-3">
-          <Panel 
-            headerTemplate={panelHeaderTemplate} 
-            toggleable={true}
-            collapsed={true}
-          >
-            <APDisplayApApiListChannelParameterList
-              key={`${ComponentName}_APDisplayApApiListChannelParameterList_${selectedApis_RefreshCounter}`}
-              apApiDisplayList={mofde.extFormData.selected_ApApiDisplayList}
-              emptyApiDisplayListMessage="No API(s) selected"
-              emptyChannelParameterListMessage="No Channel Parameters defined"
-            />
-        </Panel>
-      </div> 
-    </React.Fragment>
-    )
+        <APDisplayApisDetails 
+          apApiDisplayList={mofde.extFormData.selected_ApApiDisplayList}
+        />
+      </React.Fragment>
+    );
   }
 
   const renderManagedObjectForm = (mofde: TManagedObjectFormDataEnvelope) => {

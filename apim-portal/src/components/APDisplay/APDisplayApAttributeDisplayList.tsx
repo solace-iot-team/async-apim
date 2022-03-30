@@ -48,7 +48,7 @@ export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisp
           />
           <Column 
             field={valueField} 
-            header="Attribute Values"
+            header="Value"
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
         </DataTable>
