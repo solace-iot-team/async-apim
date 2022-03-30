@@ -43,13 +43,14 @@ export const EditApis: React.FC<IEditApisProps> = (props: IEditApisProps) => {
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
 
-      APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_Apis({
-        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
-        apApiProductDisplay_Apis: mo
-      });  
+      // APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_Apis({
+      //   apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+      //   apApiProductDisplay_Apis: mo
+      // });  
 
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Apis({
         organizationId: props.organizationId,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
         apApiProductDisplay_Apis: mo
       });
       setUpdatedManagedObject(mo);

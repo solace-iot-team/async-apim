@@ -12,12 +12,10 @@ import APAdminPortalApiProductsDisplayService, {
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
-import { EditNewApAttributeListForm } from "../../../../components/APManageAttributes/EditNewApAttributeListForm";
+import { EditNewAttributesForm } from "./EditNewAttributesForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { TAPAttributeDisplayList } from "../../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
-import { EditNewAttributesForm } from "./EditNewAttributesForm";
 
 export interface IEditAttributesProps {
   organizationId: string;
@@ -46,12 +44,13 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
-      APAdminPortalApiProductsDisplayService.set_ApManagedAssetDisplay_Attributes({
-        apManagedAssetDisplay: props.apAdminPortalApiProductDisplay,
-        apManagedAssetDisplay_Attributes: mo
-      });  
-      await APAdminPortalApiProductsDisplayService.apiUpdate_ApManagedAssetDisplay_Attributes({
+      // APAdminPortalApiProductsDisplayService.set_ApManagedAssetDisplay_Attributes({
+      //   apManagedAssetDisplay: props.apAdminPortalApiProductDisplay,
+      //   apManagedAssetDisplay_Attributes: mo
+      // });  
+      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Attributes({
         organizationId: props.organizationId,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
         apManagedAssetDisplay_Attributes: mo
       });
       setUpdatedManagedObject(mo);

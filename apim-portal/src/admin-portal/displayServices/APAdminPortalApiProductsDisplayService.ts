@@ -1,6 +1,5 @@
 import { 
   APIProduct,
-  APIProductPatch,
   ApiProductsService, 
   CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -9,7 +8,6 @@ import {
   IAPApiProductDisplay, 
 } from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
-import { TAPManagedAssetDisplay_Attributes } from '../../displayServices/APManagedAssetDisplayService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 

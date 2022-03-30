@@ -294,9 +294,9 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
           {Config.getUseDevelTools() && 
           <TabPanel header='DEVEL: Raw Attributes'>
             <React.Fragment>
-              <div className="p-text-bold">General Attributes:</div>
+              <div className="p-text-bold">All Attributes for cross checking:</div>
               <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.apComplete_ApAttributeDisplayList}
+                apAttributeDisplayList={managedObject.devel_display_complete_ApAttributeList}
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />

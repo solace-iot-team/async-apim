@@ -48,6 +48,9 @@ class APAttributesDisplayService {
     };
   }
 
+  /**
+   * Creates a new list.
+   */
   public create_ApAttributeDisplayList({ apRawAttributeList }:{
     apRawAttributeList: TAPRawAttributeList;
   }): TAPAttributeDisplayList {
