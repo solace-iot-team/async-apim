@@ -1,44 +1,42 @@
 
+
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { TAPApiProductDisplay_Apis } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPApiProductDisplay_Environments } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewEnvironmentsForm } from "./EditNewEnvironmentsForm";
+import { EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewApisForm } from "./EditNewApisForm";
-import { EAction } from "../ManageApiProductsCommon";
 
-export interface INewApisProps {
+export interface INewEnvironmentsProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
+  onNext: (apApiProductDisplay_Environments: TAPApiProductDisplay_Environments) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
-  const ComponentName = 'NewApis';
+export const NewEnvironments: React.FC<INewEnvironmentsProps> = (props: INewEnvironmentsProps) => {
+  const ComponentName = 'NewEnvironments';
 
-  type TManagedObject = TAPApiProductDisplay_Apis;
+  type TManagedObject = TAPApiProductDisplay_Environments;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
-
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Apis({
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Environments({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
@@ -50,9 +48,6 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus';
-    const logName = `${ComponentName}.${funcName}()`;
-
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
     }
@@ -62,8 +57,8 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     props.onNext(mo);
   }
 
-  const onSubmit = (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => {
-    doSubmitManagedObject(apApiProductDisplay_Apis);
+  const onSubmit = (apApiProductDisplay_Environments: TAPApiProductDisplay_Environments) => {
+    doSubmitManagedObject(apApiProductDisplay_Environments);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -91,11 +86,11 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewApisForm
+          <EditNewEnvironmentsForm
             formId={formId}
             action={EAction.NEW}
             organizationId={props.organizationId}
-            apApiProductDisplay_Apis={mo}
+            apApiProductDisplay_Environments={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
@@ -107,7 +102,6 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     );
   }
 
-  
   return (
     <div className="manage-api-products">
 

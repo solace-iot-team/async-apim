@@ -118,6 +118,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
           <EditNewGeneralForm
             formId={formId}
             action={EAction.EDIT}
+            organizationId={props.organizationId}
             apApiProductDisplay_General={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}

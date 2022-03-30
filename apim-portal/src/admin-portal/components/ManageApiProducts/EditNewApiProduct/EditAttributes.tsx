@@ -1,6 +1,5 @@
 
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -36,9 +35,7 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
-
   // * Api Calls *
-
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -125,8 +122,6 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
             formId={formId}
             action={EAction.EDIT}
             apManagedAssetDisplay_Attributes={mo}
-            // onError={props.onError}
-            // onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
           />
           {/* footer */}

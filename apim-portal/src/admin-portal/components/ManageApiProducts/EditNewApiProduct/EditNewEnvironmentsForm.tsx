@@ -72,14 +72,15 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
   }
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [selected_ApEnvironmentDisplayList, setSelected_ApEnvironmentDisplayList] = React.useState<TAPEnvironmentDisplayList>([]);
+  const [selected_ApEnvironmentDisplayList, setSelected_ApEnvironmentDisplayList] = React.useState<TAPEnvironmentDisplayList>();
   const [complete_ApProtocolDisplayList, setComplete_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>([]);
-  const [selected_ApProtocolDisplayList, setSelected_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>([]);
+  const [selected_ApProtocolDisplayList, setSelected_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
 
   const doInitialize = async () => {
     setManagedObject(props.apApiProductDisplay_Environments);
@@ -93,7 +94,6 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
     setSelected_ApEnvironmentDisplayList(managedObject.apEnvironmentDisplayList);
     setSelected_ApProtocolDisplayList(managedObject.apProtocolDisplayList);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -101,6 +101,10 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
     managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(isInitialized) {
+      managedObjectUseForm.clearErrors();
+      managedObjectUseForm.trigger();  
+    } else setIsInitialized(true);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -136,18 +140,20 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const isSelectedProtocolListValid = (): boolean => {
+  const isSelectedProtocolListValid = (apProtocolDisplayList: TAPProtocolDisplayList): boolean => {
     // const funcName = 'isSelectedProtocolListValid';
     // const logName = `${ComponentName}.${funcName}()`;
-    return selected_ApProtocolDisplayList.length > 0;
+    return apProtocolDisplayList.length > 0;
   }
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(selected_ApEnvironmentDisplayList === undefined) throw new Error(`${logName}: selected_ApEnvironmentDisplayList === undefined`);
+    if(selected_ApProtocolDisplayList === undefined) throw new Error(`${logName}: selected_ApProtocolDisplayList === undefined`);
     setIsFormSubmitted(true);
-    if(!isSelectedProtocolListValid()) return false;
+    if(!isSelectedProtocolListValid(selected_ApProtocolDisplayList)) return false;
     props.onSubmit(create_ManagedObject_From_FormEntities({
       formDataEnvelope: newMofde,
       selected_ApProtocolDisplayList: selected_ApProtocolDisplayList,
@@ -173,15 +179,18 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
   }
 
   const onProtocolSelectionChange = (apProtocolDisplayList: TAPProtocolDisplayList) => {
-    const funcName = 'onProtocolSelectionChange';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // const funcName = 'onProtocolSelectionChange';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     // alert(`${logName}: apProtocolDisplayList = ${APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(apProtocolDisplayList)}`);
     setSelected_ApProtocolDisplayList(apProtocolDisplayList);
   }
 
   const displaySelectedProtocolsErrorMessage = () => {
-    if(isFormSubmitted && !isSelectedProtocolListValid()) return <p className="p-error">Select at least 1 protocol.</p>;
+    const funcName = 'displaySelectedProtocolsErrorMessage';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(selected_ApProtocolDisplayList === undefined) throw new Error(`${logName}: selected_ApProtocolDisplayList === undefined`);
+    if(isFormSubmitted && !isSelectedProtocolListValid(selected_ApProtocolDisplayList)) return <p className="p-error">Select at least 1 protocol.</p>;
   }
 
   const renderSelectProtocols = (complete_apProtocolDisplayList: TAPProtocolDisplayList, selected_apProtocolDisplayList: TAPProtocolDisplayList) => {
@@ -210,6 +219,7 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    if(selected_ApProtocolDisplayList === undefined) throw new Error(`${logName}: selected_ApProtocolDisplayList === undefined`);
 
     return (
       <div className="card p-mt-4">

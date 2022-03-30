@@ -1,45 +1,43 @@
 
+
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { TAPApiProductDisplay_Apis } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
+import { EditNewAttributesForm } from "./EditNewAttributesForm";
+import { EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewApisForm } from "./EditNewApisForm";
-import { EAction } from "../ManageApiProductsCommon";
 
-export interface INewApisProps {
+export interface INewAttributesProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
+  onNext: (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  // onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
-  const ComponentName = 'NewApis';
+export const NewAttributes: React.FC<INewAttributesProps> = (props: INewAttributesProps) => {
+  const ComponentName = 'NewAttributes';
 
-  type TManagedObject = TAPApiProductDisplay_Apis;
+  type TManagedObject = TAPManagedAssetDisplay_Attributes;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
-
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Apis({
-      apApiProductDisplay: props.apAdminPortalApiProductDisplay
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApManagedAssetDisplay_Attributes({
+      apManagedAssetDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
 
@@ -49,21 +47,21 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus';
-    const logName = `${ComponentName}.${funcName}()`;
+  // React.useEffect(() => {
+  //   const funcName = 'useEffect[apiCallStatus';
+  //   const logName = `${ComponentName}.${funcName}()`;
 
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  //   if (apiCallStatus !== null) {
+  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
+  //   }
+  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onNext(mo);
   }
 
-  const onSubmit = (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => {
-    doSubmitManagedObject(apApiProductDisplay_Apis);
+  const onSubmit = (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => {
+    doSubmitManagedObject(apManagedAssetDisplay_Attributes);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -91,15 +89,12 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewApisForm
+          <EditNewAttributesForm
             formId={formId}
             action={EAction.NEW}
-            organizationId={props.organizationId}
-            apApiProductDisplay_Apis={mo}
-            onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
+            apManagedAssetDisplay_Attributes={mo}
             onSubmit={onSubmit}
-          />
+          />          
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

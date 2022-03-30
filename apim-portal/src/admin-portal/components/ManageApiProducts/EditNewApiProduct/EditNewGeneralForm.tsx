@@ -6,17 +6,20 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from "primereact/inputtextarea";
 import { classNames } from 'primereact/utils';
 
-import { TApiCallState } from "../../../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { EAction} from "../ManageApiProductsCommon";
+import { EAction, E_CALL_STATE_ACTIONS} from "../ManageApiProductsCommon";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
+  organizationId: string;
   apApiProductDisplay_General: TAPApiProductDisplay_General;
   formId: string;
   onSubmit: (apAdminPortalApiProductDisplay_General: TAPApiProductDisplay_General) => void;
@@ -70,23 +73,23 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
 
   // * Api Calls *
 
-  // NEW: validate if apiproduct id exists 
-  // const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
-  //   const funcName = 'apiUpdateManagedObject';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
-  //   try {
-  //     await APAdminPortalApiProductsDisplayService.apiUpdate_ApAdminPortalApiProductDisplay_General({
-  //       organizationId: props.organizationId,
-  //       apAdminPortalApiProductDisplay_General: mo,
-  //     });
-  //   } catch(e: any) {
-  //     APSClientOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
+  const apiCheck_ApiProductIdExists = async(apiProductId: string): Promise<boolean | undefined> => {
+    const funcName = 'apiCheck_ApiProductIdExists';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_API_PRODUCT_ID_EXISTS, `check api product exists: ${apiProductId}`);
+    let checkResult: boolean | undefined = undefined;
+    try { 
+      checkResult = await APAdminPortalApiProductsDisplayService.apiCheck_ApApiProductDisplay_Exists({
+        organizationId: props.organizationId,
+        apiProductId: apiProductId
+      });
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return checkResult;
+  }
 
   const doInitialize = async () => {
     setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
@@ -120,6 +123,15 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     // placeholder
   }
 
+  const validate_Id = async(id: string): Promise<string | boolean> => {
+    if(props.action === EAction.EDIT) return true;
+    // check if id exists
+    const checkResult: boolean | undefined = await apiCheck_ApiProductIdExists(id);
+    if(checkResult === undefined) return false;
+    if(checkResult) return 'API Product Id already exists, choose a unique Id.';
+    return true;
+  }
+
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
     return (
@@ -133,17 +145,16 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <Controller
                   control={managedObjectUseForm.control}
                   name="formData.id"
-
-                  // async validate if id exists if new
-                  rules={APConnectorFormValidationRules.Name()}
-
-
+                  rules={{
+                    ...APConnectorFormValidationRules.Name(),
+                    validate: validate_Id
+                  }}
                   render={( { field, fieldState }) => {
                     return(
                       <InputText
                         id={field.name}
                         {...field}
-                        autoFocus={isNewObject}
+                        autoFocus={false}
                         disabled={!isNewObject}
                         className={classNames({ 'p-invalid': fieldState.invalid })}                       
                       />
@@ -166,7 +177,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={!isNewObject}
+                          autoFocus={true}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
                   )}}

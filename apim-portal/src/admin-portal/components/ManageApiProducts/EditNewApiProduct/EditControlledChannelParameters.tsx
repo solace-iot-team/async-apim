@@ -69,6 +69,7 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
             availableApAttributeEntityIdList={available_ApChannelParameterEntityIdList}
             attributeName_Name="Controlled Channel Parameter"
             attributeValue_Name="Value"
+            emptyMessage="No Controlled Channel Parameters defined."
             onChange={props.onChange}
           />
         </div>

@@ -28,6 +28,7 @@ export interface IEditNewApAttributeListFormProps {
   availableApAttributeEntityIdList?: TAPEntityIdList; /** if supplied, validates attribute names against this list */
   attributeName_Name: string;
   attributeValue_Name: string;
+  emptyMessage?: string;
   onChange: (apAttributeDisplayList: TAPAttributeDisplayList) => void; /** called every time the list has changed */
 }
 
@@ -63,6 +64,7 @@ export const EditNewApAttributeListForm: React.FC<IEditNewApAttributeListFormPro
   const EmptyManagedObject: TManagedObject = APAttributesDisplayService.create_Empty_ApAttributeDisplay();
   const UniqueKeyPrefix: string = props.uniqueKeyPrefix + '_' + ComponentName;
   const FormId: string = UniqueKeyPrefix + '_Form';
+  const EmptyMessage: string = props.emptyMessage !== undefined ? props.emptyMessage : 'No attributes defined.';
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>(props.apAttributeDisplayList);
@@ -154,7 +156,7 @@ export const EditNewApAttributeListForm: React.FC<IEditNewApAttributeListFormPro
           className="p-datatable-sm"
           showGridlines={false}
           value={managedObjectList}
-          emptyMessage='No attributes defined.'
+          emptyMessage={EmptyMessage}
           scrollable 
           dataKey={dataKey}  
           sortMode='single'

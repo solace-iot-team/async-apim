@@ -111,8 +111,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   // * New Object *
   const onNewManagedObject = () => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(undefined);
-    setManagedObjectHasReferences(false);
+    // setManagedObjectEntityId(undefined);
+    // setManagedObjectHasReferences(false);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
   // * Edit Object *
@@ -340,16 +340,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNewSuccess={onNewManagedObjectSuccess}
+          onSuccessNotification={props.onSuccess}
         />
-        // <EditNewApiProduct
-        //   action={EAction.NEW}
-        //   organizationId={props.organizationId}
-        //   onNewSuccess={onNewManagedObjectSuccess}
-        //   onEditSuccess={onEditManagedObjectSuccess}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading} 
-        // />
       }
       {showEditComponent && managedObjectEntityId &&
         <ManageEditApiProduct

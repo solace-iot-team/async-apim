@@ -1,4 +1,5 @@
 
+
 import React from "react";
 // import { useForm, Controller } from 'react-hook-form';
 
@@ -10,27 +11,27 @@ import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { TAPApiProductDisplay_Apis } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPApiProductDisplay_Apis, TAPApiProductDisplay_Policies } from "../../../../displayServices/APApiProductsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewApisForm } from "./EditNewApisForm";
+import { EditNewPoliciesForm } from "./EditNewPoliciesForm";
 import { EAction } from "../ManageApiProductsCommon";
 
-export interface INewApisProps {
+export interface INewPoliciesProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
+  onNext: (apApiProductDisplay_Policies: TAPApiProductDisplay_Policies) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
-  const ComponentName = 'NewApis';
+export const NewPolicies: React.FC<INewPoliciesProps> = (props: INewPoliciesProps) => {
+  const ComponentName = 'NewPolicies';
 
-  type TManagedObject = TAPApiProductDisplay_Apis;
+  type TManagedObject = TAPApiProductDisplay_Policies;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -38,7 +39,7 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
 
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Apis({
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Policies({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
@@ -62,8 +63,8 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     props.onNext(mo);
   }
 
-  const onSubmit = (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => {
-    doSubmitManagedObject(apApiProductDisplay_Apis);
+  const onSubmit = (apApiProductDisplay_Policies: TAPApiProductDisplay_Policies) => {
+    doSubmitManagedObject(apApiProductDisplay_Policies);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -91,11 +92,10 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewApisForm
+          <EditNewPoliciesForm
             formId={formId}
             action={EAction.NEW}
-            organizationId={props.organizationId}
-            apApiProductDisplay_Apis={mo}
+            apApiProductDisplay_Policies={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

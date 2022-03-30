@@ -22,13 +22,11 @@ import {
 import { ManageSelectApis } from "./ManageSelectApis";
 import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
 import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { APDisplayApApiListChannelParameterList } from "../../../../components/APDisplay/APDisplayApApiListApChannelParameterList";
 import { EditControlledChannelParameters } from "./EditControlledChannelParameters";
+import { APDisplayApisDetails } from "../../../../components/APDisplay/APDisplayApisDetails";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { APDisplayApisDetails } from "../../../../components/APDisplay/APDisplayApisDetails";
 
 export interface IEditNewApisFormProps {
   formId: string;
@@ -140,6 +138,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
   const [selectedApis_RefreshCounter, setSelectedApis_RefreshCounter] = React.useState<number>(0);
+  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
 
   const doInitialize = async () => {
     setManagedObject(props.apApiProductDisplay_Apis);
@@ -163,6 +162,10 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     // useFormData is directly modified by the form itself
     managedObjectUseForm.setValue('useFormData', managedObjectFormDataEnvelope.useFormData);
     setSelectedApis_RefreshCounter(selectedApis_RefreshCounter + 1);
+    if(isInitialized) {
+      managedObjectUseForm.clearErrors();
+      managedObjectUseForm.trigger();  
+    } else setIsInitialized(true);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

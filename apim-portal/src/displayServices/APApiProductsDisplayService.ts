@@ -1,4 +1,5 @@
 import { 
+  ApiError,
   APIProduct,
   APIProductAccessLevel,
   APIProductPatch,
@@ -6,6 +7,7 @@ import {
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
@@ -453,6 +455,25 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // API calls
   // ********************************************************************************************************************************
 
+  public async apiCheck_ApApiProductDisplay_Exists({ organizationId, apiProductId }: {
+    organizationId: string;
+    apiProductId: string;
+  }): Promise<boolean> {
+    try {
+      await ApiProductsService.getApiProduct({
+        organizationName: organizationId,
+        apiProductName: apiProductId
+      });
+      return true;
+     } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
+
     // const patch: APIProductPatch = {
   //   displayName: apiProduct.displayName,
   //   description: apiProduct.description,
@@ -600,100 +621,43 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   }
 
-  // protected async apsGetList_ApApiProductDisplayList({ organizationId }: {
-  //   organizationId: string;
-  //   // includeAccessLevel?: APIProductAccessLevel;
-  // }): Promise<TAPApiProductDisplayList> {
+  public async apiCreate_ApApiProductDisplay({ organizationId, apApiProductDisplay }: {
+    organizationId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): Promise<void> {
+    const funcName = 'apiCreate_ApApiProductDisplay';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-  //   const funcName = 'apsGetList_ApApiProductDisplayList';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
+    const apRawAttributeList: TAPRawAttributeList = this.create_Complete_ApRawAttributeList({ apManagedAssetDisplay: apApiProductDisplay });
 
-  //   const _connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-  //     organizationName: organizationId
-  //   });
-  //   // const connectorApiProductList: Array<APIProduct> = this.filterConnectorApiProductList(_connectorApiProductList, includeAccessLevel);
-  //   const list: TAPApiProductDisplayList = [];
+    alert(`${logName}: check console ...`);
+    console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);
 
-  //   for(const connectorApiProduct of _connectorApiProductList) {
-  //     // if(!connectorApiProduct.environments) throw new Error(`${logName}: connectorApiProduct.environments is undefined`);
-  //     // const productApEnvDisplayList: TAPEnvironmentDisplayList = [];
-  //     // for(const envName of connectorApiProduct.environments) {
-  //     //   const found = apEnvDisplayList.find( (apEnvDisplay: TAPEnvironmentDisplay) => {
-  //     //     return envName === apEnvDisplay.apEntityId.id;
-  //     //   });
-  //     //   if(found === undefined) throw new Error(`${logName}: found is undefined`);        
-  //     //   productApEnvDisplayList.push(found);
-  //     // }
-  //     // const productApApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
-  //     //   organizationId: organizationId,
-  //     //   apiIdList: connectorApiProduct.apis
-  //     // });
-  //     // list.push(this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, productApEnvDisplayList, productApApiDisplayList));
 
-  //     list.push(this.create_ApApiProductDisplay_From_ApiEntities({ connectorApiProduct: connectorApiProduct }));
-  //   };
+    const create: APIProduct = {
+      apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
+      approvalType: apApiProductDisplay.apApprovalType,
+      displayName: apApiProductDisplay.apEntityId.displayName,
+      name: apApiProductDisplay.apEntityId.id,
+      description: apApiProductDisplay.apDescription,
+      pubResources: [],
+      subResources: [],
+      // accessLevel: 
+      attributes: apRawAttributeList,
+      environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apEnvironmentDisplayList),
+      protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
+        apProtocolDisplayList: apApiProductDisplay.apProtocolDisplayList
+      }),
+      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay.apClientOptionsDisplay)
+    }
 
-    // const apEnvDisplayList = await APEnvironmentsService.listApEnvironmentDisplay({
-    //   organizationId: organizationId
-    // });
-    // for(const connectorApiProduct of connectorApiProductList) {
-    //   if(!connectorApiProduct.environments) throw new Error(`${logName}: connectorApiProduct.environments is undefined`);
-    //   const productApEnvDisplayList: TAPEnvironmentDisplayList = [];
-    //   for(const envName of connectorApiProduct.environments) {
-    //     const found = apEnvDisplayList.find( (apEnvDisplay: TAPEnvironmentDisplay) => {
-    //       return envName === apEnvDisplay.apEntityId.id;
-    //     });
-    //     if(found === undefined) throw new Error(`${logName}: found is undefined`);        
-    //     productApEnvDisplayList.push(found);
-    //   }
-    //   const productApApiDisplayList: TAPApiDisplayList = await APApisService.listApApiDisplayForApiIdList({
-    //     organizationId: organizationId,
-    //     apiIdList: connectorApiProduct.apis
-    //   });
-    //   list.push(this.create_ApApiProductDisplay_From_ApiEntities(connectorApiProduct, productApEnvDisplayList, productApApiDisplayList));
-    // };
-  //   return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<IAPApiProductDisplay>(list);    
-  // }
+    await ApiProductsService.createApiProduct({
+      organizationName: organizationId,
+      requestBody: create
+    });  
+
+  }
   
-  // protected async createApApiProductDisplay({ organizationId, apApiProductDisplay}: {
-  //   organizationId: string;
-  //   apApiProductDisplay: TAPApiProductDisplay;
-  // }): Promise<void> {
-
-  //   await ApiProductsService.createApiProduct({
-  //     organizationName: organizationId,
-  //     requestBody: apApiProductDisplay.connectorApiProduct
-  //   });
-
-  // }
-
-  // protected async updateApApiProductDisplay({ organizationId, apApiProductDisplay }: {
-  //   organizationId: string;
-  //   apApiProductDisplay: TAPApiProductDisplay;
-  // }): Promise<void> {
-
-  //   const apiProduct: APIProduct = apApiProductDisplay.connectorApiProduct;
-  //   const patch: APIProductPatch = {
-  //     displayName: apiProduct.displayName,
-  //     description: apiProduct.description,
-  //     approvalType: apiProduct.approvalType,
-  //     attributes: apiProduct.attributes,
-  //     clientOptions: apiProduct.clientOptions,
-  //     environments: apiProduct.environments,
-  //     protocols: apiProduct.protocols,
-  //     pubResources: apiProduct.pubResources,
-  //     subResources: apiProduct.subResources,
-  //     apis: apiProduct.apis,
-  //     accessLevel: apiProduct.accessLevel
-  //   };
-  
-  //   await ApiProductsService.updateApiProduct({
-  //     organizationName: organizationId,
-  //     apiProductName: apApiProductDisplay.apEntityId.id,
-  //     requestBody: patch
-  //   });  
-  // }
-
   // public async deleteApApiProductDisplay({ organizationId, apiProductId}: {
   //   organizationId: string;
   //   apiProductId: string;
@@ -704,21 +668,4 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   //   });
   // }
 
-  // public async getApiSpec({ organizationId, apiProductId, apiEntityId }: {
-  //   organizationId: string;
-  //   apiProductId: string;
-  //   apiEntityId: TAPEntityId;
-  // }): Promise<TAPApiSpecDisplay> {
-  //   const spec: any = await ApiProductsService.getApiProductApiSpecification({
-  //     organizationName: organizationId, 
-  //     apiProductName: apiProductId,
-  //     apiName: apiEntityId.id,
-  //     format: EAPApiSpecFormat.JSON
-  //   });
-  //   return {
-  //     apEntityId: apiEntityId,
-  //     format: EAPApiSpecFormat.JSON,
-  //     spec: spec
-  //   };
-  // }
 }

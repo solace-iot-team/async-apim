@@ -123,6 +123,7 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
         <div className="p-fluid">
           <EditNewGeneralForm
             formId={formId}
+            organizationId={props.organizationId}
             action={EAction.NEW}
             apApiProductDisplay_General={mo}
             onError={props.onError}
