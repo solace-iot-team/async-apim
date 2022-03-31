@@ -85,12 +85,16 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
     const logName = `${this.ComponentName}.${funcName}()`;
     
+    let filter: string | undefined = undefined;
     if(businessGroupId !== undefined) {
-      const attributeName: string = this.get_AttributeName_BusinessGroupId();
-      alert(`${logName}: search for attribute: ${attributeName}=${businessGroupId}`);
+      filter = this.create_ConnectorFilter_For_Attribute({
+        attributeName: this.get_AttributeName_BusinessGroupId(),
+        attributeValue: businessGroupId
+      });
     }
     const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-      organizationName: organizationId
+      organizationName: organizationId,
+      filter: filter
     });
 
     // get the complete env list for reference

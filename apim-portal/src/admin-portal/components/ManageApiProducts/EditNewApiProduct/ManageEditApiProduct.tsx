@@ -116,13 +116,9 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
 
     return (
       <React.Fragment>
-        {/* <div className="p-mt-4"><b>Activated</b>: {String(APOrganizationUsersDisplayService.get_isActivated({apUserDisplay: mo}))}</div> */}
-
-
         <div className="p-mt-2">
-          <div>TBD: Set Owning Business Group to current or assign to any other?</div>
-          <div>TBD: manage version: create a new semVer to edit (validate it is correct and greater than current) </div>
-          <div>TBD: manage lifecycle: any new version is created as 'in-development' </div>
+          <div>Version: TBD: manage version: system suggests the next minor version automatically, user can override. semVer format, (validate it is correct and greater than current) </div>
+          <div>Lifecycle: TBD: manage lifecycle: any new version is created as 'draft' </div>
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>

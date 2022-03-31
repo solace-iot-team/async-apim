@@ -112,6 +112,13 @@ export abstract class APManagedAssetDisplayService {
     return `_${CAPManagedAssetAttribute_Prefix}_${scope}_`;
   }
 
+  protected create_ConnectorFilter_For_Attribute({ attributeName, attributeValue }:{
+    attributeName: string;
+    attributeValue: string;
+  }): string {
+    return `"${attributeName}" "${attributeValue}"`;
+  }
+  
   protected get_AttributeName_BusinessGroupId(): string {
     return this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID });
   }
