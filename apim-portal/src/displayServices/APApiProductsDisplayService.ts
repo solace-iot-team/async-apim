@@ -289,6 +289,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return Object.keys(e).map(k => e[k]);
   }  
 
+  protected get_IsDeleteAllowed({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): boolean {
+    return true;
+  }
+
   public get_ApiProductDisplay_General({ apApiProductDisplay }:{
     apApiProductDisplay: IAPApiProductDisplay;
   }): TAPApiProductDisplay_General {
@@ -657,14 +663,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   }
   
-  // public async deleteApApiProductDisplay({ organizationId, apiProductId}: {
-  //   organizationId: string;
-  //   apiProductId: string;
-  // }): Promise<void> {
-  //   await ApiProductsService.deleteApiProduct({
-  //     organizationName: organizationId,
-  //     apiProductName: apiProductId
-  //   });
-  // }
+  public async apiDelete_ApApiProductDisplay({ organizationId, apiProductId }: {
+    organizationId: string;
+    apiProductId: string;
+  }): Promise<void> {
+
+    await ApiProductsService.deleteApiProduct({
+      organizationName: organizationId,
+      apiProductName: apiProductId
+    });
+  }
 
 }

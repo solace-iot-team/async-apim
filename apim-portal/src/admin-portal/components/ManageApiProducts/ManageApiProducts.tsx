@@ -17,6 +17,8 @@ import { ManagedNewApiProduct } from "./EditNewApiProduct/ManageNewApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
+import { DeleteApiProduct } from "./DeleteApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -59,7 +61,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-  const [managedObjectHasReferences, setManagedObjectHasReferences] = React.useState<boolean>(false);
+  const [isManagedObjectDeleteAllowed, setIsManagedObjectDeleteAllowed] = React.useState<boolean>(false);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -101,10 +103,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (moEntityId: TAPEntityId, hasReferences: boolean): void => {
+  const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(moEntityId)
-    setManagedObjectHasReferences(hasReferences);
+    setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
+    setIsManagedObjectDeleteAllowed(APAdminPortalApiProductsDisplayService.get_IsDeleteAllowed({
+      apApiProductDisplay: apAdminPortalApiProductDisplay
+    }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -154,12 +158,11 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       </React.Fragment>
     );
     if(showViewComponent) {          
-      const isDeleteAllowed: boolean = !managedObjectHasReferences;
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isDeleteAllowed} />        
+          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isManagedObjectDeleteAllowed} />        
         </React.Fragment>
       );
       }
@@ -321,16 +324,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-        <p>DeleteApiProduct</p>
-        // <DeleteApiProduct
-        //   organizationId={props.organizationId}
-        //   apiProductId={managedObjectId}
-        //   apiProductDisplayName={managedObjectDisplayName}
-        //   onSuccess={onDeleteManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+         <DeleteApiProduct
+          organizationId={props.organizationEntityId.id}
+          apiProductEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          onCancel={onSubComponentCancel}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
+         />
       }
       {showNewComponent &&
         <ManagedNewApiProduct

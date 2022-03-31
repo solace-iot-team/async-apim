@@ -50,6 +50,17 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return APSearchContentService.add_SearchContent<TAPAdminPortalApiProductDisplay>(apAdminPortalApiProductDisplay);
   }
 
+  public get_IsDeleteAllowed({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): boolean {
+    const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = apApiProductDisplay as TAPAdminPortalApiProductDisplay;
+    if(!super.get_IsDeleteAllowed({
+      apApiProductDisplay: apApiProductDisplay
+    })) return false;
+    if(apAdminPortalApiProductDisplay.apAppReferenceEntityIdList.length > 0) return false;
+    return true;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************

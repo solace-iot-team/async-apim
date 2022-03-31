@@ -28,7 +28,7 @@ export interface IListApiProductsProps {
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectEntityId: TAPEntityId) => void;
   onManagedObjectDelete: (managedObjectEntityId: TAPEntityId) => void;
-  onManagedObjectView: (managedObjectEntityId: TAPEntityId, hasReferences: boolean) => void;
+  onManagedObjectView: (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -100,7 +100,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.apEntityId, mo.apAppReferenceEntityIdList.length > 0);
+    props.onManagedObjectView(mo);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -251,7 +251,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header='API Products:' notes="TODO: filter by current, selected business group"/>
+      <APComponentHeader header='API Products:' notes="TODO: filter by current, selected business group. quick filter by lifecycle status"/>
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
