@@ -52,9 +52,6 @@ export type TAPApiProductDisplay_Environments = IAPEntityIdDisplay & {
 export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
   apApiDisplayList: TAPApiDisplayList;
   apControlledChannelParameterList: TAPControlledChannelParameterList;
-  // internalReference: {
-  //   apComplete_ApAttributeDisplayList: TAPAttributeDisplayList;
-  // }
 }
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
@@ -67,8 +64,8 @@ export type TAPClientOptionsDisplay = {
   apGuaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay;  
 }
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
-  // remove this after
-  connectorApiProduct: APIProduct;
+  // keep for devel purposes only
+  devel_connectorApiProduct: APIProduct;
 
   // General
   apDescription: string;
@@ -180,7 +177,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   protected create_Empty_ApApiProductDisplay(): IAPApiProductDisplay {
     const apApiProductDisplay: IAPApiProductDisplay = {
       ...this.create_Empty_ApManagedAssetDisplay(),
-      connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
+
+      devel_connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
 
       apDescription: '',
       apApprovalType: this.create_ApApprovalType(),
@@ -248,7 +246,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const apApiProductDisplay: IAPApiProductDisplay = {
       ..._base,
 
-      connectorApiProduct: connectorApiProduct,
+      devel_connectorApiProduct: connectorApiProduct,
 
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
@@ -625,14 +623,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     organizationId: string;
     apApiProductDisplay: IAPApiProductDisplay;
   }): Promise<void> {
-    const funcName = 'apiCreate_ApApiProductDisplay';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'apiCreate_ApApiProductDisplay';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const apRawAttributeList: TAPRawAttributeList = this.create_Complete_ApRawAttributeList({ apManagedAssetDisplay: apApiProductDisplay });
 
-    alert(`${logName}: check console ...`);
-    console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);
-
+    // alert(`${logName}: check console ...`);
+    // console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);
+    // test upstream error handling
+    // throw new Error(`${logName}: testing error handling`);
 
     const create: APIProduct = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),

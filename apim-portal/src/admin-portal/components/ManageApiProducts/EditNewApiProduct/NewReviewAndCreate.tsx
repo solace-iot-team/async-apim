@@ -12,7 +12,7 @@ import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { DisplayAdminPortalApiProduct } from "../DisplayApiProduct";
+import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
 
 export interface INewReviewAndCreateProps {
   organizationId: string;
@@ -113,6 +113,7 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
     return (
       <React.Fragment>
         <DisplayAdminPortalApiProduct
+          scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE}
           organizationId={props.organizationId}
           apAdminPortalApiProductDisplay={props.apAdminPortalApiProductDisplay}
           onError={props.onError}
