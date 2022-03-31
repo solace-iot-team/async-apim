@@ -32,7 +32,6 @@ export const NewEnvironments: React.FC<INewEnvironmentsProps> = (props: INewEnvi
   type TManagedObject = TAPApiProductDisplay_Environments;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
   const doInitialize = async () => {
@@ -46,12 +45,6 @@ export const NewEnvironments: React.FC<INewEnvironmentsProps> = (props: INewEnvi
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onNext(mo);

@@ -1,7 +1,4 @@
-import { 
-  APIInfo, 
-  APIInfoList, 
-} from '@solace-iot-team/apim-connector-openapi-browser';
+
 import { APApisDisplayService } from '../../displayServices/APApisDisplayService';
 
 class APAdminPortalApisDisplayService extends APApisDisplayService {

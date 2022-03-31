@@ -4,7 +4,6 @@ import {
   Developer 
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
-import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APOrganizationUsersDisplayService from './APUsersDisplayService/APOrganizationUsersDisplayService';
 
 export enum EAPAssetType {

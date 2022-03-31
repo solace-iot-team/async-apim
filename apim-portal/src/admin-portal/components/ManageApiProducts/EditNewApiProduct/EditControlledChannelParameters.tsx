@@ -5,11 +5,11 @@ import { TAPApiChannelParameter, TAPApiChannelParameterList, TAPApiDisplayList }
 import { TAPControlledChannelParameter, TAPControlledChannelParameterList } from "../../../../displayServices/APApiProductsDisplayService";
 import { SelectApiChannelParameter } from "./SelectApiChannelParameter";
 import { EditNewApAttributeListForm } from "../../../../components/APManageAttributes/EditNewApAttributeListForm";
+import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
-import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 export interface IEditControlledChannelParametersProps {
   apApiDisplayList: TAPApiDisplayList;
@@ -52,7 +52,7 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const uniqueKey = ComponentName+'_EditNewApAttributeListForm_'+'managedObject';
+    const uniqueKey = `${ComponentName}_EditNewApAttributeListForm_managedObject`;
     return (
       <React.Fragment>
         <SelectApiChannelParameter

@@ -2,7 +2,6 @@
 import React from "react";
 import { useForm } from 'react-hook-form';
 
-import { TApiCallState } from "../../../../utils/ApiCallState";
 import { EAction} from "../ManageApiProductsCommon";
 import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
 import { TAPAttributeDisplayList } from "../../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
@@ -16,8 +15,6 @@ export interface IEditNewAttributesFormProps {
   formId: string;
   apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
   onSubmit: (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => void;
-  // onError: (apiCallState: TApiCallState) => void;
-  // onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (props: IEditNewAttributesFormProps) => {
@@ -71,12 +68,6 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   if (apiCallStatus !== null) {
-  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
-  //   }
-  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     // const funcName = 'onSubmitManagedObjectForm'; 
     // const logName = `${ComponentName}.${funcName}()`;
@@ -107,7 +98,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
-    const uniqueKey_ExternalAttributes = ComponentName+'_EditNewApAttributeListForm'+'_mo.apExternal_ApAttributeDisplayList';
+    const uniqueKey_ExternalAttributes = ComponentName+'_EditNewApAttributeListForm_mo.apExternal_ApAttributeDisplayList';
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">

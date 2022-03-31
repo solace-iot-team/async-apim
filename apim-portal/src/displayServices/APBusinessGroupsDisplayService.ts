@@ -477,13 +477,13 @@ class APBusinessGroupsDisplayService {
   public async getRootApBusinessGroupDisplay({organizationId}:{
     organizationId: string
   }): Promise<TAPBusinessGroupDisplay> {
-    return await this.getApBusinessGroupDisplay({ 
+    return await this.apsGet_ApBusinessGroupDisplay({ 
       organizationId: organizationId,
       businessGroupId: organizationId
     });
   }
 
-  public async getApBusinessGroupDisplay({ organizationId, businessGroupId }: {
+  public async apsGet_ApBusinessGroupDisplay({ organizationId, businessGroupId }: {
     organizationId: string;
     businessGroupId: string;
   }): Promise<TAPBusinessGroupDisplay> {
@@ -508,7 +508,7 @@ class APBusinessGroupsDisplayService {
     });
   }
 
-  public async getApBusinessGroupDisplayByExternalReference({ organizationId, externalReferenceId }: {
+  public async apsGet_ApBusinessGroupDisplay_By_ExternalReference({ organizationId, externalReferenceId }: {
     organizationId: string;
     externalReferenceId: string;
   }): Promise<TAPBusinessGroupDisplay> {

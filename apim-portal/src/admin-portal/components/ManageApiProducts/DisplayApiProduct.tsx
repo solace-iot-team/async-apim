@@ -12,6 +12,7 @@ import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import APEntityIdsService, { 
+  TAPEntityId,
   TAPEntityIdList 
 } from "../../../utils/APEntityIdsService";
 import { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
@@ -172,6 +173,14 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
+  const renderOwner = (apOwnerInfo: TAPEntityId): JSX.Element => {
+    return (
+      <span>
+        {apOwnerInfo.displayName}
+      </span>
+    );
+  }
+
   const renderVersion = (): JSX.Element => {
     const funcName = 'renderVersion';
     const logName = `${ComponentName}.${funcName}()`;
@@ -226,6 +235,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
           <div><b>Version</b>:{renderVersion()}</div>
           <div><b>Lifecycle</b>: TBD: Show Lifecycle status </div>
           <div><b>Business Group</b>: {renderBusinessGroup(managedObject.apBusinessGroupInfo)}</div>
+          <div><b>Owner</b>: {renderOwner(managedObject.apOwnerInfo)}</div>
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>

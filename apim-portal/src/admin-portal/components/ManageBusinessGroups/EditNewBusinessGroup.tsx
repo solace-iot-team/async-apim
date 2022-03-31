@@ -92,7 +92,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${managedObjectDisplayName}`);
     try {
-      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getApBusinessGroupDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: managedObjectId
       })

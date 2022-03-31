@@ -9,7 +9,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, TAPEntityIdList, 
+  IAPEntityIdDisplay, 
 } from '../utils/APEntityIdsService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -269,7 +269,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       const is_available = available_ApApiChannelParameterList.find((y) => {
         return y.apEntityId.id === x.apEntityId.id;
       });
-      if(is_available) return x;
+      if(is_available !== undefined) return true;
+      return false;
     });
     return filtered_list;
   }

@@ -78,10 +78,17 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return APEntityIdsService.create_SortedApEntityIdList_From_CommonEntityNamesList(list);
   }
 
-  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId }: {
+  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId }: {
     organizationId: string;
+    businessGroupId?: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
-
+    const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    
+    if(businessGroupId !== undefined) {
+      const attributeName: string = this.get_AttributeName_BusinessGroupId();
+      alert(`${logName}: search for attribute: ${attributeName}=${businessGroupId}`);
+    }
     const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId
     });

@@ -111,6 +111,10 @@ export abstract class APManagedAssetDisplayService {
     if(tag !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
     return `_${CAPManagedAssetAttribute_Prefix}_${scope}_`;
   }
+
+  protected get_AttributeName_BusinessGroupId(): string {
+    return this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID });
+  }
   
   protected create_Empty_ApManagedAssetDisplay(): IAPManagedAssetDisplay {
     const apManagedAssetDisplay: IAPManagedAssetDisplay = {
@@ -155,24 +159,26 @@ export abstract class APManagedAssetDisplayService {
         apExternalBusinessGroupReference: undefined
       };
       // id
-      const businessGroupId_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      const businessGroupId_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
         prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID }),
         apAttributeDisplayList: apBusinessGroupAttributeDisplayList
       });
-      if(businessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: businessGroupId_apAttributeDisplayList.length > 1`);
+      // be tolerant to multiple entries, take the first one only
+      // if(businessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: businessGroupId_apAttributeDisplayList.length > 1`);
       // can be missing if not created by AP
-      if(businessGroupId_apAttributeDisplayList.length === 1) {
+      if(businessGroupId_apAttributeDisplayList.length > 0) {
         const businessGroupId: string = businessGroupId_apAttributeDisplayList[0].value;
         // displayName
         const businessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.DISPLAY_NAME });
-        const businessGroupDisplayName_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+        const businessGroupDisplayName_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
           prefixed_with: businessGroupDisplayName_Name,
           apAttributeDisplayList: apBusinessGroupAttributeDisplayList
         });
-        if(businessGroupDisplayName_apAttributeDisplayList.length > 1) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length > 1`);
-        if(businessGroupDisplayName_apAttributeDisplayList.length !== 1) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length !== 1, required=${businessGroupDisplayName_Name}`);
+        // be tolerant to multiple entries, take the first one only
+        // if(businessGroupDisplayName_apAttributeDisplayList.length > 1) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length > 1`);
+        if(businessGroupDisplayName_apAttributeDisplayList.length < 1) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length < 1, required=${businessGroupDisplayName_Name}`);
         const businessGroupDisplayName: string = businessGroupDisplayName_apAttributeDisplayList[0].value;
-        
+
         const businessGroupEntityId: TAPEntityId = {
           id: businessGroupId,
           displayName: businessGroupDisplayName
@@ -180,20 +186,20 @@ export abstract class APManagedAssetDisplayService {
         apBusinessGroupDisplayReference.apEntityId = businessGroupEntityId;
 
         // external business group id & displayName, may be undefined
-        const externalBusinessGroupId_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+        const externalBusinessGroupId_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
           prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_ID }),
           apAttributeDisplayList: apBusinessGroupAttributeDisplayList
         });
-        if(externalBusinessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: externalBusinessGroupId_apAttributeDisplayList.length > 1`);
-        if(externalBusinessGroupId_apAttributeDisplayList.length === 1) {
+        // if(externalBusinessGroupId_apAttributeDisplayList.length > 1) throw new Error(`${logName}: externalBusinessGroupId_apAttributeDisplayList.length > 1`);
+        if(externalBusinessGroupId_apAttributeDisplayList.length > 0) {
           const externalBusinessGroupId: string = externalBusinessGroupId_apAttributeDisplayList[0].value;
           const externalBusinessGroupDisplayName_Name = this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_DISPLAY_NAME });
-          const externalBusinessGroupDisplayName_apAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+          const externalBusinessGroupDisplayName_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
             prefixed_with: externalBusinessGroupDisplayName_Name,
             apAttributeDisplayList: apBusinessGroupAttributeDisplayList
           });
-          if(externalBusinessGroupDisplayName_apAttributeDisplayList.length > 1) throw new Error(`${logName}: externalBusinessGroupDisplayName_apAttributeDisplayList.length > 1`);
-          if(externalBusinessGroupDisplayName_apAttributeDisplayList.length !== 1) throw new Error(`${logName}: externalBusinessGroupDisplayName_apAttributeDisplayList.length !== 1, required=${externalBusinessGroupDisplayName_Name}`);
+          // if(externalBusinessGroupDisplayName_apAttributeDisplayList.length > 1) throw new Error(`${logName}: externalBusinessGroupDisplayName_apAttributeDisplayList.length > 1`);
+          if(externalBusinessGroupDisplayName_apAttributeDisplayList.length < 1) throw new Error(`${logName}: externalBusinessGroupDisplayName_apAttributeDisplayList.length < 1, required=${externalBusinessGroupDisplayName_Name}`);
           const externalBusinessGroupDisplayName: string = externalBusinessGroupDisplayName_apAttributeDisplayList[0].value;
           const externalBusinessGroupEntityId: TAPEntityId = {
             id: externalBusinessGroupId,
@@ -211,16 +217,14 @@ export abstract class APManagedAssetDisplayService {
   private create_ApManagedAsset_OwnerInfo({ apAttributeDisplayList }:{
     apAttributeDisplayList: TAPAttributeDisplayList;
   }): TAPManagedAssetOwnerInfo {
-    const funcName = 'create_ApManagedAsset_OwnerInfo';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const apManagedAssetOwnerInfo: TAPManagedAssetOwnerInfo = APEntityIdsService.create_EmptyObject();
     const ownerList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.ASSET_OWNER, tag: EAPManagedAssetAttribute_Owner_Tag.ID }),
       apAttributeDisplayList: apAttributeDisplayList
     });
-    if(ownerList.length > 1) throw new Error(`${logName}: ownerList.length > 1`);
-    if(ownerList.length === 1) {
+    // if(ownerList.length > 1) throw new Error(`${logName}: ownerList.length > 1`);
+    if(ownerList.length > 0) {
       const ownerId: string = ownerList[0].value;
       apManagedAssetOwnerInfo.id = ownerId;
       apManagedAssetOwnerInfo.displayName = ownerId;

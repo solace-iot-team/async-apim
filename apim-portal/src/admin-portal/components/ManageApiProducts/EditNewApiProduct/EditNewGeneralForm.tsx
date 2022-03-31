@@ -112,8 +112,6 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
-    const funcName = 'onSubmitManagedObjectForm';
-    const logName = `${ComponentName}.${funcName}()`;
     props.onSubmit(create_ManagedObject_From_FormEntities({
       formDataEnvelope: newMofde,
     }));

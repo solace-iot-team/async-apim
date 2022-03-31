@@ -25,10 +25,12 @@ import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes } f
 import { NewPolicies } from "./NewPolicies";
 import { NewEnvironments } from "./NewEnvironments";
 import { NewAttributes } from "./NewAttributes";
+import { NewReviewAndCreate } from "./NewReviewAndCreate";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { NewReviewAndCreate } from "./NewReviewAndCreate";
 
 export interface IManageNewApiProductProps {
   organizationId: string;
@@ -134,43 +136,41 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
+  const [userContext] = React.useContext(UserContext);
+
   // * Api Calls *
 
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EMPTY_API_PRODUCT, 'create empty api product');
     try {
       const empty: TAPAdminPortalApiProductDisplay = APAdminPortalApiProductsDisplayService.create_Empty_ApAdminPortalApiProductDisplay();
-
-      // dummy: replace with business group proper from user context ...
-
-      const dummy: TAPManagedAssetBusinessGroupInfo = {
+      // set the business group info
+      const _apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
+        organizationId: props.organizationId,
+        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+      });
+      const _apExternalBusinessGroupReference: TAPEntityId | undefined = _apBusinessGroupDisplay.apExternalReference ? { 
+        id: _apBusinessGroupDisplay.apExternalReference.externalId, 
+        displayName: _apBusinessGroupDisplay.apExternalReference.displayName
+      } : undefined;
+      const _businessGroupInfo: TAPManagedAssetBusinessGroupInfo = {
         apBusinessGroupDisplayReference: {
-          apEntityId: {
-            id: `business-group-id-hard-coded-in-${ComponentName}`,
-            displayName: `Business Group hard-coded in ${ComponentName}`,
-          },
-          apExternalBusinessGroupReference: undefined
+          apEntityId: _apBusinessGroupDisplay.apEntityId,
+          apExternalBusinessGroupReference: _apExternalBusinessGroupReference
         }
       };
-
       APAdminPortalApiProductsDisplayService.set_ApBusinessGroupInfo({
         apManagedAssetDisplay: empty,
-        apManagedAssetBusinessGroupInfo: dummy
+        apManagedAssetBusinessGroupInfo: _businessGroupInfo
       });
-
-      const dummyOwnerInfo: TAPEntityId = {
-        id: `owner-id-hard-coded-in-${ComponentName}`,
-        displayName: `owner-id-hard-coded-in-${ComponentName}`,
-      }
+      // set the owner info
       APAdminPortalApiProductsDisplayService.set_ApOwnerInfo({
         apManagedAssetDisplay: empty,
-        apOwnerInfo: dummyOwnerInfo
+        apOwnerInfo: userContext.apLoginUserDisplay.apEntityId
       });
-
-      // end dummy
-
       setManagedObject(empty);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -350,10 +350,25 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     props.onNewSuccess(apiCallState, apiProductEntityId);
   }
 
+  const renderBusinessGroupInfo = (mo: TManagedObject): JSX.Element => {
+    const funcName = 'renderBusinessGroupInfo';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(mo.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) throw new Error(`${logName}: mo.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined`);
+
+    return(
+      <div className="p-mt-4">
+        <span><b>Business Group:</b> {mo.apBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}</span>
+      </div>
+    );
+  }
+
   const renderComponent = (mo: TManagedObject) => {
 
     return (
       <React.Fragment>
+        <div>
+          {renderBusinessGroupInfo(mo)}
+        </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
             <React.Fragment>
@@ -439,7 +454,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
   }
   
   return (
-    <div className="manage-users">
+    <div className="manage-api-products">
 
       <APComponentHeader header={`Create New API Product`} />
 

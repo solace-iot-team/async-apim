@@ -1,22 +1,20 @@
 
 
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { TAPApiProductDisplay_Apis, TAPApiProductDisplay_Policies } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPApiProductDisplay_Policies } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewPoliciesForm } from "./EditNewPoliciesForm";
+import { EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewPoliciesForm } from "./EditNewPoliciesForm";
-import { EAction } from "../ManageApiProductsCommon";
 
 export interface INewPoliciesProps {
   organizationId: string;
@@ -34,7 +32,6 @@ export const NewPolicies: React.FC<INewPoliciesProps> = (props: INewPoliciesProp
   type TManagedObject = TAPApiProductDisplay_Policies;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
 
@@ -49,15 +46,6 @@ export const NewPolicies: React.FC<INewPoliciesProps> = (props: INewPoliciesProp
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onNext(mo);

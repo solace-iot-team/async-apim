@@ -61,7 +61,6 @@ export const EditNewPoliciesForm: React.FC<IEditNewPoliciesFormProps> = (props: 
   
   const [managedObject] = React.useState<TManagedObject>(props.apApiProductDisplay_Policies);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doInitialize = async () => {
@@ -78,15 +77,7 @@ export const EditNewPoliciesForm: React.FC<IEditNewPoliciesFormProps> = (props: 
     if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
-    // const funcName = 'onSubmitManagedObjectForm';
-    // const logName = `${ComponentName}.${funcName}()`;
     props.onSubmit(create_ManagedObject_From_FormEntities({
       formDataEnvelope: newMofde,
     }));

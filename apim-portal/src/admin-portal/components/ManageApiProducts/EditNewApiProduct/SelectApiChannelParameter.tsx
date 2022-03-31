@@ -17,14 +17,11 @@ import "../ManageApiProducts.css";
 
 export interface ISelectApiChannelParameterProps {
   apApiDisplayList: TAPApiDisplayList;
-  // onError: (apiCallState: TApiCallState) => void;
   onSelect: (apApiChannelParameter: TAPApiChannelParameter) => void;
-  // onCancel: () => void;
-  // onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const SelectApiChannelParameter: React.FC<ISelectApiChannelParameterProps> = (props: ISelectApiChannelParameterProps) => {
-  const ComponentName = 'SelectApiChannelParameter';
+  // const ComponentName = 'SelectApiChannelParameter';
 
   type TManagedObject = TAPApiChannelParameter;
   type TManagedObjectList = Array<TManagedObject>;

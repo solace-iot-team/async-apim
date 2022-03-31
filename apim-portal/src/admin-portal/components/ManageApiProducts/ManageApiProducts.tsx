@@ -14,11 +14,11 @@ import { ListApiProducts } from "./ListApiProducts";
 import { ViewApiProduct } from "./ViewApiProduct";
 import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
 import { ManagedNewApiProduct } from "./EditNewApiProduct/ManageNewApiProduct";
+import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
+import { DeleteApiProduct } from "./DeleteApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
-import { DeleteApiProduct } from "./DeleteApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -56,7 +56,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
@@ -78,14 +77,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(!managedObjectDisplayName) return;
-  //   if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW ||
-  //       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT
-  //     ) props.setBreadCrumbLabelList([managedObjectDisplayName]);
-  //   else props.setBreadCrumbLabelList([]);
-  // }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -115,8 +106,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   // * New Object *
   const onNewManagedObject = () => {
     setApiCallStatus(null);
-    // setManagedObjectEntityId(undefined);
-    // setManagedObjectHasReferences(false);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
   // * Edit Object *
@@ -149,8 +138,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    // const funcName = 'renderLeftToolbarContent';
-    // const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) return (
       <React.Fragment>
@@ -178,12 +165,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   
   // * prop callbacks *
   const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    setBreadCrumbItemList(itemList);
     props.setBreadCrumbItemList(itemList);
-  }
-  const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-    props.setBreadCrumbItemList(newItemList);
   }
   const onSetManageObjectComponentState = (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apiProductEntityId);
@@ -209,16 +191,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    // props.onSuccess(apiCallState);
-
-    // don't change - user can continue editing
-
-
-    // if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-    //   setManagedObjectEntityId(updatedMoEntityId);
-    //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    // }
-    // else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);

@@ -5,8 +5,7 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
@@ -33,7 +32,6 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   type TManagedObject = TAPApiProductDisplay_Apis;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
 
@@ -48,15 +46,6 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onNext(mo);

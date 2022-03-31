@@ -76,7 +76,6 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
   const [complete_ApProtocolDisplayList, setComplete_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>([]);
   const [selected_ApProtocolDisplayList, setSelected_ApProtocolDisplayList] = React.useState<TAPProtocolDisplayList>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectEnvironments, setShowSelectEnvironments] = React.useState<boolean>(false);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
@@ -133,12 +132,6 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
       apProtocolDisplayList: _complete_apProtocolDisplayList
     }));
   }, [selected_ApEnvironmentDisplayList]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const isSelectedProtocolListValid = (apProtocolDisplayList: TAPProtocolDisplayList): boolean => {
     // const funcName = 'isSelectedProtocolListValid';

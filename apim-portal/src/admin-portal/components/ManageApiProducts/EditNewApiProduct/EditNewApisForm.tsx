@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
@@ -133,7 +132,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showSelectApis, setShowSelectApis] = React.useState<boolean>(false);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
@@ -168,11 +167,11 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     } else setIsInitialized(true);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  // React.useEffect(() => {
+  //   if (apiCallStatus !== null) {
+  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
+  //   }
+  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const isSelected_ControlledChannelParameterListValid = (): boolean => {
     // const funcName = 'isSelected_ControlledChannelParameterListValid';
@@ -240,9 +239,6 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   }
 
   const renderEdit_ControlledChannelParametersForm = (mofde: TManagedObjectFormDataEnvelope): JSX.Element => {
-    const funcName = 'renderEdit_ControlledChannelParametersForm';
-    const logName = `${ComponentName}.${funcName}()`;
-    // if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
     return (
       <React.Fragment>
         <EditControlledChannelParameters

@@ -13,12 +13,11 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { EditGeneral } from "./EditGeneral";
 import { EditPolicies } from "./EditPolicies";
 import { EditEnvironments } from "./EditEnvironments";
+import { EditAttributes } from "./EditAttributes";
+import { EditApis } from "./EditApis";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditAppAttributes } from "../../ManageApps/EditAppAttributes";
-import { EditAttributes } from "./EditAttributes";
-import { EditApis } from "./EditApis";
 
 export interface IManageEditApiProductProps {
   organizationId: string;

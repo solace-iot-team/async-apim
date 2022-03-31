@@ -17,6 +17,7 @@ import APAdminPortalApiProductsDisplayService, {
   TAPAdminPortalApiProductDisplayList 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -42,6 +43,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   type TManagedObject = TAPAdminPortalApiProductDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
+  const [userContext] = React.useContext(UserContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -54,10 +56,11 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      // alert(`${logName}: only get the api products which are in the business groups user has APITeam role in ...`);
       const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
-        organizationId: props.organizationEntityId.id
+        organizationId: props.organizationEntityId.id,
+        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -248,11 +251,21 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   //   } else return (<></>);
   // }
 
+  const renderBusinessGroupInfo = (): JSX.Element => {
+    return(
+      <div>
+        <span><b>Business Group:</b> {userContext.runtimeSettings.currentBusinessGroupEntityId?.displayName}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header='API Products:' notes="TODO: filter by current, selected business group. quick filter by lifecycle status"/>
+      <APComponentHeader header='API Products:' notes="TODO: quick filter by lifecycle status"/>
 
+      {renderBusinessGroupInfo()}
+      
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       <div className="p-mt-4">

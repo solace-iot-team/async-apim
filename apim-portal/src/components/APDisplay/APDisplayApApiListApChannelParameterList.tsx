@@ -6,13 +6,11 @@ import { Column } from "primereact/column";
 
 import { 
   TAPApiChannelParameter, 
-  TAPApiDisplay, 
   TAPApiDisplayList 
 } from "../../displayServices/APApisDisplayService";
+import { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
-import APAdminPortalApisDisplayService from "../../admin-portal/displayServices/APAdminPortalApisDisplayService";
-import { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 export interface IAPDisplayApApiListChannelParameterListProps {
   apApiDisplayList: TAPApiDisplayList;
@@ -40,9 +38,9 @@ export const APDisplayApApiListChannelParameterList: React.FC<IAPDisplayApApiLis
   const nameOf_ApiChannelParameter_ApEntityId = (name: keyof TAPEntityId) => {
     return `${nameOf_ManagedObject('apApiChannelParameter')}.${nameOf_ManagedObject('apEntityId')}.${name}`;
   }
-  const nameOf_ApiChannelParameter = (name: keyof TAPApiChannelParameter) => {
-    return `${nameOf_ManagedObject('apApiChannelParameter')}.${name}`;
-  }
+  // const nameOf_ApiChannelParameter = (name: keyof TAPApiChannelParameter) => {
+  //   return `${nameOf_ManagedObject('apApiChannelParameter')}.${name}`;
+  // }
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const dataTableRef = React.useRef<any>(null);
 
@@ -70,13 +68,8 @@ export const APDisplayApApiListChannelParameterList: React.FC<IAPDisplayApApiLis
     );
   }
 
-  // <td colSpan="4" style={{ textAlign: 'right' }}>Total Customers</td>
-  // <td>{calculateCustomerTotal(data.representative.name)}</td>
   const rowGroupFooterTemplate = (row: TManagedObject) => {
     return(<></>);
-    // return(
-    //   <span>Footer, what to put in here?</span>
-    // );
   }
   const apiParameterValueBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (
