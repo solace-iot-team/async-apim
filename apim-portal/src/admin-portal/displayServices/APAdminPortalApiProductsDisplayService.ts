@@ -78,12 +78,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return APEntityIdsService.create_SortedApEntityIdList_From_CommonEntityNamesList(list);
   }
 
-  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId }: {
+  private apiGetList_ConnectorApiProductList = async({ organizationId, businessGroupId }: {
     organizationId: string;
     businessGroupId?: string;
-  }): Promise<TAPAdminPortalApiProductDisplayList> => {
-    const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+  }): Promise<Array<APIProduct>> => {
     
     let filter: string | undefined = undefined;
     if(businessGroupId !== undefined) {
@@ -97,6 +95,19 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       filter: filter
     });
 
+    return connectorApiProductList;
+  }
+
+
+  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId }: {
+    organizationId: string;
+    businessGroupId?: string;
+  }): Promise<TAPAdminPortalApiProductDisplayList> => {
+    
+    const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
+      organizationId: organizationId,
+      businessGroupId: businessGroupId
+    })
     // get the complete env list for reference
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId
@@ -112,6 +123,26 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
     }
     return apAdminPortalApiProductDisplayList;
+  }
+
+  public apiGetList_ApiProductEntityIdList_By_BusinessGroupId = async({ organizationId, businessGroupId }: {
+    organizationId: string;
+    businessGroupId: string;
+  }): Promise<TAPEntityIdList> => {
+    
+    const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
+      organizationId: organizationId,
+      businessGroupId: businessGroupId
+    })
+
+    const list: TAPEntityIdList = connectorApiProductList.map( (x) => {
+      return {
+        id: x.name,
+        displayName: x.displayName
+      };
+    });
+
+    return list;
   }
 
   public apiGet_AdminPortalApApiProductDisplay = async({ organizationId, apiProductId }: {

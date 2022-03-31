@@ -49,9 +49,6 @@ EAPManagedAssetAttribute_BusinessGroup_Tag
 | EAPManagedAssetAttribute_Lifecycle_Tag;
 
 export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
-  // internalReference: {
-  //   apComplete_ApAttributeDisplayList: TAPAttributeDisplayList;
-  // }
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
 }
@@ -118,7 +115,7 @@ export abstract class APManagedAssetDisplayService {
   }): string {
     return `"${attributeName}" "${attributeValue}"`;
   }
-  
+
   protected get_AttributeName_BusinessGroupId(): string {
     return this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.ID });
   }
