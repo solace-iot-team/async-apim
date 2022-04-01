@@ -1,5 +1,5 @@
 
-import React, { isValidElement } from "react";
+import React from "react";
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
