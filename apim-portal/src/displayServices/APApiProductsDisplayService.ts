@@ -397,35 +397,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
   }): IAPApiProductDisplay {
-    // const funcName = 'set_ApApiProductDisplay_Apis';
-    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     apApiProductDisplay.apApiDisplayList = JSON.parse(JSON.stringify(apApiProductDisplay_Apis.apApiDisplayList));
     apApiProductDisplay.apControlledChannelParameterList = JSON.parse(JSON.stringify(apApiProductDisplay_Apis.apControlledChannelParameterList));
-
-
-    // // create the complete available channel parameter attribute list for APIs in 
-    // const apCombinedApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
-    //   apApiDisplayList: apApiProductDisplay.apApiDisplayList
-    // });
-    // // calculate the new complete list 
-    // const new_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(apApiProductDisplay_Apis.apControlledChannelParameterList));
-    // // add any attributes not in list yet and do not add if they are not available
-    // apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList.forEach( (previous: IAPAttributeDisplay) => {
-    //   // if previous is in combined list ==> do not add
-    //   const isPreviousInCombinedList = apCombinedApiChannelParameterList.find( (x) => {
-    //     return x.apEntityId.id === previous.apEntityId.id;
-    //   });
-    //   if(isPreviousInCombinedList === undefined) {
-    //     new_complete_ApAttributeDisplayList.push(previous);
-    //   }
-    // });
-
-    // apApiProductDisplay_Apis.internalReference.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
-
-    // apApiProductDisplay.apApiDisplayList = apApiProductDisplay_Apis.apApiDisplayList;
-    // apApiProductDisplay.apControlledChannelParameterList = apApiProductDisplay_Apis.apControlledChannelParameterList;
-    // apApiProductDisplay.apComplete_ApAttributeDisplayList = new_complete_ApAttributeDisplayList;
 
     return apApiProductDisplay;
   }
@@ -436,7 +410,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     const _complete_ApAttributeList: TAPAttributeDisplayList = super.create_Complete_ApAttributeList({
       apManagedAssetDisplay: apManagedAssetDisplay
-    })
+    });
 
     // add controlled channel parameters
     const apApiProductDisplay: IAPApiProductDisplay = apManagedAssetDisplay as IAPApiProductDisplay;
@@ -446,6 +420,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         value: apControlledChannelParameter.value
       });  
     }
+
     return _complete_ApAttributeList;
   }
 
@@ -640,7 +615,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // alert(`${logName}: check console ...`);
     // console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);
     // test upstream error handling
-    // throw new Error(`${logName}: testing error handling`);
+    // throw new Error(`${logName}: test create error case: check attributes not set to raw attributes`);
 
     const create: APIProduct = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),

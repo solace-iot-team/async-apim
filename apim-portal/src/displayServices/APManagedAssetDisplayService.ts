@@ -393,7 +393,10 @@ export abstract class APManagedAssetDisplayService {
   public create_Complete_ApAttributeList({ apManagedAssetDisplay }:{
     apManagedAssetDisplay: IAPManagedAssetDisplay;
   }): TAPAttributeDisplayList {
-    const _complete_ApAttributeList: TAPAttributeDisplayList = this.get_ApExternalAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay });
+
+    // work on a copy
+    const _complete_ApAttributeList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(this.get_ApExternalAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay })));
+
     _complete_ApAttributeList.push(...this.get_ApCustomAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay }));
     // add the business group info attributes
     const apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo = apManagedAssetDisplay.apBusinessGroupInfo;

@@ -9,10 +9,10 @@ import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
 
 export interface INewReviewAndCreateProps {
   organizationId: string;
