@@ -340,7 +340,7 @@ export const EditNewApi: React.FC<IEditNewApiProps> = (props: IEditNewApiProps) 
                 <Controller
                   name="id"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.Name()}
+                  rules={APConnectorFormValidationRules.CommonName()}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

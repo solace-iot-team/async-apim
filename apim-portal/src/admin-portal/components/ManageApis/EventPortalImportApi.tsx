@@ -63,6 +63,7 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
   const [importManagedObjectId, setImportManagedObjectId] = React.useState<TManagedObjectId>();
   const [importManagedObjectDisplayName, setImportManagedObjectDisplayName] = React.useState<string>();
   const [importEventPortalId, setImportEventPortalId] = React.useState<string>();
+  const [isImportable, setIsImportable] = React.useState<boolean>(false);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showImportComponent, setShowImportComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -91,8 +92,9 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_DIALOG);    
   }
 
-  const onViewEventApiProduct = (connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => {
+  const onViewEventApiProduct = (isImportable: boolean, connectorId: TManagedObjectId, eventPortalId: TManagedObjectId, displayName: string) => {
     setApiCallStatus(null);
+    setIsImportable(isImportable);
     setImportEventPortalId(eventPortalId);
     setImportManagedObjectId(connectorId);
     setImportManagedObjectDisplayName(displayName);
@@ -161,9 +163,19 @@ export const EventPortalImportApi: React.FC<IEventPortalImportApiProps> = (props
     if(!componentState.currentState) return undefined;
     if(showViewComponent) return (
       <>
-        <Button label={ToolbarButtonLabelBackToList} icon="pi pi-arrow-left" onClick={onBackToList} className="p-button-text p-button-plain"/>
-        <Button label={ToolbarButtonLabelImport} icon="pi pi-cloud-download" onClick={onEventPortalViewEventApiProductImport} className="p-button-text p-button-plain p-button-outlined"/>
-        
+        <Button 
+          label={ToolbarButtonLabelBackToList} 
+          icon="pi pi-arrow-left" 
+          onClick={onBackToList} 
+          className="p-button-text p-button-plain"
+        />
+        <Button 
+          label={ToolbarButtonLabelImport} 
+          icon="pi pi-cloud-download" 
+          onClick={onEventPortalViewEventApiProductImport} 
+          className="p-button-text p-button-plain p-button-outlined"
+          disabled={!isImportable}
+        />
       </>
     );
     else return undefined;
