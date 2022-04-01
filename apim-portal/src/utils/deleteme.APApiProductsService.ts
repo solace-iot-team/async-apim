@@ -58,7 +58,9 @@ export class APApiProductsService {
       displayName: '',
       description: '',
       pubResources: [],
-      subResources: []
+      subResources: [],
+      environments: [],
+      protocols: [],
     };
   }
 

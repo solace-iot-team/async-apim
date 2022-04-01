@@ -170,7 +170,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       displayName: '',
       description: '',
       pubResources: [],
-      subResources: []
+      subResources: [],
+      environments: [],
+      protocols: [],
     };
   }
 

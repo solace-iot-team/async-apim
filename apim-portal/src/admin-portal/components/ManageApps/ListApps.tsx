@@ -115,11 +115,20 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
       const apiAppList: Array<AppListItem> = await AppsService.listApps({
         organizationName: props.organizationId, 
       });
-      let _managedObjectList: TManagedObjectList = [];
+      const _managedObjectList: TManagedObjectList = [];
       for(const apiAppListItem of apiAppList) {
         if(!apiAppListItem.apiProducts) throw new Error(`${logName}: apiAppListItem.apiProducts is undefined`);
-        let _apApiProductList: TApiProductList = [];
-        for(const apiApiProductId of apiAppListItem.apiProducts) {
+        const _apApiProductList: TApiProductList = [];
+
+        // apiProducts: AppApiProducts = Array<(AppApiProductsComplex | CommonName)>;
+
+        //   export declare type AppApiProductsComplex = {
+        //     apiproduct: CommonName;
+        //     status?: AppStatus;
+        // };
+
+        for(const apiAppApiProduct of apiAppListItem.apiProducts) {
+          const apiApiProductId: string = (typeof apiAppApiProduct === 'string' ? apiAppApiProduct : apiAppApiProduct.apiproduct);
           const apiApiProduct = await ApiProductsService.getApiProduct({
             organizationName: props.organizationId,
             apiProductName: apiApiProductId

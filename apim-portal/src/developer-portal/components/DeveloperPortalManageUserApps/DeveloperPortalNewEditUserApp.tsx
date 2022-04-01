@@ -161,11 +161,20 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
         topicSyntax: EApiTopicSyntax.SMF
       });
       // get all api products display names
-      let _apiProductSelectItemList: TApiEntitySelectItemList = [];
-      for(const apiProductName of _apiAppResponse.apiProducts) {
+      const _apiProductSelectItemList: TApiEntitySelectItemList = [];
+
+      // apiProducts: AppApiProducts = Array<(AppApiProductsComplex | CommonName)>;
+
+      //   export declare type AppApiProductsComplex = {
+      //     apiproduct: CommonName;
+      //     status?: AppStatus;
+      // };
+
+      for(const apiAppApiProduct of _apiAppResponse.apiProducts) {
+        const apiApiProductId: string = (typeof apiAppApiProduct === 'string' ? apiAppApiProduct : apiAppApiProduct.apiproduct);
         const apiProduct: APIProduct = await ApiProductsService.getApiProduct({
           organizationName: orgId, 
-          apiProductName: apiProductName
+          apiProductName: apiApiProductId
         });
         _apiProductSelectItemList.push({
           displayName: apiProduct.displayName,

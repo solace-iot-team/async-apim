@@ -141,6 +141,9 @@ export const DeveloperPortalDeleteUserAppWebhook: React.FC<IDeveloperPortalDelet
       case AppStatus.PENDING:
         question = 'Are you sure you want to delete it?';
         break;
+      case AppStatus.REVOKED:
+        question = 'Are you sure you want to delete it?';
+        break;
       default:
         Globals.assertNever(logName, appStatus);
     }
@@ -167,6 +170,10 @@ export const DeveloperPortalDeleteUserAppWebhook: React.FC<IDeveloperPortalDelet
             <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
           );
         case AppStatus.APPROVED:
+          return (
+            <Button label="De-Provision" icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
+          );
+        case AppStatus.REVOKED:
           return (
             <Button label="De-Provision" icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
           );

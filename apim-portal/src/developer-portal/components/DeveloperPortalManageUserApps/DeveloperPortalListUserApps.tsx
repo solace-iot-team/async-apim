@@ -180,8 +180,17 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
           // } catch (e:any) {
           //   APClientConnectorOpenApi.logError(logName, e);
           // }
-          let _apiAppProductList: TApiProductList = [];
-          for(const apiAppProductId of _apiAppResponse_smf.apiProducts) {
+          const _apiAppProductList: TApiProductList = [];
+
+          // apiProducts: AppApiProducts = Array<(AppApiProductsComplex | CommonName)>;
+
+          //   export declare type AppApiProductsComplex = {
+          //     apiproduct: CommonName;
+          //     status?: AppStatus;
+          // };
+
+          for(const apiAppApiProduct of _apiAppResponse_smf.apiProducts) {
+            const apiAppProductId: string = (typeof apiAppApiProduct === 'string' ? apiAppApiProduct : apiAppApiProduct.apiproduct);
             const apiApiProduct = await ApiProductsService.getApiProduct({
               organizationName: props.organizationId,
               apiProductName: apiAppProductId
