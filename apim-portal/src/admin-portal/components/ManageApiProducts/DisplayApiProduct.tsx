@@ -162,13 +162,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
-  const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
-    if(apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
-      <span style={{ color: 'red' }}>None.</span>
-    );
+  const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {    
+    // if(apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
+    //   <span style={{ color: 'red' }}>None.</span>
+    // );
     return (
       <span>
-        {apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}
+        {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
       </span>
     );
   }

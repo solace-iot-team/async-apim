@@ -27,7 +27,6 @@ import { NewEnvironments } from "./NewEnvironments";
 import { NewAttributes } from "./NewAttributes";
 import { NewReviewAndCreate } from "./NewReviewAndCreate";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -147,20 +146,23 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EMPTY_API_PRODUCT, 'create empty api product');
     try {
       const empty: TAPAdminPortalApiProductDisplay = APAdminPortalApiProductsDisplayService.create_Empty_ApAdminPortalApiProductDisplay();
-      // set the business group info
-      const _apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
-        organizationId: props.organizationId,
-        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
-      });
-      const _apExternalBusinessGroupReference: TAPEntityId | undefined = _apBusinessGroupDisplay.apExternalReference ? { 
-        id: _apBusinessGroupDisplay.apExternalReference.externalId, 
-        displayName: _apBusinessGroupDisplay.apExternalReference.displayName
-      } : undefined;
+      // // set the business group info
+      // const _apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
+      //   organizationId: props.organizationId,
+      //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+      // });
+      // const _apExternalBusinessGroupReference: TAPExternalBusinessGroupReference | undefined = _apBusinessGroupDisplay.apExternalReference ? { 
+      //   apEntityId: {
+      //     id: _apBusinessGroupDisplay.apExternalReference.externalId, 
+      //     displayName: _apBusinessGroupDisplay.apExternalReference.displayName  
+      //   },
+      //   apExternalSystemEntityId: {
+      //     id: _apBusinessGroupDisplay.apExternalReference.externalSystemId,
+      //     displayName: _apBusinessGroupDisplay.apExternalReference.externalSystemDisplayName
+      //   }
+      // } : undefined;
       const _businessGroupInfo: TAPManagedAssetBusinessGroupInfo = {
-        apBusinessGroupDisplayReference: {
-          apEntityId: _apBusinessGroupDisplay.apEntityId,
-          apExternalBusinessGroupReference: _apExternalBusinessGroupReference
-        }
+        apOwningBusinessGroupEntityId: userContext.runtimeSettings.currentBusinessGroupEntityId
       };
       APAdminPortalApiProductsDisplayService.set_ApBusinessGroupInfo({
         apManagedAssetDisplay: empty,
@@ -351,13 +353,9 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
   }
 
   const renderBusinessGroupInfo = (mo: TManagedObject): JSX.Element => {
-    const funcName = 'renderBusinessGroupInfo';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(mo.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) throw new Error(`${logName}: mo.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined`);
-
     return(
       <div className="p-mt-4">
-        <span><b>Business Group:</b> {mo.apBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}</span>
+        <span><b>Business Group:</b> {mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</span>
       </div>
     );
   }

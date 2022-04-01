@@ -45,6 +45,7 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Environments({
         organizationId: props.organizationId,
         apApiProductDisplay_Environments: mo,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay
       });
       setUpdatedManagedObject(mo);
     } catch(e: any) {

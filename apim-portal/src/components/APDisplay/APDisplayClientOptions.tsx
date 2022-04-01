@@ -14,9 +14,6 @@ export const APDisplayClientOptions: React.FC<IAPDisplayClientOptionsProps> = (p
   // const componentName='APDisplayClientOptions';
 
   const renderGuaranteedMessaging = (): JSX.Element => {
-    const renderNotEnabled = (): JSX.Element => {
-      return (<>'Not enabled.'</>);
-    }
     const renderRow = (name: string, value: string | number): JSX.Element => {
       return (
         <div className="p-field p-grid p-ml-2 p-mb-1">
@@ -24,6 +21,10 @@ export const APDisplayClientOptions: React.FC<IAPDisplayClientOptionsProps> = (p
           <div className="p-col">{value}</div>
         </div>
       );      
+    }
+    const renderNotEnabled = (): JSX.Element => {
+      // return (<>Not enabled.</>);
+      return renderRow('Enabled','False');
     }
     const renderEnabled = (): JSX.Element => {
       return (

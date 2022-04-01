@@ -32,8 +32,11 @@ export type TAPTreeTableExpandedKeysType = {
 }
 
 /** Id & display names for referencing in UI */
+export type TAPExternalBusinessGroupReference = IAPEntityIdDisplay & {
+  apExternalSystemEntityId: TAPEntityId;   
+}
 export type TAPBusinessGroupDisplayReference = IAPEntityIdDisplay & {
-  apExternalBusinessGroupReference?: TAPEntityId;
+  apExternalBusinessGroupReference?: TAPExternalBusinessGroupReference;
 }
 
 export type TAPBusinessGroupAssetReference = {
@@ -76,13 +79,13 @@ class APBusinessGroupsDisplayService {
     return bg;
   }
 
-  public create_ApBusinessGroupDisplayReference({ businessGroupEntityId, externalBusinessGroupEntityId }:{
+  public create_ApBusinessGroupDisplayReference({ businessGroupEntityId, apExternalBusinessGroupReference }:{
     businessGroupEntityId: TAPEntityId;
-    externalBusinessGroupEntityId?: TAPEntityId;
+    apExternalBusinessGroupReference?: TAPExternalBusinessGroupReference;
   }): TAPBusinessGroupDisplayReference {
     return {
       apEntityId: businessGroupEntityId,
-      apExternalBusinessGroupReference: externalBusinessGroupEntityId
+      apExternalBusinessGroupReference: apExternalBusinessGroupReference,
     };
   }
 
@@ -459,18 +462,35 @@ class APBusinessGroupsDisplayService {
     apsBusinessGroupResponseList.push(root_apsBusinessGroupResponse);
 
     const list: TAPBusinessGroupDisplayList = [];
-    
+
     for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
 
       const parentBusinessGroupEntityId: TAPEntityId | undefined = apsBusinessGroupResponse.businessGroupParentId !== undefined ? this.get_ApBusinessGroupEntityId_From_ApsBusinessGroupResponseList({
         apsBusinessGroupResponseList: apsBusinessGroupResponseList,
         businessGroupId: apsBusinessGroupResponse.businessGroupParentId
       }) : undefined;
-      
-      const childrenEntityIdList: TAPEntityIdList = this.get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({
-        apsBusinessGroupResponseList: apsBusinessGroupResponseList,
-        businessGroupIdList: apsBusinessGroupResponse.businessGroupChildIds
-      });
+
+      // children for root: only the ones in the list, excluding the internal ones
+      let childrenEntityIdList: TAPEntityIdList = [];
+      if(apsBusinessGroupResponse.businessGroupId !== root_apsBusinessGroupResponse.businessGroupId) {
+        childrenEntityIdList = this.get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({
+          apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+          businessGroupIdList: apsBusinessGroupResponse.businessGroupChildIds
+        });
+      } else {
+        // only external business groups, the others are not in the response list
+        const rootExternalBusinessGroupChildIds: Array<string> = apsBusinessGroupResponse.businessGroupChildIds.filter( (x) => {
+          const found = apsBusinessGroupResponseList.find( (y) => {
+            return y.businessGroupId === x;
+          });
+          if(found) return true;
+          return false;
+        });
+        childrenEntityIdList = this.get_ApBusinessGroupEntityIdList_From_ApsBusinessGroupResponseList({
+          apsBusinessGroupResponseList: apsBusinessGroupResponseList,
+          businessGroupIdList: rootExternalBusinessGroupChildIds
+        });
+      } 
 
       // get the references: api products
       let apApiProductReferenceEntityIdList: TAPEntityIdList = [];
@@ -489,21 +509,6 @@ class APBusinessGroupsDisplayService {
         apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       }));
     }
-    // get the top level business group === organization id
-    const topLevelBusinessGroup: TAPBusinessGroupDisplay = await this.getRootApBusinessGroupDisplay({ 
-      organizationId: organizationId,
-    });
-    // alert(`${logName}: \nBEFORE: topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = ${JSON.stringify(topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList, null, 2)}`);
-    topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = list.filter( (x) => {
-      if(x.apBusinessGroupParentEntityId) return x.apBusinessGroupParentEntityId.id === organizationId;
-      return false;
-    }).map( (y) => {
-      return y.apEntityId;
-    })
-    // alert(`${logName}: \nAFTER: topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList = ${JSON.stringify(topLevelBusinessGroup.apBusinessGroupChildrenEntityIdList, null, 2)}`);
-    // add it to the list
-    list.push(topLevelBusinessGroup);
-
     return list;
   }
 

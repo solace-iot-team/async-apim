@@ -15,6 +15,7 @@ import { EditPolicies } from "./EditPolicies";
 import { EditEnvironments } from "./EditEnvironments";
 import { EditAttributes } from "./EditAttributes";
 import { EditApis } from "./EditApis";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -38,6 +39,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   const ManagedEditApiProduct_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.apiProductEntityId);
@@ -51,7 +53,8 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
     try { 
       const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
-        apiProductId: props.apiProductEntityId.id
+        apiProductId: props.apiProductEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       setManagedObject(object);
     } catch(e) {

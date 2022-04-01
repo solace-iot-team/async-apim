@@ -45,6 +45,7 @@ export const EditPolicies: React.FC<IEditPoliciesProps> = (props: IEditPoliciesP
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Policies({
         organizationId: props.organizationId,
         apApiProductDisplay_Policies: mo,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay
       });
       setUpdatedManagedObject(mo);
     } catch(e: any) {

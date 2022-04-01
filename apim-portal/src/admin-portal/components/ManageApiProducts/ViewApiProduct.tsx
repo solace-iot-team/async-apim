@@ -9,6 +9,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -30,6 +31,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -39,7 +41,8 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     try { 
       const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
-        apiProductId: props.apiProductEntityId.id
+        apiProductId: props.apiProductEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       setManagedObject(object);
     } catch(e) {

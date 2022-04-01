@@ -27,16 +27,18 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     };
   }
 
-  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
+  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList, default_ownerId }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
+    default_ownerId: string;
   }): Promise<TAPAdminPortalApiProductDisplay> {
     
     const base: IAPApiProductDisplay = await this.create_ApApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
       completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
+      default_ownerId: default_ownerId
     });
 
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = {
@@ -86,7 +88,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     let filter: string | undefined = undefined;
     if(businessGroupId !== undefined) {
       filter = this.create_ConnectorFilter_For_Attribute({
-        attributeName: this.get_AttributeName_BusinessGroupId(),
+        attributeName: this.get_AttributeName_OwningBusinessGroupId(),
         attributeValue: businessGroupId
       });
     }
@@ -99,9 +101,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
   }
 
 
-  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId }: {
+  public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId, default_ownerId }: {
     organizationId: string;
-    businessGroupId?: string;
+    businessGroupId: string;
+    default_ownerId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
     
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
@@ -119,6 +122,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         organizationId: organizationId,
         connectorApiProduct: connectorApiProduct,
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+        default_ownerId: default_ownerId
       });
       apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
     }
@@ -145,9 +149,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return list;
   }
 
-  public apiGet_AdminPortalApApiProductDisplay = async({ organizationId, apiProductId }: {
+  public apiGet_AdminPortalApApiProductDisplay = async({ organizationId, apiProductId, default_ownerId }: {
     organizationId: string;
     apiProductId: string;
+    default_ownerId: string;
   }): Promise<TAPAdminPortalApiProductDisplay> => {
 
     const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
@@ -164,6 +169,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+      default_ownerId: default_ownerId
     });
     return apAdminPortalApiProductDisplay;
   }

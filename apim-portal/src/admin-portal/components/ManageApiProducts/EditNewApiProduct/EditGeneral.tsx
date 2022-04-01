@@ -47,6 +47,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_General({
         organizationId: props.organizationId,
         apApiProductDisplay_General: mo,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay
       });
       setUpdatedManagedObject(mo);
     } catch(e: any) {

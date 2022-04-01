@@ -146,7 +146,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     return rowData.apEntityId.displayName;
   }
   const renderManagedObjectDataTable = () => {
-    let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectList_To_TableDataList(managedObjectList);    
+    const managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectList_To_TableDataList(managedObjectList);    
     return (
       <div className="card">
           <DataTable

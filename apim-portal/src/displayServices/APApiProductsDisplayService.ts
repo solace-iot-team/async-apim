@@ -205,10 +205,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apControlledChannelParameterList;
   }
 
-  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList }:{
+  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList, default_ownerId }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
+    default_ownerId: string;
   }): Promise<IAPApiProductDisplay> {
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -217,6 +218,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
       apRawAttributeList: connectorApiProduct.attributes,
+      default_ownerId: default_ownerId,
     });
     // get the used Apis
     const apApiDisplayList: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });
@@ -404,11 +406,13 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay;
   }
 
-  public create_Complete_ApAttributeList({ apManagedAssetDisplay }:{
+  public async create_Complete_ApAttributeList({ organizationId, apManagedAssetDisplay }:{
+    organizationId: string;
     apManagedAssetDisplay: IAPManagedAssetDisplay;
-  }): TAPAttributeDisplayList {
+  }): Promise<TAPAttributeDisplayList> {
 
-    const _complete_ApAttributeList: TAPAttributeDisplayList = super.create_Complete_ApAttributeList({
+    const _complete_ApAttributeList: TAPAttributeDisplayList = await super.create_Complete_ApAttributeList({
+      organizationId: organizationId,
       apManagedAssetDisplay: apManagedAssetDisplay
     });
 
@@ -424,11 +428,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return _complete_ApAttributeList;
   }
 
-  public create_Complete_ApRawAttributeList({ apManagedAssetDisplay }:{
+  public async create_Complete_ApRawAttributeList({ organizationId, apManagedAssetDisplay }:{
+    organizationId: string;
     apManagedAssetDisplay: IAPManagedAssetDisplay;
-  }): TAPRawAttributeList {
+  }): Promise<TAPRawAttributeList> {
     const rawAttributeList: TAPRawAttributeList = APAttributesDisplayService.create_ApRawAttributeList({
-      apAttributeDisplayList: this.create_Complete_ApAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay })
+      apAttributeDisplayList: await this.create_Complete_ApAttributeList({ 
+        organizationId: organizationId,
+        apManagedAssetDisplay: apManagedAssetDisplay 
+      })
     });
     return rawAttributeList;
   }
@@ -471,40 +479,47 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // };
 
 
-  protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate }:{
+  protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate, apRawAttributeList }:{
     organizationId: string;
     apiProductId: string;
-    apiProductUpdate: APIProductPatch;
+    apiProductUpdate: APIProductPatch;    
+    apRawAttributeList: TAPRawAttributeList;    
   }): Promise<void> {
     // const funcName = 'apiUpdate';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
-
+    const update: APIProductPatch = {
+      ...apiProductUpdate,
+      attributes: apRawAttributeList
+    }
     await ApiProductsService.updateApiProduct({
       organizationName: organizationId,
       apiProductName: apiProductId,
-      requestBody: apiProductUpdate
+      requestBody: update
     });  
   
   }
 
-  public async apiUpdate_ApApiProductDisplay_General({ organizationId, apApiProductDisplay_General }:{
+  public async apiUpdate_ApApiProductDisplay_General({ organizationId, apApiProductDisplay, apApiProductDisplay_General }:{
     organizationId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_General: TAPApiProductDisplay_General;
   }): Promise<void> {
-    
-    // create mechanism for Api Product category when required
-    // use APIProduct attributes
-
+        
     const update: APIProductPatch = {
       displayName: apApiProductDisplay_General.apEntityId.displayName,
       description: apApiProductDisplay_General.apDescription,
     };
 
+    // always update with the full attribute list
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_General.apEntityId.id,
-      apiProductUpdate: update
+      apiProductUpdate: update,
+      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
+        organizationId: organizationId,
+        apManagedAssetDisplay: apApiProductDisplay
+      })
     });
 
   }
@@ -519,25 +534,27 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }): Promise<void> {
 
     const working_apApiProductDisplay: IAPApiProductDisplay = JSON.parse(JSON.stringify(apApiProductDisplay));
+
     this.set_ApManagedAssetDisplay_Attributes({
       apManagedAssetDisplay: working_apApiProductDisplay,
       apManagedAssetDisplay_Attributes: apManagedAssetDisplay_Attributes
     });
 
-    const update: APIProductPatch = {
-      attributes: this.create_Complete_ApRawAttributeList({ apManagedAssetDisplay: working_apApiProductDisplay })
-    };
-
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay.apEntityId.id,
-      apiProductUpdate: update
+      apiProductUpdate: {},
+      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
+        organizationId: organizationId,
+        apManagedAssetDisplay: working_apApiProductDisplay
+      })
     });
 
   }
 
-  public async apiUpdate_ApApiProductDisplay_Policies({ organizationId, apApiProductDisplay_Policies }:{
+  public async apiUpdate_ApApiProductDisplay_Policies({ organizationId, apApiProductDisplay, apApiProductDisplay_Policies }:{
     organizationId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_Policies: TAPApiProductDisplay_Policies;
   }): Promise<void> {
 
@@ -549,13 +566,18 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_Policies.apEntityId.id,
-      apiProductUpdate: update
+      apiProductUpdate: update,
+      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
+        organizationId: organizationId,
+        apManagedAssetDisplay: apApiProductDisplay
+      })
     });
 
   }
 
-  public async apiUpdate_ApApiProductDisplay_Environments({ organizationId, apApiProductDisplay_Environments }:{
+  public async apiUpdate_ApApiProductDisplay_Environments({ organizationId, apApiProductDisplay_Environments, apApiProductDisplay }:{
     organizationId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_Environments: TAPApiProductDisplay_Environments;
   }): Promise<void> {
 
@@ -569,7 +591,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_Environments.apEntityId.id,
-      apiProductUpdate: update
+      apiProductUpdate: update,
+      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
+        organizationId: organizationId,
+        apManagedAssetDisplay: apApiProductDisplay
+      })
     });
 
   }
@@ -592,13 +618,16 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     const update: APIProductPatch = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay_Apis.apApiDisplayList),
-      attributes: this.create_Complete_ApRawAttributeList({ apManagedAssetDisplay: working_apApiProductDisplay })
     };
 
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay_Apis.apEntityId.id,
-      apiProductUpdate: update
+      apiProductUpdate: update,
+      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
+        organizationId: organizationId,
+        apManagedAssetDisplay: working_apApiProductDisplay
+      })
     });
 
   }
@@ -610,7 +639,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'apiCreate_ApApiProductDisplay';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    const apRawAttributeList: TAPRawAttributeList = this.create_Complete_ApRawAttributeList({ apManagedAssetDisplay: apApiProductDisplay });
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiProductDisplay 
+    });
 
     // alert(`${logName}: check console ...`);
     // console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);

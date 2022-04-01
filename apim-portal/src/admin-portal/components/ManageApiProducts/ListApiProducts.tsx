@@ -60,7 +60,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     try {
       const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
         organizationId: props.organizationEntityId.id,
-        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -155,12 +156,12 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return row.apApprovalType;
   }
   const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
-    if(row.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
-      <div style={{ color: 'red' }}>None.</div>
-    );
+    // if(row.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
+    //   <div style={{ color: 'red' }}>None.</div>
+    // );
     return (
       <div>
-        {row.apBusinessGroupInfo.apBusinessGroupDisplayReference.apEntityId.displayName}
+        {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
       </div>
     );
   }
