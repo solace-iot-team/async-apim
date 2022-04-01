@@ -186,6 +186,8 @@ class APBusinessGroupsDisplayService {
     const funcName = 'generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
+    if(referenceApBusinessGroupDisplayList.length === 0) return [];
+    
     // get the toplevel group === organization
     const topLevelGroup: TAPBusinessGroupDisplay | undefined = referenceApBusinessGroupDisplayList.find( (x) => {
       return x.apBusinessGroupParentEntityId === undefined;
@@ -426,20 +428,29 @@ class APBusinessGroupsDisplayService {
     return list;
   }
 
-  public async apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({ organizationId, externalSystemId, fetchAssetReferences = false }: {
+  public async apsGetList_ApBusinessGroupSystemDisplay_By_ExternalSystem({ organizationId, externalSystemId, fetchAssetReferences = false }: {
     organizationId: string;
     externalSystemId: string;
     fetchAssetReferences?: boolean;
   }): Promise<TAPBusinessGroupDisplayList> {
 
-    // const funcName = 'listApBusinessGroupSystemDisplayByExternalSystem';
+    // const funcName = 'apsGetList_ApBusinessGroupSystemDisplay_By_ExternalSystem';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // alert(`${logName}: starting ...`);
 
     const listResponse: ListAPSBusinessGroupsResponse = await ApsBusinessGroupsService.listApsBusinessGroupsByExternalSystem({
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
     const apsBusinessGroupResponseList: APSBusinessGroupResponseList = listResponse.list;
+    if(apsBusinessGroupResponseList.length === 0) return [];
+
+    /* DEBUG */
+    // for(const apsBusinessGroupResponse of apsBusinessGroupResponseList) {
+    //   console.log(`${logName}: apsBusinessGroupResponse.businessGroupId=${apsBusinessGroupResponse.businessGroupId}, apsBusinessGroupResponse.displayName=${apsBusinessGroupResponse.displayName}`);
+    // }
+    // alert(`${logName}: see console log`);
+
     // add the organization/root business group to the list as well
     const root_apsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroup({
       organizationId: organizationId,

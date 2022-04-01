@@ -12,7 +12,7 @@ import APBusinessGroupsDisplayService, {
 
 export type TAPExternalSystemDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsExternalSystem: APSExternalSystem;
-  apsBusinessGroupExternalDisplayList: TAPBusinessGroupDisplayList;
+  apBusinessGroupExternalDisplayList: TAPBusinessGroupDisplayList;
 }
 export type TAPExternalSystemDisplayList = Array<TAPExternalSystemDisplay>;
 
@@ -41,20 +41,15 @@ class APExternalSystemsDisplayService {
         displayName: apsExternalSystem.displayName
       },
       apsExternalSystem: apsExternalSystem,
-      apsBusinessGroupExternalDisplayList: apBusinessGroupDisplayList,
+      apBusinessGroupExternalDisplayList: apBusinessGroupDisplayList,
       apSearchContent: ''
     };
     return APSearchContentService.add_SearchContent<TAPExternalSystemDisplay>(base);
   }
 
-  // public generateGlobalSearchContent(apProductDisplay: TAPApiProductDisplay): string {
-  //   return Globals.generateDeepObjectValuesString(apProductDisplay).toLowerCase();
-  // }
-
-  // public getApApiDisplayNameListAsString(displayNameList: Array<string> ): string {
-  //   if(displayNameList.length > 0) return displayNameList.join(', ');
-  //   else return '';
-  // }
+  // ********************************************************************************************************************************
+  // API calls
+  // ********************************************************************************************************************************
 
   public async listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({ organizationId}: {
     organizationId: string;
@@ -69,11 +64,11 @@ class APExternalSystemsDisplayService {
     return [];
   }
 
-  public async listApExternalSystemDisplay({ organizationId}: {
+  public async apiGetList_ApExternalSystemDisplay({ organizationId}: {
     organizationId: string;
   }): Promise<TAPExternalSystemDisplayList> {
 
-    // const funcName = 'listApExternalSystemDisplay';
+    // const funcName = 'apiGetList_ApExternalSystemDisplay';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const response: ListAPSExternalSystemsResponse = await ApsExternalSystemsService.listApsExternalSystems({
@@ -81,27 +76,29 @@ class APExternalSystemsDisplayService {
     });
     const list: TAPExternalSystemDisplayList = [];
     for(const apsExternalSystem of response.list) {
-      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({
+      // console.log(`${logName}: apsExternalSystem.externalSystemId=${apsExternalSystem.externalSystemId}, apsExternalSystem.displayName=${apsExternalSystem.displayName}`);
+      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplay_By_ExternalSystem({
         organizationId: organizationId,
         externalSystemId: apsExternalSystem.externalSystemId
       });
       list.push(this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, apBusinessGroupDisplayList));
     }
+    // alert(`${logName}: see console log`);
     return list;
   }
   
-  public async getApExternalSystemDisplay({ organizationId, externalSystemId }: {
+  public async apiGet_ApExternalSystemDisplay({ organizationId, externalSystemId }: {
     organizationId: string;
     externalSystemId: string;
   }): Promise<TAPExternalSystemDisplay> {
-    // const funcName = 'getApExternalSystemDisplay';
+    // const funcName = 'apiGet_ApExternalSystemDisplay';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const apsExternalSystem: APSExternalSystem = await ApsExternalSystemsService.getApsExternalSystem({
       organizationId: organizationId,
       externalSystemId: externalSystemId
     });
-    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayByExternalSystem({
+    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplay_By_ExternalSystem({
       organizationId: organizationId,
       externalSystemId: apsExternalSystem.externalSystemId
     });
@@ -109,7 +106,7 @@ class APExternalSystemsDisplayService {
     return this.create_ApExternalSystemDisplay_From_ApiEntities(apsExternalSystem, apBusinessGroupDisplayList);
   }
 
-  public async createApExternalSystemDisplay({ organizationId, apExternalSystemDisplay }: {
+  public async apiCreate_ApExternalSystemDisplay({ organizationId, apExternalSystemDisplay }: {
     organizationId: string;
     apExternalSystemDisplay: TAPExternalSystemDisplay
   }): Promise<void> {
@@ -119,7 +116,7 @@ class APExternalSystemsDisplayService {
     });
   }
 
-  public async updateApExternalSystemDisplay({ organizationId, apExternalSystemDisplay }: {
+  public async apiUpdate_ApExternalSystemDisplay({ organizationId, apExternalSystemDisplay }: {
     organizationId: string;
     apExternalSystemDisplay: TAPExternalSystemDisplay
   }): Promise<void> {
@@ -134,7 +131,7 @@ class APExternalSystemsDisplayService {
     });
   }
 
-  public async deleteApExternalSystemDisplay({ organizationId, externalSystemId }: {
+  public async apiDelete_ApExternalSystemDisplay({ organizationId, externalSystemId }: {
     organizationId: string;
     externalSystemId: string;
   }): Promise<void> {

@@ -88,7 +88,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM, `retrieve details for external system: ${managedObjectDisplayName}`);
     try {
-      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.getApExternalSystemDisplay({
+      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.apiGet_ApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: managedObjectId
       })
@@ -106,7 +106,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_EXTERNAL_SYSTEM, `create external system: ${mo.apEntityId.displayName}`);
     try { 
-      await APExternalSystemsDisplayService.createApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.apiCreate_ApExternalSystemDisplay({
         organizationId: props.organizationId,
         apExternalSystemDisplay: mo
       });
@@ -125,7 +125,7 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_EXTERNAL_SYSTEM, `update external system: ${mo.apEntityId.displayName}`);
     try { 
-      await APExternalSystemsDisplayService.updateApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.apiUpdate_ApExternalSystemDisplay({
         organizationId: props.organizationId,
         apExternalSystemDisplay: mo
       });
@@ -331,8 +331,8 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
   }
 
   const getEditNotes = (mo: TManagedObject): string => {
-    if(mo.apsBusinessGroupExternalDisplayList.length === 0) return 'No imported business groups.';
-    return `Imported Business Groups: ${mo.apsBusinessGroupExternalDisplayList.length}.`;
+    if(mo.apBusinessGroupExternalDisplayList.length === 0) return 'No imported business groups.';
+    return `Imported Business Groups: ${mo.apBusinessGroupExternalDisplayList.length}.`;
   }
   
   return (

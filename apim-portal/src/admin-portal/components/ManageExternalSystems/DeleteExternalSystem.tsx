@@ -37,7 +37,7 @@ export const DeleteExternalSystem: React.FC<IDeleteExternalSystemProps> = (props
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_EXTERNAL_SYSTEM, `delete external system: ${props.externalSystemDisplayName}`);
     try { 
-      await APExternalSystemsDisplayService.deleteApExternalSystemDisplay({
+      await APExternalSystemsDisplayService.apiDelete_ApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
       });
