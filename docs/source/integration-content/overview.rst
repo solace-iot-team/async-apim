@@ -27,7 +27,7 @@ Extracting Business Group information:
 --------------------------------------
 
 * filter by attribute: `_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_`
-* extract value from attribute: `_AP_BUSINESS_GROUP_EXTERNAL_ID_`
+* extract value from attribute: `_AP_BUSINESS_GROUP_OWNING_EXTERNAL_ID_`
 
 
 .. seealso::
