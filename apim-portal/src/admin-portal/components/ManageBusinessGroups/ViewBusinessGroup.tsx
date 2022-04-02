@@ -10,13 +10,13 @@ import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../displayServices/APBusinessGroupsDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageBusinessGroups.css";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export interface IViewBusinessGroupProps {
-  organizationId: string,
+  organizationId: string;
   businessGroupEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -37,7 +37,7 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${props.businessGroupEntityId.displayName}`);
     try { 
-      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getApBusinessGroupDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: props.businessGroupEntityId.id
       });
@@ -108,7 +108,7 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     return (
       <React.Fragment>
         <div className="p-col-12">

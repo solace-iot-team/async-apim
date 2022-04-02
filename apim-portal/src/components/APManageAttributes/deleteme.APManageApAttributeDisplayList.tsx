@@ -11,7 +11,7 @@ import { Column } from "primereact/column";
 
 import { APConnectorFormValidationRules } from "../../utils/APConnectorOpenApiFormValidationRules";
 // import { TAPAttribute, TAPAttributeList } from "../../utils/APAttributes/APAttributesService";
-import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "../../utils/APAttributes/APAttributesService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "../../utils/APAttributes/deleteme.APAttributesService";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';

@@ -1,4 +1,5 @@
 import { CommonEntityNameList, CommonEntityNames } from "@solace-iot-team/apim-connector-openapi-browser";
+import { Globals } from "./Globals";
 
 export interface IAPEntityIdDisplay {
   apEntityId: TAPEntityId;
@@ -21,9 +22,16 @@ class APEntityIdsService {
     return `apEntityId.${name}`;
   }
 
-  public create_EmptyObject = (): TAPEntityId => {
+  public create_EmptyObject_NoId = (): TAPEntityId => {
     return {
       id: '',
+      displayName: ''
+    };
+  }
+
+  public create_EmptyObject = (): TAPEntityId => {
+    return {
+      id: Globals.getUUID(),
       displayName: ''
     };
   }
@@ -60,6 +68,10 @@ class APEntityIdsService {
     return list.map( (x) => {
       return x.displayName;
     });
+  }
+
+  public create_SortedDisplayNameList(list: TAPEntityIdList): Array<string> {
+    return this.create_DisplayNameList(this.sort_byDisplayName(list));
   }
 
   public create_IdList(list: TAPEntityIdList): Array<string> {

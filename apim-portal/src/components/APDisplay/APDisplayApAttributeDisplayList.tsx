@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { TAPAttributeDisplayList } from "../../utils/APAttributes/APAttributesService";
+import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 
 import "../APComponents.css";
 
@@ -20,29 +20,35 @@ export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisp
   const dataTableRef = React.useRef<any>(null);
 
   const renderComponent = (apAttributeDisplayList: TAPAttributeDisplayList): JSX.Element => {
+    const dataKey = APAttributesDisplayService.nameOf_ApEntityId('id');
+    const sortField = APAttributesDisplayService.nameOf_ApEntityId('displayName');
+    const valueField = APAttributesDisplayService.nameOf('value');
+
     return (
       <React.Fragment>
         <DataTable
           className="p-datatable-sm"
           ref={dataTableRef}
           value={apAttributeDisplayList}
-          dataKey="apEntityId.id"
+          dataKey={dataKey}
           sortMode="single" 
-          sortField="apEntityId.displayName" 
+          sortField={sortField} 
           sortOrder={1}
           scrollable 
           // scrollHeight="200px" 
+          resizableColumns 
+          columnResizeMode="fit"
         >
           <Column 
-            field="apEntityId.displayName" 
+            field={sortField}
             header="Attribute Name" 
             bodyStyle={{ verticalAlign: 'top' }}
             style={{width: '20%'}}
             sortable    
           />
           <Column 
-            field="connectorAttribute.value" 
-            header="Attribute Values"
+            field={valueField} 
+            header="Value"
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
         </DataTable>

@@ -37,7 +37,7 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM, `retrieve details for external system: ${props.externalSystemDisplayName}`);
     try { 
-      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.getApExternalSystemDisplay({
+      const object: TAPExternalSystemDisplay = await APExternalSystemsDisplayService.apiGet_ApExternalSystemDisplay({
         organizationId: props.organizationId,
         externalSystemId: props.externalSystemId
       });
@@ -85,7 +85,7 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
               <div className="p-text-bold">Business Groups:</div>
               <APDisplayApBusinessGroupDisplayList 
                 className="p-ml-4 p-mt-4"
-                apBusinessGroupDisplayList={managedObject.apsBusinessGroupExternalDisplayList} 
+                apBusinessGroupDisplayList={managedObject.apBusinessGroupExternalDisplayList} 
                 emptyMessage="None."  
               />
 

@@ -4,7 +4,6 @@ import {
   Developer 
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
-import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APOrganizationUsersDisplayService from './APUsersDisplayService/APOrganizationUsersDisplayService';
 
 export enum EAPAssetType {
@@ -18,7 +17,7 @@ export type TAPDeveloperAppAssetInfoDisplay = IAPEntityIdDisplay & {
 export type TAPAssetInfoDisplay = TAPDeveloperAppAssetInfoDisplay;
 export type TAPAssetInfoDisplayList = Array<TAPAssetInfoDisplay>;
 
-export type TAPOrganizationAssetInfoDisplay = IAPEntityIdDisplay & IAPSearchContent & {
+export type TAPOrganizationAssetInfoDisplay = IAPEntityIdDisplay & {
   apAssetInfoDisplayList: TAPAssetInfoDisplayList;
 }
 export type TAPOrganizationAssetInfoDisplayList = Array<TAPOrganizationAssetInfoDisplay>;
@@ -64,9 +63,8 @@ class APAssetDisplayService {
     const base: TAPOrganizationAssetInfoDisplay = {
       apEntityId: apOrganizationEntityId,
       apAssetInfoDisplayList: apAssetInfoDisplayList,
-      apSearchContent: ''
     };
-    return APSearchContentService.add_SearchContent<TAPOrganizationAssetInfoDisplay>(base);
+    return base;
   }
 
   private async getDeveloperApp({ organizationId, userId }: {

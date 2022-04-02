@@ -92,7 +92,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP, `retrieve details for business group: ${managedObjectDisplayName}`);
     try {
-      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.getApBusinessGroupDisplay({
+      const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
         organizationId: props.organizationId,
         businessGroupId: managedObjectId
       })
@@ -251,6 +251,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     const isNewObject: boolean = (props.action === EAction.NEW);
     const isToplevelGroup: boolean = managedObject.apBusinessGroupParentEntityId === undefined;
+    const isIdPreset: boolean = managedObjectFormData?.apEntityId.id !== '';
     return (
       <div className="card p-mt-2">
         <div className="p-fluid">
@@ -260,8 +261,8 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
               <span className="p-float-label p-input-icon-right">
                 <i className="pi pi-key" />
                 <Controller
-                  name="apEntityId.id"
                   control={managedObjectUseForm.control}
+                  name="apEntityId.id"
                   rules={APSOpenApiFormValidationRules.APSId("Enter Id.", true)}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
@@ -269,7 +270,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={isNewObject}
+                          autoFocus={isNewObject && !isIdPreset}
                           disabled={!isNewObject}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />
@@ -292,7 +293,7 @@ export const EditNewBusinessGroups: React.FC<IEditNewBusinessGroupsProps> = (pro
                         <InputText
                           id={field.name}
                           {...field}
-                          autoFocus={!isNewObject && !isToplevelGroup}
+                          autoFocus={(!isNewObject && !isToplevelGroup) || isIdPreset}
                           disabled={isToplevelGroup}
                           className={classNames({ 'p-invalid': fieldState.invalid })}                       
                         />

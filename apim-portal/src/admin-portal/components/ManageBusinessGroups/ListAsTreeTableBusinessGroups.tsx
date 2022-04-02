@@ -48,8 +48,6 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
   const [selectedManagedObjectTreeTableNodeKey, setSelectedManagedObjectTreeTableNodeKey] = React.useState<TreeTableSelectionKeys>(null);
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [selectedManagedObjectTreeTableNode, setSelectedManagedObjectTreeTableNode] = React.useState<TManagedObjectTreeTableNode>();
   const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>();
 
 
@@ -61,7 +59,8 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_LIST, 'retrieve list of business groups');
     try {
       const list: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-        organizationId: props.organizationId
+        organizationId: props.organizationId,
+        fetchAssetReferences: true
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -130,8 +129,21 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
   const membersBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
     return String(node.data.apMemberUserEntityIdList.length);
   }
-  const assetsBodyTemplate = (node: TManagedObjectTreeTableNode): string => {
-    return 'TBD';
+  const assetsBodyTemplate = (node: TManagedObjectTreeTableNode): Array<JSX.Element> => {
+    const jsxElementList: Array<JSX.Element> = [];
+    if(node.data.apBusinessGroupAssetReference.apApiProductReferenceEntityIdList.length > 0) {
+      jsxElementList.push(
+        <div>
+          API Products: {node.data.apBusinessGroupAssetReference.apApiProductReferenceEntityIdList.length}
+        </div>
+      );
+    }
+    if(jsxElementList.length === 0) {
+      jsxElementList.push(
+        <div>None.</div>
+      );
+    }
+    return jsxElementList;
   }
   const actionBodyTemplate = (node: TManagedObjectTreeTableNode) => {
     const isDeleteAllowed: boolean = APBusinessGroupsDisplayService.isDeleteAllowed(node.data);

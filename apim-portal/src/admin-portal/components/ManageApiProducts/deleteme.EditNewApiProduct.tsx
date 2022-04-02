@@ -24,16 +24,16 @@ import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./ManageApiProductsCommon";
-import { SelectApis } from "./SelectApis";
-import { SelectEnvironments } from "./SelectEnvironments";
-import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/APManageApAttributeDisplayList";
-import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/APAdminPortalApiProductsService";
-import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/APAttributesService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
-import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/APApisService";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId} from "./deleteme.ManageApiProductsCommon";
+import { SelectApis } from "./deleteme.SelectApis";
+import { SelectEnvironments } from "./deleteme.SelectEnvironments";
+import { APManageApAttributeDisplayList } from "../../../components/APManageAttributes/deleteme.APManageApAttributeDisplayList";
+import APAdminPortalApiProductsService, { TAPAdminPortalApiProductDisplay } from "../../utils/deleteme.APAdminPortalApiProductsService";
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList, TAPConnectorAttribute } from "../../../utils/APAttributes/deleteme.APAttributesService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/deleteme.APEnvironmentsService";
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from "../../../utils/deleteme.APApisService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/APProtocolsService";
+import APProtocolsService, { TAPProtocolDisplayList } from "../../../utils/deleteme.APProtocolsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

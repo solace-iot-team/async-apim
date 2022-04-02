@@ -24,10 +24,10 @@ import {
   EWebhookAuthMethodSelectIdNone,
 } from "./DeveloperPortalManageUserAppWebhooksCommon";
 import { Globals } from "../../../../utils/Globals";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
 
 export interface IDeveloperPortalListUserAppWebhooksProps {
   managedAppWebhooks: TAPManagedAppWebhooks;
@@ -93,6 +93,16 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
     if(!selectedTableDataRow) throw new Error(`${logName}: selectedTableDataRow is undefined`);    
     props.onNewManagedWebhook(selectedTableDataRow.apManagedWebhook);
   }
+
+  const onCreateWebhookDialogRevoked = () => {
+    const funcName = 'onCreateWebhookDialogRevoked';
+    const logName = `${componentName}.${funcName}()`;
+    throw new Error(`${logName}: App access has been revoked, handle properly`);
+    // setShowCreateWebhookDialog(false);
+    // if(!selectedTableDataRow) throw new Error(`${logName}: selectedTableDataRow is undefined`);    
+    // props.onNewManagedWebhook(selectedTableDataRow.apManagedWebhook);
+  }
+
   const onCreateWebhookDialogCancel = () => {
     setShowCreateWebhookDialog(false);
   }
@@ -111,6 +121,10 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
           case AppStatus.APPROVED:
             return (
               <Button label="Provision" icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateWebhookDialogCreate}/>
+            );
+          case AppStatus.REVOKED:
+            return (
+              <Button label="Provision" icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateWebhookDialogRevoked}/>
             );
           default:
             Globals.assertNever(logName, appStatus);
@@ -149,6 +163,10 @@ export const DeveloperPortalListUserAppWebhooks: React.FC<IDeveloperPortalListUs
       case AppStatus.PENDING:
         header = 'Create a new Webhook';
         question = 'Do you want to create a new webhook?';
+        break;
+      case AppStatus.REVOKED:
+        header = 'App access has been revoked.';
+        question = 'You cannot create a new webhook.';
         break;
       default:
         Globals.assertNever(logName, appStatus);

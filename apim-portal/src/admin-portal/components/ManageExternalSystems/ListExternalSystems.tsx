@@ -75,9 +75,10 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     setIsGetManagedObjectListInProgress(true);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EXTERNAL_SYSTEM_LIST, 'retrieve list of external systems');
     try {
-      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.listApExternalSystemDisplay({
+      const list: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({
         organizationId: props.organizationId
-      })
+      });
+      // alert(`${logName}: list = ${JSON.stringify(list, null, 2)}`);
       setManagedObjectList(list);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -115,7 +116,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.apEntityId.id, mo.apEntityId.displayName, mo.apsBusinessGroupExternalDisplayList.length > 0);
+    props.onManagedObjectView(mo.apEntityId.id, mo.apEntityId.displayName, mo.apBusinessGroupExternalDisplayList.length > 0);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -134,9 +135,9 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     );
   }
 
-  const referencesByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    if(rowData.apsBusinessGroupExternalDisplayList.length === 0) return (<>-</>);
-    return (<>{`Business Groups: ${rowData.apsBusinessGroupExternalDisplayList.length}`}</>);
+  const referencedByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    if(rowData.apBusinessGroupExternalDisplayList.length === 0) return (<>Business Groups: None.</>);
+    return (<>{`Business Groups: ${rowData.apBusinessGroupExternalDisplayList.length}`}</>);
   }
   const desriptionByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
     return (<>{rowData.apsExternalSystem.description}</>);
@@ -145,7 +146,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     return rowData.apEntityId.displayName;
   }
   const renderManagedObjectDataTable = () => {
-    let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectList_To_TableDataList(managedObjectList);    
+    const managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectList_To_TableDataList(managedObjectList);    
     return (
       <div className="card">
           <DataTable
@@ -172,7 +173,7 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
           >
             <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
             <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            <Column header="References" headerStyle={{width: '15em' }} body={referencesByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="References" headerStyle={{width: '15em' }} body={referencedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>
     );

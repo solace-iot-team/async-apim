@@ -3,31 +3,34 @@ import React from "react";
 
 import { Dialog } from 'primereact/dialog';
 
-import { TApiCallState } from "../../../utils/ApiCallState";
+import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import { 
+  TAPEnvironmentDisplayList 
+} from "../../../../displayServices/APEnvironmentsDisplayService";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import { SearchSelectEnvironments } from "./SearchSelectEnvironments";
-import { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 
-import '../../../components/APComponents.css';
-import "./ManageApiProducts.css";
+import '../../../../components/APComponents.css';
+import "../ManageApiProducts.css";
 
-export interface ISelectEnvironmentsProps {
+export interface IManageSelectEnvironmentsProps {
   organizationId: string;  
-  currentSelectedEnvironmentEntityIdList: TAPEntityIdList;
+  selectedEnvironmentEntityIdList: TAPEntityIdList;
+  onSave: (apEnvironmentDisplayList: TAPEnvironmentDisplayList) => void;
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, modifiedSelectedApiItemList: TAPEntityIdList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const SelectEnvironments: React.FC<ISelectEnvironmentsProps> = (props: ISelectEnvironmentsProps) => {
-  // const componentName = 'SelectEnvironments';
+export const ManageSelectEnvironments: React.FC<IManageSelectEnvironmentsProps> = (props: IManageSelectEnvironmentsProps) => {
+  // const ComponentName = 'ManageSelectEnvironments';
 
   const renderSelectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
         <SearchSelectEnvironments
           organizationId={props.organizationId}
-          currentSelectedEnvironmentEntityIdList={props.currentSelectedEnvironmentEntityIdList}
+          selectedEnvironmentEntityIdList={props.selectedEnvironmentEntityIdList}
           onError={props.onError}
           onSave={props.onSave}
           onCancel={props.onCancel}

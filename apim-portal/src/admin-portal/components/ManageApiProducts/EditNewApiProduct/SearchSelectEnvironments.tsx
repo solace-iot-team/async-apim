@@ -6,28 +6,34 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Button } from 'primereact/button';
 
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from "../../../utils/APEnvironmentsService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
+import APEnvironmentsDisplayService, { 
+  TAPEnvironmentDisplay, 
+  TAPEnvironmentDisplayList
+} from "../../../../displayServices/APEnvironmentsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 
-import '../../../components/APComponents.css';
-import "./ManageApiProducts.css";
+import '../../../../components/APComponents.css';
+import "../ManageApiProducts.css";
 
 export interface ISearchSelectEnvironmentsProps {
   organizationId: string;
-  currentSelectedEnvironmentEntityIdList: TAPEntityIdList,
+  selectedEnvironmentEntityIdList: TAPEntityIdList;
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apiCallState: TApiCallState, selectedEnvironmentEntityIdList: TAPEntityIdList) => void;
+  onSave: (apEnvironmentDisplayList: TAPEnvironmentDisplayList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> = (props: ISearchSelectEnvironmentsProps) => {
-  const componentName = 'SearchSelectEnvironments';
+  const ComponentName = 'SearchSelectEnvironments';
+
+  type TManagedObject = TAPEnvironmentDisplay;
+  type TManagedObjectList = Array<TManagedObject>;
 
   const DialogHeader = 'Search & Select Environment(s):';
   const MessageNoManagedObjectsFound = "No Environments found."
@@ -35,9 +41,13 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
+
+  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
+  const [selectedManagedObjectList, setSelectedManagedObjectList] = React.useState<TManagedObjectList>();
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
-  const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
-  const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
+  
+  // const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
+  // const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -45,13 +55,13 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   // * Api Calls *
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ENVIRONMENT_LIST, 'retrieve list of environments');
     try {
-      const apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsService.listApEnvironmentDisplay({ 
+      const list: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
         organizationId: props.organizationId
-      })
-      setManagedObjectTableDataList(apEnvironmentDisplayList);
+      });
+      setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -71,19 +81,19 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectTableDataList === undefined) return;
-    setSelectedManagedObjectTableDataList(
+    if(managedObjectList === undefined) return;
+    setSelectedManagedObjectList(
       APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPEnvironmentDisplay>({
-        apDisplayObjectList: managedObjectTableDataList,
-        filterByEntityIdList: props.currentSelectedEnvironmentEntityIdList
+        apDisplayObjectList: managedObjectList,
+        filterByEntityIdList: props.selectedEnvironmentEntityIdList
       })
     );
-  }, [managedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
-    if(selectedManagedObjectTableDataList === undefined) return;
+    if(selectedManagedObjectList === undefined) return;
     setIsInitialized(true);
-  }, [selectedManagedObjectTableDataList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [selectedManagedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -95,9 +105,9 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   const onSaveSelectedEnvironments = () => {
     const funcName = 'onSaveSelectedEnvironments';
-    const logName = `${componentName}.${funcName}()`;
-    if(selectedManagedObjectTableDataList === undefined) throw new Error(`${logName}: selectedManagedObjectTableDataList === undefined`);
-    props.onSave(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.SELECT_ENVIRONMENTS, `select environments`), APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList<TAPEnvironmentDisplay>(selectedManagedObjectTableDataList));
+    const logName = `${ComponentName}.${funcName}()`;
+    if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
+    props.onSave(selectedManagedObjectList);
   }
 
   // * Data Table *
@@ -108,9 +118,9 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
  
   const renderDataTableHeader = (): JSX.Element => {
     const funcName = 'renderDataTableHeader';
-    const logName = `${componentName}.${funcName}()`;
-    if(selectedManagedObjectTableDataList === undefined) throw new Error(`${logName}: selectedManagedObjectTableDataList === undefined`);
-    const isSaveDisabled: boolean = selectedManagedObjectTableDataList.length === 0;
+    const logName = `${ComponentName}.${funcName}()`;
+    if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
+    const isSaveDisabled: boolean = selectedManagedObjectList.length === 0;
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
@@ -133,7 +143,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }
 
   const onSelectionChange = (event: any): void => {
-    setSelectedManagedObjectTableDataList(event.value);
+    setSelectedManagedObjectList(event.value);
   }
 
   const renderManagedObjectTableEmptyMessage = () => {
@@ -142,8 +152,8 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-    const dataKey = APEnvironmentsService.nameOf_Entity('id');
-    const sortField = APEnvironmentsService.nameOf_Entity('displayName');
+    const dataKey = APEnvironmentsDisplayService.nameOf_ApEntityId('id');
+    const sortField = APEnvironmentsDisplayService.nameOf_ApEntityId('displayName');
     return (
       <div className="card">
           <DataTable
@@ -151,17 +161,17 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             className="p-datatable-sm"
             autoLayout={true}
             resizableColumns 
-            columnResizeMode="expand"
-            showGridlines
+            columnResizeMode="fit"
+            showGridlines={false}
             header={renderDataTableHeader()}
-            value={managedObjectTableDataList}
+            value={managedObjectList}
             globalFilter={globalFilter}
             scrollable 
             scrollHeight="800px" 
             dataKey={dataKey}
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // selection
-            selection={selectedManagedObjectTableDataList}
+            selection={selectedManagedObjectList}
             onSelectionChange={onSelectionChange}
             // sorting
             sortMode='single'
@@ -198,3 +208,4 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     </div>
   );
 }
+

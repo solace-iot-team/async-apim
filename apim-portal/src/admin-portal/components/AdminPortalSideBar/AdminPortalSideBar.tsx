@@ -47,7 +47,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
-      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
+      isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts) &&
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
       ) return [];
 
@@ -62,6 +62,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
+      // {
+      //   label: 'OLD API Products',
+      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts),
+      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts); }
+      // },
       {
         label: 'APIs',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),

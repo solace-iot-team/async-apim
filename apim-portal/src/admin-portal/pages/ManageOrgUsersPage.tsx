@@ -70,5 +70,5 @@ export const ManageOrgUsersPage: React.FC = () => {
         />
       }
     </div>
-);
+  );
 }

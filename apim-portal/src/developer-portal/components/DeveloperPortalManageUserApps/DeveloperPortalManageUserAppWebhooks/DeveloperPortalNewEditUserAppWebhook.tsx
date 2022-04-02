@@ -366,6 +366,11 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
           return (
             <Button form={formId} type="submit" label='Provision' icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" style={{ width: '12em'}} />
           );
+        case AppStatus.REVOKED:
+          throw new Error(`${logName}: App in status revoked - handle properly`);
+          // return (
+          //   <Button form={formId} type="submit" label='Provision' icon="pi pi-fast-forward" className="p-button-text p-button-plain p-button-outlined" style={{ width: '12em'}} />
+          // );
         default:
           Globals.assertNever(logName, appStatus);
       }
@@ -790,6 +795,11 @@ export const DeveloperPortalNewEditUserAppWebhook: React.FC<IDeveloperPortalNewE
         if(props.action === EAction.NEW) return `Provision New Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
         else if(props.action === EAction.EDIT) return `Re-Provision Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
         else throw new Error(`${logName}: unknown props.action = ${props.action}`);
+      case AppStatus.REVOKED:
+        throw new Error(`${logName}: App in status revoked, handle properly.`);
+        // if(props.action === EAction.NEW) return `Provision New Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        // else if(props.action === EAction.EDIT) return `Re-Provision Webhook for App: ${props.managedAppWebhooks.appDisplayName}`;
+        // else throw new Error(`${logName}: unknown props.action = ${props.action}`);
       default:
         Globals.assertNever(logName, appStatus);
     }

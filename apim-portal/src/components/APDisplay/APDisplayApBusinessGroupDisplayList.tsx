@@ -45,11 +45,8 @@ export const APDisplayApBusinessGroupDisplayList: React.FC<IAPDisplayApBusinessG
     initializeExpandedKeys()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-
-  const renderComponent = (apBusinessGroupDisplayList: TAPBusinessGroupDisplayList): JSX.Element => {
-
-    const treeTableNodeList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
-
+  
+  const renderComponent = (): JSX.Element => {
     return (
       <React.Fragment>
         <Tree 
@@ -74,7 +71,7 @@ export const APDisplayApBusinessGroupDisplayList: React.FC<IAPDisplayApBusinessG
   return (
     <div className={props.className ? props.className : 'card'}>
     {props.apBusinessGroupDisplayList.length > 0 &&
-      renderComponent(props.apBusinessGroupDisplayList)
+      renderComponent()
     }
     {(props.apBusinessGroupDisplayList.length === 0) && 
       <span>{props.emptyMessage}</span>

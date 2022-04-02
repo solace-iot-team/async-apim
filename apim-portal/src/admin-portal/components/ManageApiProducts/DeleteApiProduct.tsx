@@ -7,18 +7,18 @@ import { Dialog } from 'primereact/dialog';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APAdminPortalApiProductsService from "../../utils/APAdminPortalApiProductsService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import APAdminPortalApiProductsDisplayService from "../../displayServices/APAdminPortalApiProductsDisplayService";
 
 export interface IDeleteApiProductProps {
-  organizationId: string,
-  apiProductId: string;
-  apiProductDisplayName: string;
+  organizationId: string;
+  apiProductEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
-  onSuccess: (apiCallState: TApiCallState) => void;
+  onDeleteSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
@@ -35,11 +35,11 @@ export const DeleteApiProduct: React.FC<IDeleteApiProductProps> = (props: IDelet
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT, `delete api product: ${props.apiProductDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT, `delete api product: ${props.apiProductEntityId.displayName}`);
     try { 
-      await APAdminPortalApiProductsService.deleteApApiProductDisplay({
+      await APAdminPortalApiProductsDisplayService.apiDelete_ApApiProductDisplay({
         organizationId: props.organizationId,
-        apiProductId: props.apiProductId
+        apiProductId: props.apiProductEntityId.id
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -53,7 +53,7 @@ export const DeleteApiProduct: React.FC<IDeleteApiProductProps> = (props: IDelet
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else props.onSuccess(apiCallStatus);
+      else props.onDeleteSuccess(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -76,7 +76,7 @@ export const DeleteApiProduct: React.FC<IDeleteApiProductProps> = (props: IDelet
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Deleting API Product: <b>{props.apiProductDisplayName}</b>.</p>
+        <p>Deleting API Product: <b>{props.apiProductEntityId.displayName}</b>.</p>
         <p>Are you sure you want to delete it?</p>
       </React.Fragment>  
     );

@@ -113,8 +113,17 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       }
       if(!_apiAppResponse_smf) throw new Error(`${logName}: _apiAppResponse_smf is undefined`);
       if(!_apiAppResponse_mqtt) throw new Error(`${logName}: _apiAppResponse_mqtt is undefined`);
-      let _apiProductList: TApiProductList = [];
-      for(const apiApiProductId of _apiAppResponse_smf.apiProducts) {
+      const _apiProductList: TApiProductList = [];
+
+      // apiProducts: AppApiProducts = Array<(AppApiProductsComplex | CommonName)>;
+
+      //   export declare type AppApiProductsComplex = {
+      //     apiproduct: CommonName;
+      //     status?: AppStatus;
+      // };
+
+      for(const apiAppApiProduct of _apiAppResponse_smf.apiProducts) {
+        const apiApiProductId: string = (typeof apiAppApiProduct === 'string' ? apiAppApiProduct : apiAppApiProduct.apiproduct);
         const apiApiProduct = await ApiProductsService.getApiProduct({
           organizationName: props.organizationId,
           apiProductName: apiApiProductId

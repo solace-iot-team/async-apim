@@ -7,11 +7,11 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from './APEntityIdsService';
 import { Globals } from './Globals';
-import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/APAttributesService";
-import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './APEnvironmentsService';
-import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './APApisService';
-import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
-import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsService';
+import APAttributesService, { TAPAttributeDisplay, TAPAttributeDisplayList } from "./APAttributes/deleteme.APAttributesService";
+import APEnvironmentsService, { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from './deleteme.APEnvironmentsService';
+import APApisService, { TAPApiDisplay, TAPApiDisplayList } from './deleteme.APApisService';
+import { EAPApiSpecFormat, TAPApiSpecDisplay } from './deleteme.APApiSpecsService';
+import APProtocolsService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './deleteme.APProtocolsService';
 import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 
 export type TAPApiProductDisplay = IAPEntityIdDisplay & IAPSearchContent & {
@@ -58,7 +58,9 @@ export class APApiProductsService {
       displayName: '',
       description: '',
       pubResources: [],
-      subResources: []
+      subResources: [],
+      environments: [],
+      protocols: [],
     };
   }
 

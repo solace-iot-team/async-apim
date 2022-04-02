@@ -1,7 +1,7 @@
 import { 
   APIInfo, APIInfoList, APIParameter, ApisService, CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { EAPApiSpecFormat, TAPApiSpecDisplay } from './APApiSpecsService';
+import { EAPApiSpecFormat, TAPApiSpecDisplay } from './deleteme.APApiSpecsService';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from './APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from './APSearchContentService';
 

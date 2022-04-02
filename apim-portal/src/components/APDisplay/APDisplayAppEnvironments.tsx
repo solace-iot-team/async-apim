@@ -81,6 +81,8 @@ export const APDisplayAppEnvironments: React.FC<IAPDisplayAppEnvironmentsProps> 
           return (<p>Note: Permissions pending approval.</p>);
         case AppStatus.APPROVED:
           return (<></>);
+        case AppStatus.REVOKED:
+          return (<p>Note: Access to App revoked.</p>);
         default:
           Globals.assertNever(logName, appStatus);
       }
