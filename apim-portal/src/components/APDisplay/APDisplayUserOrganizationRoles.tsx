@@ -35,10 +35,10 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
       return APEntityIdsService.getSortedDisplayNameList_As_String(row.apOrganizationRoleEntityIdList);
     }
 
-    const legacyRolesBodyTemplate = (row: TAPMemberOfOrganizationDisplay): string => {
-      if(row.apLegacyOrganizationRoleEntityIdList.length === 0) return 'None.';
-      return APEntityIdsService.getSortedDisplayNameList_As_String(row.apLegacyOrganizationRoleEntityIdList);
-    }
+    // const legacyRolesBodyTemplate = (row: TAPMemberOfOrganizationDisplay): string => {
+    //   if(row.apLegacyOrganizationRoleEntityIdList.length === 0) return 'None.';
+    //   return APEntityIdsService.getSortedDisplayNameList_As_String(row.apLegacyOrganizationRoleEntityIdList);
+    // }
 
     const _sortable: boolean = props.apMemberOfOrganizationDisplayList.length > 1;
     
@@ -57,7 +57,7 @@ export const APDisplayUserOrganizationRoles: React.FC<IAPDisplayUserOrganization
         >
           <Column header="Organization" field={APMemberOfService.nameOf_TAPMemberOfOrganizationDisplay_Entity('displayName')} sortable={_sortable} />
           <Column header="Organization Roles" body={rolesBodyTemplate} />
-          <Column header="Legacy Roles" body={legacyRolesBodyTemplate} />
+          {/* <Column header="Legacy Roles" body={legacyRolesBodyTemplate} /> */}
         </DataTable>
         {/* DEBUG */}
         {/* <pre style={ { fontSize: '12px' }} >
