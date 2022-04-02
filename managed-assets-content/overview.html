@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup &mdash; Solace Async API Management r0.0.2 documentation</title>
+  <title>Managed Assets Overview &mdash; Solace Async API Management r0.0.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Managed Assets" href="../managed-assets.html" />
-    <link rel="prev" title="Installation" href="installation.html" /> 
+    <link rel="next" title="Integration" href="../integration.html" />
+    <link rel="prev" title="Managed Assets" href="../managed-assets.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,16 +41,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../quickstart.html">Quickstart</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#login">Login</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-organization">Create Organization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../managed-assets.html">Managed Assets</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Managed Assets Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#general">General</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../managed-assets.html">Managed Assets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
 </ul>
@@ -73,10 +71,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../quickstart.html">Quickstart</a> &raquo;</li>
-      <li>Setup</li>
+          <li><a href="../managed-assets.html">Managed Assets</a> &raquo;</li>
+      <li>Managed Assets Overview</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/quickstart-content/setup.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/managed-assets-content/overview.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -84,35 +82,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="setup">
-<span id="quickstart-content-setup"></span><h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h1>
-<section id="login">
-<h2>Login<a class="headerlink" href="#login" title="Permalink to this headline"></a></h2>
-<p>Login with the bootstrapped master user.</p>
-<p>Defaults:</p>
+  <section id="managed-assets-overview">
+<span id="id1"></span><h1>Managed Assets Overview<a class="headerlink" href="#managed-assets-overview" title="Permalink to this headline"></a></h1>
+<section id="general">
+<h2>General<a class="headerlink" href="#general" title="Permalink to this headline"></a></h2>
+<p>Managed assets are:</p>
+<ul class="simple">
+<li><p>API Products</p></li>
+</ul>
+<p>Assets are tagged with the following, reserved attributes:</p>
 <dl class="field-list simple">
-<dt class="field-odd">user id</dt>
-<dd class="field-odd"><p><cite>master.user&#64;async-apim-quickstart.com</cite></p>
+<dt class="field-odd">_AP_ASSET_OWNER_ID_</dt>
+<dd class="field-odd"><p>the owner id the asset belongs to</p>
 </dd>
-<dt class="field-even">password</dt>
-<dd class="field-even"><p><cite>master.user&#64;async-apim-quickstart.com</cite></p>
+<dt class="field-even">_AP_BUSINESS_GROUP_OWNING_ID_</dt>
+<dd class="field-even"><p>the internal business group Id the asset belongs to</p>
+</dd>
+<dt class="field-odd">_AP_BUSINESS_GROUP_OWNING_DISPLAY_NAME_</dt>
+<dd class="field-odd"><p>the internal business group display name the asset belongs to</p>
+</dd>
+<dt class="field-even">_AP_BUSINESS_GROUP_OWNING_EXTERNAL_ID_</dt>
+<dd class="field-even"><p>the external system’s business group id, if the business group was imported from an external system</p>
+</dd>
+<dt class="field-odd">_AP_BUSINESS_GROUP_OWNING_EXTERNAL_DISPLAY_NAME_</dt>
+<dd class="field-odd"><p>the external system’s business group display name, if the business group was imported from an external system</p>
+</dd>
+<dt class="field-even">_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_</dt>
+<dd class="field-even"><p>the external system’s id the external business group information relates to</p>
 </dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json">bootstrap user list</a> - default details of the bootstrapped users.</p></li>
+<li><p><a class="reference internal" href="../integration-content/overview.html#integration-content-overview"><span class="std std-ref">Integration Overview</span></a></p></li>
 </ul>
 </div>
-</section>
-<section id="create-organization">
-<h2>Create Organization<a class="headerlink" href="#create-organization" title="Permalink to this headline"></a></h2>
-<p>The bootstrapped user is member of the organization <cite>apim-quickstart</cite>.</p>
-<ul class="simple">
-<li><p>Create an Organization with the Name <cite>apim-quickstart</cite>.</p></li>
-<li><p>Logout and Login again</p></li>
-<li><p>Start creating entities …</p></li>
-</ul>
 </section>
 </section>
 
@@ -120,8 +124,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../managed-assets.html" class="btn btn-neutral float-right" title="Managed Assets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../managed-assets.html" class="btn btn-neutral float-left" title="Managed Assets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../integration.html" class="btn btn-neutral float-right" title="Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

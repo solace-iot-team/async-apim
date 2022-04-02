@@ -7,6 +7,8 @@ Solace Async API Management
   :caption: Guides
 
   quickstart
+  managed-assets
+  integration
   connector
 
 .. toctree::
