@@ -115,7 +115,7 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
         <DisplayAdminPortalApiProduct
           scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE}
           organizationId={props.organizationId}
-          apAdminPortalApiProductDisplay={props.apAdminPortalApiProductDisplay}
+          apAdminPortalApiProductDisplay={mo}
           onError={props.onError}
           onSuccess={props.onSuccessNotification}
           onLoadingChange={props.onLoadingChange}
