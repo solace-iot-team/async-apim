@@ -27,6 +27,7 @@ import { Globals } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { Divider } from "primereact/divider";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -229,6 +230,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
     return (
       <React.Fragment>
         <div className="p-mt-2">
@@ -315,9 +317,20 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
+              {Config.getUseDevelTools() &&
+                <React.Fragment>
+                  <Divider />
+                  <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
+                  <APDisplayApAttributeDisplayList
+                    apAttributeDisplayList={managedObject.devel_display_complete_ApAttributeList}
+                    emptyMessage="No attributes defined"
+                    className="p-ml-4"
+                  />
+                </React.Fragment>
+              }
             </React.Fragment>
           </TabPanel>
-          {Config.getUseDevelTools() &&
+          {/* {Config.getUseDevelTools() &&
           <TabPanel header='DEVEL: Raw Attributes'>
             <React.Fragment>
               <div className="p-text-bold">All Attributes for cross checking:</div>
@@ -328,7 +341,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
               />
             </React.Fragment>
           </TabPanel>
-          }
+          } */}
         </TabView> 
       </React.Fragment>
     ); 
