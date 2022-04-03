@@ -11,7 +11,12 @@ import APBusinessGroupsDisplayService, {
   TAPBusinessGroupDisplayReference 
 } from './APBusinessGroupsDisplayService';
 
-
+export type TAPMeta = {
+  apCreatedBy: string;
+  apCreatedOn: number;
+  apLastModifiedBy: string;
+  apLastModifiedOn: string;
+}
 const CAPManagedAssetAttribute_Prefix = "AP";
 enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",

@@ -6,6 +6,7 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
+  Meta,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
@@ -28,11 +29,13 @@ import {
 import { 
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay, 
-  TAPManagedAssetDisplay_Attributes
+  TAPManagedAssetDisplay_Attributes,
+  TAPMeta,
 } from './APManagedAssetDisplayService';
 import APProtocolsDisplayService, { 
   TAPProtocolDisplayList 
 } from './APProtocolsDisplayService';
+import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
 
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
@@ -83,6 +86,12 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   apEnvironmentDisplayList: TAPEnvironmentDisplayList;
   /** the consolidated protocol list across all environments */
   apProtocolDisplayList: TAPProtocolDisplayList;  
+
+  // version(s)
+  apVersionInfo: IAPVersionInfo;
+
+  // meta
+  apMeta?: TAPMeta;
 }
 export type TAPApiProductDisplayList = Array<IAPApiProductDisplay>;
 
@@ -190,6 +199,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEnvironmentDisplayList: [],
       apProtocolDisplayList: [],
       apApiProductCategoryDisplayName: '',
+      apVersionInfo: APVersioningDisplayService.create_Empty_ApVersionInfo(),
     };
     return apApiProductDisplay;
   }
@@ -205,11 +215,13 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apControlledChannelParameterList;
   }
 
-  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, completeApEnvironmentDisplayList, default_ownerId }:{
+  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, default_ownerId, currentVersion }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
+    connectorRevisions?: Array<string>;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
     default_ownerId: string;
+    currentVersion?: string;
   }): Promise<IAPApiProductDisplay> {
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -261,6 +273,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEnvironmentDisplayList: apEnvironmentDisplayList,
       apProtocolDisplayList: apProtocolDisplayList,
       // apApiProductImageUrl: this.CDefaultApiProductImageUrl,
+      apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
+        connectorMeta: connectorApiProduct.meta, 
+        connectorRevisions: connectorRevisions,
+        currentVersion: currentVersion,
+       }),
     };
     return apApiProductDisplay;
   }

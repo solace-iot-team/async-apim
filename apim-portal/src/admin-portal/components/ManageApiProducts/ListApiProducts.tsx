@@ -155,15 +155,25 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const approvalTypeTemplate = (row: TManagedObject): string => {
     return row.apApprovalType;
   }
-  const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
-    // if(row.apBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
-    //   <div style={{ color: 'red' }}>None.</div>
-    // );
+  // const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return (
+  //     <div>
+  //       {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
+  //     </div>
+  //   );
+  // }
+
+  const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (
       <div>
-        {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
+        {row.apVersionInfo.apLastVersion}
       </div>
     );
+    // return (
+    //   <div>
+    //     {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
+    //   </div>
+    // );
   }
 
   // const accessLevelTemplate = (rowData: TManagedObjectTableDataRow): string => {
@@ -204,8 +214,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           sortOrder={1}
         >
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
+          <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
+          {/* <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable /> */}
           {/* <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField="connectorApiProduct.accessLevel" sortable /> */}
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
 
