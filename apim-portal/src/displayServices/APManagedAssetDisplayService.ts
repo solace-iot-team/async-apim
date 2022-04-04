@@ -287,11 +287,12 @@ export abstract class APManagedAssetDisplayService {
   /**
    * Create a managed asset display object.
    */
-  protected create_ApManagedAssetDisplay_From_ApiEntities({ id, displayName, apRawAttributeList, default_ownerId }: {
+  protected create_ApManagedAssetDisplay_From_ApiEntities({ id, displayName, apRawAttributeList, default_ownerId, version }: {
     id: string;
     displayName: string;
     apRawAttributeList: TAPRawAttributeList;
     default_ownerId: string;
+    version?: string;
   }): IAPManagedAssetDisplay {
     // const funcName = 'create_ApManagedAssetDisplay';
     // const logName = `${this.BaseComponentName}.${funcName}()`;

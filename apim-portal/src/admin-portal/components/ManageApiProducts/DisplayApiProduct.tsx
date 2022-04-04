@@ -436,6 +436,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
+        <div>DEBUG: selectedVersion = {selectedVersion}</div>
+
         {managedObject && selectedVersion && renderManagedObject() }
 
       </div>

@@ -8,6 +8,7 @@ export interface IAPEntityIdDisplay {
 export type TAPEntityId = {
   id: string;
   displayName: string;
+  // version?: string;
 }
 export type TAPEntityIdList = Array<TAPEntityId>;
 

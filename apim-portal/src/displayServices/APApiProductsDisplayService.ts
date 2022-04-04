@@ -278,6 +278,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisions: connectorRevisions,
         currentVersion: currentVersion,
        }),
+      //  apEntityId: {
+      //    ..._base.apEntityId,
+      //    version: currentVersion
+      //  }
     };
     return apApiProductDisplay;
   }

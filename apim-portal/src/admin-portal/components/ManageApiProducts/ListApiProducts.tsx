@@ -176,6 +176,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     // );
   }
 
+  // const apEntityIdBodyTemplate = (row: TManagedObject) => {
+  //   return JSON.stringify(row.apEntityId);
+  // }
   // const accessLevelTemplate = (rowData: TManagedObjectTableDataRow): string => {
   //   return rowData.connectorApiProduct.accessLevel ? rowData.connectorApiProduct.accessLevel : '?';
   // }
@@ -213,6 +216,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           sortField={sortField}
           sortOrder={1}
         >
+          {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
           <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable />

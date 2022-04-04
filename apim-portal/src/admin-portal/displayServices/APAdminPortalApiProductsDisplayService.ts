@@ -8,6 +8,7 @@ import {
   IAPApiProductDisplay, 
 } from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
+import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 
@@ -122,11 +123,13 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
 
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
+      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
       const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
         organizationId: organizationId,
         connectorApiProduct: connectorApiProduct,
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-        default_ownerId: default_ownerId
+        default_ownerId: default_ownerId,
+        currentVersion: apVersionInfo.apCurrentVersion,
       });
       apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
     }

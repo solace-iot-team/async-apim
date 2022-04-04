@@ -97,6 +97,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
+    // // DEBUG: is the version set?
+    // alert(`${ComponentName}.onViewManagedObject():  apAdminPortalApiProductDisplay.apEntityId = ${JSON.stringify(apAdminPortalApiProductDisplay.apEntityId)}`);
     setIsManagedObjectDeleteAllowed(APAdminPortalApiProductsDisplayService.get_IsDeleteAllowed({
       apApiProductDisplay: apAdminPortalApiProductDisplay
     }));
