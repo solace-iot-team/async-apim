@@ -169,11 +169,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         {row.apVersionInfo.apLastVersion}
       </div>
     );
-    // return (
-    //   <div>
-    //     {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
-    //   </div>
-    // );
   }
 
   // const apEntityIdBodyTemplate = (row: TManagedObject) => {
@@ -191,7 +186,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const filterField = APAdminPortalApiProductsDisplayService.nameOf('apSearchContent');
     const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf_ConnectorApiProduct('approvalType');
     // const gmSortField = APAdminPortalApiProductsDisplayService.nameOf('apIsGuaranteedMessagingEnabled');
-    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
+    // const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
     return (
       <div className="card">
         <DataTable

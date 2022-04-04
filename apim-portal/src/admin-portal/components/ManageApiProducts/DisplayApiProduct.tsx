@@ -27,6 +27,7 @@ import { Config } from "../../../Config";
 import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
 import { Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
+import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -310,12 +311,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   }
 
   const renderMeta = (mo: TManagedObject): JSX.Element => {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE) return (<></>);
     return (
       <React.Fragment>  
-        <div>Created by: {mo.apMeta?.apCreatedBy}</div>
-        <div>Created on: {mo.apMeta?.apCreatedOn}</div>
-        <div>Last Modified by: {mo.apMeta?.apLastModifiedBy}</div>
-        <div>Last Modifined on: {mo.apMeta?.apLastModifiedOn}</div>
+        <div>Created by: {mo.apMetaInfo.apCreatedBy}</div>
+        <div>Created on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apCreatedOn)}</div>
+        <div>Last Modified by: {mo.apMetaInfo.apLastModifiedBy}</div>
+        <div>Last Modifined on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>
       </React.Fragment>
     );
   }

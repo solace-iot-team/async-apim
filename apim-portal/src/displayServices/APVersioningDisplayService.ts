@@ -52,6 +52,21 @@ class APVersioningDisplayService {
     });
   }
 
+  public create_NewVersion(): string {
+    return '1.0.0';
+  }
+
+  public create_NextVersion(version: string): string {
+    const versionSemVer = new SemVer(version);
+    versionSemVer.inc("minor");
+    return versionSemVer.format();
+  }
+
+  public is_GreaterThan(lastVersion: string, newVersion: string): boolean {
+    const lastVersionSemVer = new SemVer(lastVersion);
+    if(lastVersionSemVer.compare(newVersion) === -1) return true;
+    return false;
+  }
 
 }
 

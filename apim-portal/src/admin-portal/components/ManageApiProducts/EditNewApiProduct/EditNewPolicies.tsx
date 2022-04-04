@@ -1,4 +1,5 @@
 
+
 import React from "react";
 
 import { Button } from 'primereact/button';
@@ -8,58 +9,69 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { EAction } from "../ManageApiProductsCommon";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
-import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
+import { TAPApiProductDisplay_Policies } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewPoliciesForm } from "./EditNewPoliciesForm";
+import { ButtonLabel_EditSaveChanges, EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface INewGeneralProps {
+export interface IEditNewPoliciesProps {
+  action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apApiProductDisplay_General: TAPApiProductDisplay_General) => void;
-  onBack: () => void;
+  onSaveChanges: (apApiProductDisplay_Policies: TAPApiProductDisplay_Policies) => void;
+  onBack?: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) => {
-  const ComponentName = 'NewGeneral';
+export const EditNewPolicies: React.FC<IEditNewPoliciesProps> = (props: IEditNewPoliciesProps) => {
+  const ComponentName = 'EditNewPolicies';
 
-  type TManagedObject = TAPApiProductDisplay_General;
+  type TManagedObject = TAPApiProductDisplay_Policies;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  // const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
-  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApiProductDisplay_General({
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_Policies({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
+  }
+
+  const validateProps = () => {
+    const funcName = 'validateProps';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.action === EAction.NEW) {
+      if(props.onBack === undefined) throw new Error(`${logName}: props.onBack === undefined`);
+    }
   }
 
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    validateProps();
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    props.onNext(mo);
+    props.onSaveChanges(mo);
   }
 
-  const onSubmit = (mo: TManagedObject) => {
-    doSubmitManagedObject(mo);
+  const onSubmit = (apApiProductDisplay_Policies: TAPApiProductDisplay_Policies) => {
+    doSubmitManagedObject(apApiProductDisplay_Policies);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
         <React.Fragment>
+          {props.action === EAction.NEW && 
+            <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+          }
           <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
         </React.Fragment>
       );
@@ -67,7 +79,12 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          {props.action === EAction.NEW && 
+            <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          }
+          {props.action === EAction.EDIT && 
+            <Button key={ComponentName+'Save'} form={formId} type="submit" label={ButtonLabel_EditSaveChanges} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+          }
         </React.Fragment>
       );
     }  
@@ -80,11 +97,10 @@ export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) 
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewGeneralForm
+          <EditNewPoliciesForm
             formId={formId}
-            organizationId={props.organizationId}
-            action={EAction.NEW}
-            apApiProductDisplay_General={mo}
+            action={props.action}
+            apApiProductDisplay_Policies={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

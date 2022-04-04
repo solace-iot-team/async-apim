@@ -9,12 +9,10 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApiProductsCommon";
+import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { NewGeneral } from "./NewGeneral";
-import { NewApis } from "./NewApis";
 import { 
   TAPApiProductDisplay_Apis, 
   TAPApiProductDisplay_Environments, 
@@ -22,14 +20,17 @@ import {
   TAPApiProductDisplay_Policies 
 } from "../../../../displayServices/APApiProductsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
-import { NewPolicies } from "./NewPolicies";
-import { NewEnvironments } from "./NewEnvironments";
-import { NewAttributes } from "./NewAttributes";
+import { EditNewGeneral } from "./EditNewGeneral";
 import { NewReviewAndCreate } from "./NewReviewAndCreate";
+import { EditNewPolicies } from "./EditNewPolicies";
+import { EditNewApis } from "./EditNewApis";
+import { EditNewEnvironments } from "./EditNewEnvironments";
+import { EditNewAttributes } from "./EditNewAttributes";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 export interface IManageNewApiProductProps {
   organizationId: string;
@@ -146,21 +147,6 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EMPTY_API_PRODUCT, 'create empty api product');
     try {
       const empty: TAPAdminPortalApiProductDisplay = APAdminPortalApiProductsDisplayService.create_Empty_ApAdminPortalApiProductDisplay();
-      // // set the business group info
-      // const _apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
-      //   organizationId: props.organizationId,
-      //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
-      // });
-      // const _apExternalBusinessGroupReference: TAPExternalBusinessGroupReference | undefined = _apBusinessGroupDisplay.apExternalReference ? { 
-      //   apEntityId: {
-      //     id: _apBusinessGroupDisplay.apExternalReference.externalId, 
-      //     displayName: _apBusinessGroupDisplay.apExternalReference.displayName  
-      //   },
-      //   apExternalSystemEntityId: {
-      //     id: _apBusinessGroupDisplay.apExternalReference.externalSystemId,
-      //     displayName: _apBusinessGroupDisplay.apExternalReference.externalSystemDisplayName
-      //   }
-      // } : undefined;
       const _businessGroupInfo: TAPManagedAssetBusinessGroupInfo = {
         apOwningBusinessGroupEntityId: userContext.runtimeSettings.currentBusinessGroupEntityId
       };
@@ -173,6 +159,8 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
         apManagedAssetDisplay: empty,
         apOwnerInfo: userContext.apLoginUserDisplay.apEntityId
       });
+      // create a suggested next version
+      empty.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NewVersion();
       setManagedObject(empty);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -370,65 +358,71 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
             <React.Fragment>
-              <NewGeneral
+              <EditNewGeneral
+                action={EAction.NEW}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
-                onBack={() => {}}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-                onNext={onNext_From_General}
+                onSaveChanges={onNext_From_General}
+                onBack={() => {}}
               />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='APIs' disabled={!showApis}>
             <React.Fragment>
-              <NewApis
+              <EditNewApis
+                action={EAction.NEW}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
-                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-                onNext={onNext_From_Apis}
+                onSaveChanges={onNext_From_Apis}
+                onBack={onBack}
               />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Policies' disabled={!showPolicies}>
             <React.Fragment>
-              <NewPolicies
+              <EditNewPolicies
+                action={EAction.NEW}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
-                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-                onNext={onNext_From_Policies}
+                onSaveChanges={onNext_From_Policies}
+                onBack={onBack}
               />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Environments' disabled={!showEnvironments}>
             <React.Fragment>
-              <NewEnvironments
+              <EditNewEnvironments
+                action={EAction.NEW}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
-                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-                onNext={onNext_From_Environments}
+                onSaveChanges={onNext_From_Environments}
+                onBack={onBack}
               />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Attributes' disabled={!showAttributes}>
             <React.Fragment>
-              <NewAttributes
+              <EditNewAttributes
+                action={EAction.NEW}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
-                onBack={onBack}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
-                onNext={onNext_From_Attributes}
+                onLoadingChange={props.onLoadingChange}
+                onSaveChanges={onNext_From_Attributes}
+                onBack={onBack} 
               />
             </React.Fragment>
           </TabPanel>

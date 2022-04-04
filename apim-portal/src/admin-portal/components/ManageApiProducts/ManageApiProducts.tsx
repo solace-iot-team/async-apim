@@ -82,9 +82,10 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT:
+          case E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT:
           case E_CALL_STATE_ACTIONS.API_CREATE_API_PRODUCT:
           case E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT:
+          case E_CALL_STATE_ACTIONS.APPLY_CHANGES:
             props.onSuccess(apiCallStatus);
             break;
           default:
@@ -151,18 +152,27 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isManagedObjectDeleteAllowed} />        
         </React.Fragment>
       );
-      }
+    }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;
   }
+  const renderRightToolbarContent = (): JSX.Element | undefined => {
+    if(showViewComponent) {
+      return (
+        <React.Fragment>
+          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isManagedObjectDeleteAllowed} style={{ color: "red", borderColor: 'red'}} />        
+        </React.Fragment>
+      );
+    }
+  }
   const renderToolbar = (): JSX.Element => {
+    const rightToolbarTemplate: JSX.Element | undefined = renderRightToolbarContent();
     const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
-    if(leftToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} />);
-    else return (<React.Fragment></React.Fragment>);
+    if(leftToolbarTemplate || rightToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate} />);
+    else return (<></>);
   }
   
   // * prop callbacks *
@@ -193,6 +203,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -328,6 +339,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateToCommand={onSetManageObjectComponentState}
+          onUserFeedback={onSubComponentSuccessNoChange}
         />
       }
     </div>

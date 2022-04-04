@@ -1,6 +1,5 @@
 
 import React from "react";
-// import { useForm, Controller } from 'react-hook-form';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -10,24 +9,25 @@ import APAdminPortalApiProductsDisplayService, {
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPApiProductDisplay_Apis } from "../../../../displayServices/APApiProductsDisplayService";
+import { EditNewApisForm } from "./EditNewApisForm";
+import { ButtonLabel_EditSaveChanges, EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewApisForm } from "./EditNewApisForm";
-import { EAction } from "../ManageApiProductsCommon";
 
-export interface INewApisProps {
+export interface IEditNewApisProps {
+  action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
-  onBack: () => void;
+  onSaveChanges: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
+  onBack?: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
-  const ComponentName = 'NewApis';
+export const EditNewApis: React.FC<IEditNewApisProps> = (props: IEditNewApisProps) => {
+  const ComponentName = 'EditNewApis';
 
   type TManagedObject = TAPApiProductDisplay_Apis;
   
@@ -41,14 +41,23 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     }));
   }
 
+  const validateProps = () => {
+    const funcName = 'validateProps';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.action === EAction.NEW) {
+      if(props.onBack === undefined) throw new Error(`${logName}: props.onBack === undefined`);
+    }
+  }
+
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    validateProps();
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    props.onNext(mo);
+    props.onSaveChanges(mo);
   }
 
   const onSubmit = (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => {
@@ -59,7 +68,9 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+          {props.action === EAction.NEW && 
+            <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+          }
           <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
         </React.Fragment>
       );
@@ -67,7 +78,12 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          {props.action === EAction.NEW && 
+            <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          }
+          {props.action === EAction.EDIT && 
+            <Button key={ComponentName+'Save'} form={formId} type="submit" label={ButtonLabel_EditSaveChanges} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+          }
         </React.Fragment>
       );
     }  
@@ -82,7 +98,7 @@ export const NewApis: React.FC<INewApisProps> = (props: INewApisProps) => {
         <div className="p-fluid">
           <EditNewApisForm
             formId={formId}
-            action={EAction.NEW}
+            action={props.action}
             organizationId={props.organizationId}
             apApiProductDisplay_Apis={mo}
             onError={props.onError}

@@ -6,7 +6,6 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
-  Meta,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
@@ -28,10 +27,9 @@ import {
 } from './APEnvironmentsDisplayService';
 import { 
   APManagedAssetDisplayService, 
-  IAPManagedAssetDisplay, 
-  TAPManagedAssetDisplay_Attributes,
-  TAPMeta,
+  IAPManagedAssetDisplay,
 } from './APManagedAssetDisplayService';
+import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APProtocolsDisplayService, { 
   TAPProtocolDisplayList 
 } from './APProtocolsDisplayService';
@@ -43,6 +41,7 @@ export type TAPControlledChannelParameterList = Array<TAPControlledChannelParame
 export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
   apDescription: string;
   apApiProductCategoryDisplayName: string;  
+  apVersionInfo: IAPVersionInfo;
 }
 export type TAPApiProductDisplay_Policies = IAPEntityIdDisplay & {
   apApprovalType: APIProduct.approvalType;
@@ -56,6 +55,9 @@ export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
   apApiDisplayList: TAPApiDisplayList;
   apControlledChannelParameterList: TAPControlledChannelParameterList;
 }
+// export type TAPApiProductDisplay_VersionInfo = IAPEntityIdDisplay & {
+//   apVersionInfo: IAPVersionInfo;
+// }
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
   requireQueue: boolean;
@@ -91,7 +93,7 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   apVersionInfo: IAPVersionInfo;
 
   // meta
-  apMeta?: TAPMeta;
+  apMetaInfo: TAPMetaInfo;
 }
 export type TAPApiProductDisplayList = Array<IAPApiProductDisplay>;
 
@@ -200,6 +202,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apProtocolDisplayList: [],
       apApiProductCategoryDisplayName: '',
       apVersionInfo: APVersioningDisplayService.create_Empty_ApVersionInfo(),
+      apMetaInfo: APMetaInfoDisplayService.create_Empty_ApMetaInfo(),
     };
     return apApiProductDisplay;
   }
@@ -278,10 +281,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisions: connectorRevisions,
         currentVersion: currentVersion,
        }),
-      //  apEntityId: {
-      //    ..._base.apEntityId,
-      //    version: currentVersion
-      //  }
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
     return apApiProductDisplay;
   }
@@ -328,6 +328,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEntityId: apApiProductDisplay.apEntityId,
       apDescription: apApiProductDisplay.apDescription,
       apApiProductCategoryDisplayName: apApiProductDisplay.apApiProductCategoryDisplayName,
+      apVersionInfo: apApiProductDisplay.apVersionInfo,
     };
     return apApiProductDisplay_General;
   }
@@ -344,6 +345,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay.apDescription = apApiProductDisplay_General.apDescription;
     apApiProductDisplay.apApiProductCategoryDisplayName = apApiProductDisplay_General.apApiProductCategoryDisplayName;
     apApiProductDisplay.apEntityId = apApiProductDisplay_General.apEntityId;
+    apApiProductDisplay.apVersionInfo = apApiProductDisplay_General.apVersionInfo;
     return apApiProductDisplay;
   }
 
@@ -404,9 +406,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEntityId: apApiProductDisplay.apEntityId,
       apApiDisplayList: apApiProductDisplay.apApiDisplayList,
       apControlledChannelParameterList: apApiProductDisplay.apControlledChannelParameterList,      
-      // internalReference: {
-      //   apComplete_ApAttributeDisplayList: apApiProductDisplay.apComplete_ApAttributeDisplayList,
-      // },
     };
     return apApiProductDisplay_Apis;
   }
@@ -426,6 +425,24 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     return apApiProductDisplay;
   }
+
+  // public get_ApApiProductDisplay_VersionInfo({ apApiProductDisplay }: {
+  //   apApiProductDisplay: IAPApiProductDisplay;
+  // }): TAPApiProductDisplay_VersionInfo {
+  //   const apApiProductDisplay_VersionInfo: TAPApiProductDisplay_VersionInfo = {
+  //     apEntityId: apApiProductDisplay.apEntityId,
+  //     apVersionInfo: apApiProductDisplay.apVersionInfo
+  //   };
+  //   return apApiProductDisplay_VersionInfo;
+  // }
+
+  // public set_ApApiProductDisplay_VersionInfo({ apApiProductDisplay, apApiProductDisplay_VersionInfo}:{
+  //   apApiProductDisplay: IAPApiProductDisplay;
+  //   apApiProductDisplay_VersionInfo: TAPApiProductDisplay_VersionInfo;
+  // }): IAPApiProductDisplay {
+  //   apApiProductDisplay.apVersionInfo = apApiProductDisplay_VersionInfo.apVersionInfo;
+  //   return apApiProductDisplay;
+  // }
 
   public async create_Complete_ApAttributeList({ organizationId, apManagedAssetDisplay }:{
     organizationId: string;
@@ -521,133 +538,34 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   
   }
 
-  public async apiUpdate_ApApiProductDisplay_General({ organizationId, apApiProductDisplay, apApiProductDisplay_General }:{
+  public async apiUpdate_ApApiProductDisplay({ organizationId, apApiProductDisplay }:{
     organizationId: string;
     apApiProductDisplay: IAPApiProductDisplay;
-    apApiProductDisplay_General: TAPApiProductDisplay_General;
-  }): Promise<void> {
-        
+  }): Promise<void> { 
+
     const update: APIProductPatch = {
-      displayName: apApiProductDisplay_General.apEntityId.displayName,
-      description: apApiProductDisplay_General.apDescription,
+      displayName: apApiProductDisplay.apEntityId.displayName,
+      description: apApiProductDisplay.apDescription,
+      approvalType: apApiProductDisplay.apApprovalType,
+      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay.apClientOptionsDisplay),
+      environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apEnvironmentDisplayList),
+      protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
+        apProtocolDisplayList: apApiProductDisplay.apProtocolDisplayList
+      }),
+      apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
+      meta: {
+        version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
+      }
     };
 
     // always update with the full attribute list
     await this.apiUpdate({
       organizationId: organizationId,
-      apiProductId: apApiProductDisplay_General.apEntityId.id,
-      apiProductUpdate: update,
-      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
-        organizationId: organizationId,
-        apManagedAssetDisplay: apApiProductDisplay
-      })
-    });
-
-  }
-
-  /**
-   * Updates the attributes from apApiProductDisplay.
-   */
-  public async apiUpdate_ApApiProductDisplay_Attributes({ organizationId, apApiProductDisplay, apManagedAssetDisplay_Attributes }:{
-    organizationId: string;
-    apApiProductDisplay: IAPApiProductDisplay;
-    apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
-  }): Promise<void> {
-
-    const working_apApiProductDisplay: IAPApiProductDisplay = JSON.parse(JSON.stringify(apApiProductDisplay));
-
-    this.set_ApManagedAssetDisplay_Attributes({
-      apManagedAssetDisplay: working_apApiProductDisplay,
-      apManagedAssetDisplay_Attributes: apManagedAssetDisplay_Attributes
-    });
-
-    await this.apiUpdate({
-      organizationId: organizationId,
       apiProductId: apApiProductDisplay.apEntityId.id,
-      apiProductUpdate: {},
-      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
-        organizationId: organizationId,
-        apManagedAssetDisplay: working_apApiProductDisplay
-      })
-    });
-
-  }
-
-  public async apiUpdate_ApApiProductDisplay_Policies({ organizationId, apApiProductDisplay, apApiProductDisplay_Policies }:{
-    organizationId: string;
-    apApiProductDisplay: IAPApiProductDisplay;
-    apApiProductDisplay_Policies: TAPApiProductDisplay_Policies;
-  }): Promise<void> {
-
-    const update: APIProductPatch = {
-      approvalType: apApiProductDisplay_Policies.apApprovalType,
-      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay_Policies.apClientOptionsDisplay)
-    };
-
-    await this.apiUpdate({
-      organizationId: organizationId,
-      apiProductId: apApiProductDisplay_Policies.apEntityId.id,
       apiProductUpdate: update,
       apRawAttributeList: await this.create_Complete_ApRawAttributeList({
         organizationId: organizationId,
         apManagedAssetDisplay: apApiProductDisplay
-      })
-    });
-
-  }
-
-  public async apiUpdate_ApApiProductDisplay_Environments({ organizationId, apApiProductDisplay_Environments, apApiProductDisplay }:{
-    organizationId: string;
-    apApiProductDisplay: IAPApiProductDisplay;
-    apApiProductDisplay_Environments: TAPApiProductDisplay_Environments;
-  }): Promise<void> {
-
-    const update: APIProductPatch = {
-      environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay_Environments.apEnvironmentDisplayList),
-      protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
-        apProtocolDisplayList: apApiProductDisplay_Environments.apProtocolDisplayList
-      })
-    };
-
-    await this.apiUpdate({
-      organizationId: organizationId,
-      apiProductId: apApiProductDisplay_Environments.apEntityId.id,
-      apiProductUpdate: update,
-      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
-        organizationId: organizationId,
-        apManagedAssetDisplay: apApiProductDisplay
-      })
-    });
-
-  }
-
-  /**
-   * Update Apis sections.
-   * Requires the apApiProductDisplay to generate the complete raw attribute list.
-   */
-  public async apiUpdate_ApApiProductDisplay_Apis({ organizationId, apApiProductDisplay, apApiProductDisplay_Apis }:{
-    organizationId: string;
-    apApiProductDisplay: IAPApiProductDisplay;
-    apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
-  }): Promise<void> {
-
-    const working_apApiProductDisplay: IAPApiProductDisplay = JSON.parse(JSON.stringify(apApiProductDisplay));
-    this.set_ApApiProductDisplay_Apis({
-      apApiProductDisplay: working_apApiProductDisplay,
-      apApiProductDisplay_Apis: apApiProductDisplay_Apis
-    });
-
-    const update: APIProductPatch = {
-      apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay_Apis.apApiDisplayList),
-    };
-
-    await this.apiUpdate({
-      organizationId: organizationId,
-      apiProductId: apApiProductDisplay_Apis.apEntityId.id,
-      apiProductUpdate: update,
-      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
-        organizationId: organizationId,
-        apManagedAssetDisplay: working_apApiProductDisplay
       })
     });
 
@@ -684,7 +602,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
         apProtocolDisplayList: apApiProductDisplay.apProtocolDisplayList
       }),
-      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay.apClientOptionsDisplay)
+      clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay.apClientOptionsDisplay),
+      meta: {
+        version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
+      }
     }
 
     await ApiProductsService.createApiProduct({

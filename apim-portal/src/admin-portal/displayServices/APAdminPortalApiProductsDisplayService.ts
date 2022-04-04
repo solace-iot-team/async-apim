@@ -105,7 +105,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return connectorApiProductList;
   }
 
-
   public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId, default_ownerId }: {
     organizationId: string;
     businessGroupId: string;
@@ -202,29 +201,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return apAdminPortalApiProductDisplay;
   }
 
-  // public async createAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
-  //   organizationId: string;
-  //   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  // }): Promise<void> {
-
-  //   // TODO: CUSTOM ATTRIBUTES into attributes
-  //   await super.createApApiProductDisplay({
-  //     organizationId: organizationId,
-  //     apApiProductDisplay: apAdminPortalApiProductDisplay
-  //   });
-
-  // }
-
-  // public async updateAdminPortalApApiProductDisplay({ organizationId, apAdminPortalApiProductDisplay }: {
-  //   organizationId: string;
-  //   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  // }): Promise<void> {
-  //   // TODO: CUSTOM ATTRIBUTES into attributes
-  //   await super.updateApApiProductDisplay({
-  //     organizationId: organizationId,
-  //     apApiProductDisplay: apAdminPortalApiProductDisplay
-  //   });
-  // }
 }
 
 export default new APAdminPortalApiProductsDisplayService();
