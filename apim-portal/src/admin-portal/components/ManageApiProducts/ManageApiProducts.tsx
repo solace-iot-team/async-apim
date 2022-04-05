@@ -83,7 +83,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         switch (apiCallStatus.context.action) {
           case E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT:
           case E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT:
-          case E_CALL_STATE_ACTIONS.APPLY_CHANGES:
             props.onSuccess(apiCallStatus);
             break;
           default:
@@ -116,13 +115,11 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     onEditManagedObject(managedObjectEntityId);
   }
-
   const onEditManagedObject = (moEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(moEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
-
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
@@ -130,7 +127,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     onDeleteManagedObject(managedObjectEntityId);
   }
-
   const onDeleteManagedObject = (moEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(moEntityId);
@@ -242,7 +238,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
-      setShowDeleteComponent(false)
+      setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
@@ -326,37 +322,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onEditNewSuccess={onNewManagedObjectSuccess}
           onUserNotification={onSubComponentUserNotification}
-
-
-  // /** both */
-
-  // action: EAction;
-  // organizationId: string;
-  // onError: (apiCallState: TApiCallState) => void;
-  // // onSuccessNotification: (apiCallState: TApiCallState) => void;
-  // onCancel: () => void;
-  // onLoadingChange: (isLoading: boolean) => void;
-  // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  // onEditNewSuccess: (apiCallState: TApiCallState, apiProductEntityId: TAPEntityId) => void;
-
-  // /** edit: required */
-  // apiProductEntityId?: TAPEntityId;
-  // onNavigateToCommand?: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
-
-
         />
-        // <ManagedNewApiProduct
-        //   organizationId={props.organizationEntityId.id}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNewSuccess={onNewManagedObjectSuccess}
-        //   onSuccessNotification={props.onSuccess}
-        // />
       }
       {showEditComponent && managedObjectEntityId &&
-
         <ManageEditNewApiProduct
           action={EAction.EDIT}
           organizationId={props.organizationEntityId.id}
@@ -369,18 +337,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onNavigateToCommand={onSetManageObjectComponentState}
           onUserNotification={onSubComponentUserNotification}
         />
-
-        // <ManageEditApiProduct
-        //   organizationId={props.organizationEntityId.id}
-        //   apiProductEntityId={managedObjectEntityId}
-        //   onSaveSuccess={onEditSaveManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateToCommand={onSetManageObjectComponentState}
-        //   onUserFeedback={onSubComponentSuccessNoChange}
-        // />
       }
     </div>
   );

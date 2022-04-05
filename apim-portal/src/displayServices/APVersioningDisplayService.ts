@@ -61,8 +61,16 @@ class APVersioningDisplayService {
     versionSemVer.inc("minor");
     return versionSemVer.format();
   }
+  
+  public create_NextLifecycleUpdateVersion(version: string): string {
+    const versionSemVer = new SemVer(version);
+    versionSemVer.inc("patch");
+    return versionSemVer.format();
+  }
 
-  public is_GreaterThan(lastVersion: string, newVersion: string): boolean {
+  public is_NewVersion_GreaterThan_LastVersion({ newVersion, lastVersion }:{
+    lastVersion: string, newVersion: string
+  }): boolean {
     const lastVersionSemVer = new SemVer(lastVersion);
     if(lastVersionSemVer.compare(newVersion) === -1) return true;
     return false;

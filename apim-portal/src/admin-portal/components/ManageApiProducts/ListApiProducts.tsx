@@ -152,9 +152,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const nameBodyTemplate = (row: TManagedObject): string => {
     return row.apEntityId.displayName;
   }
-  const approvalTypeTemplate = (row: TManagedObject): string => {
-    return row.apApprovalType;
-  }
+  // const approvalTypeTemplate = (row: TManagedObject): string => {
+  //   return row.apApprovalType;
+  // }
   // const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
   //   return (
   //     <div>
@@ -174,19 +174,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   // const apEntityIdBodyTemplate = (row: TManagedObject) => {
   //   return JSON.stringify(row.apEntityId);
   // }
-  // const accessLevelTemplate = (rowData: TManagedObjectTableDataRow): string => {
-  //   return rowData.connectorApiProduct.accessLevel ? rowData.connectorApiProduct.accessLevel : '?';
-  // }
-  // const protocolsTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-  //   return APRenderUtils.renderStringListAsDivList(rowData.apProtocolDisplayNameList);
-  // }
+  const accessLevelTemplate = (row: TManagedObject): string => {
+    return row.apAccessLevel;
+  }
+  const stateTemplate = (row: TManagedObject): string => {
+    return row.apLifecycleInfo.apLifecycleState;
+  }
   const renderManagedObjectDataTable = () => {
     const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
     const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAdminPortalApiProductsDisplayService.nameOf('apSearchContent');
-    const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf_ConnectorApiProduct('approvalType');
-    // const gmSortField = APAdminPortalApiProductsDisplayService.nameOf('apIsGuaranteedMessagingEnabled');
-    // const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
+    const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
+    // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
+    const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
+    const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleInfo('apLifecycleState');
     return (
       <div className="card">
         <DataTable
@@ -214,9 +214,11 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
           <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-          <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable />
+          <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable />
+          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
+
+          {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
           {/* <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable /> */}
-          {/* <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField="connectorApiProduct.accessLevel" sortable /> */}
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
 
 
@@ -228,7 +230,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
           <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
-          {/* <Column header="Protocols" body={protocolsTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
           <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>
@@ -273,13 +274,13 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header='API Products:' notes="TODO: quick filter by lifecycle status"/>
+      <APComponentHeader header='API Products:' />
 
-      {renderBusinessGroupInfo()}
+      <div className="p-mt-2">{renderBusinessGroupInfo()}</div>
       
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      <div className="p-mt-4">
+      <div className="p-mt-2">
         {isInitialized && renderContent()}
       </div>
       

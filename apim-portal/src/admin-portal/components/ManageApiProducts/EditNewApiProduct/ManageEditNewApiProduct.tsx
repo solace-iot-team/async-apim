@@ -8,18 +8,18 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { 
+  TAPApiProductDisplay_AccessAndState,
   TAPApiProductDisplay_Apis, 
   TAPApiProductDisplay_Environments, 
   TAPApiProductDisplay_General, 
   TAPApiProductDisplay_Policies 
 } from "../../../../displayServices/APApiProductsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes, TAPManagedAssetLifecycleInfo } from "../../../../displayServices/APManagedAssetDisplayService";
 import { EditNewGeneral } from "./EditNewGeneral";
 import { EditNewPolicies } from "./EditNewPolicies";
 import { EditNewApis } from "./EditNewApis";
@@ -27,11 +27,13 @@ import { EditNewEnvironments } from "./EditNewEnvironments";
 import { EditNewAttributes } from "./EditNewAttributes";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
+import { EditNewAccessAndState } from "./EditNewAccessAndState";
+import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 
 export interface IManageEditNewApiProductProps {
   /** both */
@@ -82,7 +84,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       case E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS:
         return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES);
       case E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES:
-        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.REVIEW);
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE);
+      case E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.REVIEW);  
       case E_COMPONENT_STATE_EDIT_NEW.REVIEW:
         return;
       default:
@@ -104,8 +108,10 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.POLICIES);
       case E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES:
         return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS);
-      case E_COMPONENT_STATE_EDIT_NEW.REVIEW:
+      case E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE:
         return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES);
+      case E_COMPONENT_STATE_EDIT_NEW.REVIEW:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE);
       default:
         Globals.assertNever(logName, componentState.currentState);
     }
@@ -116,7 +122,8 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     [E_COMPONENT_STATE_EDIT_NEW.POLICIES, 2],
     [E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS, 3],
     [E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES, 4],
-    [E_COMPONENT_STATE_EDIT_NEW.REVIEW, 5]
+    [E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE, 5],
+    [E_COMPONENT_STATE_EDIT_NEW.REVIEW, 6]
   ]);
   const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_EDIT_NEW) => {
     const funcName = 'setActiveTabIndexByComponentState';
@@ -133,12 +140,12 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const [showPolicies, setShowPolicies] = React.useState<boolean>(false);
   const [showEnvironments, setShowEnvironments] = React.useState<boolean>(false);
   const [showAttributes, setShowAttributes] = React.useState<boolean>(false);
+  const [showAccessAndState, setShowAccessAndState] = React.useState<boolean>(false);
   const [showReview, setShowReview] = React.useState<boolean>(false);
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   const [userContext] = React.useContext(UserContext);
 
@@ -254,18 +261,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   if(props.action !== EAction.EDIT) return;
-  //   if(managedObject === undefined) return;
-  //   if(refreshCounter > 0) setApiCallStatus(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.APPLY_CHANGES, `changes applied for: ${managedObject.apEntityId.displayName}`));
-  //   setRefreshCounter(refreshCounter + 1);
-  // }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      // if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT) props.onEditNewSuccess(apiCallStatus, );
-      // if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.APPLY_CHANGES) props.onUserFeedback(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -280,6 +278,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(false);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(false);
       return;
     }
@@ -289,6 +288,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(false);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.APIS) {
@@ -297,6 +297,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(false);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.POLICIES) {
@@ -305,6 +306,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(true);
       setShowEnvironments(false);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS) {
@@ -313,6 +315,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(true);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES) {
@@ -321,6 +324,16 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(false);
       setShowAttributes(true);
+      setShowAccessAndState(false);
+      setShowReview(false);
+    }
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.ACCESS_AND_STATE) {
+      setShowGeneral(false);
+      setShowApis(false);
+      setShowPolicies(false);
+      setShowEnvironments(false);
+      setShowAttributes(false);
+      setShowAccessAndState(true);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.REVIEW) {
@@ -329,6 +342,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       setShowPolicies(false);
       setShowEnvironments(false);
       setShowAttributes(false);
+      setShowAccessAndState(false);
       setShowReview(true);
     }
     // set the tabIndex
@@ -409,6 +423,20 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     setNextComponentState();
   }
 
+  const onNext_From_AccessAndState = (apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState) => {
+    const funcName = 'onNext_From_AccessAndState';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+    const newMo: TManagedObject = APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_AccessAndState({ 
+      apApiProductDisplay: managedObject,
+      apApiProductDisplay_AccessAndState: apApiProductDisplay_AccessAndState
+    }) as TManagedObject;
+
+    setManagedObject(newMo);
+    setNextComponentState();
+  }
+
   const onBack = () => {
     setPreviousComponentState();
   }
@@ -422,12 +450,22 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       <div><b>Business Group:</b> {businessGroupDisplayName}</div>
     );
   }
-
   const renderVersionInfo = (version: string): JSX.Element => {
     return (
       <div><b>Current Version:</b> {version}</div>
     );
   }
+  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+    return(
+      <div><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</div>
+    );
+  }
+  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
+    return(
+      <div><b>Access: </b>{accessLevel}</div>
+    );
+  }
+
   const renderComponent = (mo: TManagedObject) => {
 
     return (
@@ -435,6 +473,8 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         <div className="p-mt-4">
           {renderBusinessGroupInfo(mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName)}
           {renderVersionInfo(mo.apVersionInfo.apLastVersion)}
+          {renderState(mo.apLifecycleInfo)}
+          {renderAccessLevel(mo.apAccessLevel)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
@@ -503,6 +543,20 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
                 onSaveChanges={onNext_From_Attributes}
+                onBack={onBack} 
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Access & State' disabled={!showAccessAndState}>
+            <React.Fragment>
+              <EditNewAccessAndState
+                action={props.action}
+                organizationId={props.organizationId}
+                apAdminPortalApiProductDisplay={mo}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onLoadingChange={props.onLoadingChange}
+                onSaveChanges={onNext_From_AccessAndState}
                 onBack={onBack} 
               />
             </React.Fragment>

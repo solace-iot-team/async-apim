@@ -11,6 +11,7 @@ import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
 } from '../utils/APEntityIdsService';
+import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
@@ -28,6 +29,7 @@ import {
 import { 
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay,
+  TAPManagedAssetLifecycleInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APProtocolsDisplayService, { 
@@ -55,9 +57,13 @@ export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
   apApiDisplayList: TAPApiDisplayList;
   apControlledChannelParameterList: TAPControlledChannelParameterList;
 }
-// export type TAPApiProductDisplay_VersionInfo = IAPEntityIdDisplay & {
-//   apVersionInfo: IAPVersionInfo;
-// }
+
+export type TAPApiProductDisplay_AccessAndState = IAPEntityIdDisplay & {
+  apLifecycleInfo: TAPManagedAssetLifecycleInfo;
+  apAccessLevel: APIProductAccessLevel;
+  // add: sharing info for business group
+  // add: changing business group info
+}
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
   requireQueue: boolean;
@@ -94,6 +100,9 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
 
   // meta
   apMetaInfo: TAPMetaInfo;
+
+  // access & state
+  apAccessLevel: APIProductAccessLevel;
 }
 export type TAPApiProductDisplayList = Array<IAPApiProductDisplay>;
 
@@ -105,9 +114,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   public nameOf<IAPApiProductDisplay>(name: keyof IAPApiProductDisplay) {
     return name;
-  }
-  public nameOf_ConnectorApiProduct(name: keyof APIProduct) {
-    return `${this.nameOf('connectorApiProduct')}.${name}`;
   }
 
   // private filterConnectorApiProductList(connectorApiProductList: Array<APIProduct>, includeAccessLevel?: APIProductAccessLevel): Array<APIProduct> {
@@ -203,6 +209,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apApiProductCategoryDisplayName: '',
       apVersionInfo: APVersioningDisplayService.create_Empty_ApVersionInfo(),
       apMetaInfo: APMetaInfoDisplayService.create_Empty_ApMetaInfo(),
+      apAccessLevel: APAccessLevelDisplayService.get_Default_AccessLevel(),
     };
     return apApiProductDisplay;
   }
@@ -282,6 +289,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         currentVersion: currentVersion,
        }),
        apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel())
     };
     return apApiProductDisplay;
   }
@@ -415,7 +423,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
    * Does NOT set the apEntityId. 
    * Makes a copy of apApiProductDisplay_Apis.
   */
-   public set_ApApiProductDisplay_Apis({ apApiProductDisplay, apApiProductDisplay_Apis }:{
+  public set_ApApiProductDisplay_Apis({ apApiProductDisplay, apApiProductDisplay_Apis }:{
     apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
   }): IAPApiProductDisplay {
@@ -426,23 +434,30 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay;
   }
 
-  // public get_ApApiProductDisplay_VersionInfo({ apApiProductDisplay }: {
-  //   apApiProductDisplay: IAPApiProductDisplay;
-  // }): TAPApiProductDisplay_VersionInfo {
-  //   const apApiProductDisplay_VersionInfo: TAPApiProductDisplay_VersionInfo = {
-  //     apEntityId: apApiProductDisplay.apEntityId,
-  //     apVersionInfo: apApiProductDisplay.apVersionInfo
-  //   };
-  //   return apApiProductDisplay_VersionInfo;
-  // }
+  public get_ApApiProductDisplay_AccessAndState({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_AccessAndState {
+    const apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apAccessLevel: apApiProductDisplay.apAccessLevel,
+      apLifecycleInfo: apApiProductDisplay.apLifecycleInfo,
+    };
+    return apApiProductDisplay_AccessAndState;
+  }
 
-  // public set_ApApiProductDisplay_VersionInfo({ apApiProductDisplay, apApiProductDisplay_VersionInfo}:{
-  //   apApiProductDisplay: IAPApiProductDisplay;
-  //   apApiProductDisplay_VersionInfo: TAPApiProductDisplay_VersionInfo;
-  // }): IAPApiProductDisplay {
-  //   apApiProductDisplay.apVersionInfo = apApiProductDisplay_VersionInfo.apVersionInfo;
-  //   return apApiProductDisplay;
-  // }
+  /** 
+   * Set the access & state properties. 
+   * Does NOT set the apEntityId. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+   public set_ApApiProductDisplay_AccessAndState({ apApiProductDisplay, apApiProductDisplay_AccessAndState }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
+  }): IAPApiProductDisplay {
+    apApiProductDisplay.apAccessLevel = apApiProductDisplay_AccessAndState.apAccessLevel;
+    apApiProductDisplay.apLifecycleInfo = apApiProductDisplay_AccessAndState.apLifecycleInfo;
+    return apApiProductDisplay;
+  }
 
   public async create_Complete_ApAttributeList({ organizationId, apManagedAssetDisplay }:{
     organizationId: string;
@@ -555,7 +570,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
       meta: {
         version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
-      }
+      },
+      accessLevel: apApiProductDisplay.apAccessLevel
     };
 
     // always update with the full attribute list

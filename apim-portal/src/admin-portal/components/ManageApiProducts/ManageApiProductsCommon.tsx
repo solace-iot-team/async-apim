@@ -3,6 +3,7 @@ export const ButtonLabel_Next = "Next";
 export const ButtonLabel_Back = "Back";
 export const ButtonLabel_Cancel = "Cancel";
 export const ButtonLabel_Create = "Create";
+export const ButtonLabel_SaveLifecycle = "Update";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -18,7 +19,6 @@ export enum E_CALL_STATE_ACTIONS {
   API_GET_ENVIRONMENT_LIST = "API_GET_ENVIRONMENT_LIST",  
   API_GET_API_INFO_LIST = "API_GET_API_INFO_LIST",
   API_CHECK_API_PRODUCT_ID_EXISTS = "API_CHECK_API_PRODUCT_ID_EXISTS",
-  APPLY_CHANGES = "APPLY_CHANGES",
 }
 
 export enum E_COMPONENT_STATE {
@@ -27,7 +27,7 @@ export enum E_COMPONENT_STATE {
   MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
   MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
   MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-  MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW"
+  MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
 }
 
 export enum E_COMPONENT_STATE_EDIT_NEW {
@@ -37,5 +37,6 @@ export enum E_COMPONENT_STATE_EDIT_NEW {
   POLICIES = "POLICIES",
   ENVIRONMENTS = "ENVIRONMENTS",
   ATTRIBUTES = "ATTRIBUTES",
+  ACCESS_AND_STATE = "ACCESS_AND_STATE",
   REVIEW = "REVIEW"
 }

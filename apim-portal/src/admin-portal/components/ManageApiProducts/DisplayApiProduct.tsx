@@ -20,7 +20,7 @@ import APEntityIdsService, {
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
@@ -28,6 +28,7 @@ import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApi
 import { Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
+import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -288,6 +289,18 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return (<></>);
   }
 
+  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+    return(
+      <span><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</span>
+    );
+  }
+
+  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
+    return(
+      <span><b>Access: </b>{accessLevel}</span>
+    );
+  }
+
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
@@ -296,8 +309,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
             <div>{renderBusinessGroup(mo.apBusinessGroupInfo)}</div>
             <div><b>Owner</b>: {renderOwner(mo.apOwnerInfo)}</div>
-
-            <div><b>Lifecycle</b>: TBD: Show Lifecycle status </div>
+            <div>{renderState(mo.apLifecycleInfo)}</div>
+            <div>{renderAccessLevel(mo.apAccessLevel)}</div>
 
             {/* DEBUG */}
             {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}

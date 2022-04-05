@@ -134,7 +134,10 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     if(isNewManagedObject()) return true;
-    if(APVersioningDisplayService.is_GreaterThan(managedObject.apVersionInfo.apLastVersion, newVersion)) return true;
+    if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
+      lastVersion: managedObject.apVersionInfo.apLastVersion, 
+      newVersion: newVersion
+    })) return true;
     return `New version must be greater than current version: ${managedObject.apVersionInfo.apLastVersion}.`
   }
 
