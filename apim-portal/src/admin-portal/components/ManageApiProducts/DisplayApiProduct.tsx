@@ -207,14 +207,11 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   }
 
   const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {    
-    // if(apManagedAssetBusinessGroupInfo.apBusinessGroupDisplayReference === undefined) return(
-    //   <span style={{ color: 'red' }}>None.</span>
-    // );
-    return (
-      <span>
-        {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
-      </span>
-    );
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      return (
+        <div><b>Business Group</b>: {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>
+      );
+    } else return (<></>);
   }
 
   const renderOwner = (apOwnerInfo: TAPEntityId): JSX.Element => {
@@ -278,9 +275,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
-        return renderVersionSelect();
+        return (
+          <div><b>Version: </b>{renderVersionSelect()}</div>
+        );
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
-        return (<span>{mo.apVersionInfo.apCurrentVersion}</span>);
+        return (
+          <div><b>New Version: {mo.apVersionInfo.apCurrentVersion}</b></div>
+        );
       default:
         Globals.assertNever(logName, props.scope);
     }
@@ -293,17 +294,17 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         <div className="api-product-view">
           <div className="api-product-view-detail-left">
 
-            <div><b>Business Group</b>: {renderBusinessGroup(mo.apBusinessGroupInfo)}</div>
+            <div>{renderBusinessGroup(mo.apBusinessGroupInfo)}</div>
             <div><b>Owner</b>: {renderOwner(mo.apOwnerInfo)}</div>
 
             <div><b>Lifecycle</b>: TBD: Show Lifecycle status </div>
 
             {/* DEBUG */}
-            <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div>
+            {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}
 
           </div>
           <div className="api-product-view-detail-right">
-            <div><b>Version: </b>{renderVersion(mo)}</div>
+            <div>{renderVersion(mo)}</div>
           </div>            
         </div>
       </div>  
@@ -432,13 +433,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     <React.Fragment>
       <div className="manage-api-products">
 
-        {managedObject && 
+        {props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING && managedObject && 
           <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} />
         }
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-        <div>DEBUG: selectedVersion = {selectedVersion}</div>
+        {/* <div>DEBUG: selectedVersion = {selectedVersion}</div> */}
 
         {managedObject && selectedVersion && renderManagedObject() }
 

@@ -11,7 +11,7 @@ import APAdminPortalApiProductsDisplayService, {
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPApiProductDisplay_Environments } from "../../../../displayServices/APApiProductsDisplayService";
 import { EditNewEnvironmentsForm } from "./EditNewEnvironmentsForm";
-import { ButtonLabel_EditSaveChanges, EAction } from "../ManageApiProductsCommon";
+import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -68,22 +68,15 @@ export const EditNewEnvironments: React.FC<IEditNewEnvironmentsProps> = (props: 
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
         <React.Fragment>
-          {props.action === EAction.NEW && 
-            <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
-          }
-          <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+          <Button key={ComponentName+ButtonLabel_Back} label={ButtonLabel_Back} icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+          <Button key={ComponentName+ButtonLabel_Cancel} type="button" label={ButtonLabel_Cancel} className="p-button-text p-button-plain" onClick={props.onCancel} />
         </React.Fragment>
       );
     }
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          {props.action === EAction.NEW && 
-            <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
-          }
-          {props.action === EAction.EDIT && 
-            <Button key={ComponentName+'Save'} form={formId} type="submit" label={ButtonLabel_EditSaveChanges} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-          }
+          <Button key={ComponentName+ButtonLabel_Next} form={formId} type="submit" label={ButtonLabel_Next} icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }  

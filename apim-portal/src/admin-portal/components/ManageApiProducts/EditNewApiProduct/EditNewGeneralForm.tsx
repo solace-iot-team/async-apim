@@ -108,8 +108,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope) {
-      managedObjectUseForm.reset({ formData: managedObjectFormDataEnvelope.formData });
-      // managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+      managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
     }
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -148,24 +147,12 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     return true;
   }
 
-  const renderChangeMessage = () => {
-    here
-    if(managedObjectUseForm.formState.isDirty) {
-      return (
-        <div className="p-mb-6">
-          <span style={{ color: 'red'}}>Please Apply Changes for them to take effect.</span>
-        </div>        
-      );
-    }
-  }
-
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">     
-            {renderChangeMessage()} 
             {/* Id */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">

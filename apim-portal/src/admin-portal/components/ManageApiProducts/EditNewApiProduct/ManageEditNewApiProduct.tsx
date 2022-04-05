@@ -1,6 +1,6 @@
 
 import React from "react";
-import { MenuItem } from "primereact/api";
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TabPanel, TabView } from "primereact/tabview";
 
 import { Globals } from "../../../../utils/Globals";
@@ -9,7 +9,7 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApiProductsCommon";
+import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
@@ -21,41 +21,47 @@ import {
 } from "../../../../displayServices/APApiProductsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
 import { EditNewGeneral } from "./EditNewGeneral";
-import { NewReviewAndCreate } from "./NewReviewAndCreate";
 import { EditNewPolicies } from "./EditNewPolicies";
 import { EditNewApis } from "./EditNewApis";
 import { EditNewEnvironments } from "./EditNewEnvironments";
 import { EditNewAttributes } from "./EditNewAttributes";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 
-export interface IManageNewApiProductProps {
+export interface IManageEditNewApiProductProps {
+  /** both */
+  action: EAction;
   organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
-  onSuccessNotification: (apiCallState: TApiCallState) => void;
-  onNewSuccess: (apiCallState: TApiCallState, newEntityId: TAPEntityId) => void;
+  onUserNotification: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onEditNewSuccess: (apiCallState: TApiCallState, apiProductEntityId: TAPEntityId) => void;
+  /** edit: required */
+  apiProductEntityId?: TAPEntityId;
+  onNavigateToCommand?: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
 }
 
-export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props: IManageNewApiProductProps) => {
-  const ComponentName = 'ManagedNewApiProduct';
+export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = (props: IManageEditNewApiProductProps) => {
+  const ComponentName = 'ManageEditNewApiProduct';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
   type TComponentState = {
-    previousState: E_COMPONENT_STATE_NEW,
-    currentState: E_COMPONENT_STATE_NEW
+    previousState: E_COMPONENT_STATE_EDIT_NEW,
+    currentState: E_COMPONENT_STATE_EDIT_NEW
   }
   const initialComponentState: TComponentState = {
-    previousState: E_COMPONENT_STATE_NEW.UNDEFINED,
-    currentState: E_COMPONENT_STATE_NEW.UNDEFINED
+    previousState: E_COMPONENT_STATE_EDIT_NEW.UNDEFINED,
+    currentState: E_COMPONENT_STATE_EDIT_NEW.UNDEFINED
   }
-  const setNewComponentState = (newState: E_COMPONENT_STATE_NEW) => {
+  const setNewComponentState = (newState: E_COMPONENT_STATE_EDIT_NEW) => {
     setComponentState({
       previousState: componentState.currentState,
       currentState: newState
@@ -65,19 +71,19 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     const funcName = 'setNextComponentState';
     const logName = `${ComponentName}.${funcName}()`;
     switch(componentState.currentState) {
-      case E_COMPONENT_STATE_NEW.UNDEFINED:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);
-      case E_COMPONENT_STATE_NEW.GENERAL:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.APIS);
-      case E_COMPONENT_STATE_NEW.APIS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.POLICIES);
-      case E_COMPONENT_STATE_NEW.POLICIES:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ENVIRONMENTS);
-      case E_COMPONENT_STATE_NEW.ENVIRONMENTS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ATTRIBUTES);
-      case E_COMPONENT_STATE_NEW.ATTRIBUTES:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.REVIEW);
-      case E_COMPONENT_STATE_NEW.REVIEW:
+      case E_COMPONENT_STATE_EDIT_NEW.UNDEFINED:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.GENERAL);
+      case E_COMPONENT_STATE_EDIT_NEW.GENERAL:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.APIS);
+      case E_COMPONENT_STATE_EDIT_NEW.APIS:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.POLICIES);
+      case E_COMPONENT_STATE_EDIT_NEW.POLICIES:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS);
+      case E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES);
+      case E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.REVIEW);
+      case E_COMPONENT_STATE_EDIT_NEW.REVIEW:
         return;
       default:
         Globals.assertNever(logName, componentState.currentState);
@@ -87,35 +93,32 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     const funcName = 'setPreviousComponentState';
     const logName = `${ComponentName}.${funcName}()`;
     switch(componentState.currentState) {
-      case E_COMPONENT_STATE_NEW.UNDEFINED:
-      case E_COMPONENT_STATE_NEW.GENERAL:
+      case E_COMPONENT_STATE_EDIT_NEW.UNDEFINED:
+      case E_COMPONENT_STATE_EDIT_NEW.GENERAL:
         return;
-      case E_COMPONENT_STATE_NEW.APIS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);
-      case E_COMPONENT_STATE_NEW.POLICIES:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.APIS);
-      case E_COMPONENT_STATE_NEW.ENVIRONMENTS:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.POLICIES);
-      case E_COMPONENT_STATE_NEW.ATTRIBUTES:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ENVIRONMENTS);
-      case E_COMPONENT_STATE_NEW.REVIEW:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ATTRIBUTES);
+      case E_COMPONENT_STATE_EDIT_NEW.APIS:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.GENERAL);
+      case E_COMPONENT_STATE_EDIT_NEW.POLICIES:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.APIS);
+      case E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.POLICIES);
+      case E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS);
+      case E_COMPONENT_STATE_EDIT_NEW.REVIEW:
+        return setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES);
       default:
         Globals.assertNever(logName, componentState.currentState);
     }
   }
-
-
-  const ComponentState2TabIndexMap = new Map<E_COMPONENT_STATE_NEW, number>([
-    [E_COMPONENT_STATE_NEW.GENERAL, 0],
-    [E_COMPONENT_STATE_NEW.APIS, 1],
-    [E_COMPONENT_STATE_NEW.POLICIES, 2],
-    [E_COMPONENT_STATE_NEW.ENVIRONMENTS, 3],
-    [E_COMPONENT_STATE_NEW.ATTRIBUTES, 4],
-    [E_COMPONENT_STATE_NEW.REVIEW, 5]
+  const ComponentState2TabIndexMap = new Map<E_COMPONENT_STATE_EDIT_NEW, number>([
+    [E_COMPONENT_STATE_EDIT_NEW.GENERAL, 0],
+    [E_COMPONENT_STATE_EDIT_NEW.APIS, 1],
+    [E_COMPONENT_STATE_EDIT_NEW.POLICIES, 2],
+    [E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS, 3],
+    [E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES, 4],
+    [E_COMPONENT_STATE_EDIT_NEW.REVIEW, 5]
   ]);
-
-  const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_NEW) => {
+  const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_EDIT_NEW) => {
     const funcName = 'setActiveTabIndexByComponentState';
     const logName = `${ComponentName}.${funcName}()`;
     const idx = ComponentState2TabIndexMap.get(state);
@@ -135,13 +138,19 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   const [userContext] = React.useContext(UserContext);
 
-  // * Api Calls *
+  // * Api Calls * 
 
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObject';
+    if(props.action === EAction.NEW) return apiGetManagedObject_New();
+    else return apiGetManagedObject_Edit();
+  }
+
+  const apiGetManagedObject_New = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObject_New';
     const logName = `${ComponentName}.${funcName}()`;
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_EMPTY_API_PRODUCT, 'create empty api product');
@@ -163,7 +172,29 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       empty.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NewVersion();
       setManagedObject(empty);
     } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const apiGetManagedObject_Edit = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObject_Edit';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.apiProductEntityId === undefined) throw new Error(`${logName}: props.apiProductEntityId === undefined`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductEntityId.displayName}`);
+    try { 
+      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        apiProductId: props.apiProductEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
+      });
+      // create a suggested next version
+      object.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(object.apVersionInfo.apLastVersion);
+      setManagedObject(object);
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
@@ -174,30 +205,76 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
-    setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);  
+    setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.GENERAL);  
+  }
+
+  const validateProps = () => {
+    const funcName = 'validateProps';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.action === EAction.EDIT) {
+      if(props.apiProductEntityId === undefined) throw new Error(`${logName}: props.apiProductEntityId === undefined`);
+      if(props.onNavigateToCommand === undefined) throw new Error(`${logName}: props.onNavigateToCommand === undefined`);
+    }
+  }
+
+  const ManagedEditApiProduct_onNavigateToCommand = (e: MenuItemCommandParams): void => {
+    const funcName = 'ManagedEditApiProduct_onNavigateToCommand';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.onNavigateToCommand === undefined) throw new Error(`${logName}: props.onNavigateToCommand === undefined`);
+    if(props.apiProductEntityId === undefined) throw new Error(`${logName}: props.apiProductEntityId === undefined`);
+    props.onNavigateToCommand(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.apiProductEntityId);
+  }
+
+  const setBreadCrumbItemList = () => {
+    const funcName = 'setBreadCrumbItemList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.action === EAction.EDIT) {
+      if(props.apiProductEntityId === undefined) throw new Error(`${logName}: props.apiProductEntityId === undefined`);
+      props.setBreadCrumbItemList([
+        {
+          label: props.apiProductEntityId.displayName,
+          command: ManagedEditApiProduct_onNavigateToCommand
+        },
+        {
+          label: 'Edit'
+        }  
+      ]);  
+    } else {
+      props.setBreadCrumbItemList([{
+        label: 'New API Product'
+      }]);  
+    }
   }
 
   // * useEffect Hooks *
 
   React.useEffect(() => {
-    props.setBreadCrumbItemList([{
-      label: 'New API Product'
-    }]);
+    validateProps();
+    setBreadCrumbItemList();
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  // React.useEffect(() => {
+  //   if(props.action !== EAction.EDIT) return;
+  //   if(managedObject === undefined) return;
+  //   if(refreshCounter > 0) setApiCallStatus(ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.APPLY_CHANGES, `changes applied for: ${managedObject.apEntityId.displayName}`));
+  //   setRefreshCounter(refreshCounter + 1);
+  // }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      // if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT) props.onEditNewSuccess(apiCallStatus, );
+      // if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.APPLY_CHANGES) props.onUserFeedback(apiCallStatus);
+    }
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const calculateShowStates = (componentState: TComponentState) => {
-    if(componentState.currentState === E_COMPONENT_STATE_NEW.UNDEFINED) {
+    if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.UNDEFINED) {
       setShowGeneral(false);
       setShowApis(false);
       setShowPolicies(false);
@@ -206,7 +283,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowReview(false);
       return;
     }
-    if(componentState.currentState === E_COMPONENT_STATE_NEW.GENERAL) {
+    if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.GENERAL) {
       setShowGeneral(true);
       setShowApis(false);
       setShowPolicies(false);
@@ -214,7 +291,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowAttributes(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.APIS) {
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.APIS) {
       setShowGeneral(false);
       setShowApis(true);
       setShowPolicies(false);
@@ -222,7 +299,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowAttributes(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.POLICIES) {
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.POLICIES) {
       setShowGeneral(false);
       setShowApis(false);
       setShowPolicies(true);
@@ -230,7 +307,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowAttributes(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.ENVIRONMENTS) {
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.ENVIRONMENTS) {
       setShowGeneral(false);
       setShowApis(false);
       setShowPolicies(false);
@@ -238,7 +315,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowAttributes(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.ATTRIBUTES) {
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.ATTRIBUTES) {
       setShowGeneral(false);
       setShowApis(false);
       setShowPolicies(false);
@@ -246,7 +323,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
       setShowAttributes(true);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.REVIEW) {
+    else if(componentState.currentState === E_COMPONENT_STATE_EDIT_NEW.REVIEW) {
       setShowGeneral(false);
       setShowApis(false);
       setShowPolicies(false);
@@ -337,29 +414,33 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
   }
 
   const onCreateSuccess = (apiCallState: TApiCallState, apiProductEntityId: TAPEntityId) => {
-    props.onNewSuccess(apiCallState, apiProductEntityId);
+    props.onEditNewSuccess(apiCallState, apiProductEntityId);
   }
 
-  const renderBusinessGroupInfo = (mo: TManagedObject): JSX.Element => {
+  const renderBusinessGroupInfo = (businessGroupDisplayName: string): JSX.Element => {
     return(
-      <div className="p-mt-4">
-        <span><b>Business Group:</b> {mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</span>
-      </div>
+      <div><b>Business Group:</b> {businessGroupDisplayName}</div>
     );
   }
 
+  const renderVersionInfo = (version: string): JSX.Element => {
+    return (
+      <div><b>Current Version:</b> {version}</div>
+    );
+  }
   const renderComponent = (mo: TManagedObject) => {
 
     return (
       <React.Fragment>
-        <div>
-          {renderBusinessGroupInfo(mo)}
+        <div className="p-mt-4">
+          {renderBusinessGroupInfo(mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName)}
+          {renderVersionInfo(mo.apVersionInfo.apLastVersion)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
             <React.Fragment>
               <EditNewGeneral
-                action={EAction.NEW}
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
@@ -373,7 +454,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
           <TabPanel header='APIs' disabled={!showApis}>
             <React.Fragment>
               <EditNewApis
-                action={EAction.NEW}
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
@@ -387,7 +468,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
           <TabPanel header='Policies' disabled={!showPolicies}>
             <React.Fragment>
               <EditNewPolicies
-                action={EAction.NEW}
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
@@ -401,7 +482,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
           <TabPanel header='Environments' disabled={!showEnvironments}>
             <React.Fragment>
               <EditNewEnvironments
-                action={EAction.NEW}
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
@@ -415,7 +496,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
           <TabPanel header='Attributes' disabled={!showAttributes}>
             <React.Fragment>
               <EditNewAttributes
-                action={EAction.NEW}
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
@@ -428,7 +509,8 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
           </TabPanel>
           <TabPanel header='Review & Create' disabled={!showReview}>
             <React.Fragment>
-              <NewReviewAndCreate              
+              <EditNewReviewAndCreate
+                action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
                 onBack={onBack}
@@ -436,7 +518,7 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
                 onCancel={props.onCancel}
                 onCreateSuccess={onCreateSuccess}
                 onLoadingChange={props.onLoadingChange}
-                onSuccessNotification={props.onSuccessNotification}
+                onUserNotification={props.onUserNotification}
               />
             </React.Fragment>
           </TabPanel>
@@ -445,10 +527,28 @@ export const ManagedNewApiProduct: React.FC<IManageNewApiProductProps> = (props:
     ); 
   }
   
+  const getHeaderNotes = (): string | undefined => {
+    const funcName = 'getComponentHeader';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(props.action === EAction.NEW) return undefined;
+    if(managedObject.apAppReferenceEntityIdList.length === 0) return 'Not used by any Apps.';
+    return `Used by ${managedObject.apAppReferenceEntityIdList.length} APP(s).`;
+  }
+
+  const getComponentHeader = (): string => {
+    const funcName = 'getComponentHeader';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+  
+    if(props.action === EAction.NEW) return 'Create New API Product';
+    else return `Edit API Product: ${managedObject.apEntityId.displayName}`
+  }
+
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header={`Create New API Product`} />
+      {managedObject && <APComponentHeader header={getComponentHeader()} notes={getHeaderNotes()}/>}
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

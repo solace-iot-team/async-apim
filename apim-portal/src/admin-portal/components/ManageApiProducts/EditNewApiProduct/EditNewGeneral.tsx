@@ -8,7 +8,7 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { ButtonLabel_EditSaveChanges, EAction } from "../ManageApiProductsCommon";
+import { ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
 import { EditNewGeneralForm } from "./EditNewGeneralForm";
 import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
@@ -20,7 +20,7 @@ export interface IEditNewGeneralProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onSaveChanges: (apApiProductDisplay_General: TAPApiProductDisplay_General) => void;
-  onBack?: () => void;
+  onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -41,18 +41,18 @@ export const EditNewGeneral: React.FC<IEditNewGeneralProps> = (props: IEditNewGe
     }));
   }
 
-  const validateProps = () => {
-    const funcName = 'validateProps';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(props.action === EAction.NEW) {
-      if(props.onBack === undefined) throw new Error(`${logName}: props.onBack === undefined`);
-    }
-  }
+  // const validateProps = () => {
+  //   const funcName = 'validateProps';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   if(props.action === EAction.NEW) {
+  //     if(props.onBack === undefined) throw new Error(`${logName}: props.onBack === undefined`);
+  //   }
+  // }
 
   // * useEffect Hooks *
 
   React.useEffect(() => {
-    validateProps();
+    // validateProps();
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -68,19 +68,14 @@ export const EditNewGeneral: React.FC<IEditNewGeneralProps> = (props: IEditNewGe
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+          <Button key={ComponentName+ButtonLabel_Cancel} type="button" label={ButtonLabel_Cancel} className="p-button-text p-button-plain" onClick={props.onCancel} />
         </React.Fragment>
       );
     }
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          {props.action === EAction.NEW && 
-            <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
-          }
-          {props.action === EAction.EDIT && 
-            <Button key={ComponentName+'Save'} form={formId} type="submit" label={ButtonLabel_EditSaveChanges} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
-          }
+          <Button key={ComponentName+ButtonLabel_Next} form={formId} type="submit" label={ButtonLabel_Next} icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }  
