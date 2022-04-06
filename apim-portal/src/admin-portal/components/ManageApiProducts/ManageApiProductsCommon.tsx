@@ -4,6 +4,7 @@ export const ButtonLabel_Back = "Back";
 export const ButtonLabel_Cancel = "Cancel";
 export const ButtonLabel_Create = "Create";
 export const ButtonLabel_SaveLifecycle = "Update";
+export const ButtonLabel_CreateNewVersion = "Create New Version";
 
 export enum EAction {
   EDIT = 'EDIT',

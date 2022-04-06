@@ -29,6 +29,7 @@ import {
 import { 
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay,
+  TAPManagedAssetDisplay_AccessAndState,
   TAPManagedAssetLifecycleInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
@@ -58,11 +59,9 @@ export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
   apControlledChannelParameterList: TAPControlledChannelParameterList;
 }
 
-export type TAPApiProductDisplay_AccessAndState = IAPEntityIdDisplay & {
+export type TAPApiProductDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
   apLifecycleInfo: TAPManagedAssetLifecycleInfo;
   apAccessLevel: APIProductAccessLevel;
-  // add: sharing info for business group
-  // add: changing business group info
 }
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
@@ -438,6 +437,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay: IAPApiProductDisplay;
   }): TAPApiProductDisplay_AccessAndState {
     const apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState = {
+      ...this.get_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiProductDisplay }),
       apEntityId: apApiProductDisplay.apEntityId,
       apAccessLevel: apApiProductDisplay.apAccessLevel,
       apLifecycleInfo: apApiProductDisplay.apLifecycleInfo,
@@ -454,6 +454,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay: IAPApiProductDisplay;
     apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
   }): IAPApiProductDisplay {
+    this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiProductDisplay, apManagedAssetDisplay_AccessAndState: apApiProductDisplay_AccessAndState });
     apApiProductDisplay.apAccessLevel = apApiProductDisplay_AccessAndState.apAccessLevel;
     apApiProductDisplay.apLifecycleInfo = apApiProductDisplay_AccessAndState.apLifecycleInfo;
     return apApiProductDisplay;

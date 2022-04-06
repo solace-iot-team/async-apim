@@ -208,19 +208,17 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   }
 
   const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {    
-    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
-      return (
-        <div><b>Business Group</b>: {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>
-      );
-    } else return (<></>);
+    return (
+      <div><b>Business Group</b>: {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>
+    );
   }
 
   const renderOwner = (apOwnerInfo: TAPEntityId): JSX.Element => {
-    return (
-      <span>
-        {apOwnerInfo.displayName}
-      </span>
-    );
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      return (
+        <div><b>Owner</b>: {apOwnerInfo.displayName}</div>
+      );
+    } else return (<></>);
   }
 
   const render_UsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
@@ -308,7 +306,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
           <div className="api-product-view-detail-left">
 
             <div>{renderBusinessGroup(mo.apBusinessGroupInfo)}</div>
-            <div><b>Owner</b>: {renderOwner(mo.apOwnerInfo)}</div>
+            <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
 

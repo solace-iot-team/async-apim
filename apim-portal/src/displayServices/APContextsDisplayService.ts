@@ -70,13 +70,15 @@ class APContextsDisplayService {
         apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
         completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
         pruneBusinessGroupsNotAMemberOf: false,
+        accessOnly_To_BusinessGroupManageAssets: false,
       });
 
       // get the business group (from last sesstion, default, or undefined)
       // alert(`${logName}: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay = ${JSON.stringify(apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay, null, 2)}`);
       const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_For_Session({
         apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay
+        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay,
+        accessOnly_To_BusinessGroupManageAssets: false,
       });
       
       // dispatch to contexts

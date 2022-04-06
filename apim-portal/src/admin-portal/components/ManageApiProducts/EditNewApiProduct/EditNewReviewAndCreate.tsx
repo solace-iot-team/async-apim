@@ -8,7 +8,7 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, ButtonLabel_CreateNewVersion, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
 
 import '../../../../components/APComponents.css';
@@ -106,9 +106,10 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
   }
 
   const componentFooterRightToolbarTemplate = () => {
+    const buttonLabel: string = props.action === EAction.EDIT ? ButtonLabel_CreateNewVersion : ButtonLabel_Create;
     return (
       <React.Fragment>
-        <Button key={ComponentName+ButtonLabel_Create} label={ButtonLabel_Create} icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
+        <Button key={ComponentName+buttonLabel} label={buttonLabel} icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
       </React.Fragment>
     );
   }

@@ -71,6 +71,10 @@ export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
 }
 export type TAPManagedAssetDisplayList = Array<IAPManagedAssetDisplay>;
 
+export type TAPManagedAssetDisplay_AccessAndState = {
+  apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
+  apOwnerInfo: TAPManagedAssetOwnerInfo;
+}
 
 /**
  * Manage aspects common to all assets.
@@ -365,6 +369,29 @@ export abstract class APManagedAssetDisplayService {
     apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
   }): IAPManagedAssetDisplay {
     apManagedAssetDisplay.apBusinessGroupInfo = JSON.parse(JSON.stringify(apManagedAssetBusinessGroupInfo));
+    return apManagedAssetDisplay;
+  }
+
+  public get_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+  }): TAPManagedAssetDisplay_AccessAndState {
+    const apManagedAssetDisplay_AccessAndState: TAPManagedAssetDisplay_AccessAndState = {
+      apBusinessGroupInfo: this.get_ApBusinessGroupInfo({ apManagedAssetDisplay: apManagedAssetDisplay }),
+      apOwnerInfo: this.get_ApOwnerInfo({ apManagedAssetDisplay: apManagedAssetDisplay })
+    };
+    return apManagedAssetDisplay_AccessAndState;
+  }
+
+  /** 
+   * Set the access & state properties. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+   public set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay, apManagedAssetDisplay_AccessAndState }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+    apManagedAssetDisplay_AccessAndState: TAPManagedAssetDisplay_AccessAndState;
+  }): IAPManagedAssetDisplay {
+    this.set_ApBusinessGroupInfo({ apManagedAssetDisplay: apManagedAssetDisplay, apManagedAssetBusinessGroupInfo: apManagedAssetDisplay_AccessAndState.apBusinessGroupInfo });
+    this.set_ApOwnerInfo({ apManagedAssetDisplay: apManagedAssetDisplay, apOwnerInfo: apManagedAssetDisplay_AccessAndState.apOwnerInfo });
     return apManagedAssetDisplay;
   }
 

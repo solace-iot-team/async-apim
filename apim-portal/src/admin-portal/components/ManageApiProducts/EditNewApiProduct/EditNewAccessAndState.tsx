@@ -33,6 +33,7 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
   type TManagedObject = TAPApiProductDisplay_AccessAndState;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+
   const FormId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
   const doInitialize = async () => {
@@ -88,6 +89,7 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
           />
+          
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

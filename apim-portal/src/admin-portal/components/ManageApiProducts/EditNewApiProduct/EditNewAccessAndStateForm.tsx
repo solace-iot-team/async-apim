@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
+import { TreeSelect } from "primereact/treeselect";
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
@@ -12,6 +13,15 @@ import { EAction} from "../ManageApiProductsCommon";
 import { TAPApiProductDisplay_AccessAndState } from "../../../../displayServices/APApiProductsDisplayService";
 import APLifecycleDisplayService, { EAPLifecycleState } from "../../../../displayServices/APLifecycleDisplayService";
 import APAccessLevelDisplayService from "../../../../displayServices/APAccessLevelDisplayService";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import APMemberOfService, { 
+  TAPMemberOfBusinessGroupDisplayTreeNodeList, 
+  TAPMemberOfBusinessGroupDisplay, 
+  TAPMemberOfBusinessGroupTreeTableNodeList 
+} from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
+import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthHelper } from "../../../../auth/AuthHelper";
+import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -26,12 +36,13 @@ export interface IEditNewAccessAndStateFormProps {
 }
 
 export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps> = (props: IEditNewAccessAndStateFormProps) => {
-  // const ComponentName = 'EditNewAccessAndStateForm';
+  const ComponentName = 'EditNewAccessAndStateForm';
 
   type TManagedObject = TAPApiProductDisplay_AccessAndState;
   type TManagedObjectFormData = {
     accessLevel: APIProductAccessLevel;
     lifecycleState: EAPLifecycleState;
+    owningBusinessGroupId: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -40,7 +51,8 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
       accessLevel: mo.apAccessLevel,
-      lifecycleState: mo.apLifecycleInfo.apLifecycleState
+      lifecycleState: mo.apLifecycleInfo.apLifecycleState,
+      owningBusinessGroupId: mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id,
     };
     return {
       formData: fd
@@ -50,19 +62,37 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   const create_ManagedObject_From_FormEntities = ({formDataEnvelope}: {
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
+
     const mo: TManagedObject = props.apApiProductDisplay_AccessAndState;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
+
+    const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      businessGroupId: fd.owningBusinessGroupId
+    });
+    if(apMemberOfBusinessGroupDisplay === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay === undefined`);
+
     mo.apAccessLevel = fd.accessLevel;
     mo.apLifecycleInfo.apLifecycleState = fd.lifecycleState;
+    mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId = apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId
     return mo;
   }
   
+  const [userContext] = React.useContext(UserContext);
+  const [authContext] = React.useContext(AuthContext);
   const [managedObject] = React.useState<TManagedObject>(props.apApiProductDisplay_AccessAndState);
+  const [apMemberOfBusinessGroupDisplayTreeNodeList, setApMemberOfBusinessGroupDisplayTreeNodeList] = React.useState<TAPMemberOfBusinessGroupDisplayTreeNodeList>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doInitialize = async () => {
-    setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
+    setApMemberOfBusinessGroupDisplayTreeNodeList(APMemberOfService.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+      accessOnly_To_BusinessGroupManageAssets: true,
+    }));
   }
 
   // * useEffect Hooks *
@@ -70,6 +100,11 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) return;
+    setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
+  }, [apMemberOfBusinessGroupDisplayTreeNodeList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
@@ -86,10 +121,60 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     // placeholder
   }
 
+  const isAllowed_ChangeOwningBusinessGroup = (): boolean => {
+    if(userContext.apLoginUserDisplay.apEntityId.id === managedObject.apOwnerInfo.id) return true;
+    if(AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup)) return true;
+    return false;
+  }
+
+  const renderChangeOwningBusinessGroup_FormField = () => {
+    const funcName = 'renderChangeOwningBusinessGroup_FormField';
+    const logName = `${ComponentName}.${funcName}()`;
+
+    if(!isAllowed_ChangeOwningBusinessGroup()) return;
+
+    if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
+
+    const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      includeBusinessGroupIsSelectable: true,
+      accessOnly_To_BusinessGroupManageAssets: true
+    });
+
+    return(
+      <div className="p-field">
+        <span className="p-float-label">
+          <Controller
+            control={managedObjectUseForm.control}
+            name="formData.owningBusinessGroupId"
+            rules={{
+              required: "Select owning business group.",
+            }}
+            render={( { field, fieldState }) => {
+              console.log(`${logName}: field=${JSON.stringify(field)}`);
+              return(
+                <TreeSelect
+                  id={field.name}
+                  {...field}
+                  options={apMemberOfBusinessGroupTreeTableNodeList}
+                  onChange={(e) => field.onChange(e.value)}
+                  placeholder="Select Business Group"
+                  filter={true}
+                  selectionMode="single"
+                  className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                />
+              )}}
+          />
+          <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.owningBusinessGroupId })}>Owning Business Group*</label>
+        </span>
+        {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.owningBusinessGroupId)}
+      </div>
+    );
+  }
+
   const renderManagedObjectForm = () => {
     return (
       <div className="card p-mt-4">
-        <p>TBD: change biz group if role=organizationAdmin or owner is me, list biz groups where role=APITeam</p>
         <p>TBD: share with biz groups, list biz groups where role=APITeam, share as readonly=yes/no</p>
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
@@ -141,7 +226,9 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.accessLevel)}
             </div>
-          </form>  
+            {/* owning business group */}
+            { renderChangeOwningBusinessGroup_FormField() }
+          </form>
         </div>
       </div>
     );
@@ -151,7 +238,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   return (
     <div className="manage-api-products">
 
-      { renderManagedObjectForm() }
+      { managedObjectFormDataEnvelope && renderManagedObjectForm() }
 
     </div>
   );
