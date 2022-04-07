@@ -26,11 +26,12 @@ import { EditNewApis } from "./EditNewApis";
 import { EditNewEnvironments } from "./EditNewEnvironments";
 import { EditNewAttributes } from "./EditNewAttributes";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
+import APVersioningDisplayService, { IAPVersionInfo } from "../../../../displayServices/APVersioningDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 import { EditNewAccessAndState } from "./EditNewAccessAndState";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -144,6 +145,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const [showReview, setShowReview] = React.useState<boolean>(false);
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [original_ManagedObject, setOriginal_ManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
@@ -164,7 +166,8 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     try {
       const empty: TAPAdminPortalApiProductDisplay = APAdminPortalApiProductsDisplayService.create_Empty_ApAdminPortalApiProductDisplay();
       const _businessGroupInfo: TAPManagedAssetBusinessGroupInfo = {
-        apOwningBusinessGroupEntityId: userContext.runtimeSettings.currentBusinessGroupEntityId
+        apOwningBusinessGroupEntityId: userContext.runtimeSettings.currentBusinessGroupEntityId,
+        apBusinessGroupSharingList: []
       };
       APAdminPortalApiProductsDisplayService.set_ApBusinessGroupInfo({
         apManagedAssetDisplay: empty,
@@ -178,6 +181,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       // create a suggested next version
       empty.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NewVersion();
       setManagedObject(empty);
+      setOriginal_ManagedObject(empty); // not a copy, to see the headers ...?
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -200,6 +204,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       // create a suggested next version
       object.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(object.apVersionInfo.apLastVersion);
       setManagedObject(object);
+      setOriginal_ManagedObject(JSON.parse(JSON.stringify(object)));
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -445,36 +450,41 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     props.onEditNewSuccess(apiCallState, apiProductEntityId);
   }
 
-  const renderBusinessGroupInfo = (businessGroupDisplayName: string): JSX.Element => {
-    return(
-      <div><b>Business Group:</b> {businessGroupDisplayName}</div>
-    );
-  }
-  const renderVersionInfo = (version: string): JSX.Element => {
+  const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
     return (
-      <div><b>Current Version:</b> {version}</div>
-    );
-  }
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
-    return(
-      <div><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</div>
-    );
-  }
-  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
-    return(
-      <div><b>Access: </b>{accessLevel}</div>
+      <APDisplayBusinessGroupInfo
+        apManagedAssetBusinessGroupInfo={apManagedAssetBusinessGroupInfo}
+        showSharingInfo={ props.action === EAction.EDIT}
+      />
     );
   }
 
+  const renderVersionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
+    if(props.action === EAction.NEW) return (<></>);
+    return (<div><b>Current Version:</b> {apVersionInfo.apLastVersion}</div>);
+  }
+
+  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+    if(props.action === EAction.NEW) return (<></>);
+    return(<div><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</div>);
+  }
+  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
+    if(props.action === EAction.NEW) return (<></>);
+    return(<div><b>Access: </b>{accessLevel}</div>);
+  }
+
   const renderComponent = (mo: TManagedObject) => {
+    const funcName = 'renderComponent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
 
     return (
       <React.Fragment>
         <div className="p-mt-4">
-          {renderBusinessGroupInfo(mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName)}
-          {renderVersionInfo(mo.apVersionInfo.apLastVersion)}
-          {renderState(mo.apLifecycleInfo)}
-          {renderAccessLevel(mo.apAccessLevel)}
+          {renderBusinessGroupInfo(original_ManagedObject.apBusinessGroupInfo)}
+          {renderVersionInfo(original_ManagedObject.apVersionInfo)}
+          {renderState(original_ManagedObject.apLifecycleInfo)}
+          {renderAccessLevel(original_ManagedObject.apAccessLevel)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
@@ -584,29 +594,29 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const getHeaderNotes = (): string | undefined => {
     const funcName = 'getComponentHeader';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
     if(props.action === EAction.NEW) return undefined;
-    if(managedObject.apAppReferenceEntityIdList.length === 0) return 'Not used by any Apps.';
-    return `Used by ${managedObject.apAppReferenceEntityIdList.length} APP(s).`;
+    if(original_ManagedObject.apAppReferenceEntityIdList.length === 0) return 'Not used by any Apps.';
+    return `Used by ${original_ManagedObject.apAppReferenceEntityIdList.length} APP(s).`;
   }
 
   const getComponentHeader = (): string => {
     const funcName = 'getComponentHeader';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
   
     if(props.action === EAction.NEW) return 'Create New API Product';
-    else return `Edit API Product: ${managedObject.apEntityId.displayName}`
+    else return `Edit API Product: ${original_ManagedObject.apEntityId.displayName}`
   }
 
   return (
     <div className="manage-api-products">
 
-      {managedObject && <APComponentHeader header={getComponentHeader()} notes={getHeaderNotes()}/>}
+      {managedObject && original_ManagedObject && <APComponentHeader header={getComponentHeader()} notes={getHeaderNotes()}/>}
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && renderComponent(managedObject)}
+      {managedObject && original_ManagedObject && renderComponent(managedObject)}
 
       {/* DEBUG */}
       {/* {managedObject && 

@@ -11,7 +11,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
   TAPAdminPortalApiProductDisplayList 
@@ -135,9 +135,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   // const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
   //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
   // }
-  const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
-  }
+  // const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
+  // }
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
   }
@@ -170,7 +170,18 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       </div>
     );
   }
-
+  const sharedBodyTemplate = (row: TManagedObject): JSX.Element => {
+    const sharingEntityIdList: TAPEntityIdList = row.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
+      return {
+        id: x.apEntityId.id,
+        displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
+      }
+    });
+    if(sharingEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
+    );
+  }
   // const apEntityIdBodyTemplate = (row: TManagedObject) => {
   //   return JSON.stringify(row.apEntityId);
   // }
@@ -219,6 +230,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
 
           {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
           {/* <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable /> */}
+
+          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
 
 
@@ -229,7 +243,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           {/* <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
           <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
-          <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/>
+          {/* <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/> */}
           <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>

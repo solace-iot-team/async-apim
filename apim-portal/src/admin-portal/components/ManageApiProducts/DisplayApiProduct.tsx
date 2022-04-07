@@ -29,6 +29,8 @@ import { Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
+import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
+import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -207,9 +209,12 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
-  const renderBusinessGroup = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {    
+  const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
     return (
-      <div><b>Business Group</b>: {apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>
+      <APDisplayBusinessGroupInfo
+        apManagedAssetBusinessGroupInfo={apManagedAssetBusinessGroupInfo}
+        showSharingInfo={true}
+      />
     );
   }
 
@@ -305,7 +310,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         <div className="api-product-view">
           <div className="api-product-view-detail-left">
 
-            <div>{renderBusinessGroup(mo.apBusinessGroupInfo)}</div>
+            <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
@@ -331,6 +336,29 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         <div>Last Modified by: {mo.apMetaInfo.apLastModifiedBy}</div>
         <div>Last Modifined on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>
       </React.Fragment>
+    );
+  }
+
+  const renderDevelAttributeList = (mo: TManagedObject): JSX.Element => {
+    const funcName = 'renderDevelAttributeList';
+    const logName = `${ComponentName}.${funcName}()`;
+    let apAttributeDisplayList: TAPAttributeDisplayList = [];
+    switch(props.scope) {
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+        apAttributeDisplayList = mo.devel_display_complete_ApAttributeList;
+        break;
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
+        apAttributeDisplayList = []
+        break;
+      default:
+        Globals.assertNever(logName, props.scope);
+    }
+    return (
+      <APDisplayApAttributeDisplayList
+        apAttributeDisplayList={apAttributeDisplayList}
+        emptyMessage="No attributes defined"
+        className="p-ml-4"
+      />
     );
   }
 
@@ -426,11 +454,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
                 <React.Fragment>
                   <Divider />
                   <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
-                  <APDisplayApAttributeDisplayList
-                    apAttributeDisplayList={managedObject.devel_display_complete_ApAttributeList}
-                    emptyMessage="No attributes defined"
-                    className="p-ml-4"
-                  />
+                  {renderDevelAttributeList(managedObject)}
                 </React.Fragment>
               }
             </React.Fragment>

@@ -1,3 +1,4 @@
+import { Validator, ValidatorResult } from 'jsonschema';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
@@ -8,9 +9,11 @@ import APAttributesDisplayService, {
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplay,
-  TAPBusinessGroupDisplayReference 
+  TAPBusinessGroupDisplayReference, 
+  TAPBusinessGroupDisplay_ExternalReference
 } from './APBusinessGroupsDisplayService';
 import APLifecycleDisplayService, { EAPLifecycleState } from './APLifecycleDisplayService';
+import { TAPManagedAssetDisplay_BusinessGroupSharing_Schema } from './APManagedAssetDisplayService_Schemas';
 
 const CAPManagedAssetAttribute_Prefix = "AP";
 enum EAPManagedAssetAttribute_Scope {
@@ -25,7 +28,8 @@ enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_DISPLAY_NAME = "OWNING_DISPLAY_NAME",
   OWNING_EXTERNAL_ID = "OWNING_EXTERNAL_ID",
   OWNING_EXTERNAL_DISPLAY_NAME = "OWNING_EXTERNAL_DISPLAY_NAME",
-  EXTERNAL_SYSTEM_ID = "EXTERNAL_SYSTEM_ID"
+  EXTERNAL_SYSTEM_ID = "EXTERNAL_SYSTEM_ID",
+  SHARING_LIST = "SHARING_LIST",
 }
 enum EAPManagedAssetAttribute_Owner_Tag {
   ID = "ID",
@@ -49,10 +53,19 @@ export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
 }
+export enum E_ManagedAssetDisplay_BusinessGroupSharing_AccessType {
+  READONLY = "readonly",
+  FULL_ACCESS = "full-access",
+}
 
+export type TAPManagedAssetDisplay_BusinessGroupSharing = IAPEntityIdDisplay & {
+  apSharingAccessType: E_ManagedAssetDisplay_BusinessGroupSharing_AccessType;
+  apExternalReference?: TAPBusinessGroupDisplay_ExternalReference;
+}
+export type TAPManagedAssetDisplay_BusinessGroupSharingList = Array<TAPManagedAssetDisplay_BusinessGroupSharing>;
 export type TAPManagedAssetBusinessGroupInfo = {
   apOwningBusinessGroupEntityId: TAPEntityId;
-  // FUTURE: add sharing info here
+  apBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
 }
 export type TAPManagedAssetOwnerInfo = TAPEntityId;
 
@@ -60,7 +73,7 @@ export type TAPManagedAssetLifecycleInfo = {
   apLifecycleState: EAPLifecycleState;
 }
 export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
-  devel_display_complete_ApAttributeList: TAPAttributeDisplayList; /** for devel display purposes only */
+  devel_display_complete_ApAttributeList: TAPAttributeDisplayList; /** for devel display purposes only, only set during creation from api, not maintained on update */
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
@@ -105,6 +118,12 @@ export abstract class APManagedAssetDisplayService {
   public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId(name: keyof TAPEntityId) {
     return `${this._nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference('apEntityId')}.${name}`;
   }
+  public nameOf_BusinessGroupSharing(name: keyof TAPManagedAssetDisplay_BusinessGroupSharing) {
+    return name;
+  }
+  public nameOf_BusinessGroupSharing_ApEntityId(name: keyof TAPEntityId) {
+    return `${this.nameOf_BusinessGroupSharing('apEntityId')}.${name}`;
+  }
 
   protected create_ManagedAssetAttribute_Prefix = (): string => {
     return `_${CAPManagedAssetAttribute_Prefix}_`;
@@ -128,6 +147,21 @@ export abstract class APManagedAssetDisplayService {
     return this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_ID });
   }
   
+  protected get_AttributeName_SharingBusinessGroupId(): string {
+    return this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST });
+  }
+
+  public create_Empty_ApManagedAssetDisplay_BusinessGroupSharing(): TAPManagedAssetDisplay_BusinessGroupSharing {
+    return {
+      apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      apSharingAccessType: E_ManagedAssetDisplay_BusinessGroupSharing_AccessType.READONLY,
+    };
+  }
+
+  public get_ApManagedAssetDisplay_BusinessGroupSharing_AccessType_SelectList = (): Array<E_ManagedAssetDisplay_BusinessGroupSharing_AccessType> => {
+    return Object.values(E_ManagedAssetDisplay_BusinessGroupSharing_AccessType);
+  }
+
   protected create_Empty_ApManagedAssetDisplay(): IAPManagedAssetDisplay {
     const apManagedAssetDisplay: IAPManagedAssetDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject(),
@@ -136,6 +170,7 @@ export abstract class APManagedAssetDisplayService {
       apCustom_ApAttributeDisplayList: [],
       apBusinessGroupInfo: {
         apOwningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+        apBusinessGroupSharingList: [],
       },
       apOwnerInfo: APEntityIdsService.create_EmptyObject_NoId(),
       apLifecycleInfo: {
@@ -143,6 +178,50 @@ export abstract class APManagedAssetDisplayService {
       }
     };
     return apManagedAssetDisplay;
+  }
+
+  private parse_BusinessGroupSharingListString(attributeValue: string): TAPManagedAssetDisplay_BusinessGroupSharingList {
+    const funcName = 'parse_BusinessGroupSharingListString';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList = [];
+    try {
+      // try parse as JSON and validate against schema
+      const jsonBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList = JSON.parse(attributeValue);
+      for(const jsonBusinessGroupSharing of jsonBusinessGroupSharingList) {
+        // validate content
+        const v: Validator = new Validator();
+        const validateResult: ValidatorResult = v.validate(jsonBusinessGroupSharing, TAPManagedAssetDisplay_BusinessGroupSharing_Schema);
+        if(!validateResult.valid) throw new Error(`${logName}: validateResult=${JSON.stringify(validateResult.errors, null, 2)}`);
+        apManagedAssetDisplay_BusinessGroupSharingList.push(jsonBusinessGroupSharing);
+      }
+      // // split into individual strings
+      // const attributeValueList: Array<string> = attributeValue.split(BusinessGroupSharing_AttributeValue_ListDelimiter);
+      // for(const av of attributeValueList) {
+      //   // try to parse it as JSON and validate content
+      //   const jsonAv: Record<string, unknown> = JSON.parse(av);
+      //   if(jsonAv[this.nameOf_BusinessGroupSharing('apEntityId')] === undefined) throw new Error(`${this.nameOf_BusinessGroupSharing('apEntityId')} not found`);
+      //   const apBusinessGroupSharingEntityId: TAPEntityId = jsonAv[this.nameOf_BusinessGroupSharing('apEntityId')] as TAPEntityId;
+      //   if(apBusinessGroupSharingEntityId.id === undefined) throw new Error(`apEntityId.id not found`);
+      //   if(apBusinessGroupSharingEntityId.displayName === undefined) throw new Error(`apEntityId.displayName not found`);
+      //   if(jsonAv[this.nameOf_BusinessGroupSharing('apSharingAccessType')] === undefined) throw new Error(`${this.nameOf_BusinessGroupSharing('apSharingAccessType')} not found`);
+      //   const apSharingAccessType: E_ManagedAssetDisplay_BusinessGroupSharing_AccessType = jsonAv[this.nameOf_BusinessGroupSharing('apSharingAccessType')] as E_ManagedAssetDisplay_BusinessGroupSharing_AccessType;
+      //   if(!Object.values(E_ManagedAssetDisplay_BusinessGroupSharing_AccessType).includes(apSharingAccessType)) throw new Error(`apSharingAccessType=${apSharingAccessType} not a valid type, valid types=${JSON.stringify(Object.values(E_ManagedAssetDisplay_BusinessGroupSharing_AccessType))}`);
+      //   const apManagedAssetDisplay_BusinessGroupSharing: TAPManagedAssetDisplay_BusinessGroupSharing = {
+      //     apEntityId: apBusinessGroupSharingEntityId,
+      //     apSharingAccessType: apSharingAccessType
+      //   };
+      //   apManagedAssetDisplay_BusinessGroupSharingList.push(apManagedAssetDisplay_BusinessGroupSharing);
+      // }
+    } catch(e: any) {
+      console.error(`${logName}: error parsing attributeValue = ${attributeValue}, e=${e}`);
+    } finally {
+      return apManagedAssetDisplay_BusinessGroupSharingList;
+    }
+  }
+
+  private create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
+    return JSON.stringify(apManagedAssetDisplay_BusinessGroupSharingList);
   }
 
   /**
@@ -160,7 +239,8 @@ export abstract class APManagedAssetDisplayService {
 
     // set to default in case none is found
     const apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo = {
-      apOwningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId()
+      apOwningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      apBusinessGroupSharingList: [],
     };
 
     // extract business group attributes
@@ -186,6 +266,15 @@ export abstract class APManagedAssetDisplayService {
     if(businessGroupDisplayName_apAttributeDisplayList.length === 0) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length === 0`);
     apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName = businessGroupDisplayName_apAttributeDisplayList[0].value;
 
+    // sharing list
+    const businessGroupSharingList_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }),
+      apAttributeDisplayList: apBusinessGroupAttributeDisplayList
+    });
+    if(businessGroupSharingList_apAttributeDisplayList.length > 0) {
+      apManagedAssetBusinessGroupInfo.apBusinessGroupSharingList = this.parse_BusinessGroupSharingListString(businessGroupSharingList_apAttributeDisplayList[0].value);
+    }
+    
     return apManagedAssetBusinessGroupInfo;
 
   }
@@ -474,6 +563,11 @@ export abstract class APManagedAssetDisplayService {
         value: apBusinessGroupDisplay.apExternalReference.externalSystemId
       }));    
     }
+    // business group sharing
+    _complete_ApAttributeList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+      name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }), 
+      value: this.create_BusinessGroupSharingListString(apManagedAssetDisplay.apBusinessGroupInfo.apBusinessGroupSharingList)
+    }));
 
     // owner info
     _complete_ApAttributeList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 

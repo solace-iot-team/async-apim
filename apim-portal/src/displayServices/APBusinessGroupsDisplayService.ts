@@ -43,11 +43,12 @@ export type TAPBusinessGroupAssetReference = {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
 }
 
+export type TAPBusinessGroupDisplay_ExternalReference = APSExternalReference & {
+  externalSystemDisplayName: string;
+};
 export type TAPBusinessGroupDisplay = IAPEntityIdDisplay & IAPSearchContent & {
   apsBusinessGroupResponse: APSBusinessGroupResponse;
-  apExternalReference?: APSExternalReference & {
-    externalSystemDisplayName: string;
-  },
+  apExternalReference?: TAPBusinessGroupDisplay_ExternalReference;
   apBusinessGroupParentEntityId?: TAPEntityId;
   apBusinessGroupChildrenEntityIdList: TAPEntityIdList;
   apMemberUserEntityIdList: TAPEntityIdList;

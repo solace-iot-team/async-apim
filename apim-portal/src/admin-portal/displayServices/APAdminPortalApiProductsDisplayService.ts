@@ -89,7 +89,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     organizationId: string;
     businessGroupId?: string;
   }): Promise<Array<APIProduct>> => {
-    
+    // const funcName = 'apiGetList_ConnectorApiProductList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const connectorApiProductList: Array<APIProduct> = [];
+    // get the business group Id first
     let filter: string | undefined = undefined;
     if(businessGroupId !== undefined) {
       filter = this.create_ConnectorFilter_For_Attribute({
@@ -97,11 +101,48 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         attributeValue: businessGroupId
       });
     }
-    const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+    const businessGroupConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId,
       filter: filter
     });
+    // console.log(`${logName}: filter = ${filter}`);
+    // console.log(`${logName}: businessGroupConnectorApiProductList=${JSON.stringify(businessGroupConnectorApiProductList, null, 2)}`);
 
+    // TODO: filter again, until connector search is fixed
+    if(businessGroupId !== undefined) {
+      const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
+      for(const connectorApiProduct of businessGroupConnectorApiProductList) {
+        const attribute = connectorApiProduct.attributes.find( (x) => {
+          return x.name === owningBusinessGroup_AttributeName;
+        });
+        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
+          connectorApiProductList.push(connectorApiProduct);
+        }
+      }
+    }
+    // now get the sharing business group ids
+    if(businessGroupId !== undefined) {
+      filter = this.create_ConnectorFilter_For_Attribute({
+        attributeName: this.get_AttributeName_SharingBusinessGroupId(),
+        attributeValue: businessGroupId
+      });
+      const sharingConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+        organizationName: organizationId,
+        filter: filter
+      });
+      // console.log(`${logName}: sharing filter = ${filter}`);
+      // console.log(`${logName}: sharingConnectorApiProductList=${JSON.stringify(sharingConnectorApiProductList, null, 2)}`);
+      // TODO: filter again, until connector search is fixed
+      const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
+      for(const connectorApiProduct of sharingConnectorApiProductList) {
+        const attribute = connectorApiProduct.attributes.find( (x) => {
+          return x.name === sharingBusinessGroup_AttributeName;
+        });
+        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
+          connectorApiProductList.push(connectorApiProduct);
+        }
+      }
+    }
     return connectorApiProductList;
   }
 

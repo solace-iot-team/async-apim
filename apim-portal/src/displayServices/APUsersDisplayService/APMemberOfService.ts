@@ -389,10 +389,11 @@ class APMemberOfService {
    * Populates idList2Keep as it recurses into the tree.
    * 
    */
-  private _create_idList2Keep_ApMemberOfBusinessGroupDisplayTreeNodeList({ list, idList2Keep, accessOnly_To_BusinessGroupManageAssets }:{
+  private _create_idList2Keep_ApMemberOfBusinessGroupDisplayTreeNodeList({ list, idList2Keep, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     list: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     idList2Keep: Array<string>;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): void {
     // const funcName = '_create_idList2Keep_ApMemberOfBusinessGroupDisplayTreeNodeList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -408,7 +409,8 @@ class APMemberOfService {
         // check if user has access to this one
         if(this.hasBusinessGroupRolesAccess({
           apMemberOfBusinessGroupDisplay: list[idx].apMemberOfBusinessGroupDisplay,
-          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+          excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
         })) {
           idList2Keep.push(list[idx].apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id);
         } else {
@@ -424,7 +426,8 @@ class APMemberOfService {
         // console.log(`${logName}: leaf_node_name = ${leaf_node_name}`);
         if(this.hasBusinessGroupRolesAccess({
           apMemberOfBusinessGroupDisplay: list[idx].apMemberOfBusinessGroupDisplay,
-          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+          excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
         })) {
           // keep it
           idList2Keep.push(list[idx].apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id);
@@ -440,9 +443,10 @@ class APMemberOfService {
   /**
    * Create a list without the groups user is not a member of.
    */
-  public create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, accessOnly_To_BusinessGroupManageAssets }:{
+  public create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
     // const funcName = 'create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -471,7 +475,8 @@ class APMemberOfService {
     this._create_idList2Keep_ApMemberOfBusinessGroupDisplayTreeNodeList({
       list: apMemberOfBusinessGroupDisplayTreeNodeList,
       idList2Keep: idList2Keep,
-      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
     });
 
     // console.log(`${logName}: idList2Keep = ${JSON.stringify(idList2Keep, null, 2)}`);
@@ -488,13 +493,22 @@ class APMemberOfService {
    * Includes the calculated roles.
    * @param pruneBusinessGroupsNotAMemberOf - prune the tree node list of groups user is not member of (has no roles)
    */
-  public create_ApMemberOfBusinessGroupDisplayTreeNodeList_WithoutRoot({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf, accessOnly_To_BusinessGroupManageAssets }: {
+  public create_ApMemberOfBusinessGroupDisplayTreeNodeList_WithoutRoot({
+    organizationEntityId, 
+    apMemberOfBusinessGroupDisplayList, 
+    completeApOrganizationBusinessGroupDisplayList, 
+    apOrganizationRoleEntityIdList, 
+    pruneBusinessGroupsNotAMemberOf, 
+    accessOnly_To_BusinessGroupManageAssets,
+    excludeAccess_To_BusinessGroupIdList
+   }: {
     organizationEntityId: TAPEntityId;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
     completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     pruneBusinessGroupsNotAMemberOf: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
     // const funcName = 'create_ApMemberOfBusinessGroupDisplayTreeNodeList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -539,7 +553,8 @@ class APMemberOfService {
       // console.log(`${logName}: interimList = ${JSON.stringify(interimList, null, 2)}`);
       const prunedList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
         apMemberOfBusinessGroupDisplayTreeNodeList: interimList,  
-        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+        excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
       });
       // console.log(`${logName}: prunedList = ${JSON.stringify(prunedList, null, 2)}`);
       interimList = prunedList;
@@ -557,13 +572,22 @@ class APMemberOfService {
    * Includes the calculated roles.
    * @param pruneBusinessGroupsNotAMemberOf - prune the tree node list of groups user is not member of (has no roles)
    */
-  public create_ApMemberOfBusinessGroupDisplayTreeNodeList({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf, accessOnly_To_BusinessGroupManageAssets }: {
+  public create_ApMemberOfBusinessGroupDisplayTreeNodeList({
+    organizationEntityId, 
+    apMemberOfBusinessGroupDisplayList, 
+    completeApOrganizationBusinessGroupDisplayList, 
+    apOrganizationRoleEntityIdList, 
+    pruneBusinessGroupsNotAMemberOf, 
+    accessOnly_To_BusinessGroupManageAssets,
+    excludeAccess_To_BusinessGroupIdList,
+    }: {
     organizationEntityId: TAPEntityId;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
     completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     pruneBusinessGroupsNotAMemberOf: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupDisplayTreeNodeList {
     // const funcName = 'create_ApMemberOfBusinessGroupDisplayTreeNodeList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -603,7 +627,8 @@ class APMemberOfService {
       // console.log(`${logName}: interimList = ${JSON.stringify(interimList, null, 2)}`);
       const prunedList: TAPMemberOfBusinessGroupDisplayTreeNodeList = this.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
         apMemberOfBusinessGroupDisplayTreeNodeList: list,  
-        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+        excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
       });
       // console.log(`${logName}: prunedList = ${JSON.stringify(prunedList, null, 2)}`);
       list = prunedList;
@@ -617,16 +642,24 @@ class APMemberOfService {
   }
 
   /**
-   * Check for calculated roles that include business group roles only
+   * Check for calculated roles that include business group roles only.
+   * Returns false for business group ids in the excludeAccess_To_BusinessGroupIdList if defined.
    */
-  private hasBusinessGroupRolesAccess = ({ apMemberOfBusinessGroupDisplay, accessOnly_To_BusinessGroupManageAssets }:{
+  private hasBusinessGroupRolesAccess = ({ apMemberOfBusinessGroupDisplay, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): boolean => {      
     const funcName = 'hasBusinessGroupRolesAccess';
     const logName = `${this.ComponentName}.${funcName}()`;  
     if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
 
+    if(excludeAccess_To_BusinessGroupIdList !== undefined) {
+      if(excludeAccess_To_BusinessGroupIdList.includes(apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id)) {
+        // alert(`${logName}: id=${apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id}, excludeAccess_To_BusinessGroupIdList =${JSON.stringify(excludeAccess_To_BusinessGroupIdList)}`);
+        return false;
+      }
+    }
     if(accessOnly_To_BusinessGroupManageAssets) {
       if(APRbacDisplayService.filter_RolesEntityIdList_By_BusinessGroupRoles_ManageAssets({
         combinedRoles: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList
@@ -639,15 +672,17 @@ class APMemberOfService {
     return false;
   }
   
-  private create_TreeTableNode({ apMemberOfBusinessGroupDisplayTreeNode, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets }: {
+  private create_TreeTableNode({ apMemberOfBusinessGroupDisplayTreeNode, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }: {
     apMemberOfBusinessGroupDisplayTreeNode: TAPMemberOfBusinessGroupDisplayTreeNode;
     includeBusinessGroupIsSelectable?: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupTreeTableNode {
 
     const hasAccess: boolean = this.hasBusinessGroupRolesAccess({
       apMemberOfBusinessGroupDisplay: apMemberOfBusinessGroupDisplayTreeNode.apMemberOfBusinessGroupDisplay,
       accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
     });
 
     return {
@@ -659,22 +694,25 @@ class APMemberOfService {
       children: this.create_TreeTableNodeList({
         apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNode.children,
         includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable,
-        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+        excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
       })
     };
   }
 
-  private create_TreeTableNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets }: {
+  private create_TreeTableNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }: {
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     includeBusinessGroupIsSelectable?: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupTreeTableNodeList {
     const treeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = [];
     for(const treeNode of apMemberOfBusinessGroupDisplayTreeNodeList) {
       const treeTableNode = this.create_TreeTableNode({
         apMemberOfBusinessGroupDisplayTreeNode: treeNode,
         includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable,
-        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+        accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+        excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
       });
       treeTableNodeList.push(treeTableNode);
     }
@@ -688,13 +726,22 @@ class APMemberOfService {
    * @returns TAPMemberOfBusinessGroupTreeTableNodeList - the tree table node list.
    * 
    */
-  public create_ApMemberOfBusinessGroupTreeTableNodeList({organizationEntityId, apMemberOfBusinessGroupDisplayList, completeApOrganizationBusinessGroupDisplayList, apOrganizationRoleEntityIdList, pruneBusinessGroupsNotAMemberOf, accessOnly_To_BusinessGroupManageAssets}:{
+  public create_ApMemberOfBusinessGroupTreeTableNodeList({
+    organizationEntityId, 
+    apMemberOfBusinessGroupDisplayList, 
+    completeApOrganizationBusinessGroupDisplayList, 
+    apOrganizationRoleEntityIdList, 
+    pruneBusinessGroupsNotAMemberOf, 
+    accessOnly_To_BusinessGroupManageAssets, 
+    excludeAccess_To_BusinessGroupIdList 
+  }:{
     organizationEntityId: TAPEntityId;
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
     completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     apOrganizationRoleEntityIdList: TAPEntityIdList;
     pruneBusinessGroupsNotAMemberOf: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupTreeTableNodeList {
     // const funcName = 'create_ApMemberOfBusinessGroupTreeTableNodeList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -716,7 +763,8 @@ class APMemberOfService {
       completeApOrganizationBusinessGroupDisplayList: completeApOrganizationBusinessGroupDisplayList,
       apOrganizationRoleEntityIdList: apOrganizationRoleEntityIdList,
       pruneBusinessGroupsNotAMemberOf: pruneBusinessGroupsNotAMemberOf,
-      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
     });
     
     // // * DEBUG *
@@ -724,20 +772,23 @@ class APMemberOfService {
 
     return this.create_TreeTableNodeList({
       apMemberOfBusinessGroupDisplayTreeNodeList: treeNodeList,
-      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
     });
   }
 
-  public create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets }:{
+  public create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({ apMemberOfBusinessGroupDisplayTreeNodeList, includeBusinessGroupIsSelectable, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     includeBusinessGroupIsSelectable: boolean;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupTreeTableNodeList {
 
     return this.create_TreeTableNodeList({
       apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
       includeBusinessGroupIsSelectable: includeBusinessGroupIsSelectable,
-      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList,
     });
 
   }
@@ -791,10 +842,11 @@ class APMemberOfService {
   /**
    * Returns the business group display object from last session or tries to figure out a default one.
    */
-  public get_ApMemberOfBusinessGroupDisplay_For_Session({ apMemberOfBusinessGroupDisplayTreeNodeList, apOrganizationSessionInfoDisplay, accessOnly_To_BusinessGroupManageAssets }:{
+  public get_ApMemberOfBusinessGroupDisplay_For_Session({ apMemberOfBusinessGroupDisplayTreeNodeList, apOrganizationSessionInfoDisplay, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     apOrganizationSessionInfoDisplay: TAPSessionInfoDisplay;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupDisplay | undefined {
 
     // const funcName = 'get_ApMemberOfBusinessGroupDisplay_For_Session';
@@ -811,7 +863,8 @@ class APMemberOfService {
     // try find a default one
     return this.find_default_ApMemberOfBusinessGroupDisplay({
       apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+      accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+      excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
     });
 
   }
@@ -886,9 +939,10 @@ class APMemberOfService {
   /** 
    * Return the first ApMemberOfBusinessGroupDisplay in the tree that user has access to.
   */
-  private find_default_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayTreeNodeList, accessOnly_To_BusinessGroupManageAssets }:{
+  private find_default_ApMemberOfBusinessGroupDisplay({ apMemberOfBusinessGroupDisplayTreeNodeList, accessOnly_To_BusinessGroupManageAssets, excludeAccess_To_BusinessGroupIdList }:{
     apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     accessOnly_To_BusinessGroupManageAssets: boolean;
+    excludeAccess_To_BusinessGroupIdList?: Array<string>;
   }): TAPMemberOfBusinessGroupDisplay | undefined {
     // const funcName = 'find_default_ApMemberOfBusinessGroupDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -911,7 +965,8 @@ class APMemberOfService {
       for(const treeNode of treeNodeList) {
         if(this.hasBusinessGroupRolesAccess({
           apMemberOfBusinessGroupDisplay: treeNode.apMemberOfBusinessGroupDisplay,
-          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets
+          accessOnly_To_BusinessGroupManageAssets: accessOnly_To_BusinessGroupManageAssets,
+          excludeAccess_To_BusinessGroupIdList: excludeAccess_To_BusinessGroupIdList
         })) return treeNode.apMemberOfBusinessGroupDisplay;
         // if(hasAccess(treeNode.apMemberOfBusinessGroupDisplay)) return  treeNode.apMemberOfBusinessGroupDisplay;
         const found: TAPMemberOfBusinessGroupDisplay | undefined = find_ApMemberOfBusinessGroupDisplay_with_Access(treeNode);
