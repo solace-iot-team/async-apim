@@ -39,6 +39,22 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   type TManagedObject = TAPDeveloperPortalApiProductDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
+  const createCustomSearchContent = (moList: TManagedObjectList) => {
+    moList.forEach( (mo) => {
+      const accessDisplay = APDeveloperPortalApiProductsDisplayService.create_AccessDisplay({ 
+        apDeveloperPortalApiProductDisplay: mo, 
+        userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+        userId: userContext.apLoginUserDisplay.apEntityId.id
+      });
+      mo.apSearchContent = 
+        accessDisplay.toLowerCase() + ','
+        + mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName.toLowerCase() + ','
+        + mo.apEntityId.displayName.toLowerCase() + ',' 
+        + mo.apDescription.toLowerCase() + ','
+        + APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apApiDisplayList).join(', ').toLowerCase()
+      ;
+    });
+  }
   const filterManagedObjectList = (moList: TManagedObjectList, filterStr: string): TManagedObjectList => {
     if(filterStr === '') return moList;
     const filterList: Array<string> = filterStr.toLowerCase().split(' ').filter( (s: string) => {
@@ -91,6 +107,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
         userId: userContext.apLoginUserDisplay.apEntityId.id,
         filterByIsAllowed_To_CreateApp: false
       });
+      createCustomSearchContent(list);
       setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
