@@ -722,6 +722,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const create: APIProduct = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
       approvalType: this.create_ConnectorApprovalType(apApiProductDisplay.apApprovalType),
+      accessLevel: apApiProductDisplay.apAccessLevel,
       displayName: apApiProductDisplay.apEntityId.displayName,
       name: apApiProductDisplay.apEntityId.id,
       description: apApiProductDisplay.apDescription,
