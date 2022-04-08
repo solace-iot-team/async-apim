@@ -12,9 +12,11 @@ import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from './ManageApiPro
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { ListApiProducts } from "./ListApiProducts";
 import { ViewApiProduct } from "./ViewApiProduct";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplay_AllowedActions } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { DeleteApiProduct } from "./DeleteApiProduct";
 import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -54,12 +56,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
+  const [userContext] = React.useContext(UserContext);
+  const [authContext] = React.useContext(AuthContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-  const [isManagedObjectDeleteAllowed, setIsManagedObjectDeleteAllowed] = React.useState<boolean>(false);
+  const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPAdminPortalApiProductDisplay_AllowedActions>(APAdminPortalApiProductsDisplayService.get_Empty_AllowedActions());
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -97,8 +101,11 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
     // // DEBUG: is the version set?
     // alert(`${ComponentName}.onViewManagedObject():  apAdminPortalApiProductDisplay.apEntityId = ${JSON.stringify(apAdminPortalApiProductDisplay.apEntityId)}`);
-    setIsManagedObjectDeleteAllowed(APAdminPortalApiProductsDisplayService.get_IsDeleteAllowed({
-      apApiProductDisplay: apAdminPortalApiProductDisplay
+    setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
+      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
     }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
@@ -145,7 +152,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+          <Button 
+            label={ToolbarEditManagedObjectButtonLabel} 
+            icon="pi pi-pencil" 
+            onClick={onEditManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+            disabled={!managedObject_AllowedActions.isEditAllowed}
+          />        
         </React.Fragment>
       );
     }
@@ -157,7 +170,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(showViewComponent) {
       return (
         <React.Fragment>
-          <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isManagedObjectDeleteAllowed} style={{ color: "red", borderColor: 'red'}} />        
+          <Button 
+            label={ToolbarDeleteManagedObjectButtonLabel} 
+            icon="pi pi-trash" 
+            onClick={onDeleteManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined" 
+            disabled={!managedObject_AllowedActions.isDeleteAllowed} 
+            style={{ color: "red", borderColor: 'red'}} 
+          />        
         </React.Fragment>
       );
     }

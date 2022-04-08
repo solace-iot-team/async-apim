@@ -11,6 +11,7 @@ import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
 } from '../utils/APEntityIdsService';
+import { Globals } from '../utils/Globals';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -40,6 +41,10 @@ import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDispla
 
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
+export enum EAPApprovalType {
+  MANUAL = "manual",
+  AUTO = "auto"
+}
 
 export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
   apDescription: string;
@@ -47,7 +52,7 @@ export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
   apVersionInfo: IAPVersionInfo;
 }
 export type TAPApiProductDisplay_Policies = IAPEntityIdDisplay & {
-  apApprovalType: APIProduct.approvalType;
+  apApprovalType: EAPApprovalType;
   apClientOptionsDisplay: TAPClientOptionsDisplay;
 }
 export type TAPApiProductDisplay_Environments = IAPEntityIdDisplay & {
@@ -82,7 +87,7 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   apApiProductCategoryDisplayName: string;
 
   // Policies
-  apApprovalType: APIProduct.approvalType;
+  apApprovalType: EAPApprovalType;
   apClientOptionsDisplay: TAPClientOptionsDisplay;
 
   // Apis
@@ -128,9 +133,33 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   //   return connectorApiProductList;
   // }
 
-  private create_ApApprovalType(approvalType?: APIProduct.approvalType): APIProduct.approvalType {
-    if(approvalType === undefined) return APIProduct.approvalType.MANUAL;
-    return approvalType;
+  private create_ApApprovalType(connectorApprovalType?: APIProduct.approvalType): EAPApprovalType {
+    const funcName = 'create_ApApprovalType';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    if(connectorApprovalType === undefined) return EAPApprovalType.MANUAL;
+    switch(connectorApprovalType) {
+      case APIProduct.approvalType.MANUAL:
+        return EAPApprovalType.MANUAL;
+      case APIProduct.approvalType.AUTO:
+        return EAPApprovalType.AUTO;
+      default:
+        Globals.assertNever(logName, connectorApprovalType);
+    }
+    return EAPApprovalType.MANUAL;
+  }
+
+  private create_ConnectorApprovalType(apApprovalType: EAPApprovalType): APIProduct.approvalType {
+    const funcName = 'create_ConnectorApprovalType';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    switch(apApprovalType) {
+      case EAPApprovalType.MANUAL:
+        return APIProduct.approvalType.MANUAL;
+      case EAPApprovalType.AUTO:
+        return APIProduct.approvalType.AUTO;
+      default:
+        Globals.assertNever(logName, apApprovalType);
+    }
+    return APIProduct.approvalType.MANUAL;
   }
 
   private check_IsGuaranteedMessagingEnabled(connectorClientOptions: ClientOptions | undefined): boolean {
@@ -518,6 +547,91 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     }
   }
 
+  /**
+   * Retrieves a list of APIProducts filtered by:
+   * - owningBusinessGroupId = businessGroupId 
+   * - sharingBusinessGroupIdList contains businessGroupId
+   */
+  protected apiGetList_ConnectorApiProductList = async({ organizationId, businessGroupId, includeAccessLevelList }: {
+    organizationId: string;
+    businessGroupId?: string;
+    includeAccessLevelList?: Array<APIProductAccessLevel>;
+  }): Promise<Array<APIProduct>> => {
+    // const funcName = 'apiGetList_ConnectorApiProductList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const connectorApiProductList: Array<APIProduct> = [];
+    // get the business group Id first
+    let filter: string | undefined = undefined;
+    if(businessGroupId !== undefined) {
+      filter = this.create_ConnectorFilter_For_Attribute({
+        attributeName: this.get_AttributeName_OwningBusinessGroupId(),
+        attributeValue: businessGroupId
+      });
+    }
+    const businessGroupConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+      organizationName: organizationId,
+      filter: filter
+    });
+    // console.log(`${logName}: filter = ${filter}`);
+    // console.log(`${logName}: businessGroupConnectorApiProductList=${JSON.stringify(businessGroupConnectorApiProductList, null, 2)}`);
+
+    // TODO: filter again, until connector search is fixed
+    if(businessGroupId !== undefined) {
+      const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
+      for(const connectorApiProduct of businessGroupConnectorApiProductList) {
+        const attribute = connectorApiProduct.attributes.find( (x) => {
+          return x.name === owningBusinessGroup_AttributeName;
+        });
+        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
+          connectorApiProductList.push(connectorApiProduct);
+        }
+      }
+    }
+    // now get the sharing business group ids
+    if(businessGroupId !== undefined) {
+      filter = this.create_ConnectorFilter_For_Attribute({
+        attributeName: this.get_AttributeName_SharingBusinessGroupId(),
+        attributeValue: businessGroupId
+      });
+      const sharingConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+        organizationName: organizationId,
+        filter: filter
+      });
+      // console.log(`${logName}: sharing filter = ${filter}`);
+      // console.log(`${logName}: sharingConnectorApiProductList=${JSON.stringify(sharingConnectorApiProductList, null, 2)}`);
+      // TODO: filter again, until connector search is fixed
+      const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
+      for(const connectorApiProduct of sharingConnectorApiProductList) {
+        const attribute = connectorApiProduct.attributes.find( (x) => {
+          return x.name === sharingBusinessGroup_AttributeName;
+        });
+        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
+          connectorApiProductList.push(connectorApiProduct);
+        }
+      }
+    }
+
+    // now include all products not in businessGroup but with accessLevel in list
+    if(includeAccessLevelList !== undefined) {
+      const accessLevelConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+        organizationName: organizationId,
+      });
+      for(const connectorApiProduct of accessLevelConnectorApiProductList) {
+        if(connectorApiProduct.accessLevel !== undefined) {
+          if(includeAccessLevelList.includes(connectorApiProduct.accessLevel)) {
+            // add if not in list already
+            const found = connectorApiProductList.find( (x) => {
+              return x.name === connectorApiProduct.name;
+            });
+            if(found === undefined) connectorApiProductList.push(connectorApiProduct);
+          }
+        }
+      }
+    }
+    return connectorApiProductList;
+  }
+
     // const patch: APIProductPatch = {
   //   displayName: apiProduct.displayName,
   //   description: apiProduct.description,
@@ -562,7 +676,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const update: APIProductPatch = {
       displayName: apApiProductDisplay.apEntityId.displayName,
       description: apApiProductDisplay.apDescription,
-      approvalType: apApiProductDisplay.apApprovalType,
+      approvalType: this.create_ConnectorApprovalType(apApiProductDisplay.apApprovalType),
       clientOptions: this.create_ConnectorClientOptions(apApiProductDisplay.apClientOptionsDisplay),
       environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apEnvironmentDisplayList),
       protocols: APProtocolsDisplayService.create_ConnectorProtocols_From_ApProtocolDisplayList({ 
@@ -607,7 +721,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     const create: APIProduct = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
-      approvalType: apApiProductDisplay.apApprovalType,
+      approvalType: this.create_ConnectorApprovalType(apApiProductDisplay.apApprovalType),
       displayName: apApiProductDisplay.apEntityId.displayName,
       name: apApiProductDisplay.apEntityId.id,
       description: apApiProductDisplay.apDescription,

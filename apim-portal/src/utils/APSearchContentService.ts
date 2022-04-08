@@ -10,9 +10,14 @@ class APSearchContentService {
     const isObject = (obj:any ) => obj && typeof obj === 'object';
     Object.keys(source).forEach( key => {
       const value = source[key];
-      if (Array.isArray(value)) result += this.generateSearchContentString(value);
+      if (Array.isArray(value)) {
+        value.forEach( (elem) => {
+          result += this.generateSearchContentString(elem);
+        });
+      }
       else if (isObject(value)) result += this.generateSearchContentString(value);
-      else result += value + ',';
+      // else if(typeof value === 'string') result += value !== undefined ? value + ',' + value.toLowerCase() + ',' : '';
+      else if(typeof value === 'string') result += value + ',' + value.toLowerCase() + ',';
     });
     return result;
   }

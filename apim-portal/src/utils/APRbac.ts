@@ -98,7 +98,10 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
-      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,      
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
     ]
   },
   {
@@ -127,6 +130,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.UserHome,
       EUIDeveloperPortalResourcePaths.ExploreApis,
       EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+      EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
       EUIDeveloperPortalResourcePaths.ManageTeamApplications,
     ]

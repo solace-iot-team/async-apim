@@ -47,9 +47,10 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
-      isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
-      isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
-      isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts)
+        isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
+        isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
+        isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts) &&
+        isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts)
       ) return [];
 
       let _items: Array<MenuItem> = [
@@ -59,18 +60,25 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
         },
+        // {
+        //   label: 'Explore APIs',
+        //   // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApis),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
+        // },
         {
+          // label: 'Explore API Products',
           label: 'Explore APIs',
-          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),
-          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApis),
-          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
-        },
-        {
-          label: 'Explore API Products',
           // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApiProducts),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts); }
         },
+        // {
+        //   label: 'DELETEME: Explore API Products',
+        //   // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts); }
+        // },
         // {
         //   label: 'Team Applications',
         //   disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),

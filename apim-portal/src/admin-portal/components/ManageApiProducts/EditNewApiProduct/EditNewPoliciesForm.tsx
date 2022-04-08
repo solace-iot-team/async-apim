@@ -9,9 +9,8 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import APAdminPortalApiProductsDisplayService, { 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { APIProduct } from "@solace-iot-team/apim-connector-openapi-browser";
 import { EAction} from "../ManageApiProductsCommon";
-import { TAPApiProductDisplay_Policies, TAPClientOptionsGuaranteedMessagingDisplay } from "../../../../displayServices/APApiProductsDisplayService";
+import { EAPApprovalType, TAPApiProductDisplay_Policies, TAPClientOptionsGuaranteedMessagingDisplay } from "../../../../displayServices/APApiProductsDisplayService";
 import { EditNewGuaranteedMessagingFormFields } from "./EditNewGuaranteedMessagingFormFields";
 
 import '../../../../components/APComponents.css';
@@ -27,7 +26,7 @@ export interface IEditNewPoliciesFormProps {
 }
 
 export type TManagedObjectFormData = {
-  approvalType: APIProduct.approvalType;
+  approvalType: EAPApprovalType;
   guaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay;
 };
 export type TManagedObjectFormDataEnvelope = {

@@ -1,17 +1,26 @@
 import { 
   APIProduct,
+  APIProductAccessLevel,
   ApiProductsService, 
   CommonEntityNameList,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { AuthHelper } from '../../auth/AuthHelper';
 import { 
   APApiProductsDisplayService, 
   IAPApiProductDisplay, 
 } from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
+import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
+import { EUIAdminPortalResourcePaths } from '../../utils/Globals';
 
+export type TAPAdminPortalApiProductDisplay_AllowedActions = {
+  isDeleteAllowed: boolean;
+  isEditAllowed: boolean;
+  isViewAllowed: boolean;
+}
 export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
   apAppReferenceEntityIdList: TAPEntityIdList;
 }; 
@@ -19,6 +28,65 @@ export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProduct
 
 class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
+
+  public get_Empty_AllowedActions(): TAPAdminPortalApiProductDisplay_AllowedActions {
+    return {
+      isDeleteAllowed: false,
+      isEditAllowed: false,
+      isViewAllowed: false
+    };
+  }
+  /**
+   * Checks:
+   * - api product in same business group as user ==> all allowed
+   * - api product is owned by user ==> all allowed
+   * - user has role organizationAdmin ==> all allowed
+   * - if api product has app references ==> delete not allowed
+   * - if api product is shared with user business group ==> view allowed
+   */
+  public get_AllowedActions({ userId, userBusinessGroupId, apAdminPortalApiProductDisplay, authorizedResourcePathAsString }:{
+    userId: string;
+    userBusinessGroupId?: string;
+    authorizedResourcePathAsString: string;
+    apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  }): TAPAdminPortalApiProductDisplay_AllowedActions {
+    const allowedActions: TAPAdminPortalApiProductDisplay_AllowedActions = {
+      isEditAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit),
+      isDeleteAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete),
+      isViewAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View),
+    };
+    if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
+      // check if owned by user
+      if(apAdminPortalApiProductDisplay.apOwnerInfo.id === userId) {
+        allowedActions.isEditAllowed = true;
+        allowedActions.isDeleteAllowed = true;
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if((!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
+      // check if api product owned by same business group
+      if(userBusinessGroupId === apAdminPortalApiProductDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id) {
+        allowedActions.isEditAllowed = true;
+        allowedActions.isDeleteAllowed = true;
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if((!allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
+      // check if api product shared with user business group
+      const foundSharingBusinessGroup: TAPManagedAssetDisplay_BusinessGroupSharing | undefined = apAdminPortalApiProductDisplay.apBusinessGroupInfo.apBusinessGroupSharingList.find( (x) => {
+        return x.apEntityId.id === userBusinessGroupId;
+      });
+      if(foundSharingBusinessGroup !== undefined) {
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if(allowedActions.isDeleteAllowed) {
+      // check if api product has references  
+      allowedActions.isDeleteAllowed = this.get_IsDeleteAllowed({ apApiProductDisplay: apAdminPortalApiProductDisplay })
+    }
+
+    return allowedActions;
+  }
 
   public create_Empty_ApAdminPortalApiProductDisplay(): TAPAdminPortalApiProductDisplay {
     return {
@@ -85,67 +153,12 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return APEntityIdsService.create_SortedApEntityIdList_From_CommonEntityNamesList(list);
   }
 
-  private apiGetList_ConnectorApiProductList = async({ organizationId, businessGroupId }: {
-    organizationId: string;
-    businessGroupId?: string;
-  }): Promise<Array<APIProduct>> => {
-    // const funcName = 'apiGetList_ConnectorApiProductList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
-
-    const connectorApiProductList: Array<APIProduct> = [];
-    // get the business group Id first
-    let filter: string | undefined = undefined;
-    if(businessGroupId !== undefined) {
-      filter = this.create_ConnectorFilter_For_Attribute({
-        attributeName: this.get_AttributeName_OwningBusinessGroupId(),
-        attributeValue: businessGroupId
-      });
-    }
-    const businessGroupConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-      organizationName: organizationId,
-      filter: filter
-    });
-    // console.log(`${logName}: filter = ${filter}`);
-    // console.log(`${logName}: businessGroupConnectorApiProductList=${JSON.stringify(businessGroupConnectorApiProductList, null, 2)}`);
-
-    // TODO: filter again, until connector search is fixed
-    if(businessGroupId !== undefined) {
-      const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
-      for(const connectorApiProduct of businessGroupConnectorApiProductList) {
-        const attribute = connectorApiProduct.attributes.find( (x) => {
-          return x.name === owningBusinessGroup_AttributeName;
-        });
-        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
-          connectorApiProductList.push(connectorApiProduct);
-        }
-      }
-    }
-    // now get the sharing business group ids
-    if(businessGroupId !== undefined) {
-      filter = this.create_ConnectorFilter_For_Attribute({
-        attributeName: this.get_AttributeName_SharingBusinessGroupId(),
-        attributeValue: businessGroupId
-      });
-      const sharingConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-        organizationName: organizationId,
-        filter: filter
-      });
-      // console.log(`${logName}: sharing filter = ${filter}`);
-      // console.log(`${logName}: sharingConnectorApiProductList=${JSON.stringify(sharingConnectorApiProductList, null, 2)}`);
-      // TODO: filter again, until connector search is fixed
-      const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
-      for(const connectorApiProduct of sharingConnectorApiProductList) {
-        const attribute = connectorApiProduct.attributes.find( (x) => {
-          return x.name === sharingBusinessGroup_AttributeName;
-        });
-        if(attribute !== undefined && attribute.value.includes(businessGroupId)) {
-          connectorApiProductList.push(connectorApiProduct);
-        }
-      }
-    }
-    return connectorApiProductList;
-  }
-
+    /**
+   * Returns a list of API products.
+   * - in the business group
+   * - any public or internal API product
+   * - api products shared with this business group (regardless of visibility)
+   */
   public apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId, default_ownerId }: {
     organizationId: string;
     businessGroupId: string;
@@ -154,8 +167,12 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
       organizationId: organizationId,
-      businessGroupId: businessGroupId
-    })
+      businessGroupId: businessGroupId,
+      includeAccessLevelList: [
+        APIProductAccessLevel.INTERNAL,
+        APIProductAccessLevel.PUBLIC
+      ],
+    });
     // get the complete env list for reference
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId

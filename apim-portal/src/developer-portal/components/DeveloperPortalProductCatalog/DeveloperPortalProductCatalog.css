@@ -65,6 +65,13 @@
   font-size: 1.5rem;
   font-weight: 700;
 }
+/* .adp-productcatalog .product-category-icon {
+  vertical-align: top;
+}
+.adp-productcatalog .product-category {
+  vertical-align: top;
+  margin-left: 3px;
+} */
 .adp-productcatalog .api-product-description {
   margin: 0 0 1rem 0;
 }

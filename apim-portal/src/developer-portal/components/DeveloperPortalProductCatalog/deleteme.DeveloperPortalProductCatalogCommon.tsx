@@ -1,3 +1,4 @@
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export enum E_COMPONENT_STATE {
   UNDEFINED = "UNDEFINED",
@@ -8,6 +9,11 @@ export enum E_COMPONENT_STATE {
 export enum E_CALL_STATE_ACTIONS {
   API_GET_PRODUCT_LIST = 'API_GET_PRODUCT_LIST',
   API_GET_PRODUCT = "API_GET_PRODUCT",
-  API_GET_API_SPEC = "API_GET_API_SPEC"
+  API_GET_API = "API_GET_API"
+}
+
+export type TAPDeveloperPortalApiProductCatalogCompositeId = {
+  apiProductId: CommonName;
+  apiProductDisplayName: CommonDisplayName
 }
 

@@ -1,20 +1,21 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
 import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
-import { EUIPublicDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
+import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/deleteme.DeveloperPortalProductCatalog';
+import { TAPDeveloperPortalApiProductCatalogCompositeId } from '../components/DeveloperPortalProductCatalog/deleteme.DeveloperPortalProductCatalogCommon';
 
 import "../../pages/Pages.css";
 
-export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
-  const componentName="DeveloperPortalExplorePublicApiProductsPage";
+export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
+  const componentName="DeveloperPortalExploreApiProductsPage";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
@@ -25,6 +26,14 @@ export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  const [locationState, setLocationState] = React.useState<TAPDeveloperPortalApiProductCatalogCompositeId>();
+  const location = useLocation<TAPDeveloperPortalApiProductCatalogCompositeId>();
+
+  React.useEffect(() => {
+    if(location.state) {
+      setLocationState(location.state);
+    }
+  }, [location.state]);
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -44,9 +53,9 @@ export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
         label: 'Explore'
       },
       { 
-        label: 'Public API Products',
+        label: 'DELETEME: API Products',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIPublicDeveloperPortalResourcePaths.ExploreApiProducts) }
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts) }
       }
     ];
     breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
@@ -62,9 +71,8 @@ export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
   const [organizationName, setOrganizationName] = React.useState<TAPOrganizationId>();
 
   React.useEffect(() => {
-    const funcName = 'useEffect([userContext])';
+    const funcName = 'useEffect([])';
     const logName = `${componentName}.${funcName}()`;
-    alert(`${logName}: what org to use for public developer portal?`)
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
     setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
   }, [userContext]);
@@ -76,6 +84,7 @@ export const DeveloperPortalExplorePublicApiProductsPage: React.FC = () => {
       {organizationName &&
         <DeveloperPortalProductCatalog
           organizationName={organizationName}
+          viewApiProductCompositeId={locationState}
           onSuccess={onSuccess} 
           onError={onError} 
           onBreadCrumbLabelList={onBreadcrumbLabelList}

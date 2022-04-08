@@ -8,26 +8,28 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
-import { TAPDeveloperPortalApiProductCatalogCompositeId } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon';
 
 import "../../pages/Pages.css";
+import { TAPEntityId } from '../../utils/APEntityIdsService';
 
 export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
   const componentName="DeveloperPortalExploreApiProductsPage";
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
+
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
-  const [locationState, setLocationState] = React.useState<TAPDeveloperPortalApiProductCatalogCompositeId>();
-  const location = useLocation<TAPDeveloperPortalApiProductCatalogCompositeId>();
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+
+  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
+
+  const [locationState, setLocationState] = React.useState<TAPEntityId>();
+  const location = useLocation<TAPEntityId>();
 
   React.useEffect(() => {
     if(location.state) {
@@ -43,24 +45,24 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
 
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
-  }
-
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       {
         label: 'Explore'
       },
       { 
-        label: 'API Products',
+        // label: 'API Products',
+        label: 'APIs',
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -68,26 +70,24 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
     )
   }
 
-  const [organizationName, setOrganizationName] = React.useState<TAPOrganizationId>();
-
   React.useEffect(() => {
     const funcName = 'useEffect([])';
     const logName = `${componentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
-  }, [userContext]);
+    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <React.Fragment>
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
-      {organizationName &&
+      {organizationEntityId && renderBreadcrumbs()}
+      {organizationEntityId &&
         <DeveloperPortalProductCatalog
-          organizationName={organizationName}
-          viewApiProductCompositeId={locationState}
+          organizationEntityId={organizationEntityId}
+          viewApiProductEntityId={locationState}
           onSuccess={onSuccess} 
           onError={onError} 
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
+          setBreadCrumbItemList={setBreadCrumbItemList}
         />
       }
     </React.Fragment>

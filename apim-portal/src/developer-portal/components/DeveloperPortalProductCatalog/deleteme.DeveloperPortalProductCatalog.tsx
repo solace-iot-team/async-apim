@@ -4,28 +4,27 @@ import { useHistory } from 'react-router-dom';
 
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from "primereact/button";
-import { MenuItem } from "primereact/api";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { E_COMPONENT_STATE } from "./DeveloperPortalProductCatalogCommon";
+import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { E_COMPONENT_STATE, TAPDeveloperPortalApiProductCatalogCompositeId } from "./deleteme.DeveloperPortalProductCatalogCommon";
+import { DeveloperPortalViewApiProduct } from "./deleteme.DeveloperPortalViewApiProduct";
+import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
+import { DeveloperPortalGridListApiProducts } from "./deleteme.DeveloperPortalGridListApiProducts";
+import { TAPDeveloperPortalApiProductCompositeId } from "../DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon";
 import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
-import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
-import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
-import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
 
 export interface IDeveloperPortalProductCatalogProps {
-  organizationEntityId: TAPEntityId;
-  viewApiProductEntityId?: TAPEntityId;
+  organizationName: TAPOrganizationId;
+  viewApiProductCompositeId?: TAPDeveloperPortalApiProductCatalogCompositeId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onBreadCrumbLabelList: (breadCrumbLableList: Array<string>) => void;
 }
 
 export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCatalogProps> = (props: IDeveloperPortalProductCatalogProps) => {
@@ -52,23 +51,19 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     });
   }
 
-  const [userContext] = React.useContext(UserContext);
-
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
-  const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-
+  const [managedObjectId, setManagedObjectId] = React.useState<CommonName>();
+  const [managedObjectDisplayName, setManagedObjectDisplayName] = React.useState<CommonDisplayName>();
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
 
-  const [isAllowedToCreateApp, setIsAllowedToCreateApp] = React.useState<boolean>(false);
-
   // * useEffect Hooks *
   React.useEffect(() => {
-    if(props.viewApiProductEntityId) {
-      setManagedObjectEntityId(props.viewApiProductEntityId);
+    if(props.viewApiProductCompositeId) {
+      setManagedObjectId(props.viewApiProductCompositeId.apiProductId);
+      setManagedObjectDisplayName(props.viewApiProductCompositeId.apiProductDisplayName);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     } else {
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW);
@@ -80,6 +75,13 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    if(!managedObjectDisplayName) return;
+    if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW
+      ) props.onBreadCrumbLabelList([managedObjectDisplayName]);
+    else props.onBreadCrumbLabelList([]);
+  }, [componentState, managedObjectDisplayName]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         // do nothing
@@ -88,30 +90,30 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay): void => {
-    
-    setIsAllowedToCreateApp(APDeveloperPortalApiProductsDisplayService.isAllowed_To_CreateApp({
-      apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
-    }));
-
+  const onViewManagedObject = (id: CommonName, displayName: CommonDisplayName): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(apDeveloperPortalApiProductDisplay.apEntityId);    
+    setManagedObjectId(id);
+    setManagedObjectDisplayName(displayName);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
   // * Create App *
 
-  const manageAppsHistory = useHistory<TAPEntityId>();
+  const manageAppsHistory = useHistory<TAPDeveloperPortalApiProductCompositeId>();
 
-  const onCreateAppWithProductFromToolbar = () => {
-    const funcName = 'onCreateAppWithProductFromToolbar';
+
+  const onCreateAppWithProduct = () => {
+    const funcName = 'onCreateAppWithProduct';
     const logName = `${componentName}.${funcName}()`;
-    if(managedObjectEntityId === undefined) Error(`${logName}: managedObjectEntityId is undefined`);
+
+    if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined`);
+    if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined`);
     manageAppsHistory.push({
       pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
-      state: managedObjectEntityId
+      state: {
+        apiProductId: managedObjectId,
+        apiProductDisplayName: managedObjectDisplayName
+      }
     });
   }
 
@@ -123,28 +125,26 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
-    if(componentState.currentState === undefined) return undefined;
-    if(showViewComponent) {
-      if(isAllowedToCreateApp)
-        return (
-          <React.Fragment>
-            <Button icon="pi pi-plus" label="Create App" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateAppWithProductFromToolbar}/>        
-          </React.Fragment>
-        );
-      }
+
+    if(!componentState.currentState) return undefined;
+    if(showViewComponent) return (
+      <React.Fragment>
+        <Button icon="pi pi-plus" label="Create App" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateAppWithProduct}/>        
+      </React.Fragment>
+    );
     return undefined;
   }
   const renderToolbar = (): JSX.Element => {
     const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
     const rightToolbarTemplate: JSX.Element | undefined = renderRightToolbarContent();
-    if(leftToolbarTemplate || rightToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate} />);
-    else return (<></>);
+    if(leftToolbarTemplate || rightToolbarTemplate) 
+      return (
+        <Toolbar className="p-mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate} />
+      );
+    else return (<React.Fragment></React.Fragment>);
   }
   
   // * prop callbacks *
-  const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    props.setBreadCrumbItemList(itemList);
-  }
   const onListViewSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -183,23 +183,22 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       {showListComponent && 
         <DeveloperPortalGridListApiProducts
           key={componentState.previousState}
-          organizationEntityId={props.organizationEntityId}
+          organizationId={props.organizationName}
           onSuccess={onListViewSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onManagedObjectView={onViewManagedObject}
+          onManagedObjectOpen={onViewManagedObject}
         />
       }
 
-      {showViewComponent && managedObjectEntityId && 
+      {showViewComponent && managedObjectId && managedObjectDisplayName &&
         <DeveloperPortalViewApiProduct 
-          organizationId={props.organizationEntityId.id}
-          apiProductEntityId={managedObjectEntityId}
+          organizationId={props.organizationName}
+          apiProductId={managedObjectId}
+          apiProductDisplayName={managedObjectDisplayName}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />      
       }
     </div>

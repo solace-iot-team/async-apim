@@ -4,7 +4,7 @@ class APAccessLevelDisplayService {
   private readonly ComponentName = "APAccessLevelDisplayService";
 
   public get_Default_AccessLevel = (): APIProductAccessLevel => {
-    return APIProductAccessLevel.INTERNAL;
+    return APIProductAccessLevel.PRIVATE;
   }
 
   public get_SelectList = (): Array<APIProductAccessLevel> => {
