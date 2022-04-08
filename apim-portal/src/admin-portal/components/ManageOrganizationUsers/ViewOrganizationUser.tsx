@@ -98,9 +98,9 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
   }
 
-  const renderLegacyOrganzationRoles = (mo: TManagedObject): string => { 
-    return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
-  }
+  // const renderLegacyOrganzationRoles = (mo: TManagedObject): string => { 
+  //   return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
+  // }
 
   const renderManagedObjectDisplay = () => {
     const funcName = 'renderManagedObjectDisplay';
@@ -127,7 +127,7 @@ export const ViewOrganizationUser: React.FC<IViewOrganizationUserProps> = (props
                     { AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, EUIAdminPortalResourcePaths.ManageSystemUsers) &&
                       <div><b>System Roles</b>: {renderSystemRoles(managedObject.apSystemRoleEntityIdList)}</div>
                     }
-                    <div className="p-mt-2" style={{ color: 'lightgray'}}><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject)}.</div>                    
+                    {/* <div className="p-mt-2" style={{ color: 'lightgray'}}><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(managedObject)}.</div>                     */}
                     <APDisplayOrganizationUserBusinessGroups
                       apOrganizationUserDisplay={managedObject}
                       className="card p-mt-2"
