@@ -1,20 +1,12 @@
-
-export const TAPManagedAssetDisplay_BusinessGroupSharing_Schema = 
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "TAPManagedAssetDisplay_BusinessGroupSharing_Schema",
   "type": "object",
-  "required": [
-    "apEntityId",
-    "apSharingAccessType"
-  ],
+  "required": ["apEntityId", "apSharingAccessType"],
   "properties": {
     "apEntityId": {
       "type": "object",
-      "required": [
-        "id",
-        "displayName"
-      ],
+      "required": ["id", "displayName"],
       "properties": {
         "id": {
           "type": "string"
@@ -26,10 +18,7 @@ export const TAPManagedAssetDisplay_BusinessGroupSharing_Schema =
     },
     "apSharingAccessType": {
       "type": "string",
-      "enum": [
-        "readonly",
-        "full-access"
-      ]
+      "enum": ["readonly", "full-access"]
     },
     "apExternalReference": {
       "type": "object",

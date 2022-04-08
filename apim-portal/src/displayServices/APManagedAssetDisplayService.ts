@@ -13,7 +13,7 @@ import APBusinessGroupsDisplayService, {
   TAPBusinessGroupDisplay_ExternalReference
 } from './APBusinessGroupsDisplayService';
 import APLifecycleDisplayService, { EAPLifecycleState } from './APLifecycleDisplayService';
-import { TAPManagedAssetDisplay_BusinessGroupSharing_Schema } from './APManagedAssetDisplayService_Schemas';
+import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
 const CAPManagedAssetAttribute_Prefix = "AP";
 enum EAPManagedAssetAttribute_Scope {
@@ -191,28 +191,10 @@ export abstract class APManagedAssetDisplayService {
       for(const jsonBusinessGroupSharing of jsonBusinessGroupSharingList) {
         // validate content
         const v: Validator = new Validator();
-        const validateResult: ValidatorResult = v.validate(jsonBusinessGroupSharing, TAPManagedAssetDisplay_BusinessGroupSharing_Schema);
+        const validateResult: ValidatorResult = v.validate(jsonBusinessGroupSharing, APManagedAssetDisplay_BusinessGroupSharing_Schema);
         if(!validateResult.valid) throw new Error(`${logName}: validateResult=${JSON.stringify(validateResult.errors, null, 2)}`);
         apManagedAssetDisplay_BusinessGroupSharingList.push(jsonBusinessGroupSharing);
       }
-      // // split into individual strings
-      // const attributeValueList: Array<string> = attributeValue.split(BusinessGroupSharing_AttributeValue_ListDelimiter);
-      // for(const av of attributeValueList) {
-      //   // try to parse it as JSON and validate content
-      //   const jsonAv: Record<string, unknown> = JSON.parse(av);
-      //   if(jsonAv[this.nameOf_BusinessGroupSharing('apEntityId')] === undefined) throw new Error(`${this.nameOf_BusinessGroupSharing('apEntityId')} not found`);
-      //   const apBusinessGroupSharingEntityId: TAPEntityId = jsonAv[this.nameOf_BusinessGroupSharing('apEntityId')] as TAPEntityId;
-      //   if(apBusinessGroupSharingEntityId.id === undefined) throw new Error(`apEntityId.id not found`);
-      //   if(apBusinessGroupSharingEntityId.displayName === undefined) throw new Error(`apEntityId.displayName not found`);
-      //   if(jsonAv[this.nameOf_BusinessGroupSharing('apSharingAccessType')] === undefined) throw new Error(`${this.nameOf_BusinessGroupSharing('apSharingAccessType')} not found`);
-      //   const apSharingAccessType: E_ManagedAssetDisplay_BusinessGroupSharing_AccessType = jsonAv[this.nameOf_BusinessGroupSharing('apSharingAccessType')] as E_ManagedAssetDisplay_BusinessGroupSharing_AccessType;
-      //   if(!Object.values(E_ManagedAssetDisplay_BusinessGroupSharing_AccessType).includes(apSharingAccessType)) throw new Error(`apSharingAccessType=${apSharingAccessType} not a valid type, valid types=${JSON.stringify(Object.values(E_ManagedAssetDisplay_BusinessGroupSharing_AccessType))}`);
-      //   const apManagedAssetDisplay_BusinessGroupSharing: TAPManagedAssetDisplay_BusinessGroupSharing = {
-      //     apEntityId: apBusinessGroupSharingEntityId,
-      //     apSharingAccessType: apSharingAccessType
-      //   };
-      //   apManagedAssetDisplay_BusinessGroupSharingList.push(apManagedAssetDisplay_BusinessGroupSharing);
-      // }
     } catch(e: any) {
       console.error(`${logName}: error parsing attributeValue = ${attributeValue}, e=${e}`);
     } finally {
