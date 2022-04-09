@@ -2,6 +2,26 @@
 
 Solace Async API Management.
 
+## Version 0.1.3
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.3
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.6
+
+#### API-M Admin & Developer Portal
+**New Features:**
+* **Manage API Products**
+  - added versions to view and update
+  - management of owning business group
+  - manage sharing with business group - including access type = `readonly`, `full-access`
+  - added accessLevel attribute: `internal`, `private`, `public`
+  - added lifecycle attribute: `draft`, `released`, `deprecated`
+  - added access rights checks for edit, delete, and view (see documentation for details)
+* **API Product Catalog in Developer Portal**
+  - renamed `Explore API Products` to `Explore APIs`
+  - refactored grid/list view
+  - added access right checks for list, view and creating apps from products (see documentation for details)
+
 ## Version 0.1.2
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.2
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
