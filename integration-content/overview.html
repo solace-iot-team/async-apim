@@ -48,6 +48,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#external-systems">External Systems</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#external-business-groups">External Business Groups</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#subscribing-to-asset-change-events">Subscribing to Asset Change Events</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#filtering">Filtering:</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#extracting-lifecycle-status">Extracting Lifecycle Status:</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#extracting-business-group-information">Extracting Business Group information:</a></li>
 </ul>
 </li>
@@ -56,6 +58,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-portal.html">Developer Portal</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
 <ul>
@@ -99,11 +105,27 @@
 </section>
 <section id="subscribing-to-asset-change-events">
 <h2>Subscribing to Asset Change Events<a class="headerlink" href="#subscribing-to-asset-change-events" title="Permalink to this headline"></a></h2>
+<p>A suggested approach for integration of assets is to subscribe to asset create/update/delete events.</p>
+<section id="filtering">
+<h3>Filtering:<a class="headerlink" href="#filtering" title="Permalink to this headline"></a></h3>
+<p>A suggested filtering approach:</p>
+<ul class="simple">
+<li><p>discard event if access level !== <cite>public</cite></p></li>
+<li><p>discard event if attribute <cite>_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_</cite> !== &lt;configured external system&gt;</p></li>
+<li><p>discard event if attribute: <cite>_AP_LIFECYLE_STATE_</cite> === <cite>draft</cite></p></li>
+</ul>
+</section>
+<section id="extracting-lifecycle-status">
+<h3>Extracting Lifecycle Status:<a class="headerlink" href="#extracting-lifecycle-status" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>extract value from attribute: <cite>_AP_LIFECYLE_STATE_</cite> (<cite>released</cite> or <cite>deprecated</cite>)</p></li>
+</ul>
+</section>
 <section id="extracting-business-group-information">
 <h3>Extracting Business Group information:<a class="headerlink" href="#extracting-business-group-information" title="Permalink to this headline"></a></h3>
 <ul class="simple">
-<li><p>filter by attribute: <cite>_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_</cite></p></li>
 <li><p>extract value from attribute: <cite>_AP_BUSINESS_GROUP_OWNING_EXTERNAL_ID_</cite></p></li>
+<li><p>extract values from attribute <cite>_AP_BUSINESS_GROUP_SHARING_LIST_</cite>, see <a class="reference internal" href="../managed-assets-content/overview.html#managed-assets-overview-business-group-sharing-list"><span class="std std-ref">Business Group Sharing List</span></a> for details.</p></li>
 </ul>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
@@ -126,8 +148,8 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 02 Apr 2022 at 12:22.
+    <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
+      <span class="lastupdated">Last updated on 09 Apr 2022 at 07:55.
       </span></p>
   </div>
 

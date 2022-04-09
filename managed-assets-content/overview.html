@@ -20,7 +20,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Integration" href="../integration.html" />
+    <link rel="next" title="API Products" href="api-products.html" />
     <link rel="prev" title="Managed Assets" href="../managed-assets.html" /> 
 </head>
 
@@ -45,12 +45,20 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../managed-assets.html">Managed Assets</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Managed Assets Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general">General</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#versioning">Versioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#business-group-sharing-list">Business Group Sharing List</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="api-products.html">API Products</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-portal.html">Developer Portal</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
 <ul>
@@ -90,6 +98,16 @@
 <ul class="simple">
 <li><p>API Products</p></li>
 </ul>
+</section>
+<section id="versioning">
+<h2>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline"></a></h2>
+<p>Managed assets are versioned using semantic versioning.</p>
+<ul class="simple">
+<li><p>each update requires a new version of the asset</p></li>
+</ul>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h2>
 <p>Assets are tagged with the following, reserved attributes:</p>
 <dl class="field-list simple">
 <dt class="field-odd">_AP_ASSET_OWNER_ID_</dt>
@@ -110,13 +128,51 @@
 <dt class="field-even">_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_</dt>
 <dd class="field-even"><p>the external system’s id the external business group information relates to</p>
 </dd>
+<dt class="field-odd">_AP_BUSINESS_GROUP_SHARING_LIST_</dt>
+<dd class="field-odd"><p>list of business group information the asset is shared with. see below for details.</p>
+</dd>
+<dt class="field-even">_AP_LIFECYLE_STATE_</dt>
+<dd class="field-even"><p>state of the asset. values: <cite>draft</cite>, <cite>released</cite>, <cite>deprecated</cite></p>
+</dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="../integration-content/overview.html#integration-content-overview"><span class="std std-ref">Integration Overview</span></a></p></li>
+<li><p><a class="reference internal" href="api-products.html#managed-assets-api-products"><span class="std std-ref">API Products</span></a></p></li>
 </ul>
 </div>
+</section>
+<section id="business-group-sharing-list">
+<span id="managed-assets-overview-business-group-sharing-list"></span><h2>Business Group Sharing List<a class="headerlink" href="#business-group-sharing-list" title="Permalink to this headline"></a></h2>
+<p>The attribute <cite>_AP_BUSINESS_GROUP_SHARING_LIST_</cite> contains a list of JSON objects with the following
+<a class="reference download internal" download="" href="../_downloads/e9ede69dbccb6b56baa4870cabe4079d/APManagedAssetDisplay_BusinessGroupSharing_Schema.json"><code class="xref download docutils literal notranslate"><span class="pre">schema</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">apEntityId.id</dt>
+<dd class="field-odd"><p>the id of the business group the asset is shared with</p>
+</dd>
+<dt class="field-even">apEntityId.displayName</dt>
+<dd class="field-even"><p>the display name of the business group the asset is shared with</p>
+</dd>
+<dt class="field-odd">apSharingAccessType</dt>
+<dd class="field-odd"><p>the access granted, values <cite>readonly</cite>, <cite>full-access</cite></p>
+</dd>
+<dt class="field-even">apExternalReference</dt>
+<dd class="field-even"><p>contains information about the external system if the business group was imported from an external system</p>
+</dd>
+<dt class="field-odd">apExterenalReference.externalId</dt>
+<dd class="field-odd"><p>the business group id in the external system</p>
+</dd>
+<dt class="field-even">apExterenalReference.displayName</dt>
+<dd class="field-even"><p>the business group display name in the external system</p>
+</dd>
+<dt class="field-odd">apExterenalReference.externalSystemId</dt>
+<dd class="field-odd"><p>the id of the external system</p>
+</dd>
+<dt class="field-even">apExterenalReference.externalSystemdisplayName</dt>
+<dd class="field-even"><p>the display name of the external system</p>
+</dd>
+</dl>
 </section>
 </section>
 
@@ -125,14 +181,14 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../managed-assets.html" class="btn btn-neutral float-left" title="Managed Assets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../integration.html" class="btn btn-neutral float-right" title="Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="api-products.html" class="btn btn-neutral float-right" title="API Products" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 02 Apr 2022 at 12:22.
+    <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
+      <span class="lastupdated">Last updated on 09 Apr 2022 at 07:55.
       </span></p>
   </div>
 

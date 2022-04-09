@@ -7,3 +7,4 @@ Managed Assets
   :maxdepth: 1
 
   managed-assets-content/overview
+  managed-assets-content/api-products
