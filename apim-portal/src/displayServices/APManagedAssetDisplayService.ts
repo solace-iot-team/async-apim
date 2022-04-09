@@ -206,6 +206,19 @@ export abstract class APManagedAssetDisplayService {
     return JSON.stringify(apManagedAssetDisplay_BusinessGroupSharingList);
   }
 
+  private create_recovered_ApManagedAssetBusinessGroupInfo(): TAPManagedAssetBusinessGroupInfo {
+    return {
+      apOwningBusinessGroupEntityId: APBusinessGroupsDisplayService.create_recovered_BusinessGroupEntityId(),
+      apBusinessGroupSharingList: []
+    };
+  }
+
+  protected is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay
+  }): boolean {
+    return apManagedAssetDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id === APBusinessGroupsDisplayService.get_recovered_BusinessGroupId();
+  }
+
   /**
    * Extracts all attributes for business group management.
    * Looks for business group Id + display name.
@@ -231,21 +244,30 @@ export abstract class APManagedAssetDisplayService {
       apAttributeDisplayList: apAttributeDisplayList
     });
     // alert(`${logName}: apBusinessGroupAttributeDisplayList=${JSON.stringify(apBusinessGroupAttributeDisplayList)}`);
-    if(apBusinessGroupAttributeDisplayList.length === 0) throw new Error(`${logName}: apBusinessGroupAttributeDisplayList.length === 0`);
+    if(apBusinessGroupAttributeDisplayList.length === 0) {
+      console.warn(`${logName}: apBusinessGroupAttributeDisplayList.length === 0, returning recovered info`);
+      return this.create_recovered_ApManagedAssetBusinessGroupInfo();
+    }
 
     // id
     const businessGroupId_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_ID }),
       apAttributeDisplayList: apBusinessGroupAttributeDisplayList
     });
-    if(businessGroupId_apAttributeDisplayList.length === 0) throw new Error(`${logName}: businessGroupId_apAttributeDisplayList.length === 0`);
+    if(businessGroupId_apAttributeDisplayList.length === 0) {
+      console.warn(`${logName}: businessGroupId_apAttributeDisplayList.length === 0`);
+      return this.create_recovered_ApManagedAssetBusinessGroupInfo();
+    }
     apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.id = businessGroupId_apAttributeDisplayList[0].value;
     // displayName
     const businessGroupDisplayName_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_DISPLAY_NAME }),
       apAttributeDisplayList: apBusinessGroupAttributeDisplayList
     });
-    if(businessGroupDisplayName_apAttributeDisplayList.length === 0) throw new Error(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length === 0`);
+    if(businessGroupDisplayName_apAttributeDisplayList.length === 0) {
+      console.warn(`${logName}: businessGroupDisplayName_apAttributeDisplayList.length === 0`);
+      return this.create_recovered_ApManagedAssetBusinessGroupInfo();
+    }
     apManagedAssetBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName = businessGroupDisplayName_apAttributeDisplayList[0].value;
 
     // sharing list

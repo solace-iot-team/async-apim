@@ -23,7 +23,7 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
 
-export interface IListApiProductsProps {
+export interface IListRecoverableApiProductsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -32,11 +32,10 @@ export interface IListApiProductsProps {
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
-  const ComponentName = 'ListApiProducts';
+export const ListRecoverableApiProducts: React.FC<IListRecoverableApiProductsProps> = (props: IListRecoverableApiProductsProps) => {
+  const ComponentName = 'ListRecoverableApiProducts';
 
-  const MessageNoManagedObjectsFound = 'No API Products defined.';
-  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
+  const MessageNoManagedObjectsFound = 'No Recoverable API Products found.';
   const GlobalSearchPlaceholder = 'search...';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay;
@@ -54,12 +53,12 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of recoverable api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
+      const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetRecoverableList_ApAdminPortalApiProductDisplayList({
         organizationId: props.organizationEntityId.id,
-        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        default_businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       setManagedObjectList(list);

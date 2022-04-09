@@ -163,18 +163,22 @@ class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplaySer
         default_ownerId: userId,
         currentVersion: apVersionInfo.apCurrentVersion,
       });      
-      // check if lifecycle status != draft
-      if(apDeveloperPortalApiProductDisplay.apLifecycleInfo.apLifecycleState !== EAPLifecycleState.DRAFT) {
-        if(filterByIsAllowed_To_CreateApp && this.isAllowed_To_CreateApp({
-          apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
-          userBusinessGroupId: businessGroupId,
-          userId: userId
-        })) {
-          apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
-        } else {
-          apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+
+      // if this is a recovered API product, don't add to list
+      if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apDeveloperPortalApiProductDisplay })) {
+        // check if lifecycle status != draft
+        if(apDeveloperPortalApiProductDisplay.apLifecycleInfo.apLifecycleState !== EAPLifecycleState.DRAFT) {
+          if(filterByIsAllowed_To_CreateApp && this.isAllowed_To_CreateApp({
+            apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
+            userBusinessGroupId: businessGroupId,
+            userId: userId
+          })) {
+            apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+          } else {
+            apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+          }
         }
-      }
+      } 
     }
     return apDeveloperPortalApiProductDisplayList;
   }

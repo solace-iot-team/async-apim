@@ -8,7 +8,7 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
+import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
@@ -48,7 +48,7 @@ export interface IManageEditNewApiProductProps {
   onEditNewSuccess: (apiCallState: TApiCallState, apiProductEntityId: TAPEntityId) => void;
   /** edit: required */
   apiProductEntityId?: TAPEntityId;
-  onNavigateToCommand?: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
+  onNavigateToCommand?: (apiProductEntityId: TAPEntityId) => void;
 }
 
 export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = (props: IManageEditNewApiProductProps) => {
@@ -234,7 +234,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     const logName = `${ComponentName}.${funcName}()`;
     if(props.onNavigateToCommand === undefined) throw new Error(`${logName}: props.onNavigateToCommand === undefined`);
     if(props.apiProductEntityId === undefined) throw new Error(`${logName}: props.apiProductEntityId === undefined`);
-    props.onNavigateToCommand(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.apiProductEntityId);
+    props.onNavigateToCommand(props.apiProductEntityId);
   }
 
   const setBreadCrumbItemList = () => {
