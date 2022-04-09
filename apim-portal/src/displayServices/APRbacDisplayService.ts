@@ -7,7 +7,7 @@ import {
   TAPRbacRole, 
   TAPRbacRoleList 
 } from '../utils/APRbac';
-import { EUICombinedResourcePaths, Globals } from '../utils/Globals';
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, Globals } from '../utils/Globals';
 import { 
   APSBusinessGroupAuthRoleList,
   APSOrganizationAuthRoleList,
@@ -22,6 +22,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupDisplay, 
   TAPMemberOfBusinessGroupDisplayTreeNodeList, 
 } from './APUsersDisplayService/APMemberOfService';
+import { AuthHelper } from '../auth/AuthHelper';
 
 class APRbacDisplayService {
   private readonly BaseComponentName = "APRbacDisplayService";
@@ -31,6 +32,10 @@ class APRbacDisplayService {
   constructor() {
     this.businessGroupRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP]);
     this.businessGroupManageAssetsRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP_MANAGE_ASSETS]);
+  }
+
+  public isAuthorized_To_ManageRecoveredAssets(authorizedResourcePathListString: string): boolean {
+    return AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathListString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover);
   }
 
   private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {

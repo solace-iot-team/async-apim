@@ -558,7 +558,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     includeAccessLevelList?: Array<APIProductAccessLevel>;
   }): Promise<Array<APIProduct>> => {
     // const funcName = 'apiGetList_ConnectorApiProductList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const connectorApiProductList: Array<APIProduct> = [];
     // get the business group Id first
@@ -569,6 +569,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         attributeValue: businessGroupId
       });
     }
+
     const businessGroupConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
       organizationName: organizationId,
       filter: filter

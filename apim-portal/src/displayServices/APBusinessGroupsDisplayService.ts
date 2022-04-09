@@ -58,6 +58,8 @@ export type TAPBusinessGroupDisplayList = Array<TAPBusinessGroupDisplay>;
 
 class APBusinessGroupsDisplayService {
   private readonly BaseComponentName = "APBusinessGroupsDisplayService";
+  private readonly C_APRecoveredBusinessGroupId = "C_APRecoveredBusinessGroupId";
+  private readonly C_APRecoveredBusinessGroupDisplayName = "Recovered Assets";
 
   public nameOf(name: keyof TAPBusinessGroupDisplay) {
     return name;
@@ -87,6 +89,17 @@ class APBusinessGroupsDisplayService {
     return {
       apEntityId: businessGroupEntityId,
       apExternalBusinessGroupReference: apExternalBusinessGroupReference,
+    };
+  }
+
+  /**
+   * Could be configurable in the organization
+   */
+   public get_recovered_BusinessGroupId(): string { return this.C_APRecoveredBusinessGroupId; }
+   public create_recovered_BusinessGroupEntityId(): TAPEntityId {
+    return {
+      id: this.get_recovered_BusinessGroupId(),
+      displayName: this.C_APRecoveredBusinessGroupDisplayName
     };
   }
 

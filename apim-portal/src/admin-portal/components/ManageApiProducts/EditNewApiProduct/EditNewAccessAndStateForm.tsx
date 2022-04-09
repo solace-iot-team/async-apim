@@ -24,6 +24,7 @@ import { AuthHelper } from "../../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { EditNewBusinessGroupSharingListForm } from "./EditNewBusinessGroupSharingListForm";
 import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../displayServices/APManagedAssetDisplayService";
+import APBusinessGroupsDisplayService from "../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -44,7 +45,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   type TManagedObjectFormData = {
     accessLevel: APIProductAccessLevel;
     lifecycleState: EAPLifecycleState;
-    owningBusinessGroupId: string;
+    owningBusinessGroupId?: string;
   };
   type TManagedObjectFormDataEnvelope = {
     businessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList; /** not managed by form */
@@ -55,7 +56,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     const fd: TManagedObjectFormData = {
       accessLevel: mo.apAccessLevel,
       lifecycleState: mo.apLifecycleInfo.apLifecycleState,
-      owningBusinessGroupId: mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id,
+      owningBusinessGroupId: (mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id === APBusinessGroupsDisplayService.get_recovered_BusinessGroupId() ? undefined : mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id),
     };
     return {
       businessGroupSharingList: mo.apBusinessGroupInfo.apBusinessGroupSharingList,
@@ -73,6 +74,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     const mo: TManagedObject = props.apApiProductDisplay_AccessAndState;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
 
+    if(fd.owningBusinessGroupId === undefined) throw new Error(`${logName}: fd.owningBusinessGroupId === undefined`);
     const apOwningMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.find_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
       apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
       businessGroupId: fd.owningBusinessGroupId
@@ -174,7 +176,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
                   {...field}
                   options={apMemberOfBusinessGroupTreeTableNodeList}
                   onChange={(e) => { field.onChange(e.value); }} 
-                  placeholder="Select Business Group"
+                  // placeholder="Select Business Group"
                   filter={true}
                   selectionMode="single"
                   className={classNames({ 'p-invalid': fieldState.invalid })}                       
@@ -209,9 +211,9 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     const uniqueKey_EditNewBusinessGroupSharingListForm = ComponentName+'_EditNewBusinessGroupSharingListForm';
 
-    const _owningBusinessGroupId: string = managedObjectUseForm.watch('formData.owningBusinessGroupId');
+    const _owningBusinessGroupId: string | undefined = managedObjectUseForm.watch('formData.owningBusinessGroupId');
     // catch the first render
-    const owningBusinessGroupId: string = _owningBusinessGroupId === undefined ? managedObjectFormDataEnvelope.formData.owningBusinessGroupId : _owningBusinessGroupId;
+    const owningBusinessGroupId: string | undefined = _owningBusinessGroupId === undefined ? managedObjectFormDataEnvelope.formData.owningBusinessGroupId : _owningBusinessGroupId;
   
     return (
       <div className="card p-mt-4">
@@ -281,7 +283,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
                 uniqueKeyPrefix={uniqueKey_EditNewBusinessGroupSharingListForm}
                 apManagedAssetDisplay_BusinessGroupSharingList={managedObjectFormDataEnvelope.businessGroupSharingList}
                 apMemberOfBusinessGroupDisplayTreeNodeList={apMemberOfBusinessGroupDisplayTreeNodeList}
-                apExcludeBusinessGroupIdList={[owningBusinessGroupId]}
+                apExcludeBusinessGroupIdList={owningBusinessGroupId === undefined ? [] : [owningBusinessGroupId]}
                 onChange={onChange_EditNewBusinessGroupSharingList}
               />
             </div>

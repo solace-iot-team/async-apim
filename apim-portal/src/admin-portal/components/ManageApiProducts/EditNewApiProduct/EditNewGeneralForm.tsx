@@ -142,7 +142,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   }
 
   const validate_Id = async(id: string): Promise<string | boolean> => {
-    if(props.action === EAction.EDIT) return true;
+    if(props.action !== EAction.NEW) return true;
     // check if id exists
     const checkResult: boolean | undefined = await apiCheck_ApiProductIdExists(id);
     if(checkResult === undefined) return false;

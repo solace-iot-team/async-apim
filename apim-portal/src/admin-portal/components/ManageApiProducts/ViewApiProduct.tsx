@@ -7,7 +7,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageApiProductsCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
@@ -21,7 +21,7 @@ export interface IViewApiProductProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  onNavigateHere: (componentState: E_COMPONENT_STATE, apiProductEntityId: TAPEntityId) => void;
+  onNavigateHere: (apiProductEntityId: TAPEntityId) => void;
 }
 
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
@@ -55,7 +55,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   }
 
   const ViewApiProduct_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, props.apiProductEntityId);
+    props.onNavigateHere(props.apiProductEntityId);
   }
 
   const doInitialize = async () => {
