@@ -2,6 +2,18 @@
 
 Solace Async API Management.
 
+## Version 0.1.4
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.4
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.6
+
+#### API-M Admin & Developer Portal
+**New Features:**
+* **Recover API Products**
+  - added `recover api products` module to `Manage API Products`.
+    - allows users with `organization admin` role to list, edit, delete API Products not containing the business group information
+
 ## Version 0.1.3
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.3
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
