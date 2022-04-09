@@ -105,7 +105,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
           {/* empty form, required for submit button */}
           </form>  
-
+          
           <div className="p-field">
             {/* external attributes */}
             <div className="p-text-bold p-mb-3">Custom Attributes:</div>

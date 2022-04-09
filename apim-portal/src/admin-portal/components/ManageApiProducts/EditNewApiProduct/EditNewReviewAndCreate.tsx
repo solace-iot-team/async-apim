@@ -8,25 +8,26 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, ButtonLabel_CreateNewVersion, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface INewReviewAndCreateProps {
+export interface IEditNewReviewAndCreateProps {
+  action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onCreateSuccess: (apiCallState: TApiCallState, apiProductEntityId: TAPEntityId) => void;
-  onSuccessNotification: (apiCallState: TApiCallState) => void;
+  onUserNotification: (apiCallState: TApiCallState) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: INewReviewAndCreateProps) => {
-  const ComponentName = 'NewReviewAndCreate';
+export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (props: IEditNewReviewAndCreateProps) => {
+  const ComponentName = 'EditNewReviewAndCreate';
 
   type  TManagedObject = TAPAdminPortalApiProductDisplay;
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -37,12 +38,21 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
   const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
+    let callState: TApiCallState;
+    if(props.action === EAction.NEW) callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
+    else callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create new version of api product: ${mo.apEntityId.displayName}`); 
     try { 
-      await APAdminPortalApiProductsDisplayService.apiCreate_ApApiProductDisplay({
-        organizationId: props.organizationId,
-        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
-      });
+      if(props.action === EAction.NEW) {
+        await APAdminPortalApiProductsDisplayService.apiCreate_ApApiProductDisplay({
+          organizationId: props.organizationId,
+          apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+        });
+      } else {
+        await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
+          organizationId: props.organizationId,
+          apApiProductDisplay: mo,
+        });  
+      }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -66,7 +76,7 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
     const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_API_PRODUCT) {
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT) {
         if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
         props.onCreateSuccess(apiCallStatus, managedObject.apEntityId);
       }
@@ -89,16 +99,17 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
   const componentFooterLeftToolbarTemplate = () => {
     return (
       <React.Fragment>
-        <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
-        <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+        <Button key={ComponentName+ButtonLabel_Back} type="button" label={ButtonLabel_Back} icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
+        <Button key={ComponentName+ButtonLabel_Cancel} type="button" label={ButtonLabel_Cancel} className="p-button-text p-button-plain" onClick={props.onCancel} />
       </React.Fragment>
     );
   }
 
   const componentFooterRightToolbarTemplate = () => {
+    const buttonLabel: string = props.action === EAction.EDIT ? ButtonLabel_CreateNewVersion : ButtonLabel_Create;
     return (
       <React.Fragment>
-        <Button key={ComponentName+'Create'} label="Create" icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
+        <Button key={ComponentName+buttonLabel} label={buttonLabel} icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
       </React.Fragment>
     );
   }
@@ -117,7 +128,7 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
           organizationId={props.organizationId}
           apAdminPortalApiProductDisplay={mo}
           onError={props.onError}
-          onSuccess={props.onSuccessNotification}
+          onSuccess={props.onUserNotification}
           onLoadingChange={props.onLoadingChange}
         />
         {/* DEBUG */}

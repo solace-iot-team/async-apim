@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TAPManagedAssetDisplay_BusinessGroupSharing_Schema",
+  "type": "object",
+  "required": ["apEntityId", "apSharingAccessType"],
+  "properties": {
+    "apEntityId": {
+      "type": "object",
+      "required": ["id", "displayName"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        }
+      }
+    },
+    "apSharingAccessType": {
+      "type": "string",
+      "enum": ["readonly", "full-access"]
+    },
+    "apExternalReference": {
+      "type": "object",
+      "required": [
+        "externalId",
+        "displayName",
+        "externalSystemId",
+        "externalSystemDisplayName"
+      ],
+      "properties": {
+        "externalId": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "externalSystemId": {
+          "type": "string"
+        },
+        "externalSystemDisplayName": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

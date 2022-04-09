@@ -53,7 +53,8 @@ export const APDisplayOrganizationUserBusinessGroups: React.FC<IAPDisplayOrganiz
       apOrganizationRoleEntityIdList: props.apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
       completeApOrganizationBusinessGroupDisplayList: props.apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
       // pruneBusinessGroupsNotAMemberOf: true
-      pruneBusinessGroupsNotAMemberOf: false
+      pruneBusinessGroupsNotAMemberOf: false,
+      accessOnly_To_BusinessGroupManageAssets: false,
     });  
     setApMemberOfBusinessGroupTreeTableNodeList(_apMemberOfBusinessGroupTreeTableNodeList);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */

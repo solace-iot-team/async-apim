@@ -1,5 +1,14 @@
 import {
-  $attributes, $ClientOptionsGuaranteedMessaging, $CommonName, $CustomCloudEndpoint, $Organization, $SempV2Authentication, $WebHook, $WebHookBasicAuth, $WebHookHeaderAuth
+  $attributes, 
+  $ClientOptionsGuaranteedMessaging, 
+  $CommonName, 
+  $CustomCloudEndpoint, 
+  $Organization, 
+  $SempV2Authentication, 
+  $WebHook, 
+  $WebHookBasicAuth, 
+  $WebHookHeaderAuth,
+  $SemVer
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APConnectorApiHelper } from "./APConnectorApiCalls";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from './APTypes';
@@ -9,10 +18,10 @@ export class APConnectorFormValidationRules {
   private static createFormPattern = (apiPattern: string) => {
     return `^${apiPattern}$`;
   }
-  private static getFormPatternRule = (schema: any, message: string): any => {
+  private static getFormPatternRule = (schema: any, message: string, displayPattern: boolean = true): any => {
     if(schema.pattern) return {
       value: new RegExp(APConnectorFormValidationRules.createFormPattern(schema.pattern)),
-      message: `${message}. Pattern: ${schema.pattern}`
+      message: displayPattern ? `${message}. Pattern: ${schema.pattern}` : message
     }
   }
 
@@ -201,6 +210,13 @@ export class APConnectorFormValidationRules {
     rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
     rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
     rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid name`);
+    return rules;
+  }
+  public static SemVer = (): any => {
+    const schema = $SemVer;
+    const rules: any = {};
+    rules['required'] = `Enter a valid semantic version number.`;
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Use format {major}.{minor}.{patch}.`, false);
     return rules;
   }
   public static Name = (): any => {

@@ -42,7 +42,8 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
       const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
         apiProductId: props.apiProductEntityId.id,
-        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+        fetch_revision_list: true
       });
       setManagedObject(object);
     } catch(e) {

@@ -36,13 +36,18 @@
 }
 
 .adp-productcatalog .product-category-icon {
-  vertical-align: middle;
+  vertical-align: top;
   margin-right: 0.5rem;
 }
 
 .adp-productcatalog .product-category {
   font-weight: 600;
-  vertical-align: middle;
+  vertical-align: top;
+}
+
+.adp-productcatalog .business-group {
+  font-weight: 600;
+  vertical-align: top;
 }
 
 .adp-productcatalog .product-list-item {
@@ -117,10 +122,14 @@
   text-align: center;
 }
 
-/* .adp-productcatalog .product-grid-item .product-price {
-  font-size: 1.5rem;
-  font-weight: 600;
-} */
+.adp-productcatalog .product-access {
+  border-radius: 2px;
+  padding: 0.25em 0.5rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
 .adp-productcatalog .product-badge {
   border-radius: 2px;
   padding: 0.25em 0.5rem;

@@ -17,6 +17,7 @@ export enum  EAPRbacRoleScope {
   SYSTEM = "SYSTEM",
   ORGANIZATION = "ORGANIZATION",
   BUSINESS_GROUP = "BUSINESS_GROUP",
+  BUSINESS_GROUP_MANAGE_ASSETS = "BUSINESS_GROUP_MANAGE_ASSETS"
 }
 export type TAPRbacRole = {
   id: EAPSCombinedAuthRole;
@@ -96,12 +97,16 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
-      EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems
+      EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
     ]
   },
   {
     id: EAPSOrganizationAuthRole.API_TEAM,
-    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP, EAPRbacRoleScope.BUSINESS_GROUP_MANAGE_ASSETS],
     displayName: 'API Team',
     description: 'Manage APIs, API Products, Apps, API Consumers.',
     uiResourcePaths: [
@@ -125,6 +130,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.UserHome,
       EUIDeveloperPortalResourcePaths.ExploreApis,
       EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+      EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
       EUIDeveloperPortalResourcePaths.ManageTeamApplications,
     ]

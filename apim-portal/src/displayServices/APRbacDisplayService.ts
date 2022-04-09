@@ -26,9 +26,11 @@ import APMemberOfService, {
 class APRbacDisplayService {
   private readonly BaseComponentName = "APRbacDisplayService";
   private readonly businessGroupRbacRoleList: TAPRbacRoleList;
+  private readonly businessGroupManageAssetsRbacRoleList: TAPRbacRoleList;
 
   constructor() {
     this.businessGroupRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP]);
+    this.businessGroupManageAssetsRbacRoleList = this.create_Scoped_RbacRoleList([EAPRbacRoleScope.BUSINESS_GROUP_MANAGE_ASSETS]);
   }
 
   private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
@@ -127,6 +129,19 @@ class APRbacDisplayService {
     return result;
   }
 
+  public filter_RolesEntityIdList_By_BusinessGroupRoles_ManageAssets({ combinedRoles }: {
+    combinedRoles: TAPEntityIdList;
+  }): TAPEntityIdList {
+    const result: TAPEntityIdList = [];
+    combinedRoles.forEach( (combinedRole: TAPEntityId) => {
+      const isBusinessGroupRole = this.businessGroupManageAssetsRbacRoleList.find( (x) => {
+        return x.id === combinedRole.id;
+      })
+      if(isBusinessGroupRole) result.push(combinedRole);
+    });
+    return result;
+  }
+
   public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, apOrganizationEntityId }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
     apOrganizationEntityId: TAPEntityId | undefined;
@@ -167,12 +182,14 @@ class APRbacDisplayService {
         completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
         // pruneBusinessGroupsNotAMemberOf: true,
         pruneBusinessGroupsNotAMemberOf: false,
+        accessOnly_To_BusinessGroupManageAssets: false
       });
 
       // get the business group from last session or find a default one
       const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_For_Session({
         apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
-        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay
+        apOrganizationSessionInfoDisplay: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationSessionInfoDisplay,
+        accessOnly_To_BusinessGroupManageAssets: false
       });
       // const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay | undefined= APMemberOfService.find_default_ApMemberOfBusinessGroupDisplay({
       //   apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,

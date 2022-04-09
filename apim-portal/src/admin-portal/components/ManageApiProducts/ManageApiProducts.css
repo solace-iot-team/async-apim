@@ -13,10 +13,11 @@
   padding-top: 0rem;
   padding-bottom: 0rem;
 }
-.manage-api-products .confirmation-content {
+.manage-api-products-delete-confirmation-content {
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
+  color: red !important;
 }
 .manage-api-products .ap-api-product-error {
   border-color: #df2121;

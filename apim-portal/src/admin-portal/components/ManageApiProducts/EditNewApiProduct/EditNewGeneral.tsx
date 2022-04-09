@@ -1,5 +1,4 @@
 
-
 import React from "react";
 
 import { Button } from 'primereact/button';
@@ -9,74 +8,66 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
-import { EditNewAttributesForm } from "./EditNewAttributesForm";
-import { EAction } from "../ManageApiProductsCommon";
+import { ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
+import { EditNewGeneralForm } from "./EditNewGeneralForm";
+import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface INewAttributesProps {
+export interface IEditNewGeneralProps {
+  action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  onNext: (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => void;
+  onSaveChanges: (apApiProductDisplay_General: TAPApiProductDisplay_General) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  // onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewAttributes: React.FC<INewAttributesProps> = (props: INewAttributesProps) => {
-  const ComponentName = 'NewAttributes';
+export const EditNewGeneral: React.FC<IEditNewGeneralProps> = (props: IEditNewGeneralProps) => {
+  const ComponentName = 'EditNewGeneral';
 
-  type TManagedObject = TAPManagedAssetDisplay_Attributes;
+  type TManagedObject = TAPApiProductDisplay_General;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  // const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const formId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
+
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApManagedAssetDisplay_Attributes({
-      apManagedAssetDisplay: props.apAdminPortalApiProductDisplay
+    setManagedObject(APAdminPortalApiProductsDisplayService.get_ApiProductDisplay_General({
+      apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
   }
 
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // validateProps();
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   const funcName = 'useEffect[apiCallStatus';
-  //   const logName = `${ComponentName}.${funcName}()`;
-
-  //   if (apiCallStatus !== null) {
-  //     if(!apiCallStatus.success) props.onError(apiCallStatus);
-  //   }
-  // }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
   const doSubmitManagedObject = async (mo: TManagedObject) => {
-    props.onNext(mo);
+    props.onSaveChanges(mo);
   }
 
-  const onSubmit = (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => {
-    doSubmitManagedObject(apManagedAssetDisplay_Attributes);
+  const onSubmit = (mo: TManagedObject) => {
+    doSubmitManagedObject(mo);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Back'} label="Back" icon="pi pi-arrow-left" className="p-button-text p-button-plain p-button-outlined" onClick={props.onBack}/>
-          <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={props.onCancel} />
+          <Button key={ComponentName+ButtonLabel_Cancel} type="button" label={ButtonLabel_Cancel} className="p-button-text p-button-plain" onClick={props.onCancel} />
         </React.Fragment>
       );
     }
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Next'} form={formId} type="submit" label="Next" icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
+          <Button key={ComponentName+ButtonLabel_Next} form={formId} type="submit" label={ButtonLabel_Next} icon="pi pi-arrow-right" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }  
@@ -89,12 +80,15 @@ export const NewAttributes: React.FC<INewAttributesProps> = (props: INewAttribut
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewAttributesForm
+          <EditNewGeneralForm
             formId={formId}
-            action={EAction.NEW}
-            apManagedAssetDisplay_Attributes={mo}
+            organizationId={props.organizationId}
+            action={props.action}
+            apApiProductDisplay_General={mo}
+            onError={props.onError}
+            onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
-          />          
+          />
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

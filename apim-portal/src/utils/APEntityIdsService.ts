@@ -8,6 +8,7 @@ export interface IAPEntityIdDisplay {
 export type TAPEntityId = {
   id: string;
   displayName: string;
+  // version?: string;
 }
 export type TAPEntityIdList = Array<TAPEntityId>;
 
@@ -48,11 +49,16 @@ class APEntityIdsService {
     return distinct;
   }
 
-  public getSortedDisplayNameList_As_String = (list: TAPEntityIdList): string => {
+  public getSortedDisplayNameList = (list: TAPEntityIdList): Array<string> => {
     if(list.length > 0) {
       const sortedList = this.sort_byDisplayName(list);
-      return sortedList.map((x) => { return x.displayName; }).join(', ');
+      return sortedList.map((x) => { return x.displayName; });
     }
+    else return [];
+  }
+
+  public getSortedDisplayNameList_As_String = (list: TAPEntityIdList): string => {
+    if(list.length > 0) return this.getSortedDisplayNameList(list).join(', ');
     else return '';
   }
 

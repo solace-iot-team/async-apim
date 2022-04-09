@@ -21,7 +21,7 @@ import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../comp
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalExploreApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
-import { TAPDeveloperPortalApiProductCatalogCompositeId } from "../DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon";
+import { TAPDeveloperPortalApiProductCatalogCompositeId } from "../DeveloperPortalProductCatalog/deleteme.DeveloperPortalProductCatalogCommon";
 import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
@@ -105,7 +105,7 @@ export const DeveloperPortalViewApi: React.FC<IDeveloperPortalViewApiProps> = (p
       const displayName: CommonDisplayName = event.currentTarget.dataset.display_name;
       // alert(`show api product: id=${id}, displayName=${displayName}`);
       productCatalogHistory.push({
-        pathname: EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+        pathname: EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
         state: {
           apiProductId: id,
           apiProductDisplayName: displayName

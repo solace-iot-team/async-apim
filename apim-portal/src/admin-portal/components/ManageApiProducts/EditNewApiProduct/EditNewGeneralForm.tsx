@@ -11,11 +11,12 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { EAction, E_CALL_STATE_ACTIONS} from "../ManageApiProductsCommon";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
+import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -35,6 +36,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     id: string;
     displayName: string;
     description: string;
+    version: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -49,6 +51,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
       description: mo.apDescription,
+      version: mo.apVersionInfo.apCurrentVersion,
     };
     return {
       formData: fd
@@ -63,6 +66,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
     mo.apDescription = fd.description;
+    mo.apVersionInfo.apCurrentVersion = fd.version;
     return mo;
   }
   
@@ -98,11 +102,14 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // alert(`${ComponentName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(managedObjectFormDataEnvelope) {
+      managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    }
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -115,10 +122,23 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     props.onSubmit(create_ManagedObject_From_FormEntities({
       formDataEnvelope: newMofde,
     }));
+    setManagedObjectFormDataEnvelope(newMofde);
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
     // placeholder
+  }
+
+  const validate_SemVer = (newVersion: string): string | boolean => {
+    const funcName = 'validate_SemVer';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(isNewManagedObject()) return true;
+    if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
+      lastVersion: managedObject.apVersionInfo.apLastVersion, 
+      newVersion: newVersion
+    })) return true;
+    return `New version must be greater than current version: ${managedObject.apVersionInfo.apLastVersion}.`
   }
 
   const validate_Id = async(id: string): Promise<string | boolean> => {
@@ -135,7 +155,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+          <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">     
             {/* Id */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
@@ -161,6 +181,30 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.id })}>Id*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.id)}
+            </div>
+            {/* version */}
+            <div className="p-field">
+              <span className="p-float-label">
+                <Controller
+                  control={managedObjectUseForm.control}
+                  name="formData.version"
+                  rules={{
+                    ...APConnectorFormValidationRules.SemVer(),
+                    validate: validate_SemVer
+                  }}
+                  render={( { field, fieldState }) => {
+                    return(
+                      <InputText
+                        id={field.name}
+                        {...field}
+                        autoFocus={true}
+                        className={classNames({ 'p-invalid': fieldState.invalid })}      
+                      />
+                  )}}
+                />
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.version })}>Version*</label>
+              </span>
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.version)}
             </div>
             {/* Display Name */}
             <div className="p-field">

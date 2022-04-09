@@ -28,12 +28,14 @@ export const SelectBusinessGroup: React.FC<ISelectBusinessGroupProps> = (props: 
 
   // prune the list
   const pruned_apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
-    apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList
+    apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
+    accessOnly_To_BusinessGroupManageAssets: false,
   });
   // create the tree table node list from pruned list
   const apMemberOfBusinessGroupTreeTableNodeList: TAPMemberOfBusinessGroupTreeTableNodeList = APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
     apMemberOfBusinessGroupDisplayTreeNodeList: pruned_apMemberOfBusinessGroupDisplayTreeNodeList,
-    includeBusinessGroupIsSelectable: true
+    includeBusinessGroupIsSelectable: true,
+    accessOnly_To_BusinessGroupManageAssets: false,
   });
 
   const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>(APBusinessGroupsDisplayService.create_ApMemberOfBusinessGroupTreeTableNodeList_ExpandedKeys({

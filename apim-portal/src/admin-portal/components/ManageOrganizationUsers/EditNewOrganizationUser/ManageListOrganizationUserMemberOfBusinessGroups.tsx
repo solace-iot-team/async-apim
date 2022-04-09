@@ -108,7 +108,8 @@ export const ManageListOrganizationUserMemberOfBusinessGroups: React.FC<IManageL
         apMemberOfBusinessGroupDisplayList: apUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
         apOrganizationRoleEntityIdList: apUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
         completeApOrganizationBusinessGroupDisplayList: apUserDisplay.completeOrganizationBusinessGroupDisplayList,
-        pruneBusinessGroupsNotAMemberOf: false
+        pruneBusinessGroupsNotAMemberOf: false,
+        accessOnly_To_BusinessGroupManageAssets: false
       });  
       setApMemberOfBusinessGroupTreeTableNodeList(_apMemberOfBusinessGroupTreeTableNodeList);
     }

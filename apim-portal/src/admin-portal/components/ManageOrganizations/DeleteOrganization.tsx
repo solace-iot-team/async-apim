@@ -34,6 +34,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
+  
   // const apiGetManagedObjectAssets = async(): Promise<TApiCallState> => {
   //   const funcName = 'apiGetManagedObjectAssets';
   //   const logName = `${componentName}.${funcName}()`;
