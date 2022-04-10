@@ -107,7 +107,10 @@ export enum EUIDeveloperPortalResourcePaths {
   ExploreApiProducts = '/developer-portal/explore/api-products',
   DELETEME_ExploreApiProducts = '/developer-portal/explore/deleteme-api-products',
   ExploreApis = '/developer-portal/explore/apis',
+  
   ManageUserApplications = '/developer-portal/manage/user/applications',
+  DELETEME_ManageUserApplications = '/developer-portal/manage/user/deleteme-applications',
+
   ManageTeamApplications = '/developer-portal/manage/team/applications',
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }

@@ -8,34 +8,26 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { TAPEntityId } from '../../utils/APEntityIdsService';
+import { TAPOrganizationId } from '../../components/APComponentsCommon';
+import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageUserApps/deleteme.DeveloperPortalManageUserApps';
+import { TAPDeveloperPortalApiProductCompositeId } from '../components/DeveloperPortalManageUserApps/deleteme.DeveloperPortalManageUserAppsCommon';
 
 import "../../pages/Pages.css";
-import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserApps';
 
 export const DeveloperPortalManageUserAppsPage: React.FC = () => {
   const componentName = "DeveloperPortalManageUserAppsPage";
 
-  const [userContext] = React.useContext(UserContext);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
-  const [locationState, setLocationState] = React.useState<TAPEntityId>();
-  const location = useLocation<TAPEntityId>();
+  const [locationState, setLocationState] = React.useState<TAPDeveloperPortalApiProductCompositeId>();
+  const location = useLocation<TAPDeveloperPortalApiProductCompositeId>();
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
 
   React.useEffect(() => {
     // const funcName = 'useEffect([])';
@@ -57,9 +49,9 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'My Apps',
+        label: 'DELETEME: My Apps',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications) }
+        command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {
@@ -75,20 +67,30 @@ export const DeveloperPortalManageUserAppsPage: React.FC = () => {
     )
   }
 
+  const [organizationName, setOrganizationName] = React.useState<TAPOrganizationId>();
+
+  React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
+    setOrganizationName(userContext.runtimeSettings.currentOrganizationEntityId.id);
+  }, [userContext]); 
+
   return (
     <React.Fragment>
       
       <Toast ref={toast} />
       
-      {organizationEntityId && renderBreadcrumbs()}
+      {breadCrumbItemList && renderBreadcrumbs()}
       
-      {organizationEntityId &&
+      {organizationName &&
         <DeveloperPortalManageUserApps
-          organizationEntityId={organizationEntityId}
+          organizationName={organizationName}
+          userId={userContext.apLoginUserDisplay.apEntityId.id}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
-          createAppWithApiProductEntityId={locationState}
+          createAppWithApiProductCompositeId={locationState}
         />
       }
     </React.Fragment>

@@ -41,12 +41,12 @@ import {
 import { 
   EWebhookAuthMethodSelectIdNone,
   E_CALL_STATE_ACTIONS, 
-} from "./DeveloperPortalManageUserAppWebhooksCommon";
+} from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { APManageTrustedCNs } from "../../../../components/APManageTrustedCNs/APManageTrustedCNs";
 
 import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageUserApps.css";
+import "../deleteme.DeveloperPortalManageUserApps.css";
 
 export enum EAction {
   EDIT = 'EDIT',

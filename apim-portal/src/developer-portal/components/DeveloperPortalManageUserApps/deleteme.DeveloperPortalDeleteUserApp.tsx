@@ -16,11 +16,11 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalDeleteUserAppProps {
   organizationId: TAPOrganizationId,

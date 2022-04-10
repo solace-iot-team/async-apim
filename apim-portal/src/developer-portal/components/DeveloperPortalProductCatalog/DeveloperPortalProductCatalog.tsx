@@ -110,7 +110,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     const logName = `${componentName}.${funcName}()`;
     if(managedObjectEntityId === undefined) Error(`${logName}: managedObjectEntityId is undefined`);
     manageAppsHistory.push({
-      pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
+      pathname: EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications,
       state: managedObjectEntityId
     });
   }

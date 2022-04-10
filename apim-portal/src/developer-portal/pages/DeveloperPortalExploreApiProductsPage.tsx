@@ -9,9 +9,9 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
+import { TAPEntityId } from '../../utils/APEntityIdsService';
 
 import "../../pages/Pages.css";
-import { TAPEntityId } from '../../utils/APEntityIdsService';
 
 export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
   const componentName="DeveloperPortalExploreApiProductsPage";
@@ -30,6 +30,13 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
 
   const [locationState, setLocationState] = React.useState<TAPEntityId>();
   const location = useLocation<TAPEntityId>();
+
+  React.useEffect(() => {
+    const funcName = 'useEffect([])';
+    const logName = `${componentName}.${funcName}()`;
+    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
+    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(location.state) {
@@ -69,13 +76,6 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
       </React.Fragment>
     )
   }
-
-  React.useEffect(() => {
-    const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
-    if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <React.Fragment>

@@ -20,7 +20,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE } from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { 
   APManagedUserAppDisplay,
   APManagedWebhook,
@@ -35,7 +35,7 @@ import { APDisplayClientInformationPanel } from "../../../components/APDisplay/A
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: TAPOrganizationId,

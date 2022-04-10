@@ -9,10 +9,10 @@ import {
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
-import { DeveloperPortalUserAppSearchSelectApiProducts } from "./DeveloperPortalUserAppSearchSelectApiProducts";
+import { DeveloperPortalUserAppSearchSelectApiProducts } from "./deleteme.DeveloperPortalUserAppSearchSelectApiProducts";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalUserAppSelectApiProductsProps {
   organizationId: TAPOrganizationId,

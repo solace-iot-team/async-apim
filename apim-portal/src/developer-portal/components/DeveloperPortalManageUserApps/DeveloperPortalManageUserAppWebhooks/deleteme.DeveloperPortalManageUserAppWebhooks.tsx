@@ -23,16 +23,16 @@ import {
   TAPManagedWebhook, 
   TAPOrganizationId, 
 } from "../../../../components/APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppWebhooksCommon";
-import { DeveloperPortalListUserAppWebhooks } from "./DeveloperPortalListUserAppWebhooks";
-import { DeveloperPortalDeleteUserAppWebhook } from "./DeveloperPortalDeleteUserAppWebhook";
-import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./DeveloperPortalNewEditUserAppWebhook";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
+import { DeveloperPortalListUserAppWebhooks } from "./deleteme.DeveloperPortalListUserAppWebhooks";
+import { DeveloperPortalDeleteUserAppWebhook } from "./deleteme.DeveloperPortalDeleteUserAppWebhook";
+import { DeveloperPortalNewEditUserAppWebhook, EAction } from "./deleteme.DeveloperPortalNewEditUserAppWebhook";
 import { Loading } from "../../../../components/Loading/Loading";
-import { DeveloperPortalViewUserAppWebhook } from "./DeveloperPortalViewUserAppWebhook";
-import { E_MANAGE_USER_APP_COMPONENT_STATE, E_MANAGE_WEBHOOK_COMPONENT_STATE } from "../DeveloperPortalManageUserAppsCommon";
+import { DeveloperPortalViewUserAppWebhook } from "./deleteme.DeveloperPortalViewUserAppWebhook";
+import { E_MANAGE_USER_APP_COMPONENT_STATE, E_MANAGE_WEBHOOK_COMPONENT_STATE } from "../deleteme.DeveloperPortalManageUserAppsCommon";
 
 import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageUserApps.css";
+import "../deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalManageUserAppWebhooksProps {
   organizationId: TAPOrganizationId;

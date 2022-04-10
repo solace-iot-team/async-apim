@@ -20,10 +20,10 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
   E_CALL_STATE_ACTIONS, 
-} from "./DeveloperPortalManageUserAppWebhooksCommon";
+} from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
 
 import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageUserApps.css";
+import "../deleteme.DeveloperPortalManageUserApps.css";
 import { Globals } from "../../../../utils/Globals";
 
 export interface IDeveloperPortalDeleteUserAppWebhookProps {

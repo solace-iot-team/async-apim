@@ -13,7 +13,7 @@ import { E_COMPONENT_STATE, TAPDeveloperPortalApiProductCatalogCompositeId } fro
 import { DeveloperPortalViewApiProduct } from "./deleteme.DeveloperPortalViewApiProduct";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { DeveloperPortalGridListApiProducts } from "./deleteme.DeveloperPortalGridListApiProducts";
-import { TAPDeveloperPortalApiProductCompositeId } from "../DeveloperPortalManageUserApps/DeveloperPortalManageUserAppsCommon";
+import { TAPDeveloperPortalApiProductCompositeId } from "../DeveloperPortalManageUserApps/deleteme.DeveloperPortalManageUserAppsCommon";
 import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
@@ -109,7 +109,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     if(!managedObjectId) throw new Error(`${logName}: managedObjectId is undefined`);
     if(!managedObjectDisplayName) throw new Error(`${logName}: managedObjectDisplayName is undefined`);
     manageAppsHistory.push({
-      pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
+      pathname: EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications,
       state: {
         apiProductId: managedObjectId,
         apiProductDisplayName: managedObjectDisplayName

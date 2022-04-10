@@ -21,7 +21,7 @@ import {
   TApiEntitySelectItemList, 
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { 
   APApiObjectsApiCalls, 
   TApiGetApiProductListResult, 
@@ -29,7 +29,7 @@ import {
 } from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalUserAppSearchSelectApiProductsProps {
   organizationId: TAPOrganizationId,

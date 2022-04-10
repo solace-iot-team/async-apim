@@ -21,7 +21,7 @@ export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSear
 }; 
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
 
-class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {
+export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APDeveloperPortalApiProductsDisplayService";
 
   /**
@@ -95,7 +95,7 @@ class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplaySer
   //   return true;
   // }
 
-  private async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, currentVersion, default_ownerId }:{
+  protected async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, currentVersion, default_ownerId }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     connectorRevisions?: Array<string>;

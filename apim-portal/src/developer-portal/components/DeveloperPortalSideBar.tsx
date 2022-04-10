@@ -47,7 +47,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
-        isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
+        isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications) && 
         isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
         isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts) &&
         isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts)
@@ -56,9 +56,13 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
       let _items: Array<MenuItem> = [
         {
           label: 'My Apps',
-          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ManageUserApplications),
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
+        },
+        {
+          label: 'DELETEME: My Apps',
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications),
+          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications); }
         },
         // {
         //   label: 'Explore APIs',

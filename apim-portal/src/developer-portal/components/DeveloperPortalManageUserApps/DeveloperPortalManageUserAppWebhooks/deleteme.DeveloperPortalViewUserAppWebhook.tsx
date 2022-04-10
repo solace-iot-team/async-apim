@@ -17,11 +17,11 @@ import {
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { APRenderUtils } from "../../../../utils/APRenderUtils";
 import { Globals } from "../../../../utils/Globals";
-import { EWebhookAuthMethodSelectIdNone } from "./DeveloperPortalManageUserAppWebhooksCommon";
+import { EWebhookAuthMethodSelectIdNone } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
 import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
 
 import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageUserApps.css";
+import "../deleteme.DeveloperPortalManageUserApps.css";
 
 export interface IDeveloperPortalViewUserAppWebhookProps {
   managedAppWebhooks: TAPManagedAppWebhooks;

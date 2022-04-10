@@ -31,12 +31,12 @@ import {
   TApiEntitySelectItemIdList, 
   APComponentsCommon
 } from "../../../components/APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
-import { DeveloperPortalUserAppSelectApiProducts } from "./DeveloperPortalUserAppSelectApiProducts";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
+import { DeveloperPortalUserAppSelectApiProducts } from "./deleteme.DeveloperPortalUserAppSelectApiProducts";
 import { EApiTopicSyntax, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./deleteme.DeveloperPortalManageUserApps.css";
 
 export enum EAction {
   EDIT = 'EDIT',
