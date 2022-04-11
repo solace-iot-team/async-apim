@@ -3,7 +3,7 @@ import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 import { Credentials } from "@solace-iot-team/apim-connector-openapi-browser";
-import { APDisplayAppCredentials } from "./APDisplayAppCredentials";
+import { APDisplayAppCredentials } from "./deleteme.APDisplayAppCredentials";
 
 import "../APComponents.css";
 

@@ -369,7 +369,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay_General;
   }
 
-  /** 
+  /**
    * Set the general properties. 
    * Sets the apEntity as well. 
    * @returns the modified apApiProductDisplay (not a copy)

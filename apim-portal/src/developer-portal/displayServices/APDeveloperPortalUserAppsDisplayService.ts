@@ -1,5 +1,6 @@
 import { 
   App,
+  AppApiProducts,
   AppApiProductsComplex,
   AppConnectionStatus,
   AppResponse,
@@ -15,52 +16,148 @@ import APEnvironmentsDisplayService, {
 } from '../../displayServices/APEnvironmentsDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import APDeveloperPortalAppApiProductsDisplayService, { 
-  TAPAppApiProductApprovalStatus, 
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from './APDeveloperPortalAppApiProductsDisplayService';
 
 export type TAPDeveloperPortalUserAppDisplay = IAPUserAppDisplay & IAPSearchContent &{
-  apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
 }
 export type TAPDeveloperPortalUserAppDisplayList = Array<TAPDeveloperPortalUserAppDisplay>;
 
 class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
   private readonly ComponentName = "APDeveloperPortalUserAppsDisplayService";
 
-
   private create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({ 
     userId, 
     connectorAppResponse_smf, 
     connectorAppResponse_mqtt, 
     connectorAppConnectionStatus,
-    apDeveloperPortalAppApiProductDisplayList,
+    apDeveloperPortalUserApp_ApiProductDisplayList,
   }: {
     userId: string;
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
-    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   }): TAPDeveloperPortalUserAppDisplay {
 
     const apUserAppDisplay: IAPUserAppDisplay = this.create_ApUserAppDisplay_From_ApiEntities({
       userId: userId,
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       connectorAppResponse_smf: connectorAppResponse_smf,
-      connectorAppResponse_mqtt: connectorAppResponse_mqtt 
+      connectorAppResponse_mqtt: connectorAppResponse_mqtt,
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
     });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
       ...apUserAppDisplay,
-      apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList,
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apSearchContent: '',      
     };
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalUserAppDisplay>(apDeveloperPortalUserAppDisplay);
   }
 
+  public get_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay }:{
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+  }): TAPDeveloperPortalAppApiProductDisplayList {
+    return apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList;
+  }
+
+  public set_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay, apDeveloperPortalUserApp_ApiProductDisplayList }:{
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): TAPDeveloperPortalUserAppDisplay {
+    apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList = apDeveloperPortalUserApp_ApiProductDisplayList;
+    return apDeveloperPortalUserAppDisplay;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+  private apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ organizationId, userId, connectorAppResponse }:{
+    organizationId: string;
+    userId: string;
+    connectorAppResponse: AppResponse;
+  }): Promise<TAPDeveloperPortalAppApiProductDisplayList> => {
+    // const funcName = 'apiGet_ApDeveloperPortalAppApiProductDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
+    const apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = [];
+    
+    for(const connectorAppApiProduct of connectorAppResponse.apiProducts) {
+      const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = await APDeveloperPortalAppApiProductsDisplayService.apiGet_DeveloperPortalApAppApiProductDisplay({
+        organizationId: organizationId,
+        userId: userId,
+        connectorAppApiProduct: connectorAppApiProduct,
+        connectorAppResponse: connectorAppResponse,
+        complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList
+      });
+      apDeveloperPortalAppApiProductDisplayList.push(apDeveloperPortalAppApiProductDisplay);
+    }
+
+    return apDeveloperPortalAppApiProductDisplayList;
+  }
+
+  public apiGet_ApDeveloperPortalUserAppDisplay = async({ organizationId, userId, appId }:{
+    organizationId: string;
+    userId: string;
+    appId: string;
+  }): Promise<TAPDeveloperPortalUserAppDisplay> => {
+    const funcName = 'apiGet_ApDeveloperPortalUserAppDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    // // TEST upstream error handling
+    // throw new Error(`${logName}: test error handling`);
+
+    const exists_userId: boolean = await this.apiCheck_UserIdExists({
+      organizationId: organizationId,
+      userId: userId,
+    });
+    if(!exists_userId) throw new Error(`${logName}: !exists_userId`);
+
+    const connectorAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      appName: appId,
+      topicSyntax: 'smf'
+    });
+
+    const connectorAppResponse_mqtt: AppResponse = await AppsService.getDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      appName: appId,
+      topicSyntax: 'mqtt'
+    });
+
+    const connectorAppConnectionStatus: AppConnectionStatus = await AppsService.getAppStatus({
+      organizationName: organizationId,
+      appName: appId
+    });  
+
+    // get every api product
+    const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+      organizationId: organizationId,
+      userId: userId,
+      connectorAppResponse: connectorAppResponse_smf,
+    });
+      
+    const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
+      userId: userId,
+      connectorAppConnectionStatus: connectorAppConnectionStatus,
+      connectorAppResponse_smf: connectorAppResponse_smf,
+      connectorAppResponse_mqtt: connectorAppResponse_mqtt,
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList
+    });
+
+    return apDeveloperPortalUserAppDisplay;
+  }
 
   public apiGetList_ApDeveloperPortalUserAppDisplayList = async({ organizationId, userId }: {
     organizationId: string;
@@ -92,64 +189,18 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
         topicSyntax: 'smf'
       });
 
-      // not required for list
-      const connectorAppResponse_mqtt: AppResponse = await AppsService.getDeveloperApp({
-        organizationName: organizationId,
-        developerUsername: userId,
-        appName: connectorApp.name,
-        topicSyntax: 'mqtt'
+      const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+        organizationId: organizationId,
+        userId: userId,
+        connectorAppResponse: connectorAppResponse_smf,
       });
-
-      // not required for list
-      // const connectorAppConnectionStatus: AppConnectionStatus = {};
-      // let _apiAppConnectionStatus: AppConnectionStatus = {};
-  // try {
-  //   _apiAppConnectionStatus = await AppsService.getAppStatus({
-  //     organizationName: props.organizationId,
-  //     appName: apiApp.name
-  //   });  
-  // } catch (e:any) {
-  //   APClientConnectorOpenApi.logError(logName, e);
-  // }
-
-      // get the complete env list for reference
-      const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-        organizationId: organizationId
-      });
-  
-      const apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = [];
-      // get every api product
-      for(const connectorAppApiProduct of connectorAppResponse_smf.apiProducts) {
-        let apiProductId: string;
-        let apAppApiProductApprovalStatus: TAPAppApiProductApprovalStatus = AppStatus.PENDING;
-        if(typeof connectorAppApiProduct === 'string') {
-          apiProductId = connectorAppApiProduct;
-          // it is just the id, take the status from the app
-          if(connectorAppResponse_smf.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct === 'string' AND connectorAppResponse_smf.status === undefined`);
-          apAppApiProductApprovalStatus = connectorAppResponse_smf.status;
-        } else {
-          const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
-          apiProductId = complexAppApiProduct.apiproduct;
-          if(complexAppApiProduct.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct !== 'string' AND complexAppApiProduct.status === undefined`);
-          apAppApiProductApprovalStatus = complexAppApiProduct.status;
-        }
-
-        const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = await APDeveloperPortalAppApiProductsDisplayService.apiGet_DeveloperPortalApAppApiProductDisplay({
-          organizationId: organizationId,
-          userId: userId,
-          apiProductId: apiProductId,
-          apAppApiProductApprovalStatus: apAppApiProductApprovalStatus,
-          complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList
-        });
-        apDeveloperPortalAppApiProductDisplayList.push(apDeveloperPortalAppApiProductDisplay);
-      }
-
+    
       const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
         userId: userId,
         connectorAppConnectionStatus: {},
         connectorAppResponse_smf: connectorAppResponse_smf,
-        connectorAppResponse_mqtt: connectorAppResponse_mqtt,
-        apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
+        connectorAppResponse_mqtt: undefined,
+        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList
       });
 
       apDeveloperPortalUserAppDisplayList.push(apDeveloperPortalUserAppDisplay);

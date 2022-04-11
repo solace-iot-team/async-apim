@@ -1,31 +1,56 @@
-import { APIProduct, ApiProductsService, AppStatus } from '@solace-iot-team/apim-connector-openapi-browser';
+import { APIProduct, ApiProductsService, AppApiProductsComplex, AppResponse, AppStatus } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APSearchContentService from '../../utils/APSearchContentService';
+import { Globals } from '../../utils/Globals';
 import { 
   APDeveloperPortalApiProductsDisplayService, 
   TAPDeveloperPortalApiProductDisplay 
 } from './APDeveloperPortalApiProductsDisplayService';
 
-export type TAPAppApiProductApprovalStatus = AppStatus;
+export enum EAPApp_ApiProduct_Status {
+  UNKNOWN = "UNKNOWN",
+  LIVE = "live",
+  APPROVAL_PENDING = "approval pending",
+  APPROVAL_REVOKED = "approval revoked"
+}
+
+// export type TAPAppApiProductApprovalStatus = AppStatus;
 
 export type TAPDeveloperPortalAppApiProductDisplay = TAPDeveloperPortalApiProductDisplay & {
-  apAppApiProductApprovalStatus: TAPAppApiProductApprovalStatus;
+  apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
 }; 
 export type TAPDeveloperPortalAppApiProductDisplayList = Array<TAPDeveloperPortalAppApiProductDisplay>;
 
 class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApiProductsDisplayService {
   private readonly FinalComponentName = "APDeveloperPortalAppApiProductsDisplayService";
 
+  private map_ConnectorAppStatus_To_ApApp_ApiProduct_Status = (connectorAppStatus: AppStatus): EAPApp_ApiProduct_Status => {
+    const funcName = 'map_ConnectorAppStatus_To_ApApp_ApiProduct_Status';
+    const logName = `${this.FinalComponentName}.${funcName}()`;
+    switch(connectorAppStatus) {
+      case AppStatus.APPROVED:
+        return EAPApp_ApiProduct_Status.LIVE;
+      case AppStatus.PENDING:
+        return EAPApp_ApiProduct_Status.APPROVAL_PENDING;
+      case AppStatus.REVOKED:
+        return EAPApp_ApiProduct_Status.APPROVAL_REVOKED;
+      default:
+        Globals.assertNever(logName, connectorAppStatus);  
+    }
+    // never gets here
+    return EAPApp_ApiProduct_Status.UNKNOWN;
+  }
+
   private create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({ 
     apDeveloperPortalApiProductDisplay,
-    apAppApiProductApprovalStatus,
+    apApp_ApiProduct_Status,
   }:{
     apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
-    apAppApiProductApprovalStatus: TAPAppApiProductApprovalStatus;
+    apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
   }): TAPDeveloperPortalAppApiProductDisplay {
     const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = {
       ...apDeveloperPortalApiProductDisplay,
-      apAppApiProductApprovalStatus: apAppApiProductApprovalStatus,
+      apApp_ApiProduct_Status: apApp_ApiProduct_Status,
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalAppApiProductDisplay>(apDeveloperPortalAppApiProductDisplay);
@@ -35,13 +60,28 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
   // API calls
   // ********************************************************************************************************************************
 
-  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ organizationId, userId, apiProductId, apAppApiProductApprovalStatus, complete_apEnvironmentDisplayList }: {
+  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ organizationId, userId, complete_apEnvironmentDisplayList, connectorAppResponse, connectorAppApiProduct }: {
     organizationId: string;
-    apiProductId: string;
-    apAppApiProductApprovalStatus: TAPAppApiProductApprovalStatus;
+    // apiProductId: string;
+    // apAppApiProductApprovalStatus: TAPAppApiProductApprovalStatus;
     userId: string;
     complete_apEnvironmentDisplayList?: TAPEnvironmentDisplayList;
+    connectorAppApiProduct: string | AppApiProductsComplex;
+    connectorAppResponse: AppResponse;
   }): Promise<TAPDeveloperPortalAppApiProductDisplay> => {
+    const funcName = 'apiGet_DeveloperPortalApAppApiProductDisplay';
+    const logName = `${this.FinalComponentName}.${funcName}()`;
+
+    // figure out the apiProductId and status with backwards compatibility
+
+    let apiProductId: string;
+    if(typeof connectorAppApiProduct === 'string') {
+      // old style, keep here for backwards compatibility
+      apiProductId = connectorAppApiProduct;
+    } else {
+      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
+      apiProductId = complexAppApiProduct.apiproduct;
+    }
 
     const connectorApiProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,
@@ -55,6 +95,23 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       });  
     }
 
+    let apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = EAPApp_ApiProduct_Status.UNKNOWN;
+    if(typeof connectorAppApiProduct === 'string') {
+      // it is just the id, attempt to calculate the status from the app
+      if(connectorApiProduct.approvalType === undefined) throw new Error(`${logName}: connectorApiProduct.approvalType === undefined`);
+      if(connectorApiProduct.approvalType === APIProduct.approvalType.AUTO) apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.LIVE;
+      else {
+        // approvalType === MANUAL
+        if(connectorAppResponse.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct === 'string' AND connectorAppResponse.status === undefined`);
+        apApp_ApiProduct_Status = this.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(connectorAppResponse.status);
+      }
+    } else {
+      // take the status from connector api product app status
+      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
+      if(complexAppApiProduct.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct !== 'string' AND complexAppApiProduct.status === undefined`);
+      apApp_ApiProduct_Status = this.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(complexAppApiProduct.status);
+    }
+
     const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
@@ -64,7 +121,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
 
     return this.create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({
       apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
-      apAppApiProductApprovalStatus: apAppApiProductApprovalStatus
+      apApp_ApiProduct_Status: apApp_ApiProduct_Status
     });
   }
 

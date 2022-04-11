@@ -35,12 +35,12 @@ import {
 import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDisplayConnectorAttributes";
-import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
+import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";
-import { APDisplayAppCredentials } from "../../../components/APDisplay/APDisplayAppCredentials";
+import { APDisplayAppCredentials } from "../../../components/APDisplay/deleteme.APDisplayAppCredentials";
 import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
 
 import '../../../components/APComponents.css';

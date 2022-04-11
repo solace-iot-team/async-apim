@@ -28,9 +28,9 @@ import {
   TAPOrganizationId 
 } from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
-import { APDisplayAppEnvironments } from "../../../components/APDisplay/APDisplayAppEnvironments";
+import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
-import { APDisplayCredentialsPanel } from "../../../components/APDisplay/APDisplayAppCredentialsPanel";
+import { APDisplayCredentialsPanel } from "../../../components/APDisplay/deleteme.APDisplayAppCredentialsPanel";
 import { APDisplayClientInformationPanel } from "../../../components/APDisplay/APDisplayAppClientInformationPanel";
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 

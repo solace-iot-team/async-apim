@@ -9,6 +9,7 @@
 // }
 
 import { ApiError, AppConnectionStatus, AppResponse, DevelopersService } from "@solace-iot-team/apim-connector-openapi-browser";
+import { TAPDeveloperPortalAppApiProductDisplayList } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { APAppsDisplayService, IAPAppDisplay } from "./APAppsDisplayService";
 
@@ -44,18 +45,21 @@ export abstract class APUserAppsDisplayService extends APAppsDisplayService {
     userId, 
     connectorAppResponse_smf, 
     connectorAppResponse_mqtt, 
-    connectorAppConnectionStatus 
+    connectorAppConnectionStatus,
+    apDeveloperPortalUserApp_ApiProductDisplayList,
   }: {
     userId: string;
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
+    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   }): IAPUserAppDisplay {
     return {
       ...this.create_ApAppDisplay_From_ApiEntities({
         connectorAppResponse_smf: connectorAppResponse_smf,
         connectorAppResponse_mqtt: connectorAppResponse_mqtt,
-        connectorAppConnectionStatus: connectorAppConnectionStatus
+        connectorAppConnectionStatus: connectorAppConnectionStatus,
+        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList
       }),
       userId: userId,
     }

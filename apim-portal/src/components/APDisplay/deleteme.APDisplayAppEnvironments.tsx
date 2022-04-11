@@ -10,8 +10,8 @@ import {
   AppEnvironment, AppResponse, AppStatus
 } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Globals } from "../../utils/Globals";
-import { APDisplayEndpoints } from "./APDisplayEndpoints";
-import { APDisplayAppPermissions } from "./APDisplayAppPermissions";
+import { APDisplayEndpoints } from "./deleteme.APDisplayEndpoints";
+import { APDisplayAppPermissions } from "./deleteme.APDisplayAppPermissions";
 import { EApiTopicSyntax } from "../APApiObjectsCommon";
 
 import "../APComponents.css";

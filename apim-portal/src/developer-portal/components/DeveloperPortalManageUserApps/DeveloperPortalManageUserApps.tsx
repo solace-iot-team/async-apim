@@ -26,6 +26,7 @@ import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
 import { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
+import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;
@@ -301,6 +302,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
   }
+  const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -422,20 +426,16 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showViewComponent && managedObjectEntityId &&
-      <p>showViewComponent</p>
-        // <DeveloperPortalViewUserApp
-        //   key={refreshCounter}
-        //   organizationId={props.organizationName}
-        //   userId={props.userId}
-        //   appId={managedObjectId}
-        //   appDisplayName={managedObjectDisplayName}
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading}
-        //   onLoadingStart={() => setIsLoading(true)}
-        //   onLoadingFinished={(viewApp: TAPDeveloperPortalUserAppDisplay) => { setViewComponentManagedObjectDisplay(viewApp); setIsLoading(false); }}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateHere={onSetManageUserAppComponentState}
-        // />      
+        <DeveloperPortalViewUserApp
+          key={`${ComponentName}_DeveloperPortalViewUserApp_${refreshCounter}`}
+          organizationEntityId={props.organizationEntityId}
+          appEntityId={managedObjectEntityId}
+          onSuccess={onSubComponentUserNotification}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageUserAppComponentState_To_View}
+        />      
       }
       {showDeleteComponent && managedObjectEntityId &&
       <p>showDeleteComponent</p>
