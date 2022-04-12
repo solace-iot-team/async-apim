@@ -31,7 +31,7 @@ import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjec
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { APDisplayCredentialsPanel } from "../../../components/APDisplay/deleteme.APDisplayAppCredentialsPanel";
-import { APDisplayClientInformationPanel } from "../../../components/APDisplay/APDisplayAppClientInformationPanel";
+import { APDisplayClientInformationPanel } from "../../../components/APDisplay/deleteme.APDisplayAppClientInformationPanel";
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
 
 import '../../../components/APComponents.css';

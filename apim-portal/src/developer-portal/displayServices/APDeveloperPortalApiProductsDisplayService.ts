@@ -3,7 +3,11 @@ import {
   APIProductAccessLevel,
   ApiProductsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APApiProductsDisplayService, EAPApprovalType, IAPApiProductDisplay } from '../../displayServices/APApiProductsDisplayService';
+import { 
+  APApiProductsDisplayService, 
+  EAPApprovalType, 
+  IAPApiProductDisplay 
+} from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { EAPLifecycleState } from '../../displayServices/APLifecycleDisplayService';
 import { E_ManagedAssetDisplay_BusinessGroupSharing_AccessType, TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
@@ -17,8 +21,7 @@ export enum E_APDeveloperPortalApiProductDisplay_AccessDisplay {
   READONLY = "readonly",
   UNDEFINED = "no access"
 }
-export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
-}; 
+export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {}; 
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
 
 export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {

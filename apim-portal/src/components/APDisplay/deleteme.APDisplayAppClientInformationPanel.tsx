@@ -2,7 +2,7 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { APDisplayAppClientInformation } from "./APDisplayAppClientInformation";
+import { APDisplayAppClientInformation } from "./deleteme.APDisplayAppClientInformation";
 import { TAPAppClientInformationList } from "../APComponentsCommon";
 
 import "../APComponents.css";

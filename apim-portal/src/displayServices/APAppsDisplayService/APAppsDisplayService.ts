@@ -41,7 +41,6 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppCredentials: TAPAppCredentialsDisplay;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   // TODO:
-  // appClientInformationList: TAPAppClientInformationDisplayList;
   // appWebhookList: TAPAppWebhookDisplayList;
   // isAppWebhookCapable: boolean;
 }

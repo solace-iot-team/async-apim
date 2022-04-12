@@ -8,7 +8,6 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-// import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
@@ -19,6 +18,8 @@ import { APDisplayDeveloperPortalAppCredentialsPanel } from "../../../components
 import { APDisplayDeveloperPortalAppEndpointsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Endpoints_Panel";
 import APAppEnvironmentsDisplayService from "../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_EnvironmentChannelPermissions_Panel";
+import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Panel";
+import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
@@ -171,12 +172,12 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               componentTitle="Channel Permissions / Topics"
             />
 
-            <p>TODO: APDisplayClientInformationPanel</p>
-            {/* <APDisplayClientInformationPanel
-              appClientInformationList={managedObject.apAppClientInformationList}
-              emptyMessage="No Client Information defined."
-              header='Client Information'
-            /> */}
+            <APDisplayDeveloperPortalAppApiProductsClientInformationPanel
+              apApp_ApiProduct_ClientInformationDisplayList={APDeveloperPortalAppApiProductsDisplayService.get_ApApp_ApiProduct_ClientInformationDisplayList({ apDeveloperPortalAppApiProductDisplayList: managedObject.apDeveloperPortalUserApp_ApiProductDisplayList })}
+              collapsed={true}
+              emptyMessage="No Client Informatin found."
+              componentTitle="Client Information"
+            />
 
           </TabPanel>
           <TabPanel header='Async API Specs'>

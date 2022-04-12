@@ -36,7 +36,7 @@ import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../componen
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDisplayConnectorAttributes";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
-import { APDisplayAppClientInformation } from "../../../components/APDisplay/APDisplayAppClientInformation";
+import { APDisplayAppClientInformation } from "../../../components/APDisplay/deleteme.APDisplayAppClientInformation";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";

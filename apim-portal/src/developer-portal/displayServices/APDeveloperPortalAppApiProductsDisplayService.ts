@@ -1,5 +1,16 @@
-import { APIProduct, ApiProductsService, AppApiProductsComplex, AppResponse, AppStatus } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
+import { 
+  APIProduct, 
+  ApiProductsService, 
+  AppApiProductsComplex, 
+  AppResponse, 
+  AppStatus, 
+  ClientInformation, 
+  ClientOptionsGuaranteedMessaging
+} from '@solace-iot-team/apim-connector-openapi-browser';
+import APEnvironmentsDisplayService, { 
+  TAPEnvironmentDisplayList 
+} from '../../displayServices/APEnvironmentsDisplayService';
+import { IAPEntityIdDisplay } from '../../utils/APEntityIdsService';
 import APSearchContentService from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
 import { 
@@ -14,12 +25,25 @@ export enum EAPApp_ApiProduct_Status {
   APPROVAL_REVOKED = "approval revoked"
 }
 
-// export type TAPAppApiProductApprovalStatus = AppStatus;
+export type TAPAppGuaranteedMessagingDisplay = {
+  queueName: string;
+  accessType: ClientOptionsGuaranteedMessaging.accessType;
+  maxTtl: number;
+  maxMsgSpoolUsage: number;
+}
+export type TAPAppClientInformationDisplay = {
+  apGuarenteedMessagingDisplay?: TAPAppGuaranteedMessagingDisplay;
+}
 
 export type TAPDeveloperPortalAppApiProductDisplay = TAPDeveloperPortalApiProductDisplay & {
   apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
+  apAppClientInformationDisplay: TAPAppClientInformationDisplay;
 }; 
 export type TAPDeveloperPortalAppApiProductDisplayList = Array<TAPDeveloperPortalAppApiProductDisplay>;
+
+// convenience
+export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & TAPAppClientInformationDisplay;
+export type TAPApp_ApiProduct_ClientInformationDisplayList = Array<TAPApp_ApiProduct_ClientInformationDisplay>;
 
 class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApiProductsDisplayService {
   private readonly FinalComponentName = "APDeveloperPortalAppApiProductsDisplayService";
@@ -44,18 +68,54 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
   private create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({ 
     apDeveloperPortalApiProductDisplay,
     apApp_ApiProduct_Status,
+    connectorAppResponse,
   }:{
     apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
     apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
+    connectorAppResponse: AppResponse;
   }): TAPDeveloperPortalAppApiProductDisplay {
+
+    // find the matching client information
+    const apAppClientInformationDisplay: TAPAppClientInformationDisplay = {
+      apGuarenteedMessagingDisplay: undefined
+    };
+    if(connectorAppResponse.clientInformation !== undefined && connectorAppResponse.clientInformation.length > 0) {
+      const found: ClientInformation | undefined = connectorAppResponse.clientInformation.find( (x) => {
+        return x.guaranteedMessaging?.apiProduct === apDeveloperPortalApiProductDisplay.apEntityId.id;
+      });
+      if(found && found.guaranteedMessaging && found.guaranteedMessaging.name) {
+        const apAppGuaranteedMessagingDisplay: TAPAppGuaranteedMessagingDisplay = {
+          queueName: found.guaranteedMessaging.name,
+          accessType: found.guaranteedMessaging.accessType,
+          maxMsgSpoolUsage: found.guaranteedMessaging.maxMsgSpoolUsage,
+          maxTtl: found.guaranteedMessaging.maxTtl
+        };
+        apAppClientInformationDisplay.apGuarenteedMessagingDisplay = apAppGuaranteedMessagingDisplay;
+      }
+    }
+
     const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = {
       ...apDeveloperPortalApiProductDisplay,
       apApp_ApiProduct_Status: apApp_ApiProduct_Status,
+      apAppClientInformationDisplay: apAppClientInformationDisplay,
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalAppApiProductDisplay>(apDeveloperPortalAppApiProductDisplay);
   }
 
+  public get_ApApp_ApiProduct_ClientInformationDisplayList({ apDeveloperPortalAppApiProductDisplayList }:{
+    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): TAPApp_ApiProduct_ClientInformationDisplayList {
+    const apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList = [];
+    for(const apDeveloperPortalAppApiProductDisplay of apDeveloperPortalAppApiProductDisplayList) {
+      const apApp_ApiProduct_ClientInformationDisplay: TAPApp_ApiProduct_ClientInformationDisplay = {
+        apEntityId: apDeveloperPortalAppApiProductDisplay.apEntityId,
+        apGuarenteedMessagingDisplay: apDeveloperPortalAppApiProductDisplay.apAppClientInformationDisplay.apGuarenteedMessagingDisplay,
+      };
+      apApp_ApiProduct_ClientInformationDisplayList.push(apApp_ApiProduct_ClientInformationDisplay);
+    }
+    return apApp_ApiProduct_ClientInformationDisplayList;
+  }
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -121,7 +181,8 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
 
     return this.create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({
       apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
-      apApp_ApiProduct_Status: apApp_ApiProduct_Status
+      apApp_ApiProduct_Status: apApp_ApiProduct_Status,
+      connectorAppResponse: connectorAppResponse,
     });
   }
 
