@@ -1,27 +1,8 @@
 
-// export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
-//   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
-//   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
-// }
-// export enum E_ManagedAssetDisplay_BusinessGroupSharing_AccessType {
-//   READONLY = "readonly",
-//   FULL_ACCESS = "full-access",
-// }
-
 import { ApiError, AppConnectionStatus, AppResponse, DevelopersService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPDeveloperPortalAppApiProductDisplayList } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { APAppsDisplayService, IAPAppDisplay } from "./APAppsDisplayService";
-
-// export type TAPManagedAssetBusinessGroupInfo = {
-//   apOwningBusinessGroupEntityId: TAPEntityId;
-//   apBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
-// }
-// export type TAPManagedAssetOwnerInfo = TAPEntityId;
-
-// export type TAPManagedAssetLifecycleInfo = {
-//   apLifecycleState: EAPLifecycleState;
-// }
 
 export interface IAPUserAppDisplay extends IAPAppDisplay {
   userId: string;
@@ -31,15 +12,15 @@ export type TAPUserAppDisplayList = Array<IAPUserAppDisplay>;
 export abstract class APUserAppsDisplayService extends APAppsDisplayService {
   private readonly MiddleComponentName = "APUserAppsDisplayService";
 
-  protected create_Empty_ApUserAppDisplay({ userId }:{
-    userId: string;
-  }): IAPUserAppDisplay {
-    const apUserAppDisplay: IAPUserAppDisplay = {
-      ...this.create_Empty_ApAppDisplay(),
-      userId: userId,
-    }
-    return apUserAppDisplay;
-  }
+  // protected create_Empty_ApUserAppDisplay({ userId }:{
+  //   userId: string;
+  // }): IAPUserAppDisplay {
+  //   const apUserAppDisplay: IAPUserAppDisplay = {
+  //     ...this.create_Empty_ApAppDisplay(),
+  //     userId: userId,
+  //   }
+  //   return apUserAppDisplay;
+  // }
 
   protected create_ApUserAppDisplay_From_ApiEntities({ 
     userId, 

@@ -9,14 +9,16 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 // import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
-import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
-import { APDisplayDeveloperPortalApp_ApiProducts } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts";
-import { APDisplayDeveloperPortalApp_Credentials_Panel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Credentials_Panel";
+import { APDisplayDeveloperPortalAppApiProducts } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts";
+import { APDisplayDeveloperPortalAppCredentialsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Credentials_Panel";
+import { APDisplayDeveloperPortalAppEndpointsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Endpoints_Panel";
+import APAppEnvironmentsDisplayService from "../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
+import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_EnvironmentChannelPermissions_Panel";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
@@ -116,10 +118,10 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
       <div className="p-col-12">
         <div className="apd-app-view">
           <div className="apd-app-view-detail-left">
-            <div><b>Status: </b>{mo.appStatus}</div>
+            <div><b>Status: </b>{mo.apAppStatus}</div>
             {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
 
-            <APDisplayDeveloperPortalApp_ApiProducts
+            <APDisplayDeveloperPortalAppApiProducts
               apDeveloperPortalApp_ApiProductDisplayList={mo.apDeveloperPortalUserApp_ApiProductDisplayList}
               className="p-mt-2 p-ml-2"
               emptyMessage="No API Products defined."
@@ -139,9 +141,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     const logName = `${componentName}.${funcName}()`;
     
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    if(managedObject.devel_connectorAppResponses.mqtt === undefined) throw new Error(`${logName}: managedObject.devel_connectorAppResponses.mqtt === undefined`);
-    // if(!managedObjectDisplay.apiAppResponse_mqtt) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt is undefined`);
-    // if(!managedObjectDisplay.apiAppResponse_mqtt.environments) throw new Error(`${logName}: managedObjectDisplay.apiAppResponse_mqtt.environments is undefined`);
+
     return (
       <React.Fragment>
 
@@ -150,27 +150,34 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General'>
 
-                  <APDisplayDeveloperPortalApp_Credentials_Panel
-                    appCredentials={managedObject.appCredentials}
-                    componentTitle="Credentials"
-                    collapsed={true}
-                  />
+            <APDisplayDeveloperPortalAppCredentialsPanel
+              appCredentials={managedObject.apAppCredentials}
+              componentTitle="Credentials"
+              collapsed={true}
+            />
 
-                  {/* <APDisplayDeveloperPortalApp_Endpoints_Panel
-                  
-                  /> */}
-                  <APDisplayAppEnvironments
-                    appResponse_smf={managedObject.devel_connectorAppResponses.smf}
-                    appResponse_mqtt={managedObject.devel_connectorAppResponses.mqtt}
-                    // className="p-ml-2"
-                  />
+            <APDisplayDeveloperPortalAppEndpointsPanel
+              apEnvironmentEndpointList={APAppEnvironmentsDisplayService.get_apEnvironmentEndpointDisplayList({ apAppEnvironmentDisplayList: managedObject.apAppEnvironmentDisplayList })}                  
+              collapsed={true}
+              emptyMessage="No Endpoints found."
+              componentTitle="Connection Endpoints"
+            />
 
-                  <p>TODO: APDisplayClientInformationPanel</p>
-                  {/* <APDisplayClientInformationPanel
-                    appClientInformationList={managedObject.apAppClientInformationList}
-                    emptyMessage="No Client Information defined."
-                    header='Client Information'
-                  /> */}
+            <APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel
+              apAppEnvironmentDisplayList={managedObject.apAppEnvironmentDisplayList}
+              // apEnvironmentChannelPermissionsDisplayList={APAppEnvironmentsDisplayService.get_ApEnvironmentChannelPermissionsDisplayList({ apAppEnvironmentDisplayList: managedObject.apAppEnvironmentDisplayList })}
+              collapsed={true}
+              emptyMessage="No Channel Permissions found."
+              componentTitle="Channel Permissions / Topics"
+            />
+
+            <p>TODO: APDisplayClientInformationPanel</p>
+            {/* <APDisplayClientInformationPanel
+              appClientInformationList={managedObject.apAppClientInformationList}
+              emptyMessage="No Client Information defined."
+              header='Client Information'
+            /> */}
+
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <p>TODO: rework APDisplayAppAsyncApis</p>

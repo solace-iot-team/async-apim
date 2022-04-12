@@ -2,21 +2,22 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { TAPAppCredentialsDisplay } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import { APDisplayDeveloperPortalAppCredentials } from "./APDisplayDeveloperPortalApp_Credentials";
+import { TAPAppEnvironmentDisplayList } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
+import { APDisplayDeveloperPortalAppEnvironmentChannelPermissions } from "./APDisplayDeveloperPortalApp_EnvironmentChannelPermissions";
 
 import "../APComponents.css";
 
-export interface IAPDisplayDeveloperPortalApp_Credentials_PanelProps {
-  appCredentials: TAPAppCredentialsDisplay;
+export interface IAPDisplayDeveloperPortalApp_EnvironmentChannelPermissions_PanelProps {
+  apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   componentClassName?: string;
   contentClassName?: string;
   componentTitle?: string;
   collapsed: boolean;
+  emptyMessage: string;
 }
 
-export const APDisplayDeveloperPortalAppCredentialsPanel: React.FC<IAPDisplayDeveloperPortalApp_Credentials_PanelProps> = (props: IAPDisplayDeveloperPortalApp_Credentials_PanelProps) => {
-  // const ComponentName='APDisplayDeveloperPortalAppCredentialsPanel';
+export const APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel: React.FC<IAPDisplayDeveloperPortalApp_EnvironmentChannelPermissions_PanelProps> = (props: IAPDisplayDeveloperPortalApp_EnvironmentChannelPermissions_PanelProps) => {
+  // const ComponentName='APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel';
 
   const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
@@ -42,9 +43,10 @@ export const APDisplayDeveloperPortalAppCredentialsPanel: React.FC<IAPDisplayDev
         collapsed={props.collapsed}
         className="p-pt-2"
       >
-        <APDisplayDeveloperPortalAppCredentials
-          appCredentials={props.appCredentials}
-          className={props.contentClassName}
+        <APDisplayDeveloperPortalAppEnvironmentChannelPermissions
+          apAppEnvironmentDisplayList={props.apAppEnvironmentDisplayList}
+          className={props.componentClassName}
+          emptyMessage={props.emptyMessage}
         />
       </Panel>
     );

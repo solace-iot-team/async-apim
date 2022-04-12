@@ -2,34 +2,21 @@ import {
   AppConnectionStatus, 
   AppResponse, 
   CommonTimestampInteger, 
-  Credentials,
   Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { EAPApp_ApiProduct_Status, TAPDeveloperPortalAppApiProductDisplay, TAPDeveloperPortalAppApiProductDisplayList } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
-import APEntityIdsService, { 
+import { 
+  EAPApp_ApiProduct_Status, 
+  TAPDeveloperPortalAppApiProductDisplay, 
+  TAPDeveloperPortalAppApiProductDisplayList 
+} from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
+import { 
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
 import { Globals } from '../../utils/Globals';
-
-// export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
-//   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
-//   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
-// }
-// export enum E_ManagedAssetDisplay_BusinessGroupSharing_AccessType {
-//   READONLY = "readonly",
-//   FULL_ACCESS = "full-access",
-// }
-
-// export type TAPManagedAssetBusinessGroupInfo = {
-//   apOwningBusinessGroupEntityId: TAPEntityId;
-//   apBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
-// }
-// export type TAPManagedAssetOwnerInfo = TAPEntityId;
-
-// export type TAPManagedAssetLifecycleInfo = {
-//   apLifecycleState: EAPLifecycleState;
-// }
+import APAppEnvironmentsDisplayService, { 
+  TAPAppEnvironmentDisplayList 
+} from './APAppEnvironmentsDisplayService';
 
 export enum EAPApp_Status {
   UNKNOWN = "UNKNOWN",
@@ -50,21 +37,15 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
     mqtt?: AppResponse,
     appConnectionStatus: AppConnectionStatus,
   },
-  appStatus: EAPApp_Status;
-  appCredentials: TAPAppCredentialsDisplay;
-
+  apAppStatus: EAPApp_Status;
+  apAppCredentials: TAPAppCredentialsDisplay;
+  apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   // TODO:
-  // appEnvironmentList: TAPAppEnvironmentDisplayList;
   // appClientInformationList: TAPAppClientInformationDisplayList;
   // appWebhookList: TAPAppWebhookDisplayList;
   // isAppWebhookCapable: boolean;
 }
 export type TAPAppDisplayList = Array<IAPAppDisplay>;
-
-// export type TAPManagedAssetDisplay_AccessAndState = {
-//   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
-//   apOwnerInfo: TAPManagedAssetOwnerInfo;
-// }
 
 export class APAppsDisplayService {
   private readonly BaseComponentName = "APAppsDisplayService";
@@ -82,23 +63,23 @@ export class APAppsDisplayService {
     return `${this.nameOf_ApAppCredentialsDisplay('secret')}.${name}`;
   }
 
-  private create_Empty_ConnectorAppResponse(): AppResponse {
-    const create_Empty_Credentials = (): Credentials => {
-      return {
-        expiresAt: -1,
-      };
-    }
-    return {
-      apiProducts: [],
-      credentials: create_Empty_Credentials(),
-      name: '',
-      displayName: '',
-    }
-  }
-  private create_Empty_ConnectorAppConnectionStatus(): AppConnectionStatus {
-    return {
-    }
-  }
+  // private create_Empty_ConnectorAppResponse(): AppResponse {
+  //   const create_Empty_Credentials = (): Credentials => {
+  //     return {
+  //       expiresAt: -1,
+  //     };
+  //   }
+  //   return {
+  //     apiProducts: [],
+  //     credentials: create_Empty_Credentials(),
+  //     name: '',
+  //     displayName: '',
+  //   }
+  // }
+  // private create_Empty_ConnectorAppConnectionStatus(): AppConnectionStatus {
+  //   return {
+  //   }
+  // }
   private create_Empty_ApCredentialsDisplay(): TAPAppCredentialsDisplay {
     return {
       expiresAt: -1,
@@ -109,19 +90,21 @@ export class APAppsDisplayService {
       }
     }
   }
-  protected create_Empty_ApAppDisplay(): IAPAppDisplay {
-    const apAppDisplay: IAPAppDisplay = {
-      apEntityId: APEntityIdsService.create_EmptyObject(),
-      devel_connectorAppResponses: {
-        smf: this.create_Empty_ConnectorAppResponse(),
-        mqtt: this.create_Empty_ConnectorAppResponse(),
-        appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
-      },
-      appStatus: EAPApp_Status.UNKNOWN,
-      appCredentials: this.create_Empty_ApCredentialsDisplay(),
-    };
-    return apAppDisplay;
-  }
+  // protected create_Empty_ApAppDisplay(): IAPAppDisplay {
+  //   const apAppDisplay: IAPAppDisplay = {
+  //     apEntityId: APEntityIdsService.create_EmptyObject(),
+  //     devel_connectorAppResponses: {
+  //       smf: this.create_Empty_ConnectorAppResponse(),
+  //       mqtt: this.create_Empty_ConnectorAppResponse(),
+  //       appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
+  //     },
+  //     apAppStatus: EAPApp_Status.UNKNOWN,
+  //     apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
+  //     apAppEnvironmentDisplayList_smf: [],
+  //     apAppEnvironmentDisplayList_mqtt: [],
+  //   };
+  //   return apAppDisplay;
+  // }
 
   protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList }: {
     connectorAppResponse_smf: AppResponse;
@@ -180,22 +163,26 @@ export class APAppsDisplayService {
         mqtt: connectorAppResponse_mqtt,
         appConnectionStatus: connectorAppConnectionStatus
       },
-      appStatus: appStatus,
-      appCredentials: appCredentials,
+      apAppStatus: appStatus,
+      apAppCredentials: appCredentials,
+      apAppEnvironmentDisplayList: APAppEnvironmentsDisplayService.create_ApAppEnvironmentDisplayList_From_ApiEntities({
+        connectorAppEnvironments_smf: connectorAppResponse_smf.environments,
+        connectorAppEnvironments_mqtt: connectorAppResponse_mqtt?.environments
+      }),
     }
   }
 
   public get_ApAppCredentialsDisplay({ apAppDisplay }:{
     apAppDisplay: IAPAppDisplay;
   }): TAPAppCredentialsDisplay {
-    return apAppDisplay.appCredentials;
+    return apAppDisplay.apAppCredentials;
   }
 
   public set_ApAppCredentialsDisplay({ apAppDisplay, apAppCredentialsDisplay }:{
     apAppDisplay: IAPAppDisplay;
     apAppCredentialsDisplay: TAPAppCredentialsDisplay;
   }): IAPAppDisplay {
-    apAppDisplay.appCredentials = apAppCredentialsDisplay;
+    apAppDisplay.apAppCredentials = apAppCredentialsDisplay;
     return apAppDisplay;
   }
 

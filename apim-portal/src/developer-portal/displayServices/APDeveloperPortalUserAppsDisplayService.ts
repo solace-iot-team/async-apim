@@ -1,11 +1,8 @@
 import { 
   App,
-  AppApiProducts,
-  AppApiProductsComplex,
   AppConnectionStatus,
   AppResponse,
   AppsService,
-  AppStatus,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   APUserAppsDisplayService, 
@@ -163,8 +160,8 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     organizationId: string;
     userId: string;
   }): Promise<TAPDeveloperPortalUserAppDisplayList> => {
-    const funcName = 'apiGetList_ApDeveloperPortalUserAppDisplayList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGetList_ApDeveloperPortalUserAppDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const exists_userId: boolean = await this.apiCheck_UserIdExists({
       organizationId: organizationId,

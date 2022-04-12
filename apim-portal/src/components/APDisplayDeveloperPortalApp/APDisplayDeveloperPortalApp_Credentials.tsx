@@ -13,8 +13,8 @@ export interface IAPDisplayDeveloperPortalApp_CredentialsProps {
   className?: string;
 }
 
-export const APDisplayDeveloperPortalApp_Credentials: React.FC<IAPDisplayDeveloperPortalApp_CredentialsProps> = (props: IAPDisplayDeveloperPortalApp_CredentialsProps) => {
-  // const ComponentName='APDisplayDeveloperPortalApp_Credentials';
+export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDeveloperPortalApp_CredentialsProps> = (props: IAPDisplayDeveloperPortalApp_CredentialsProps) => {
+  // const ComponentName='APDisplayDeveloperPortalAppCredentials';
 
   const componentDataTableRef = React.useRef<any>(null);
 

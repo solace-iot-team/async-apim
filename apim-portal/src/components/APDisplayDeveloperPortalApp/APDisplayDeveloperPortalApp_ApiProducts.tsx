@@ -18,8 +18,8 @@ export interface IAPDisplayDeveloperPortalApp_ApiProductsProps {
   emptyMessage: string;
 }
 
-export const APDisplayDeveloperPortalApp_ApiProducts: React.FC<IAPDisplayDeveloperPortalApp_ApiProductsProps> = (props: IAPDisplayDeveloperPortalApp_ApiProductsProps) => {
-  // const ComponentName='APDisplayDeveloperPortalApp_ApiProducts';
+export const APDisplayDeveloperPortalAppApiProducts: React.FC<IAPDisplayDeveloperPortalApp_ApiProductsProps> = (props: IAPDisplayDeveloperPortalApp_ApiProductsProps) => {
+  // const ComponentName='APDisplayDeveloperPortalAppApiProducts';
 
 
   const componentDataTableRef = React.useRef<any>(null);

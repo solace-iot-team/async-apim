@@ -47,6 +47,9 @@ export const APDisplayAppPermissions: React.FC<IAPDisplayAppPermissionsProps> = 
     return apiPermissionList.map( (elem: Record<string, ChannelPermission>) => {
       const apiChannel: string = Object.keys(elem)[0];
       const apiChannelPermission: ChannelPermission = Object.values(elem)[0];      
+
+      console.log(`apiPermissionList: Array<Record<string, ChannelPermission>> = ${JSON.stringify(apiPermissionList, null, 2)}`);
+
       return {
         channel: apiChannel,
         topicList: apiChannelPermission.permissions

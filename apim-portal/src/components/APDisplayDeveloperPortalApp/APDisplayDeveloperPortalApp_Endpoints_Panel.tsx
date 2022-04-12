@@ -2,21 +2,22 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { TAPAppCredentialsDisplay } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import { APDisplayDeveloperPortalAppCredentials } from "./APDisplayDeveloperPortalApp_Credentials";
+import { TAPEnvironmentEndpointDisplayList } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
+import { APDisplayDeveloperPortalAppEndpoints } from "./APDisplayDeveloperPortalApp_Endpoints";
 
 import "../APComponents.css";
 
-export interface IAPDisplayDeveloperPortalApp_Credentials_PanelProps {
-  appCredentials: TAPAppCredentialsDisplay;
+export interface IAPDisplayDeveloperPortalApp_Endpoints_PanelProps {
+  apEnvironmentEndpointList: TAPEnvironmentEndpointDisplayList;
   componentClassName?: string;
   contentClassName?: string;
   componentTitle?: string;
   collapsed: boolean;
+  emptyMessage: string;
 }
 
-export const APDisplayDeveloperPortalAppCredentialsPanel: React.FC<IAPDisplayDeveloperPortalApp_Credentials_PanelProps> = (props: IAPDisplayDeveloperPortalApp_Credentials_PanelProps) => {
-  // const ComponentName='APDisplayDeveloperPortalAppCredentialsPanel';
+export const APDisplayDeveloperPortalAppEndpointsPanel: React.FC<IAPDisplayDeveloperPortalApp_Endpoints_PanelProps> = (props: IAPDisplayDeveloperPortalApp_Endpoints_PanelProps) => {
+  // const ComponentName='APDisplayDeveloperPortalAppEndpointsPanel';
 
   const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
@@ -42,9 +43,10 @@ export const APDisplayDeveloperPortalAppCredentialsPanel: React.FC<IAPDisplayDev
         collapsed={props.collapsed}
         className="p-pt-2"
       >
-        <APDisplayDeveloperPortalAppCredentials
-          appCredentials={props.appCredentials}
+        <APDisplayDeveloperPortalAppEndpoints
+          apEnvironmentEndpointList={props.apEnvironmentEndpointList}
           className={props.contentClassName}
+          emptyMessage={props.emptyMessage}
         />
       </Panel>
     );

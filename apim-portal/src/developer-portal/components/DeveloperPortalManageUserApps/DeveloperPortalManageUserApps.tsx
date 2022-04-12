@@ -20,13 +20,13 @@ import {
   E_MANAGE_USER_APP_COMPONENT_STATE 
 } from "./DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
+import { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
+import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 
 // import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;

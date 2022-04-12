@@ -4,19 +4,12 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 import { MenuItem } from "primereact/api";
 import { Divider } from "primereact/divider";
 
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-// import { 
-//   APManagedUserAppDisplay, 
-//   TApiEntitySelectItemList, 
-//   TAPManagedWebhook,
-//   TAPManagedWebhookList 
-// } from "../../../components/APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
@@ -46,41 +39,6 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay;
   type TManagedObjectList = Array<TManagedObject>;
-
-  // const transformManagedObjectListToTableDataList = (moList: TManagedObjectList): TManagedObjectTableDataList => {
-  //   const _createApiProductDisplayNameList = (apiProductList: TApiProductList): Array<CommonDisplayName> => {
-  //     return apiProductList.map( (apiProduct: TApiProduct) => {
-  //       return apiProduct.displayName
-  //     });
-  //   }
-  //   const _createEnvWithWebhookDefinedList = (mwhList: TAPManagedWebhookList): Array<CommonDisplayName> => {
-  //     let l: Array<CommonDisplayName> = [];
-  //     mwhList.forEach( (mwh: TAPManagedWebhook) => {
-  //       if(mwh.webhookWithoutEnvs) l.push(mwh.webhookEnvironmentReference.entityRef.displayName);
-  //     });
-  //     return l;
-  //   }
-  //   const _transformManagedObjectToTableDataRow = (mo: TManagedObject): TManagedObjectTableDataRow => {
-  //     const funcName = '_transformManagedObjectToTableDataRow';
-  //     const logName = `${componentName}.${funcName}()`;
-  //     if(!mo.apiAppResponse_smf.environments) throw new Error(`${logName}: mo.apiAppResponse_smf.environments is undefined`);
-  //     const managedObjectTableDataRow: TManagedObjectTableDataRow = {
-  //       ...mo,
-  //       productDisplayNameList:_createApiProductDisplayNameList(mo.apiProductList),
-  //       environmentDisplayNameList: mo.apiAppResponse_smf.environments.map( (x) => { return APManagedUserAppDisplay.getAppEnvironmentDisplayName(x) }),
-  //       environmentWithWebhookDefinedDisplayNameList: _createEnvWithWebhookDefinedList(mo.apManagedWebhookList),
-  //       globalSearch: ''
-  //     };
-  //     const globalSearch = Globals.generateDeepObjectValuesString(managedObjectTableDataRow);
-  //     return {
-  //       ...managedObjectTableDataRow,
-  //       globalSearch: globalSearch
-  //     }
-  //   }
-  //   return moList.map( (mo: TManagedObject) => {
-  //     return _transformManagedObjectToTableDataRow(mo);
-  //   });
-  // }
 
   const [userContext] = React.useContext(UserContext);
 
@@ -204,14 +162,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
       <div>TDB: api product displayName (status)</div>
     )
   }
-  // const environmentsBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-  //   return APRenderUtils.renderStringListAsDivList(rowData.environmentDisplayNameList);
-  // }
-  // const webhooksBodyTemplate = (rowData: TManagedObjectTableDataRow) => {
-  //   if(!rowData.isAppWebhookCapable) return ('N/A');
-  //   if(rowData.environmentWithWebhookDefinedDisplayNameList.length === 0) return ('None defined.');
-  //   return APRenderUtils.renderStringListAsDivList(rowData.environmentWithWebhookDefinedDisplayNameList);
-  // }
+
   const renderManagedObjectDataTable = () => {
     const dataKey = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('id');
     const sortField = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('displayName');
