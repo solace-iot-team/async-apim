@@ -8,7 +8,6 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -20,6 +19,7 @@ import APAppEnvironmentsDisplayService from "../../../displayServices/APAppsDisp
 import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_EnvironmentChannelPermissions_Panel";
 import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Panel";
 import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
+import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
@@ -181,12 +181,11 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
           </TabPanel>
           <TabPanel header='Async API Specs'>
-            <p>TODO: rework APDisplayAppAsyncApis</p>
-            <APDisplayAppAsyncApis 
+            <APDisplayDeveloperPortalAppAsyncApiSpecs
               organizationId={props.organizationEntityId.id}
               appId={props.appEntityId.id}
-              appDisplayName={props.appEntityId.displayName}
-              label="Click to view API"
+              apAppApiDisplayList={managedObject.apAppApiDisplayList}
+              label="Double Click to view API"
               onError={props.onError}
               onLoadingChange={props.onLoadingChange}
             />

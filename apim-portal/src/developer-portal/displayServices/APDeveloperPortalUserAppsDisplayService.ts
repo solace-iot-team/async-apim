@@ -4,6 +4,7 @@ import {
   AppResponse,
   AppsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
 import { 
   APUserAppsDisplayService, 
   IAPUserAppDisplay 
@@ -19,6 +20,7 @@ import APDeveloperPortalAppApiProductsDisplayService, {
 
 export type TAPDeveloperPortalUserAppDisplay = IAPUserAppDisplay & IAPSearchContent &{
   apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  apAppApiDisplayList: TAPAppApiDisplayList;
 }
 export type TAPDeveloperPortalUserAppDisplayList = Array<TAPDeveloperPortalUserAppDisplay>;
 
@@ -31,12 +33,14 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     connectorAppResponse_mqtt, 
     connectorAppConnectionStatus,
     apDeveloperPortalUserApp_ApiProductDisplayList,
+    apAppApiDisplayList,
   }: {
     userId: string;
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+    apAppApiDisplayList: TAPAppApiDisplayList;
   }): TAPDeveloperPortalUserAppDisplay {
 
     const apUserAppDisplay: IAPUserAppDisplay = this.create_ApUserAppDisplay_From_ApiEntities({
@@ -50,6 +54,7 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
       ...apUserAppDisplay,
       apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+      apAppApiDisplayList: apAppApiDisplayList,
       apSearchContent: '',      
     };
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalUserAppDisplay>(apDeveloperPortalUserAppDisplay);
@@ -144,13 +149,21 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
       userId: userId,
       connectorAppResponse: connectorAppResponse_smf,
     });
-      
+
+    // create the app api display list
+    const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
+      organizationId: organizationId,
+      appId: appId,
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+    });
+
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
       userId: userId,
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
-      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+      apAppApiDisplayList: apAppApiDisplayList,
     });
 
     return apDeveloperPortalUserAppDisplay;
@@ -192,12 +205,20 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
         connectorAppResponse: connectorAppResponse_smf,
       });
     
+      // create the app api display list
+      const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
+        organizationId: organizationId,
+        appId: connectorApp.name,
+        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+      });
+
       const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
         userId: userId,
         connectorAppConnectionStatus: {},
         connectorAppResponse_smf: connectorAppResponse_smf,
         connectorAppResponse_mqtt: undefined,
-        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList
+        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+        apAppApiDisplayList: apAppApiDisplayList,
       });
 
       apDeveloperPortalUserAppDisplayList.push(apDeveloperPortalUserAppDisplay);

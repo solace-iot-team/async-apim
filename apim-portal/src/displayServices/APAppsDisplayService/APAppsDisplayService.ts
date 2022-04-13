@@ -40,6 +40,7 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppStatus: EAPApp_Status;
   apAppCredentials: TAPAppCredentialsDisplay;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
+
   // TODO:
   // appWebhookList: TAPAppWebhookDisplayList;
   // isAppWebhookCapable: boolean;
@@ -105,13 +106,10 @@ export class APAppsDisplayService {
   //   return apAppDisplay;
   // }
 
-  protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList }: {
-    connectorAppResponse_smf: AppResponse;
-    connectorAppResponse_mqtt?: AppResponse;
-    connectorAppConnectionStatus: AppConnectionStatus;
+  private create_ApAppStatus({ apDeveloperPortalUserApp_ApiProductDisplayList }:{
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
-  }): IAPAppDisplay {
-    const funcName = 'create_ApAppDisplay_From_ApiEntities';
+  }): EAPApp_Status {
+    const funcName = 'create_ApAppStatus';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     // calculate the app status from the individual api product app statuses
@@ -139,10 +137,20 @@ export class APAppsDisplayService {
     });
     let appStatus: EAPApp_Status = EAPApp_Status.UNKNOWN;
     if(numLive === numTotal) appStatus = EAPApp_Status.LIVE;
-    if(numLive > 0) appStatus = EAPApp_Status.PARTIALLY_LIVE;
+    else if(numLive > 0) appStatus = EAPApp_Status.PARTIALLY_LIVE;
     if(numLive === 0 && (numApprovalPending > 0 || numApprovalRevoked > 0) ) appStatus = EAPApp_Status.APPROVAL_REQUIRED;
     if(appStatus === EAPApp_Status.UNKNOWN) throw new Error(`${logName}: appStatus === EAPApp_Status.UNKNOWN`);
+    return appStatus;
+  }
 
+  protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList }: {
+    connectorAppResponse_smf: AppResponse;
+    connectorAppResponse_mqtt?: AppResponse;
+    connectorAppConnectionStatus: AppConnectionStatus;
+    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): IAPAppDisplay {
+    // const funcName = 'create_ApAppDisplay_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
     appCredentials.expiresAt = connectorAppResponse_smf.credentials.expiresAt;
@@ -162,7 +170,7 @@ export class APAppsDisplayService {
         mqtt: connectorAppResponse_mqtt,
         appConnectionStatus: connectorAppConnectionStatus
       },
-      apAppStatus: appStatus,
+      apAppStatus: this.create_ApAppStatus({ apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList }),
       apAppCredentials: appCredentials,
       apAppEnvironmentDisplayList: APAppEnvironmentsDisplayService.create_ApAppEnvironmentDisplayList_From_ApiEntities({
         connectorAppEnvironments_smf: connectorAppResponse_smf.environments,

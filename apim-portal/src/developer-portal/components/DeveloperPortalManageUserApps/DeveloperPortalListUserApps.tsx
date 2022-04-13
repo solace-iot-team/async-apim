@@ -167,6 +167,7 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
     const dataKey = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('id');
     const sortField = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apSearchContent');
+    const statusField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
 
     return (
       <div className="card">
@@ -193,8 +194,11 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
             sortOrder={1}
           >
             <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-            {/* <Column header="State" headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable /> */}
-            <Column header="API Products" body={apiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Status" field={statusField} sortable style={{ width: "15%"}} />
+
+            {/* <Column header="Status" body={nameBodyTemplate} headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable /> */}
+
+            {/* <Column header="API Products" body={apiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             {/* <Column header="Environment(s)" body={environmentsBodyTemplate}  bodyStyle={{textAlign: 'left'}}/>
             <Column header="Webhook(s)" body={webhooksBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }}/> */}
         </DataTable>

@@ -1,4 +1,4 @@
-import { ApiProductsService, ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 
 export enum EAPApiSpecFormat {
@@ -12,12 +12,30 @@ export type TAPApiSpecDisplay = IAPEntityIdDisplay & {
   spec: any
 }
 
-export class APApiSpecsDisplayService {
+class APApiSpecsDisplayService {
   private readonly BaseComponentName = "APApiSpecsDisplayService";
 
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+  public async apiGet_App_ApiSpec({ organizationId, appId, apiEntityId }: {
+    organizationId: string;
+    appId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<TAPApiSpecDisplay> {
+    const spec: Record<string, unknown> = await AppsService.getAppApiSpecification({
+      organizationName: organizationId,
+      appName: appId,
+      apiName: apiEntityId.id,
+      format: EAPApiSpecFormat.JSON      
+    });
+    return {
+      apEntityId: apiEntityId,
+      format: EAPApiSpecFormat.JSON,
+      spec: spec
+    };
+  }
 
   public async apiGet_ApiProduct_ApiSpec({ organizationId, apiProductId, apiEntityId }: {
     organizationId: string;

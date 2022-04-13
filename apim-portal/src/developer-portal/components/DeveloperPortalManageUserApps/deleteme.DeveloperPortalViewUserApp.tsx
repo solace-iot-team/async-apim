@@ -29,7 +29,7 @@ import {
 } from "../../../components/APComponentsCommon";
 import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
-import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
+import { APDisplayAppAsyncApis } from "../../../components/APDisplay/deleteme.APDisplayAppAsyncApis";
 import { APDisplayCredentialsPanel } from "../../../components/APDisplay/deleteme.APDisplayAppCredentialsPanel";
 import { APDisplayClientInformationPanel } from "../../../components/APDisplay/deleteme.APDisplayAppClientInformationPanel";
 import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";

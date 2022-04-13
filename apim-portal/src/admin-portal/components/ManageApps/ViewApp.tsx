@@ -38,7 +38,7 @@ import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDi
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppClientInformation } from "../../../components/APDisplay/deleteme.APDisplayAppClientInformation";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
-import { APDisplayAppAsyncApis } from "../../../components/APDisplay/APDisplayAppAsyncApis";
+import { APDisplayAppAsyncApis } from "../../../components/APDisplay/deleteme.APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";
 import { APDisplayAppCredentials } from "../../../components/APDisplay/deleteme.APDisplayAppCredentials";
 import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
