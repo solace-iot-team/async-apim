@@ -12,15 +12,15 @@ export type TAPUserAppDisplayList = Array<IAPUserAppDisplay>;
 export abstract class APUserAppsDisplayService extends APAppsDisplayService {
   private readonly MiddleComponentName = "APUserAppsDisplayService";
 
-  // protected create_Empty_ApUserAppDisplay({ userId }:{
-  //   userId: string;
-  // }): IAPUserAppDisplay {
-  //   const apUserAppDisplay: IAPUserAppDisplay = {
-  //     ...this.create_Empty_ApAppDisplay(),
-  //     userId: userId,
-  //   }
-  //   return apUserAppDisplay;
-  // }
+  protected create_Empty_ApUserAppDisplay({ userId }:{
+    userId: string;
+  }): IAPUserAppDisplay {
+    const apUserAppDisplay: IAPUserAppDisplay = {
+      ...this.create_Empty_ApAppDisplay(),
+      userId: userId,
+    }
+    return apUserAppDisplay;
+  }
 
   protected create_ApUserAppDisplay_From_ApiEntities({ 
     userId, 

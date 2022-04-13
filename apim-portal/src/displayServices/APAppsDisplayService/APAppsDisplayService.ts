@@ -2,6 +2,7 @@ import {
   AppConnectionStatus, 
   AppResponse, 
   CommonTimestampInteger, 
+  Credentials, 
   Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
@@ -9,7 +10,7 @@ import {
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
-import { 
+import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
@@ -63,23 +64,23 @@ export class APAppsDisplayService {
     return `${this.nameOf_ApAppCredentialsDisplay('secret')}.${name}`;
   }
 
-  // private create_Empty_ConnectorAppResponse(): AppResponse {
-  //   const create_Empty_Credentials = (): Credentials => {
-  //     return {
-  //       expiresAt: -1,
-  //     };
-  //   }
-  //   return {
-  //     apiProducts: [],
-  //     credentials: create_Empty_Credentials(),
-  //     name: '',
-  //     displayName: '',
-  //   }
-  // }
-  // private create_Empty_ConnectorAppConnectionStatus(): AppConnectionStatus {
-  //   return {
-  //   }
-  // }
+  private create_Empty_ConnectorAppResponse(): AppResponse {
+    const create_Empty_Credentials = (): Credentials => {
+      return {
+        expiresAt: -1,
+      };
+    }
+    return {
+      apiProducts: [],
+      credentials: create_Empty_Credentials(),
+      name: '',
+      displayName: '',
+    }
+  }
+  private create_Empty_ConnectorAppConnectionStatus(): AppConnectionStatus {
+    return {
+    }
+  }
   private create_Empty_ApCredentialsDisplay(): TAPAppCredentialsDisplay {
     return {
       expiresAt: -1,
@@ -90,21 +91,20 @@ export class APAppsDisplayService {
       }
     }
   }
-  // protected create_Empty_ApAppDisplay(): IAPAppDisplay {
-  //   const apAppDisplay: IAPAppDisplay = {
-  //     apEntityId: APEntityIdsService.create_EmptyObject(),
-  //     devel_connectorAppResponses: {
-  //       smf: this.create_Empty_ConnectorAppResponse(),
-  //       mqtt: this.create_Empty_ConnectorAppResponse(),
-  //       appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
-  //     },
-  //     apAppStatus: EAPApp_Status.UNKNOWN,
-  //     apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
-  //     apAppEnvironmentDisplayList_smf: [],
-  //     apAppEnvironmentDisplayList_mqtt: [],
-  //   };
-  //   return apAppDisplay;
-  // }
+  protected create_Empty_ApAppDisplay(): IAPAppDisplay {
+    const apAppDisplay: IAPAppDisplay = {
+      apEntityId: APEntityIdsService.create_EmptyObject(),
+      devel_connectorAppResponses: {
+        smf: this.create_Empty_ConnectorAppResponse(),
+        mqtt: this.create_Empty_ConnectorAppResponse(),
+        appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
+      },
+      apAppStatus: EAPApp_Status.UNKNOWN,
+      apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
+      apAppEnvironmentDisplayList: [],
+    };
+    return apAppDisplay;
+  }
 
   private create_ApAppStatus({ apDeveloperPortalUserApp_ApiProductDisplayList }:{
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;

@@ -16,12 +16,14 @@ import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConn
 
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { 
+  EAction,
   E_CALL_STATE_ACTIONS, 
   E_MANAGE_USER_APP_COMPONENT_STATE 
 } from "./DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
 import { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
+import { DeveloperPortalEditNewUserApp } from "./EditNew/DeveloperPortalEditNewUserApp";
 
 // import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
 
@@ -451,7 +453,20 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         // />
       }
       { showNewComponent &&
-      <p>showNewComponent</p>
+        <DeveloperPortalEditNewUserApp
+          action={EAction.NEW}
+          organizationId={props.organizationEntityId.id}
+          userId={userContext.apLoginUserDisplay.apEntityId.id}
+          onNewSuccess={onNewManagedObjectSuccess} 
+          onEditSuccess={onEditManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+
+          // needs 1 apiProductEntityId to prepopulate the form
+
+        />
         // <DeveloperPortalNewEditUserApp
         //   action={EAction.NEW}
         //   organizationId={props.organizationName}

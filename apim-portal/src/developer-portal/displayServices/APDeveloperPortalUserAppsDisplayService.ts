@@ -5,6 +5,7 @@ import {
   AppsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
+import { EAPApp_Status } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import { 
   APUserAppsDisplayService, 
   IAPUserAppDisplay 
@@ -26,6 +27,24 @@ export type TAPDeveloperPortalUserAppDisplayList = Array<TAPDeveloperPortalUserA
 
 class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
   private readonly ComponentName = "APDeveloperPortalUserAppsDisplayService";
+
+  public create_Empty_ApDeveloperPortalUserAppDisplay({ userId }:{
+    userId: string;
+  }): TAPDeveloperPortalUserAppDisplay {
+
+    const apUserAppDisplay: IAPUserAppDisplay = this.create_Empty_ApUserAppDisplay({
+      userId: userId
+    });
+
+    const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
+      ...apUserAppDisplay,
+      apAppStatus: EAPApp_Status.UNKNOWN,
+      apDeveloperPortalUserApp_ApiProductDisplayList: [],
+      apAppApiDisplayList: [],
+      apSearchContent: ''
+    };
+    return apDeveloperPortalUserAppDisplay;
+  }
 
   private create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({ 
     userId, 
@@ -227,6 +246,27 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
 
     return apDeveloperPortalUserAppDisplayList;
   }
+
+  public async apiCreate_ApDeveloperPortalUserAppDisplay({ organizationId, apDeveloperPortalUserAppDisplay }:{
+    organizationId: string;
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+  }): Promise<void> {
+    const funcName = 'apiCreate_ApDeveloperPortalUserAppDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    alert(`${logName}: implement me `);
+  }
+
+  public async apiUpdate_ApDeveloperPortalUserAppDisplay({ organizationId, apDeveloperPortalUserAppDisplay }:{
+    organizationId: string;
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+  }): Promise<void> {
+    const funcName = 'apiUpdate_ApDeveloperPortalUserAppDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    alert(`${logName}: implement me `);
+  }
+  
 }
 
 export default new APDeveloperPortalUserAppsDisplayService();
