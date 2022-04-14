@@ -1,6 +1,8 @@
 import { 
+  ApiError,
   AppConnectionStatus, 
   AppResponse, 
+  AppsService, 
   CommonTimestampInteger, 
   Credentials, 
   Secret
@@ -10,10 +12,12 @@ import {
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
+import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
+import { APOrganizationsService } from '../../utils/APOrganizationsService';
 import { Globals } from '../../utils/Globals';
 import APAppEnvironmentsDisplayService, { 
   TAPAppEnvironmentDisplayList 
@@ -21,12 +25,14 @@ import APAppEnvironmentsDisplayService, {
 
 export enum EAPApp_Status {
   UNKNOWN = "UNKNOWN",
+  NO_API_PRODUCTS = "No API Products",
   LIVE = "live",
   PARTIALLY_LIVE = "partially live",
   APPROVAL_REQUIRED = "approval required",
 }
 
 export type TAPAppCredentialsDisplay = {
+  apConsumerKeyExiresIn: number; /** millseconds  */
   expiresAt: number;
   issuedAt: CommonTimestampInteger;
   secret: Secret;
@@ -41,11 +47,18 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppStatus: EAPApp_Status;
   apAppCredentials: TAPAppCredentialsDisplay;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
-
   // TODO:
   // appWebhookList: TAPAppWebhookDisplayList;
   // isAppWebhookCapable: boolean;
 }
+
+export type TAPAppDisplay_General = IAPEntityIdDisplay & {
+}
+
+export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
+  apAppCredentials: TAPAppCredentialsDisplay;
+}
+
 export type TAPAppDisplayList = Array<IAPAppDisplay>;
 
 export class APAppsDisplayService {
@@ -88,7 +101,8 @@ export class APAppsDisplayService {
       secret: {
         consumerKey: '',
         consumerSecret: ''
-      }
+      },
+      apConsumerKeyExiresIn: APOrganizationsService.get_Default_DeveloperPortalApp_CredentailsExpiryDuration()
     }
   }
   protected create_Empty_ApAppDisplay(): IAPAppDisplay {
@@ -136,10 +150,13 @@ export class APAppsDisplayService {
       }
     });
     let appStatus: EAPApp_Status = EAPApp_Status.UNKNOWN;
-    if(numLive === numTotal) appStatus = EAPApp_Status.LIVE;
-    else if(numLive > 0) appStatus = EAPApp_Status.PARTIALLY_LIVE;
-    if(numLive === 0 && (numApprovalPending > 0 || numApprovalRevoked > 0) ) appStatus = EAPApp_Status.APPROVAL_REQUIRED;
-    if(appStatus === EAPApp_Status.UNKNOWN) throw new Error(`${logName}: appStatus === EAPApp_Status.UNKNOWN`);
+    if(numTotal === 0) appStatus = EAPApp_Status.NO_API_PRODUCTS;
+    else {
+      if(numLive === numTotal) appStatus = EAPApp_Status.LIVE;
+      else if(numLive > 0) appStatus = EAPApp_Status.PARTIALLY_LIVE;
+      if(numLive === 0 && (numApprovalPending > 0 || numApprovalRevoked > 0) ) appStatus = EAPApp_Status.APPROVAL_REQUIRED;
+      if(appStatus === EAPApp_Status.UNKNOWN) throw new Error(`${logName}: appStatus === EAPApp_Status.UNKNOWN`);  
+    }
     return appStatus;
   }
 
@@ -159,6 +176,7 @@ export class APAppsDisplayService {
       appCredentials.secret.consumerKey = connectorAppResponse_smf.credentials.secret.consumerKey;
       appCredentials.secret.consumerSecret = connectorAppResponse_smf.credentials.secret.consumerSecret;
     }
+    if(connectorAppResponse_smf.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse_smf.expiresIn;
 
     return {
       apEntityId: {
@@ -179,17 +197,56 @@ export class APAppsDisplayService {
     }
   }
 
-  public get_ApAppCredentialsDisplay({ apAppDisplay }:{
+  protected is_MonitorStats_Allowed({ apAppDisplay }: {
     apAppDisplay: IAPAppDisplay;
-  }): TAPAppCredentialsDisplay {
-    return apAppDisplay.apAppCredentials;
+  }): boolean {
+    if(apAppDisplay.apAppStatus === EAPApp_Status.LIVE || apAppDisplay.apAppStatus === EAPApp_Status.PARTIALLY_LIVE) return true;
+    return false;
+  }
+  
+
+  // public get_ApAppCredentialsDisplay({ apAppDisplay }:{
+  //   apAppDisplay: IAPAppDisplay;
+  // }): TAPAppCredentialsDisplay {
+  //   return apAppDisplay.apAppCredentials;
+  // }
+
+  // public set_ApAppCredentialsDisplay({ apAppDisplay, apAppCredentialsDisplay }:{
+  //   apAppDisplay: IAPAppDisplay;
+  //   apAppCredentialsDisplay: TAPAppCredentialsDisplay;
+  // }): IAPAppDisplay {
+  //   apAppDisplay.apAppCredentials = apAppCredentialsDisplay;
+  //   return apAppDisplay;
+  // }
+
+  public get_ApAppDisplay_General({ apAppDisplay }: {
+    apAppDisplay: IAPAppDisplay;
+  }): TAPAppDisplay_General {
+    return {
+      apEntityId: apAppDisplay.apEntityId,
+    };
+  }
+  public set_ApAppDisplay_General({ apAppDisplay, apAppDisplay_General }:{
+    apAppDisplay: IAPAppDisplay;
+    apAppDisplay_General: TAPAppDisplay_General;
+  }): IAPAppDisplay {
+    apAppDisplay.apEntityId = apAppDisplay_General.apEntityId;
+    return apAppDisplay;
   }
 
-  public set_ApAppCredentialsDisplay({ apAppDisplay, apAppCredentialsDisplay }:{
+  public get_ApAppDisplay_Credentials({ apAppDisplay }: {
     apAppDisplay: IAPAppDisplay;
-    apAppCredentialsDisplay: TAPAppCredentialsDisplay;
+  }): TAPAppDisplay_Credentials {
+    return {
+      apEntityId: apAppDisplay.apEntityId,
+      apAppCredentials: apAppDisplay.apAppCredentials,
+    };
+  }
+  public set_ApAppDisplay_Credentials({ apAppDisplay, apAppDisplay_Credentials }:{
+    apAppDisplay: IAPAppDisplay;
+    apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): IAPAppDisplay {
-    apAppDisplay.apAppCredentials = apAppCredentialsDisplay;
+    apAppDisplay.apAppCredentials = apAppDisplay_Credentials.apAppCredentials;
     return apAppDisplay;
   }
 
@@ -197,6 +254,24 @@ export class APAppsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
+  public async apiCheck_AppId_Exists({ organizationId, appId }:{
+    organizationId: string;
+    appId: string;
+  }): Promise<boolean> {
+    try {
+      await AppsService.getApp({
+        organizationName: organizationId,
+        appName: appId
+      });
+      return true;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
 
 }
 

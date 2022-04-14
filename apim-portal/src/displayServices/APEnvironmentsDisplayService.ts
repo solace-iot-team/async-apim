@@ -16,7 +16,6 @@ export type TAPEnvironmentDisplay = IAPEntityIdDisplay & IAPSearchContent & {
 }
 export type TAPEnvironmentDisplayList = Array<TAPEnvironmentDisplay>;
 
-
 class APEnvironmentsDisplayService {
   private readonly BaseComponentName = "APEnvironmentsDisplayService";
 

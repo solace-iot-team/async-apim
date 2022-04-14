@@ -31,3 +31,10 @@
   border-top-left-radius: 3px;
   font-weight: 600;
 }
+
+.apd-manage-user-apps-delete-confirmation-content {
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+  color: red !important;
+}

@@ -5,6 +5,9 @@ import {
   AppsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
+import APAppEnvironmentsDisplayService, { 
+  TAPAppEnvironmentDisplayList 
+} from '../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService';
 import { EAPApp_Status } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import { 
   APUserAppsDisplayService, 
@@ -24,6 +27,11 @@ export type TAPDeveloperPortalUserAppDisplay = IAPUserAppDisplay & IAPSearchCont
   apAppApiDisplayList: TAPAppApiDisplayList;
 }
 export type TAPDeveloperPortalUserAppDisplayList = Array<TAPDeveloperPortalUserAppDisplay>;
+
+export type TAPDeveloperPortalUserAppDisplay_AllowedActions = {
+  isManageWebhooksAllowed: boolean;
+  isMonitorStatsAllowed: boolean;
+}
 
 class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
   private readonly ComponentName = "APDeveloperPortalUserAppsDisplayService";
@@ -91,6 +99,31 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
   }): TAPDeveloperPortalUserAppDisplay {
     apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList = apDeveloperPortalUserApp_ApiProductDisplayList;
     return apDeveloperPortalUserAppDisplay;
+  }
+
+  public get_Empty_AllowedActions(): TAPDeveloperPortalUserAppDisplay_AllowedActions {
+    return {
+      isManageWebhooksAllowed: false,
+      isMonitorStatsAllowed: false
+    };
+  }
+
+  private is_ManageWebhooks_Allowed({ apAppEnvironmentDisplayList }:{
+    apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
+  }): boolean {
+    return APAppEnvironmentsDisplayService.isAny_ApAppEnvironmentDisplay_Webhook_Capable({
+      apAppEnvironmentDisplayList: apAppEnvironmentDisplayList
+    });
+  }
+
+  public get_AllowedActions({ apDeveloperPortalUserAppDisplay }: {
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+  }): TAPDeveloperPortalUserAppDisplay_AllowedActions {
+    const allowedActions: TAPDeveloperPortalUserAppDisplay_AllowedActions = {
+      isManageWebhooksAllowed: this.is_ManageWebhooks_Allowed({ apAppEnvironmentDisplayList: apDeveloperPortalUserAppDisplay.apAppEnvironmentDisplayList }),
+      isMonitorStatsAllowed: this.is_MonitorStats_Allowed({ apAppDisplay: apDeveloperPortalUserAppDisplay }),
+    };
+    return allowedActions;
   }
 
   // ********************************************************************************************************************************
@@ -247,14 +280,30 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     return apDeveloperPortalUserAppDisplayList;
   }
 
-  public async apiCreate_ApDeveloperPortalUserAppDisplay({ organizationId, apDeveloperPortalUserAppDisplay }:{
+  public async apiCreate_ApDeveloperPortalUserAppDisplay({ organizationId, userId, apDeveloperPortalUserAppDisplay }:{
     organizationId: string;
+    userId: string;
     apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
   }): Promise<void> {
-    const funcName = 'apiCreate_ApDeveloperPortalUserAppDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiCreate_ApDeveloperPortalUserAppDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
-    alert(`${logName}: implement me `);
+    const create: App = {
+      name: apDeveloperPortalUserAppDisplay.apEntityId.id,
+      displayName: apDeveloperPortalUserAppDisplay.apEntityId.displayName,
+      apiProducts: [],
+      expiresIn: apDeveloperPortalUserAppDisplay.apAppCredentials.apConsumerKeyExiresIn,
+      credentials: {
+      // TODO: remove once not manadatory in API
+      expiresAt: apDeveloperPortalUserAppDisplay.apAppCredentials.expiresAt,
+      }
+    };
+
+    await AppsService.createDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      requestBody: create
+    });
   }
 
   public async apiUpdate_ApDeveloperPortalUserAppDisplay({ organizationId, apDeveloperPortalUserAppDisplay }:{
@@ -265,6 +314,20 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     const logName = `${this.ComponentName}.${funcName}()`;
 
     alert(`${logName}: implement me `);
+  }
+
+  public async apiDelete_ApDeveloperPortalUserAppDisplay({ organizationId, userId, appId }:{
+    organizationId: string;
+    userId: string;
+    appId: string;
+  }): Promise<void> {
+
+    await AppsService.deleteDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      appName: appId
+    });
+
   }
   
 }

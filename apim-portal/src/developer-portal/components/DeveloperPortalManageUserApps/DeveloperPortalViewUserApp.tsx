@@ -120,6 +120,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
         <div className="apd-app-view">
           <div className="apd-app-view-detail-left">
             <div><b>Status: </b>{mo.apAppStatus}</div>
+            <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
             {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
 
             <APDisplayDeveloperPortalAppApiProducts
@@ -213,8 +214,13 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     <React.Fragment>
       <div className="apd-manage-user-apps">
 
-        <APComponentHeader header={`App: ${props.appEntityId.displayName}`} />
+        {managedObject && <APComponentHeader header={`App: ${managedObject.apEntityId.displayName}`} /> }
 
+        <div className="p-mt-4 p-mb-4">
+          <div>TODO: re-generate keys</div>
+          <div>TODO: add products</div>
+
+        </div>
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
         {managedObject && renderManagedObject() }

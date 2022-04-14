@@ -16,14 +16,18 @@ import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConn
 
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { 
-  EAction,
   E_CALL_STATE_ACTIONS, 
   E_MANAGE_USER_APP_COMPONENT_STATE 
 } from "./DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
-import { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
+import APDeveloperPortalUserAppsDisplayService, { 
+  TAPDeveloperPortalUserAppDisplay, 
+  TAPDeveloperPortalUserAppDisplay_AllowedActions 
+} from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
-import { DeveloperPortalEditNewUserApp } from "./EditNew/DeveloperPortalEditNewUserApp";
+import { ManageNewUserApp } from "./EditNewUserApp/ManageNewUserApp";
+import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
+import { ManageEditUserApp } from "./EditNewUserApp/ManageEditUserApp";
 
 // import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
 
@@ -86,6 +90,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
+  const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPDeveloperPortalUserAppDisplay_AllowedActions>(APDeveloperPortalUserAppsDisplayService.get_Empty_AllowedActions());
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -135,17 +140,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const onViewManagedObject = (apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apDeveloperPortalUserAppDisplay.apEntityId);
-    alert(`${ComponentName}.onViewManagedObject(): get the allowed actions (like manage webhooks)`)
-
-  // return isAllowedToManageWebhooks
-  // see: APAdminPortalApiProductsDisplayService.get_AllowedActions
-  // setManagedObject_AllowedActions(APDeveloperPortalAppsDisplayService.get_AllowedActions({
-  //   apDeveloperPortalAppDisplay: apDeveloperPortalAppDisplay,
-  //   authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-  //   userId: userContext.apLoginUserDisplay.apEntityId.id,
-  //   userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
-  // }));
-
+    setManagedObject_AllowedActions(APDeveloperPortalUserAppsDisplayService.get_AllowedActions({
+      apDeveloperPortalUserAppDisplay: apDeveloperPortalUserAppDisplay
+    }));
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New Object *
@@ -199,27 +196,26 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       </React.Fragment>
     );
     if(showViewComponent) {
-      alert(`renderLeftToolbarContent: enable the disable of manage webhooks `);
       return (
         <React.Fragment>
           <Button key={ComponentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           <Button key={ComponentName+ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button 
-            key={ComponentName+ToolbarDeleteManagedObjectButtonLabel}
-            label={ToolbarDeleteManagedObjectButtonLabel} 
-            icon="pi pi-trash" 
-            onClick={onDeleteManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-          />
           <Button 
             key={ComponentName+ToolbarManageWebhooksManagedObjectButtonLabel}
             label={ToolbarManageWebhooksManagedObjectButtonLabel} 
             // icon="pi pi-pencil" 
             onClick={onManageWebhooksManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
-            // disabled={!viewComponentManagedObjectDisplay.isAppWebhookCapable}
+            disabled={!managedObject_AllowedActions.isManageWebhooksAllowed}
           />
-
+          <Button 
+            key={ComponentName+ToolbarMonitorManagedObjectButtonLabel}
+            label={ToolbarMonitorManagedObjectButtonLabel} 
+            // icon="pi pi-pencil" 
+            onClick={onMonitorManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+            disabled={!managedObject_AllowedActions.isMonitorStatsAllowed}
+          />
         </React.Fragment>
       )
     }
@@ -231,17 +227,15 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {
-      alert(`renderRightToolbarContent: is app live?`)
-      // if(!viewComponentManagedObjectDisplay) return undefined;
       return (
         <React.Fragment>
           <Button 
-            key={ComponentName+ToolbarMonitorManagedObjectButtonLabel}
-            label={ToolbarMonitorManagedObjectButtonLabel} 
-            // icon="pi pi-pencil" 
-            onClick={onMonitorManagedObjectFromToolbar} 
+            key={ComponentName+ToolbarDeleteManagedObjectButtonLabel}
+            label={ToolbarDeleteManagedObjectButtonLabel} 
+            icon="pi pi-trash" 
+            onClick={onDeleteManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
-            // disabled={!APManagedUserAppDisplay.isAppLive(viewComponentManagedObjectDisplay.apiAppResponse_smf)}
+            style={{ color: "red", borderColor: 'red'}}
           />
         </React.Fragment>
       );
@@ -282,23 +276,13 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
     setApiCallStatus(apiCallState);
-    if(componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectEntityId(newMoEntityId);
-      setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    }
-    else setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setManagedObjectEntityId(newMoEntityId);
+    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
-  // const onEditManagedObjectSuccess = (apiCallState: TApiCallState, updatedDisplayName?: string) => {
-  //   setApiCallStatus(apiCallState);
-  //   if(componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-  //     if(updatedDisplayName) setManagedObjectDisplayName(updatedDisplayName);
-  //     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  //   }
-  //   else setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  // }
   const onEditManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    // setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    // setRefreshCounter(refreshCounter + 1);
   }
   const onEditWebhooksManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -440,60 +424,36 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-      <p>showDeleteComponent</p>
-        // <DeveloperPortalDeleteUserApp
-        //   organizationId={props.organizationName}
-        //   userId={props.userId}
-        //   appId={managedObjectId}
-        //   appDisplayName={managedObjectDisplayName}
-        //   onSuccess={onDeleteManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        <DeveloperPortalDeleteUserApp
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
+        />
       }
       { showNewComponent &&
-        <DeveloperPortalEditNewUserApp
-          action={EAction.NEW}
+        <ManageNewUserApp
           organizationId={props.organizationEntityId.id}
-          userId={userContext.apLoginUserDisplay.apEntityId.id}
           onNewSuccess={onNewManagedObjectSuccess} 
-          onEditSuccess={onEditManagedObjectSuccess} 
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-
-          // needs 1 apiProductEntityId to prepopulate the form
-
         />
-        // <DeveloperPortalNewEditUserApp
-        //   action={EAction.NEW}
-        //   organizationId={props.organizationName}
-        //   userId={props.userId}
-        //   onNewSuccess={onNewManagedObjectSuccess} 
-        //   onEditSuccess={onEditManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   presetApiProductSelectItemList={presetApiProductSelectItemList}
-        // />
       }
       {showEditComponent && managedObjectEntityId &&
-        <p>showEditComponent</p>
-
-        // <DeveloperPortalNewEditUserApp
-        //   action={EAction.EDIT}
-        //   organizationId={props.organizationName}
-        //   userId={props.userId}
-        //   appId={managedObjectId}
-        //   appDisplayName={managedObjectDisplayName}
-        //   onNewSuccess={onNewManagedObjectSuccess} 
-        //   onEditSuccess={onEditManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        <ManageEditUserApp
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateToCommand={onSetManageUserAppComponentState_To_View}
+          onSaveSuccess={onSubComponentUserNotification}
+        />
       }
       {showManageWebhooksComponent && managedObjectEntityId &&
       <p>showManageWebhooksComponent</p>

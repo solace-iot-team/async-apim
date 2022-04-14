@@ -111,7 +111,8 @@ export enum EUIDeveloperPortalResourcePaths {
   ManageUserApplications = '/developer-portal/manage/user/applications',
   DELETEME_ManageUserApplications = '/developer-portal/manage/user/deleteme-applications',
 
-  ManageTeamApplications = '/developer-portal/manage/team/applications',
+  ManageBusinessGroupApplications = '/developer-portal/manage/businessgroup/applications',
+
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }
 

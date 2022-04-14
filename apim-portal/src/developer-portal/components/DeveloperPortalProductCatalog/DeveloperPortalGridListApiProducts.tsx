@@ -347,8 +347,8 @@ const renderApiProductAsGridItem = (mo: TManagedObject) => {
     return(
       <React.Fragment>
         <div className="p-mb-2 p-mt-2 page-header">
-          {/* <div className="title p-mt-2 p-mb-4">Explore API Products</div> */}
-          <div className="title p-mt-2 p-mb-4">Explore APIs</div>
+          <div className="title p-mt-2 p-mb-4">Explore API Products</div>
+          {/* <div className="title p-mt-2 p-mb-4">Explore APIs</div> */}
           <div className="p-input-icon-left p-mb-2">
             <i className="pi pi-search" />
             <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '700px'}} value={globalFilter} />

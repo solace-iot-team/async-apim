@@ -136,7 +136,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
       EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications,
 
-      EUIDeveloperPortalResourcePaths.ManageTeamApplications,
+      EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications,
     ]
   }
 ];

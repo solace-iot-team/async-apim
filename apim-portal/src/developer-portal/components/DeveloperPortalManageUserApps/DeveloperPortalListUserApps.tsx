@@ -156,12 +156,12 @@ export const DeveloperPortalListUserApps: React.FC<IDeveloperPortalListUserAppsP
   const nameBodyTemplate = (row: TManagedObject): string => {
     return row.apEntityId.displayName;
   }
-  const apiProductsBodyTemplate = (row: TManagedObject): JSX.Element => {
-    // APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
-    return (
-      <div>TDB: api product displayName (status)</div>
-    )
-  }
+  // const apiProductsBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   // APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
+  //   return (
+  //     <div>TDB: api product displayName (status)</div>
+  //   )
+  // }
 
   const renderManagedObjectDataTable = () => {
     const dataKey = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('id');

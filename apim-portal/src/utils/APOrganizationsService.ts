@@ -35,6 +35,11 @@ export class APOrganizationsService {
 
   public static C_SECRET_MASK = '***';
 
+  public static get_Default_DeveloperPortalApp_CredentailsExpiryDuration(): number {
+    // 6 months in milliseconds
+    return (6 * 30 * 24 * 3600 * 1000);
+  }
+
   private static _maskSecrets = (obj: any, mask: string): any => {
     const funcName = '_maskSecrets';
     const logName = `${APOrganizationsService.componentName}.${funcName}()`;

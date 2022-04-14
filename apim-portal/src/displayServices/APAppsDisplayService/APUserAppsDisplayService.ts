@@ -1,8 +1,20 @@
 
-import { ApiError, AppConnectionStatus, AppResponse, DevelopersService } from "@solace-iot-team/apim-connector-openapi-browser";
+import { 
+  ApiError, 
+  AppConnectionStatus, 
+  AppPatch, 
+  AppResponse, 
+  AppsService, 
+  DevelopersService 
+} from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPDeveloperPortalAppApiProductDisplayList } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
-import { APAppsDisplayService, IAPAppDisplay } from "./APAppsDisplayService";
+import { 
+  APAppsDisplayService, 
+  IAPAppDisplay, 
+  TAPAppDisplay_Credentials, 
+  TAPAppDisplay_General 
+} from "./APAppsDisplayService";
 
 export interface IAPUserAppDisplay extends IAPAppDisplay {
   userId: string;
@@ -78,5 +90,55 @@ export abstract class APUserAppsDisplayService extends APAppsDisplayService {
     return false;
   }
 
+  public async apiUpdate_ApAppDisplay_General({ organizationId, userId, apAppDisplay_General }:{
+    organizationId: string;
+    userId: string;
+    apAppDisplay_General: TAPAppDisplay_General;
+  }): Promise<void> {
+
+    const update: AppPatch = {
+      displayName: apAppDisplay_General.apEntityId.displayName
+    }
+    await AppsService.updateDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      appName: apAppDisplay_General.apEntityId.id,
+      requestBody: update
+    });
+  }
+
+  public async apiUpdate_ApAppDisplay_Credentials({ organizationId, userId, apAppDisplay_Credentials }:{
+    organizationId: string;
+    userId: string;
+    apAppDisplay_Credentials: TAPAppDisplay_Credentials;
+  }): Promise<void> {
+
+    const crutchExpiresAtCalculation = (expiresIn: number): number => {
+      const d = new Date(Date.now() + expiresIn);
+      return d.getUTCMilliseconds();
+    }
+    const test_Secret = (): string => {
+      return `newSecretAt_${Date.now()}`;
+      // const d = new Date(Date.now());
+      // return d.toUTCString();
+    }
+    const update: AppPatch = {
+      // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn
+      credentials: {
+        expiresAt: crutchExpiresAtCalculation(apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn),
+        secret: {
+          consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
+          consumerSecret: test_Secret()
+          // consumerSecret: undefined, // ensures it is re-generated          
+        }
+      }
+    }
+    await AppsService.updateDeveloperApp({
+      organizationName: organizationId,
+      developerUsername: userId,
+      appName: apAppDisplay_Credentials.apEntityId.id,
+      requestBody: update
+    });
+  }
 
 }

@@ -58,8 +58,8 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
         label: 'Explore'
       },
       { 
-        // label: 'API Products',
-        label: 'APIs',
+        label: 'API Products',
+        // label: 'APIs',
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts) }
       }

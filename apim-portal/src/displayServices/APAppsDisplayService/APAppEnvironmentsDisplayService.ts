@@ -226,6 +226,31 @@ export class APAppEnvironmentsDisplayService {
     return apChannelTopicDisplayList;
   }
 
+  public is_ApAppEnvironmentDisplay_Webhook_Capable({ apAppEnvironmentDisplay }:{
+    apAppEnvironmentDisplay: IAPAppEnvironmentDisplay;
+  }): boolean {
+    // is http enabled?
+    const foundHttp = apAppEnvironmentDisplay.apEndpointList.find( (apEndpointDisplay: TAPEndpointDisplay) => {
+      return (apEndpointDisplay.protocol.name === Protocol.name.HTTP || apEndpointDisplay.protocol.name === Protocol.name.HTTPS);
+    });
+    if(foundHttp !== undefined) {
+      // any publish permissions?
+      if(apAppEnvironmentDisplay.apChannelPermissions_smf.apPublishPermissionList.length > 0) return true;
+    }
+    return false;
+  }
+
+  public isAny_ApAppEnvironmentDisplay_Webhook_Capable({ apAppEnvironmentDisplayList }:{
+    apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
+  }): boolean {
+    if(apAppEnvironmentDisplayList.length === 0) return false;
+    let isCapable: boolean = false;
+    apAppEnvironmentDisplayList.forEach( (apAppEnvironmentDisplay: IAPAppEnvironmentDisplay) => {
+      if(!isCapable && this.is_ApAppEnvironmentDisplay_Webhook_Capable({ apAppEnvironmentDisplay: apAppEnvironmentDisplay })) isCapable = true;
+    });
+    return isCapable;
+  }
+
 }
 
 export default new APAppEnvironmentsDisplayService();
