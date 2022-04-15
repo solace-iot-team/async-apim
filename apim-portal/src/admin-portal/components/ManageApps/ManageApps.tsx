@@ -11,7 +11,7 @@ import {
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { APManagedUserAppDisplay, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedUserAppDisplay, TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { TViewManagedApp } from '../../../components/APApiObjectsCommon';
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageAppsCommon";
 import { ListApps } from "./ListApps";

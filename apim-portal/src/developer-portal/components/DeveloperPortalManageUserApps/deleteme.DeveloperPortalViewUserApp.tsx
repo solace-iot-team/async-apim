@@ -26,7 +26,7 @@ import {
   APManagedWebhook,
   TAPDeveloperPortalUserAppDisplay, 
   TAPOrganizationId 
-} from "../../../components/APComponentsCommon";
+} from "../../../components/deleteme.APComponentsCommon";
 import { EApiTopicSyntax, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme.APDisplayAppEnvironments";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/deleteme.APDisplayAppAsyncApis";

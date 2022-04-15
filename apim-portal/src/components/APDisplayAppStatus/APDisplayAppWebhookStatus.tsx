@@ -1,7 +1,7 @@
 
 import React from "react";
 
-import { TAPWebhookStatus } from "../APComponentsCommon";
+import { TAPWebhookStatus } from "../deleteme.APComponentsCommon";
 
 import "../APComponents.css";
 import { Globals } from "../../utils/Globals";

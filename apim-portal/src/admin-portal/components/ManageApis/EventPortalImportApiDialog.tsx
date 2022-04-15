@@ -9,7 +9,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";

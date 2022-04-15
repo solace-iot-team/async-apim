@@ -7,7 +7,7 @@ import { Column } from "primereact/column";
 import { 
   TAPManagedWebhook, 
   TAPManagedWebhookList,
-} from "../APComponentsCommon";
+} from "../deleteme.APComponentsCommon";
 
 import { WebHookAuth, WebHookBasicAuth, WebHookHeaderAuth } from "@solace-iot-team/apim-connector-openapi-browser";
 import { Globals } from "../../utils/Globals";

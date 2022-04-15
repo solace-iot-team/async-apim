@@ -19,7 +19,7 @@ import {
   TAPManagedWebhook, 
   TAPManagedWebhookList, 
   TAPWebhookStatus 
-} from "../../../../components/APComponentsCommon";
+} from "../../../../components/deleteme.APComponentsCommon";
 import { 
   EWebhookAuthMethodSelectIdNone,
 } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";

@@ -2,7 +2,7 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { APManagedWebhook, TAPManagedWebhookList } from "../APComponentsCommon";
+import { APManagedWebhook, TAPManagedWebhookList } from "../deleteme.APComponentsCommon";
 import { APDisplayAppWebhooks } from "./APDisplayAppWebhooks";
 
 import "../APComponents.css";

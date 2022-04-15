@@ -9,7 +9,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import { APConnectorFormValidationRules } from "../../utils/APConnectorOpenApiFormValidationRules";
-import { TAPTrustedCN, TAPTrustedCNList } from "../APComponentsCommon";
+import { TAPTrustedCN, TAPTrustedCNList } from "../deleteme.APComponentsCommon";
 
 import "../APComponents.css";
 import 'primeflex/primeflex.css';

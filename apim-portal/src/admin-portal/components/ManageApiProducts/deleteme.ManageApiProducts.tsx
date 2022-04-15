@@ -7,7 +7,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from './deleteme.ManageApiProductsCommon';
 import { ListApiProducts } from "./deleteme.ListApiProducts";
 import { EAction, EditNewApiProduct } from "./deleteme.EditNewApiProduct";

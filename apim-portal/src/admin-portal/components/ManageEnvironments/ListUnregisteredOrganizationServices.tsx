@@ -9,7 +9,7 @@ import { EnvironmentListItem, EnvironmentsService } from '@solace-iot-team/apim-
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { TOrganizationService } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';

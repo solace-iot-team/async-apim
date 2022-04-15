@@ -13,7 +13,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   TAPManagedAppWebhooks, TAPWebhookStatus, 
-} from "../APComponentsCommon";
+} from "../deleteme.APComponentsCommon";
 import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { APRenderUtils } from "../../utils/APRenderUtils";
 import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../APDisplayAppStatus/APDisplayAppWebhookStatus";

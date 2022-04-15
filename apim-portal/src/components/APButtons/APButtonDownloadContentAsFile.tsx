@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "primereact/button";
 
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { EFileDownloadType } from "../APComponentsCommon";
+import { EFileDownloadType } from "../deleteme.APComponentsCommon";
 import { Globals } from "../../utils/Globals";
 
 import "../APComponents.css";

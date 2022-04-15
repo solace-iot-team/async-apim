@@ -15,7 +15,7 @@ import {
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
 

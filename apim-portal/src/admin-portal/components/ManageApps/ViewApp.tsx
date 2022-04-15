@@ -31,7 +31,7 @@ import {
   APManagedUserAppDisplay,
   TAPAdminPortalUserAppDisplay, 
   TAPOrganizationId 
-} from "../../../components/APComponentsCommon";
+} from "../../../components/deleteme.APComponentsCommon";
 import { EApiTopicSyntax, TApiProduct, TApiProductList } from "../../../components/APApiObjectsCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { APDisplayConnectorAttributes } from "../../../components/APDisplay/APDisplayConnectorAttributes";

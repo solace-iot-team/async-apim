@@ -27,7 +27,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiProductList } from "../../../components/APApiObjectsCommon";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APManageConnectorAttributes } from "../../../components/APManageAttributes/APManageConnectorAttributes";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";

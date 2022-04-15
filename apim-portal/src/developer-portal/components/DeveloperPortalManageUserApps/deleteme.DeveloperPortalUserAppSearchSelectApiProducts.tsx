@@ -20,7 +20,7 @@ import {
   TApiEntitySelectItem,
   TApiEntitySelectItemList, 
   TAPOrganizationId 
-} from "../../../components/APComponentsCommon";
+} from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { 
   APApiObjectsApiCalls, 

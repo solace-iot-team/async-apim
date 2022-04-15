@@ -9,7 +9,7 @@ import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewManagedObject } from "./ManageApisCommon";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ListApis } from "./ListApis";
 import { EAction, EditNewApi } from "./EditNewApi";
 import { DeleteApi } from "./DeleteApi";

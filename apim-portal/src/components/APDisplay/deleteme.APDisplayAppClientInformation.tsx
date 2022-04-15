@@ -10,7 +10,7 @@ import {
 import { 
   TAPAppClientInformation, 
   TAPAppClientInformationList 
-} from "../APComponentsCommon";
+} from "../deleteme.APComponentsCommon";
 
 import "../APComponents.css";
 

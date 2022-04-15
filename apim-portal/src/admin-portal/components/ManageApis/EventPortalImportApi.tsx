@@ -6,7 +6,7 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TManagedObjectId } from "./ManageApisCommon";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { EventPortalListEventApiProducts } from "./EventPortalListEventApiProducts";
 import { EventPortalImportApiDialog } from "./EventPortalImportApiDialog";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";

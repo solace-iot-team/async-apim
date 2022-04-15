@@ -6,7 +6,7 @@ import AsyncApiComponent, { ConfigInterface } from "@asyncapi/react-component";
 import { Toolbar } from "primereact/toolbar";
 import { APButtonDownloadContentAsFile } from "../APButtons/APButtonDownloadContentAsFile";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { EFileDownloadType, EFileExtension } from "../APComponentsCommon";
+import { EFileDownloadType, EFileExtension } from "../deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { Globals } from "../../utils/Globals";
 

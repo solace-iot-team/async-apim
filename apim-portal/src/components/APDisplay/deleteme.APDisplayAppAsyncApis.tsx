@@ -8,7 +8,7 @@ import { Divider } from "primereact/divider";
 import { AppsService } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { TAPOrganizationId } from "../APComponentsCommon";
+import { TAPOrganizationId } from "../deleteme.APComponentsCommon";
 import { APDisplayAsyncApiSpec } from "../APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 

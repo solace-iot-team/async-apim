@@ -22,7 +22,7 @@ import {
   TAPManagedAppWebhooks, 
   TAPManagedWebhook, 
   TAPOrganizationId, 
-} from "../../../../components/APComponentsCommon";
+} from "../../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
 import { DeveloperPortalListUserAppWebhooks } from "./deleteme.DeveloperPortalListUserAppWebhooks";
 import { DeveloperPortalDeleteUserAppWebhook } from "./deleteme.DeveloperPortalDeleteUserAppWebhook";

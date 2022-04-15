@@ -18,7 +18,7 @@ import { TApiCallState } from "../../../utils/ApiCallState";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { APManagedUserAppDisplay, TAPDeveloperPortalUserAppDisplay, TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { DeveloperPortalListUserApps } from "./deleteme.DeveloperPortalListUserApps";
 import { E_CALL_STATE_ACTIONS, E_MANAGE_USER_APP_COMPONENT_STATE, TAPDeveloperPortalApiProductCompositeId } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalViewUserApp } from "./deleteme.DeveloperPortalViewUserApp";

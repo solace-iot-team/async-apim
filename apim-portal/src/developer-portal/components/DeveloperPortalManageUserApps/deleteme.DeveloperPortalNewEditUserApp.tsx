@@ -30,7 +30,7 @@ import {
   TApiEntitySelectItemList, 
   TApiEntitySelectItemIdList, 
   APComponentsCommon
-} from "../../../components/APComponentsCommon";
+} from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./deleteme.DeveloperPortalManageUserAppsCommon";
 import { DeveloperPortalUserAppSelectApiProducts } from "./deleteme.DeveloperPortalUserAppSelectApiProducts";
 import { EApiTopicSyntax, TManagedObjectDisplayName, TManagedObjectId } from "../../../components/APApiObjectsCommon";
