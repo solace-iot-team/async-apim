@@ -1,6 +1,7 @@
 import { 
   ApiError,
   AppConnectionStatus, 
+  AppPatch, 
   AppResponse, 
   AppsService, 
   CommonTimestampInteger, 
@@ -31,11 +32,28 @@ export enum EAPApp_Status {
   APPROVAL_REQUIRED = "approval required",
 }
 
+export enum EAPApp_Type {
+  UNKNOWN = "UNKNOWN",
+  USER = "User App",
+  TEAM = "Business Group App"
+}
+export enum EAPApp_OwnerType {
+  UNKNOWN = "UNKNOWN",
+  INTERNAL = "internal",
+  EXTERNAL = "external"
+}
+
 export type TAPAppCredentialsDisplay = {
   apConsumerKeyExiresIn: number; /** millseconds  */
   expiresAt: number;
   issuedAt: CommonTimestampInteger;
   secret: Secret;
+}
+
+export type TAPAppMeta = {
+  apAppType: EAPApp_Type;
+  appOwnerId: string;
+  apAppOwnerType: EAPApp_OwnerType;
 }
 
 export interface IAPAppDisplay extends IAPEntityIdDisplay {
@@ -44,6 +62,7 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
     mqtt?: AppResponse,
     appConnectionStatus: AppConnectionStatus,
   },
+  apAppMeta: TAPAppMeta;
   apAppStatus: EAPApp_Status;
   apAppCredentials: TAPAppCredentialsDisplay;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
@@ -53,9 +72,11 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
 }
 
 export type TAPAppDisplay_General = IAPEntityIdDisplay & {
+  apAppMeta: TAPAppMeta;
 }
 
 export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
+  apAppMeta: TAPAppMeta;
   apAppCredentials: TAPAppCredentialsDisplay;
 }
 
@@ -69,6 +90,9 @@ export class APAppsDisplayService {
   }
   public nameOf_ApEntityId(name: keyof TAPEntityId) {
     return `${this.nameOf('apEntityId')}.${name}`;
+  }
+  public nameOf_ApAppMeta(name: keyof TAPAppMeta) {
+    return `${this.nameOf('apAppMeta')}.${name}`;
   }
   public nameOf_ApAppCredentialsDisplay(name: keyof TAPAppCredentialsDisplay) {
     return name;
@@ -94,6 +118,13 @@ export class APAppsDisplayService {
     return {
     }
   }
+  private create_Empty_ApAppMeta(): TAPAppMeta {
+    return {
+      apAppType: EAPApp_Type.UNKNOWN,
+      appOwnerId: '',
+      apAppOwnerType: EAPApp_OwnerType.UNKNOWN
+    }
+  }
   private create_Empty_ApCredentialsDisplay(): TAPAppCredentialsDisplay {
     return {
       expiresAt: -1,
@@ -105,9 +136,12 @@ export class APAppsDisplayService {
       apConsumerKeyExiresIn: APOrganizationsService.get_Default_DeveloperPortalApp_CredentailsExpiryDuration()
     }
   }
-  protected create_Empty_ApAppDisplay(): IAPAppDisplay {
+  protected create_Empty_ApAppDisplay({ apAppMeta }:{
+    apAppMeta?: TAPAppMeta;
+  }): IAPAppDisplay {
     const apAppDisplay: IAPAppDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject(),
+      apAppMeta: apAppMeta ? apAppMeta : this.create_Empty_ApAppMeta(),
       devel_connectorAppResponses: {
         smf: this.create_Empty_ConnectorAppResponse(),
         mqtt: this.create_Empty_ConnectorAppResponse(),
@@ -144,7 +178,9 @@ export class APAppsDisplayService {
           numApprovalRevoked++;
           break;
         case EAPApp_ApiProduct_Status.UNKNOWN:
-          throw new Error(`${logName}: apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status === EAPApp_ApiProduct_Status.UNKNOWN`);
+        case EAPApp_ApiProduct_Status.WILL_AUTO_PROVISIONED:
+        case EAPApp_ApiProduct_Status.WILL_REQUIRE_APPROVAL:
+          throw new Error(`${logName}: apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status === ${apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status}`);
         default:
           Globals.assertNever(logName, apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status);
       }
@@ -160,11 +196,12 @@ export class APAppsDisplayService {
     return appStatus;
   }
 
-  protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList }: {
+  protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList, apAppMeta }: {
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+    apAppMeta: TAPAppMeta;
   }): IAPAppDisplay {
     // const funcName = 'create_ApAppDisplay_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -183,6 +220,7 @@ export class APAppsDisplayService {
         id: connectorAppResponse_smf.name,
         displayName: connectorAppResponse_smf.displayName ? connectorAppResponse_smf.displayName : connectorAppResponse_smf.name
       },
+      apAppMeta: apAppMeta,
       devel_connectorAppResponses: {
         smf: connectorAppResponse_smf,
         mqtt: connectorAppResponse_mqtt,
@@ -224,6 +262,7 @@ export class APAppsDisplayService {
   }): TAPAppDisplay_General {
     return {
       apEntityId: apAppDisplay.apEntityId,
+      apAppMeta: apAppDisplay.apAppMeta,
     };
   }
   public set_ApAppDisplay_General({ apAppDisplay, apAppDisplay_General }:{
@@ -239,6 +278,7 @@ export class APAppsDisplayService {
   }): TAPAppDisplay_Credentials {
     return {
       apEntityId: apAppDisplay.apEntityId,
+      apAppMeta: apAppDisplay.apAppMeta,
       apAppCredentials: apAppDisplay.apAppCredentials,
     };
   }
@@ -271,6 +311,96 @@ export class APAppsDisplayService {
       }
       throw e;
     }
+  }
+
+  protected async apiUpdate({ organizationId, appId, apAppMeta, update }: {
+    organizationId: string;
+    appId: string;
+    apAppMeta: TAPAppMeta;
+    update: AppPatch;
+  }): Promise<void> {
+    const funcName = 'apiUpdate';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    switch(apAppMeta.apAppType) {
+      case EAPApp_Type.USER:
+        await AppsService.updateDeveloperApp({
+          organizationName: organizationId,
+          developerUsername: apAppMeta.appOwnerId,
+          appName: appId,
+          requestBody: update
+        });  
+        break;
+      case EAPApp_Type.TEAM:
+        await AppsService.updateTeamApp({
+          organizationName: organizationId,
+          teamName: apAppMeta.appOwnerId,
+          appName: appId,
+          requestBody: update
+        });  
+        break;
+      case EAPApp_Type.UNKNOWN:
+        throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
+      default:
+        Globals.assertNever(logName, apAppMeta.apAppType);
+    }
+
+  }
+
+  public async apiUpdate_ApAppDisplay_General({ organizationId, apAppDisplay_General }:{
+    organizationId: string;
+    apAppDisplay_General: TAPAppDisplay_General;
+  }): Promise<void> {
+
+    const update: AppPatch = {
+      displayName: apAppDisplay_General.apEntityId.displayName
+    }
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apAppMeta: apAppDisplay_General.apAppMeta,
+      appId: apAppDisplay_General.apEntityId.id,
+      update: update
+    });
+
+  }
+
+  /**
+   * Re-generate app credentials
+   */
+  public async apiUpdate_ApAppDisplay_Credentials({ organizationId, apAppDisplay_Credentials }:{
+    organizationId: string;
+    apAppDisplay_Credentials: TAPAppDisplay_Credentials;
+  }): Promise<void> {
+
+    const crutchExpiresAtCalculation = (expiresIn: number): number => {
+      const d = new Date(Date.now() + expiresIn);
+      return d.getUTCMilliseconds();
+    }
+    const test_Secret = (): string => {
+      return `newSecretAt_${Date.now()}`;
+      // const d = new Date(Date.now());
+      // return d.toUTCString();
+    }
+    const update: AppPatch = {
+      // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn
+      credentials: {
+        expiresAt: crutchExpiresAtCalculation(apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn),
+        secret: {
+          consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
+          consumerSecret: test_Secret()
+          // consumerSecret: undefined, // ensures it is re-generated          
+        }
+      }
+    }
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apAppMeta: apAppDisplay_Credentials.apAppMeta,
+      appId: apAppDisplay_Credentials.apEntityId.id,
+      update: update
+    });
+
   }
 
 }

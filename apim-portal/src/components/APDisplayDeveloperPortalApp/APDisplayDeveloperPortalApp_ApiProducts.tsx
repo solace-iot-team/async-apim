@@ -84,6 +84,11 @@ export const APDisplayDeveloperPortalAppApiProducts: React.FC<IAPDisplayDevelope
       <div>{row.apApp_ApiProduct_Status}</div>
     );
   }
+  const ownerBodyTemplate = (row: TAPDeveloperPortalAppApiProductDisplay): JSX.Element => {
+    return (
+      <div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>
+    );
+  }
 
   const renderComponentContent = (): JSX.Element => {
     const dataKey = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
@@ -101,15 +106,16 @@ export const APDisplayDeveloperPortalAppApiProducts: React.FC<IAPDisplayDevelope
           sortField={nameField} 
           sortOrder={1}
           scrollable 
+          autoLayout={true}
           // scrollHeight="200px" 
           // expandedRows={expandedViewProductsDataTableRows}
           // onRowToggle={(e) => setExpandedViewProductsDataTableRows(e.data)}
           // rowExpansionTemplate={rowExpansionTemplate}
         >
-          <Column header="API Product" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} style={{width: '25%'}} field={nameField} sortable />
-          <Column header="Version/State" body={versionBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} style={{width: '25%'}} />
-          {/* <Column header="State" body={stateBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} style={{width: '25%'}} /> */}
-          <Column header="App Status" body={statusBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} style={{width: '25%'}} field={statusField} sortable />
+          <Column header="API Product" body={nameBodyTemplate} field={nameField} sortable />
+          <Column header="Version/State" body={versionBodyTemplate} style={{width: '15%'}} />
+          <Column header="Owner" body={ownerBodyTemplate} style={{width: '15%'}} />
+          <Column header="Status" body={statusBodyTemplate} style={{width: '15%'}} field={statusField} sortable />
           
           {/* <Column body={apisBodyTemplate} header="APIs" bodyStyle={{ verticalAlign: 'top' }}/>
           <Column body={attributesBodyTemplate} header="Attributes" bodyStyle={{ verticalAlign: 'top' }}/>

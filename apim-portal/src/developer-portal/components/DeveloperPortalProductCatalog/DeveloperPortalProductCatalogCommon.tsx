@@ -11,3 +11,7 @@ export enum E_CALL_STATE_ACTIONS {
   API_GET_API_SPEC = "API_GET_API_SPEC"
 }
 
+export enum E_Mode {
+  EXPLORE = "EXPLORE",
+  ADD_TO_APP = "ADD_TO_APP"
+}

@@ -382,7 +382,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
                 <Controller
                   name="apiObject.name"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.Name()}
+                  rules={APConnectorFormValidationRules.CommonName()}
                   render={( { field, fieldState }) => {
                       return(
                         <InputText
@@ -404,7 +404,7 @@ export const DeveloperPortalNewEditUserApp: React.FC<IDeveloperPortalNewEditUser
                 <Controller
                   name="apiObject.displayName"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.DisplayName()}
+                  rules={APConnectorFormValidationRules.CommonDisplayName()}
                   render={( { field, fieldState }) => {
                       return(
                         <InputText

@@ -141,7 +141,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                     control={managedObjectUseForm.control}
                     name="formData.id"
                     rules={{
-                      ...APConnectorFormValidationRules.Name(),
+                      ...APConnectorFormValidationRules.CommonName(),
                       validate: validate_Id
                     }}
                     render={( { field, fieldState }) => {
@@ -166,7 +166,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <Controller
                   control={managedObjectUseForm.control}
                   name="formData.displayName"
-                  rules={APConnectorFormValidationRules.DisplayName()}
+                  rules={APConnectorFormValidationRules.CommonDisplayName()}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

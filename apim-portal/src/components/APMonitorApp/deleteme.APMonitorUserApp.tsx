@@ -23,8 +23,8 @@ import {
   TAPManagedAppWebhooks, 
   TAPOrganizationId, 
 } from "../deleteme.APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./APMonitorUserAppCommon";
-import { APMonitorUserAppViewStats } from "./APMonitorUserAppViewStats";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.APMonitorUserAppCommon";
+import { APMonitorUserAppViewStats } from "./deleteme.APMonitorUserAppViewStats";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 
 import '../APComponents.css';

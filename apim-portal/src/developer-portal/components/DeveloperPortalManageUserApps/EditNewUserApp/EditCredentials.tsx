@@ -9,7 +9,6 @@ import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDispl
 import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageUserAppsCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { EditNewCredentialsForm } from "./EditNewCredentialsForm";
 
 import '../../../../components/APComponents.css';
@@ -35,8 +34,6 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
-  const [userContext] = React.useContext(UserContext);
-
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -44,7 +41,6 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     try {
       await APDeveloperPortalUserAppsDisplayService.apiUpdate_ApAppDisplay_Credentials({
         organizationId: props.organizationId,
-        userId: userContext.apLoginUserDisplay.apEntityId.id,
         apAppDisplay_Credentials: mo
       });
       setUpdatedManagedObject(mo);

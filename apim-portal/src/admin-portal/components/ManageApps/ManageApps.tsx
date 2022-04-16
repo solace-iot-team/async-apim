@@ -20,7 +20,7 @@ import { EditAppAttributes } from "./EditAppAttributes";
 import { ApproveApp } from "./ApproveApp";
 import { RevokeApp } from "./RevokeApp";
 import { DeleteApp } from "./DeleteApp";
-import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
+import { APMonitorUserApp } from "../../../components/APMonitorApp/deleteme.APMonitorUserApp";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";

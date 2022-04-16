@@ -1,7 +1,6 @@
 import React from "react";
 
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
-import { TabPanel, TabView } from "primereact/tabview";
 
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
@@ -11,14 +10,12 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageUserAppsCommon";
-import { EditGeneral } from "./EditGeneral";
-import { TAPAppDisplay_Credentials, TAPAppDisplay_General } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import { EditCredentials } from "./EditCredentials";
+import { EditApiProducts } from "./EditApiProducts";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
 
-export interface IManageEditUserAppProps {
+export interface IManageApiProductProps {
   organizationId: string;
   appEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
@@ -29,18 +26,16 @@ export interface IManageEditUserAppProps {
   onNavigateToCommand: (appEntityId: TAPEntityId) => void;
 }
 
-export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IManageEditUserAppProps) => {
-  const ComponentName = 'ManageEditUserApp';
+export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IManageApiProductProps) => {
+  const ComponentName = 'ManageApiProducts';
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [userContext] = React.useContext(UserContext);
 
-  const ManagedEditUserApp_onNavigateToCommand = (e: MenuItemCommandParams): void => {
+  const ManageApiProducts_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.appEntityId);
   }
 
@@ -74,10 +69,10 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
     props.setBreadCrumbItemList([
       {
         label: moDisplayName,
-        command: ManagedEditUserApp_onNavigateToCommand
+        command: ManageApiProducts_onNavigateToCommand
       },
       {
-        label: 'Edit'
+        label: 'Manage API Products'
       }  
     ]);
   }
@@ -91,7 +86,6 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setBreadCrumbItemList(managedObject.apEntityId.displayName);
-    setRefreshCounter(refreshCounter + 1);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -100,17 +94,8 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onSaveSuccess_General = (apiCallState: TApiCallState, apAppDisplay_General: TAPAppDisplay_General) => {
+  const onSaveSuccess = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
-    doInitialize();
-  }
-
-  const onSaveSuccess_Credentials = (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => {
-    // const funcName = 'onSaveSuccess_Credentials';
-    // const logName = `${ComponentName}.${funcName}()`;
-    // alert(`${logName}: apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret = ${apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret}`)
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
   }
 
   const onError = (apiCallStatus: TApiCallState) => {
@@ -125,14 +110,6 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
           <div className="apd-app-view-detail-left">
             <div><b>Status: </b>{mo.apAppStatus}</div>
             <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
-
-            {/* <APDisplayDeveloperPortalAppApiProducts
-              apDeveloperPortalApp_ApiProductDisplayList={mo.apDeveloperPortalUserApp_ApiProductDisplayList}
-              className="p-mt-2 p-ml-2"
-              emptyMessage="No API Products defined."
-            /> */}
-
           </div>
           <div className="apd-app-view-detail-right">
             <div>Id: {mo.apEntityId.id}</div>
@@ -151,35 +128,15 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
         <div className="p-mt-2">
           {renderHeader(managedObject)}
         </div>              
-
-        <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
-          <TabPanel header='General'>
-            <React.Fragment>
-              <EditGeneral
-                // key={`${ComponentName}_EditGeneral_${refreshCounter}`}
-                organizationId={props.organizationId}
-                apDeveloperPortalUserAppDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={onError}
-                onSaveSuccess={onSaveSuccess_General}
-                onLoadingChange={props.onLoadingChange}
-              />
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Credentials'>
-            <React.Fragment>
-              <EditCredentials
-                key={`${ComponentName}_EditCredentials_${refreshCounter}`}
-                organizationId={props.organizationId}
-                apDeveloperPortalUserAppDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={onError}
-                onSaveSuccess={onSaveSuccess_Credentials}
-                onLoadingChange={props.onLoadingChange}
-              />
-            </React.Fragment>
-          </TabPanel>
-        </TabView>
+        <EditApiProducts
+          // key={ComponentName + '_EditApiProducts_' + refreshCounter}
+          organizationId={props.organizationId}
+          apDeveloperPortalUserAppDisplay={managedObject}
+          onSaveSuccess={onSaveSuccess}
+          onError={onError}
+          onCancel={props.onCancel}
+          onLoadingChange={props.onLoadingChange}
+        />
       </React.Fragment>
     ); 
   }
@@ -187,7 +144,7 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
   return (
     <div className="apd-manage-user-apps">
 
-      {managedObject && <APComponentHeader header={`Edit App: ${managedObject.apEntityId.displayName}`} /> }
+      {managedObject && <APComponentHeader header={`Manage API Products for: ${managedObject.apEntityId.displayName}`} /> }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

@@ -8,7 +8,8 @@ import {
   $WebHook, 
   $WebHookBasicAuth, 
   $WebHookHeaderAuth,
-  $SemVer
+  $SemVer,
+  $CommonDisplayName
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APConnectorApiHelper } from "./APConnectorApiCalls";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from './APTypes';
@@ -212,6 +213,15 @@ export class APConnectorFormValidationRules {
     rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid name`);
     return rules;
   }
+  public static CommonDisplayName = (): any => {
+    const schema = $CommonDisplayName;
+    const rules: any = {};
+    rules['required'] = `Enter a display name.`;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid display name`);
+    return rules;
+  }
   public static SemVer = (): any => {
     const schema = $SemVer;
     const rules: any = {};
@@ -219,43 +229,6 @@ export class APConnectorFormValidationRules {
     rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Use format {major}.{minor}.{patch}.`, false);
     return rules;
   }
-  public static Name = (): any => {
-    const minLength: number  = 4;
-    const maxLength: number = 256;
-    const pattern: string = '^[A-Za-z0-9_-]*$';
-    return {
-      required: "Enter unique Name.",
-      minLength: {
-        value: minLength,
-        message: `Minimum of ${minLength} chars.`
-      },
-      maxLength: {
-        value: maxLength,
-        message: `Maximum of ${maxLength} chars.`
-      },
-      pattern: {
-        value: new RegExp(pattern),
-        message: `Invalid Name. Use numbers, letters, '_', '-' only. Pattern: ${pattern}`
-      }
-    }
-  }
-
-  public static DisplayName = (): any => {
-    const minLength: number  = 4;
-    const maxLength: number = 256;
-    return {
-      required: "Enter Display Name.",
-      minLength: {
-        value: minLength,
-        message: `Minimum of ${minLength} chars.`
-      },
-      maxLength: {
-        value: maxLength,
-        message: `Maximum of ${maxLength} chars.`
-      }
-    }
-  }
-
   public static AsyncApiSpec = (): any => {
 // example: https://www.carlrippon.com/custom-validation-rules-in-react-hook-form/
 // https://react-hook-form.com/api/useform/register

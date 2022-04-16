@@ -26,7 +26,7 @@ import { DeveloperPortalNewEditUserApp, EAction } from "./deleteme.DeveloperPort
 import { DeveloperPortalDeleteUserApp } from "./deleteme.DeveloperPortalDeleteUserApp";
 import { TManagedObjectId } from "../../../components/APApiObjectsCommon";
 import { DeveloperPortalManageUserAppWebhooks } from "./DeveloperPortalManageUserAppWebhooks/deleteme.DeveloperPortalManageUserAppWebhooks";
-import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
+import { APMonitorUserApp } from "../../../components/APMonitorApp/deleteme.APMonitorUserApp";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../components/APComponents.css';

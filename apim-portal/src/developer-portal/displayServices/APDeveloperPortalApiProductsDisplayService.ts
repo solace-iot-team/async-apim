@@ -134,12 +134,14 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
    * - api products shared with this business group (regardless of visibility)
    * - lifecycle not = draft
    * - optionally: filtered by isAllowed_To_CreateApp
+   * - optionally: exclude list of api product ids
    */
-  public apiGetList_ApDeveloperPortalApiProductDisplayList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp }: {
+  public apiGetList_ApDeveloperPortalApiProductDisplayList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp, exclude_ApiProductIdList }: {
     organizationId: string;
     businessGroupId: string;
     userId: string;
     filterByIsAllowed_To_CreateApp: boolean;
+    exclude_ApiProductIdList?: Array<string>;
   }): Promise<TAPDeveloperPortalApiProductDisplayList> => {
     
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
@@ -150,6 +152,17 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
         APIProductAccessLevel.PUBLIC
       ],
     });
+    if(exclude_ApiProductIdList && exclude_ApiProductIdList.length > 0) {
+      for(let idx=0; idx<connectorApiProductList.length; idx++) {
+        const exclude = exclude_ApiProductIdList.find( (id: string) => {
+          return id === connectorApiProductList[idx].name;
+        });
+        if(exclude !== undefined) {
+          connectorApiProductList.splice(idx, 1);
+          idx--;
+        }
+      }
+    }
 
     // get the complete env list for reference
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({

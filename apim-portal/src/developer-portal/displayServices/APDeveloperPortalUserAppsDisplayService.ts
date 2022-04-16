@@ -1,28 +1,38 @@
 import { 
+  ApiError,
   App,
+  AppApiProductsComplex,
   AppConnectionStatus,
+  AppPatch,
   AppResponse,
   AppsService,
+  DevelopersService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
 import APAppEnvironmentsDisplayService, { 
   TAPAppEnvironmentDisplayList 
 } from '../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService';
-import { EAPApp_Status } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import { 
-  APUserAppsDisplayService, 
-  IAPUserAppDisplay 
-} from '../../displayServices/APAppsDisplayService/APUserAppsDisplayService';
+  APAppsDisplayService,
+  EAPApp_OwnerType, 
+  EAPApp_Type, 
+  IAPAppDisplay, 
+  TAPAppMeta 
+} from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
+// import { 
+//   APUserAppsDisplayService, 
+// } from '../../displayServices/APAppsDisplayService/APUserAppsDisplayService';
 import APEnvironmentsDisplayService, { 
   TAPEnvironmentDisplayList 
 } from '../../displayServices/APEnvironmentsDisplayService';
+import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import APDeveloperPortalAppApiProductsDisplayService, { 
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from './APDeveloperPortalAppApiProductsDisplayService';
 
-export type TAPDeveloperPortalUserAppDisplay = IAPUserAppDisplay & IAPSearchContent &{
+export type TAPDeveloperPortalUserAppDisplay = IAPAppDisplay & IAPSearchContent &{
   apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   apAppApiDisplayList: TAPAppApiDisplayList;
 }
@@ -33,20 +43,27 @@ export type TAPDeveloperPortalUserAppDisplay_AllowedActions = {
   isMonitorStatsAllowed: boolean;
 }
 
-class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
+class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
   private readonly ComponentName = "APDeveloperPortalUserAppsDisplayService";
+
+  private create_ApAppMeta({ userId }:{
+    userId: string;
+  }): TAPAppMeta {
+    return {
+      apAppType: EAPApp_Type.USER,
+      apAppOwnerType: EAPApp_OwnerType.INTERNAL,
+      appOwnerId: userId
+    };
+  }
 
   public create_Empty_ApDeveloperPortalUserAppDisplay({ userId }:{
     userId: string;
   }): TAPDeveloperPortalUserAppDisplay {
 
-    const apUserAppDisplay: IAPUserAppDisplay = this.create_Empty_ApUserAppDisplay({
-      userId: userId
-    });
+    const apAppDisplay: IAPAppDisplay = this.create_Empty_ApAppDisplay({ apAppMeta: this.create_ApAppMeta({ userId: userId }) });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
-      ...apUserAppDisplay,
-      apAppStatus: EAPApp_Status.UNKNOWN,
+      ...apAppDisplay,
       apDeveloperPortalUserApp_ApiProductDisplayList: [],
       apAppApiDisplayList: [],
       apSearchContent: ''
@@ -70,8 +87,8 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     apAppApiDisplayList: TAPAppApiDisplayList;
   }): TAPDeveloperPortalUserAppDisplay {
 
-    const apUserAppDisplay: IAPUserAppDisplay = this.create_ApUserAppDisplay_From_ApiEntities({
-      userId: userId,
+    const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
+      apAppMeta: this.create_ApAppMeta({ userId: userId }),
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
@@ -79,7 +96,7 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
-      ...apUserAppDisplay,
+      ...apAppDisplay,
       apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
       apSearchContent: '',      
@@ -129,6 +146,34 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+  public async apiCheck_UserIdExists({ organizationId, userId }:{
+    organizationId: string;
+    userId: string;
+  }): Promise<boolean> {
+    const funcName = 'apiCheck_UserIdExists';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    let anyError: any = undefined;
+    try {
+      await DevelopersService.getDeveloper({
+        organizationName: organizationId, 
+        developerUsername: userId
+      });
+      return true;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+        else anyError = e;
+      } else anyError = e;
+    }
+    if(anyError) {
+      APClientConnectorOpenApi.logError(logName, anyError);
+      throw anyError;
+    }    
+    return false;
+  }
 
   private apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ organizationId, userId, connectorAppResponse }:{
     organizationId: string;
@@ -221,6 +266,10 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     return apDeveloperPortalUserAppDisplay;
   }
 
+  /**
+   * List of User Apps. 
+   * NOTE: does not include api list.
+   */
   public apiGetList_ApDeveloperPortalUserAppDisplayList = async({ organizationId, userId }: {
     organizationId: string;
     userId: string;
@@ -251,18 +300,19 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
         topicSyntax: 'smf'
       });
 
+      // required to calculate the app status
       const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
         organizationId: organizationId,
         userId: userId,
         connectorAppResponse: connectorAppResponse_smf,
       });
     
-      // create the app api display list
-      const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
-        organizationId: organizationId,
-        appId: connectorApp.name,
-        apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-      });
+      // // create the app api display list
+      // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
+      //   organizationId: organizationId,
+      //   appId: connectorApp.name,
+      //   apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+      // });
 
       const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
         userId: userId,
@@ -270,7 +320,7 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
         connectorAppResponse_smf: connectorAppResponse_smf,
         connectorAppResponse_mqtt: undefined,
         apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-        apAppApiDisplayList: apAppApiDisplayList,
+        apAppApiDisplayList: [],
       });
 
       apDeveloperPortalUserAppDisplayList.push(apDeveloperPortalUserAppDisplay);
@@ -306,16 +356,6 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
     });
   }
 
-  public async apiUpdate_ApDeveloperPortalUserAppDisplay({ organizationId, apDeveloperPortalUserAppDisplay }:{
-    organizationId: string;
-    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-  }): Promise<void> {
-    const funcName = 'apiUpdate_ApDeveloperPortalUserAppDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
-
-    alert(`${logName}: implement me `);
-  }
-
   public async apiDelete_ApDeveloperPortalUserAppDisplay({ organizationId, userId, appId }:{
     organizationId: string;
     userId: string;
@@ -330,6 +370,34 @@ class APDeveloperPortalUserAppsDisplayService extends APUserAppsDisplayService {
 
   }
   
+  public async apiUpdate_ApDeveloperPortalUserAppDisplay_AppApiProductDisplayList({ organizationId, apDeveloperPortalUserAppDisplay, apDeveloperPortalAppApiProductDisplayList }:{
+    organizationId: string;
+    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
+    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): Promise<void> {
+    // const funcName = 'apiUpdate_AppApiProductDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // test downstream error handling
+    // throw new Error(`${logName}: test error handling`);
+
+    const connectorAppApiProductList: Array<AppApiProductsComplex> = APDeveloperPortalAppApiProductsDisplayService.create_ConnectorApiProductList({
+      apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
+    });
+    const update: AppPatch = {
+      apiProducts: connectorAppApiProductList,
+    }
+
+    // alert(`${logName}: update api product list, update=${JSON.stringify(update, null, 2)}`);
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
+      apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
+      update: update
+    });
+
+  }
+
 }
 
 export default new APDeveloperPortalUserAppsDisplayService();

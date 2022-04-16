@@ -816,7 +816,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                 <Controller
                   name="apEntityId.id"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.Name()}
+                  rules={APConnectorFormValidationRules.CommonName()}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(
@@ -839,7 +839,7 @@ export const EditNewApiProduct: React.FC<IEditNewApiProductProps> = (props: IEdi
                 <Controller
                   name="apEntityId.displayName"
                   control={managedObjectUseForm.control}
-                  rules={APConnectorFormValidationRules.DisplayName()}
+                  rules={APConnectorFormValidationRules.CommonDisplayName()}
                   render={( { field, fieldState }) => {
                       // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
                       return(

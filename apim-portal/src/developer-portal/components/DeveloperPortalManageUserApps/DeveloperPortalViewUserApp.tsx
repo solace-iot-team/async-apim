@@ -122,13 +122,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
             <div><b>Status: </b>{mo.apAppStatus}</div>
             <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
             {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
-
-            <APDisplayDeveloperPortalAppApiProducts
-              apDeveloperPortalApp_ApiProductDisplayList={mo.apDeveloperPortalUserApp_ApiProductDisplayList}
-              className="p-mt-2 p-ml-2"
-              emptyMessage="No API Products defined."
-            />
-
           </div>
           <div className="apd-app-view-detail-right">
             <div>Id: {mo.apEntityId.id}</div>
@@ -181,6 +174,13 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
             />
 
           </TabPanel>
+          <TabPanel header="API Products">
+            <APDisplayDeveloperPortalAppApiProducts
+              apDeveloperPortalApp_ApiProductDisplayList={managedObject.apDeveloperPortalUserApp_ApiProductDisplayList}
+              className="p-mt-2 p-ml-2"
+              emptyMessage="No API Products defined."
+            />
+          </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
               organizationId={props.organizationEntityId.id}
@@ -216,11 +216,6 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
         {managedObject && <APComponentHeader header={`App: ${managedObject.apEntityId.displayName}`} /> }
 
-        <div className="p-mt-4 p-mb-4">
-          <div>TODO: re-generate keys</div>
-          <div>TODO: add products</div>
-
-        </div>
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
         {managedObject && renderManagedObject() }

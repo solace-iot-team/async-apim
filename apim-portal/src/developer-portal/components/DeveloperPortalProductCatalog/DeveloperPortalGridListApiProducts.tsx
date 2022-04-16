@@ -10,9 +10,12 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "././DeveloperPortalProductCatalogCommon";
-import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay, TAPDeveloperPortalApiProductDisplayList } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
+import { E_CALL_STATE_ACTIONS, E_Mode } from "././DeveloperPortalProductCatalogCommon";
+import APEntityIdsService from "../../../utils/APEntityIdsService";
+import APDeveloperPortalApiProductsDisplayService, { 
+  TAPDeveloperPortalApiProductDisplay, 
+  TAPDeveloperPortalApiProductDisplayList 
+} from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { TAPApiDisplayList } from "../../../displayServices/APApisDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 
@@ -21,7 +24,10 @@ import "./DeveloperPortalProductCatalog.css";
 import "./DeveloperPortalProductCatalogGridList.css";
 
 export interface IDeveloperPortalGridListApiProductsProps {
-  organizationEntityId: TAPEntityId;
+  organizationId: string;
+  mode: E_Mode;
+  title?: string;
+  exclude_ApiProductIdList?: Array<string>;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -102,10 +108,11 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
       const list: TAPDeveloperPortalApiProductDisplayList = await APDeveloperPortalApiProductsDisplayService.apiGetList_ApDeveloperPortalApiProductDisplayList({
-        organizationId: props.organizationEntityId.id,
+        organizationId: props.organizationId,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         userId: userContext.apLoginUserDisplay.apEntityId.id,
-        filterByIsAllowed_To_CreateApp: false
+        filterByIsAllowed_To_CreateApp: (props.mode === E_Mode.ADD_TO_APP),
+        exclude_ApiProductIdList: props.exclude_ApiProductIdList
       });
       createCustomSearchContent(list);
       setManagedObjectList(list);
@@ -320,7 +327,7 @@ const renderApiProductAsGridItem = (mo: TManagedObject) => {
           value={filteredManagedObjectList} 
           layout={dataViewLayoutType} 
           header={header}
-          itemTemplate={renderApiProduct} 
+          itemTemplate={renderApiProduct}           
           // paginator 
           // rows={9}
           sortOrder={1} 
@@ -347,8 +354,9 @@ const renderApiProductAsGridItem = (mo: TManagedObject) => {
     return(
       <React.Fragment>
         <div className="p-mb-2 p-mt-2 page-header">
-          <div className="title p-mt-2 p-mb-4">Explore API Products</div>
-          {/* <div className="title p-mt-2 p-mb-4">Explore APIs</div> */}
+          {props.title && 
+            <div className="title p-mt-2 p-mb-4">{props.title}</div>
+          }
           <div className="p-input-icon-left p-mb-2">
             <i className="pi pi-search" />
             <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '700px'}} value={globalFilter} />

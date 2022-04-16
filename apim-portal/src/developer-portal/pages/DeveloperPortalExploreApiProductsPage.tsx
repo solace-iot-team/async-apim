@@ -10,6 +10,7 @@ import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../util
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalog';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
+import { E_Mode } from '../components/DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon';
 
 import "../../pages/Pages.css";
 
@@ -83,7 +84,8 @@ export const DeveloperPortalExploreApiProductsPage: React.FC = () => {
       {organizationEntityId && renderBreadcrumbs()}
       {organizationEntityId &&
         <DeveloperPortalProductCatalog
-          organizationEntityId={organizationEntityId}
+          organizationId={organizationEntityId.id}
+          mode={E_Mode.EXPLORE}
           viewApiProductEntityId={locationState}
           onSuccess={onSuccess} 
           onError={onError} 

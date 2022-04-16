@@ -10,7 +10,6 @@ import { TAPAppDisplay_General } from "../../../../displayServices/APAppsDisplay
 import { EditNewGeneralForm } from "./EditNewGeneralForm";
 import { EAction, E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageUserAppsCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
@@ -35,8 +34,6 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
-  const [userContext] = React.useContext(UserContext);
-
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -44,7 +41,6 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     try {
       await APDeveloperPortalUserAppsDisplayService.apiUpdate_ApAppDisplay_General({
         organizationId: props.organizationId,
-        userId: userContext.apLoginUserDisplay.apEntityId.id,
         apAppDisplay_General: mo
       });
       setUpdatedManagedObject(mo);
