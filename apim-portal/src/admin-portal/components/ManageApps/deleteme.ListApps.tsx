@@ -20,7 +20,7 @@ import { Globals } from "../../../utils/Globals";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { TApiEntitySelectItemList, TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageAppsCommon";
 import { 
   TViewManagedApp,
   TViewManagedAppList,
@@ -31,7 +31,7 @@ import {
 } from '../../../components/APApiObjectsCommon';
 
 import '../../../components/APComponents.css';
-import "./ManageApps.css";
+import "./deleteme.ManageApps.css";
 
 export interface IListAppsProps {
   organizationId: TAPOrganizationId,

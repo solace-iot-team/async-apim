@@ -21,10 +21,10 @@ import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiPro
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
+import { ManageRecoverApiProducts } from "./ManageRecoverApiProducts";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { ManageRecoverApiProducts } from "./ManageRecoverApiProducts";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;

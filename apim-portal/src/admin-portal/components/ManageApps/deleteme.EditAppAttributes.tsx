@@ -28,13 +28,13 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiProductList } from "../../../components/APApiObjectsCommon";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageAppsCommon";
 import { APManageConnectorAttributes } from "../../../components/APManageAttributes/APManageConnectorAttributes";
 import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { TAPConnectorAttribute, TAPConnectorAttributeList } from "../../../utils/APAttributes/deleteme.APAttributesService";
 
 import '../../../components/APComponents.css';
-import "./ManageApps.css";
+import "./deleteme.ManageApps.css";
 
 export interface IEditAppAttributesProps {
   organizationId: TAPOrganizationId,

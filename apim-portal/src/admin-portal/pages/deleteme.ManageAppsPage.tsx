@@ -7,26 +7,25 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
+import { TAPOrganizationId } from '../../components/deleteme.APComponentsCommon';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
-import { TAPEntityId } from '../../utils/APEntityIdsService';
-import { ManageApps } from '../components/ManageApps/ManageApps';
+import { ManageApps } from '../components/ManageApps/deleteme.ManageApps';
 
 import "../../pages/Pages.css";
 
 export const ManageAppsPage: React.FC = () => {
-  const ComponentName = 'ManageAppsPage';
+  const componentName = 'ManageAppsPage';
 
-  const [userContext] = React.useContext(UserContext);  
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
-
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-
-  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
+  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -41,7 +40,7 @@ export const ManageAppsPage: React.FC = () => {
       { 
         label: 'APPs',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {
@@ -59,24 +58,24 @@ export const ManageAppsPage: React.FC = () => {
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${ComponentName}.${funcName}()`;
+    const logName = `${componentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+    setOrganizationId(userContext.runtimeSettings.currentOrganizationEntityId.id);
+  }, [userContext]);
 
   return (
-    <div className="ap-pages">
+    <React.Fragment>
       <Toast ref={toast} />
-      {organizationEntityId && renderBreadcrumbs()}
-      {organizationEntityId && 
+      {renderBreadcrumbs()}
+      {organizationId && 
         <ManageApps
-          organizationId={organizationEntityId.id}
+          organizationId={organizationId}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
         />
       }
-    </div>
+    </React.Fragment>
   );
 
 }

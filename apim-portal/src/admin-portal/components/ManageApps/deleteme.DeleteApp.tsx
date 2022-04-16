@@ -10,10 +10,10 @@ import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
-import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import { E_CALL_STATE_ACTIONS } from "./deleteme.ManageAppsCommon";
 
 import '../../../components/APComponents.css';
-import "./ManageApps.css";
+import "./deleteme.ManageApps.css";
 
 export interface IDeleteAppProps {
   organizationId: TAPOrganizationId,

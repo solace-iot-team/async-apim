@@ -23,7 +23,7 @@ import {
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { Globals } from "../../../utils/Globals";
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageAppsCommon";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./deleteme.ManageAppsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -44,7 +44,7 @@ import { APDisplayAppCredentials } from "../../../components/APDisplay/deleteme.
 import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
 
 import '../../../components/APComponents.css';
-import "./ManageApps.css";
+import "./deleteme.ManageApps.css";
 
 export interface IViewAppProps {
   organizationId: TAPOrganizationId,
