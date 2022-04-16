@@ -59,11 +59,12 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
         },
-        {
-          label: 'Business Group Apps',
-          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications),
-          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications); }
-        },
+        // TODO: Implement
+        // {
+        //   label: 'Business Group Apps',
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications); }
+        // },
         {
           label: 'DELETEME: My Apps',
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications),
