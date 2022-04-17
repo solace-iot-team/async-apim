@@ -139,7 +139,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     setApiCallStatus(null);
     setManagedObjectEntityId(apDeveloperPortalUserAppDisplay.apEntityId);
     setManagedObject_AllowedActions(APDeveloperPortalUserAppsDisplayService.get_AllowedActions({
-      apDeveloperPortalUserAppDisplay: apDeveloperPortalUserAppDisplay
+      apAppDisplay: apDeveloperPortalUserAppDisplay
     }));
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
@@ -231,7 +231,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
             disabled={!managedObject_AllowedActions.isMonitorStatsAllowed}
           />
         </React.Fragment>
-      )
+      );
     }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;

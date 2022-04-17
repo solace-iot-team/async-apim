@@ -9,23 +9,23 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageUserAppsCommon";
 import { APDisplayDeveloperPortalAppApiProducts } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts";
 import { APDisplayDeveloperPortalAppCredentialsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Credentials_Panel";
 import { APDisplayDeveloperPortalAppEndpointsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Endpoints_Panel";
 import APAppEnvironmentsDisplayService from "../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_EnvironmentChannelPermissions_Panel";
 import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Panel";
-import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
+import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../displayServices/APAdminPortalAppsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
+import APDeveloperPortalAppApiProductsDisplayService from "../../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 
 import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import "./ManageApps.css";
 
-export interface IDeveloperPortalViewUserAppProps {
-  organizationEntityId: TAPEntityId;
+export interface IViewAppProps {
+  organizationId: string;
   appEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -34,10 +34,10 @@ export interface IDeveloperPortalViewUserAppProps {
   onNavigateHere: (appEntityId: TAPEntityId) => void;
 }
 
-export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppProps> = (props: IDeveloperPortalViewUserAppProps) => {
-  const componentName = 'DeveloperPortalViewUserApp';
+export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
+  const ComponentName = 'ViewApp';
 
-  type TManagedObject = TAPDeveloperPortalUserAppDisplay;
+  type TManagedObject = TAPAdminPortalAppDisplay;
 
   const [userContext] = React.useContext(UserContext);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -47,17 +47,14 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve details for app: ${props.appEntityId.displayName}`);
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP, `retrieve details for app: ${props.appEntityId.displayName}`);
     try { 
-
-      const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
-        organizationId: props.organizationEntityId.id,
-        userId: userContext.apLoginUserDisplay.apEntityId.id,
+      const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await APAdminPortalAppsDisplayService.apiGet_ApAdminPortalAppDisplay({
+        organizationId: props.organizationId,
         appId: props.appEntityId.id
       });
-      setManagedObject(apDeveloperPortalUserAppDisplay);
-
+      setManagedObject(apAdminPortalAppDisplay);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -66,7 +63,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     return callState;
   }
 
-  const DeveloperPortalViewUserApp_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+  const ViewApp_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateHere(props.appEntityId);
   }
 
@@ -80,7 +77,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     props.setBreadCrumbItemList([
       {
         label: moDisplayName,
-        command: DeveloperPortalViewUserApp_onNavigateHereCommand
+        command: ViewApp_onNavigateHereCommand
       }
     ]);
   }
@@ -114,18 +111,23 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   //   }
   // }
 
+  // should be a reusable component
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
-        <div className="apd-app-view">
-          <div className="apd-app-view-detail-left">
-            <div><b>Status: </b>{mo.apAppStatus}</div>
+        <div className="ap-app-view">
+          <div className="ap-app-view-detail-left">
+            <div><b>Status: {mo.apAppStatus}</b></div>
             <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
+            <div className="p-mt-2"></div>
+            <div>App Type: {mo.apAppMeta.apAppType}</div>
+            <div>App Owner Id: {mo.apAppMeta.appOwnerId}</div>
+            <div>App Owner Type: {mo.apAppMeta.apAppOwnerType}</div>
           </div>
-          <div className="apd-app-view-detail-right">
+          <div className="ap-app-view-detail-right">
             <div>Id: {mo.apEntityId.id}</div>
-          </div>            
+            <div>Internal Name: {mo.apAppInternalName}</div>
+            </div>            
         </div>
       </div>  
     );
@@ -133,7 +135,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
 
@@ -165,8 +167,15 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               componentTitle="Channel Permissions / Topics"
             />
 
+            <div>
+              <p>TEST client information, managedObject.devel_connectorAppResponses.smf.clientInformation = </p>
+              <pre>
+                {JSON.stringify(managedObject.devel_connectorAppResponses.smf.clientInformation, null, 2)}
+              </pre>
+            </div>
+
             <APDisplayDeveloperPortalAppApiProductsClientInformationPanel
-              apAppStatus={managedObject.apAppStatus}
+              apAppStatus={managedObject.apAppStatus}            
               apApp_ApiProduct_ClientInformationDisplayList={APDeveloperPortalAppApiProductsDisplayService.get_ApApp_ApiProduct_ClientInformationDisplayList({ apAppApiProductDisplayList: managedObject.apAppApiProductDisplayList })}
               collapsed={true}
               emptyMessage="No Client Information found."
@@ -184,7 +193,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
-              organizationId={props.organizationEntityId.id}
+              organizationId={props.organizationId}
               appId={props.appEntityId.id}
               apAppApiDisplayList={managedObject.apAppApiDisplayList}
               label="Double Click to view API"
@@ -213,7 +222,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   return (
     <React.Fragment>
-      <div className="apd-manage-user-apps">
+        <div className="ap-manage-apps">
 
         {managedObject && <APComponentHeader header={`App: ${managedObject.apEntityId.displayName}`} /> }
 

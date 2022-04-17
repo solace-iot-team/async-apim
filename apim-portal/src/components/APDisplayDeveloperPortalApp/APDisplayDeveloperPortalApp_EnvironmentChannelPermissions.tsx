@@ -49,7 +49,8 @@ export const APDisplayDeveloperPortalAppEnvironmentChannelPermissions: React.FC<
         case E_APTopicSyntax.SMF:
         break;
         case E_APTopicSyntax.MQTT:
-          if(row.apChannelPermissions_mqtt) apChannelPermissionsDisplay = row.apChannelPermissions_mqtt;
+          if(row.apChannelPermissions_mqtt === undefined) throw new Error(`${logName}: row.apChannelPermissions_mqtt === undefined`);
+          apChannelPermissionsDisplay = row.apChannelPermissions_mqtt;
         break;
         default:
           Globals.assertNever(logName, selectedTopicSyntax);

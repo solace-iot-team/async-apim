@@ -51,7 +51,7 @@ export interface IViewAppProps {
   appId: CommonName;
   appDisplayName: CommonDisplayName;
   appType: AppListItem.appType;
-  appOwnerId: CommonName;  
+  appOwnerId: CommonName; 
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;

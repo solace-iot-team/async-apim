@@ -38,7 +38,7 @@ export const ManageAppsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'APPs',
+        label: 'DELETEME: APPs',
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) }
       }

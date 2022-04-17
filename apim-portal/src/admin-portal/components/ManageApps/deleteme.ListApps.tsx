@@ -104,7 +104,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   ]
   const [selectedGlobalFilter, setSelectedGlobalFilter] = React.useState<string>('');
   const dt = React.useRef<any>(null);
-
+ 
   // * Api Calls *
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';

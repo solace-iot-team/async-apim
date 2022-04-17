@@ -22,16 +22,16 @@ export class APAppApisDisplayService {
     return name;
   }
 
-  private create_ApAppApiDisplayList_From_ApiEntities = ({ apDeveloperPortalAppApiProductDisplay }:{
-    apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay
+  private create_ApAppApiDisplayList_From_ApiEntities = ({ apApp_ApiProductDisplay }:{
+    apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay
   }): TAPAppApiDisplayList => {
 
     const list: TAPAppApiDisplayList = [];
-    apDeveloperPortalAppApiProductDisplay.apApiDisplayList.forEach( (apApiDisplay: TAPApiDisplay) => {
+    apApp_ApiProductDisplay.apApiDisplayList.forEach( (apApiDisplay: TAPApiDisplay) => {
       const apAppApiDisplay: TAPAppApiDisplay = {
         apEntityId: apApiDisplay.apEntityId,
         apVersion: apApiDisplay.apVersion,
-        apApiProductEntityId: apDeveloperPortalAppApiProductDisplay.apEntityId,
+        apApiProductEntityId: apApp_ApiProductDisplay.apEntityId,
       };
       list.push(apAppApiDisplay);
     });
@@ -43,10 +43,10 @@ export class APAppApisDisplayService {
   // ********************************************************************************************************************************
 
 
-  public async apiGetList_ApAppApiDisplay({ organizationId, appId, apDeveloperPortalUserApp_ApiProductDisplayList }: {
+  public async apiGetList_ApAppApiDisplay({ organizationId, appId, apApp_ApiProductDisplayList }: {
     organizationId: string;
     appId: string;
-    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;    
+    apApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;    
   }): Promise<TAPAppApiDisplayList> {
     // const funcName = 'apiGetList_ApAppApiDisplay';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -75,8 +75,8 @@ export class APAppApisDisplayService {
     // }
 
     const list: TAPAppApiDisplayList = [];
-    apDeveloperPortalUserApp_ApiProductDisplayList.forEach( (apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay) => {
-      list.push(...this.create_ApAppApiDisplayList_From_ApiEntities({ apDeveloperPortalAppApiProductDisplay: apDeveloperPortalAppApiProductDisplay }));
+    apApp_ApiProductDisplayList.forEach( (apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay) => {
+      list.push(...this.create_ApAppApiDisplayList_From_ApiEntities({ apApp_ApiProductDisplay: apApp_ApiProductDisplay }));
     }); 
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<TAPAppApiDisplay>(list);    
   }

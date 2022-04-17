@@ -118,7 +118,7 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
     );
   }
   const existingNewBodyTemplate = (row: TManagedObjectElement): JSX.Element => {
-    const isExisting: boolean = APDeveloperPortalAppApiProductsDisplayService.isExisting_ApDeveloperPortalAppApiProductDisplay({ apDeveloperPortalAppApiProductDisplay: row});
+    const isExisting: boolean = APDeveloperPortalAppApiProductsDisplayService.isExisting_ApAppApiProductDisplay({ apAppApiProductDisplay: row});
     if(isExisting) return (<div>existing</div>);
     else return (<div>new</div>);
   }

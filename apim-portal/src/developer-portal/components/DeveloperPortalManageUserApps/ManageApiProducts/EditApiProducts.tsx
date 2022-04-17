@@ -56,14 +56,14 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     // compare original with managedObject
     let hasChanged: boolean = false;
     managedObject.forEach( (moElem: TManagedObjectElement) => {
-      const exists = props.apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList.find( (x) => {
+      const exists = props.apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList.find( (x) => {
         return x.apEntityId.id === moElem.apEntityId.id;
       });
       if(exists === undefined) hasChanged = true;
     });
     // test if managedObject is empty
     if(!hasChanged) {
-      if(managedObject.length === 0 && props.apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList.length > 0) hasChanged = true;
+      if(managedObject.length === 0 && props.apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList.length > 0) hasChanged = true;
     }
     return hasChanged;
   }
@@ -94,7 +94,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_ADD_API_PRODUCT_TO_APP, `add api product: ${apiProductEntityId.displayName}`);
     try {
       // check if api product is already on the app
-      const existing: TAPDeveloperPortalAppApiProductDisplay | undefined = props.apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList.find((x) => {
+      const existing: TAPDeveloperPortalAppApiProductDisplay | undefined = props.apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList.find((x) => {
         return x.apEntityId.id === apiProductEntityId.id;
       });
       if(existing) {
@@ -131,7 +131,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
 
   const doInitialize = async () => {
     // work on a copy 
-    setManagedObject(JSON.parse(JSON.stringify(props.apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList)));
+    setManagedObject(JSON.parse(JSON.stringify(props.apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList)));
   }
 
   React.useEffect(() => {

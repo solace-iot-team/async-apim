@@ -39,9 +39,9 @@ export const ManageAppsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'APPs',
+        label: 'Manage Apps',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {

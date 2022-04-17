@@ -3,12 +3,13 @@ import {
   AppConnectionStatus, 
   AppPatch, 
   AppResponse, 
+  AppResponseGeneric, 
   AppsService, 
   CommonTimestampInteger, 
   Credentials, 
   Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { 
+import APDeveloperPortalAppApiProductsDisplayService, { 
   EAPApp_ApiProduct_Status, 
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
@@ -20,9 +21,13 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { APOrganizationsService } from '../../utils/APOrganizationsService';
 import { Globals } from '../../utils/Globals';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
+import { TAPAppApiDisplayList } from './APAppApisDisplayService';
 import APAppEnvironmentsDisplayService, { 
   TAPAppEnvironmentDisplayList 
 } from './APAppEnvironmentsDisplayService';
+
+export type TAPTopicSyntax = 'smf' | 'mqtt';
 
 export enum EAPApp_Status {
   UNKNOWN = "UNKNOWN",
@@ -62,13 +67,21 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
     mqtt?: AppResponse,
     appConnectionStatus: AppConnectionStatus,
   },
+  apAppInternalName: string;
   apAppMeta: TAPAppMeta;
   apAppStatus: EAPApp_Status;
   apAppCredentials: TAPAppCredentialsDisplay;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
+  apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  apAppApiDisplayList: TAPAppApiDisplayList;
+
   // TODO:
   // appWebhookList: TAPAppWebhookDisplayList;
   // isAppWebhookCapable: boolean;
+}
+
+export type TAPAppDisplay_AllowedActions = {
+  isMonitorStatsAllowed: boolean;
 }
 
 export type TAPAppDisplay_General = IAPEntityIdDisplay & {
@@ -141,6 +154,7 @@ export class APAppsDisplayService {
   }): IAPAppDisplay {
     const apAppDisplay: IAPAppDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject(),
+      apAppInternalName: '',
       apAppMeta: apAppMeta ? apAppMeta : this.create_Empty_ApAppMeta(),
       devel_connectorAppResponses: {
         smf: this.create_Empty_ConnectorAppResponse(),
@@ -150,24 +164,26 @@ export class APAppsDisplayService {
       apAppStatus: EAPApp_Status.UNKNOWN,
       apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
       apAppEnvironmentDisplayList: [],
+      apAppApiProductDisplayList: [],
+      apAppApiDisplayList: []
     };
     return apAppDisplay;
   }
 
-  private create_ApAppStatus({ apDeveloperPortalUserApp_ApiProductDisplayList }:{
-    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  private create_ApAppStatus({ apAppApiProductDisplayList }:{
+    apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   }): EAPApp_Status {
     const funcName = 'create_ApAppStatus';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     // calculate the app status from the individual api product app statuses
-    const numTotal: number = apDeveloperPortalUserApp_ApiProductDisplayList.length;
+    const numTotal: number = apAppApiProductDisplayList.length;
     let numLive: number = 0;
     let numApprovalPending: number = 0;
     let numApprovalRevoked: number = 0;
 
-    apDeveloperPortalUserApp_ApiProductDisplayList.forEach( (apDeveloperPortalUserApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay) => {
-      switch(apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status) {
+    apAppApiProductDisplayList.forEach( (apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay) => {
+      switch(apApp_ApiProductDisplay.apApp_ApiProduct_Status) {
         case EAPApp_ApiProduct_Status.LIVE:
           numLive++;
           break;
@@ -180,9 +196,9 @@ export class APAppsDisplayService {
         case EAPApp_ApiProduct_Status.UNKNOWN:
         case EAPApp_ApiProduct_Status.WILL_AUTO_PROVISIONED:
         case EAPApp_ApiProduct_Status.WILL_REQUIRE_APPROVAL:
-          throw new Error(`${logName}: apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status === ${apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status}`);
+          throw new Error(`${logName}: apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status === ${apApp_ApiProductDisplay.apApp_ApiProduct_Status}`);
         default:
-          Globals.assertNever(logName, apDeveloperPortalUserApp_ApiProductDisplay.apApp_ApiProduct_Status);
+          Globals.assertNever(logName, apApp_ApiProductDisplay.apApp_ApiProduct_Status);
       }
     });
     let appStatus: EAPApp_Status = EAPApp_Status.UNKNOWN;
@@ -196,12 +212,20 @@ export class APAppsDisplayService {
     return appStatus;
   }
 
-  protected create_ApAppDisplay_From_ApiEntities({ connectorAppResponse_smf, connectorAppResponse_mqtt, connectorAppConnectionStatus, apDeveloperPortalUserApp_ApiProductDisplayList, apAppMeta }: {
+  protected create_ApAppDisplay_From_ApiEntities({ 
+    connectorAppResponse_smf, 
+    connectorAppResponse_mqtt, 
+    connectorAppConnectionStatus, 
+    apAppMeta, 
+    apAppApiProductDisplayList,
+    apAppApiDisplayList,
+  }: {
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
-    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppMeta: TAPAppMeta;
+    apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+    apAppApiDisplayList: TAPAppApiDisplayList;
   }): IAPAppDisplay {
     // const funcName = 'create_ApAppDisplay_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -220,18 +244,21 @@ export class APAppsDisplayService {
         id: connectorAppResponse_smf.name,
         displayName: connectorAppResponse_smf.displayName ? connectorAppResponse_smf.displayName : connectorAppResponse_smf.name
       },
+      apAppInternalName: connectorAppResponse_smf.internalName ? connectorAppResponse_smf.internalName : '',
       apAppMeta: apAppMeta,
       devel_connectorAppResponses: {
         smf: connectorAppResponse_smf,
         mqtt: connectorAppResponse_mqtt,
         appConnectionStatus: connectorAppConnectionStatus
       },
-      apAppStatus: this.create_ApAppStatus({ apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList }),
+      apAppStatus: this.create_ApAppStatus({ apAppApiProductDisplayList: apAppApiProductDisplayList }),
       apAppCredentials: appCredentials,
       apAppEnvironmentDisplayList: APAppEnvironmentsDisplayService.create_ApAppEnvironmentDisplayList_From_ApiEntities({
         connectorAppEnvironments_smf: connectorAppResponse_smf.environments,
         connectorAppEnvironments_mqtt: connectorAppResponse_mqtt?.environments
       }),
+      apAppApiProductDisplayList: apAppApiProductDisplayList,
+      apAppApiDisplayList: apAppApiDisplayList,
     }
   }
 
@@ -242,6 +269,21 @@ export class APAppsDisplayService {
     return false;
   }
   
+  protected get_Empty_AllowedActions(): TAPAppDisplay_AllowedActions {
+    return {
+      isMonitorStatsAllowed: false
+    };
+  }
+
+  protected get_AllowedActions({ apAppDisplay }: {
+    apAppDisplay: IAPAppDisplay;
+  }): TAPAppDisplay_AllowedActions {
+    const allowedActions: TAPAppDisplay_AllowedActions = {
+      isMonitorStatsAllowed: this.is_MonitorStats_Allowed({ apAppDisplay: apAppDisplay }),
+    };
+    return allowedActions;
+  }
+
 
   // public get_ApAppCredentialsDisplay({ apAppDisplay }:{
   //   apAppDisplay: IAPAppDisplay;
@@ -311,6 +353,35 @@ export class APAppsDisplayService {
       }
       throw e;
     }
+  }
+
+  protected apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ organizationId, ownerId, connectorAppResponse }:{
+    organizationId: string;
+    ownerId: string;
+    connectorAppResponse: AppResponse;
+  }): Promise<TAPDeveloperPortalAppApiProductDisplayList> => {
+    // const funcName = 'apiGet_ApDeveloperPortalAppApiProductDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
+    const apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = [];
+    
+    for(const connectorAppApiProduct of connectorAppResponse.apiProducts) {
+      const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = await APDeveloperPortalAppApiProductsDisplayService.apiGet_DeveloperPortalApAppApiProductDisplay({
+        organizationId: organizationId,
+        ownerId: ownerId,
+        connectorAppApiProduct: connectorAppApiProduct,
+        connectorAppResponse: connectorAppResponse,
+        complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList
+      });
+      apDeveloperPortalAppApiProductDisplayList.push(apDeveloperPortalAppApiProductDisplay);
+    }
+
+    return apDeveloperPortalAppApiProductDisplayList;
   }
 
   protected async apiUpdate({ organizationId, appId, apAppMeta, update }: {
@@ -401,6 +472,41 @@ export class APAppsDisplayService {
       update: update
     });
 
+  }
+
+  public async apiDelete_ApAppDisplay({ organizationId, appId }:{
+    organizationId: string;
+    appId: string;
+  }): Promise<void> {
+    const funcName = 'apiDelete_ApAppDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    // what kind of app is it?
+    const connectorAppResponseGeneric: AppResponseGeneric = await AppsService.getApp({
+      organizationName: organizationId,
+      appName: appId
+    });
+    if(connectorAppResponseGeneric.appType === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.appType === undefined`);
+    if(connectorAppResponseGeneric.ownerId === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.ownerId === undefined`);
+
+    switch(connectorAppResponseGeneric.appType) {
+      case AppResponseGeneric.appType.DEVELOPER:
+        await AppsService.deleteDeveloperApp({
+          organizationName: organizationId,
+          developerUsername: connectorAppResponseGeneric.ownerId,
+          appName: appId
+        });
+        break;
+      case AppResponseGeneric.appType.TEAM:
+        await AppsService.deleteTeamApp({
+          organizationName: organizationId,
+          teamName: connectorAppResponseGeneric.ownerId,
+          appName: appId
+        });
+        break;
+      default:
+        Globals.assertNever(logName, connectorAppResponseGeneric.appType);
+    }
   }
 
 }

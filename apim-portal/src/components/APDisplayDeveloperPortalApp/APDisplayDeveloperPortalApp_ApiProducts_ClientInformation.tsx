@@ -10,13 +10,16 @@ import APDeveloperPortalAppApiProductsDisplayService, {
   TAPApp_ApiProduct_ClientInformationDisplayList,
 } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import APDisplayUtils from "../../displayServices/APDisplayUtils";
+import { EAPApp_Status } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import "../APComponents.css";
 
 export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps {
+  apAppStatus: EAPApp_Status;
   apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList;
   className?: string;
   emptyMessage: string;
+  notProvisionedMessage: string;
 }
 
 export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps> = (props: IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps) => {
@@ -49,11 +52,11 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<I
 
   const nameBodyTemplate = (row: TAPApp_ApiProduct_ClientInformationDisplay): JSX.Element => {
     return (
-      <div>{row.apEntityId.displayName}</div>
+      <div>{row.apEntityId.displayName}, Status={row.apApp_ApiProduct_Status}</div>
     );
   }
 
-  const renderComponentContent = (): JSX.Element => {
+  const renderComponentContent = (): JSX.Element => {    
     const dataKey = APDeveloperPortalAppApiProductsDisplayService.nameOf_ApEntityId('id');
     const nameField = APDeveloperPortalAppApiProductsDisplayService.nameOf_ApEntityId('displayName');
 
@@ -83,19 +86,25 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<I
   const renderComponent = (): JSX.Element => {
     return (
       <React.Fragment>
-        {/* {renderComponentHeader()} */}
         {renderComponentContent()}
       </React.Fragment>
     );
   }
 
+  const isProvisioned = (): boolean => {
+    return props.apAppStatus === EAPApp_Status.LIVE || props.apAppStatus === EAPApp_Status.PARTIALLY_LIVE;
+  }
+
   return (
     <div className={props.className ? props.className : 'card'}>
-      {props.apApp_ApiProduct_ClientInformationDisplayList.length > 0 &&
+      {props.apApp_ApiProduct_ClientInformationDisplayList.length > 0 && isProvisioned() &&
         renderComponent()
       }
-      {(props.apApp_ApiProduct_ClientInformationDisplayList.length === 0) && 
+      {props.apApp_ApiProduct_ClientInformationDisplayList.length === 0  &&  isProvisioned() && 
         <span>{props.emptyMessage}</span>
+      }
+      {!isProvisioned() && 
+        <span>{props.notProvisionedMessage}</span>
       }
     </div>
   );

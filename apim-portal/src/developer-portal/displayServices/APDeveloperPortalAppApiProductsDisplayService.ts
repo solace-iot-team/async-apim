@@ -45,7 +45,9 @@ export type TAPDeveloperPortalAppApiProductDisplay = TAPDeveloperPortalApiProduc
 export type TAPDeveloperPortalAppApiProductDisplayList = Array<TAPDeveloperPortalAppApiProductDisplay>;
 
 // convenience
-export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & TAPAppClientInformationDisplay;
+export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & TAPAppClientInformationDisplay & {
+  apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
+}
 export type TAPApp_ApiProduct_ClientInformationDisplayList = Array<TAPApp_ApiProduct_ClientInformationDisplay>;
 
 class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApiProductsDisplayService {
@@ -186,20 +188,6 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return apDeveloperPortalAppApiProductDisplay;
   }
 
-  public get_ApApp_ApiProduct_ClientInformationDisplayList({ apDeveloperPortalAppApiProductDisplayList }:{
-    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
-  }): TAPApp_ApiProduct_ClientInformationDisplayList {
-    const apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList = [];
-    for(const apDeveloperPortalAppApiProductDisplay of apDeveloperPortalAppApiProductDisplayList) {
-      const apApp_ApiProduct_ClientInformationDisplay: TAPApp_ApiProduct_ClientInformationDisplay = {
-        apEntityId: apDeveloperPortalAppApiProductDisplay.apEntityId,
-        apGuarenteedMessagingDisplay: apDeveloperPortalAppApiProductDisplay.apAppClientInformationDisplay.apGuarenteedMessagingDisplay,
-      };
-      apApp_ApiProduct_ClientInformationDisplayList.push(apApp_ApiProduct_ClientInformationDisplay);
-    }
-    return apApp_ApiProduct_ClientInformationDisplayList;
-  }
-
   public remove_ApDeveloperPortalAppApiProductDisplay_From_List({ apiProductEntityId, apDeveloperPortalAppApiProductDisplayList }:{
     apiProductEntityId: TAPEntityId;
     apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
@@ -249,19 +237,34 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return connectorAppApiProductList;
   }
 
-  public isExisting_ApDeveloperPortalAppApiProductDisplay({ apDeveloperPortalAppApiProductDisplay }:{
-    apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay;
+  public isExisting_ApAppApiProductDisplay({ apAppApiProductDisplay }:{
+    apAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay;
   }): boolean {
-    return this.isExisting_ApApp_ApiProduct_Status(apDeveloperPortalAppApiProductDisplay.apApp_ApiProduct_Status);
+    return this.isExisting_ApApp_ApiProduct_Status(apAppApiProductDisplay.apApp_ApiProduct_Status);
   }
   
+  public get_ApApp_ApiProduct_ClientInformationDisplayList({ apAppApiProductDisplayList }:{
+    apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): TAPApp_ApiProduct_ClientInformationDisplayList {
+    const apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList = [];
+    for(const apAppApiProductDisplay of apAppApiProductDisplayList) {
+      const apApp_ApiProduct_ClientInformationDisplay: TAPApp_ApiProduct_ClientInformationDisplay = {
+        apEntityId: apAppApiProductDisplay.apEntityId,
+        apApp_ApiProduct_Status: apAppApiProductDisplay.apApp_ApiProduct_Status,
+        apGuarenteedMessagingDisplay: apAppApiProductDisplay.apAppClientInformationDisplay.apGuarenteedMessagingDisplay,
+      };
+      apApp_ApiProduct_ClientInformationDisplayList.push(apApp_ApiProduct_ClientInformationDisplay);
+    }
+    return apApp_ApiProduct_ClientInformationDisplayList;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
 
-  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ organizationId, userId, complete_apEnvironmentDisplayList, connectorAppResponse, connectorAppApiProduct }: {
+  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ organizationId, ownerId, complete_apEnvironmentDisplayList, connectorAppResponse, connectorAppApiProduct }: {
     organizationId: string;
-    userId: string;
+    ownerId: string;
     complete_apEnvironmentDisplayList?: TAPEnvironmentDisplayList;
     connectorAppApiProduct: string | AppApiProductsComplex;
     connectorAppResponse: AppResponse;
@@ -313,7 +316,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-      default_ownerId: userId,
+      default_ownerId: ownerId,
     });
 
     return this.create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({

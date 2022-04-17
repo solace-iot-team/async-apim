@@ -57,7 +57,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
 
     let _items: Array<MenuItem> = [
       {
-        label: 'APPs',
+        label: 'Manage Apps',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
       },

@@ -4,14 +4,17 @@ import React from "react";
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 import { TAPApp_ApiProduct_ClientInformationDisplayList } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APDisplayDeveloperPortalAppApiProductsClientInformation } from "./APDisplayDeveloperPortalApp_ApiProducts_ClientInformation";
+import { EAPApp_Status } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import "../APComponents.css";
 
 export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformation_PanelProps {
+  apAppStatus: EAPApp_Status;
   apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList;
   componentClassName?: string;
   contentClassName?: string;
   emptyMessage: string;
+  notProvisionedMessage: string;
   componentTitle?: string;
   collapsed: boolean;
 }
@@ -44,9 +47,11 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformationPanel: React
         className="p-pt-2"
       >
         <APDisplayDeveloperPortalAppApiProductsClientInformation
+          apAppStatus={props.apAppStatus}
           apApp_ApiProduct_ClientInformationDisplayList={props.apApp_ApiProduct_ClientInformationDisplayList}
           className={props.contentClassName}
           emptyMessage={props.emptyMessage}
+          notProvisionedMessage={props.notProvisionedMessage}
         />
       </Panel>
     );
