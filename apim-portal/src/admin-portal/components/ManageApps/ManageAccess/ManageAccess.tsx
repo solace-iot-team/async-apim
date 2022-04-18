@@ -17,6 +17,8 @@ import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
+import { EditApiProducts } from "./EditApiProducts";
+import { EditCredentials } from "./EditCredentials";
 
 export interface IManageAccessProps {
   organizationId: string;
@@ -99,10 +101,12 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onSaveSuccess_Credentials = (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => {
-    // const funcName = 'onSaveSuccess_Credentials';
-    // const logName = `${ComponentName}.${funcName}()`;
-    // alert(`${logName}: apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret = ${apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret}`)
+  const onSaveSuccess_ApiProducts = (apiCallState: TApiCallState) => {
+    props.onSaveSuccess(apiCallState);
+    doInitialize();
+  }
+
+  const onSaveSuccess_Credentials = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
     doInitialize();
   }
@@ -147,22 +151,28 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='API Products'>
             <React.Fragment>
-              <p>TODO: approve/revoke access by product</p>
               <p>TODO: set the channel paramters - across all products</p>
+              <EditApiProducts
+                organizationId={props.organizationId}
+                apAdminPortalAppDisplay={managedObject}
+                onSaveSuccess={onSaveSuccess_ApiProducts}
+                onCancel={props.onCancel}
+                onError={onError}
+                onLoadingChange={props.onLoadingChange}
+              />
             </React.Fragment>
           </TabPanel>
           <TabPanel header='Credentials'>
             <React.Fragment>
-              <p>TODO: EditCredentials</p>
-              {/* <EditCredentials
+              <EditCredentials
                 key={`${ComponentName}_EditCredentials_${refreshCounter}`}
                 organizationId={props.organizationId}
-                apDeveloperPortalUserAppDisplay={managedObject}
+                apAdminPortalAppDisplay={managedObject}
                 onCancel={props.onCancel}
                 onError={onError}
-                onSaveSuccess={onSaveSuccess_Credentials}
                 onLoadingChange={props.onLoadingChange}
-              /> */}
+                onSaveSuccess={onSaveSuccess_Credentials}
+              />
             </React.Fragment>
           </TabPanel>
         </TabView>

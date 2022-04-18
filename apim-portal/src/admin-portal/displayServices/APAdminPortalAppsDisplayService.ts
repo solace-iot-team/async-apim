@@ -1,11 +1,14 @@
 import { 
+  AppApiProductsComplex,
   AppConnectionStatus,
   AppListItem,
+  AppPatch,
   AppResponse,
   AppResponseGeneric,
   AppsService,
+  AppStatus,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPDeveloperPortalAppApiProductDisplayList } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
+import APDeveloperPortalAppApiProductsDisplayService, { TAPDeveloperPortalAppApiProductDisplayList } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
 import { 
   APAppsDisplayService,
@@ -337,6 +340,32 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
   }
   
+  public async apiUpdate_ApAdminPortalAppDisplay_ApAppApiProductDisplayList_Status({ organizationId, apAdminPortalAppDisplay, apDeveloperPortalAppApiProductDisplayList }:{
+    organizationId: string;
+    apAdminPortalAppDisplay: TAPAdminPortalAppDisplay;
+    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): Promise<void> {
+    this.set_ApApp_ApiProductDisplayList({ 
+      apAppDisplay: apAdminPortalAppDisplay,
+      apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
+    });
+
+    const connectorAppApiProductList: Array<AppApiProductsComplex> = APDeveloperPortalAppApiProductsDisplayService.create_ConnectorApiProductList({
+      apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
+    });
+
+    const update: AppPatch = {
+      apiProducts: connectorAppApiProductList,
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      appId: apAdminPortalAppDisplay.apEntityId.id,
+      apAppMeta: apAdminPortalAppDisplay.apAppMeta,
+      update: update
+    });
+
+  }
   // public async apiUpdate_ApDeveloperPortalUserAppDisplay_AppApiProductDisplayList({ organizationId, apDeveloperPortalUserAppDisplay, apDeveloperPortalAppApiProductDisplayList }:{
   //   organizationId: string;
   //   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;

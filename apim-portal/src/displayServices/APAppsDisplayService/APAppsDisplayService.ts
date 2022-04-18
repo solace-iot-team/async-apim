@@ -5,6 +5,7 @@ import {
   AppResponse, 
   AppResponseGeneric, 
   AppsService, 
+  AppStatus, 
   CommonTimestampInteger, 
   Credentials, 
   Secret
@@ -284,21 +285,6 @@ export class APAppsDisplayService {
     return allowedActions;
   }
 
-
-  // public get_ApAppCredentialsDisplay({ apAppDisplay }:{
-  //   apAppDisplay: IAPAppDisplay;
-  // }): TAPAppCredentialsDisplay {
-  //   return apAppDisplay.apAppCredentials;
-  // }
-
-  // public set_ApAppCredentialsDisplay({ apAppDisplay, apAppCredentialsDisplay }:{
-  //   apAppDisplay: IAPAppDisplay;
-  //   apAppCredentialsDisplay: TAPAppCredentialsDisplay;
-  // }): IAPAppDisplay {
-  //   apAppDisplay.apAppCredentials = apAppCredentialsDisplay;
-  //   return apAppDisplay;
-  // }
-
   public get_ApAppDisplay_General({ apAppDisplay }: {
     apAppDisplay: IAPAppDisplay;
   }): TAPAppDisplay_General {
@@ -331,6 +317,16 @@ export class APAppsDisplayService {
     apAppDisplay.apAppCredentials = apAppDisplay_Credentials.apAppCredentials;
     return apAppDisplay;
   }
+
+  public set_ApApp_ApiProductDisplayList({ apAppDisplay, apDeveloperPortalUserApp_ApiProductDisplayList }:{
+    apAppDisplay: IAPAppDisplay;
+    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): IAPAppDisplay {
+    apAppDisplay.apAppApiProductDisplayList = apDeveloperPortalUserApp_ApiProductDisplayList;
+    return apAppDisplay;
+  }
+
+
 
   // ********************************************************************************************************************************
   // API calls
@@ -393,13 +389,19 @@ export class APAppsDisplayService {
     const funcName = 'apiUpdate';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
+    // always set the App to approved
+    const requestBody: AppPatch = {
+      status: AppStatus.APPROVED,
+      ...update
+    };
+
     switch(apAppMeta.apAppType) {
       case EAPApp_Type.USER:
         await AppsService.updateDeveloperApp({
           organizationName: organizationId,
           developerUsername: apAppMeta.appOwnerId,
           appName: appId,
-          requestBody: update
+          requestBody: requestBody
         });  
         break;
       case EAPApp_Type.TEAM:
@@ -407,7 +409,7 @@ export class APAppsDisplayService {
           organizationName: organizationId,
           teamName: apAppMeta.appOwnerId,
           appName: appId,
-          requestBody: update
+          requestBody: requestBody
         });  
         break;
       case EAPApp_Type.UNKNOWN:

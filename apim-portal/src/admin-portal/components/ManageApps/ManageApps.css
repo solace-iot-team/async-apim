@@ -19,6 +19,13 @@
   margin-left: 2.5rem;
 }
 
+.ap-manage-apps-delete-confirmation-content {
+  display: flex;
+  align-items: center;
+  /* justify-content: center; */
+  color: red !important;
+}
+
 /*.manage-api-products .sub-table {
   padding-left: 2rem;
   padding-top: 0rem;

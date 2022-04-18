@@ -45,6 +45,11 @@ export type TAPDeveloperPortalAppApiProductDisplay = TAPDeveloperPortalApiProduc
 export type TAPDeveloperPortalAppApiProductDisplayList = Array<TAPDeveloperPortalAppApiProductDisplay>;
 
 // convenience
+export type TAPApp_ApiProduct_AllowedActions = {
+  isApproveAllowed: boolean;
+  isRevokeAllowed: boolean;
+}
+
 export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & TAPAppClientInformationDisplay & {
   apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
 }
@@ -222,6 +227,24 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return apDeveloperPortalAppApiProductDisplayList;
   }
   
+  public set_ApApp_ApiProduct_Status_In_List({ apiProductEntityId, apApp_ApiProduct_Status, apDeveloperPortalAppApiProductDisplayList }:{
+    apiProductEntityId: TAPEntityId;
+    apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
+    apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): TAPDeveloperPortalAppApiProductDisplayList {
+    const funcName = 'set_ApApp_ApiProduct_Status_In_List';
+    const logName = `${this.FinalComponentName}.${funcName}()`;
+    // test downstream error handling
+    // throw new Error(`${logName}: test error handling`);
+
+    const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay | undefined = apDeveloperPortalAppApiProductDisplayList.find( (x) => {
+      return x.apEntityId.id === apiProductEntityId.id;
+    });
+    if(apDeveloperPortalAppApiProductDisplay === undefined) throw new Error(`${logName}: apDeveloperPortalAppApiProductDisplay === undefined`);
+    apDeveloperPortalAppApiProductDisplay.apApp_ApiProduct_Status = apApp_ApiProduct_Status;
+    return apDeveloperPortalAppApiProductDisplayList;
+  }
+
   public create_ConnectorApiProductList({ apDeveloperPortalAppApiProductDisplayList }:{
     apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   }): Array<AppApiProductsComplex> {
@@ -258,6 +281,33 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return apApp_ApiProduct_ClientInformationDisplayList;
   }
 
+  public get_AllowedActions({ apAppApiProductDisplay}:{
+    apAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay;
+  }): TAPApp_ApiProduct_AllowedActions {
+    const funcName = 'get_AllowedActions';
+    const logName = `${this.FinalComponentName}.${funcName}()`;
+
+    switch(apAppApiProductDisplay.apApp_ApiProduct_Status) {
+      case EAPApp_ApiProduct_Status.APPROVAL_PENDING:
+      case EAPApp_ApiProduct_Status.APPROVAL_REVOKED:
+        return {
+          isApproveAllowed: true,
+          isRevokeAllowed: false
+        };
+      case EAPApp_ApiProduct_Status.LIVE:
+        return {
+          isApproveAllowed: false,
+          isRevokeAllowed: true
+        };
+      case EAPApp_ApiProduct_Status.UNKNOWN:
+      case EAPApp_ApiProduct_Status.WILL_AUTO_PROVISIONED:
+      case EAPApp_ApiProduct_Status.WILL_REQUIRE_APPROVAL:
+        throw new Error(`${logName}: unable to calculate allowed action for apAppApiProductDisplay.apApp_ApiProduct_Status=${apAppApiProductDisplay.apApp_ApiProduct_Status}`);
+      default:
+        Globals.assertNever(logName, apAppApiProductDisplay.apApp_ApiProduct_Status);
+    }
+    throw new Error(`${logName}: should never get here`);
+  }
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************

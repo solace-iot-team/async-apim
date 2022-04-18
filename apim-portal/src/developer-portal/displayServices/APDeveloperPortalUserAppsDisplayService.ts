@@ -99,14 +99,6 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
     return apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList;
   }
 
-  public set_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay, apDeveloperPortalUserApp_ApiProductDisplayList }:{
-    apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-    apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
-  }): TAPDeveloperPortalUserAppDisplay {
-    apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList = apDeveloperPortalUserApp_ApiProductDisplayList;
-    return apDeveloperPortalUserAppDisplay;
-  }
-
   public get_Empty_AllowedActions(): TAPDeveloperPortalUserAppDisplay_AllowedActions {
     return {
       ...super.get_Empty_AllowedActions(),
@@ -304,8 +296,8 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       apiProducts: [],
       expiresIn: apDeveloperPortalUserAppDisplay.apAppCredentials.apConsumerKeyExiresIn,
       credentials: {
-      // TODO: remove once not manadatory in API
-      expiresAt: apDeveloperPortalUserAppDisplay.apAppCredentials.expiresAt,
+        // TODO: remove once not manadatory in API
+        expiresAt: apDeveloperPortalUserAppDisplay.apAppCredentials.expiresAt,
       }
     };
 
@@ -314,6 +306,17 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       developerUsername: userId,
       requestBody: create
     });
+
+    // patch the empty app with status approved
+    const update: AppPatch = {}
+    await this.apiUpdate({
+      organizationId: organizationId,
+      appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
+      apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
+      update: update
+    });
+
+
   }
 
   public async apiDelete_ApDeveloperPortalUserAppDisplay({ organizationId, userId, appId }:{
