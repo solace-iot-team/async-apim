@@ -36,7 +36,7 @@ export const APDisplayApControlledChannelParameters: React.FC<IAPDisplayApContro
           sortField={sortField} 
           sortOrder={1}
           scrollable 
-          // scrollHeight="200px" 
+          // scrollHeight="200px"
         >
           <Column 
             field={sortField}

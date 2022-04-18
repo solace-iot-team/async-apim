@@ -210,7 +210,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
       const titleClassName = `${options.titleClassName} p-pl-1`;
       return (
         <div className={className} style={{ justifyContent: 'left'}} >
-          <button className={options.togglerClassName} onClick={options.onTogglerClick} style={{ width: '13em', borderRadius: 'none'}}>
+          <button className={options.togglerClassName} onClick={options.onTogglerClick} style={{ width: '13em', borderRadius: 'unset'}}>
             <span className={toggleIcon}></span>
             <span className={titleClassName}>
               Search API Products

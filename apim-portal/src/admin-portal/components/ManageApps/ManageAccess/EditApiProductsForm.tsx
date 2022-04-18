@@ -207,7 +207,7 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
           // rowExpansionTemplate={rowExpansionTemplate}
         >
           <Column header="API Product" body={nameBodyTemplate} field={nameField} sortable />
-          <Column header="Version/State" body={versionBodyTemplate} style={{width: '15%'}} />
+          <Column header="Version (State)" body={versionBodyTemplate} style={{width: '15%'}} />
           <Column header="Owner" body={ownerBodyTemplate} style={{width: '20%'}} />
           <Column header="Current Status" body={currentStatusBodyTemplate} style={{width: '15%'}} />
           <Column header="New Status" body={newStatusBodyTemplate} style={{width: '15%'}} field={statusField} />

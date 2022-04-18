@@ -9,16 +9,17 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import { 
-  TAPAppDisplay_Credentials 
-} from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../../displayServices/APAdminPortalAppsDisplayService";
+import APAdminPortalAppsDisplayService, { 
+  TAPAdminPortalAppDisplay 
+} from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
+import { EditApiProducts } from "./EditApiProducts";
+import { EditCredentials } from "./EditCredentials";
+import { APDisplayApApiProductListControlledChannelParameterList } from "../../../../components/APDisplay/APDisplayApApiProductListApControlledChannelParameterList";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { EditApiProducts } from "./EditApiProducts";
-import { EditCredentials } from "./EditCredentials";
+import { EditChannelParameters } from "./EditChannelParameters";
 
 export interface IManageAccessProps {
   organizationId: string;
@@ -101,6 +102,11 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  const onSaveSuccess_ChannelParameters = (apiCallState: TApiCallState) => {
+    props.onSaveSuccess(apiCallState);
+    doInitialize();
+  }
+
   const onSaveSuccess_ApiProducts = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
     doInitialize();
@@ -149,9 +155,20 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+          <TabPanel header='Channel Parameters'>
+            <React.Fragment>
+              <EditChannelParameters
+                organizationId={props.organizationId}
+                apAdminPortalAppDisplay={managedObject}
+                onSaveSuccess={onSaveSuccess_ChannelParameters}
+                onCancel={props.onCancel}
+                onError={onError}
+                onLoadingChange={props.onLoadingChange}
+              />
+            </React.Fragment>
+          </TabPanel>
           <TabPanel header='API Products'>
             <React.Fragment>
-              <p>TODO: set the channel paramters - across all products</p>
               <EditApiProducts
                 organizationId={props.organizationId}
                 apAdminPortalAppDisplay={managedObject}

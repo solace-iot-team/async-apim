@@ -33,7 +33,7 @@ export const APDisplayApisDetails: React.FC<IAPDisplayApisDetailsProps> = (props
     }  
     return (
       <React.Fragment>
-        <div className="p-ml-3">
+        <div className="p-ml-3"> 
           <Panel 
             headerTemplate={panelHeaderTemplate} 
             toggleable={true}
