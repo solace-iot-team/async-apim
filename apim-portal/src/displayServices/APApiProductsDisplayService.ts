@@ -336,6 +336,30 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return filtered_list;
   }
 
+  public create_Combined_ApControlledChannelParameterList({ apApiProductDisplayList }: {
+    apApiProductDisplayList: TAPApiProductDisplayList;
+  }): TAPControlledChannelParameterList {
+    const combined_ApControlledChannelParameterList: TAPControlledChannelParameterList = [];
+
+    for(const apApiProductDisplay of apApiProductDisplayList) {
+      for(const apControlledChannelParameter of apApiProductDisplay.apControlledChannelParameterList) {
+        const existing_ApControlledChannelParameter: TAPControlledChannelParameter | undefined = combined_ApControlledChannelParameterList.find( (x) => {
+          return x.apEntityId.id === apControlledChannelParameter.apEntityId.id;
+        });
+        if(existing_ApControlledChannelParameter !== undefined) {
+          // merge values and update
+          const existing_value_list: Array<string> = existing_ApControlledChannelParameter.value.split(',');
+          const new_value_list: Array<string> = existing_value_list.concat(apControlledChannelParameter.value.split(','));
+          // dedup and set
+          apControlledChannelParameter.value = Globals.deDuplicateStringList(new_value_list).join(',');
+        }
+        combined_ApControlledChannelParameterList.push(apControlledChannelParameter);
+      }
+    }
+    return combined_ApControlledChannelParameterList;
+  }
+
+
   public get_SelectList_For_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
     const e: any = ClientOptionsGuaranteedMessaging.accessType;
     return Object.keys(e).map(k => e[k]);

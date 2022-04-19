@@ -61,6 +61,11 @@ class APAttributesDisplayService {
     };
   }
 
+  public create_CopyOf({ apAttributeDisplayList }:{
+    apAttributeDisplayList: TAPAttributeDisplayList;
+  }): TAPAttributeDisplayList {
+    return JSON.parse(JSON.stringify(apAttributeDisplayList));
+  }
   /**
    * Creates a new list.
    */

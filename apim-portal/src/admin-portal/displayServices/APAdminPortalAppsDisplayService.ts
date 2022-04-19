@@ -362,7 +362,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       organizationId: organizationId,
       appId: apAdminPortalAppDisplay.apEntityId.id,
       apAppMeta: apAdminPortalAppDisplay.apAppMeta,
-      update: update
+      connectorAppPatch: update
     });
 
   }

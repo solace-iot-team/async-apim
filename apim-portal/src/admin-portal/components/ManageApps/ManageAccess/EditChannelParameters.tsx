@@ -5,17 +5,14 @@ import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { EditApiProductsForm } from "./EditApiProductsForm";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import APAdminPortalAppsDisplayService, { 
   TAPAdminPortalAppDisplay 
 } from "../../../displayServices/APAdminPortalAppsDisplayService";
-import APDeveloperPortalAppApiProductsDisplayService, { 
-  EAPApp_ApiProduct_Status, 
-  TAPDeveloperPortalAppApiProductDisplay 
-} from "../../../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
 import { APDisplayApApiProductListControlledChannelParameterListPanel } from "../../../../components/APDisplay/APDisplayApApiProductListApControlledChannelParameterListPanel";
+import { EditChannelParametersForm } from "./EditChannelParametersForm";
+import APAppsDisplayService, { TAPAppDisplay_ChannelParameters } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
@@ -32,8 +29,7 @@ export interface IEditChannelParametersProps {
 export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (props: IEditChannelParametersProps) => {
   const ComponentName = 'EditChannelParameters';
 
-  type TManagedObjectElement = TAPDeveloperPortalAppApiProductDisplay;
-  type TManagedObject = Array<TManagedObjectElement>;
+  type TManagedObject = TAPAppDisplay_ChannelParameters;
 
   const FormId = `ManageApps_ManageAccess_${ComponentName}`;
 
@@ -41,43 +37,15 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
-
-  const hasApiProductListChanged = (): boolean => {
-    const funcName = 'hasApiProductListChanged';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    // compare original with managedObject
-    let hasChanged: boolean = false;
-    managedObject.forEach( (moElem: TManagedObjectElement) => {
-      const currentAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay | undefined = props.apAdminPortalAppDisplay.apAppApiProductDisplayList.find( (x) => {
-        return x.apEntityId.id === moElem.apEntityId.id;
-      });
-      if(currentAppApiProductDisplay === undefined) throw new Error(`${logName}: currentAppApiProductDisplay === undefined`);
-      if(moElem.apApp_ApiProduct_Status !== currentAppApiProductDisplay.apApp_ApiProduct_Status) hasChanged = true;
-    });
-    return hasChanged;
-  }
-
-  const get_OriginalManagedObjectElement = (moElem: TManagedObjectElement): TManagedObjectElement => {
-    const funcName = 'get_OriginalManagedObjectElement';
-    const logName = `${ComponentName}.${funcName}()`;
-    // find it in original list
-    const original = props.apAdminPortalAppDisplay.apAppApiProductDisplayList.find( (x) => {
-      return x.apEntityId.id === moElem.apEntityId.id;
-    });
-    if(original === undefined) throw new Error(`${logName}: original === undefined`);
-    return original;
-  }
-
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP_API_PRODUCTS, `update api products for app: ${props.apAdminPortalAppDisplay.apEntityId.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP_CHANNEL_PARAMETERS, `update channel parameters for app: ${props.apAdminPortalAppDisplay.apEntityId.displayName}`);
     try {
-      await APAdminPortalAppsDisplayService.apiUpdate_ApAdminPortalAppDisplay_ApAppApiProductDisplayList_Status({
+      await APAdminPortalAppsDisplayService.apiUpdate_ApAppDisplay_ChannelParameters({
         organizationId: props.organizationId,
-        apAdminPortalAppDisplay: props.apAdminPortalAppDisplay,
-        apDeveloperPortalAppApiProductDisplayList: mo
+        apAppDisplay: props.apAdminPortalAppDisplay,
+        apAppDisplay_ChannelParameters: mo
       });
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -88,8 +56,10 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
   }
 
   const doInitialize = async () => {
-    // work on a copy 
-    setManagedObject(JSON.parse(JSON.stringify(props.apAdminPortalAppDisplay.apAppApiProductDisplayList)));
+    // should work on a copy?
+    setManagedObject(APAppsDisplayService.get_ApAppDisplay_ChannelParameters({
+      apAppDisplay: props.apAdminPortalAppDisplay
+    }));
   }
 
   React.useEffect(() => {
@@ -125,42 +95,6 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
     doSubmitManagedObject(mo);
   }
 
-  const onApprove = (moElem: TManagedObjectElement) => {
-    const funcName = 'onApprove';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(APDeveloperPortalAppApiProductsDisplayService.set_ApApp_ApiProduct_Status_In_List({
-      apiProductEntityId: moElem.apEntityId,
-      apDeveloperPortalAppApiProductDisplayList: managedObject,
-      apApp_ApiProduct_Status: EAPApp_ApiProduct_Status.LIVE // WILL_BE_LIVE?
-    }));
-    setRefreshCounter(refreshCounter + 1);
-  }
-
-  const onRevoke = (moElem: TManagedObjectElement) => {
-    const funcName = 'onRevoke';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(APDeveloperPortalAppApiProductsDisplayService.set_ApApp_ApiProduct_Status_In_List({
-      apiProductEntityId: moElem.apEntityId,
-      apDeveloperPortalAppApiProductDisplayList: managedObject,
-      apApp_ApiProduct_Status: EAPApp_ApiProduct_Status.APPROVAL_REVOKED
-    }));
-    setRefreshCounter(refreshCounter + 1);
-  }
-
-  const onReset = (moElem: TManagedObjectElement) => {
-    const funcName = 'onReset';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    setManagedObject(APDeveloperPortalAppApiProductsDisplayService.set_ApApp_ApiProduct_Status_In_List({
-      apiProductEntityId: moElem.apEntityId,
-      apDeveloperPortalAppApiProductDisplayList: managedObject,
-      apApp_ApiProduct_Status: get_OriginalManagedObjectElement(moElem).apApp_ApiProduct_Status
-    }));
-    setRefreshCounter(refreshCounter + 1);
-  }
-
   const renderManagedObjectFormFooter = (): JSX.Element => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
       return (
@@ -172,7 +106,7 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" disabled={!hasApiProductListChanged()} />
+          <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }  
@@ -192,19 +126,13 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
             // className="p-mt-6"
           />
 
-
-          <p>TODO: EditChannelParametersForm</p>
-          {/* <EditApiProductsForm 
-            key={ComponentName + '_EditApiProductsForm_' + refreshCounter}
+          <EditChannelParametersForm
+            key={ComponentName + '_EditChannelParametersForm_' + refreshCounter}
             organizationId={props.organizationId}
             formId={FormId}
-            apDeveloperPortalApp_ApiProductDisplayList={mo}
-            original_ApDeveloperPortalApp_ApiProductDisplayList={props.apAdminPortalAppDisplay.apAppApiProductDisplayList}
+            apAppDisplay_ChannelParameters={mo}
             onSubmit={onSubmit}
-            onApprove={onApprove}
-            onRevoke={onRevoke}
-            onReset={onReset}
-          /> */}
+          />
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

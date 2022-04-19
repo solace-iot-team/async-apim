@@ -22,6 +22,8 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { APOrganizationsService } from '../../utils/APOrganizationsService';
 import { Globals } from '../../utils/Globals';
+import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
+import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
 import { TAPAppApiDisplayList } from './APAppApisDisplayService';
 import APAppEnvironmentsDisplayService, { 
@@ -62,6 +64,9 @@ export type TAPAppMeta = {
   apAppOwnerType: EAPApp_OwnerType;
 }
 
+export type TAPAppChannelParameter = IAPAttributeDisplay;
+export type TAPAppChannelParameterList = Array<TAPAppChannelParameter>;
+
 export interface IAPAppDisplay extends IAPEntityIdDisplay {
   devel_connectorAppResponses: {
     smf: AppResponse,
@@ -75,6 +80,8 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   apAppApiDisplayList: TAPAppApiDisplayList;
+  apAppChannelParameterList: TAPAppChannelParameterList;
+  apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
 
   // TODO:
   // appWebhookList: TAPAppWebhookDisplayList;
@@ -93,6 +100,13 @@ export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
   apAppMeta: TAPAppMeta;
   apAppCredentials: TAPAppCredentialsDisplay;
 }
+
+export type TAPAppDisplay_ChannelParameters = IAPEntityIdDisplay & {
+  apAppMeta: TAPAppMeta;
+  apAppChannelParameterList: TAPAppChannelParameterList;
+  combined_ApAppApiProductsControlledChannelParameterList: TAPControlledChannelParameterList;
+}
+
 
 export type TAPAppDisplayList = Array<IAPAppDisplay>;
 
@@ -166,7 +180,9 @@ export class APAppsDisplayService {
       apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
       apAppEnvironmentDisplayList: [],
       apAppApiProductDisplayList: [],
-      apAppApiDisplayList: []
+      apAppApiDisplayList: [],
+      apAppChannelParameterList: [],
+      apCustom_ApAttributeDisplayList: [],
     };
     return apAppDisplay;
   }
@@ -213,6 +229,31 @@ export class APAppsDisplayService {
     return appStatus;
   }
 
+  private create_Complete_ApRawAttributeList({ apAppDisplay }:{
+    apAppDisplay: IAPAppDisplay;
+  }): TAPRawAttributeList {
+    // work on copies
+    // note: concat creates a new list
+    // concat channel parameters and custom attributes
+    const complete_ApAttributeList: TAPAttributeDisplayList = apAppDisplay.apAppChannelParameterList.concat(apAppDisplay.apCustom_ApAttributeDisplayList);
+
+    const rawAttributeList: TAPRawAttributeList = APAttributesDisplayService.create_ApRawAttributeList({
+      apAttributeDisplayList: complete_ApAttributeList
+    });
+    return rawAttributeList;
+  }
+
+  private extract_ApAppChannelParameterList({ apAttributeDisplayList, combined_ApApiProductControlledChannelParameterList }:{
+    apAttributeDisplayList: TAPAttributeDisplayList;
+    combined_ApApiProductControlledChannelParameterList: TAPControlledChannelParameterList;
+  }): TAPAppChannelParameterList {
+    const apAppChannelParameterList: TAPAppChannelParameterList = APAttributesDisplayService.extract_ByEntityIdList({
+      apAttributeDisplayList: apAttributeDisplayList,
+      idList_To_extract: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPAppChannelParameter>(combined_ApApiProductControlledChannelParameterList)
+    });
+    return apAppChannelParameterList;
+  }
+
   protected create_ApAppDisplay_From_ApiEntities({ 
     connectorAppResponse_smf, 
     connectorAppResponse_mqtt, 
@@ -240,6 +281,22 @@ export class APAppsDisplayService {
     }
     if(connectorAppResponse_smf.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse_smf.expiresIn;
 
+    // map raw attributes to ApAppDisplay entities
+    // create the working list
+    const working_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({
+      apRawAttributeList: connectorAppResponse_smf.attributes ? connectorAppResponse_smf.attributes : []
+    });
+    // extract channel parameters from list
+    const combined_ApApiProductControlledChannelParameterList: TAPControlledChannelParameterList = APDeveloperPortalAppApiProductsDisplayService.create_Combined_ApControlledChannelParameterList({
+      apApiProductDisplayList: apAppApiProductDisplayList
+    });
+    const apAppChannelParameterList: TAPAppChannelParameterList = this.extract_ApAppChannelParameterList({
+      apAttributeDisplayList: working_ApAttributeDisplayList,
+      combined_ApApiProductControlledChannelParameterList: combined_ApApiProductControlledChannelParameterList
+    });
+    // rest are custom attributes
+    const apCustom_ApAttributeDisplayList: TAPAttributeDisplayList = working_ApAttributeDisplayList;
+    
     return {
       apEntityId: {
         id: connectorAppResponse_smf.name,
@@ -260,6 +317,8 @@ export class APAppsDisplayService {
       }),
       apAppApiProductDisplayList: apAppApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
+      apAppChannelParameterList: apAppChannelParameterList,
+      apCustom_ApAttributeDisplayList: apCustom_ApAttributeDisplayList
     }
   }
 
@@ -326,6 +385,25 @@ export class APAppsDisplayService {
     return apAppDisplay;
   }
 
+  public get_ApAppDisplay_ChannelParameters({ apAppDisplay }: {
+    apAppDisplay: IAPAppDisplay;
+  }): TAPAppDisplay_ChannelParameters {
+    return {
+      apEntityId: apAppDisplay.apEntityId,
+      apAppMeta: apAppDisplay.apAppMeta,
+      apAppChannelParameterList: apAppDisplay.apAppChannelParameterList,
+      combined_ApAppApiProductsControlledChannelParameterList: APDeveloperPortalAppApiProductsDisplayService.create_Combined_ApControlledChannelParameterList({
+        apApiProductDisplayList: apAppDisplay.apAppApiProductDisplayList
+      }),
+    };
+  }
+  public set_ApAppDisplay_ChannelParameters({ apAppDisplay, apAppDisplay_ChannelParameters }:{
+    apAppDisplay: IAPAppDisplay;
+    apAppDisplay_ChannelParameters: TAPAppDisplay_ChannelParameters;
+  }): IAPAppDisplay {
+    apAppDisplay.apAppChannelParameterList = apAppDisplay_ChannelParameters.apAppChannelParameterList;
+    return apAppDisplay;
+  }
 
 
   // ********************************************************************************************************************************
@@ -380,19 +458,21 @@ export class APAppsDisplayService {
     return apDeveloperPortalAppApiProductDisplayList;
   }
 
-  protected async apiUpdate({ organizationId, appId, apAppMeta, update }: {
+  protected async apiUpdate({ organizationId, appId, apAppMeta, connectorAppPatch, apRawAttributeList }: {
     organizationId: string;
     appId: string;
     apAppMeta: TAPAppMeta;
-    update: AppPatch;
+    connectorAppPatch: AppPatch;
+    apRawAttributeList?: TAPRawAttributeList;
   }): Promise<void> {
     const funcName = 'apiUpdate';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     // always set the App to approved
     const requestBody: AppPatch = {
+      ...connectorAppPatch,
       status: AppStatus.APPROVED,
-      ...update
+      attributes: apRawAttributeList
     };
 
     switch(apAppMeta.apAppType) {
@@ -433,7 +513,25 @@ export class APAppsDisplayService {
       organizationId: organizationId,
       apAppMeta: apAppDisplay_General.apAppMeta,
       appId: apAppDisplay_General.apEntityId.id,
-      update: update
+      connectorAppPatch: update
+    });
+
+  }
+
+  public async apiUpdate_ApAppDisplay_ChannelParameters({ organizationId, apAppDisplay, apAppDisplay_ChannelParameters }:{
+    organizationId: string;
+    apAppDisplay: IAPAppDisplay;
+    apAppDisplay_ChannelParameters: TAPAppDisplay_ChannelParameters;
+  }): Promise<void> {
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apAppMeta: apAppDisplay_ChannelParameters.apAppMeta,
+      appId: apAppDisplay_ChannelParameters.apEntityId.id,
+      connectorAppPatch: {},
+      apRawAttributeList: this.create_Complete_ApRawAttributeList({
+        apAppDisplay: this.set_ApAppDisplay_ChannelParameters({ apAppDisplay: apAppDisplay, apAppDisplay_ChannelParameters: apAppDisplay_ChannelParameters })
+      })
     });
 
   }
@@ -471,7 +569,7 @@ export class APAppsDisplayService {
       organizationId: organizationId,
       apAppMeta: apAppDisplay_Credentials.apAppMeta,
       appId: apAppDisplay_Credentials.apEntityId.id,
-      update: update
+      connectorAppPatch: update
     });
 
   }

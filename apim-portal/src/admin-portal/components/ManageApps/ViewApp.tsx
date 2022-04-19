@@ -23,6 +23,10 @@ import APDeveloperPortalAppApiProductsDisplayService from "../../../developer-po
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
+import { Config } from "../../../Config";
+import { Divider } from "primereact/divider";
+import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 
 export interface IViewAppProps {
   organizationId: string;
@@ -111,6 +115,19 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   //   }
   // }
 
+  const renderDevelAttributeList = (mo: TManagedObject): JSX.Element => {
+    const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({ 
+      apRawAttributeList: mo.devel_connectorAppResponses.smf.attributes ? mo.devel_connectorAppResponses.smf.attributes : []
+    });
+    return (
+      <APDisplayApAttributeDisplayList
+        apAttributeDisplayList={apAttributeDisplayList}
+        emptyMessage="No attributes defined"
+        className="p-ml-4"
+      />
+    );
+  }
+
   // should be a reusable component
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
@@ -190,6 +207,12 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               className="p-mt-2 p-ml-2"
               emptyMessage="No API Products defined."
             />
+            <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
+            <APDisplayApAttributeDisplayList
+              apAttributeDisplayList={managedObject.apAppChannelParameterList}
+              emptyMessage="No App Channel Parameters defined."
+              className="p-ml-2 p-mt-2"
+            />
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
@@ -215,6 +238,23 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               emptyMessage="Webhooks not supported by API Products / Environments."              
             />
           </TabPanel> */}
+          <TabPanel header="General Attributes">
+            <React.Fragment>
+              <div className="p-text-bold">General Attributes:</div>
+              <APDisplayApAttributeDisplayList
+                apAttributeDisplayList={managedObject.apCustom_ApAttributeDisplayList}
+                emptyMessage="No attributes defined"
+                className="p-ml-4"
+              />
+              {Config.getUseDevelTools() &&
+                <React.Fragment>
+                  <Divider />
+                  <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
+                  {renderDevelAttributeList(managedObject)}
+                </React.Fragment>
+              }
+            </React.Fragment>
+          </TabPanel>
         </TabView>
       </React.Fragment>
     ); 

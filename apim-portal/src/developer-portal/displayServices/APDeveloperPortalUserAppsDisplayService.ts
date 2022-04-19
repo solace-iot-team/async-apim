@@ -313,7 +313,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       organizationId: organizationId,
       appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
       apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
-      update: update
+      connectorAppPatch: update
     });
 
 
@@ -356,7 +356,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       organizationId: organizationId,
       appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
       apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
-      update: update
+      connectorAppPatch: update
     });
 
   }
