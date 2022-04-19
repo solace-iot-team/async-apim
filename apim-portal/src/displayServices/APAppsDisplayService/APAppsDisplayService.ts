@@ -254,6 +254,33 @@ export class APAppsDisplayService {
     return apAppChannelParameterList;
   }
 
+  private create_ApAppCredentials_From_ApiEntities({ connectorAppResponse }:{
+    connectorAppResponse: AppResponse;
+  }): TAPAppCredentialsDisplay {
+    const funcName = 'create_ApAppCredentials_From_ApiEntities';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
+    if(connectorAppResponse.credentials.expiresAt) appCredentials.expiresAt = connectorAppResponse.credentials.expiresAt;
+    if(connectorAppResponse.credentials.issuedAt) appCredentials.issuedAt = connectorAppResponse.credentials.issuedAt;
+    if(connectorAppResponse.credentials.secret) {
+      appCredentials.secret.consumerKey = connectorAppResponse.credentials.secret.consumerKey;
+      appCredentials.secret.consumerSecret = connectorAppResponse.credentials.secret.consumerSecret;
+    }
+    if(connectorAppResponse.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse.expiresIn;
+
+here
+
+    // test:
+    if(appCredentials.issuedAt === -1) throw new Error(`${logName}: appCredentials.issuedAt === -1`);
+    if(appCredentials.expiresAt === -1) throw new Error(`${logName}: appCredentials.expiresAt === -1`);
+    const calculated_expiresAt: number = appCredentials.issuedAt + appCredentials.apConsumerKeyExiresIn;
+    throw new Error(`${logName}: appCredentials.expiresAt=${appCredentials.expiresAt}, calculated_expiresAt=${calculated_expiresAt}`);
+
+
+    return appCredentials;
+  }
+
   protected create_ApAppDisplay_From_ApiEntities({ 
     connectorAppResponse_smf, 
     connectorAppResponse_mqtt, 
@@ -269,17 +296,8 @@ export class APAppsDisplayService {
     apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
   }): IAPAppDisplay {
-    // const funcName = 'create_ApAppDisplay_From_ApiEntities';
-    // const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
-    appCredentials.expiresAt = connectorAppResponse_smf.credentials.expiresAt;
-    if(connectorAppResponse_smf.credentials.issuedAt) appCredentials.issuedAt = connectorAppResponse_smf.credentials.issuedAt;
-    if(connectorAppResponse_smf.credentials.secret) {
-      appCredentials.secret.consumerKey = connectorAppResponse_smf.credentials.secret.consumerKey;
-      appCredentials.secret.consumerSecret = connectorAppResponse_smf.credentials.secret.consumerSecret;
-    }
-    if(connectorAppResponse_smf.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse_smf.expiresIn;
+    const appCredentials: TAPAppCredentialsDisplay = this.create_ApAppCredentials_From_ApiEntities({ connectorAppResponse: connectorAppResponse_smf });
 
     // map raw attributes to ApAppDisplay entities
     // create the working list
@@ -544,23 +562,32 @@ export class APAppsDisplayService {
     apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): Promise<void> {
 
-    const crutchExpiresAtCalculation = (expiresIn: number): number => {
-      const d = new Date(Date.now() + expiresIn);
-      return d.getUTCMilliseconds();
-    }
-    const test_Secret = (): string => {
-      return `newSecretAt_${Date.now()}`;
-      // const d = new Date(Date.now());
-      // return d.toUTCString();
-    }
+    // const crutchExpiresAtCalculation = (expiresIn: number): number => {
+    //   const d = new Date(Date.now() + expiresIn);
+    //   return d.getUTCMilliseconds();
+    // }
+    // const test_Secret = (): string => {
+    //   return `newSecretAt_${Date.now()}`;
+    //   // const d = new Date(Date.now());
+    //   // return d.toUTCString();
+    // }
+    // const update: AppPatch = {
+    //   // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn
+    //   credentials: {
+    //     expiresAt: crutchExpiresAtCalculation(apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn),
+    //     secret: {
+    //       consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
+    //       consumerSecret: test_Secret()
+    //       // consumerSecret: undefined, // ensures it is re-generated          
+    //     }
+    //   }
+    // }
+
     const update: AppPatch = {
-      // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn
       credentials: {
-        expiresAt: crutchExpiresAtCalculation(apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn),
         secret: {
           consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
-          consumerSecret: test_Secret()
-          // consumerSecret: undefined, // ensures it is re-generated          
+          consumerSecret: undefined, // ensures it is re-generated          
         }
       }
     }

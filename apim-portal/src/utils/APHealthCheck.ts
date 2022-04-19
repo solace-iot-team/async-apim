@@ -420,6 +420,7 @@ export class APServerHealthCheck {
       healthCheckResult.healthCheckLog.push(apiCheckBaseLogEntry);
       if(apiCheckBaseLogEntry.success !== EAPHealthCheckSuccess.PASS) {
         healthCheckResult.summary.success = apiCheckBaseLogEntry.success;
+        APLogger.error(APLogger.createLogEntry(logName, apiCheckBaseLogEntry));
         // abort check
         throw new APError(logName, 'access url check failed');
       }
@@ -428,6 +429,7 @@ export class APServerHealthCheck {
       healthCheckResult.healthCheckLog.push(apiGetAboutLogEntry);
       if(apiGetAboutLogEntry.success !== EAPHealthCheckSuccess.PASS) {
         healthCheckResult.summary.success = apiGetAboutLogEntry.success;
+        APLogger.error(APLogger.createLogEntry(logName, apiGetAboutLogEntry));
         // abort check
         throw new APError(logName, 'about check failed');
       }
@@ -435,10 +437,12 @@ export class APServerHealthCheck {
       // healthcheck endpoint
       const apiGetHealthCheckLogEntry = await APServerHealthCheck.apiGetHealthCheckEndpoint();
       healthCheckResult.healthCheckLog.push(apiGetHealthCheckLogEntry);
+      if(apiGetHealthCheckLogEntry.success !== EAPHealthCheckSuccess.PASS) APLogger.error(APLogger.createLogEntry(logName, apiGetHealthCheckLogEntry));
 
       // configuration check
       const checkConfigurationLogEntry: TAPServerHealthCheckLogEntry_CheckConfiguration = APServerHealthCheck.checkConfiguration(configContext, apiGetAboutLogEntry.apsAbout);
       healthCheckResult.healthCheckLog.push(checkConfigurationLogEntry);
+      if(checkConfigurationLogEntry.success !== EAPHealthCheckSuccess.PASS) APLogger.error(APLogger.createLogEntry(logName, checkConfigurationLogEntry));
 
     } catch (e) {
       APLogger.error(APLogger.createLogEntry(logName, e));

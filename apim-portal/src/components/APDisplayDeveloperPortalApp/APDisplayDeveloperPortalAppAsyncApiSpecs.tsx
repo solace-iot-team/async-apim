@@ -101,8 +101,7 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
     const rowGroupFooterTemplate = (row: TAPAppApiDisplay) => { return(<></>); }
   
     const dataKey = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId')}.${APEntityIdsService.nameOf('id')}`;
-    const sortField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId')}.${APEntityIdsService.nameOf('displayName')}`;
-    const groupField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apApiProductEntityId')}.${APEntityIdsService.nameOf('displayName')}`;
+    const groupField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apApiProductEntityId')}.${APEntityIdsService.nameOf('id')}`;
     const apiField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId')}.${APEntityIdsService.nameOf('displayName')}`;
     const versionField = APDisplayUtils.nameOf<TAPAppApiDisplay>('apVersion');
 
@@ -114,10 +113,10 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
         value={props.apAppApiDisplayList}
         dataKey={dataKey}
         sortMode="single" 
-        sortField={sortField} 
+        sortField={apiField} 
         sortOrder={1}
         scrollable 
-        scrollHeight="200px" 
+        // scrollHeight="200px" 
         resizableColumns 
         columnResizeMode="fit"
         groupField={groupField}

@@ -295,10 +295,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       displayName: apDeveloperPortalUserAppDisplay.apEntityId.displayName,
       apiProducts: [],
       expiresIn: apDeveloperPortalUserAppDisplay.apAppCredentials.apConsumerKeyExiresIn,
-      credentials: {
-        // TODO: remove once not manadatory in API
-        expiresAt: apDeveloperPortalUserAppDisplay.apAppCredentials.expiresAt,
-      }
+      credentials: {}
     };
 
     await AppsService.createDeveloperApp({
@@ -315,7 +312,6 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
       connectorAppPatch: update
     });
-
 
   }
 
