@@ -23,6 +23,7 @@ import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/AP
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationEntityId: TAPEntityId;
@@ -180,6 +181,14 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               apDeveloperPortalApp_ApiProductDisplayList={managedObject.apAppApiProductDisplayList}
               className="p-mt-2 p-ml-2"
               emptyMessage="No API Products defined."
+            />
+            <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
+            <APDisplayApAttributeDisplayList
+              apAttributeDisplayList={managedObject.apAppChannelParameterList}
+              tableRowHeader_AttributeName="App Channel Parameter"
+              tableRowHeader_AttributeValue="Value(s)"
+              emptyMessage="No App Channel Parameters defined."
+              className="p-ml-2 p-mt-2"
             />
           </TabPanel>
           <TabPanel header='Async API Specs'>

@@ -122,6 +122,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     return (
       <APDisplayApAttributeDisplayList
         apAttributeDisplayList={apAttributeDisplayList}
+        tableRowHeader_AttributeName="Devel Attribute"
+        tableRowHeader_AttributeValue="Value(s)"
         emptyMessage="No attributes defined"
         className="p-ml-4"
       />
@@ -210,6 +212,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
             <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
             <APDisplayApAttributeDisplayList
               apAttributeDisplayList={managedObject.apAppChannelParameterList}
+              tableRowHeader_AttributeName="App Channel Parameter"
+              tableRowHeader_AttributeValue="Value(s)"
               emptyMessage="No App Channel Parameters defined."
               className="p-ml-2 p-mt-2"
             />
@@ -243,7 +247,9 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               <div className="p-text-bold">General Attributes:</div>
               <APDisplayApAttributeDisplayList
                 apAttributeDisplayList={managedObject.apCustom_ApAttributeDisplayList}
-                emptyMessage="No attributes defined"
+                tableRowHeader_AttributeName="App Attribute"
+                tableRowHeader_AttributeValue="Value"  
+                emptyMessage="No App Attributes defined."
                 className="p-ml-4"
               />
               {Config.getUseDevelTools() &&

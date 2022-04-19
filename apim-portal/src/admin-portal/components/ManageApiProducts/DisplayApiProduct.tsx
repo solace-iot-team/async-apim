@@ -356,6 +356,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return (
       <APDisplayApAttributeDisplayList
         apAttributeDisplayList={apAttributeDisplayList}
+        tableRowHeader_AttributeName="Devel Attribute"
+        tableRowHeader_AttributeValue="Value"
         emptyMessage="No attributes defined"
         className="p-ml-4"
       />
@@ -447,6 +449,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
               <div className="p-text-bold">General Attributes:</div>
               <APDisplayApAttributeDisplayList
                 apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
+                tableRowHeader_AttributeName="Attribute"
+                tableRowHeader_AttributeValue="Value"  
                 emptyMessage="No attributes defined"
                 className="p-ml-4"
               />
