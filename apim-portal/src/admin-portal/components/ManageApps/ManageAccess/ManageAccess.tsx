@@ -20,6 +20,7 @@ import { APDisplayApApiProductListControlledChannelParameterList } from "../../.
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
 import { EditChannelParameters } from "./EditChannelParameters";
+import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
 
 export interface IManageAccessProps {
   organizationId: string;
@@ -122,28 +123,6 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     props.onError(apiCallStatus);
   }
 
-  // should be a reusable component
-  const renderHeader = (mo: TManagedObject): JSX.Element => {
-    return (
-      <div className="p-col-12">
-        <div className="ap-app-view">
-          <div className="ap-app-view-detail-left">
-            <div><b>Status: {mo.apAppStatus}</b></div>
-            <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            <div className="p-mt-2"></div>
-            <div>App Type: {mo.apAppMeta.apAppType}</div>
-            <div>App Owner Id: {mo.apAppMeta.appOwnerId}</div>
-            <div>App Owner Type: {mo.apAppMeta.apAppOwnerType}</div>
-          </div>
-          <div className="ap-app-view-detail-right">
-            <div>Id: {mo.apEntityId.id}</div>
-            <div>Internal Name: {mo.apAppInternalName}</div>
-            </div>            
-        </div>
-      </div>  
-    );
-  }
-
   const renderContent = () => {
     const funcName = 'renderContent';
     const logName = `${ComponentName}.${funcName}()`;
@@ -151,7 +130,9 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     return (
       <React.Fragment>
         <div className="p-mt-2">
-          {renderHeader(managedObject)}
+          <DisplayAppHeaderInfo
+            apAppDisplay={managedObject}
+          />
         </div>              
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>

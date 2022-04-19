@@ -3,6 +3,7 @@ import React from "react";
 
 import { TabView, TabPanel } from 'primereact/tabview';
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
+import { Divider } from "primereact/divider";
 
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -20,13 +21,13 @@ import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../..
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 import APDeveloperPortalAppApiProductsDisplayService from "../../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
+import { Config } from "../../../Config";
+import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
-import { Config } from "../../../Config";
-import { Divider } from "primereact/divider";
-import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
+import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
 
 export interface IViewAppProps {
   organizationId: string;
@@ -130,28 +131,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     );
   }
 
-  // should be a reusable component
-  const renderHeader = (mo: TManagedObject): JSX.Element => {
-    return (
-      <div className="p-col-12">
-        <div className="ap-app-view">
-          <div className="ap-app-view-detail-left">
-            <div><b>Status: {mo.apAppStatus}</b></div>
-            <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            <div className="p-mt-2"></div>
-            <div>App Type: {mo.apAppMeta.apAppType}</div>
-            <div>App Owner Id: {mo.apAppMeta.appOwnerId}</div>
-            <div>App Owner Type: {mo.apAppMeta.apAppOwnerType}</div>
-          </div>
-          <div className="ap-app-view-detail-right">
-            <div>Id: {mo.apEntityId.id}</div>
-            <div>Internal Name: {mo.apAppInternalName}</div>
-            </div>            
-        </div>
-      </div>  
-    );
-  }
-
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -161,8 +140,10 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     return (
       <React.Fragment>
 
-        {renderHeader(managedObject)}
-
+        <DisplayAppHeaderInfo
+          apAppDisplay={managedObject}
+        />
+      
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General'>
 
