@@ -261,10 +261,9 @@ export class APAppsDisplayService {
   private create_ApAppCredentials_From_ApiEntities({ connectorAppResponse }:{
     connectorAppResponse: AppResponse;
   }): TAPAppCredentialsDisplay {
-    const funcName = 'create_ApAppCredentials_From_ApiEntities';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
-    // TODO: console.log off
-    console.log(`${logName}: connectorAppResponse.credentials=${JSON.stringify(connectorAppResponse.credentials, null, 2)}, \nconnectorAppResponse.expiresIn=${connectorAppResponse.expiresIn}`);
+    // const funcName = 'create_ApAppCredentials_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // console.log(`${logName}: connectorAppResponse.credentials=${JSON.stringify(connectorAppResponse.credentials, null, 2)}, \nconnectorAppResponse.expiresIn=${connectorAppResponse.expiresIn}`);
 
     const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
     if(connectorAppResponse.credentials.expiresAt) appCredentials.expiresAt = connectorAppResponse.credentials.expiresAt;

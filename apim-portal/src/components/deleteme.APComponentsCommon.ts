@@ -309,7 +309,7 @@ export class APManagedUserAppDisplay {
       }
     }    
 }
-
+  
 
 // * webhook *
 export type TAPWebhookStatus = {

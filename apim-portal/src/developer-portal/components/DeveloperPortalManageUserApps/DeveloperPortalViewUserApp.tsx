@@ -20,13 +20,13 @@ import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from ".
 import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Panel";
 import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
+import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 
 export interface IDeveloperPortalViewUserAppProps {
-  organizationEntityId: TAPEntityId;
+  organizationId: string;
   appEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -51,14 +51,12 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
     const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve details for app: ${props.appEntityId.displayName}`);
     try { 
-
       const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
-        organizationId: props.organizationEntityId.id,
+        organizationId: props.organizationId,
         userId: userContext.apLoginUserDisplay.apEntityId.id,
         appId: props.appEntityId.id
       });
       setManagedObject(apDeveloperPortalUserAppDisplay);
-
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -196,7 +194,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
-              organizationId={props.organizationEntityId.id}
+              organizationId={props.organizationId}
               appId={props.appEntityId.id}
               apAppApiDisplayList={managedObject.apAppApiDisplayList}
               onError={props.onError}

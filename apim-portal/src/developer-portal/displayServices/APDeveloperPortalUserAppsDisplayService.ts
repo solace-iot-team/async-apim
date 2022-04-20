@@ -154,7 +154,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
       throw anyError;
     }    
     return false;
-  }
+  } 
 
   public apiGet_ApDeveloperPortalUserAppDisplay = async({ organizationId, userId, appId }:{
     organizationId: string;

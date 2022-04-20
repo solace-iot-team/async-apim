@@ -30,6 +30,7 @@ import { ManageApiProducts } from "./ManageApiProducts/ManageApiProducts";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;
@@ -63,16 +64,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       currentState: newCurrentState
     });
   }
-  
-  // const transformApiProductCompositeIdToSelectItemIdList = (apiProductCompositeId: TAPDeveloperPortalApiProductCompositeId): TApiEntitySelectItemList => {
-  //   return [
-  //     {
-  //       id: apiProductCompositeId.apiProductId,
-  //       displayName: apiProductCompositeId.apiProductDisplayName
-  //     }
-  //   ];
-  // }
-  
+    
   const ToolbarNewManagedObjectButtonLabel = 'New App';
   const ToolbarEditManagedObjectButtonLabel = 'Edit App';
   const ToolbarManageApiProductsManagedObjectButtonLabel = "Manage API Products";
@@ -255,6 +247,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       );
     }
   }
+
   const renderToolbar = (): JSX.Element => {
     const leftToolbarContent: JSX.Element | undefined = renderLeftToolbarContent();
     const rightToolbarContent: JSX.Element | undefined = renderRightToolbarContent();
@@ -273,6 +266,10 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const onSetManageUserAppComponentState_To_View = (apAppEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apAppEntityId);
     setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
+  const onSetManageUserAppComponentState_To_ManageUserAppWebhooks = () => {
+    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS);
     setRefreshCounter(refreshCounter + 1);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
@@ -442,7 +439,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       {showViewComponent && managedObjectEntityId &&
         <DeveloperPortalViewUserApp
           key={`${ComponentName}_DeveloperPortalViewUserApp_${refreshCounter}`}
-          organizationEntityId={props.organizationEntityId}
+          organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onSuccess={onSubComponentUserNotification}
           onError={onSubComponentError} 
@@ -496,20 +493,18 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showManageWebhooksComponent && managedObjectEntityId &&
-      <p>showManageWebhooksComponent</p>
-        // <DeveloperPortalManageUserAppWebhooks
-        //   key={refreshCounter}
-        //   organizationId={props.organizationName}
-        //   userId={props.userId}
-        //   appId={managedObjectId}
-        //   appDisplayName={managedObjectDisplayName}
-        //   onSuccess={onEditWebhooksManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
-        //   onNavigateHere={onSetManageUserAppComponentState}
-        // />
+        <ManageUserAppWebhooks
+          key={`${ComponentName}_ManageUserAppWebhooks_${refreshCounter}`}
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onSuccessNotification={onSubComponentUserNotification}
+          onNavigateToApp={onSetManageUserAppComponentState_To_View}
+          onNavigateToCommand={onSetManageUserAppComponentState_To_ManageUserAppWebhooks}
+        />
       }
       {showMonitorComponent && managedObjectEntityId &&
       <p>showMonitorComponent</p>

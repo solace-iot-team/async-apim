@@ -10,7 +10,6 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APDisplayDeveloperPortalAppApiProducts } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts";
 import { APDisplayDeveloperPortalAppCredentialsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Credentials_Panel";
 import { APDisplayDeveloperPortalAppEndpointsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_Endpoints_Panel";
@@ -24,10 +23,10 @@ import APDeveloperPortalAppApiProductsDisplayService from "../../../developer-po
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { Config } from "../../../Config";
 import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
+import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
 
 export interface IViewAppProps {
   organizationId: string;
@@ -44,7 +43,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
 
   type TManagedObject = TAPAdminPortalAppDisplay;
 
-  const [userContext] = React.useContext(UserContext);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
