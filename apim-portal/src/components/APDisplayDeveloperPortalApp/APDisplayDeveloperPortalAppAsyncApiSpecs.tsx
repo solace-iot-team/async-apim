@@ -20,7 +20,8 @@ export interface IAPDisplayDeveloperPortalAppAsyncApiSpecsProps {
   organizationId: string;
   appId: string;
   apAppApiDisplayList: TAPAppApiDisplayList;
-  label: string;
+  tableHeader?: string;
+  noApisMessage?: string;
   className?: string;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -33,6 +34,11 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
     API_GET_APP_API = 'API_GET_APP_API'
   }
   
+  const DefaultTableHeader = "Double Click to view API";
+  const TableHeader = props.tableHeader ? props.tableHeader : DefaultTableHeader;
+  const DefaultNoApisMessage = "No Async APIs available.";
+  const NoApisMessage = props.noApisMessage ? props.noApisMessage : DefaultNoApisMessage;
+
   const [selectedApAppApiDisplay, setSelectedApAppApiDisplay] = React.useState<TAPAppApiDisplay>();
   const [showApiEntityId, setShowApiEntityId] = React.useState<TAPEntityId>();
   const [showApiSpec, setShowApiSpec] = React.useState<TAPApiSpecDisplay>();
@@ -109,7 +115,7 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
       <DataTable
         className="p-datatable-sm"
         ref={dataTableRef}
-        header={props.label}
+        header={TableHeader}
         value={props.apAppApiDisplayList}
         dataKey={dataKey}
         sortMode="single" 
@@ -139,8 +145,12 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
   return (
     <React.Fragment>
       <div className={props.className ? props.className : 'card'}>
-        {/* <div className="p-mt-4 p-mb-4"><b>{props.label}</b></div> */}
-        {renderComponent()}
+        { props.apAppApiDisplayList.length > 0 &&
+          renderComponent()
+        }
+        { props.apAppApiDisplayList.length === 0 &&
+          <div>{NoApisMessage}</div>
+        }
       </div>
 
       {showApiSpec && showApiEntityId &&
@@ -157,11 +167,6 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
       }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
-
-      {/* DEBUG */}
-      {/* <pre style={ { fontSize: '8px' }} >
-        {JSON.stringify(managedObjectDisplay, null, 2)}
-      </pre> */}
 
     </React.Fragment> 
   );

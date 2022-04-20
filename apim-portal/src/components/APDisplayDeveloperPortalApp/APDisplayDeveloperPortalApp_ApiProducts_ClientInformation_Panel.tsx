@@ -14,7 +14,6 @@ export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Pane
   componentClassName?: string;
   contentClassName?: string;
   emptyMessage: string;
-  notProvisionedMessage: string;
   componentTitle?: string;
   collapsed: boolean;
 }
@@ -51,7 +50,6 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformationPanel: React
           apApp_ApiProduct_ClientInformationDisplayList={props.apApp_ApiProduct_ClientInformationDisplayList}
           className={props.contentClassName}
           emptyMessage={props.emptyMessage}
-          notProvisionedMessage={props.notProvisionedMessage}
         />
       </Panel>
     );

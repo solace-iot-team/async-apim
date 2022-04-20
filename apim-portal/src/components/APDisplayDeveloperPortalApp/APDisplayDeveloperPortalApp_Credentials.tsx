@@ -7,7 +7,6 @@ import { Column } from "primereact/column";
 import APAppsDisplayService, { TAPAppCredentialsDisplay } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import "../APComponents.css";
-import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 export interface IAPDisplayDeveloperPortalApp_CredentialsProps {
   appCredentials: TAPAppCredentialsDisplay;
@@ -21,7 +20,7 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
 
   const expiresAtBodyTemplate = (row: TAPAppCredentialsDisplay): JSX.Element => {
     if(row.expiresAt !== -1) {
-      const d = new Date(row.issuedAt);
+      const d = new Date(row.expiresAt);
       return (<>{d.toUTCString()}</>);
     } else {
       return (<div style={{ color: 'red'}}>-</div>);
@@ -37,16 +36,25 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
     }
   }
 
-  const expiresInBodyTemplate = (row: TAPAppCredentialsDisplay): JSX.Element => {
-    return (<div>{APDisplayUtils.convertMilliseconds(row.apConsumerKeyExiresIn)}</div>);
-  }
+  // const devel_connectorExpiresInBodyTemplate = (row: TAPAppCredentialsDisplay): JSX.Element => {
+  //   return (<div>{APDisplayUtils.convertMilliseconds(row.devel_connector_app_expires_in)}</div>);
+  // }
+
+  // const devel_portalExpiresAtBodyTemplate = (row: TAPAppCredentialsDisplay): JSX.Element => {
+  //   if(row.devel_calculated_expiresAt !== -1) {
+  //     const d = new Date(row.devel_calculated_expiresAt);
+  //     return (<>{d.toUTCString()}</>);
+  //   } else {
+  //     return (<div style={{ color: 'red'}}>-</div>);
+  //   }
+  // }
 
   const renderComponentContent = (): JSX.Element => {
     const consumerKeyField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay_Secret('consumerKey');
     const consumerSecretField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay_Secret('consumerSecret');
     const expiresAtField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('expiresAt');
     const issuedAtField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('issuedAt');
-    const expiresInField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('apConsumerKeyExiresIn');
+    // const expiresInField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('apConsumerKeyExiresIn');
     return (
       <div className="p-ml-2">
         <DataTable
@@ -61,7 +69,8 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
           <Column header="Consumer Secret" field={consumerSecretField} />
           <Column header="Issued At" body={issuedAtBodyTemplate} field={issuedAtField} style={{ textAlign: 'center'}}/>
           <Column header="Expires At" body={expiresAtBodyTemplate} field={expiresAtField} style={{ textAlign: 'center'}}/>
-          <Column header="TEST: Expires In" body={expiresInBodyTemplate} field={expiresInField} style={{ textAlign: 'center'}}/>
+          {/* <Column header="DEVEL: Connector Expires In" body={devel_connectorExpiresInBodyTemplate} field={expiresInField} style={{ textAlign: 'center'}}/> */}
+          {/* <Column header="DEVEL: Portal Expires At" body={devel_portalExpiresAtBodyTemplate} style={{ textAlign: 'center'}}/> */}
         </DataTable>
       </div>
     );

@@ -170,8 +170,7 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               apAppStatus={managedObject.apAppStatus}
               apApp_ApiProduct_ClientInformationDisplayList={APDeveloperPortalAppApiProductsDisplayService.get_ApApp_ApiProduct_ClientInformationDisplayList({ apAppApiProductDisplayList: managedObject.apAppApiProductDisplayList })}
               collapsed={true}
-              emptyMessage="No Client Information found."
-              notProvisionedMessage="No Client Information available, App is not provisioned."
+              emptyMessage="No Client Information available."
               componentTitle="Client Information"
             />
 
@@ -182,21 +181,24 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
               className="p-mt-2 p-ml-2"
               emptyMessage="No API Products defined."
             />
-            <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
-            <APDisplayApAttributeDisplayList
-              apAttributeDisplayList={managedObject.apAppChannelParameterList}
-              tableRowHeader_AttributeName="App Channel Parameter"
-              tableRowHeader_AttributeValue="Value(s)"
-              emptyMessage="No App Channel Parameters defined."
-              className="p-ml-2 p-mt-2"
-            />
+            {managedObject.apAppApiProductDisplayList.length > 0 &&
+              <React.Fragment>
+                <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
+                <APDisplayApAttributeDisplayList
+                  apAttributeDisplayList={managedObject.apAppChannelParameterList}
+                  tableRowHeader_AttributeName="App Channel Parameter"
+                  tableRowHeader_AttributeValue="Value(s)"
+                  emptyMessage="No App Channel Parameters defined."
+                  className="p-ml-2 p-mt-2"
+                />
+              </React.Fragment>
+            }
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
               organizationId={props.organizationEntityId.id}
               appId={props.appEntityId.id}
               apAppApiDisplayList={managedObject.apAppApiDisplayList}
-              label="Double Click to view API"
               onError={props.onError}
               onLoadingChange={props.onLoadingChange}
             />

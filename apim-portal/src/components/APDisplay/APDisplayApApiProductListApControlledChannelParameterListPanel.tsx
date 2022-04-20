@@ -16,7 +16,7 @@ export interface IAPDisplayApApiProductListControlledChannelParameterListPanelPr
 }
 
 export const APDisplayApApiProductListControlledChannelParameterListPanel: React.FC<IAPDisplayApApiProductListControlledChannelParameterListPanelProps> = (props: IAPDisplayApApiProductListControlledChannelParameterListPanelProps) => {
-  const ComponentName='APDisplayApApiProductListControlledChannelParameterListPanel';
+  // const ComponentName='APDisplayApApiProductListControlledChannelParameterListPanel';
 
   const renderComponent = (): JSX.Element => {
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {

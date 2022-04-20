@@ -15,7 +15,7 @@ import { EditApiProductsForm } from "./EditApiProductsForm";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageUserAppsCommon";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import APEntityIdsService, { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { DeveloperPortalProductCatalog } from "../../DeveloperPortalProductCatalog/DeveloperPortalProductCatalog";
 import { E_Mode } from "../../DeveloperPortalProductCatalog/DeveloperPortalProductCatalogCommon";
 import { TAPDeveloperPortalApiProductDisplay } from "../../../displayServices/APDeveloperPortalApiProductsDisplayService";
@@ -45,7 +45,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
   const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-
+  const [duplicateApiDisplayNameList, setDuplicateApiDisplayNameList] = React.useState<Array<string>>();
   const [userContext] = React.useContext(UserContext);
 
 
@@ -87,6 +87,36 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     return callState;
   }
 
+  const isNewApiProductValidAddition = (apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay): boolean => {
+    const funcName = 'isNewApiProductValidAddition';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+    const getDupes = (input: Array<string>): Array<string> => {
+      return input.reduce( (acc: Array<string>, currentValue: string, currentIndex: number, arr: Array<string>) => {
+        if(arr.indexOf(currentValue) !== currentIndex && acc.indexOf(currentValue) < 0) acc.push(currentValue); 
+        return acc;
+      }, []);
+    }
+
+    // validate if new api product does not contain any api that any other api product already contains
+    // otherwise set a state to display a dialog
+
+    // create apEntityIdList of all apis for all existing products
+    const existing_ApiEntityIdList: TAPEntityIdList = APDeveloperPortalAppApiProductsDisplayService.get_ListOf_ApiEntityIds({
+      apAppApiProductDisplayList: managedObject
+    });
+    const combined_ApiEntityIdList: TAPEntityIdList = existing_ApiEntityIdList.concat(APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(apDeveloperPortalApiProductDisplay.apApiDisplayList));
+    // check if any of the new product entityIds are in existing list
+    const _dupes: Array<string> = getDupes(APEntityIdsService.create_DisplayNameList(combined_ApiEntityIdList));
+    if(_dupes.length > 0) {
+      setDuplicateApiDisplayNameList(_dupes);
+      return false;
+    }
+    setDuplicateApiDisplayNameList(undefined);
+    return true;
+  }
+
   const apiAddApiProductToApp = async(apiProductEntityId: TAPEntityId): Promise<TApiCallState> => {
     const funcName = 'apiAddApiProductToApp';
     const logName = `${ComponentName}.${funcName}()`;
@@ -111,14 +141,16 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
           default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
           fetch_revision_list: false,
         });
-        // add it to the list
-        const newMo: TManagedObject = APDeveloperPortalAppApiProductsDisplayService.add_ApDeveloperPortalApiProductDisplay_To_List({
-          apDeveloperPortalAppApiProductDisplay: APDeveloperPortalAppApiProductsDisplayService.create_ApDeveloperPortalAppApiProductDisplay_From_ApDeveloperPortalApiProductDisplay({
-            apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay
-          }),
-          apDeveloperPortalAppApiProductDisplayList: managedObject
-        });
-        setManagedObject(newMo);
+        if(isNewApiProductValidAddition(apDeveloperPortalApiProductDisplay)) {
+          // add it to the list
+          const newMo: TManagedObject = APDeveloperPortalAppApiProductsDisplayService.add_ApDeveloperPortalApiProductDisplay_To_List({
+            apDeveloperPortalAppApiProductDisplay: APDeveloperPortalAppApiProductsDisplayService.create_ApDeveloperPortalAppApiProductDisplay_From_ApDeveloperPortalApiProductDisplay({
+              apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay
+            }),
+            apDeveloperPortalAppApiProductDisplayList: managedObject
+          });
+          setManagedObject(newMo);
+        }
       }
       setRefreshCounter(refreshCounter + 1);
     } catch(e: any) {
@@ -197,13 +229,17 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     )
   }
 
+
+  const onAddApiProductToApp = (apiProductEntityId: TAPEntityId) => {
+    apiAddApiProductToApp(apiProductEntityId);
+  }
+
   const renderSearchApiProducts = (): JSX.Element => {
     const funcName = 'renderSearchApiProducts';
     const logName = `${ComponentName}.${funcName}()`;
 
     const onSuccess_From_ProductCatalog = (apiCallState: TApiCallState) => {};
     const setBreadCrumbItemList_From_ProductCatalog = (itemList: Array<MenuItem>) => {};
-    const onAdd = (apiProductEntityId: TAPEntityId) => { apiAddApiProductToApp(apiProductEntityId); }
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-search' : 'pi pi-search';
       const className = `${options.className} p-jc-start`;
@@ -237,7 +273,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
           mode={E_Mode.ADD_TO_APP}
           // title="Search API Products & Add to App"
           exclude_ApiProductIdList={APEntityIdsService.create_IdList_From_ApDisplayObjectList(managedObject)}
-          onAddToApp={onAdd}
+          onAddToApp={onAddApiProductToApp}
           organizationId={props.organizationId}
           // viewApiProductEntityId={locationState}
           onSuccess={onSuccess_From_ProductCatalog} 
@@ -245,6 +281,23 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
           setBreadCrumbItemList={setBreadCrumbItemList_From_ProductCatalog}
         />
       </Panel>
+    );
+  }
+
+  const renderErrorMessage = (): JSX.Element => {
+    if(duplicateApiDisplayNameList === undefined) return (<></>);
+    return(
+      <React.Fragment>
+        <div className="card p-mb-2">
+            <div style={{ color: 'red' }} >
+              <p>Cannot select API Products that contain the same APIs as already selected API Products.</p> 
+              <p>Duplicate APIs:</p>
+              <div className="p-ml-2">
+                {duplicateApiDisplayNameList.join(', ')}.
+              </div>
+          </div>
+        </div>
+      </React.Fragment>
     );
   }
 
@@ -264,6 +317,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>
+        {renderErrorMessage()}
         {renderSearchApiProducts()}
       </div>
     );

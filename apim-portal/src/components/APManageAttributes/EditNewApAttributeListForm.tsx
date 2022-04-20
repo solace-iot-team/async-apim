@@ -187,7 +187,7 @@ export const EditNewApAttributeListForm: React.FC<IEditNewApAttributeListFormPro
       const found: TAPEntityId | undefined = props.availableApAttributeEntityIdList.find( (x) => {
         return x.id === name;
       });
-      if(found === undefined) return `${props.attributeName_Name} is not in the available list.`;
+      if(found === undefined) return `Unknown ${props.attributeName_Name}.`;
     }
     return true;
   }

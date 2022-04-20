@@ -1,27 +1,23 @@
 import React from "react";
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
-import { TApiCallState } from "../../../../utils/ApiCallState";
 import { 
   TAPControlledChannelParameterList 
 } from "../../../../displayServices/APApiProductsDisplayService";
 import { 
-  TAPAppChannelParameter,
   TAPAppChannelParameterList,
   TAPAppDisplay_ChannelParameters 
 } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import { EditAppChannelParameters } from "./EditAppChannelParameters";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { EditAppChannelParameters } from "./EditAppChannelParameters";
 
 export interface IEditChannelParametersFormProps {
   formId: string;
   organizationId: string;
   apAppDisplay_ChannelParameters: TAPAppDisplay_ChannelParameters;
   onSubmit: (apAppDisplay_ChannelParameters: TAPAppDisplay_ChannelParameters) => void;
-  // onError: (apiCallState: TApiCallState) => void;
-  // onLoadingChange: (isLoading: boolean) => void;
 }
 
 

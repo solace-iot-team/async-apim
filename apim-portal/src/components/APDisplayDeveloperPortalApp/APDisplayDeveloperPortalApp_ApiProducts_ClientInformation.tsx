@@ -19,7 +19,6 @@ export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps
   apApp_ApiProduct_ClientInformationDisplayList: TAPApp_ApiProduct_ClientInformationDisplayList;
   className?: string;
   emptyMessage: string;
-  notProvisionedMessage: string;
 }
 
 export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps> = (props: IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps) => {
@@ -91,20 +90,13 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<I
     );
   }
 
-  const isProvisioned = (): boolean => {
-    return props.apAppStatus === EAPApp_Status.LIVE || props.apAppStatus === EAPApp_Status.PARTIALLY_LIVE;
-  }
-
   return (
     <div className={props.className ? props.className : 'card'}>
-      {props.apApp_ApiProduct_ClientInformationDisplayList.length > 0 && isProvisioned() &&
+      {props.apApp_ApiProduct_ClientInformationDisplayList.length > 0 &&
         renderComponent()
       }
-      {props.apApp_ApiProduct_ClientInformationDisplayList.length === 0  &&  isProvisioned() && 
+      {props.apApp_ApiProduct_ClientInformationDisplayList.length === 0  &&
         <span>{props.emptyMessage}</span>
-      }
-      {!isProvisioned() && 
-        <span>{props.notProvisionedMessage}</span>
       }
     </div>
   );

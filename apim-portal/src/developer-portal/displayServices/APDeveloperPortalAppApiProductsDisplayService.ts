@@ -11,7 +11,7 @@ import { EAPApprovalType } from '../../displayServices/APApiProductsDisplayServi
 import APEnvironmentsDisplayService, { 
   TAPEnvironmentDisplayList 
 } from '../../displayServices/APEnvironmentsDisplayService';
-import { IAPEntityIdDisplay, TAPEntityId } from '../../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
 import { 
@@ -307,6 +307,19 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
         Globals.assertNever(logName, apAppApiProductDisplay.apApp_ApiProduct_Status);
     }
     throw new Error(`${logName}: should never get here`);
+  }
+
+  /**
+   * Returns an entity id list of all apis for all api products
+   */
+  public get_ListOf_ApiEntityIds({ apAppApiProductDisplayList }:{
+    apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
+  }): TAPEntityIdList {
+    const list: TAPEntityIdList = [];
+    apAppApiProductDisplayList.forEach( (apAppApiProductDisplay) => {
+      list.push(...APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(apAppApiProductDisplay.apApiDisplayList));
+    });
+    return list;
   }
   // ********************************************************************************************************************************
   // API calls

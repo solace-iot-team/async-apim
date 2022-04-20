@@ -8,19 +8,17 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APAdminPortalAppsDisplayService, { 
   TAPAdminPortalAppDisplay 
 } from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
 import { EditApiProducts } from "./EditApiProducts";
 import { EditCredentials } from "./EditCredentials";
-import { APDisplayApApiProductListControlledChannelParameterList } from "../../../../components/APDisplay/APDisplayApApiProductListApControlledChannelParameterList";
+import { EditChannelParameters } from "./EditChannelParameters";
+import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { EditChannelParameters } from "./EditChannelParameters";
-import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
 
 export interface IManageAccessProps {
   organizationId: string;
@@ -42,7 +40,6 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [userContext] = React.useContext(UserContext);
 
   const ManagedAccess_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.appEntityId);

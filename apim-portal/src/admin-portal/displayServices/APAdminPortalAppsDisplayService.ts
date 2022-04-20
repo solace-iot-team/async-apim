@@ -6,7 +6,6 @@ import {
   AppResponse,
   AppResponseGeneric,
   AppsService,
-  AppStatus,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APDeveloperPortalAppApiProductsDisplayService, { TAPDeveloperPortalAppApiProductDisplayList } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
@@ -202,8 +201,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     organizationId: string;
     appId: string;
   }): Promise<TAPAdminPortalAppDisplay> => {
-    const funcName = 'apiGet_ApAdminPortalAppDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGet_ApAdminPortalAppDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // TEST upstream error handling
     // throw new Error(`${logName}: test error handling`);
 

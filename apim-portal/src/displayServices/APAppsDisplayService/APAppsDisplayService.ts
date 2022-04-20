@@ -52,10 +52,12 @@ export enum EAPApp_OwnerType {
 }
 
 export type TAPAppCredentialsDisplay = {
-  apConsumerKeyExiresIn: number; /** millseconds  */
-  expiresAt: number;
-  issuedAt: CommonTimestampInteger;
+  apConsumerKeyExiresIn: number; /** duration in millseconds  */
+  expiresAt: number; /** millis since epoch */
+  issuedAt: CommonTimestampInteger; /** millis since epoch */
   secret: Secret;
+  devel_calculated_expiresAt: number; /** devel: cross check correct expiresAt calculation */
+  devel_connector_app_expires_in: number; /** devel: duration in millseconds */
 }
 
 export type TAPAppMeta = {
@@ -161,7 +163,9 @@ export class APAppsDisplayService {
         consumerKey: '',
         consumerSecret: ''
       },
-      apConsumerKeyExiresIn: APOrganizationsService.get_Default_DeveloperPortalApp_CredentailsExpiryDuration()
+      apConsumerKeyExiresIn: APOrganizationsService.get_Default_DeveloperPortalApp_CredentailsExpiryDuration(),
+      devel_calculated_expiresAt: -1,
+      devel_connector_app_expires_in: -1,
     }
   }
   protected create_Empty_ApAppDisplay({ apAppMeta }:{
@@ -259,6 +263,8 @@ export class APAppsDisplayService {
   }): TAPAppCredentialsDisplay {
     const funcName = 'create_ApAppCredentials_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
+    // TODO: console.log off
+    console.log(`${logName}: connectorAppResponse.credentials=${JSON.stringify(connectorAppResponse.credentials, null, 2)}, \nconnectorAppResponse.expiresIn=${connectorAppResponse.expiresIn}`);
 
     const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
     if(connectorAppResponse.credentials.expiresAt) appCredentials.expiresAt = connectorAppResponse.credentials.expiresAt;
@@ -268,16 +274,9 @@ export class APAppsDisplayService {
       appCredentials.secret.consumerSecret = connectorAppResponse.credentials.secret.consumerSecret;
     }
     if(connectorAppResponse.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse.expiresIn;
-
-here
-
-    // test:
-    if(appCredentials.issuedAt === -1) throw new Error(`${logName}: appCredentials.issuedAt === -1`);
-    if(appCredentials.expiresAt === -1) throw new Error(`${logName}: appCredentials.expiresAt === -1`);
-    const calculated_expiresAt: number = appCredentials.issuedAt + appCredentials.apConsumerKeyExiresIn;
-    throw new Error(`${logName}: appCredentials.expiresAt=${appCredentials.expiresAt}, calculated_expiresAt=${calculated_expiresAt}`);
-
-
+    // devel:
+    appCredentials.devel_calculated_expiresAt = appCredentials.issuedAt + appCredentials.apConsumerKeyExiresIn;
+    appCredentials.devel_connector_app_expires_in = connectorAppResponse.expiresIn ? connectorAppResponse.expiresIn : -1;
     return appCredentials;
   }
 
@@ -562,28 +561,9 @@ here
     apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): Promise<void> {
 
-    // const crutchExpiresAtCalculation = (expiresIn: number): number => {
-    //   const d = new Date(Date.now() + expiresIn);
-    //   return d.getUTCMilliseconds();
-    // }
-    // const test_Secret = (): string => {
-    //   return `newSecretAt_${Date.now()}`;
-    //   // const d = new Date(Date.now());
-    //   // return d.toUTCString();
-    // }
-    // const update: AppPatch = {
-    //   // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn
-    //   credentials: {
-    //     expiresAt: crutchExpiresAtCalculation(apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn),
-    //     secret: {
-    //       consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
-    //       consumerSecret: test_Secret()
-    //       // consumerSecret: undefined, // ensures it is re-generated          
-    //     }
-    //   }
-    // }
-
+    // update expiresIn in case it is not set
     const update: AppPatch = {
+      expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn,
       credentials: {
         secret: {
           consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,

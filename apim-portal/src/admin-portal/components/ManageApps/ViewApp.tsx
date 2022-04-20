@@ -167,19 +167,11 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               componentTitle="Channel Permissions / Topics"
             />
 
-            <div>
-              <p>TEST client information, managedObject.devel_connectorAppResponses.smf.clientInformation = </p>
-              <pre>
-                {JSON.stringify(managedObject.devel_connectorAppResponses.smf.clientInformation, null, 2)}
-              </pre>
-            </div>
-
             <APDisplayDeveloperPortalAppApiProductsClientInformationPanel
               apAppStatus={managedObject.apAppStatus}            
               apApp_ApiProduct_ClientInformationDisplayList={APDeveloperPortalAppApiProductsDisplayService.get_ApApp_ApiProduct_ClientInformationDisplayList({ apAppApiProductDisplayList: managedObject.apAppApiProductDisplayList })}
               collapsed={true}
-              emptyMessage="No Client Information found."
-              notProvisionedMessage="No Client Information available, App is not provisioned."
+              emptyMessage="No Client Information available."
               componentTitle="Client Information"
             />
 
@@ -190,21 +182,24 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               className="p-mt-2 p-ml-2"
               emptyMessage="No API Products defined."
             />
-            <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
-            <APDisplayApAttributeDisplayList
-              apAttributeDisplayList={managedObject.apAppChannelParameterList}
-              tableRowHeader_AttributeName="App Channel Parameter"
-              tableRowHeader_AttributeValue="Value(s)"
-              emptyMessage="No App Channel Parameters defined."
-              className="p-ml-2 p-mt-2"
-            />
+            {managedObject.apAppApiProductDisplayList.length > 0 &&
+              <React.Fragment>
+                <div className="p-text-bold p-mt-4 p-ml-2">App Channel Parameters:</div>
+                <APDisplayApAttributeDisplayList
+                  apAttributeDisplayList={managedObject.apAppChannelParameterList}
+                  tableRowHeader_AttributeName="App Channel Parameter"
+                  tableRowHeader_AttributeValue="Value(s)"
+                  emptyMessage="No App Channel Parameters defined."
+                  className="p-ml-2 p-mt-2"
+                />
+              </React.Fragment>
+            }
           </TabPanel>
           <TabPanel header='Async API Specs'>
             <APDisplayDeveloperPortalAppAsyncApiSpecs
               organizationId={props.organizationId}
               appId={props.appEntityId.id}
               apAppApiDisplayList={managedObject.apAppApiDisplayList}
-              label="Double Click to view API"
               onError={props.onError}
               onLoadingChange={props.onLoadingChange}
             />
