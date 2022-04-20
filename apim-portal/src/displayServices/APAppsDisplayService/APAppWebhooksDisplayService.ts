@@ -71,7 +71,7 @@ export class APAppWebhooksDisplayService {
   };
   }
 
-  protected create_Empty_ApAppWebhookDisplay(): IAPAppWebhookDisplay {
+  public create_Empty_ApAppWebhookDisplay(): IAPAppWebhookDisplay {
     const apAppWebhookDisplay: IAPAppWebhookDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       apEnvironmentDisplayList: [],

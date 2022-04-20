@@ -37,7 +37,7 @@ export interface IListUserAppWebhooksProps {
 export const ListUserAppWebhooks: React.FC<IListUserAppWebhooksProps> = (props: IListUserAppWebhooksProps) => {
   const ComponentName = 'ListUserAppWebhooks';
 
-  const MessageNoManagedObjectsFound = 'No Webhooks configured - create a new Webhook.';
+  const MessageNoManagedObjectsFound = 'No Webhooks configured.';
   const GlobalSearchPlaceholder = 'search ...';
 
   type TManagedObject = IAPAppWebhookDisplay;

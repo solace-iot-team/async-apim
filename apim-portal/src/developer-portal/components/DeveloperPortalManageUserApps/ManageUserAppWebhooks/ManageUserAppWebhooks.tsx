@@ -11,11 +11,12 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { E_COMPONENT_STATE, E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import { ListUserAppWebhooks } from "./ListUserAppWebhooks";
+import { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { ListUserAppWebhooks } from "./ListUserAppWebhooks";
-import { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import { EAction, EditNewUserAppWebhook } from "./EditNewUserAppWebhook";
 
 export interface IManageUserAppWebhooksProps {
   organizationId: string;
@@ -166,20 +167,6 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  //  * View Object *
-  const onView_FromToolbar = (): void => {
-    setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.VIEW);
-  }  
-  // const onViewManagedObject = (apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay): void => {
-  //   setApiCallStatus(null);
-  //   setManagedObjectEntityId(apDeveloperPortalUserAppDisplay.apEntityId);
-  //   setManagedObject_AllowedActions(APDeveloperPortalUserAppsDisplayService.get_AllowedActions({
-  //     apAppDisplay: apDeveloperPortalUserAppDisplay
-  //   }));
-  //   setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  // }  
-
   const onNew_FromToolbar = (): void => {
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.NEW);
@@ -259,17 +246,17 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
     // }));
     setNewComponentState(E_COMPONENT_STATE.VIEW);
   }  
+  const onNewSuccess = (apiCallState: TApiCallState, apAppWebhookDisplayEntityId: TAPEntityId) => {
+    setApiCallStatus(apiCallState);
+    setManagedObjectEntityId(apAppWebhookDisplayEntityId);
+    setNewComponentState(E_COMPONENT_STATE.VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
 
 
   // const onEditSuccess = (apiCallState: TApiCallState, updatedManagedWebhook: TAPManagedWebhook) => {
   //   setApiCallStatus(apiCallState);
   //   setManagedWebhook(updatedManagedWebhook);
-  //   setRefreshComponentCounter(refreshComponentCounter + 1);
-  //   setPreviousComponentState();
-  // }
-  // const onNewManagedWebhookSuccess = (apiCallState: TApiCallState, newManagedWebhook: TAPManagedWebhook) => {
-  //   setApiCallStatus(apiCallState);
-  //   setManagedWebhook(newManagedWebhook);
   //   setRefreshComponentCounter(refreshComponentCounter + 1);
   //   setPreviousComponentState();
   // }
@@ -378,7 +365,16 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
         // />
       }
       {showNewComponent && managedApAppDisplay && 
-      <p>showNewComponent</p>
+      <EditNewUserAppWebhook
+        action={EAction.NEW}
+        organizationId={props.organizationId}
+        apDeveloperPortalUserAppDisplay={managedApAppDisplay}
+        onCancel={onSubComponentCancel}
+        onError={onSubComponentError}
+        onLoadingChange={props.onLoadingChange}
+        setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        onEditNewSuccess={onNewSuccess}
+      />
         // <DeveloperPortalNewEditUserAppWebhook 
         //   action={EAction.NEW}
         //   organizationId={props.organizationId}

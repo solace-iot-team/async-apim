@@ -44,7 +44,7 @@ export const EditNewPoliciesForm: React.FC<IEditNewPoliciesFormProps> = (props: 
       guaranteedMessaging: mo.apClientOptionsDisplay.apGuaranteedMessaging
     };
     return {
-      formData: fd
+      formData: fd 
     };
   }
 
