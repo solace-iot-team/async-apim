@@ -2,6 +2,7 @@ import {
   ApiError,
   AppsService, 
   WebHook,
+  WebHookAuth,
   WebHookBasicAuth,
   WebHookHeaderAuth,
   WebHookNameList,
@@ -11,11 +12,24 @@ import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId,
+  TAPEntityIdList,
 } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
-import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
-import { EAPApp_Type, TAPAppMeta } from './APAppsDisplayService';
+import { TAPAppEnvironmentDisplayList } from './APAppEnvironmentsDisplayService';
+import { EAPApp_Type, IAPAppDisplay, TAPAppMeta } from './APAppsDisplayService';
+
+
+export enum E_APProtocol {
+  HTTP = "http",
+  HTTPS = 'https'
+}
+export type TAPDecomposedUri = {
+  protocol: E_APProtocol;
+  host: string;
+  port: number;
+  resource: string;
+}
 
 export type TAPWebhookStatus = WebHookStatus;
 export type TAPWebhookBasicAuth = WebHookBasicAuth;
@@ -27,7 +41,7 @@ export type TAPWebhookHeaderAuth = WebHookHeaderAuth;
 export interface IAPAppWebhookDisplay extends IAPEntityIdDisplay, IAPSearchContent {
   // apAppMeta & apAppEntityId?
   devel_connectorWebhook: WebHook;
-  apEnvironmentDisplayList: TAPEnvironmentDisplayList;
+  apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   apWebhookUri: string;
   // apWebhookStatus: TAPWebhookStatus;
   apWebhookMethod: WebHook.method;
@@ -48,6 +62,15 @@ export class APAppWebhooksDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
 
+  private create_ApiWebhookId = (webhookId: string): string => {
+    try {
+      const url = new URL(webhookId);
+      return encodeURIComponent(webhookId);
+    } catch (e: any) {
+      return webhookId;
+    }
+  }
+
   private create_Empty_ConnectorWebHook(): WebHook {
     return {
       name: '',
@@ -57,15 +80,17 @@ export class APAppWebhooksDisplayService {
     }
   }
 
-  private create_Empty_ApWebhookBasicAuth(): TAPWebhookBasicAuth {
+  public create_Empty_ApWebhookBasicAuth(): TAPWebhookBasicAuth {
     return {
+      authMethod: WebHookBasicAuth.authMethod.BASIC,
       username: '',
       password: '',
     };
   }
 
-  private create_Empty_ApWebhookHeaderAuth(): TAPWebhookHeaderAuth {
+  public create_Empty_ApWebhookHeaderAuth(): TAPWebhookHeaderAuth {
     return {
+      authMethod: WebHookHeaderAuth.authMethod.HEADER,
       headerName: '',
       headerValue: ''
   };
@@ -74,7 +99,7 @@ export class APAppWebhooksDisplayService {
   public create_Empty_ApAppWebhookDisplay(): IAPAppWebhookDisplay {
     const apAppWebhookDisplay: IAPAppWebhookDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
-      apEnvironmentDisplayList: [],
+      apAppEnvironmentDisplayList: [],
       apWebhookUri: '',
       // apWebhookStatus: {},
       // apWebhookBasicAuth: this.create_Empty_ApWebhookBasicAuth(),
@@ -87,17 +112,17 @@ export class APAppWebhooksDisplayService {
     return apAppWebhookDisplay;
   }
 
-  protected create_ApAppWebhookDisplay_From_ApiEntities({ connector_WebHook, complete_apEnvironmentDisplayList }:{
+  protected create_ApAppWebhookDisplay_From_ApiEntities({ connector_WebHook, apAppEnvironmentDisplayList }:{
     connector_WebHook: WebHook;
-    complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList;
+    apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   }): IAPAppWebhookDisplay {
     const funcName = 'create_ApAppCredentials_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const id: string = connector_WebHook.name ? connector_WebHook.name : connector_WebHook.uri;
     const displayName: string = id;
-    const apEnvironmentDisplayList: TAPEnvironmentDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_IdList({
-      apDisplayObjectList: complete_apEnvironmentDisplayList,
+    const filtered_apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_IdList({
+      apDisplayObjectList: apAppEnvironmentDisplayList,
       filterByIdList: connector_WebHook.environments ? connector_WebHook.environments : [],
     });
     let apWebhookBasicAuth: TAPWebhookBasicAuth | undefined = undefined;
@@ -106,12 +131,14 @@ export class APAppWebhooksDisplayService {
       switch(connector_WebHook.authentication.authMethod) {
         case WebHookBasicAuth.authMethod.BASIC:
           apWebhookBasicAuth = {
+            authMethod: WebHookBasicAuth.authMethod.BASIC,
             username: connector_WebHook.authentication.username,
             password: connector_WebHook.authentication.password
           };
           break;
         case WebHookHeaderAuth.authMethod.HEADER:
           apWebhookHeaderAuth = {
+            authMethod: WebHookHeaderAuth.authMethod.HEADER,
             headerName: connector_WebHook.authentication.headerName,
             headerValue: connector_WebHook.authentication.headerValue
           };
@@ -125,7 +152,7 @@ export class APAppWebhooksDisplayService {
         id: id,
         displayName: displayName
       },
-      apEnvironmentDisplayList: apEnvironmentDisplayList,
+      apAppEnvironmentDisplayList: filtered_apAppEnvironmentDisplayList,
       apWebhookUri: connector_WebHook.uri,
       apWebhookBasicAuth: apWebhookBasicAuth,
       apWebhookHeaderAuth: apWebhookHeaderAuth,
@@ -137,6 +164,40 @@ export class APAppWebhooksDisplayService {
     };
     return APSearchContentService.add_SearchContent<IAPAppWebhookDisplay>(apAppWebhookDisplay);
   }
+
+  private create_ConnectorRequestBody = ({ apAppWebhookDisplay }:{
+    apAppWebhookDisplay: IAPAppWebhookDisplay;
+  }): WebHook => {
+
+    let auth: WebHookAuth | undefined = undefined;
+    if(apAppWebhookDisplay.apWebhookBasicAuth !== undefined) {
+      const basicAuth: WebHookBasicAuth = {
+        username: apAppWebhookDisplay.apWebhookBasicAuth.username,
+        password: apAppWebhookDisplay.apWebhookBasicAuth.password,
+        authMethod: WebHookBasicAuth.authMethod.BASIC,
+      };
+      auth = basicAuth;
+    } else if(apAppWebhookDisplay.apWebhookHeaderAuth !== undefined) {
+      const headerAuth: WebHookHeaderAuth = {
+        headerName: apAppWebhookDisplay.apWebhookHeaderAuth.headerName,
+        headerValue: apAppWebhookDisplay.apWebhookHeaderAuth.headerValue,
+        authMethod: WebHookHeaderAuth.authMethod.HEADER,
+      };
+      auth = headerAuth;
+    }
+    const requestBody: WebHook = {
+      uri: apAppWebhookDisplay.apWebhookUri,
+      name: apAppWebhookDisplay.apEntityId.id,
+      environments: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apAppWebhookDisplay.apAppEnvironmentDisplayList),
+      method: apAppWebhookDisplay.apWebhookMethod,
+      mode: apAppWebhookDisplay.apWebhookMode,
+      authentication: auth,
+      // add if still required
+      tlsOptions: undefined
+    };
+    return requestBody;
+  }
+
 
   // private static getAPWebhookStatus = (envName: CommonName, appConnectionStatus: AppConnectionStatus): TAPWebhookStatus | undefined => {
   //   const funcName = 'getAPWebhookStatus';
@@ -159,6 +220,30 @@ export class APAppWebhooksDisplayService {
   //   return undefined;
   // }
 
+  public get_decomposedUri(uri: string): TAPDecomposedUri {
+    const decomposedUri: TAPDecomposedUri = {
+      protocol: E_APProtocol.HTTP,
+      host: '',
+      port: 80,
+      resource: ''
+    };
+    if(uri === '') return decomposedUri;
+    const url: URL = new URL(uri);
+    decomposedUri.protocol = url.protocol === 'http:' ? E_APProtocol.HTTP : E_APProtocol.HTTPS;
+    decomposedUri.host = url.hostname;
+    if(url.port) decomposedUri.port = parseInt(url.port);  
+    decomposedUri.resource = `${url.pathname}${url.search}`; 
+    return decomposedUri;
+  }
+
+  public get_composedUri(apDecomposedUri: TAPDecomposedUri): string {
+    let url: URL;
+    const base: string = `${apDecomposedUri.protocol}://${apDecomposedUri.host}:${apDecomposedUri.port}`;
+    if(apDecomposedUri.resource !== '') url = new URL(apDecomposedUri.resource, base);
+    else url = new URL(base);
+    return url.toString();
+  }
+
 
   // ********************************************************************************************************************************
   // API calls
@@ -173,13 +258,15 @@ export class APAppWebhooksDisplayService {
     const funcName = 'apiCheck_AppWebhookId_Exists';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
+    const _webhookId: string = this.create_ApiWebhookId(webhookId);
+
     try {
       switch(apAppMeta.apAppType) {
         case EAPApp_Type.USER:
           await AppsService.getDeveloperAppWebHook({
             organizationName: organizationId,
             appName: appId,
-            webhookName: webhookId,
+            webhookName: _webhookId,
             developerUsername: apAppMeta.appOwnerId,
           });
           return true;
@@ -187,7 +274,7 @@ export class APAppWebhooksDisplayService {
           await AppsService.getTeamAppWebHook({
             organizationName: organizationId,
             appName: appId,
-            webhookName: webhookId,
+            webhookName: _webhookId,
             teamName: apAppMeta.appOwnerId
           });
           return true;
@@ -206,15 +293,17 @@ export class APAppWebhooksDisplayService {
     return false;
   }
 
-  public apiGet_ApAppWebhookDisplay = async({ organizationId, appId, apAppMeta, webhookId, complete_apEnvironmentDisplayList }:{
+  public apiGet_ApAppWebhookDisplay = async({ organizationId, appId, apAppMeta, webhookId, apAppEnvironmentDisplayList }:{
     organizationId: string;
     appId: string;
     apAppMeta: TAPAppMeta;
     webhookId: string;
-    complete_apEnvironmentDisplayList?: TAPEnvironmentDisplayList;
+    apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   }): Promise<IAPAppWebhookDisplay> => {
     const funcName = 'apiGet_ApAppWebhookDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const _webhookId: string = this.create_ApiWebhookId(webhookId);
 
     let connector_WebHook: WebHook = this.create_Empty_ConnectorWebHook();
     switch(apAppMeta.apAppType) {
@@ -222,7 +311,7 @@ export class APAppWebhooksDisplayService {
         connector_WebHook = await AppsService.getDeveloperAppWebHook({
           organizationName: organizationId,
           appName: appId,
-          webhookName: webhookId,
+          webhookName: _webhookId,
           developerUsername: apAppMeta.appOwnerId,
         });
         break;
@@ -230,7 +319,7 @@ export class APAppWebhooksDisplayService {
         connector_WebHook = await AppsService.getTeamAppWebHook({
           organizationName: organizationId,
           appName: appId,
-          webhookName: webhookId,
+          webhookName: _webhookId,
           teamName: apAppMeta.appOwnerId,
         });
         break;
@@ -240,23 +329,18 @@ export class APAppWebhooksDisplayService {
         Globals.assertNever(logName, apAppMeta.apAppType);
     }
 
-    // get the complete env list for reference
-    if(complete_apEnvironmentDisplayList === undefined) {
-      complete_apEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-        organizationId: organizationId
-      });  
-    }
     return this.create_ApAppWebhookDisplay_From_ApiEntities({
       connector_WebHook: connector_WebHook,
-      complete_apEnvironmentDisplayList
+      apAppEnvironmentDisplayList: apAppEnvironmentDisplayList,
     });
 
   }
 
-  public apiGetList_ApAppWebhookDisplayList = async({ organizationId, appId, apAppMeta }:{
+  public apiGetList_ApAppWebhookDisplayList = async({ organizationId, appId, apAppMeta, apAppEnvironmentDisplayList }:{
     organizationId: string;
     appId: string;
     apAppMeta: TAPAppMeta;
+    apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   }): Promise<TAPAppWebhookDisplayList> => {
     const funcName = 'apiGetList_ApAppWebhookDisplayList';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -285,14 +369,11 @@ export class APAppWebhooksDisplayService {
 
     const apAppWebhookDisplayList: TAPAppWebhookDisplayList = [];
 
-    // get the complete env list for reference
-    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-      organizationId: organizationId
-    });  
     // get each webhook
     for(const webHookName of webHookNameList) {
       if(webHookName.name === undefined && webHookName.uri === undefined) throw new Error(`${logName}: webHookName.name === undefined && webHookName.uri === undefined`);
       let webhookId: string = '';
+      // try name first, then uri
       if(webHookName.name) webhookId = webHookName.name;
       else if(webHookName.uri) webhookId = webHookName.uri;
       const apAppWebhookDisplay: IAPAppWebhookDisplay = await this.apiGet_ApAppWebhookDisplay({
@@ -300,7 +381,7 @@ export class APAppWebhooksDisplayService {
         appId: appId,
         apAppMeta: apAppMeta,
         webhookId: webhookId,
-        complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList
+        apAppEnvironmentDisplayList: apAppEnvironmentDisplayList,
       });
       apAppWebhookDisplayList.push(apAppWebhookDisplay);
     }
@@ -311,82 +392,143 @@ export class APAppWebhooksDisplayService {
     return apAppWebhookDisplayList;
   }
 
-  // protected async apiUpdate({ organizationId, appId, apAppMeta, connectorAppPatch, apRawAttributeList }: {
-  //   organizationId: string;
-  //   appId: string;
-  //   apAppMeta: TAPAppMeta;
-  //   connectorAppPatch: AppPatch;
-  //   apRawAttributeList?: TAPRawAttributeList;
-  // }): Promise<void> {
-  //   const funcName = 'apiUpdate';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
+  public apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDispaly = async({ organizationId, apAppDisplay, webhookId }:{
+    organizationId: string;
+    apAppDisplay: IAPAppDisplay;
+    webhookId?: string;
+  }): Promise<TAPAppEnvironmentDisplayList> => {
 
-  //   // always set the App to approved
-  //   const requestBody: AppPatch = {
-  //     ...connectorAppPatch,
-  //     status: AppStatus.APPROVED,
-  //     attributes: apRawAttributeList
-  //   };
+    // get all the existing webhooks
+    const apAppWebhookDisplayList: TAPAppWebhookDisplayList = await this.apiGetList_ApAppWebhookDisplayList({
+      organizationId: organizationId,
+      appId: apAppDisplay.apEntityId.id,
+      apAppMeta: apAppDisplay.apAppMeta,
+      apAppEnvironmentDisplayList: apAppDisplay.apAppEnvironmentDisplayList
+    });
 
-  //   switch(apAppMeta.apAppType) {
-  //     case EAPApp_Type.USER:
-  //       await AppsService.updateDeveloperApp({
-  //         organizationName: organizationId,
-  //         developerUsername: apAppMeta.appOwnerId,
-  //         appName: appId,
-  //         requestBody: requestBody
-  //       });  
-  //       break;
-  //     case EAPApp_Type.TEAM:
-  //       await AppsService.updateTeamApp({
-  //         organizationName: organizationId,
-  //         teamName: apAppMeta.appOwnerId,
-  //         appName: appId,
-  //         requestBody: requestBody
-  //       });  
-  //       break;
-  //     case EAPApp_Type.UNKNOWN:
-  //       throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
-  //     default:
-  //       Globals.assertNever(logName, apAppMeta.apAppType);
-  //   }
+    const notAvailable_ApAppEnvironmentDisplayEntityIdList: TAPEntityIdList = [];
+    for(const apAppWebhookDisplay of apAppWebhookDisplayList) {
+      for(const apAppEnvironmentDisplay of apAppWebhookDisplay.apAppEnvironmentDisplayList) {
+        if(webhookId !== apAppWebhookDisplay.apEntityId.id) {
+          notAvailable_ApAppEnvironmentDisplayEntityIdList.push(apAppEnvironmentDisplay.apEntityId);
+        }
+      } 
+    }
+    const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_NotEntityIdList({
+      apDisplayObjectList: apAppDisplay.apAppEnvironmentDisplayList,
+      filterBy_NotEntityIdList: notAvailable_ApAppEnvironmentDisplayEntityIdList,
+    });
 
-  // }
+    return apAppEnvironmentDisplayList;
+  }
 
-  // public async apiDelete_ApAppDisplay({ organizationId, appId }:{
-  //   organizationId: string;
-  //   appId: string;
-  // }): Promise<void> {
-  //   const funcName = 'apiDelete_ApAppDisplay';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
+  public apiCreate_ApAppWebhookDisplay = async({ organizationId, appId, apAppMeta, apAppWebhookDisplay }:{
+    organizationId: string;
+    appId: string;
+    apAppMeta: TAPAppMeta;
+    apAppWebhookDisplay: IAPAppWebhookDisplay;
+  }): Promise<void> => {
+    const funcName = 'apiCreate_ApAppWebhookDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
-  //   // what kind of app is it?
-  //   const connectorAppResponseGeneric: AppResponseGeneric = await AppsService.getApp({
-  //     organizationName: organizationId,
-  //     appName: appId
-  //   });
-  //   if(connectorAppResponseGeneric.appType === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.appType === undefined`);
-  //   if(connectorAppResponseGeneric.ownerId === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.ownerId === undefined`);
+    switch(apAppMeta.apAppType) {
+      case EAPApp_Type.USER:
+        await AppsService.createDeveloperAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          developerUsername: apAppMeta.appOwnerId,
+          requestBody: this.create_ConnectorRequestBody({ apAppWebhookDisplay: apAppWebhookDisplay }),
+        });
+        break;
+      case EAPApp_Type.TEAM:
+        await AppsService.createTeamAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          teamName: apAppMeta.appOwnerId,
+          requestBody: this.create_ConnectorRequestBody({ apAppWebhookDisplay: apAppWebhookDisplay }),
+        });
+        break;
+      case EAPApp_Type.UNKNOWN:
+        throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
+      default:
+        Globals.assertNever(logName, apAppMeta.apAppType);
+    }
 
-  //   switch(connectorAppResponseGeneric.appType) {
-  //     case AppResponseGeneric.appType.DEVELOPER:
-  //       await AppsService.deleteDeveloperApp({
-  //         organizationName: organizationId,
-  //         developerUsername: connectorAppResponseGeneric.ownerId,
-  //         appName: appId
-  //       });
-  //       break;
-  //     case AppResponseGeneric.appType.TEAM:
-  //       await AppsService.deleteTeamApp({
-  //         organizationName: organizationId,
-  //         teamName: connectorAppResponseGeneric.ownerId,
-  //         appName: appId
-  //       });
-  //       break;
-  //     default:
-  //       Globals.assertNever(logName, connectorAppResponseGeneric.appType);
-  //   }
-  // }
+  }
+
+  public apiUpdate_ApAppWebhookDisplay = async({ organizationId, appId, apAppMeta, apAppWebhookDisplay }:{
+    organizationId: string;
+    appId: string;
+    apAppMeta: TAPAppMeta;
+    apAppWebhookDisplay: IAPAppWebhookDisplay;
+  }): Promise<void> => {
+    const funcName = 'apiUpdate_ApAppWebhookDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const _webhookId: string = this.create_ApiWebhookId(apAppWebhookDisplay.apEntityId.id);
+
+    switch(apAppMeta.apAppType) {
+      case EAPApp_Type.USER:
+        await AppsService.updateDeveloperAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          developerUsername: apAppMeta.appOwnerId,
+          webhookName: _webhookId,
+          requestBody: this.create_ConnectorRequestBody({ apAppWebhookDisplay: apAppWebhookDisplay }),
+        });
+        break;
+      case EAPApp_Type.TEAM:
+        await AppsService.updateTeamAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          teamName: apAppMeta.appOwnerId,
+          webhookName: _webhookId,
+          requestBody: this.create_ConnectorRequestBody({ apAppWebhookDisplay: apAppWebhookDisplay }),
+        });
+        break;
+      case EAPApp_Type.UNKNOWN:
+        throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
+      default:
+        Globals.assertNever(logName, apAppMeta.apAppType);
+    }
+
+  }
+
+  public apiDelete_ApAppWebhookDisplay = async({ organizationId, appId, apAppMeta, webhookId }:{
+    organizationId: string;
+    appId: string;
+    apAppMeta: TAPAppMeta;
+    webhookId: string;
+  }): Promise<void> => {
+    const funcName = 'apiDelete_ApAppWebhookDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    const _webhookId: string = this.create_ApiWebhookId(webhookId);
+
+    switch(apAppMeta.apAppType) {
+      case EAPApp_Type.USER:
+        await AppsService.deleteDeveloperAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          developerUsername: apAppMeta.appOwnerId,
+          webhookName: _webhookId,
+        });
+        break;
+      case EAPApp_Type.TEAM:
+        await AppsService.deleteTeamAppWebHook({
+          organizationName: organizationId,
+          appName: appId,
+          teamName: apAppMeta.appOwnerId,
+          webhookName: _webhookId,
+        });
+        break;
+      case EAPApp_Type.UNKNOWN:
+        throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
+      default:
+        Globals.assertNever(logName, apAppMeta.apAppType);
+    }
+
+  }
 
 }
 

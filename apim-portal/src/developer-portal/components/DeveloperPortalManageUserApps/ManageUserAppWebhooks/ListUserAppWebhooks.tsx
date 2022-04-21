@@ -19,7 +19,9 @@ import APAppWebhooksDisplayService, {
   IAPAppWebhookDisplay, 
   TAPAppWebhookDisplayList 
 } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
-import { E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
+import { EWebhookAuthMethodSelectIdNone, E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
+import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APEntityIdsService from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
@@ -65,7 +67,8 @@ export const ListUserAppWebhooks: React.FC<IListUserAppWebhooksProps> = (props: 
       const apAppWebhookDisplayList: TAPAppWebhookDisplayList = await APAppWebhooksDisplayService.apiGetList_ApAppWebhookDisplayList({
         organizationId: props.organizationId,
         appId: props.apDeveloperPortalUserAppDisplay.apEntityId.id,
-        apAppMeta: props.apDeveloperPortalUserAppDisplay.apAppMeta
+        apAppMeta: props.apDeveloperPortalUserAppDisplay.apAppMeta,
+        apAppEnvironmentDisplayList: props.apDeveloperPortalUserAppDisplay.apAppEnvironmentDisplayList,
       });
       setManagedObjectList(apAppWebhookDisplayList);
     } catch(e: any) {
@@ -140,45 +143,53 @@ export const ListUserAppWebhooks: React.FC<IListUserAppWebhooksProps> = (props: 
   const nameBodyTemplate = (row: TManagedObject): string => {
     return row.apEntityId.displayName;
   }
+  const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apAppEnvironmentDisplayList));
+  }
+  const authenticationBodyTemplate = (row: TManagedObject): string | undefined => {
+    if(row.apWebhookBasicAuth) return row.apWebhookBasicAuth.authMethod;
+    if(row.apWebhookHeaderAuth) return row.apWebhookHeaderAuth.authMethod;
+    return EWebhookAuthMethodSelectIdNone.NONE;
+  }
 
   const renderManagedObjectDataTable = () => {
     const dataKey = APAppWebhooksDisplayService.nameOf_ApEntityId('id');
     const sortField = APAppWebhooksDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apSearchContent');
     // const statusField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
-
+    const methodField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apWebhookMethod');
+    const uriField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apWebhookUri');
     return (
       <div className="card">
-          <DataTable
-            ref={managedObjectListDataTableRef}
-            className="p-datatable-sm"
-            autoLayout={true}
-            resizableColumns 
-            columnResizeMode="fit"
-            showGridlines={false}
-            header={renderDataTableHeader()}
-            value={managedObjectList}
-            globalFilter={globalFilter}
-            selectionMode="single"
-            selection={selectedManagedObject}
-            onRowClick={onManagedObjectSelect}
-            onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-            scrollable 
-            // scrollHeight="800px" 
-            dataKey={dataKey}  
-            // sorting
-            sortMode='single'
-            sortField={sortField}
-            sortOrder={1}
-          >
-            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-            {/* <Column header="Status" field={statusField} sortable style={{ width: "15%"}} /> */}
-
-            {/* <Column header="Status" body={nameBodyTemplate} headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable /> */}
-
-            {/* <Column header="API Products" body={apiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
-            {/* <Column header="Environment(s)" body={environmentsBodyTemplate}  bodyStyle={{textAlign: 'left'}}/>
-            <Column header="Webhook(s)" body={webhooksBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }}/> */}
+        <DataTable
+          ref={managedObjectListDataTableRef}
+          className="p-datatable-sm"
+          autoLayout={true}
+          resizableColumns 
+          columnResizeMode="fit"
+          showGridlines={false}
+          header={renderDataTableHeader()}
+          value={managedObjectList}
+          globalFilter={globalFilter}
+          selectionMode="single"
+          selection={selectedManagedObject}
+          onRowClick={onManagedObjectSelect}
+          onRowDoubleClick={(e) => onManagedObjectOpen(e)}
+          scrollable 
+          // scrollHeight="800px" 
+          dataKey={dataKey}  
+          // sorting
+          sortMode='single'
+          sortField={sortField}
+          sortOrder={1}
+        >
+          <Column header="Name" body={nameBodyTemplate} filterField={filterField} sortField={sortField} sortable />
+          <Column header="Environment(s)" body={environmentsBodyTemplate} />
+          <Column header="Method" field={methodField} style={{ width: "6em"}} />
+          <Column header="URI" field={uriField} style={{ width: "50%"}}/>
+          <Column header="Auth" body={authenticationBodyTemplate} style={{ width: "6em"}}/>
+          {/* <Column header="Status" field={statusField} sortable style={{ width: "15%"}} /> */}
+          {/* <Column header="Status" body={nameBodyTemplate} headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable /> */}
         </DataTable>
       </div>
     );

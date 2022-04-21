@@ -109,6 +109,20 @@ class APEntityIdsService {
     });
   }
 
+  public create_ApDisplayObjectList_FilteredBy_NotEntityIdList<T extends IAPEntityIdDisplay>({ apDisplayObjectList, filterBy_NotEntityIdList }:{
+    apDisplayObjectList: Array<T>;
+    filterBy_NotEntityIdList: TAPEntityIdList;
+  }): Array<T> {
+    if(apDisplayObjectList.length === 0) return [];
+    if(filterBy_NotEntityIdList.length === 0) return apDisplayObjectList;
+    return apDisplayObjectList.filter( (x: T) => {
+      const idx = filterBy_NotEntityIdList.findIndex( (y) => {
+        return x.apEntityId.id === y.id;
+      });
+      return (idx === -1);
+    });
+  }
+
   public create_ApDisplayObjectList_FilteredBy_IdList<T extends IAPEntityIdDisplay>({ apDisplayObjectList, filterByIdList }:{
     apDisplayObjectList: Array<T>;
     filterByIdList: Array<string>;

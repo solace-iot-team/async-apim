@@ -9,13 +9,15 @@ import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpe
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import APAppWebhooksDisplayService, { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import APAppWebhooksDisplayService, { IAPAppWebhookDisplay, TAPAppWebhookDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { EditNewUserAppWebhookForm } from "./EditNewUserAppWebhookForm";
+import { TAPAppEnvironmentDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 
 export enum EAction {
   EDIT = 'EDIT',
@@ -46,9 +48,29 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
   const FormId = `DeveloperPortalManageUserApps_ManageUserAppWebhooks_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [available_ApAppEnvironmentDisplayList, setAvailable_ApAppEnvironmentDisplayList] = React.useState<TAPAppEnvironmentDisplayList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
+  const apiGetAvailable_ApAppEnvironmentDisplayList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetAvailable_ApAppEnvironmentDisplayList';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_WEBHOOK_AVAILABLE_ENVIRONMENTS, `retrieve list of available webhook environments for app: ${props.apDeveloperPortalUserAppDisplay.apEntityId.displayName}`);
+    try { 
+      const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDispaly({
+        organizationId: props.organizationId,
+        apAppDisplay: props.apDeveloperPortalUserAppDisplay,
+        webhookId: props.apAppWebhookDisplayEntityId ? props.apAppWebhookDisplayEntityId.id : undefined
+      });
+      setAvailable_ApAppEnvironmentDisplayList(apAppEnvironmentDisplayList);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     if(props.action === EAction.NEW) return apiGetManagedObject_New();
     else return apiGetManagedObject_Edit();
@@ -81,6 +103,7 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
         organizationId: props.organizationId,
         apAppMeta: props.apDeveloperPortalUserAppDisplay.apAppMeta,
         appId: props.apDeveloperPortalUserAppDisplay.apEntityId.id,
+        apAppEnvironmentDisplayList: props.apDeveloperPortalUserAppDisplay.apAppEnvironmentDisplayList,
         webhookId: props.apAppWebhookDisplayEntityId.id
       });
       setManagedObject(object);
@@ -92,8 +115,47 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
     return callState;
   }
 
+  const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
+    const funcName = 'apiCreateManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_APP_WEBHOOK, `create webhook: ${mo.apEntityId.displayName}`);
+    try {
+      await APAppWebhooksDisplayService.apiCreate_ApAppWebhookDisplay({
+        organizationId: props.organizationId,
+        appId: props.apDeveloperPortalUserAppDisplay.apEntityId.id,
+        apAppMeta: props.apDeveloperPortalUserAppDisplay.apAppMeta,
+        apAppWebhookDisplay: mo  
+      });
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
+    const funcName = 'apiUpdateManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP_WEBHOOK, `update webhook: ${mo.apEntityId.displayName}`);
+    try {
+      await APAppWebhooksDisplayService.apiUpdate_ApAppWebhookDisplay({
+        organizationId: props.organizationId,
+        appId: props.apDeveloperPortalUserAppDisplay.apEntityId.id,
+        apAppMeta: props.apDeveloperPortalUserAppDisplay.apAppMeta,
+        apAppWebhookDisplay: mo  
+      });
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const doInitialize = async () => {
     props.onLoadingChange(true);
+    await apiGetAvailable_ApAppEnvironmentDisplayList();
     await apiGetManagedObject();
     props.onLoadingChange(false);
   }
@@ -157,13 +219,17 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onSubmit = (apiCallState: TApiCallState, mo: TManagedObject) => {
-    const funcName = 'onSubmit';
-    const logName = `${ComponentName}.${funcName}()`;
+  const doSubmit = async(mo: TManagedObject) => {
+    if(props.action === EAction.NEW) await apiCreateManagedObject(mo);
+    else await apiUpdateManagedObject(mo);
+  }
+  const onSubmit = (mo: TManagedObject) => {
+    setManagedObject(mo);
+    doSubmit(mo);
+  }
 
-    alert(`${logName}: now create or update the webhook here ...?`)
-    // setManagedObject(mo);
-    // setApiCallStatus(apiCallState);
+  const onError = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -190,15 +256,17 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <p>EditNewUserAppWebhookForm</p>
-          {/* <EditNewPoliciesForm
-            formId={formId}
+          <EditNewUserAppWebhookForm
+            organizationId={props.organizationId}
             action={props.action}
-            apApiProductDisplay_Policies={mo}
-            onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
+            apDeveloperPortalUserAppDisplay={props.apDeveloperPortalUserAppDisplay}
+            available_ApAppEnvironmentDisplayList={available_ApAppEnvironmentDisplayList}
+            formId={FormId}
+            apAppWebhookDisplay={mo}
+            onError={onError}
+            // onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
-          /> */}
+          />
           {/* footer */}
           { renderManagedObjectFormFooter() }
         </div>

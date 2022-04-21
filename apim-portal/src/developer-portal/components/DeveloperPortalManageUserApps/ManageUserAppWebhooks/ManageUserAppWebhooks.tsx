@@ -17,6 +17,7 @@ import { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayS
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
 import { EAction, EditNewUserAppWebhook } from "./EditNewUserAppWebhook";
+import { ViewUserAppWebhook } from "./ViewUserAppWebhook";
 
 export interface IManageUserAppWebhooksProps {
   organizationId: string;
@@ -234,6 +235,13 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
   //   props.setBreadCrumbItemList(newItemList);
   // }
+
+  const onSetManageUserAppComponentState_To_View = (apAppWebhookDisplayEntityId: TAPEntityId) => {
+    setManagedObjectEntityId(apAppWebhookDisplayEntityId);
+    setNewComponentState(E_COMPONENT_STATE.VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
+
   const onListSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     // setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -344,12 +352,17 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
         />
       }
 
-      {showViewComponent && managedApAppDisplay && 
-      <p>showViewComponent</p>
-        // <DeveloperPortalViewUserAppWebhook
-        //   managedAppWebhooks={managedObject}
-        //   managedWebhook={managedWebhook}
-        // />
+      {showViewComponent && managedApAppDisplay && managedObjectEntityId &&
+        <ViewUserAppWebhook
+          key={`${ComponentName}_ViewUserAppWebhook_${refreshCounter}`}
+          organizationId={props.organizationId}
+          apDeveloperPortalUserAppDisplay={managedApAppDisplay}
+          apAppWebhookDisplayEntityId={managedObjectEntityId}
+          onError={props.onError}
+          onLoadingChange={props.onLoadingChange}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHereCommand={onSetManageUserAppComponentState_To_View}
+        />
       }
       {showDeleteComponent && managedApAppDisplay && 
       <p>showDeleteComponent</p>
