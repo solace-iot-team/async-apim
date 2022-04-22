@@ -22,7 +22,7 @@ export interface IAPMonitorAppViewStatsProps {
 }
 
 export const APMonitorAppViewStats: React.FC<IAPMonitorAppViewStatsProps> = (props: IAPMonitorAppViewStatsProps) => {
-  const componentName = 'APMonitorAppViewStats';
+  // const ComponentName = 'APMonitorAppViewStats';
 
   const renderSectionTitle = (text: string): JSX.Element => {
     return (<DataTable header={text} />);
@@ -122,8 +122,6 @@ export const APMonitorAppViewStats: React.FC<IAPMonitorAppViewStatsProps> = (pro
 
   
   const renderEnvStats = (apAppEnvironmentStatusDisplay: TAPAppEnvironmentStatusDisplay): JSX.Element => {
-    const funcName = 'renderEnvStats';
-    const logName = `${componentName}.${funcName}()`;
 
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';

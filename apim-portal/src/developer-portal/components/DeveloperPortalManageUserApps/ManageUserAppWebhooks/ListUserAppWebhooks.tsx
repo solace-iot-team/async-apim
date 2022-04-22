@@ -11,7 +11,6 @@ import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpe
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { 
   TAPDeveloperPortalUserAppDisplay, 
 } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
@@ -46,13 +45,9 @@ export const ListUserAppWebhooks: React.FC<IListUserAppWebhooksProps> = (props: 
   type TManagedObject = IAPAppWebhookDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const [userContext] = React.useContext(UserContext);
-
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
-
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
-
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   

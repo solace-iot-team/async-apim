@@ -76,7 +76,7 @@ export class APAppWebhooksDisplayService {
 
   private create_ApiWebhookId = (webhookId: string): string => {
     try {
-      const url = new URL(webhookId);
+      new URL(webhookId);
       return encodeURIComponent(webhookId);
     } catch (e: any) {
       return webhookId;

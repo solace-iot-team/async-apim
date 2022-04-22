@@ -1,5 +1,3 @@
-import { WebHookBasicAuth, WebHookHeaderAuth } from "@solace-iot-team/apim-connector-openapi-browser";
-
 export enum E_CALL_STATE_ACTIONS {
   API_GET_USER_APP = "API_GET_USER_APP",
   API_GET_APP_WEBHOOK_LIST = "API_GET_APP_WEBHOOK_LIST",

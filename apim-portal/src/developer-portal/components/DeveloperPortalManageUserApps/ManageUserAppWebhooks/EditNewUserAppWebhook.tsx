@@ -9,7 +9,9 @@ import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpe
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import APAppWebhooksDisplayService, { IAPAppWebhookDisplay, TAPAppWebhookDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import APAppWebhooksDisplayService, { 
+  IAPAppWebhookDisplay 
+} from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";

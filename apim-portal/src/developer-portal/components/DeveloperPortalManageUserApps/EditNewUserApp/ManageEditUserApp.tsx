@@ -14,11 +14,10 @@ import { E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageUserAppsCommon";
 import { EditGeneral } from "./EditGeneral";
 import { TAPAppDisplay_Credentials, TAPAppDisplay_General } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { EditCredentials } from "./EditCredentials";
+import { DeveloperPortalDisplayAppHeaderInfo } from "../DeveloperPortalDisplayAppHeaderInfo";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { Config } from "../../../../Config";
-import { DeveloperPortalDisplayAppHeaderInfo } from "../DeveloperPortalDisplayAppHeaderInfo";
 
 export interface IManageEditUserAppProps {
   organizationId: string;

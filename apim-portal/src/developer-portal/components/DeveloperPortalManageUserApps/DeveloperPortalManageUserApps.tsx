@@ -5,8 +5,6 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
@@ -71,9 +69,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete App';
   const ToolbarMonitorManagedObjectButtonLabel = 'Monitor Stats';
   
-  const [userContext] = React.useContext(UserContext);
-  const [authContext] = React.useContext(AuthContext);
-
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -288,10 +283,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const onManageApiProductsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setPreviousComponentState();
-  }
-  const onEditWebhooksManagedObjectSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);

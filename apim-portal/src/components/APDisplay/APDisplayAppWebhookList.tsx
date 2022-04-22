@@ -94,7 +94,8 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
     setSelectedManagedObject(event.data);
   }  
   const onManagedObjectOpen = (event: any): void => {
-    const mo: TManagedObject = event.data as TManagedObject;
+    // placeholder
+    // const mo: TManagedObject = event.data as TManagedObject;
     // alert(`${ComponentName}.onManagedObjectOpen(): show the status of the webhook now?`);
   }
 

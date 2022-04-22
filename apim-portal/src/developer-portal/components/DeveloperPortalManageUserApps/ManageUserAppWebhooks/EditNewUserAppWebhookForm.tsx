@@ -85,10 +85,6 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
 
   type TManagedObject = IAPAppWebhookDisplay;
 
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
-
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const decomposedUri: TAPDecomposedUri = APAppWebhooksDisplayService.get_decomposedUri(mo.apWebhookUri);
     let authMethodId: TAPWebhookAuthMethodSelectId = EAPWebhookAuthMethodSelectIdNone.NONE;
@@ -310,7 +306,6 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
   }
 
   const renderManagedObjectForm = () => {
-    const isNewObject: boolean = isNewManagedObject();
     const selectedWebhookAuthMethodId: TAPWebhookAuthMethodSelectId = managedObjectUseForm.watch('formData.selectedWebhookAuthMethodId');
     return (
       <div className="card p-mt-4">

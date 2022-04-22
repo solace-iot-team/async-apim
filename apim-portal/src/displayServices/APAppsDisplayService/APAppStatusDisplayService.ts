@@ -11,9 +11,6 @@ import { TAPAppEnvironmentDisplayList } from './APAppEnvironmentsDisplayService'
 import { EAPApp_Status, IAPAppDisplay } from './APAppsDisplayService';
 import APAppWebhooksDisplayService, { TAPAppWebhookDisplayList } from './APAppWebhooksDisplayService';
 
-
-// export type TAPWebhookStatus = WebHookStatus;
-
 export type TAPAppEnvironmentStatusDisplay = IAPEntityIdDisplay & {
   connectorAppEnvironmentStatus: AppEnvironmentStatus;
 }
@@ -76,8 +73,6 @@ export class APAppStatusDisplayService {
     organizationId: string;
     apAppDisplay: IAPAppDisplay;
   }): Promise<IAPAppStatusDisplay> => {
-    const funcName = 'apiGet_ApAppStatusDisplay';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     const connector_AppConnectionStatus: AppConnectionStatus = await AppsService.getAppStatus({
       organizationName: organizationId,
