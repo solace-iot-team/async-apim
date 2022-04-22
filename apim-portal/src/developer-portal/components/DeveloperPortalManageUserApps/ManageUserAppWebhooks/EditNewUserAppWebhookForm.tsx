@@ -189,7 +189,11 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(managedObjectFormDataEnvelope) {
+      managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+      // need to set the arrays separately
+      managedObjectUseForm.setValue('formData.selectedEnvironmentIdList', managedObjectFormDataEnvelope.formData.selectedEnvironmentIdList);
+    }
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

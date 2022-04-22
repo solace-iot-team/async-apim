@@ -25,12 +25,12 @@ import { ManageNewUserApp } from "./EditNewUserApp/ManageNewUserApp";
 import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 import { ManageEditUserApp } from "./EditNewUserApp/ManageEditUserApp";
 import { ManageApiProducts } from "./ManageApiProducts/ManageApiProducts";
+import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
 
 // import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;
@@ -499,7 +499,6 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onSuccessNotification={onSubComponentUserNotification}
           onNavigateToApp={onSetManageUserAppComponentState_To_View}

@@ -31,7 +31,7 @@ export interface IEditNewUserAppWebhookProps {
   onError: (apiCallState: TApiCallState) => void;
   onEditNewSuccess: (apiCallState: TApiCallState, apAppWebhookDisplayEntityId: TAPEntityId) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, isLoadingHeader?: JSX.Element) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   /** edit: required */
   apAppWebhookDisplayEntityId?: TAPEntityId;
@@ -43,6 +43,7 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
 
   type TManagedObject = IAPAppWebhookDisplay;
 
+  const LoadingHeader: JSX.Element = (<div>Provisioning Webhook on Environment(s)</div>);
   const ButtonLabel_Cancel = "Cancel";
   const ButtonLabel_Save = "Save";
   const FormId = `DeveloperPortalManageUserApps_ManageUserAppWebhooks_${ComponentName}`;
@@ -220,8 +221,10 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmit = async(mo: TManagedObject) => {
+    props.onLoadingChange(true, LoadingHeader);
     if(props.action === EAction.NEW) await apiCreateManagedObject(mo);
     else await apiUpdateManagedObject(mo);
+    props.onLoadingChange(false);
   }
   const onSubmit = (mo: TManagedObject) => {
     setManagedObject(mo);
@@ -254,7 +257,7 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
 
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
-      <div className="card p-mt-4">
+      <div className="card p-mt-6">
         <div className="p-fluid">
           <EditNewUserAppWebhookForm
             organizationId={props.organizationId}
@@ -309,10 +312,15 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
   //   return '';
   // }
 
+  const getComponentHeader = (): string => {
+    if(props.action === EAction.NEW) return "Create New Webhook";
+    else return "Edit Webhook";
+  }
+
   return (
     <div className="apd-manage-user-apps">
 
-      <APComponentHeader header="Create New Webhook" />
+      <APComponentHeader header={getComponentHeader()} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

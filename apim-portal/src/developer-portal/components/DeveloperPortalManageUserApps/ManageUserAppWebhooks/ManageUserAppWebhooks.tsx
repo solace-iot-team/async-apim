@@ -13,11 +13,13 @@ import { E_COMPONENT_STATE, E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooks
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { ListUserAppWebhooks } from "./ListUserAppWebhooks";
 import { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import { EAction, EditNewUserAppWebhook } from "./EditNewUserAppWebhook";
+import { ViewUserAppWebhook } from "./ViewUserAppWebhook";
+import { DeleteUserAppWebhook } from "./DeleteUserAppWebhook";
+import { Loading } from "../../../../components/Loading/Loading";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
-import { EAction, EditNewUserAppWebhook } from "./EditNewUserAppWebhook";
-import { ViewUserAppWebhook } from "./ViewUserAppWebhook";
 
 export interface IManageUserAppWebhooksProps {
   organizationId: string;
@@ -25,7 +27,6 @@ export interface IManageUserAppWebhooksProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccessNotification: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateToApp: (appEntityId: TAPEntityId) => void;
   onNavigateToCommand: () => void;
@@ -77,7 +78,8 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isLoadingHeader, setIsLoadingHeader] = React.useState<JSX.Element>();
 
   const ManageUserAppWebhooks_onNavigateToAppCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToApp(props.appEntityId);
@@ -106,9 +108,9 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   }
   
   const doInitialize = async () => {
-    props.onLoadingChange(true);
+    onLoadingChange(true);
     await apiGetManagedApAppDisplay();
-    props.onLoadingChange(false);
+    onLoadingChange(false);
   }
 
   const getBaseBreadCrumbItemList = (): Array<MenuItem> => {
@@ -228,23 +230,20 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   }
   
   // * prop callbacks *
+  const onLoadingChange = (isLoading: boolean, header?: JSX.Element) => {
+    setIsLoading(isLoading);
+    setIsLoadingHeader(header);
+  }
   const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
     setBreadCrumbItemList(itemList);
   }
-  // const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-  //   props.setBreadCrumbItemList(newItemList);
-  // }
-
   const onSetManageUserAppComponentState_To_View = (apAppWebhookDisplayEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apAppWebhookDisplayEntityId);
     setNewComponentState(E_COMPONENT_STATE.VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-
   const onListSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    // setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onView = (apAppWebhookDisplay: IAPAppWebhookDisplay): void => {
     setApiCallStatus(null);
@@ -260,21 +259,19 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
     setNewComponentState(E_COMPONENT_STATE.VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-
-
-  // const onEditSuccess = (apiCallState: TApiCallState, updatedManagedWebhook: TAPManagedWebhook) => {
-  //   setApiCallStatus(apiCallState);
-  //   setManagedWebhook(updatedManagedWebhook);
-  //   setRefreshComponentCounter(refreshComponentCounter + 1);
-  //   setPreviousComponentState();
-  // }
-  // const onDeleteManagedWebhookSuccess = (apiCallState: TApiCallState) => {
-  //   // managedObject is now defunct
-  //   setManagedObject(undefined);
-  //   setApiCallStatus(apiCallState);
-  //   setNewComponentState(E_MANAGE_WEBHOOK_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
-  //   setRefreshComponentCounter(refreshComponentCounter + 1);
-  // }
+  const onEditSuccess = (apiCallState: TApiCallState, apAppWebhookDisplayEntityId: TAPEntityId) => {
+    setApiCallStatus(apiCallState);
+    setManagedObjectEntityId(apAppWebhookDisplayEntityId);
+    setNewComponentState(E_COMPONENT_STATE.VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
+  const onDeleteSuccess = (apiCallState: TApiCallState) => {
+    // managedObject is now defunct
+    setManagedObjectEntityId(undefined);
+    setApiCallStatus(apiCallState);
+    setNewComponentState(E_COMPONENT_STATE.LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -336,7 +333,7 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   return (
     <div className="apd-manage-user-apps">
 
-      {/* <Loading show={isLoading} /> */}
+      <Loading show={isLoading} header={isLoadingHeader}/>
       
       { renderToolbar() }
 
@@ -345,7 +342,7 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
           organizationId={props.organizationId}
           apDeveloperPortalUserAppDisplay={managedApAppDisplay}
           onError={props.onError}
-          onLoadingChange={props.onLoadingChange}
+          onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onSuccess={onListSuccess}
           onManagedObjectView={onView}
@@ -359,62 +356,47 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
           apDeveloperPortalUserAppDisplay={managedApAppDisplay}
           apAppWebhookDisplayEntityId={managedObjectEntityId}
           onError={props.onError}
-          onLoadingChange={props.onLoadingChange}
+          onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHereCommand={onSetManageUserAppComponentState_To_View}
         />
       }
-      {showDeleteComponent && managedApAppDisplay && 
-      <p>showDeleteComponent</p>
-        // <DeveloperPortalDeleteUserAppWebhook
-        //   organizationId={props.organizationId}
-        //   userId={props.userId}
-        //   managedAppWebhooks={managedObject}
-        //   deleteManagedWebhook={managedWebhook}
-        //   onSuccess={onDeleteManagedWebhookSuccess}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={props.onLoadingChange} 
-        // />
+      {showDeleteComponent && managedApAppDisplay && managedObjectEntityId &&
+        <DeleteUserAppWebhook
+          organizationId={props.organizationId}
+          apDeveloperPortalUserAppDisplay={managedApAppDisplay}
+          apAppWebhookDisplayEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onLoadingChange={onLoadingChange}
+          onCancel={onSubComponentCancel}
+          onDeleteSuccess={onDeleteSuccess}
+        />
       }
       {showNewComponent && managedApAppDisplay && 
-      <EditNewUserAppWebhook
-        action={EAction.NEW}
-        organizationId={props.organizationId}
-        apDeveloperPortalUserAppDisplay={managedApAppDisplay}
-        onCancel={onSubComponentCancel}
-        onError={onSubComponentError}
-        onLoadingChange={props.onLoadingChange}
-        setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        onEditNewSuccess={onNewSuccess}
-      />
-        // <DeveloperPortalNewEditUserAppWebhook 
-        //   action={EAction.NEW}
-        //   organizationId={props.organizationId}
-        //   userId={props.userId}
-        //   managedAppWebhooks={managedObject}
-        //   managedWebhook={managedWebhook}
-        //   onNewSuccess={onNewManagedWebhookSuccess}
-        //   onEditSuccess={onEditManagedWebhookSuccess}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={props.onLoadingChange} 
-        // />
+        <EditNewUserAppWebhook
+          action={EAction.NEW}
+          organizationId={props.organizationId}
+          apDeveloperPortalUserAppDisplay={managedApAppDisplay}
+          onCancel={onSubComponentCancel}
+          onError={onSubComponentError}
+          onLoadingChange={onLoadingChange}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onEditNewSuccess={onNewSuccess}
+        />
       }
-      {showEditComponent && managedApAppDisplay &&
-      <p>showEditComponent</p>
-        // <DeveloperPortalNewEditUserAppWebhook 
-        //   action={EAction.EDIT}
-        //   organizationId={props.organizationId}
-        //   userId={props.userId}
-        //   managedAppWebhooks={managedObject}
-        //   managedWebhook={managedWebhook}
-        //   onNewSuccess={onNewManagedWebhookSuccess}
-        //   onEditSuccess={onEditManagedWebhookSuccess}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={props.onLoadingChange} 
-        // />
+      {showEditComponent && managedApAppDisplay && managedObjectEntityId &&
+        <EditNewUserAppWebhook
+          action={EAction.EDIT}
+          organizationId={props.organizationId}
+          apDeveloperPortalUserAppDisplay={managedApAppDisplay}
+          onCancel={onSubComponentCancel}
+          onError={onSubComponentError}
+          onLoadingChange={onLoadingChange}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onEditNewSuccess={onEditSuccess}
+          apAppWebhookDisplayEntityId={managedObjectEntityId}
+          onNavigateToCommand={onSetManageUserAppComponentState_To_View}
+        />
       }
 
     </div>
