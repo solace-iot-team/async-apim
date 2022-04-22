@@ -7,8 +7,12 @@ import {
   AppResponseGeneric,
   AppsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APDeveloperPortalAppApiProductsDisplayService, { TAPDeveloperPortalAppApiProductDisplayList } from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
-import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
+import APDeveloperPortalAppApiProductsDisplayService, { 
+  TAPDeveloperPortalAppApiProductDisplayList 
+} from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
+import APAppApisDisplayService, { 
+  TAPAppApiDisplayList }
+   from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
 import { 
   APAppsDisplayService,
   EAPApp_OwnerType, 
@@ -19,7 +23,9 @@ import {
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import APBusinessGroupsDisplayService from '../../displayServices/APBusinessGroupsDisplayService';
-import APOrganizationUsersDisplayService, { TAPCheckOrganizationUserIdExistsResult } from '../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService';
+import APOrganizationUsersDisplayService, { 
+  TAPCheckOrganizationUserIdExistsResult 
+} from '../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
 
@@ -144,7 +150,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     throw new Error(`${logName}: unknown apAppType=${apAppType}`);
   }
 
-  private async create_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId }:{
+  private async create_ApAdminPortalAppDisplay_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId }:{
     organizationId: string;
     connectorAppType?: AppResponseGeneric.appType;
     connectorOwnerId?: string;
@@ -211,7 +217,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       appName: appId
     });
 
-    const apAppMeta: TAPAppMeta = await this.create_ApAppMeta({ 
+    const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
       organizationId: organizationId, 
       connectorAppType: connectorAppResponseGeneric.appType,
       connectorOwnerId: connectorAppResponseGeneric.ownerId
@@ -291,7 +297,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     for(const connectorAppListItem of connectorAppList) {
       if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
 
-      const apAppMeta: TAPAppMeta = await this.create_ApAppMeta({ 
+      const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
         organizationId: organizationId, 
         connectorAppType: connectorAppListItem.appType,
         connectorOwnerId: connectorAppListItem.ownerId

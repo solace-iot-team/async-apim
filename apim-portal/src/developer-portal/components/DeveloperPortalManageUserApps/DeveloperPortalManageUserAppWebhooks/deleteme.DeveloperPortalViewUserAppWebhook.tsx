@@ -18,7 +18,7 @@ import { APComponentHeader } from "../../../../components/APComponentHeader/APCo
 import { APRenderUtils } from "../../../../utils/APRenderUtils";
 import { Globals } from "../../../../utils/Globals";
 import { EWebhookAuthMethodSelectIdNone } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
-import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/deleteme.APDisplayAppWebhookStatus";
 
 import '../../../../components/APComponents.css';
 import "../deleteme.DeveloperPortalManageUserApps.css";

@@ -7,61 +7,31 @@ import { Column } from "primereact/column";
 
 import { 
   AppConnection,
-  AppEnvironmentStatus,
   QueueStatus,
   WebHookStatus,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { 
-  TAPManagedAppWebhooks, TAPWebhookStatus, 
-} from "../deleteme.APComponentsCommon";
-import { APComponentHeader } from "../APComponentHeader/APComponentHeader";
 import { APRenderUtils } from "../../utils/APRenderUtils";
-import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../APDisplayAppStatus/deleteme.APDisplayAppWebhookStatus";
+import { IAPAppStatusDisplay, TAPAppEnvironmentStatusDisplay } from "../../displayServices/APAppsDisplayService/APAppStatusDisplayService";
+import { EAPApp_Status } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "./APDisplayAppWebhookStatus";
 
 import '../APComponents.css';
-// import "../DeveloperPortalManageUserApps.css";
 
-export interface IAPMonitorUserAppViewStatsProps {
-  managedAppWebhooks: TAPManagedAppWebhooks;
-  state?: any;
-  onStateChange: (newState: any) => void;
+export interface IAPMonitorAppViewStatsProps {
+  apAppStatusDisplay: IAPAppStatusDisplay;
 }
 
-export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps> = (props: IAPMonitorUserAppViewStatsProps) => {
-  const componentName = 'APMonitorUserAppViewStats';
-
-  type TPanelState = {
-    isCollapsed: boolean;
-  }
-  type TPanelStateMap = Map<string, TPanelState>;
-
-  type TManagedObjectDisplay = TAPManagedAppWebhooks;
-
-  const [managedObjectDisplay] = React.useState<TManagedObjectDisplay>(props.managedAppWebhooks);
-  const [externalState, setExternalState] = React.useState<TPanelStateMap>(props.state ? props.state : new Map<string, TPanelState>());
-
-  React.useEffect(() => {
-    // const funcName = 'useEffect([externalState])';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: triggered ...`);
-    // for(const [key, value] of externalState) {
-    //   console.log(`${logName}: externalState: key=${key}, value=${JSON.stringify(value, null, 2)}`);
-    // }
-    props.onStateChange(externalState);
-  }, [externalState]); /* eslint-disable-line react-hooks/exhaustive-deps */
+export const APMonitorAppViewStats: React.FC<IAPMonitorAppViewStatsProps> = (props: IAPMonitorAppViewStatsProps) => {
+  const componentName = 'APMonitorAppViewStats';
 
   const renderSectionTitle = (text: string): JSX.Element => {
     return (<DataTable header={text} />);
   }
   const renderWebhookStatus = (appWebhookStatus: WebHookStatus): JSX.Element => {
-    const apWebhookStatus: TAPWebhookStatus = {
-      summaryStatus: appWebhookStatus.up ? appWebhookStatus.up : false,
-      apiWebhookStatus: appWebhookStatus
-    }
     return (
       <div className="p-ml-2">
         <APDisplayAppWebhookStatus
-          apWebhookStatus={apWebhookStatus}
+          appWebhookStatus={appWebhookStatus}
           displayContent={EAPDisplayAppWebhookStatus_Content.ALL}
         />
       </div>
@@ -145,136 +115,139 @@ export const APMonitorUserAppViewStats: React.FC<IAPMonitorUserAppViewStatsProps
             <Column header="MBs" headerStyle={{width: '10em', textAlign: 'center'}} body={messagesQueuedMBBodyTemplate} field="messagesQueuedMB" bodyStyle={{ textAlign: 'center' }} />
             <Column header="Consumers" headerStyle={{width: '10em', textAlign: 'center'}} field="consumerCount" bodyStyle={{ textAlign: 'center' }} />
           </DataTable>
-          {/* DEBUG */}
-          {/* <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(appQueueStatusList, null, 2)}
-          </pre> */}
         </div>
       </React.Fragment>
     );
   }
 
-  const renderEnvStats = (appEnvStatus: AppEnvironmentStatus): JSX.Element => {
+  
+  const renderEnvStats = (apAppEnvironmentStatusDisplay: TAPAppEnvironmentStatusDisplay): JSX.Element => {
     const funcName = 'renderEnvStats';
     const logName = `${componentName}.${funcName}()`;
 
     const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
-      const onTogglerClick = (event: React.MouseEvent<HTMLElement, MouseEvent>): void => {
-        const funcName = 'onTogglerClick';
-        const logName = `${componentName}.${funcName}()`;
-        if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
-        const isCollapsed = options.collapsed ? false : true;
-        const clone = new Map(externalState);
-        clone.set(appEnvStatus.name, { isCollapsed: isCollapsed });
-        setExternalState(clone);
-        options.onTogglerClick(event);
-      }
       const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
       const className = `${options.className} p-jc-start`;
       const titleClassName = `${options.titleClassName} p-pl-1`;
       return (
         <div className={className} style={{ justifyContent: 'left'}} >
-          {/* <button className={options.togglerClassName} onClick={options.onTogglerClick}> */}
-          <button className={options.togglerClassName} onClick={onTogglerClick}>
+          <button className={options.togglerClassName} onClick={options.onTogglerClick}>
             <span className={toggleIcon}></span>
           </button>
           <span className={titleClassName}>
-            Environment: {appEnvStatus.displayName}
+            Environment: {apAppEnvironmentStatusDisplay.apEntityId.displayName}
           </span>
         </div>
       );
     }
-    
-    if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
-
+      
     return (
       <Panel 
         headerTemplate={panelHeaderTemplate} 
         toggleable
-        collapsed={externalState.get(appEnvStatus.name)?.isCollapsed}
+        collapsed={false}
         className="p-pt-2"
       >
         <div className="p-ml-2">
-          {renderWebhooks(appEnvStatus.webHooks)}
-          {renderConnections(appEnvStatus.connections)}
-          {renderQueues(appEnvStatus.queues)}
-          {/* DEBUG */}
-          {/* <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(appEnvStatus, null, 2)}
-          </pre> */}
+          {renderWebhooks(apAppEnvironmentStatusDisplay.connectorAppEnvironmentStatus.webHooks)}
+          {renderConnections(apAppEnvironmentStatusDisplay.connectorAppEnvironmentStatus.connections)}
+          {renderQueues(apAppEnvironmentStatusDisplay.connectorAppEnvironmentStatus.queues)}
         </div>
       </Panel>
     );
   }
 
-  const renderAppStats = (managedAppWebhooks: TAPManagedAppWebhooks): JSX.Element | Array<JSX.Element> => {
-    const funcName = 'renderAppStats';
-    const logName = `${componentName}.${funcName}()`;
+  // const renderEnvStats = (appEnvStatus: AppEnvironmentStatus): JSX.Element => {
+  //   const funcName = 'renderEnvStats';
+  //   const logName = `${componentName}.${funcName}()`;
 
-    if(!managedAppWebhooks.apiAppConnectionStatus) return (<></>);
+  //   const panelHeaderTemplate = (options: PanelHeaderTemplateOptions) => {
+  //     const onTogglerClick = (event: React.MouseEvent<HTMLElement, MouseEvent>): void => {
+  //       const funcName = 'onTogglerClick';
+  //       const logName = `${componentName}.${funcName}()`;
+  //       if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
+  //       const isCollapsed = options.collapsed ? false : true;
+  //       const clone = new Map(externalState);
+  //       clone.set(appEnvStatus.name, { isCollapsed: isCollapsed });
+  //       setExternalState(clone);
+  //       options.onTogglerClick(event);
+  //     }
+  //     const toggleIcon = options.collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-down';
+  //     const className = `${options.className} p-jc-start`;
+  //     const titleClassName = `${options.titleClassName} p-pl-1`;
+  //     return (
+  //       <div className={className} style={{ justifyContent: 'left'}} >
+  //         {/* <button className={options.togglerClassName} onClick={options.onTogglerClick}> */}
+  //         <button className={options.togglerClassName} onClick={onTogglerClick}>
+  //           <span className={toggleIcon}></span>
+  //         </button>
+  //         <span className={titleClassName}>
+  //           Environment: {appEnvStatus.displayName}
+  //         </span>
+  //       </div>
+  //     );
+  //   }
+    
+  //   if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
 
-    if(!managedAppWebhooks.apiAppConnectionStatus.environments) return (
-      <p>No Environments found.</p>
-    );
+  //   return (
+  //     <Panel 
+  //       headerTemplate={panelHeaderTemplate} 
+  //       toggleable
+  //       collapsed={externalState.get(appEnvStatus.name)?.isCollapsed}
+  //       className="p-pt-2"
+  //     >
+  //       <div className="p-ml-2">
+  //         {renderWebhooks(appEnvStatus.webHooks)}
+  //         {renderConnections(appEnvStatus.connections)}
+  //         {renderQueues(appEnvStatus.queues)}
+  //         {/* DEBUG */}
+  //         {/* <pre style={ { fontSize: '10px' }} >
+  //           {JSON.stringify(appEnvStatus, null, 2)}
+  //         </pre> */}
+  //       </div>
+  //     </Panel>
+  //   );
+  // }
+
+  const renderAppStats = (): JSX.Element | Array<JSX.Element> => {
     const renderedEnvStats: Array<JSX.Element> = [];
-    for(const appEnvStatus of managedAppWebhooks.apiAppConnectionStatus.environments) {
-      // initialize the state map
-      if(appEnvStatus.name === undefined) throw new Error(`${logName}: appEnvStatus.name === undefined`);
-
-      if(!externalState.has(appEnvStatus.name)) {
-        const clone = new Map(externalState);
-        clone.set(appEnvStatus.name, { isCollapsed: false });
-        setExternalState(clone);
-      }
-      renderedEnvStats.push(renderEnvStats(appEnvStatus))
+    for(const apAppEnvironmentStatusDisplay of props.apAppStatusDisplay.apAppEnvironmentStatusDisplayList) {
+      renderedEnvStats.push(renderEnvStats(apAppEnvironmentStatusDisplay));
     }
     return renderedEnvStats;
   }
 
-  const renderManagedObjectDisplay = () => {
-    const funcName = 'renderManagedObjectDisplay';
-    const logName = `${componentName}.${funcName}()`;
-    
-    if(!managedObjectDisplay) throw new Error(`${logName}: managedObjectDisplay is undefined`);
+  const renderComponent = () => {
+    if(props.apAppStatusDisplay.apAppStatus !== EAPApp_Status.LIVE &&  props.apAppStatusDisplay.apAppStatus !== EAPApp_Status.PARTIALLY_LIVE) {
+      return (
+        <div>
+          App is not live.  
+        </div>
+      );
+    }
+    if(props.apAppStatusDisplay.apAppEnvironmentStatusDisplayList.length === 0) {
+      return (
+        <div>
+          No provisioned environments.
+        </div>
+      );
+    }
     return (
-      <React.Fragment>
-        <div className="p-col-12">
-          <div className="apd-app-view">
-            <div className="apd-app-view-detail-left">
+      <div>
+        
+        {renderAppStats()}  
 
-              {renderAppStats(managedObjectDisplay)}  
-
-            </div>
-            <div className="apd-app-view-detail-right">
-              {/* <div>App Status: {managedObjectDisplay.apiAppResponse.status}</div> */}
-            </div>            
-          </div>
-        </div>  
-      </React.Fragment>
+      </div>  
     ); 
   }
 
 
   return (
     <React.Fragment>
-      <div className="apd-manage-user-apps">
 
-        <APComponentHeader header={`Stats for App: ${props.managedAppWebhooks.appDisplayName}`} />
+      { renderComponent() }
 
-        {managedObjectDisplay && renderManagedObjectDisplay() }
-      
-      </div>
-
-      {/* DEBUG */}
-      {/* {managedObjectDisplay &&
-        <div>
-          <hr/> 
-          <h1>{componentName}.managedObjectDisplay.apiAppConnectionStatus:</h1>
-          <pre style={ { fontSize: '10px' }} >
-              {JSON.stringify(managedObjectDisplay.apiAppConnectionStatus, null, 2)}
-          </pre>
-        </div>
-      } */}
     </React.Fragment>
   );
 }

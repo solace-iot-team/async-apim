@@ -38,7 +38,7 @@ export type TAPDeveloperPortalUserAppDisplay_AllowedActions = TAPAppDisplay_Allo
 class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
   private readonly ComponentName = "APDeveloperPortalUserAppsDisplayService";
 
-  private create_ApAppMeta({ userId }:{
+  private create_ApDeveloperPortalUserApp_ApAppMeta({ userId }:{
     userId: string;
   }): TAPAppMeta {
     return {
@@ -52,7 +52,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
     userId: string;
   }): TAPDeveloperPortalUserAppDisplay {
 
-    const apAppDisplay: IAPAppDisplay = this.create_Empty_ApAppDisplay({ apAppMeta: this.create_ApAppMeta({ userId: userId }) });
+    const apAppDisplay: IAPAppDisplay = this.create_Empty_ApAppDisplay({ apAppMeta: this.create_ApDeveloperPortalUserApp_ApAppMeta({ userId: userId }) });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
       ...apAppDisplay,
@@ -78,7 +78,7 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
   }): TAPDeveloperPortalUserAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
-      apAppMeta: this.create_ApAppMeta({ userId: userId }),
+      apAppMeta: this.create_ApDeveloperPortalUserApp_ApAppMeta({ userId: userId }),
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,

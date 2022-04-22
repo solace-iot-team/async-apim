@@ -131,6 +131,33 @@ export class APAppsDisplayService {
     return `${this.nameOf_ApAppCredentialsDisplay('secret')}.${name}`;
   }
 
+  private create_ApAppMeta({ connectorAppResponseGeneric }:{
+    connectorAppResponseGeneric: AppResponseGeneric;
+  }): TAPAppMeta {
+    const funcName = 'create_ApAppMeta';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    if(connectorAppResponseGeneric.appType === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.appType === undefined`);
+    if(connectorAppResponseGeneric.ownerId === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.ownerId === undefined`);
+
+    switch(connectorAppResponseGeneric.appType) {
+      case AppResponseGeneric.appType.DEVELOPER:
+        return {
+          apAppType: EAPApp_Type.USER,
+          apAppOwnerType: EAPApp_OwnerType.UNKNOWN,
+          appOwnerId: connectorAppResponseGeneric.ownerId
+        };
+      case AppResponseGeneric.appType.TEAM:
+        return {
+          apAppType: EAPApp_Type.TEAM,
+          apAppOwnerType: EAPApp_OwnerType.UNKNOWN,
+          appOwnerId: connectorAppResponseGeneric.ownerId
+        };
+      default:
+        Globals.assertNever(logName, connectorAppResponseGeneric.appType);
+    }
+    throw new Error(`${logName}: should never get here`);
+  }
+
   private create_Empty_ConnectorAppResponse(): AppResponse {
     const create_Empty_Credentials = (): Credentials => {
       return {
@@ -443,6 +470,72 @@ export class APAppsDisplayService {
       }
       throw e;
     }
+  }
+
+  public apiGet_ApAppDisplay = async({ organizationId, appId }:{
+    organizationId: string;
+    appId: string;
+  }): Promise<IAPAppDisplay> => {
+    const funcName = 'apiGet_ApAppDisplay';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    // // TEST upstream error handling
+    // throw new Error(`${logName}: test error handling`);
+    const connectorAppResponseGeneric: AppResponseGeneric = await AppsService.getApp({
+      organizationName: organizationId,
+      appName: appId
+    });
+    const apAppMeta: TAPAppMeta = this.create_ApAppMeta({ connectorAppResponseGeneric: connectorAppResponseGeneric });
+  
+    let connectorAppResponse_smf: AppResponse | undefined = undefined;
+    switch(apAppMeta.apAppType) {
+      case EAPApp_Type.USER:
+        connectorAppResponse_smf = await AppsService.getDeveloperApp({
+          organizationName: organizationId,
+          developerUsername: apAppMeta.appOwnerId,
+          appName: appId,
+          topicSyntax: 'smf'
+        });
+        break;
+      case EAPApp_Type.TEAM:
+        connectorAppResponse_smf = await AppsService.getTeamApp({
+          organizationName: organizationId,
+          teamName: apAppMeta.appOwnerId,
+          appName: appId,
+          topicSyntax: 'smf'
+        });
+        break;
+      case EAPApp_Type.UNKNOWN:
+        throw new Error(`${logName}: apAppMeta.apAppType=${apAppMeta.apAppType}`);
+      default:
+        Globals.assertNever(logName, apAppMeta.apAppType);
+    }
+    if(connectorAppResponse_smf === undefined) throw new Error(`${logName}: connectorAppResponse_smf === undefined`);
+
+    // get every api product
+    const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+      organizationId: organizationId,
+      ownerId: apAppMeta.appOwnerId,
+      connectorAppResponse: connectorAppResponse_smf,
+    });
+
+    // // create the app api display list
+    // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
+    //   organizationId: organizationId,
+    //   appId: appId,
+    //   apApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+    // });
+
+    const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
+      apAppMeta: apAppMeta,
+      connectorAppConnectionStatus: {},
+      connectorAppResponse_smf: connectorAppResponse_smf,
+      connectorAppResponse_mqtt: undefined,
+      apAppApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+      apAppApiDisplayList: []
+    });
+
+    return apAppDisplay;
   }
 
   protected apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ organizationId, ownerId, connectorAppResponse }:{

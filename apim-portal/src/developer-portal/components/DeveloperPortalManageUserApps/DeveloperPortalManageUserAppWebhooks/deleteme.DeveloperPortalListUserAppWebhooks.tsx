@@ -24,7 +24,7 @@ import {
   EWebhookAuthMethodSelectIdNone,
 } from "./deleteme.DeveloperPortalManageUserAppWebhooksCommon";
 import { Globals } from "../../../../utils/Globals";
-import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/APDisplayAppWebhookStatus";
+import { APDisplayAppWebhookStatus, EAPDisplayAppWebhookStatus_Content } from "../../../../components/APDisplayAppStatus/deleteme.APDisplayAppWebhookStatus";
 
 import '../../../../components/APComponents.css';
 import "../deleteme.DeveloperPortalManageUserApps.css";

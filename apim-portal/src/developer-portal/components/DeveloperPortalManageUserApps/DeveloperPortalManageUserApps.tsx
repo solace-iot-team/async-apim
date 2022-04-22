@@ -31,6 +31,8 @@ import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebh
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { APMonitorApp } from "../../../components/APMonitorApp/APMonitorApp";
+import { DeveloperPortalMonitorUserApp } from "./DeveloperPortalMonitorUserApp";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;
@@ -506,19 +508,14 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showMonitorComponent && managedObjectEntityId &&
-      <p>showMonitorComponent</p>
-        // <APMonitorUserApp
-        //   key={refreshCounter}
-        //   organizationId={props.organizationName}
-        //   appId={managedObjectId}
-        //   appDisplayName={managedObjectDisplayName}
-        //   appType={AppListItem.appType.DEVELOPER}
-        //   appOwnerId={props.userId}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
-        // />
+        <DeveloperPortalMonitorUserApp
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onLoadingChange={setIsLoading}
+          onNavigateToApp={onSetManageUserAppComponentState_To_View}
+        />
       }
     </div>
   );
