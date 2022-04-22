@@ -6,12 +6,12 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { APMonitorApp } from "../../../components/APMonitorApp/APMonitorApp";
-
-import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 
-export interface IDeveloperPortalMonitorUserAppProps {
+import '../../../components/APComponents.css';
+import "./ManageApps.css";
+
+export interface IMonitorAppProps {
   organizationId: string;
   appEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
@@ -20,10 +20,10 @@ export interface IDeveloperPortalMonitorUserAppProps {
   onNavigateToApp: (appEntityId: TAPEntityId) => void;
 }
 
-export const DeveloperPortalMonitorUserApp: React.FC<IDeveloperPortalMonitorUserAppProps> = (props: IDeveloperPortalMonitorUserAppProps) => {
-  // const ComponentName = 'DeveloperPortalMonitorUserApp';
+export const MonitorApp: React.FC<IMonitorAppProps> = (props: IMonitorAppProps) => {
+  // const ComponentName = 'MonitorApp';
 
-  const DeveloperPortalViewMonitorUserApp_onNavigateToAppCommand = (e: MenuItemCommandParams): void => {
+  const AdminPortalMonitorApp_onNavigateToAppCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToApp(props.appEntityId);
   }
 
@@ -31,7 +31,7 @@ export const DeveloperPortalMonitorUserApp: React.FC<IDeveloperPortalMonitorUser
     return [
       {
         label: props.appEntityId.displayName,
-        command: DeveloperPortalViewMonitorUserApp_onNavigateToAppCommand
+        command: AdminPortalMonitorApp_onNavigateToAppCommand
       },
       {
         label: 'Monitor Stats',
@@ -50,7 +50,7 @@ export const DeveloperPortalMonitorUserApp: React.FC<IDeveloperPortalMonitorUser
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
-    <div className="apd-manage-user-apps">
+    <div className="ap-manage-apps">
 
       <APComponentHeader header={`App: ${props.appEntityId.displayName}`} />
 

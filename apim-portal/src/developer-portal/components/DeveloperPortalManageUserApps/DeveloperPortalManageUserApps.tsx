@@ -26,13 +26,10 @@ import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
 import { ManageEditUserApp } from "./EditNewUserApp/ManageEditUserApp";
 import { ManageApiProducts } from "./ManageApiProducts/ManageApiProducts";
 import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
-
-// import { APMonitorUserApp } from "../../../components/APMonitorUserApp/APMonitorUserApp";
+import { DeveloperPortalMonitorUserApp } from "./DeveloperPortalMonitorUserApp";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { APMonitorApp } from "../../../components/APMonitorApp/APMonitorApp";
-import { DeveloperPortalMonitorUserApp } from "./DeveloperPortalMonitorUserApp";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;

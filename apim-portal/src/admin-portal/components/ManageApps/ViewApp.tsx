@@ -24,6 +24,7 @@ import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/A
 import { Config } from "../../../Config";
 import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
+import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -42,6 +43,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const ComponentName = 'ViewApp';
 
   type TManagedObject = TAPAdminPortalAppDisplay;
+
+  const MessageNoWebhooksFound = 'No Webhooks configured.';
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -203,19 +206,14 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
             />
           </TabPanel>
           <TabPanel header="Webhooks">
-            <p>TODO: rework APDisplayAppWebhooks</p>
-            {/* <APDisplayAppWebhooks
-              managedWebhookList={managedObjectDisplay.apManagedWebhookList}
-              emptyMessage="Webhooks not supported by API Products / Environments."              
-            /> */}
-          </TabPanel>
-
-          {/* <TabPanel header={getWebhooksTabHeader()}>
-            <APDisplayAppWebhooks
-              managedWebhookList={managedObjectDisplay.apManagedWebhookList}
-              emptyMessage="Webhooks not supported by API Products / Environments."              
+            <APDisplayAppWebhookList
+              organizationId={props.organizationId}
+              apDeveloperPortalUserAppDisplay={managedObject}
+              onError={props.onError}
+              onLoadingChange={props.onLoadingChange}
+              emptyMessage={MessageNoWebhooksFound}
             />
-          </TabPanel> */}
+          </TabPanel>
           <TabPanel header="General Attributes">
             <React.Fragment>
               <div className="p-text-bold">General Attributes:</div>

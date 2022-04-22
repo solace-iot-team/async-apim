@@ -18,6 +18,7 @@ import { DeleteApp } from "./DeleteApp";
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
 import { ManageAccess } from "./ManageAccess/ManageAccess";
+import { MonitorApp } from "./MonitorApp";
 
 export interface IManageAppsProps {
   organizationId: string;
@@ -197,8 +198,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    alert(`${logName}: implement E_COMPONENT_STATE.MANAGED_OBJECT_MONITOR`);
-    // setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
   }
   
   // * Toolbar *
@@ -431,21 +431,16 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
           onSaveSuccess={onSubComponentUserNotification}
         />      
       }
-      {/* {showMonitorComponent && managedObjectId && managedObjectDisplayName &&
-        viewManagedObject && viewManagedObject.appListItem.appType && viewManagedObject.appListItem.ownerId &&
-        <APMonitorUserApp
-          key={refreshCounter}
+      {showMonitorComponent && managedObjectEntityId &&
+        <MonitorApp
           organizationId={props.organizationId}
-          appId={managedObjectId}
-          appDisplayName={managedObjectDisplayName}
-          appType={viewManagedObject.appListItem.appType}
-          appOwnerId={viewManagedObject.appListItem.ownerId}
+          appEntityId={managedObjectEntityId}
           onError={onSubComponentError}
-          onCancel={onSubComponentCancel}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onLoadingChange={setIsLoading}
-          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
+          onNavigateToApp={onSetManageObjectComponentState_To_View}
         />
-      } */}
+      }
 
     </div>
   );

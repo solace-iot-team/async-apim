@@ -16,7 +16,7 @@ import APAppStatusDisplayService, { IAPAppStatusDisplay } from "../../displaySer
 import { APMonitorAppViewStats } from "./APMonitorAppViewStats";
 
 import '../APComponents.css';
-// import "../APMonitorUserApps.css";
+import "./APMonitorApp.css";
 
 export interface IAPMonitorAppProps {
   organizationId: string;
@@ -185,19 +185,40 @@ export const APMonitorApp: React.FC<IAPMonitorAppProps> = (props: IAPMonitorAppP
     }
   }
 
+  const renderHeader = (mo: TManagedObject): JSX.Element => {
+    return (
+      <div className="p-col-12">
+        <div className="ap-app-view">
+          <div className="ap-app-view-detail-left">
+            <div><b>Status: </b>{mo.apAppStatus}</div>
+          </div>
+          <div className="ap-app-view-detail-right">
+            <div>Id: {mo.apEntityId.id}</div>
+          </div>            
+        </div>
+      </div>  
+    );
+  }
+
   return (
     <div className={props.className ? props.className : 'card'}>
+      <div className="ap-monitor-app">
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+        { managedObject && renderHeader(managedObject) }
+        
+        { renderToolbar() }
 
-      { renderToolbar() }
+        <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {showViewComponent && managedObject && 
-        <APMonitorAppViewStats
-          key={`${ComponentName}_APMonitorAppViewStats_${refreshCounter}`}
-          apAppStatusDisplay={managedObject}
-        />
-      }
+
+        {showViewComponent && managedObject && 
+          <APMonitorAppViewStats
+            key={`${ComponentName}_APMonitorAppViewStats_${refreshCounter}`}
+            apAppStatusDisplay={managedObject}
+          />
+        }
+
+      </div>
     </div>
   );
 }
