@@ -25,6 +25,7 @@ import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplay
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
+import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: string;
@@ -118,18 +119,9 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
 
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
-      <div className="p-col-12">
-        <div className="apd-app-view">
-          <div className="apd-app-view-detail-left">
-            <div><b>Status: </b>{mo.apAppStatus}</div>
-            <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
-          </div>
-          <div className="apd-app-view-detail-right">
-            <div>Id: {mo.apEntityId.id}</div>
-          </div>            
-        </div>
-      </div>  
+      <DeveloperPortalDisplayAppHeaderInfo
+        apAppDisplay={mo}
+      />
     );
   }
 

@@ -17,6 +17,8 @@ import { EditCredentials } from "./EditCredentials";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
+import { Config } from "../../../../Config";
+import { DeveloperPortalDisplayAppHeaderInfo } from "../DeveloperPortalDisplayAppHeaderInfo";
 
 export interface IManageEditUserAppProps {
   organizationId: string;
@@ -106,9 +108,6 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
   }
 
   const onSaveSuccess_Credentials = (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => {
-    // const funcName = 'onSaveSuccess_Credentials';
-    // const logName = `${ComponentName}.${funcName}()`;
-    // alert(`${logName}: apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret = ${apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret}`)
     props.onSaveSuccess(apiCallState);
     doInitialize();
   }
@@ -120,25 +119,9 @@ export const ManageEditUserApp: React.FC<IManageEditUserAppProps> = (props: IMan
 
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
-      <div className="p-col-12">
-        <div className="apd-app-view">
-          <div className="apd-app-view-detail-left">
-            <div><b>Status: </b>{mo.apAppStatus}</div>
-            <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-            {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
-
-            {/* <APDisplayDeveloperPortalAppApiProducts
-              apDeveloperPortalApp_ApiProductDisplayList={mo.apDeveloperPortalUserApp_ApiProductDisplayList}
-              className="p-mt-2 p-ml-2"
-              emptyMessage="No API Products defined."
-            /> */}
-
-          </div>
-          <div className="apd-app-view-detail-right">
-            <div>Id: {mo.apEntityId.id}</div>
-          </div>            
-        </div>
-      </div>  
+      <DeveloperPortalDisplayAppHeaderInfo
+        apAppDisplay={mo}
+      />
     );
   }
 
