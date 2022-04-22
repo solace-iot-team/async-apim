@@ -16,9 +16,12 @@ import APAdminPortalAppsDisplayService, {
   TAPAdminPortalAppDisplayList 
 } from "../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
+import APMemberOfService, { TAPMemberOfBusinessGroupDisplay } from "../../../displayServices/APUsersDisplayService/APMemberOfService";
 
 export interface IListAppsProps {
   organizationId: string;
@@ -37,6 +40,8 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
 
   type TManagedObject = TAPAdminPortalAppDisplay;
   type TManagedObjectList = Array<TManagedObject>;
+
+  const [userContext] = React.useContext(UserContext);
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
@@ -59,10 +64,22 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
+
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
+    const currentBusinessGroupId: string = userContext.runtimeSettings.currentBusinessGroupEntityId.id;
+    // get all calculated roles in current business group
+    const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+      businessGroupId: currentBusinessGroupId
+    });
+    if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_LIST, `retrieve list of apps`);
     try { 
-      const list: TAPAdminPortalAppDisplayList = await APAdminPortalAppsDisplayService.apiGetList_ApAdminPortalAppDisplayList({
+      const list: TAPAdminPortalAppDisplayList = await APAdminPortalAppsDisplayService.apiGetList_ApAdminPortalAppDisplayList_With_Rbac({
         organizationId: props.organizationId,
+        businessGroupId: currentBusinessGroupId,
+        businessGroupRoleEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList
       });
       setManagedObjectList(list);
     } catch(e: any) {

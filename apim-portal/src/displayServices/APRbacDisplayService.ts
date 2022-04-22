@@ -147,6 +147,14 @@ class APRbacDisplayService {
     return result;
   }
 
+  public includes_Role({ businessGroupRoleEntityIdList, role }:{
+    businessGroupRoleEntityIdList: TAPEntityIdList;
+    role: EAPSOrganizationAuthRole | EAPSBusinessGroupAuthRole;
+  }): boolean {
+    const idList = APEntityIdsService.create_IdList(businessGroupRoleEntityIdList);
+    return idList.includes(role);
+  }
+
   public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, apOrganizationEntityId }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
     apOrganizationEntityId: TAPEntityId | undefined;

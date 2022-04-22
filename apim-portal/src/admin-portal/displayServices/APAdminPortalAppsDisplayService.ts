@@ -23,11 +23,17 @@ import {
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import APBusinessGroupsDisplayService from '../../displayServices/APBusinessGroupsDisplayService';
+import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
+import APLoginUsersDisplayService from '../../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
+import APMemberOfService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayTreeNodeList } from '../../displayServices/APUsersDisplayService/APMemberOfService';
 import APOrganizationUsersDisplayService, { 
-  TAPCheckOrganizationUserIdExistsResult 
+  TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay 
 } from '../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService';
+import { APUsersDisplayService } from '../../displayServices/APUsersDisplayService/APUsersDisplayService';
+import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
+import { EAPSBusinessGroupAuthRole, EAPSOrganizationAuthRole } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 
 export type TAPAdminPortalAppDisplay_AllowedActions = TAPAppDisplay_AllowedActions & {
   // nothing to add for now
@@ -268,6 +274,138 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
     return apAdminPortalAppDisplay;
 
+  }
+
+
+  private hasManageAppAccess_For_External_Apps = (businessGroupRoleEntityIdList: TAPEntityIdList): boolean => {
+    return APRbacDisplayService.includes_Role({
+      businessGroupRoleEntityIdList: businessGroupRoleEntityIdList,
+      role: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN
+    });
+  }
+
+  // TODO: move to APOrganizationUserDisplayService
+  private hasUser_ApiConsumer_Role_In_BusinessGroup = async({ organizationId, businessGroupId, userId }:{
+    organizationId: string;
+    businessGroupId: string;
+    userId: string;
+  }): Promise<boolean> => {
+    const funcName = 'hasUser_ApiConsumer_Role_In_BusinessGroup';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const organizationEntityId: TAPEntityId = { id: organizationId, displayName: organizationId };
+    const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+      userId: userId,
+      organizationEntityId: organizationEntityId,
+      fetch_ApOrganizationAssetInfoDisplayList: false,
+    });
+    if(apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
+
+    const apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      organizationEntityId: organizationEntityId,
+      apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+      apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
+      completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
+      pruneBusinessGroupsNotAMemberOf: false,
+      accessOnly_To_BusinessGroupManageAssets: false,
+    });
+
+    const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+      businessGroupId: businessGroupId
+    });
+    if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+    const isApiConsumer: boolean = APRbacDisplayService.includes_Role({
+      businessGroupRoleEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList,
+      role: EAPSBusinessGroupAuthRole.API_CONSUMER
+    }); 
+    return isApiConsumer;
+  }
+
+  public apiGetList_ApAdminPortalAppDisplayList_With_Rbac = async({ organizationId, businessGroupId, businessGroupRoleEntityIdList }: {
+    organizationId: string;
+    businessGroupId: string;
+    businessGroupRoleEntityIdList: TAPEntityIdList;
+  }): Promise<TAPAdminPortalAppDisplayList> => {
+    const funcName = 'apiGetList_ApAdminPortalAppDisplayList_With_Rbac';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    // get the access levels
+    const canManage_ExternalApps: boolean = this.hasManageAppAccess_For_External_Apps(businessGroupRoleEntityIdList);
+    // keep a cache of ownerIds which have Api consumer role in business group
+    const apiConsumer_OwnerIdList: Array<string> = [];
+
+    const apAdminPortalAppDisplayList: TAPAdminPortalAppDisplayList = [];
+
+    const connectorAppList: Array<AppListItem> = await AppsService.listApps({
+      organizationName: organizationId, 
+    });
+
+    for(const connectorAppListItem of connectorAppList) {
+      if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
+
+      const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
+        organizationId: organizationId, 
+        connectorAppType: connectorAppListItem.appType,
+        connectorOwnerId: connectorAppListItem.ownerId
+      });
+
+      // re-write?
+      // add it to the list?
+      let canManageApp: boolean = false;
+      // external user or team apps 
+      if(apAppMeta.apAppOwnerType === EAPApp_OwnerType.EXTERNAL && canManage_ExternalApps) canManageApp = true;
+      // team apps in this business group
+      else if(apAppMeta.apAppType === EAPApp_Type.TEAM && businessGroupId === apAppMeta.appOwnerId) canManageApp = true;
+      else if(apAppMeta.apAppType === EAPApp_Type.USER) {
+        // it is a user app
+        // check if ownerId has api consumer calculated roles in this business group
+        // check the cache first
+        const found = apiConsumer_OwnerIdList.find( (x) => {
+          return x === apAppMeta.appOwnerId;
+        });
+        if(found) canManageApp = true;
+        else {
+          const hasApiConsumerRole: boolean = await this.hasUser_ApiConsumer_Role_In_BusinessGroup({
+            organizationId: organizationId,
+            businessGroupId: businessGroupId,
+            userId: apAppMeta.appOwnerId
+          });
+          if(hasApiConsumerRole) {
+            apiConsumer_OwnerIdList.push(apAppMeta.appOwnerId);
+            canManageApp = true;
+          }
+        }
+      }
+
+      if(canManageApp) {
+        const connectorAppResponse_smf: AppResponse = await this.apiGet_ConnectorAppResponse({
+          organizationId: organizationId,
+          apAppType: apAppMeta.apAppType,
+          apTopicSyntax: 'smf',
+          appId: connectorAppListItem.name,
+          ownerId: apAppMeta.appOwnerId
+        });
+    
+        // required to calculate the app status
+        const apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+          organizationId: organizationId,
+          ownerId: apAppMeta.appOwnerId,
+          connectorAppResponse: connectorAppResponse_smf,
+        });
+  
+        const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = this.create_ApAdminPortalAppDisplay_From_ApiEntities({
+          apAppMeta: apAppMeta,
+          connectorAppResponse_smf: connectorAppResponse_smf,
+          connectorAppConnectionStatus: {},
+          apApp_ApiProduct_DisplayList: apApp_ApiProduct_DisplayList,
+          apApp_Api_DisplayList: [],
+        });
+        apAdminPortalAppDisplayList.push(apAdminPortalAppDisplay);  
+      }
+    }
+
+    return apAdminPortalAppDisplayList;
   }
 
   /**
