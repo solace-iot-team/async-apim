@@ -41,7 +41,7 @@ import { APDisplayOwner } from "../../../components/APDisplay/APDisplayOwner";
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/deleteme.APDisplayAppAsyncApis";
 import { Divider } from "primereact/divider";
 import { APDisplayAppCredentials } from "../../../components/APDisplay/deleteme.APDisplayAppCredentials";
-import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/APDisplayAppWebhooksPanel";
+import { APDisplayAppWebhooksPanel } from "../../../components/APDisplay/deleteme.APDisplayAppWebhooksPanel";
 
 import '../../../components/APComponents.css';
 import "./deleteme.ManageApps.css";

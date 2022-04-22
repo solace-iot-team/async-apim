@@ -62,13 +62,10 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
 
   const [userContext] = React.useContext(UserContext);
 
-  // const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedApAppDisplay, setManagedApAppDisplay] = React.useState<TAPDeveloperPortalUserAppDisplay>();  
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
   // const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPDeveloperPortalUserAppDisplay_AllowedActions>(APDeveloperPortalUserAppsDisplayService.get_Empty_AllowedActions());
-
-  // const [managedWebhook, setManagedWebhook] = React.useState<TAPManagedWebhook>();
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);

@@ -21,6 +21,7 @@ import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "..
 import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
+import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
@@ -39,6 +40,8 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
   const componentName = 'DeveloperPortalViewUserApp';
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay;
+
+  const MessageNoWebhooksFound = 'No Webhooks configured.';
 
   const [userContext] = React.useContext(UserContext);
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -202,11 +205,14 @@ export const DeveloperPortalViewUserApp: React.FC<IDeveloperPortalViewUserAppPro
             />
           </TabPanel>
           <TabPanel header="Webhooks">
-            <p>TODO: rework APDisplayAppWebhooks</p>
-            {/* <APDisplayAppWebhooks
-              managedWebhookList={managedObjectDisplay.apManagedWebhookList}
-              emptyMessage="Webhooks not supported by API Products / Environments."              
-            /> */}
+            {/* <div className="p-mt-2 p-mb-2 p-ml-2"><em>Double-click to see the status.</em></div> */}
+            <APDisplayAppWebhookList
+              organizationId={props.organizationId}
+              apDeveloperPortalUserAppDisplay={managedObject}
+              onError={props.onError}
+              onLoadingChange={props.onLoadingChange}
+              emptyMessage={MessageNoWebhooksFound}
+            />
           </TabPanel>
 
           {/* <TabPanel header={getWebhooksTabHeader()}>

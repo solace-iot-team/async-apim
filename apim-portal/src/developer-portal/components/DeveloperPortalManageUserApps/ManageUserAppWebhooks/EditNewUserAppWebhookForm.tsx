@@ -15,14 +15,23 @@ import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpe
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import APAppWebhooksDisplayService, { E_APProtocol, IAPAppWebhookDisplay, TAPAppWebhookDisplayList, TAPDecomposedUri, TAPWebhookBasicAuth, TAPWebhookHeaderAuth } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import APAppWebhooksDisplayService, { 
+  EAPWebhookAuthMethodSelectId,
+  EAPWebhookAuthMethodSelectIdNone, 
+  E_APProtocol, 
+  IAPAppWebhookDisplay, 
+  TAPDecomposedUri, 
+  TAPWebhookAuthMethodSelectId, 
+  TAPWebhookBasicAuth, 
+  TAPWebhookHeaderAuth 
+} from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { 
   WebHook, 
   WebHookAuth, 
   WebHookBasicAuth, 
   WebHookHeaderAuth 
 } from "@solace-iot-team/apim-connector-openapi-browser";
-import { EWebhookAuthMethodSelectId, EWebhookAuthMethodSelectIdNone, E_CALL_STATE_ACTIONS, TWebhookAuthMethodSelectId } from "./ManageUserAppWebhooksCommon";
+import { E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import APEntityIdsService from "../../../../utils/APEntityIdsService";
 import { TAPAppEnvironmentDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
@@ -44,7 +53,7 @@ export type TManagedObjectFormData = {
   resource: string;
   httpMethod: WebHook.method;
   deliveryMode: WebHook.mode;
-  selectedWebhookAuthMethodId: TWebhookAuthMethodSelectId;
+  selectedWebhookAuthMethodId: TAPWebhookAuthMethodSelectId;
   webhookBasicAuth: TAPWebhookBasicAuth;
   webhookHeaderAuth: TAPWebhookHeaderAuth;
 
@@ -82,7 +91,7 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const decomposedUri: TAPDecomposedUri = APAppWebhooksDisplayService.get_decomposedUri(mo.apWebhookUri);
-    let authMethodId: TWebhookAuthMethodSelectId = EWebhookAuthMethodSelectIdNone.NONE;
+    let authMethodId: TAPWebhookAuthMethodSelectId = EAPWebhookAuthMethodSelectIdNone.NONE;
     let webhookBasicAuth: WebHookBasicAuth = APAppWebhooksDisplayService.create_Empty_ApWebhookBasicAuth();
     let webhookHeaderAuth: WebHookHeaderAuth = APAppWebhooksDisplayService.create_Empty_ApWebhookHeaderAuth();
     if(mo.apWebhookBasicAuth !== undefined) {
@@ -115,7 +124,7 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
       const logName = `${ComponentName}.${funcName}()`;
 
       switch (formData.selectedWebhookAuthMethodId) {
-        case EWebhookAuthMethodSelectIdNone.NONE:
+        case EAPWebhookAuthMethodSelectIdNone.NONE:
           return undefined;
         case WebHookBasicAuth.authMethod.BASIC:
           return formData.webhookBasicAuth;
@@ -271,7 +280,7 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
   //   );
   // }
 
-  const renderManagedObjectForm_WebhookAuthMethodDetails = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId): JSX.Element => {
+  const renderManagedObjectForm_WebhookAuthMethodDetails = (webhookAuthMethodSelectId: TAPWebhookAuthMethodSelectId): JSX.Element => {
     return(
       <EditNewWebhookAuthFormFields
         managedObjectUseForm={managedObjectUseForm}
@@ -302,7 +311,7 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
 
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
-    const selectedWebhookAuthMethodId: TWebhookAuthMethodSelectId = managedObjectUseForm.watch('formData.selectedWebhookAuthMethodId');
+    const selectedWebhookAuthMethodId: TAPWebhookAuthMethodSelectId = managedObjectUseForm.watch('formData.selectedWebhookAuthMethodId');
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -514,7 +523,7 @@ export const EditNewUserAppWebhookForm: React.FC<IEditNewUserAppWebhookFormProps
                       <Dropdown
                         id={field.name}
                         {...field}
-                        options={Object.values(EWebhookAuthMethodSelectId)} 
+                        options={Object.values(EAPWebhookAuthMethodSelectId)} 
                         onChange={(e) => { 
                           field.onChange(e.value);
                           managedObjectUseForm.clearErrors();

@@ -20,16 +20,3 @@ export enum E_COMPONENT_STATE {
   EDIT = "EDIT",
   DELETE = "DELETE"
 }
-
-export enum EWebhookAuthMethodSelectIdNone { 
-  NONE = 'None'
-}
-export type TWebhookAuthMethodSelectId = 
-  EWebhookAuthMethodSelectIdNone 
-  | WebHookBasicAuth.authMethod.BASIC 
-  | WebHookHeaderAuth.authMethod.HEADER;
-export const EWebhookAuthMethodSelectId = { 
-  ...EWebhookAuthMethodSelectIdNone, 
-  ...WebHookBasicAuth.authMethod, 
-  ...WebHookHeaderAuth.authMethod 
-}

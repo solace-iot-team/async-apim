@@ -32,7 +32,7 @@ import { APDisplayAppEnvironments } from "../../../components/APDisplay/deleteme
 import { APDisplayAppAsyncApis } from "../../../components/APDisplay/deleteme.APDisplayAppAsyncApis";
 import { APDisplayCredentialsPanel } from "../../../components/APDisplay/deleteme.APDisplayAppCredentialsPanel";
 import { APDisplayClientInformationPanel } from "../../../components/APDisplay/deleteme.APDisplayAppClientInformationPanel";
-import { APDisplayAppWebhooks } from "../../../components/APDisplay/APDisplayAppWebhooks";
+import { APDisplayAppWebhooks } from "../../../components/APDisplay/deleteme.APDisplayAppWebhooks";
 
 import '../../../components/APComponents.css';
 import "./deleteme.DeveloperPortalManageUserApps.css";

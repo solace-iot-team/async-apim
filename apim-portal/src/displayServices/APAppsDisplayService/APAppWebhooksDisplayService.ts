@@ -19,6 +19,18 @@ import { Globals } from '../../utils/Globals';
 import { TAPAppEnvironmentDisplayList } from './APAppEnvironmentsDisplayService';
 import { EAPApp_Type, IAPAppDisplay, TAPAppMeta } from './APAppsDisplayService';
 
+export enum EAPWebhookAuthMethodSelectIdNone { 
+  NONE = 'None'
+}
+export type TAPWebhookAuthMethodSelectId = 
+  EAPWebhookAuthMethodSelectIdNone 
+  | WebHookBasicAuth.authMethod.BASIC 
+  | WebHookHeaderAuth.authMethod.HEADER;
+export const EAPWebhookAuthMethodSelectId = { 
+  ...EAPWebhookAuthMethodSelectIdNone, 
+  ...WebHookBasicAuth.authMethod, 
+  ...WebHookHeaderAuth.authMethod 
+}
 
 export enum E_APProtocol {
   HTTP = "http",

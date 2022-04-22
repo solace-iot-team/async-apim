@@ -6,8 +6,11 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import APEntityIdsService, { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { EWebhookAuthMethodSelectIdNone, E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
-import APAppWebhooksDisplayService, { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import { E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
+import APAppWebhooksDisplayService, { 
+  EAPWebhookAuthMethodSelectIdNone, 
+  IAPAppWebhookDisplay 
+} from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -114,7 +117,7 @@ export const ViewUserAppWebhook: React.FC<IViewUserAppWebhookProps> = (props: IV
   const renderAuth = (mo: TManagedObject): string | undefined => {
     if(mo.apWebhookBasicAuth) return mo.apWebhookBasicAuth.authMethod;
     if(mo.apWebhookHeaderAuth) return mo.apWebhookHeaderAuth.authMethod;
-    return EWebhookAuthMethodSelectIdNone.NONE;
+    return EAPWebhookAuthMethodSelectIdNone.NONE;
   }
 
   const renderManagedObject = () => {

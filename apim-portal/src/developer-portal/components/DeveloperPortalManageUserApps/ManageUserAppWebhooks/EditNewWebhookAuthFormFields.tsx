@@ -9,11 +9,11 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 import { TManagedObjectFormDataEnvelope } from "./EditNewUserAppWebhookForm";
 import { WebHookBasicAuth, WebHookHeaderAuth } from "@solace-iot-team/apim-connector-openapi-browser";
-import { TWebhookAuthMethodSelectId } from "./ManageUserAppWebhooksCommon";
+import { TAPWebhookAuthMethodSelectId } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 
 export interface IEditNewWebhookAuthFormFieldsProps {
   managedObjectUseForm: UseFormReturn<TManagedObjectFormDataEnvelope>;
-  webhookAuthMethodSelectId: TWebhookAuthMethodSelectId;
+  webhookAuthMethodSelectId: TAPWebhookAuthMethodSelectId;
 }
 
 export const EditNewWebhookAuthFormFields: React.FC<IEditNewWebhookAuthFormFieldsProps> = (props: IEditNewWebhookAuthFormFieldsProps) => {
@@ -21,7 +21,7 @@ export const EditNewWebhookAuthFormFields: React.FC<IEditNewWebhookAuthFormField
 
   const managedObjectUseForm = props.managedObjectUseForm;
 
-  const renderManagedObjectFormWebhookBasicAuth = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId) => {
+  const renderManagedObjectFormWebhookBasicAuth = (webhookAuthMethodSelectId: TAPWebhookAuthMethodSelectId) => {
     const isActive: boolean = (webhookAuthMethodSelectId === WebHookBasicAuth.authMethod.BASIC);
     return (
       <div className="p-ml-4" hidden={!isActive}>
@@ -80,7 +80,7 @@ export const EditNewWebhookAuthFormFields: React.FC<IEditNewWebhookAuthFormField
     );
   }
 
-  const renderManagedObjectFormWebhookHeaderAuth = (webhookAuthMethodSelectId: TWebhookAuthMethodSelectId) => {
+  const renderManagedObjectFormWebhookHeaderAuth = (webhookAuthMethodSelectId: TAPWebhookAuthMethodSelectId) => {
     const isActive: boolean = (webhookAuthMethodSelectId === WebHookHeaderAuth.authMethod.HEADER);
     return (
       <div className="p-ml-4" hidden={!isActive}>
