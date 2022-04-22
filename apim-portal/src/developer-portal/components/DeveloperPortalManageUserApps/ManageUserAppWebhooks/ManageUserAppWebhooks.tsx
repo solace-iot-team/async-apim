@@ -12,7 +12,7 @@ import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDispl
 import { E_COMPONENT_STATE, E_CALL_STATE_ACTIONS } from "./ManageUserAppWebhooksCommon";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { ListUserAppWebhooks } from "./ListUserAppWebhooks";
-import { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import APAppWebhooksDisplayService, { IAPAppWebhookDisplay } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { EAction, EditNewUserAppWebhook } from "./EditNewUserAppWebhook";
 import { ViewUserAppWebhook } from "./ViewUserAppWebhook";
 import { DeleteUserAppWebhook } from "./DeleteUserAppWebhook";
@@ -20,6 +20,7 @@ import { Loading } from "../../../../components/Loading/Loading";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageUserApps.css";
+import { TAPAppEnvironmentDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 
 export interface IManageUserAppWebhooksProps {
   organizationId: string;
@@ -65,7 +66,7 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedApAppDisplay, setManagedApAppDisplay] = React.useState<TAPDeveloperPortalUserAppDisplay>();  
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-  // const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPDeveloperPortalUserAppDisplay_AllowedActions>(APDeveloperPortalUserAppsDisplayService.get_Empty_AllowedActions());
+  const [available_ApAppEnvironmentDisplayList, setAvailable_ApAppEnvironmentDisplayList] = React.useState<TAPAppEnvironmentDisplayList>([]);
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
@@ -85,8 +86,8 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
     props.onNavigateToCommand();
   }
 
-  const apiGetManagedApAppDisplay = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedApAppDisplay';
+  const apiGet_Entities = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGet_Entities';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_USER_APP, `retrieve user app: ${props.appEntityId.displayName}`);
     try { 
@@ -95,6 +96,12 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
         appId: props.appEntityId.id,
         userId: userContext.apLoginUserDisplay.apEntityId.id,
       });
+      const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay({
+        organizationId: props.organizationId,
+        apAppDisplay: apDeveloperPortalUserAppDisplay,
+        webhookId: undefined
+      });
+      setAvailable_ApAppEnvironmentDisplayList(apAppEnvironmentDisplayList);
       setManagedApAppDisplay(apDeveloperPortalUserAppDisplay);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -104,9 +111,29 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
     return callState;
   }
   
+  const apiGetAvailable_ApAppEnvironmentDisplayList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetAvailable_ApAppEnvironmentDisplayList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedApAppDisplay === undefined) throw new Error(`${logName}: managedApAppDisplay === undefined`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_WEBHOOK_AVAILABLE_ENVIRONMENTS, `retrieve list of available webhook environments for app: ${managedApAppDisplay.apEntityId.displayName}`);
+    try { 
+      const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay({
+        organizationId: props.organizationId,
+        apAppDisplay: managedApAppDisplay,
+        webhookId: undefined
+      });
+      setAvailable_ApAppEnvironmentDisplayList(apAppEnvironmentDisplayList);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const doInitialize = async () => {
     onLoadingChange(true);
-    await apiGetManagedApAppDisplay();
+    await apiGet_Entities();
     onLoadingChange(false);
   }
 
@@ -137,6 +164,11 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
+    if(refreshCounter === 0) return;
+    apiGetAvailable_ApAppEnvironmentDisplayList();
+  }, [refreshCounter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  
+  React.useEffect(() => {
     if(managedApAppDisplay === undefined) return;
     setBreadCrumbItemList([]);
     setNewComponentState(E_COMPONENT_STATE.LIST_VIEW);
@@ -145,14 +177,6 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   props.setBreadCrumbItemList(breadCrumbItemList);
-  // }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(refreshComponentCounter > 0) doRefreshComponentData();
-  // }, [refreshComponentCounter]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -182,16 +206,22 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
   
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
+    const funcName = 'renderLeftToolbarContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedApAppDisplay === undefined) throw new Error(`${logName}: managedApAppDisplay === undefined`);
     if(!componentState.currentState) return undefined;
+
+    const isNewAvailable: boolean = available_ApAppEnvironmentDisplayList.length > 0;
+
     if(showListComponent) return (
       <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNew_FromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
+        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNew_FromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isNewAvailable} />
       </React.Fragment>
     );
     if(showViewComponent) {
       return (
         <React.Fragment>
-          <Button key={ComponentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNew_FromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
+          <Button key={ComponentName+ToolbarNewManagedObjectButtonLabel} label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNew_FromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!isNewAvailable} />
           <Button key={ComponentName+ToolbarEditManagedObjectButtonLabel} label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEdit_FromToolbar} className="p-button-text p-button-plain p-button-outlined"/>
         </React.Fragment>
       );
@@ -332,7 +362,7 @@ export const ManageUserAppWebhooks: React.FC<IManageUserAppWebhooksProps> = (pro
 
       <Loading show={isLoading} header={isLoadingHeader}/>
       
-      { renderToolbar() }
+      { managedApAppDisplay && renderToolbar() }
 
       {showListComponent && managedApAppDisplay &&
         <ListUserAppWebhooks

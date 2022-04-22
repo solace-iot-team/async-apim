@@ -58,7 +58,7 @@ export const EditNewUserAppWebhook: React.FC<IEditNewUserAppWebhookProps> = (pro
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_WEBHOOK_AVAILABLE_ENVIRONMENTS, `retrieve list of available webhook environments for app: ${props.apDeveloperPortalUserAppDisplay.apEntityId.displayName}`);
     try { 
-      const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDispaly({
+      const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay({
         organizationId: props.organizationId,
         apAppDisplay: props.apDeveloperPortalUserAppDisplay,
         webhookId: props.apAppWebhookDisplayEntityId ? props.apAppWebhookDisplayEntityId.id : undefined

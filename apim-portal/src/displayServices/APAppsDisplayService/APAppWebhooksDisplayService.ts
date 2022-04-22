@@ -404,7 +404,7 @@ export class APAppWebhooksDisplayService {
     return apAppWebhookDisplayList;
   }
 
-  public apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDispaly = async({ organizationId, apAppDisplay, webhookId }:{
+  public apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay = async({ organizationId, apAppDisplay, webhookId }:{
     organizationId: string;
     apAppDisplay: IAPAppDisplay;
     webhookId?: string;
