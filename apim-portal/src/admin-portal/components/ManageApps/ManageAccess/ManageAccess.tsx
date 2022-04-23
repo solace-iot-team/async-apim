@@ -128,7 +128,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
       <React.Fragment>
         <div className="p-mt-2">
           <DisplayAppHeaderInfo
-            apAppDisplay={managedObject}
+            apAdminPortalAppDisplay={managedObject}
           />
         </div>              
 

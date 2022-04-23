@@ -73,7 +73,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return EAPApp_ApiProduct_Status.UNKNOWN
   }
 
-  private map_ConnectorAppStatus_To_ApApp_ApiProduct_Status = (connectorAppStatus: AppStatus): EAPApp_ApiProduct_Status => {
+  public map_ConnectorAppStatus_To_ApApp_ApiProduct_Status = (connectorAppStatus: AppStatus): EAPApp_ApiProduct_Status => {
     const funcName = 'map_ConnectorAppStatus_To_ApApp_ApiProduct_Status';
     const logName = `${this.FinalComponentName}.${funcName}()`;
     switch(connectorAppStatus) {
@@ -86,8 +86,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       default:
         Globals.assertNever(logName, connectorAppStatus);  
     }
-    // never gets here
-    return EAPApp_ApiProduct_Status.UNKNOWN;
+    throw new Error(`${logName}: should never get here, connectorAppStatus=${connectorAppStatus}`);
   }
 
   private map_ApApp_ApiProduct_Status_To_ConnectorAppStatus = (apApp_ApiProduct_Status: EAPApp_ApiProduct_Status): AppStatus => {
@@ -346,7 +345,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       apiProductId = complexAppApiProduct.apiproduct;
     }
 
-    const connectorApiProduct = await ApiProductsService.getApiProduct({
+    const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,
       apiProductName: apiProductId
     });

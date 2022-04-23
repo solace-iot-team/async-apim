@@ -1,11 +1,10 @@
 
 import React from "react";
 
-import { Config } from "../../../Config";
-import { IAPAppDisplay } from "../../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import { TAPAdminPortalAppDisplay } from "../../displayServices/APAdminPortalAppsDisplayService";
 
 export interface IDisplayAppHeaderInfoProps {
-  apAppDisplay: IAPAppDisplay;
+  apAdminPortalAppDisplay: TAPAdminPortalAppDisplay;
 }
 
 export const DisplayAppHeaderInfo: React.FC<IDisplayAppHeaderInfoProps> = (props: IDisplayAppHeaderInfoProps) => {
@@ -16,19 +15,18 @@ export const DisplayAppHeaderInfo: React.FC<IDisplayAppHeaderInfoProps> = (props
       <div className="p-col-12">
         <div className="ap-app-view">
           <div className="ap-app-view-detail-left">
-            <div><b>Status: {props.apAppDisplay.apAppStatus}</b></div>
-            {Config.getUseDevelTools() &&
-              <div>DEVEL: connector app status:{props.apAppDisplay.devel_connectorAppResponses.smf.status}</div>
-            }  
+            <div><b>Status: {props.apAdminPortalAppDisplay.apAdminPortalAppStatus}</b></div>
+            {/* <div><b>DEVEL Status: {props.apAdminPortalAppDisplay.apAppStatus}</b></div> */}
             <div className="p-mt-2"></div>
-            <div>App Type: {props.apAppDisplay.apAppMeta.apAppType}</div>
-            <div>App Owner Id: {props.apAppDisplay.apAppMeta.appOwnerId}</div>
-            <div>App Owner Type: {props.apAppDisplay.apAppMeta.apAppOwnerType}</div>
+            <div>App Type: {props.apAdminPortalAppDisplay.apAppMeta.apAppType}</div>
+            <div>App Owner Id: {props.apAdminPortalAppDisplay.apAppMeta.appOwnerId}</div>
+            <div>App Owner Type: {props.apAdminPortalAppDisplay.apAppMeta.apAppOwnerType}</div>
           </div>
           <div className="ap-app-view-detail-right">
-            <div>Id: {props.apAppDisplay.apEntityId.id}</div>
-            <div>Internal Name: {props.apAppDisplay.apAppInternalName}</div>
-            </div>            
+            <div>Id: {props.apAdminPortalAppDisplay.apEntityId.id}</div>
+            <div>Internal Name: {props.apAdminPortalAppDisplay.apAppInternalName}</div>
+            <div>App Status: {props.apAdminPortalAppDisplay.devel_connectorAppResponses.smf.status}</div>
+          </div>            
         </div>
       </div>  
     );

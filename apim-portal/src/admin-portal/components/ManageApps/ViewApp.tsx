@@ -142,7 +142,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
       <React.Fragment>
 
         <DisplayAppHeaderInfo
-          apAppDisplay={managedObject}
+          apAdminPortalAppDisplay={managedObject}
         />
       
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>

@@ -22,10 +22,10 @@ import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
+import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageUserApps.css";
-import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 
 export interface IDeveloperPortalViewUserAppProps {
   organizationId: string;

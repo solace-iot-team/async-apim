@@ -182,10 +182,11 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     const dataKey = APAdminPortalAppsDisplayService.nameOf_ApEntityId('id');
     const sortField = APAdminPortalAppsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apSearchContent');
-    const statusField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
+    const statusField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apAdminPortalAppStatus');
     const ownerIdField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('appOwnerId');
     const ownerTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppOwnerType');
     const appTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppType');
+    // const develStatusField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
 
     return (
       <div className="card">
@@ -216,6 +217,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             <Column header="Owner Id" body={ownerIdBodyTemplate} field={ownerIdField} sortable />
             <Column header="Owner Type" body={ownerTypeBodyTemplate} field={ownerTypeField} sortable style={{ width: '9em' }}/>
             <Column header="Status" field={statusField} sortable style={{ width: "13em"}} />
+            {/* <Column header="DEVEL:Status" field={develStatusField} sortable style={{ width: "13em"}} /> */}
         </DataTable>
       </div>
     );
@@ -240,34 +242,17 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     } 
   }
 
-  // const renderDebug = (): JSX.Element => {
-  //   return (<></>);
-  //   // if(managedObjectList.length > 0 && selectedManagedObject) {
-  //   //   const _d = {
-  //   //     ...selectedManagedObject,
-  //   //     globalSearch: 'not shown...'
-  //   //   }
-  //   //   return (
-  //   //     <pre style={ { fontSize: '10px' }} >
-  //   //       {JSON.stringify(_d, null, 2)}
-  //   //     </pre>
-  //   //   );
-  //   // } else return (<></>);
-  // }
-
   return (
     <div className="ap-manage-apps">
 
-      <APComponentHeader header='Manage Apps:' />
+      <APComponentHeader header='Apps:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       <div className="p-mt-4">
-        <div style={{ fontSize: 'small'}}>
-          <p>TODO: translate partially live to requires approval here</p>
-          <p>TODO: scope the list: ROLE=orgAdmin: list all external + current business group apps + user apps where ownerId apiConsumer in current busienss group</p>
-          <p>TODO: scope the list: ROLE=apiTeam: biz group apps in current business group & user apps where ownerId apiConsumer in current busienss group</p>
-        </div>
+        {/* <div style={{ fontSize: 'small'}}>
+          <p>TODO: re-work get list with RBAC</p>
+        </div> */}
         {isInitialized && renderContent()}
       </div>
       
