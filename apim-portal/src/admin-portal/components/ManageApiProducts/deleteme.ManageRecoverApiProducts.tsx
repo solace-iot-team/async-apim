@@ -19,7 +19,7 @@ import { DeleteApiProduct } from "./DeleteApiProduct";
 import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { ListRecoverableApiProducts } from "./ListRecoverableApiProducts";
+import { ListRecoverableApiProducts } from "./deleteme.ListRecoverableApiProducts";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
