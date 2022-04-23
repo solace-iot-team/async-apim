@@ -65,11 +65,11 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications),
         //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications); }
         // },
-        {
-          label: 'DELETEME: My Apps',
-          disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications),
-          command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications); }
-        },
+        // {
+        //   label: 'DELETEME: My Apps',
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications); }
+        // },
         // {
         //   label: 'Explore APIs',
         //   // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),

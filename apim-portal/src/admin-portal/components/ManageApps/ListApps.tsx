@@ -17,11 +17,12 @@ import APAdminPortalAppsDisplayService, {
 } from "../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import APMemberOfService, { 
+  TAPMemberOfBusinessGroupDisplay 
+} from "../../../displayServices/APUsersDisplayService/APMemberOfService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
-import APMemberOfService, { TAPMemberOfBusinessGroupDisplay } from "../../../displayServices/APUsersDisplayService/APMemberOfService";
 
 export interface IListAppsProps {
   organizationId: string;

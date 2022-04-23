@@ -1,6 +1,4 @@
 import { 
-  APIProduct,
-  ApiProductsService,
   AppApiProductsComplex,
   AppConnectionStatus,
   AppListItem,
