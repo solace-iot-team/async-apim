@@ -76,7 +76,7 @@ export const EditChannelParameters: React.FC<IEditChannelParametersProps> = (pro
     // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_APP_API_PRODUCTS) {
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_APP_CHANNEL_PARAMETERS) {
           // if(updatedManagedObject === undefined) throw new Error(`${logName}: updatedManagedObject === undefined`);
           // props.onSaveSuccess(apiCallStatus, updatedManagedObject);
           props.onSaveSuccess(apiCallStatus);

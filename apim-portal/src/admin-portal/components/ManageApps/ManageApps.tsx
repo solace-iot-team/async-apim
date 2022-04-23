@@ -194,16 +194,16 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   }
   const onSetManageObjectComponentState_To_View = (appEntityId: TAPEntityId) => {
     setManagedObjectEntityId(appEntityId);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -271,7 +271,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
 
       <CheckConnectorHealth />
 
-      <Loading show={isLoading} />      
+      <Loading key={ComponentName} show={isLoading} />      
       
       { !isLoading && renderToolbar() }
 
@@ -281,7 +281,6 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
           organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
-          onLoadingChange={setIsLoading} 
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onManagedObjectView={onViewManagedObject}
         />

@@ -20,6 +20,7 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupDisplay 
 } from "../../../displayServices/APUsersDisplayService/APMemberOfService";
+import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -28,7 +29,6 @@ export interface IListAppsProps {
   organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectView: (apAdminPortalAppDisplay: TAPAdminPortalAppDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
@@ -50,6 +50,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   
   // const selectGlobalFilterOptions: TApiEntitySelectItemList = [
@@ -92,9 +93,11 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   }
 
   const doInitialize = async () => {
-    props.onLoadingChange(true);
+    // props.onLoadingChange(true);
+    setIsLoading(true);
     await apiGetManagedObjectList();
-    props.onLoadingChange(false);
+    setIsLoading(false);
+    // props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
@@ -246,20 +249,16 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   return (
     <div className="ap-manage-apps">
 
+      <Loading key={ComponentName} show={isLoading} />      
+
       <APComponentHeader header='Apps:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       <div className="p-mt-4">
-        {/* <div style={{ fontSize: 'small'}}>
-          <p>TODO: re-work get list with RBAC</p>
-        </div> */}
         {isInitialized && renderContent()}
       </div>
       
-      {/* DEBUG */}
-      {/* {renderDebug()} */}
-
     </div>
   );
 }

@@ -128,6 +128,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
       <React.Fragment>
         <div className="p-mt-2">
           <DisplayAppHeaderInfo
+            key={`${ComponentName}_DisplayAppHeaderInfo_${refreshCounter}`}
             apAdminPortalAppDisplay={managedObject}
           />
         </div>              
@@ -136,6 +137,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
           <TabPanel header='Channel Parameters'>
             <React.Fragment>
               <EditChannelParameters
+                key={`${ComponentName}_EditChannelParameters_${refreshCounter}`}
                 organizationId={props.organizationId}
                 apAdminPortalAppDisplay={managedObject}
                 onSaveSuccess={onSaveSuccess_ChannelParameters}
@@ -148,6 +150,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
           <TabPanel header='API Products'>
             <React.Fragment>
               <EditApiProducts
+                key={`${ComponentName}_EditApiProducts_${refreshCounter}`}
                 organizationId={props.organizationId}
                 apAdminPortalAppDisplay={managedObject}
                 onSaveSuccess={onSaveSuccess_ApiProducts}

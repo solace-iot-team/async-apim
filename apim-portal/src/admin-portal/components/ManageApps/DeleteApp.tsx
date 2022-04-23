@@ -10,6 +10,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import APAdminPortalAppsDisplayService from "../../displayServices/APAdminPortalAppsDisplayService";
+import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -122,7 +123,7 @@ export const DeleteApp: React.FC<IDeleteAppProps> = (props: IDeleteAppProps) => 
     <div className="ap-manage-apps">
   
       {renderManagedObjectDeleteDialog()}
-  
+
     </div>
   );
 }
