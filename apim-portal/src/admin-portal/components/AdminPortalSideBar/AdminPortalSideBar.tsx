@@ -86,7 +86,10 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   }
 
   const getOrganizationIntegrationMenuItems = (): Array<MenuItem> => {
-    if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
+    if(
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganization) ||
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationIntegration) 
+      ) return [];
     let _items: Array<MenuItem> = [
       {
         label: 'External Systems',
@@ -96,6 +99,22 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     ];
     return _items;
   }
+
+  const getOrganizationAssetMaintenanceMenuItems = (): Array<MenuItem> => {
+    if(
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganization) ||
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance) 
+      ) return [];
+    let _items: Array<MenuItem> = [
+      {
+        label: 'API Products',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts),         
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts); }
+      },
+    ];
+    return _items;
+  }
+
 
   const getOrganizationMenuItems = (): Array<MenuItem> => {
     if(isDisabled(EUIAdminPortalResourcePaths.ManageOrganization)) return [];
@@ -133,6 +152,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             label: 'Integration',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationIntegration),
             items: getOrganizationIntegrationMenuItems()
+          },
+          {
+            label: 'Asset Maintenance',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance),
+            items: getOrganizationAssetMaintenanceMenuItems()
           },
         ] 
       },

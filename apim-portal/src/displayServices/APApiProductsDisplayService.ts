@@ -572,6 +572,20 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }
 
   /**
+   * Retrieves the unfiltered list of APIProducts.
+   */
+  protected apiGetUnfilteredList_ConnectorApiProductList = async({ organizationId }: {
+    organizationId: string;
+  }): Promise<Array<APIProduct>> => {
+
+    const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+      organizationName: organizationId,
+    });
+
+    return connectorApiProductList;
+  }
+  
+  /**
    * Retrieves a list of APIProducts filtered by:
    * - owningBusinessGroupId = businessGroupId 
    * - sharingBusinessGroupIdList contains businessGroupId

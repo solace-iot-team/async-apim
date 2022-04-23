@@ -8,31 +8,32 @@ import { MenuItem } from "primereact/api";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from './ManageApiProductsCommon';
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { ListApiProducts } from "./ListApiProducts";
-import { ViewApiProduct } from "./ViewApiProduct";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./MaintainApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
   TAPAdminPortalApiProductDisplay_AllowedActions 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
-import { DeleteApiProduct } from "./DeleteApiProduct";
-import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { ListMaintainApiProducts } from "./ListMaintainApiProducts";
+import { ViewApiProduct } from "../ManageApiProducts/ViewApiProduct";
+import { ManageEditNewApiProduct } from "../ManageApiProducts/EditNewApiProduct/ManageEditNewApiProduct";
+import { EAction } from "../ManageApiProducts/ManageApiProductsCommon";
+import { DeleteApiProduct } from "../ManageApiProducts/DeleteApiProduct";
 
 import '../../../components/APComponents.css';
-import "./ManageApiProducts.css";
+import "./MaintainApiProducts.css";
 
-export interface IManageApiProductsProps {
+export interface IMaintainApiProductsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IManageApiProductsProps) => {
-  const ComponentName = 'ManageApiProducts';
+export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: IMaintainApiProductsProps) => {
+  const ComponentName = 'MaintainApiProducts';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -55,26 +56,42 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [userContext] = React.useContext(UserContext);
   const [authContext] = React.useContext(AuthContext);
+
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPAdminPortalApiProductDisplay_AllowedActions>(APAdminPortalApiProductsDisplayService.get_Empty_AllowedActions());
+
+  // const [managedObjectHasReferences, setManagedObjectHasReferences] = React.useState<boolean>(false);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
-  const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  
+  // const MaintainApiProducts_onNavigateToCommand = (e: MenuItemCommandParams): void => {
+  //   const funcName = 'MaintainApiProducts_onNavigateToCommand';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   if(props.onNavigateToCommand === undefined) throw new Error(`${logName}: props.onNavigateToCommand === undefined`);
+  //   props.onNavigateToCommand(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_RECOVER);
+  // }
+
+  // const setBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+  //   props.setBreadCrumbItemList([
+  //     {
+  //       label: 'Recover API Products',
+  //       command: ManageRecoverApiProducts_onNavigateToCommand
+  //     },
+  //     ...itemList
+  //   ]);
+  // }
 
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -84,10 +101,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    props.setBreadCrumbItemList(breadCrumbItemList);
-  }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -107,8 +120,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
-    // // DEBUG: is the version set?
-    // alert(`${ComponentName}.onViewManagedObject():  apAdminPortalApiProductDisplay.apEntityId = ${JSON.stringify(apAdminPortalApiProductDisplay.apEntityId)}`);
     setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
@@ -117,21 +128,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-  // * New Object *
-  const onNewManagedObject = () => {
-    setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
-  }
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
-    onEditManagedObject(managedObjectEntityId);
-  }
-  const onEditManagedObject = (moEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(moEntityId);
+    setManagedObjectEntityId(managedObjectEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
   // * Delete Object *
@@ -139,30 +142,16 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     const funcName = 'onDeleteManagedObjectFromToolbar';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
-    onDeleteManagedObject(managedObjectEntityId);
-  }
-  const onDeleteManagedObject = (moEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(moEntityId);
+    setManagedObjectEntityId(managedObjectEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
-  // // * Recover objects *
-  // const onRecoverManagedObjectListFromToolbar = () => {
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_RECOVER);
-  // }
-
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showListComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-      </React.Fragment>
-    );
     if(showViewComponent) {          
       return (
         <React.Fragment>
-          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
           <Button 
             label={ToolbarEditManagedObjectButtonLabel} 
             icon="pi pi-pencil" 
@@ -175,7 +164,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
-    if(showNewComponent) return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(showViewComponent) {
@@ -192,16 +180,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         </React.Fragment>
       );
     }
-    // if(showListComponent && APRbacDisplayService.isAuthorized_To_ManageRecoveredAssets(authContext.authorizedResourcePathsAsString)) {
-    //   return (
-    //     <Button 
-    //       label={ToolbarRecoverManagedObjectListButtonLabel} 
-    //       icon="pi pi-cog" 
-    //       onClick={onRecoverManagedObjectListFromToolbar} 
-    //       className="p-button-text p-button-plain p-button-outlined" 
-    //     />        
-    //   );
-    // }
   }
   const renderToolbar = (): JSX.Element => {
     const rightToolbarTemplate: JSX.Element | undefined = renderRightToolbarContent();
@@ -212,7 +190,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   
   // * prop callbacks *
   const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    setBreadCrumbItemList(itemList);
+    props.setBreadCrumbItemList(itemList);
   }
   const onSetManageObjectComponentState_To_View = (apiProductEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apiProductEntityId);
@@ -227,14 +205,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
-  }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
-    setApiCallStatus(apiCallState);
-    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectEntityId(newMoEntityId);
-      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    }
-    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -258,14 +228,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -273,14 +241,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
-      setShowNewComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
-      setShowDeleteComponent(false);
-      setShowNewComponent(false);
+      setShowDeleteComponent(false)
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -288,21 +254,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
-      setShowNewComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
-    }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
-      setShowListComponent(false);
-      setShowViewComponent(false);
-      setShowEditComponent(false);
-      setShowDeleteComponent(false);
-      setShowNewComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -310,7 +267,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
 
   return (
-    <div className="manage-api-products">
+    <div className="ap-maintain-api-products">
 
       <CheckConnectorHealth />
       
@@ -319,8 +276,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       { !isLoading && renderToolbar() }
 
       {showListComponent && 
-        <ListApiProducts
-          key={`${ComponentName}_ListApiProducts_${refreshCounter}`}
+        <ListMaintainApiProducts
+          key={`${ComponentName}_ListMaintainApiProducts_${refreshCounter}`}
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
@@ -329,16 +286,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
       }
-      {/* {showListRecoverComponent && 
-        <ManageRecoverApiProducts
-          key={`${ComponentName}_ListRecoverableApiProducts_${refreshCounter}`}
-          organizationEntityId={props.organizationEntityId}
-          onSuccess={onMangeRecoverManagedObjectsSuccess} 
-          onError={onSubComponentError} 
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onNavigateToCommand={onSetManageObjectComponentState_From_List}
-        />
-      } */}
       {showViewComponent && managedObjectEntityId &&
         <ViewApiProduct
           key={`${ComponentName}_showViewComponent_${refreshCounter}`}
@@ -349,28 +296,16 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
-        />      
+        />
       }
       {showDeleteComponent && managedObjectEntityId &&
         <DeleteApiProduct
-        organizationId={props.organizationEntityId.id}
-        apiProductEntityId={managedObjectEntityId}
-        onError={onSubComponentError} 
-        onLoadingChange={setIsLoading}
-        onCancel={onSubComponentCancel}
-        onDeleteSuccess={onDeleteManagedObjectSuccess}
-        />
-      }
-      {showNewComponent &&
-        <ManageEditNewApiProduct
-          action={EAction.NEW}
           organizationId={props.organizationEntityId.id}
-          onError={onSubComponentError}
-          onCancel={onSubComponentCancel}
+          apiProductEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onEditNewSuccess={onNewManagedObjectSuccess}
-          onUserNotification={onSubComponentUserNotification}
+          onCancel={onSubComponentCancel}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
         />
       }
       {showEditComponent && managedObjectEntityId &&
