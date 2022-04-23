@@ -41,10 +41,10 @@ export const APDisplayAppWebhookStatus: React.FC<IAPDisplayAppWebhookStatusProps
     if(ts === undefined) return 'not available';
     return new Date(ts * 1000).toUTCString();
   }
-  // const getName = (name: string | undefined): string => {
-  //   if(name === '' || name === undefined) return 'not available';
-  //   return name;
-  // }
+  const getName = (name: string | undefined): string => {
+    if(name === '' || name === undefined) return 'not available';
+    return name;
+  }
   const getUri = (uri: string | undefined): string => {
     if(uri === '' || uri === undefined) return 'not available';
     return uri;
@@ -54,12 +54,11 @@ export const APDisplayAppWebhookStatus: React.FC<IAPDisplayAppWebhookStatusProps
     return reason;
   }
 
-
   const renderAll = (): JSX.Element => {
     const apiWebhookStatus = props.appWebhookStatus;
     return (
       <div>
-        {/* <div><b>Name</b>: {props.appWebhookStatus.}</div> */}
+        <div><b>Name</b>: {getName(apiWebhookStatus.name)}</div>
         <div><b>URI</b>: {getUri(apiWebhookStatus.uri)}</div>
         <div className="p-ml-2">
           <div>Status: {renderStatus()}</div>
