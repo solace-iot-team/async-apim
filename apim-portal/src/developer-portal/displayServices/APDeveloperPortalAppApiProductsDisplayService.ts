@@ -128,6 +128,40 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     throw new Error(`${logName}: should never get here`);
   }
 
+  public create_ApApp_ApiProduct_Status = ({ connectorAppStatus, connectorAppApiProduct }:{
+    connectorAppStatus: AppStatus;
+    connectorAppApiProduct: string | AppApiProductsComplex;
+  }): EAPApp_ApiProduct_Status => {
+    const funcName = 'create_ApApp_ApiProduct_Status';
+    const logName = `${this.FinalComponentName}.${funcName}()`;
+
+    let apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = EAPApp_ApiProduct_Status.UNKNOWN;
+    if(typeof connectorAppApiProduct === 'string') {
+      // just the id, either legacy or externally managed
+      switch(connectorAppStatus) {
+        case AppStatus.APPROVED:
+          apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.LIVE;
+          break;
+        case AppStatus.PENDING:
+          // is this also true for api products = auto? 
+          // if not, then need to get the api product here
+          apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.APPROVAL_PENDING;
+          break;
+        case AppStatus.REVOKED:
+          apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.APPROVAL_REVOKED;
+          break;
+        default:
+          Globals.assertNever(logName, connectorAppStatus);
+      }
+    } else {
+      // take the status from connector api product app status
+      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
+      if(complexAppApiProduct.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct !== 'string' AND complexAppApiProduct.status === undefined`);
+      apApp_ApiProduct_Status = this.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(complexAppApiProduct.status);
+    }
+    return apApp_ApiProduct_Status;
+  }
+
   private create_Empty_ApAppClientInformationDisplay(): TAPAppClientInformationDisplay {
     return {
       apGuarenteedMessagingDisplay: undefined
@@ -333,9 +367,9 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
   }): Promise<TAPDeveloperPortalAppApiProductDisplay> => {
     const funcName = 'apiGet_DeveloperPortalApAppApiProductDisplay';
     const logName = `${this.FinalComponentName}.${funcName}()`;
+    if(connectorAppResponse.status === undefined) throw new Error(`${logName}: connectorAppResponse.status === undefined`);
 
     // figure out the apiProductId and status with backwards compatibility
-
     let apiProductId: string;
     if(typeof connectorAppApiProduct === 'string') {
       // old style, keep here for backwards compatibility
@@ -357,22 +391,10 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       });  
     }
 
-    let apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = EAPApp_ApiProduct_Status.UNKNOWN;
-    if(typeof connectorAppApiProduct === 'string') {
-      // it is just the id, attempt to calculate the status from the app
-      if(connectorApiProduct.approvalType === undefined) throw new Error(`${logName}: connectorApiProduct.approvalType === undefined`);
-      if(connectorApiProduct.approvalType === APIProduct.approvalType.AUTO) apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.LIVE;
-      else {
-        // approvalType === MANUAL
-        if(connectorAppResponse.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct === 'string' AND connectorAppResponse.status === undefined`);
-        apApp_ApiProduct_Status = this.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(connectorAppResponse.status);
-      }
-    } else {
-      // take the status from connector api product app status
-      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
-      if(complexAppApiProduct.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct !== 'string' AND complexAppApiProduct.status === undefined`);
-      apApp_ApiProduct_Status = this.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(complexAppApiProduct.status);
-    }
+    const apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = this.create_ApApp_ApiProduct_Status({
+      connectorAppStatus: connectorAppResponse.status,
+      connectorAppApiProduct: connectorAppApiProduct
+    });
 
     const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,

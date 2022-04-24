@@ -11,7 +11,7 @@ import { TApiCallState } from "../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageAppsCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APAdminPortalAppsDisplayService, { 
-  TAPAdminPortalAppDisplay, 
+  IAPAdminPortalAppListDisplay,
   TAPAdminPortalAppDisplay_AllowedActions 
 } from "../../displayServices/APAdminPortalAppsDisplayService";
 import { ListApps } from "./ListApps";
@@ -101,12 +101,9 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (apAdminPortalAppDisplay: TAPAdminPortalAppDisplay): void => {
+  const onViewManagedObject = (apAdminPortalAppListDisplay: IAPAdminPortalAppListDisplay): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(apAdminPortalAppDisplay.apEntityId);
-    setManagedObject_AllowedActions(APAdminPortalAppsDisplayService.get_AllowedActions({
-      apAppDisplay: apAdminPortalAppDisplay
-    }));
+    setManagedObjectEntityId(apAdminPortalAppListDisplay.apEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -291,6 +288,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
           key={`${ComponentName}_ViewApp_${refreshCounter}`}
           organizationId={props.organizationId}
           appEntityId={managedObjectEntityId}
+          setAllowedActions={setManagedObject_AllowedActions}
           onSuccess={onSubComponentUserNotification}
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

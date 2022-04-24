@@ -12,8 +12,8 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import APAdminPortalAppsDisplayService, { 
-  TAPAdminPortalAppDisplay, 
-  TAPAdminPortalAppDisplayList 
+  IAPAdminPortalAppListDisplay,
+  TAPAdminPortalAppListDisplayList
 } from "../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -21,6 +21,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupDisplay 
 } from "../../../displayServices/APUsersDisplayService/APMemberOfService";
 import { Loading } from "../../../components/Loading/Loading";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -29,7 +30,7 @@ export interface IListAppsProps {
   organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onManagedObjectView: (apAdminPortalAppDisplay: TAPAdminPortalAppDisplay) => void;
+  onManagedObjectView: (apAdminPortalAppListDisplay: IAPAdminPortalAppListDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -39,7 +40,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const MessageNoManagedObjectsFound = 'No Apps found.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TAPAdminPortalAppDisplay;
+  type TManagedObject = IAPAdminPortalAppListDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
@@ -78,7 +79,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_LIST, `retrieve list of apps`);
     try { 
-      const list: TAPAdminPortalAppDisplayList = await APAdminPortalAppsDisplayService.apiGetList_ApAdminPortalAppDisplayList_With_Rbac({
+      const list: TAPAdminPortalAppListDisplayList = await APAdminPortalAppsDisplayService.apiGetList_ApAdminPortalAppListDisplayList({
         organizationId: props.organizationId,
         businessGroupId: currentBusinessGroupId,
         businessGroupRoleEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList
@@ -93,17 +94,13 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   }
 
   const doInitialize = async () => {
-    // props.onLoadingChange(true);
     setIsLoading(true);
     await apiGetManagedObjectList();
     setIsLoading(false);
-    // props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
-    // const funcName = 'useEffect([])';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mounting ...`);
+    // console.log(`${ComponentName}: mounting ...`);
     props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -185,8 +182,8 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const renderManagedObjectDataTable = () => {
     const dataKey = APAdminPortalAppsDisplayService.nameOf_ApEntityId('id');
     const sortField = APAdminPortalAppsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apSearchContent');
-    const statusField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apAdminPortalAppStatus');
+    const filterField = APDisplayUtils.nameOf<TManagedObject>('apSearchContent');
+    const statusField = APDisplayUtils.nameOf<TManagedObject>('apAdminPortalAppStatus');
     const ownerIdField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('appOwnerId');
     const ownerTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppOwnerType');
     const appTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppType');

@@ -290,26 +290,19 @@ class APRbacDisplayService {
    * - check if appOwnerId is member of the business group
    * - check if appOwnerId has role of apiConsumer in business group
    */
-  public canManage_UserApp_In_BusinessGroup = async({ organizationId, businessGroupId, appOwnerId }:{
+  public canManage_UserApp_In_BusinessGroup = ({ organizationId, businessGroupId, apOrganizationUserDisplay }:{
     organizationId: string;
     businessGroupId: string;
-    appOwnerId: string;
-  }): Promise<boolean> => {
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): boolean => {
     const funcName = 'hasUser_ApiConsumer_Role_In_BusinessGroup';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    const organizationEntityId: TAPEntityId = { id: organizationId, displayName: organizationId };
-    // get the appOwnerId details
-    const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
-      userId: appOwnerId,
-      organizationEntityId: organizationEntityId,
-      fetch_ApOrganizationAssetInfoDisplayList: false,
-    });
     if(apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
 
     // get the tree node list with calculated roles in each business group
     const apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_ApMemberOfBusinessGroupDisplayTreeNodeList({
-      organizationEntityId: organizationEntityId,
+      organizationEntityId: { id: organizationId, displayName: organizationId },
       apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
       apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
       completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,

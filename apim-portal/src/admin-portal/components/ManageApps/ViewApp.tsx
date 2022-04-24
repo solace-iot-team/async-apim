@@ -16,7 +16,10 @@ import { APDisplayDeveloperPortalAppEndpointsPanel } from "../../../components/A
 import APAppEnvironmentsDisplayService from "../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 import { APDisplayDeveloperPortalAppEnvironmentChannelPermissionsPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_EnvironmentChannelPermissions_Panel";
 import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalApp_ApiProducts_ClientInformation_Panel";
-import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../displayServices/APAdminPortalAppsDisplayService";
+import APAdminPortalAppsDisplayService, { 
+  TAPAdminPortalAppDisplay, 
+  TAPAdminPortalAppDisplay_AllowedActions 
+} from "../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 import APDeveloperPortalAppApiProductsDisplayService from "../../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
@@ -32,6 +35,7 @@ import "./ManageApps.css";
 export interface IViewAppProps {
   organizationId: string;
   appEntityId: TAPEntityId;
+  setAllowedActions: (apAdminPortalAppDisplay_AllowedActions: TAPAdminPortalAppDisplay_AllowedActions) => void;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -96,6 +100,9 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setBreadCrumbItemList(managedObject.apEntityId.displayName);
+    props.setAllowedActions(APAdminPortalAppsDisplayService.get_AllowedActions({
+        apAppDisplay: managedObject
+    }));
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */  
 
   React.useEffect(() => {

@@ -1,4 +1,5 @@
 import { 
+  AppApiProducts,
   AppApiProductsComplex,
   AppConnectionStatus,
   AppListItem,
@@ -27,9 +28,9 @@ import {
 import APBusinessGroupsDisplayService from '../../displayServices/APBusinessGroupsDisplayService';
 import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APOrganizationUsersDisplayService, { 
-  TAPCheckOrganizationUserIdExistsResult
+  TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay, TAPOrganizationUserDisplayList
 } from '../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService';
-import { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import { IAPEntityIdDisplay, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
 
@@ -44,16 +45,18 @@ export enum EAPAdminPortalApp_Status {
 export type TAPAdminPortalAppDisplay_AllowedActions = TAPAppDisplay_AllowedActions & {
   // nothing to add for now
 }
-
 export type TAPAdminPortalAppDisplay = IAPAppDisplay & IAPSearchContent & {
   apAdminPortalAppStatus: EAPAdminPortalApp_Status;
 }
-export type TAPAdminPortalAppDisplayList = Array<TAPAdminPortalAppDisplay>;
-
-// export type TAPDeveloperPortalUserAppDisplay_AllowedActions = {
-//   isManageWebhooksAllowed: boolean;
-//   isMonitorStatsAllowed: boolean;
-// }
+/**
+ * Display for list.
+ */
+export interface IAPAdminPortalAppListDisplay extends IAPEntityIdDisplay, IAPSearchContent {
+  connectorAppListItem: AppListItem;
+  apAppMeta: TAPAppMeta;
+  apAdminPortalAppStatus: EAPAdminPortalApp_Status;
+}
+export type TAPAdminPortalAppListDisplayList = Array<IAPAdminPortalAppListDisplay>;
 
 class APAdminPortalAppsDisplayService extends APAppsDisplayService {
   private readonly ComponentName = "APAdminPortalAppsDisplayService";
@@ -76,38 +79,28 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     throw new Error(`${logName}: unknown connectorAppType=${connectorAppType}`);
   }
 
-  /**
-   * TODO: remove async & organizationId once it's clear we do not need more info.
-   */
-  private async create_ApAdminPortalAppStatus({ organizationId, connectorAppResponse }:{
-    organizationId: string;
-    connectorAppResponse: AppResponse;
-  }): Promise<EAPAdminPortalApp_Status> {
+  private create_ApAdminPortalAppStatus({ connectorAppStatus, connectorAppApiProductList }:{
+    connectorAppStatus?: AppStatus;
+    connectorAppApiProductList?: AppApiProducts;
+  }): EAPAdminPortalApp_Status {
     const funcName = 'create_ApAdminPortalAppStatus';
     const logName = `${this.ComponentName}.${funcName}()`;
+    if(connectorAppStatus === undefined) throw new Error(`${logName}: connectorAppStatus === undefined`);
 
-    // calculate the app status from the individual api product app statuses
-    const numTotal: number = connectorAppResponse.apiProducts.length;
+    if(connectorAppApiProductList === undefined || connectorAppApiProductList.length === 0) return EAPAdminPortalApp_Status.NO_API_PRODUCTS;
+
+    // get the individual api products statuses
+    const numTotal: number = connectorAppApiProductList.length;
     let numLive: number = 0;
     let numApprovalPending: number = 0;
     let numApprovalRevoked: number = 0;
 
-    for(const connectorAppApiProduct of connectorAppResponse.apiProducts) {
-      // connectorAppApiProduct: string | AppApiProductsComplex
-      let apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = EAPApp_ApiProduct_Status.UNKNOWN;
-      if(typeof connectorAppApiProduct === 'string') {
-        // just the id, either legacy or externally managed
-        // calculate from app & api product status
-        if(connectorAppResponse.status === undefined) throw new Error(`${logName}: connectorAppResponse.status === undefined`);
-        if(connectorAppResponse.status !== AppStatus.APPROVED) apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.APPROVAL_PENDING;
-        // if app is approved, all products are approved, regardless if they are manual or auto approval
-        else apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.LIVE;
-      } else {
-        // take the status from connector api product app status
-        const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
-        if(complexAppApiProduct.status === undefined) throw new Error(`${logName}: typeof connectorAppApiProduct !== 'string' AND complexAppApiProduct.status === undefined`);
-        apApp_ApiProduct_Status = APDeveloperPortalAppApiProductsDisplayService.map_ConnectorAppStatus_To_ApApp_ApiProduct_Status(complexAppApiProduct.status);
-      }
+    for(const connectorAppApiProduct of connectorAppApiProductList) {
+
+      const apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = APDeveloperPortalAppApiProductsDisplayService.create_ApApp_ApiProduct_Status({
+        connectorAppStatus: connectorAppStatus,
+        connectorAppApiProduct: connectorAppApiProduct
+      });
 
       switch(apApp_ApiProduct_Status) {
         case EAPApp_ApiProduct_Status.LIVE:
@@ -143,23 +136,45 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     return apAdminPortalAppStatus;
   }
 
-  private async create_ApAdminPortalAppDisplay_From_ApiEntities({ 
-    organizationId,
+  private create_ApAdminPortalAppListDisplay_From_ApiEntities({ apAppMeta, apAdminPortalApp_Status, connectorAppListItem }:{
+    apAppMeta: TAPAppMeta;
+    apAdminPortalApp_Status: EAPAdminPortalApp_Status;
+    connectorAppListItem: AppListItem;
+  }): IAPAdminPortalAppListDisplay {
+    const funcName = 'create_ApAdminPortalAppListDisplay_From_ApiEntities';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
+
+    const apAdminPortalAppListDisplay: IAPAdminPortalAppListDisplay = {
+      connectorAppListItem: connectorAppListItem,
+      apEntityId: {
+        id: connectorAppListItem.name,
+        displayName: connectorAppListItem.displayName ? connectorAppListItem.displayName : connectorAppListItem.name
+      },
+      apAppMeta: apAppMeta,
+      apAdminPortalAppStatus: apAdminPortalApp_Status,
+      apSearchContent: '' 
+    };
+    return APSearchContentService.add_SearchContent<IAPAdminPortalAppListDisplay>(apAdminPortalAppListDisplay);
+  }
+
+  private create_ApAdminPortalAppDisplay_From_ApiEntities({ 
     apAppMeta, 
+    apAdminPortalApp_Status,
     connectorAppResponse_smf,
     connectorAppResponse_mqtt,
     connectorAppConnectionStatus,
     apApp_ApiProduct_DisplayList,
     apApp_Api_DisplayList,
   }: {
-    organizationId: string;
     apAppMeta: TAPAppMeta;
+    apAdminPortalApp_Status: EAPAdminPortalApp_Status;
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
     connectorAppConnectionStatus: AppConnectionStatus;
     apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apApp_Api_DisplayList: TAPAppApiDisplayList;
-  }): Promise<TAPAdminPortalAppDisplay> {
+  }): TAPAdminPortalAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
       apAppMeta: apAppMeta,
@@ -172,25 +187,11 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
     const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = {
       ...apAppDisplay,
-      apAdminPortalAppStatus: await this.create_ApAdminPortalAppStatus({ organizationId: organizationId, connectorAppResponse: connectorAppResponse_smf }),
+      apAdminPortalAppStatus: apAdminPortalApp_Status,
       apSearchContent: '',      
     };
     return APSearchContentService.add_SearchContent<TAPAdminPortalAppDisplay>(apAdminPortalAppDisplay);
   }
-
-  // public get_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay }:{
-  //   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-  // }): TAPDeveloperPortalAppApiProductDisplayList {
-  //   return apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList;
-  // }
-
-  // public set_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay, apDeveloperPortalUserApp_ApiProductDisplayList }:{
-  //   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-  //   apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
-  // }): TAPDeveloperPortalUserAppDisplay {
-  //   apDeveloperPortalUserAppDisplay.apDeveloperPortalUserApp_ApiProductDisplayList = apDeveloperPortalUserApp_ApiProductDisplayList;
-  //   return apDeveloperPortalUserAppDisplay;
-  // }
 
   public get_Empty_AllowedActions(): TAPAdminPortalAppDisplay_AllowedActions {
     return {
@@ -211,16 +212,36 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
-  private async apiCheck_isOwnerIdInternal({ organizationId, ownerId, apAppType }:{
+  /**
+   * Checks if ownerId (team or user) is internal. 
+   * If it is a user and it is internal, update the cache if provided.
+   */
+  private async apiCheck_isOwnerIdInternal({ organizationId, ownerId, apAppType, cache_ApOrganizationUserDisplayList }:{
     apAppType: EAPApp_Type;
-    ownerId: string;
+    ownerId?: string;
     organizationId: string;
+    cache_ApOrganizationUserDisplayList?: TAPOrganizationUserDisplayList;
   }): Promise<boolean> {
     const funcName = 'apiCheck_isOwnerIdInternal';
     const logName = `${this.ComponentName}.${funcName}()`;
+    if(ownerId === undefined) throw new Error(`${logName}: ownerId === undefined`);
     switch(apAppType) {
       case EAPApp_Type.USER:
+        console.log(`${logName}: looking for userId=${ownerId}`);
+        // check cache if defined
+        if(cache_ApOrganizationUserDisplayList !== undefined) {
+          const cached_ApOrganizationUserDisplay: TAPOrganizationUserDisplay | undefined = cache_ApOrganizationUserDisplayList.find( (x) => {
+            return x.apEntityId.id === ownerId;
+          });
+          if(cached_ApOrganizationUserDisplay !== undefined) return true;
+        }
+        console.log(`${logName}: not in cache, userId=${ownerId}`);
+        // not in cache
         const result: TAPCheckOrganizationUserIdExistsResult = await APOrganizationUsersDisplayService.apsCheck_OrganizationUserIdExists({ organizationId: organizationId, userId: ownerId });
+        if(cache_ApOrganizationUserDisplayList !== undefined && result.existsInOrganization && result.apOrganizationUserDisplay !== undefined) {
+          // add to cache
+          cache_ApOrganizationUserDisplayList.push(result.apOrganizationUserDisplay);
+        }
         return result.existsInOrganization;
       case EAPApp_Type.TEAM:
         return await APBusinessGroupsDisplayService.apsCheck_BusinessGroupIdExists({ organizationId: organizationId, businessGroupId: ownerId });
@@ -232,20 +253,33 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     throw new Error(`${logName}: unknown apAppType=${apAppType}`);
   }
 
-  private async create_ApAdminPortalAppDisplay_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId }:{
+  /**
+   * Makes a call 
+   * @param param0 
+   * @returns 
+   */
+  private async create_ApAdminPortalAppDisplay_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId, isOwnerInternal, cache_ApOrganizationUserDisplayList }:{
     organizationId: string;
     connectorAppType?: AppResponseGeneric.appType;
     connectorOwnerId?: string;
+    isOwnerInternal?: boolean;
+    cache_ApOrganizationUserDisplayList?: TAPOrganizationUserDisplayList;
+    connectorAppApiProductList: AppApiProducts;
   }): Promise<TAPAppMeta> {
     const funcName = 'create_ApAppMeta';
     const logName = `${this.ComponentName}.${funcName}()`;
     if(connectorOwnerId === undefined) throw new Error(`${logName}: connectorOwnerId === undefined`);
     const apAppType: EAPApp_Type = this.map_ConnectorAppType_To_ApAppType({ connectorAppType: connectorAppType });
-    const isOwnerInternal: boolean = await this.apiCheck_isOwnerIdInternal({ organizationId: organizationId, apAppType: apAppType, ownerId: connectorOwnerId });
+    if(isOwnerInternal === undefined) isOwnerInternal = await this.apiCheck_isOwnerIdInternal({ 
+      organizationId: organizationId, 
+      apAppType: apAppType, 
+      ownerId: connectorOwnerId,
+      cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+    });
     return {
       apAppType: apAppType,
       apAppOwnerType: isOwnerInternal ? EAPApp_OwnerType.INTERNAL : EAPApp_OwnerType.EXTERNAL,
-      appOwnerId: connectorOwnerId
+      appOwnerId: connectorOwnerId,
     };
   }
 
@@ -302,7 +336,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
       organizationId: organizationId, 
       connectorAppType: connectorAppResponseGeneric.appType,
-      connectorOwnerId: connectorAppResponseGeneric.ownerId
+      connectorOwnerId: connectorAppResponseGeneric.ownerId,
+      connectorAppApiProductList: connectorAppResponseGeneric.apiProducts
     });
 
     const connectorAppResponse_smf: AppResponse = await this.apiGet_ConnectorAppResponse({
@@ -339,9 +374,9 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     });
 
 
-    const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await this.create_ApAdminPortalAppDisplay_From_ApiEntities({
-      organizationId: organizationId,
+    const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = this.create_ApAdminPortalAppDisplay_From_ApiEntities({
       apAppMeta: apAppMeta,
+      apAdminPortalApp_Status: this.create_ApAdminPortalAppStatus({ connectorAppStatus: connectorAppResponse_smf.status, connectorAppApiProductList: connectorAppResponse_smf.apiProducts }),
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       connectorAppConnectionStatus: connectorAppConnectionStatus,
@@ -354,15 +389,19 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
   }
 
   /**
-   * TODO: re-work to only use connector AppResponseGeneric for the list.
-   * otherwise, it will take too long for many apps
+   * Create a list of IAPAdminPortalAppListDisplay objects with RBAC rules applied.
+   * Possible enhancement: optimize http gets if it becomes an issue: (browser should cache calls though)
+   *  - for every app user that is internal:
+   *    - retrieve user - ok
+   *    - retrieve business groups (could be cached)
+   *    - retrieve external systems (could be cached)
    */
-  public apiGetList_ApAdminPortalAppDisplayList_With_Rbac = async({ organizationId, businessGroupId, businessGroupRoleEntityIdList }: {
+  public apiGetList_ApAdminPortalAppListDisplayList = async({ organizationId, businessGroupId, businessGroupRoleEntityIdList }: {
     organizationId: string;
     businessGroupId: string;
     businessGroupRoleEntityIdList: TAPEntityIdList;
-  }): Promise<TAPAdminPortalAppDisplayList> => {
-    const funcName = 'apiGetList_ApAdminPortalAppDisplayList_With_Rbac';
+  }): Promise<TAPAdminPortalAppListDisplayList> => {
+    const funcName = 'apiGetList_ApAdminPortalAppListDisplayList';
     const logName = `${this.ComponentName}.${funcName}()`;
 
     // get the access levels
@@ -370,10 +409,16 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       businessGroupRoleEntityIdList: businessGroupRoleEntityIdList
     });
 
-    // keep a cache of ownerIds which have Api consumer role in business group
-    const canManageApps_For_OwnerIdList: Array<string> = [];
+    // keep a cache of known (internal) and not known(external) ownerIds
+    const cache_Internal_OwnerIdList: Array<string> = [];
+    const cache_External_OwnerIdList: Array<string> = [];
+    // keep a cache of ownerIds which have Api consumer role in business group ==> user can manage apps for these owners
+    const cache_CanManageApps_For_OwnerIdList: Array<string> = [];
+    const cache_CannotManageApps_For_OwnerIdList: Array<string> = [];
+    // keep a cache for internal user details
+    const cache_ApOrganizationUserDisplayList: TAPOrganizationUserDisplayList = [];
 
-    const apAdminPortalAppDisplayList: TAPAdminPortalAppDisplayList = [];
+    const apAdminPortalAppListDisplayList: TAPAdminPortalAppListDisplayList = [];
 
     const connectorAppList: Array<AppListItem> = await AppsService.listApps({
       organizationName: organizationId, 
@@ -381,15 +426,43 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
     for(const connectorAppListItem of connectorAppList) {
       if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
+      if(connectorAppListItem.ownerId === undefined) throw new Error(`${logName}: connectorAppListItem.ownerId === undefined`);
+      
+      // check if ownerId is known (internal) or not known (external)
+      let isOwnerInternal: boolean = false;
+      const foundAppOwnerIdInternal = cache_Internal_OwnerIdList.find( (x) => {
+        return x === connectorAppListItem.ownerId;
+      });
+      if(foundAppOwnerIdInternal !== undefined) isOwnerInternal = true;
+      else {
+        // check in cache if external
+        const foundAppOwnerIdExternal = cache_External_OwnerIdList.find( (x) => {
+          return x === connectorAppListItem.ownerId;
+        });
+        if(foundAppOwnerIdExternal !== undefined) isOwnerInternal = false;
+        else {
+          // check & add to correct cache
+          isOwnerInternal = await this.apiCheck_isOwnerIdInternal({ 
+            organizationId: organizationId, 
+            apAppType: this.map_ConnectorAppType_To_ApAppType({ connectorAppType: connectorAppListItem.appType }), 
+            ownerId: connectorAppListItem.ownerId,
+            cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList
+          });
+          if(isOwnerInternal) cache_Internal_OwnerIdList.push(connectorAppListItem.ownerId);
+          else cache_External_OwnerIdList.push(connectorAppListItem.ownerId);
+        }  
+      }
 
       const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
         organizationId: organizationId, 
         connectorAppType: connectorAppListItem.appType,
-        connectorOwnerId: connectorAppListItem.ownerId
+        connectorOwnerId: connectorAppListItem.ownerId,
+        isOwnerInternal: isOwnerInternal,
+        cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+        connectorAppApiProductList: connectorAppListItem.apiProducts ? connectorAppListItem.apiProducts : []
       });
 
-      // re-write?
-      // add it to the list?
+      // determine if user is allowed to manage the app
       let canManageApp: boolean = false;
       // external user or team apps 
       if(apAppMeta.apAppOwnerType === EAPApp_OwnerType.EXTERNAL && canManage_ExternalApps) canManageApp = true;
@@ -399,117 +472,63 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
         // it is a user app
         // check if ownerId has api consumer calculated roles in this business group
         // check the cache first
-        const foundAppOwnerId: string | undefined = canManageApps_For_OwnerIdList.find( (x) => {
+        const found_can: string | undefined = cache_CanManageApps_For_OwnerIdList.find( (x) => {
           return x === apAppMeta.appOwnerId;
         });
-        if(foundAppOwnerId) {
-          // alert(`${logName}: found appOwnerId in cache, foundAppOwnerId=${foundAppOwnerId}`);
-          canManageApp = true;
-        }
+        if(found_can !== undefined) canManageApp = true;
         else {
-          const canManageAppsForOwnerId: boolean = await APRbacDisplayService.canManage_UserApp_In_BusinessGroup({
-            organizationId: organizationId,
-            businessGroupId: businessGroupId,
-            appOwnerId: apAppMeta.appOwnerId
+          const found_cannot: string | undefined = cache_CannotManageApps_For_OwnerIdList.find( (x) => {
+            return x === apAppMeta.appOwnerId;
           });
-          if(canManageAppsForOwnerId) {
-            canManageApps_For_OwnerIdList.push(apAppMeta.appOwnerId);
-            canManageApp = true;
-          }
+          if(found_cannot !== undefined) canManageApp = false;
+          else {
+            // get the details from the cache
+            const apOrganizationUserDisplay: TAPOrganizationUserDisplay | undefined = cache_ApOrganizationUserDisplayList.find( (x) => {
+              return x.apEntityId.id === apAppMeta.appOwnerId;
+            });
+            if(apOrganizationUserDisplay === undefined) throw new Error(`${logName}: apOrganizationUserDisplay === undefined`);
+
+
+            // const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
+            //   userId: apAppMeta.appOwnerId,
+            //   organizationEntityId: { id: organizationId, displayName: organizationId },
+            //   fetch_ApOrganizationAssetInfoDisplayList: false,
+            // });
+            // // add it to the cache
+            // cache_ApOrganizationUserDisplayList.push(apOrganizationUserDisplay);
+        
+            const canManageAppsForOwnerId: boolean = APRbacDisplayService.canManage_UserApp_In_BusinessGroup({
+              organizationId: organizationId,
+              businessGroupId: businessGroupId,
+              apOrganizationUserDisplay: apOrganizationUserDisplay,
+            });
+  
+            if(canManageAppsForOwnerId) {
+              cache_CanManageApps_For_OwnerIdList.push(apAppMeta.appOwnerId);
+              canManageApp = true;
+            } else {
+              cache_CannotManageApps_For_OwnerIdList.push(apAppMeta.appOwnerId);
+              canManageApp = false;
+            }
+          }  
         }
       }
 
       if(canManageApp) {
-        const connectorAppResponse_smf: AppResponse = await this.apiGet_ConnectorAppResponse({
-          organizationId: organizationId,
-          apAppType: apAppMeta.apAppType,
-          apTopicSyntax: 'smf',
-          appId: connectorAppListItem.name,
-          ownerId: apAppMeta.appOwnerId
-        });
-    
-        // required to calculate the app status
-        const apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
-          organizationId: organizationId,
-          ownerId: apAppMeta.appOwnerId,
-          connectorAppResponse: connectorAppResponse_smf,
-        });
-  
-        const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await this.create_ApAdminPortalAppDisplay_From_ApiEntities({
-          organizationId: organizationId,
+        // add the app to list 
+        const apAdminPortalAppListDisplay: IAPAdminPortalAppListDisplay = this.create_ApAdminPortalAppListDisplay_From_ApiEntities({
           apAppMeta: apAppMeta,
-          connectorAppResponse_smf: connectorAppResponse_smf,
-          connectorAppConnectionStatus: {},
-          apApp_ApiProduct_DisplayList: apApp_ApiProduct_DisplayList,
-          apApp_Api_DisplayList: [],
+          connectorAppListItem: connectorAppListItem,
+          apAdminPortalApp_Status: this.create_ApAdminPortalAppStatus({
+            connectorAppApiProductList: connectorAppListItem.apiProducts,
+            connectorAppStatus: connectorAppListItem.status
+          }),
         });
-        apAdminPortalAppDisplayList.push(apAdminPortalAppDisplay);  
+        apAdminPortalAppListDisplayList.push(apAdminPortalAppListDisplay);
       }
     }
 
-    return apAdminPortalAppDisplayList;
-  }
-
-  /**
-   * Get a list of user or team apps. Internal user / team or External user/team.
-   * Includes:
-   * - smf
-   * - api products
-   * Does not include:
-   * - mqtt
-   * - apis
-   * - app status
-   * @param param0 
-   * @returns 
-   */
-  public apiGetList_ApAdminPortalAppDisplayList = async({ organizationId }: {
-    organizationId: string;
-  }): Promise<TAPAdminPortalAppDisplayList> => {
-    const funcName = 'apiGetList_ApAdminPortalAppDisplayList';
-    const logName = `${this.ComponentName}.${funcName}()`;
-
-    const apAdminPortalAppDisplayList: TAPAdminPortalAppDisplayList = [];
-
-    const connectorAppList: Array<AppListItem> = await AppsService.listApps({
-      organizationName: organizationId, 
-    });
-
-    for(const connectorAppListItem of connectorAppList) {
-      if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
-
-      const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
-        organizationId: organizationId, 
-        connectorAppType: connectorAppListItem.appType,
-        connectorOwnerId: connectorAppListItem.ownerId
-      });
-
-      const connectorAppResponse_smf: AppResponse = await this.apiGet_ConnectorAppResponse({
-        organizationId: organizationId,
-        apAppType: apAppMeta.apAppType,
-        apTopicSyntax: 'smf',
-        appId: connectorAppListItem.name,
-        ownerId: apAppMeta.appOwnerId
-      });
-  
-      // required to calculate the app status
-      const apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
-        organizationId: organizationId,
-        ownerId: apAppMeta.appOwnerId,
-        connectorAppResponse: connectorAppResponse_smf,
-      });
-
-      const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await this.create_ApAdminPortalAppDisplay_From_ApiEntities({
-        organizationId: organizationId,
-        apAppMeta: apAppMeta,
-        connectorAppResponse_smf: connectorAppResponse_smf,
-        connectorAppConnectionStatus: {},
-        apApp_ApiProduct_DisplayList: apApp_ApiProduct_DisplayList,
-        apApp_Api_DisplayList: [],
-      });
-      apAdminPortalAppDisplayList.push(apAdminPortalAppDisplay);
-    }
-
-    return apAdminPortalAppDisplayList;
+    return apAdminPortalAppListDisplayList;
   }
 
   public async apiDelete_ApDeveloperPortalUserAppDisplay({ organizationId, userId, appId }:{
@@ -540,7 +559,9 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
     });
 
+    // set to approved, apiProducts list is correctly set here
     const update: AppPatch = {
+      status: AppStatus.APPROVED,
       apiProducts: connectorAppApiProductList,
     };
 
@@ -552,33 +573,6 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     });
 
   }
-  // public async apiUpdate_ApDeveloperPortalUserAppDisplay_AppApiProductDisplayList({ organizationId, apDeveloperPortalUserAppDisplay, apDeveloperPortalAppApiProductDisplayList }:{
-  //   organizationId: string;
-  //   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-  //   apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
-  // }): Promise<void> {
-  //   // const funcName = 'apiUpdate_AppApiProductDisplayList';
-  //   // const logName = `${this.ComponentName}.${funcName}()`;
-  //   // test downstream error handling
-  //   // throw new Error(`${logName}: test error handling`);
-
-  //   const connectorAppApiProductList: Array<AppApiProductsComplex> = APDeveloperPortalAppApiProductsDisplayService.create_ConnectorApiProductList({
-  //     apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
-  //   });
-  //   const update: AppPatch = {
-  //     apiProducts: connectorAppApiProductList,
-  //   }
-
-  //   // alert(`${logName}: update api product list, update=${JSON.stringify(update, null, 2)}`);
-
-  //   await this.apiUpdate({
-  //     organizationId: organizationId,
-  //     appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
-  //     apAppMeta: apDeveloperPortalUserAppDisplay.apAppMeta,
-  //     update: update
-  //   });
-
-  // }
 
 }
 

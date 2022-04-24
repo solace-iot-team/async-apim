@@ -84,10 +84,6 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppApiDisplayList: TAPAppApiDisplayList;
   apAppChannelParameterList: TAPAppChannelParameterList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
-
-  // TODO:
-  // appWebhookList: TAPAppWebhookDisplayList;
-  // isAppWebhookCapable: boolean;
 }
 
 export type TAPAppDisplay_AllowedActions = {
@@ -577,10 +573,8 @@ export class APAppsDisplayService {
     const funcName = 'apiUpdate';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    // always set the App to approved
     const requestBody: AppPatch = {
       ...connectorAppPatch,
-      status: AppStatus.APPROVED,
       attributes: apRawAttributeList
     };
 
