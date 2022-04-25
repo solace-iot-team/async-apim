@@ -25,7 +25,7 @@ import {
   TAPAppMeta, 
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
-import APBusinessGroupsDisplayService from '../../displayServices/APBusinessGroupsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APOrganizationUsersDisplayService, { 
   TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay, TAPOrganizationUserDisplayList
@@ -216,11 +216,12 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
    * Checks if ownerId (team or user) is internal. 
    * If it is a user and it is internal, update the cache if provided.
    */
-  private async apiCheck_isOwnerIdInternal({ organizationId, ownerId, apAppType, cache_ApOrganizationUserDisplayList }:{
+  private async apiCheck_isOwnerIdInternal({ organizationId, ownerId, apAppType, cache_ApOrganizationUserDisplayList, complete_ApOrganizationBusinessGroupDisplayList }:{
     apAppType: EAPApp_Type;
     ownerId?: string;
     organizationId: string;
     cache_ApOrganizationUserDisplayList?: TAPOrganizationUserDisplayList;
+    complete_ApOrganizationBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
   }): Promise<boolean> {
     const funcName = 'apiCheck_isOwnerIdInternal';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -237,7 +238,11 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
         }
         console.log(`${logName}: not in cache, userId=${ownerId}`);
         // not in cache
-        const result: TAPCheckOrganizationUserIdExistsResult = await APOrganizationUsersDisplayService.apsCheck_OrganizationUserIdExists({ organizationId: organizationId, userId: ownerId });
+        const result: TAPCheckOrganizationUserIdExistsResult = await APOrganizationUsersDisplayService.apsCheck_OrganizationUserIdExists({ 
+          organizationId: organizationId, 
+          userId: ownerId,
+          complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
+        });
         if(cache_ApOrganizationUserDisplayList !== undefined && result.existsInOrganization && result.apOrganizationUserDisplay !== undefined) {
           // add to cache
           cache_ApOrganizationUserDisplayList.push(result.apOrganizationUserDisplay);
@@ -255,16 +260,15 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
   /**
    * Makes a call 
-   * @param param0 
-   * @returns 
    */
-  private async create_ApAdminPortalAppDisplay_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId, isOwnerInternal, cache_ApOrganizationUserDisplayList }:{
+  private async create_ApAdminPortalAppDisplay_ApAppMeta({ organizationId, connectorAppType, connectorOwnerId, isOwnerInternal, cache_ApOrganizationUserDisplayList, complete_ApOrganizationBusinessGroupDisplayList }:{
     organizationId: string;
     connectorAppType?: AppResponseGeneric.appType;
     connectorOwnerId?: string;
     isOwnerInternal?: boolean;
     cache_ApOrganizationUserDisplayList?: TAPOrganizationUserDisplayList;
     connectorAppApiProductList: AppApiProducts;
+    complete_ApOrganizationBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
   }): Promise<TAPAppMeta> {
     const funcName = 'create_ApAppMeta';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -275,6 +279,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       apAppType: apAppType, 
       ownerId: connectorOwnerId,
       cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+      complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
     });
     return {
       apAppType: apAppType,
@@ -404,6 +409,11 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     const funcName = 'apiGetList_ApAdminPortalAppListDisplayList';
     const logName = `${this.ComponentName}.${funcName}()`;
 
+    // get the complete apBusinessGroupDisplayList once
+    const complete_ApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId
+    });  
+
     // get the access levels
     const canManage_ExternalApps: boolean = APRbacDisplayService.hasAccess_BusinessGroupRoleEntityIdList_ManageAppAccess_For_External_Apps({
       businessGroupRoleEntityIdList: businessGroupRoleEntityIdList
@@ -446,7 +456,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
             organizationId: organizationId, 
             apAppType: this.map_ConnectorAppType_To_ApAppType({ connectorAppType: connectorAppListItem.appType }), 
             ownerId: connectorAppListItem.ownerId,
-            cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList
+            cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+            complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
           });
           if(isOwnerInternal) cache_Internal_OwnerIdList.push(connectorAppListItem.ownerId);
           else cache_External_OwnerIdList.push(connectorAppListItem.ownerId);
@@ -459,7 +470,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
         connectorOwnerId: connectorAppListItem.ownerId,
         isOwnerInternal: isOwnerInternal,
         cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
-        connectorAppApiProductList: connectorAppListItem.apiProducts ? connectorAppListItem.apiProducts : []
+        connectorAppApiProductList: connectorAppListItem.apiProducts ? connectorAppListItem.apiProducts : [],
+        complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
       });
 
       // determine if user is allowed to manage the app
