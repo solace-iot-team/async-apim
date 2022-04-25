@@ -10,7 +10,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEnvironmentName, TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPEnvironmentName, TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ManageEnvironmentsCommon, E_CALL_STATE_ACTIONS, TViewApiObject, TViewManagedObject } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';

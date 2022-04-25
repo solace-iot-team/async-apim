@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { Toolbar } from 'primereact/toolbar';
 import { Button } from "primereact/button";
@@ -9,8 +8,7 @@ import { MenuItem } from "primereact/api";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { E_COMPONENT_STATE } from "./DeveloperPortalProductCatalogCommon";
-import { EUIDeveloperPortalResourcePaths } from "../../../utils/Globals";
+import { E_COMPONENT_STATE, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
@@ -21,15 +19,24 @@ import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
 
 export interface IDeveloperPortalProductCatalogProps {
-  organizationEntityId: TAPEntityId;
+  organizationId: string;
   viewApiProductEntityId?: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  /** interaction with apps component */
+  mode: E_Mode;
+  title?: string;
+  exclude_ApiProductIdList?: Array<string>;
+  onAddToApp?: (apiProductEntityId: TAPEntityId) => void;
 }
 
 export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCatalogProps> = (props: IDeveloperPortalProductCatalogProps) => {
   const componentName = 'DeveloperPortalProductCatalog';
+
+  const DefaultTitle = "Explore API Products";
+  const ToolbarAddButtonLabel = 'Add to App';
+  const ToolbarBackToSearchButtonLabel = "Back to Search";
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -65,8 +72,17 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
 
   const [isAllowedToCreateApp, setIsAllowedToCreateApp] = React.useState<boolean>(false);
 
+  const validateProps = () => {
+    const funcName = 'validateProps';
+    const logName = `${componentName}.${funcName}()`;
+    if(props.mode === E_Mode.ADD_TO_APP) {
+      if(props.exclude_ApiProductIdList === undefined) throw new Error(`${logName}: props.exclude_ApiProductIdList === undefined, props.mode=${props.mode}`);
+      if(props.onAddToApp === undefined) throw new Error(`${logName}: props.onAddToApp === undefined, props.mode=${props.mode}`);
+    }
+  }
   // * useEffect Hooks *
   React.useEffect(() => {
+    validateProps();
     if(props.viewApiProductEntityId) {
       setManagedObjectEntityId(props.viewApiProductEntityId);
       setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
@@ -103,23 +119,39 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
 
   // * Create App *
 
-  const manageAppsHistory = useHistory<TAPEntityId>();
+  // const manageAppsHistory = useHistory<TAPEntityId>();
 
-  const onCreateAppWithProductFromToolbar = () => {
-    const funcName = 'onCreateAppWithProductFromToolbar';
+  // const onCreateAppWithProductFromToolbar = () => {
+  //   const funcName = 'onCreateAppWithProductFromToolbar';
+  //   const logName = `${componentName}.${funcName}()`;
+  //   if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId is undefined`);
+  //   manageAppsHistory.push({
+  //     pathname: EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications,
+  //     state: managedObjectEntityId
+  //   });
+  // }
+
+  const onAddApiProductToAppFromToolbar = () => {
+    const funcName = 'onAddApiProductToAppFromToolbar';
     const logName = `${componentName}.${funcName}()`;
-    if(managedObjectEntityId === undefined) Error(`${logName}: managedObjectEntityId is undefined`);
-    manageAppsHistory.push({
-      pathname: EUIDeveloperPortalResourcePaths.ManageUserApplications,
-      state: managedObjectEntityId
-    });
+    if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId is undefined`);
+    if(props.onAddToApp === undefined) throw new Error(`${logName}: props.onAddToApp === undefined`);
+    props.onAddToApp(managedObjectEntityId);
+  }
+
+  const onBackToSearchFromToolbar = () => {
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_LIST_VIEW);
   }
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
     if(showListComponent) return undefined;
-    if(showViewComponent) return  undefined;
+    if(showViewComponent) {
+      if(props.mode === E_Mode.ADD_TO_APP || props.mode === E_Mode.EXPLORE) {
+        return(<Button icon="pi pi-arrow-left" label={ToolbarBackToSearchButtonLabel} className="p-button-text p-button-plain p-button-outlined" onClick={onBackToSearchFromToolbar}/>);
+      }
+    }
     return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
@@ -128,7 +160,12 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       if(isAllowedToCreateApp)
         return (
           <React.Fragment>
-            <Button icon="pi pi-plus" label="Create App" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateAppWithProductFromToolbar}/>        
+            {/* {props.mode === E_Mode.EXPLORE &&
+              <Button icon="pi pi-plus" label="Create App" className="p-button-text p-button-plain p-button-outlined" onClick={onCreateAppWithProductFromToolbar}/>        
+            } */}
+            {props.mode === E_Mode.ADD_TO_APP &&
+              <Button icon="pi pi-plus" label={ToolbarAddButtonLabel} className="p-button-text p-button-plain p-button-outlined" onClick={onAddApiProductToAppFromToolbar}/>        
+            }
           </React.Fragment>
         );
       }
@@ -171,6 +208,12 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     }
   }
 
+  const getTitle = (): string | undefined => {
+    if(props.title) return props.title;
+    if(props.mode === E_Mode.EXPLORE) return DefaultTitle;
+    return undefined;
+  }
+
   return (
     <div className="adp-productcatalog">
 
@@ -183,7 +226,10 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       {showListComponent && 
         <DeveloperPortalGridListApiProducts
           key={componentState.previousState}
-          organizationEntityId={props.organizationEntityId}
+          mode={props.mode}
+          title={getTitle()}
+          exclude_ApiProductIdList={props.exclude_ApiProductIdList}
+          organizationId={props.organizationId}
           onSuccess={onListViewSuccess} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
@@ -194,7 +240,8 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
 
       {showViewComponent && managedObjectEntityId && 
         <DeveloperPortalViewApiProduct 
-          organizationId={props.organizationEntityId.id}
+          mode={props.mode}
+          organizationId={props.organizationId}
           apiProductEntityId={managedObjectEntityId}
           onSuccess={onSubComponentSuccess} 
           onError={onSubComponentError} 

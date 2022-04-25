@@ -47,6 +47,23 @@ class APDisplayUtils {
     );
   }
 
+  public convertMilliseconds = (ms: number): string => {
+    let d, h, m, s;
+    s = Math.floor(ms / 1000);
+    m = Math.floor(s / 60);
+    s = s % 60;
+    h = Math.floor(m / 60);
+    m = m % 60;
+    d = Math.floor(h / 24);
+    h = h % 24;
+  
+    const pad = (n: number) => { 
+      return n < 10 ? '0' + n : n; 
+    };
+  
+    const result = d + ' days, ' + pad(h) + ' hours, ' + pad(m) + ' mins';
+    return result;
+  };
 }
 
 export default new APDisplayUtils();

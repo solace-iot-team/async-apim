@@ -15,7 +15,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { Globals } from "../../../utils/Globals";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
 import { APRenderUtils } from "../../../utils/APRenderUtils";

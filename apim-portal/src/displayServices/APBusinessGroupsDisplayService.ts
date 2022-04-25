@@ -1,5 +1,6 @@
 import APAdminPortalApiProductsDisplayService from '../admin-portal/displayServices/APAdminPortalApiProductsDisplayService';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
+import { APSClientOpenApi } from '../utils/APSClientOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { Globals } from '../utils/Globals';
 import { 
@@ -14,7 +15,8 @@ import {
   APSExternalSystemList,
   APSExternalSystem,
   APSUserIdList,
-  APSBusinessGroupResponseList
+  APSBusinessGroupResponseList,
+  ApiError
 } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { TAPMemberOfBusinessGroupTreeTableNodeList } from './APUsersDisplayService/APMemberOfService';
 
@@ -373,6 +375,25 @@ class APBusinessGroupsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
+  public async apsCheck_BusinessGroupIdExists({ organizationId, businessGroupId }:{
+    organizationId: string;
+    businessGroupId: string;
+  }): Promise<boolean> {
+    try {
+      // throw new Error(`${logName}: test error handling upstream`);
+      await ApsBusinessGroupsService.getApsBusinessGroup({
+        organizationId: organizationId,
+        businessgroupId: businessGroupId
+      });
+      return true;
+     } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
   // public async apsGet_ApBusinessGroupDisplay({ organizationId, businessGroupId }: {
   //   organizationId: string;
   //   businessGroupId: string;

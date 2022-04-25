@@ -68,9 +68,8 @@ export const APDisplayApApiListChannelParameterList: React.FC<IAPDisplayApApiLis
     );
   }
 
-  const rowGroupFooterTemplate = (row: TManagedObject) => {
-    return(<></>);
-  }
+  const rowGroupFooterTemplate = (row: TManagedObject) => { return(<></>); }
+
   const apiParameterValueBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (
       <div>

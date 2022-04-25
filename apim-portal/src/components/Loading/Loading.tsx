@@ -6,11 +6,12 @@ import "../APComponents.css";
 import "./Loading.css";
 
 export interface ILoadingProps {
-  show: boolean
+  show: boolean;
+  header?: JSX.Element;
 }
 
 export const Loading: React.FC<ILoadingProps> = (props: ILoadingProps) => {
-
+  const header: JSX.Element = props.header ? props.header : (<div/>);
   return (
     <React.Fragment>
       {props.show &&
@@ -18,7 +19,7 @@ export const Loading: React.FC<ILoadingProps> = (props: ILoadingProps) => {
           <Dialog 
             style={{ width: '600px' }} 
             visible={true}
-            header={<div/>}
+            header={header}
             footer={<div/>}
             showHeader={true} 
             modal={true} 

@@ -17,7 +17,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/APComponentsCommon";
+import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalExploreApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";

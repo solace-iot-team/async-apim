@@ -153,6 +153,45 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return APEntityIdsService.create_SortedApEntityIdList_From_CommonEntityNamesList(list);
   }
 
+  public apiGetMaintainanceList_ApAdminPortalApiProductDisplayList = async({ organizationId, default_ownerId }:{
+    organizationId: string;
+    default_ownerId: string;
+    // currentBusinessGroupId: string;
+  }): Promise<TAPAdminPortalApiProductDisplayList> => {
+
+    const connectorApiProductList: Array<APIProduct> = await this.apiGetUnfilteredList_ConnectorApiProductList({
+      organizationId: organizationId,
+    });
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+
+    const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
+    for(const connectorApiProduct of connectorApiProductList) {
+      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
+      const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
+        organizationId: organizationId,
+        connectorApiProduct: connectorApiProduct,
+        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+        default_ownerId: default_ownerId,
+        currentVersion: apVersionInfo.apCurrentVersion,
+      });
+
+      // apply more filters if needed
+      apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
+
+      // // add only to list if this is a recoverable api product
+      // if(this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) {
+      //   // apAdminPortalApiProductDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id = default_businessGroupId;
+      //   apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
+      // }
+    }
+    return apAdminPortalApiProductDisplayList;
+
+  }
+
   public apiGetRecoverableList_ApAdminPortalApiProductDisplayList = async({ organizationId, default_businessGroupId, default_ownerId }:{
     organizationId: string;
     default_businessGroupId: string;

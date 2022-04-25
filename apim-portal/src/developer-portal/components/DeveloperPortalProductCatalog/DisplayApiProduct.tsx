@@ -20,7 +20,7 @@ import { APDisplayApControlledChannelParameters } from "../../../components/APDi
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalProductCatalogCommon";
+import { E_CALL_STATE_ACTIONS, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 
 import '../../../components/APComponents.css';
@@ -28,6 +28,7 @@ import "./DeveloperPortalProductCatalog.css";
 
 
 export interface IDisplayDeveloperPortalApiProductProps {
+  mode: E_Mode;
   organizationId: string;
   apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
   userBusinessGroupId?: string;
@@ -203,13 +204,19 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
       setSelectedVersion(e.value);
     }
 
-    return(
-      <Dropdown
-        value={selectedVersion}
-        options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
-        onChange={onVersionSelect}
-      />                          
-    );
+    const isSelectDisabled: boolean = props.mode === E_Mode.ADD_TO_APP;
+    if(isSelectDisabled) {
+      return (<span><b> {selectedVersion}</b></span>)
+    } else {
+      return(
+        <Dropdown
+          value={selectedVersion}
+          options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
+          onChange={onVersionSelect}
+          disabled={isSelectDisabled}
+        />                          
+      );  
+    }
   }
 
   const renderVersion = (mo: TManagedObject): JSX.Element => {

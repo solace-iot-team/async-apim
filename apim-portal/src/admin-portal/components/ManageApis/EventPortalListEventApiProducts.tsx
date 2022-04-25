@@ -17,7 +17,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { Globals } from "../../../utils/Globals";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
 import { Config } from "../../../Config";
 import { APConnectorFormValidationRules } from "../../../utils/APConnectorOpenApiFormValidationRules";

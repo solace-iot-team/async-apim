@@ -70,7 +70,12 @@ export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
   LoginAs = '/admin-portal/loginas',
+  
+  DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
+  ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
+  
+  
   deleteme_ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/deletemeapiproducts',
 
   ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
@@ -92,6 +97,9 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
 
+  ManageOrganizationAssetMaintenance ='/admin-portal/manage/organization/asset_maintenance',
+  ManageOrganizationAssetMaintenanceApiProducts = '/admin-portal/manage/organization/asset_maintenance/apiproducts',
+
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
   ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
@@ -107,8 +115,12 @@ export enum EUIDeveloperPortalResourcePaths {
   ExploreApiProducts = '/developer-portal/explore/api-products',
   DELETEME_ExploreApiProducts = '/developer-portal/explore/deleteme-api-products',
   ExploreApis = '/developer-portal/explore/apis',
+  
   ManageUserApplications = '/developer-portal/manage/user/applications',
-  ManageTeamApplications = '/developer-portal/manage/team/applications',
+  DELETEME_ManageUserApplications = '/developer-portal/manage/user/deleteme-applications',
+
+  ManageBusinessGroupApplications = '/developer-portal/manage/businessgroup/applications',
+
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }
 

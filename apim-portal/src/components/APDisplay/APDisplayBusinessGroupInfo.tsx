@@ -19,9 +19,7 @@ export const APDisplayBusinessGroupInfo: React.FC<IAPDisplayBusinessGroupInfoPro
   const renderComponentHeader = (): JSX.Element => {
     if(!props.header) return (<React.Fragment></React.Fragment>);
     const className: string = props.headerClassName ? props.headerClassName : "ap-display-component-header";
-    return (
-        <div className={className}>Credentials</div>
-    );
+    return (<div className={className}>Business Group</div>);
   }
   const renderComponentContent = (): JSX.Element => {
     const sharingEntityIdList: TAPEntityIdList = props.apManagedAssetBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {

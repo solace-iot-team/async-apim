@@ -109,6 +109,34 @@ class APEntityIdsService {
     });
   }
 
+  public create_ApDisplayObjectList_FilteredBy_NotEntityIdList<T extends IAPEntityIdDisplay>({ apDisplayObjectList, filterBy_NotEntityIdList }:{
+    apDisplayObjectList: Array<T>;
+    filterBy_NotEntityIdList: TAPEntityIdList;
+  }): Array<T> {
+    if(apDisplayObjectList.length === 0) return [];
+    if(filterBy_NotEntityIdList.length === 0) return apDisplayObjectList;
+    return apDisplayObjectList.filter( (x: T) => {
+      const idx = filterBy_NotEntityIdList.findIndex( (y) => {
+        return x.apEntityId.id === y.id;
+      });
+      return (idx === -1);
+    });
+  }
+
+  public create_ApDisplayObjectList_FilteredBy_IdList<T extends IAPEntityIdDisplay>({ apDisplayObjectList, filterByIdList }:{
+    apDisplayObjectList: Array<T>;
+    filterByIdList: Array<string>;
+  }): Array<T> {
+    if(apDisplayObjectList.length === 0) return [];
+    if(filterByIdList.length === 0) return [];
+    return apDisplayObjectList.filter( (x: T) => {
+      const idx = filterByIdList.findIndex( (y) => {
+        return x.apEntityId.id === y;
+      });
+      return (idx > -1);
+    });
+  }
+
   public sort_ApDisplayObjectList_By_DisplayName<T extends IAPEntityIdDisplay>(list: Array<T>): Array<T> {
     return list.sort( (e1: T, e2: T) => {
       if(e1.apEntityId.displayName.toLocaleLowerCase() < e2.apEntityId.displayName.toLocaleLowerCase()) return -1;

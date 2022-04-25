@@ -8,7 +8,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIPublicDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { TAPOrganizationId } from '../../components/APComponentsCommon';
+import { TAPOrganizationId } from '../../components/deleteme.APComponentsCommon';
 import { DeveloperPortalProductCatalog } from '../components/DeveloperPortalProductCatalog/deleteme.DeveloperPortalProductCatalog';
 
 import "../../pages/Pages.css";

@@ -10,6 +10,7 @@ Solace Async API Management
   managed-assets
   integration
   connector
+  admin-portal
 
 .. toctree::
   :maxdepth: 2

@@ -3,7 +3,11 @@ import {
   APIProductAccessLevel,
   ApiProductsService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APApiProductsDisplayService, EAPApprovalType, IAPApiProductDisplay } from '../../displayServices/APApiProductsDisplayService';
+import { 
+  APApiProductsDisplayService, 
+  EAPApprovalType, 
+  IAPApiProductDisplay 
+} from '../../displayServices/APApiProductsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { EAPLifecycleState } from '../../displayServices/APLifecycleDisplayService';
 import { E_ManagedAssetDisplay_BusinessGroupSharing_AccessType, TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
@@ -17,11 +21,10 @@ export enum E_APDeveloperPortalApiProductDisplay_AccessDisplay {
   READONLY = "readonly",
   UNDEFINED = "no access"
 }
-export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
-}; 
+export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {}; 
 export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
 
-class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {
+export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APDeveloperPortalApiProductsDisplayService";
 
   /**
@@ -95,7 +98,7 @@ class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplaySer
   //   return true;
   // }
 
-  private async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, currentVersion, default_ownerId }:{
+  protected async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, currentVersion, default_ownerId }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     connectorRevisions?: Array<string>;
@@ -131,12 +134,14 @@ class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplaySer
    * - api products shared with this business group (regardless of visibility)
    * - lifecycle not = draft
    * - optionally: filtered by isAllowed_To_CreateApp
+   * - optionally: exclude list of api product ids
    */
-  public apiGetList_ApDeveloperPortalApiProductDisplayList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp }: {
+  public apiGetList_ApDeveloperPortalApiProductDisplayList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp, exclude_ApiProductIdList }: {
     organizationId: string;
     businessGroupId: string;
     userId: string;
     filterByIsAllowed_To_CreateApp: boolean;
+    exclude_ApiProductIdList?: Array<string>;
   }): Promise<TAPDeveloperPortalApiProductDisplayList> => {
     
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
@@ -147,6 +152,17 @@ class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplaySer
         APIProductAccessLevel.PUBLIC
       ],
     });
+    if(exclude_ApiProductIdList && exclude_ApiProductIdList.length > 0) {
+      for(let idx=0; idx<connectorApiProductList.length; idx++) {
+        const exclude = exclude_ApiProductIdList.find( (id: string) => {
+          return id === connectorApiProductList[idx].name;
+        });
+        if(exclude !== undefined) {
+          connectorApiProductList.splice(idx, 1);
+          idx--;
+        }
+      }
+    }
 
     // get the complete env list for reference
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({

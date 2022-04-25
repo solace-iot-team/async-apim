@@ -47,7 +47,7 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
-        isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
+        isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications) && 
         isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
         isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts) &&
         isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts)
@@ -56,10 +56,20 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
       let _items: Array<MenuItem> = [
         {
           label: 'My Apps',
-          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ManageUserApplications),
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageUserApplications),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageUserApplications); }
         },
+        // TODO: Implement
+        // {
+        //   label: 'Business Group Apps',
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications); }
+        // },
+        // {
+        //   label: 'DELETEME: My Apps',
+        //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications),
+        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications); }
+        // },
         // {
         //   label: 'Explore APIs',
         //   // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApis),
@@ -67,9 +77,8 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApis); }
         // },
         {
-          // label: 'Explore API Products',
-          label: 'Explore APIs',
-          // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
+          label: 'Explore API Products',
+          // label: 'Explore APIs',
           disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.ExploreApiProducts),
           command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ExploreApiProducts); }
         },
@@ -78,11 +87,6 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
         //   // disabled: isDisabledWithOrgAndConnectorUnavailable(EUIDeveloperPortalResourcePaths.ExploreApiProducts),
         //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithOrg, EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts),
         //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts); }
-        // },
-        // {
-        //   label: 'Team Applications',
-        //   disabled: isDisabledWithOrg(EUIDeveloperPortalResourcePaths.ManageTeamApplications),
-        //   command: () => { navigateTo(EUIDeveloperPortalResourcePaths.ManageTeamApplications); }
         // },
       ];
       return _items;

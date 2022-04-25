@@ -7,25 +7,26 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { TAPOrganizationId } from '../../components/APComponentsCommon';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
+import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApps } from '../components/ManageApps/ManageApps';
 
 import "../../pages/Pages.css";
 
 export const ManageAppsPage: React.FC = () => {
-  const componentName = 'ManageAppsPage';
+  const ComponentName = 'ManageAppsPage';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
+
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
+
+  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -38,7 +39,7 @@ export const ManageAppsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: 'APPs',
+        label: 'Manage Apps',
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
       }
@@ -58,24 +59,24 @@ export const ManageAppsPage: React.FC = () => {
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationId(userContext.runtimeSettings.currentOrganizationEntityId.id);
-  }, [userContext]);
+    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
-    <React.Fragment>
+    <div className="ap-pages">
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
-      {organizationId && 
+      {organizationEntityId && renderBreadcrumbs()}
+      {organizationEntityId && 
         <ManageApps
-          organizationId={organizationId}
+          organizationId={organizationEntityId.id}
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
         />
       }
-    </React.Fragment>
+    </div>
   );
 
 }

@@ -14,7 +14,7 @@ import {
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/APComponentsCommon";
+import { APManagedApiDisplay, TAPDeveloperPortalApiDisplay } from "../../../components/deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalExploreApisCommon";
 import { Globals } from "../../../utils/Globals";

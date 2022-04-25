@@ -98,11 +98,14 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
+      EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,
+      EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
+      EUIAdminPortalResourcePaths.ManageOrganizationApps_AllOrganizationApps,
     ]
   },
   {
@@ -116,8 +119,11 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageOrganizationApis,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
-      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts,
       EUIAdminPortalResourcePaths.ManageOrganizationApps,
+
+      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts,
+      EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
+
     ]
   },
   {
@@ -131,9 +137,12 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.UserHome,
       EUIDeveloperPortalResourcePaths.ExploreApis,
       EUIDeveloperPortalResourcePaths.ExploreApiProducts,
-      EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
-      EUIDeveloperPortalResourcePaths.ManageTeamApplications,
+      
+      EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts,
+      EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications,
+
+      EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications,
     ]
   }
 ];

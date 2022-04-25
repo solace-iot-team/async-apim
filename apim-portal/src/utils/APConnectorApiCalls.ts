@@ -9,7 +9,7 @@ import {
 import { 
   APSConnectorClientConfig 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPOrganizationId } from '../components/APComponentsCommon';
+import { TAPOrganizationId } from '../components/deleteme.APComponentsCommon';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { ApiCallState, TApiCallState } from './ApiCallState';
 import { Globals } from './Globals';

@@ -107,7 +107,7 @@ export abstract class APManagedAssetDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
   public nameOf_ApLifecycleInfo(name: keyof TAPManagedAssetLifecycleInfo) {
-    return `${this.nameOf('apLifecycleInfo')}.${name}}`;
+    return `${this.nameOf('apLifecycleInfo')}.${name}`;
   }
   private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
     return `${this.nameOf('apBusinessGroupInfo')}.${name}`;

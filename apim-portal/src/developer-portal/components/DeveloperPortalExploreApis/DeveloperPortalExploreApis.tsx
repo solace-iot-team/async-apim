@@ -6,7 +6,7 @@ import { Toolbar } from 'primereact/toolbar';
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-openapi-browser";
 import { E_COMPONENT_STATE } from "./DeveloperPortalExploreApisCommon";
 import { DeveloperPortalGridListApis } from "./DeveloperPortalGridListApis";

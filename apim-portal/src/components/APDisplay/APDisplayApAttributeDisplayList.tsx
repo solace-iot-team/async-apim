@@ -12,6 +12,8 @@ export interface IAPDisplayApAttributeDisplayListProps {
   apAttributeDisplayList: TAPAttributeDisplayList;
   emptyMessage: string;
   className?: string;
+  tableRowHeader_AttributeName: string;
+  tableRowHeader_AttributeValue: string;
 }
 
 export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisplayListProps> = (props: IAPDisplayApAttributeDisplayListProps) => {
@@ -41,14 +43,14 @@ export const APDisplayApAttributeDisplayList: React.FC<IAPDisplayApAttributeDisp
         >
           <Column 
             field={sortField}
-            header="Attribute Name" 
+            header={props.tableRowHeader_AttributeName} 
             bodyStyle={{ verticalAlign: 'top' }}
             style={{width: '20%'}}
             sortable    
           />
           <Column 
             field={valueField} 
-            header="Value"
+            header={props.tableRowHeader_AttributeValue}
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
         </DataTable>

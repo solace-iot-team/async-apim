@@ -8,20 +8,26 @@ import { AdminPortalUserHomePage } from "./pages/AdminPortalUserHomePage";
 import { ManageConnectorsPage } from "./pages/ManageConnectorsPage";
 import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
 import { MonitorSystemHealthPage } from "./pages/MonitorSystemHealthPage";
-import { ManageOrgEnvironmentsPage } from "./pages/ManageOrgEnvironmentsPage";
+
+import { ManageAppsPage } from "./pages/ManageAppsPage";
 import { ManageApisPage } from "./pages/ManageApisPage";
-import { ManageAppsPage } from './pages/ManageAppsPage';
+
 import { AdminPortalHealthCheckViewPage } from "./pages/AdminPortalHealthCheckViewPage";
 import { ManageOrgUsersPage } from "./pages/ManageOrgUsersPage";
+import { ManageOrgEnvironmentsPage } from "./pages/ManageOrgEnvironmentsPage";
+import { ManageOrgAssetMaintenanceApiProductsPage } from "./pages/ManageOrgAssetMaintenanceApiProductsPage";
 import { ManageOrgIntegrationExternalSystemsPage } from "./pages/ManageOrgIntegrationExternalSystemsPage";
 import { ManageOrgBusinessGroupsPage } from "./pages/ManageOrgBusinessGroupsPage";
-import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
-import { ManageOrganizationSettingsPage } from "./pages/ManageOrganizationSettingsPage";
-import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
 import { MonitorOrganizationStatusPage } from "./pages/MonitorOrganizationStatusPage";
+import { ManageOrganizationSettingsPage } from "./pages/ManageOrganizationSettingsPage";
+
+import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
+import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
 import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 
 import { ManageApiProductsPage as deleteme_ManageApiProductsPage} from "./pages/deleteme.ManageApiProductsPage";
+import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
+
 
 
 
@@ -45,14 +51,19 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} component={ManageOrgBusinessGroupsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageOrgEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} component={ManageOrgIntegrationExternalSystemsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts} component={ManageOrgAssetMaintenanceApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts} />,
         /* API Team*/
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
 
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} component={deleteme_ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} />,
 
-
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
+
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} component={deleteme_ManageAppsPage} exact key={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} />,
+
+
+
     ]
   );
 }

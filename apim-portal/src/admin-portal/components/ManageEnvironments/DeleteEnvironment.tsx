@@ -9,7 +9,7 @@ import { EnvironmentsService } from '@solace-iot-team/apim-connector-openapi-bro
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId, TAPEnvironmentName } from '../../../components/APComponentsCommon';
+import { TAPOrganizationId, TAPEnvironmentName } from '../../../components/deleteme.APComponentsCommon';
 import { E_CALL_STATE_ACTIONS } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';

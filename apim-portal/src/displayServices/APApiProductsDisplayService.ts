@@ -336,6 +336,30 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return filtered_list;
   }
 
+  public create_Combined_ApControlledChannelParameterList({ apApiProductDisplayList }: {
+    apApiProductDisplayList: TAPApiProductDisplayList;
+  }): TAPControlledChannelParameterList {
+    const combined_ApControlledChannelParameterList: TAPControlledChannelParameterList = [];
+
+    for(const apApiProductDisplay of apApiProductDisplayList) {
+      for(const apControlledChannelParameter of apApiProductDisplay.apControlledChannelParameterList) {
+        const existing_ApControlledChannelParameter: TAPControlledChannelParameter | undefined = combined_ApControlledChannelParameterList.find( (x) => {
+          return x.apEntityId.id === apControlledChannelParameter.apEntityId.id;
+        });
+        if(existing_ApControlledChannelParameter !== undefined) {
+          // merge values and update
+          const existing_value_list: Array<string> = existing_ApControlledChannelParameter.value.split(',');
+          const new_value_list: Array<string> = existing_value_list.concat(apControlledChannelParameter.value.split(','));
+          // dedup and set
+          apControlledChannelParameter.value = Globals.deDuplicateStringList(new_value_list).join(',');
+        }
+        combined_ApControlledChannelParameterList.push(apControlledChannelParameter);
+      }
+    }
+    return combined_ApControlledChannelParameterList;
+  }
+
+
   public get_SelectList_For_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
     const e: any = ClientOptionsGuaranteedMessaging.accessType;
     return Object.keys(e).map(k => e[k]);
@@ -369,7 +393,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductDisplay_General;
   }
 
-  /** 
+  /**
    * Set the general properties. 
    * Sets the apEntity as well. 
    * @returns the modified apApiProductDisplay (not a copy)
@@ -547,6 +571,20 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     }
   }
 
+  /**
+   * Retrieves the unfiltered list of APIProducts.
+   */
+  protected apiGetUnfilteredList_ConnectorApiProductList = async({ organizationId }: {
+    organizationId: string;
+  }): Promise<Array<APIProduct>> => {
+
+    const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+      organizationName: organizationId,
+    });
+
+    return connectorApiProductList;
+  }
+  
   /**
    * Retrieves a list of APIProducts filtered by:
    * - owningBusinessGroupId = businessGroupId 

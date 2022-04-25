@@ -123,9 +123,9 @@ export const NewOrganizationUserReviewAndCreate: React.FC<INewOrganizationUserRe
     return APEntityIdsService.getSortedDisplayNameList_As_String(apSystemRoleEntityIdList);
   }
 
-  const renderLegacyOrganzationRoles = (mo: TManagedObject): string => {
-    return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
-  }
+  // const renderLegacyOrganzationRoles = (mo: TManagedObject): string => {
+  //   return APEntityIdsService.getSortedDisplayNameList_As_String(mo.memberOfOrganizationDisplay.apLegacyOrganizationRoleEntityIdList);
+  // }
 
   const renderCredentials = (apUserAuthenticationDisplay: TAPUserAuthenticationDisplay): string => {
     if(apUserAuthenticationDisplay.password.length > 0) return '***';
@@ -149,7 +149,7 @@ export const NewOrganizationUserReviewAndCreate: React.FC<INewOrganizationUserRe
           <div className="p-mt-2"><b>System Roles</b>: {renderSystemRoles(mo.apSystemRoleEntityIdList)}.</div>
         }
         
-        <div className="p-mt-2" style={{ color: 'lightgray'}}><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(mo)}.</div>                    
+        {/* <div className="p-mt-2" style={{ color: 'lightgray'}}><b>Legacy Organzation Roles</b>: {renderLegacyOrganzationRoles(mo)}.</div>                     */}
 
         <APDisplayOrganizationUserBusinessGroups
           apOrganizationUserDisplay={mo}

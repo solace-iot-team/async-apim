@@ -4,62 +4,44 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { AppListItem, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { Globals } from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPOrganizationId } from "../../../components/APComponentsCommon";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
+import APAdminPortalAppsDisplayService from "../../displayServices/APAdminPortalAppsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
 
 export interface IDeleteAppProps {
-  organizationId: TAPOrganizationId,
-  appId: string;
-  appDisplayName: string;
-  appType: AppListItem.appType;
-  appOwnerId: string;
+  organizationId: string;
+  appEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
-  onSuccess: (apiCallState: TApiCallState) => void;
+  onDeleteSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const DeleteApp: React.FC<IDeleteAppProps> = (props: IDeleteAppProps) => {
-  const componentName = 'DeleteApp';
+  const ComponentName = 'DeleteApp';
 
-  const ManagedObjectConfirmDialogHeader = "Confirm Deleting APP";
+  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting App";
 
-  const [showManagedObjectDialog, setShowManagedObjectDialog] = React.useState<boolean>(true);
+  const [showManagedObjectDeleteDialog, setShowManagedObjectDeleteDialog] = React.useState<boolean>(true);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
-    const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_APP, `deleting app: ${props.appDisplayName}`);
-    try { 
-      switch(props.appType) {
-        case AppListItem.appType.DEVELOPER: 
-          await AppsService.deleteDeveloperApp({
-            organizationName: props.organizationId, 
-            developerUsername: props.appOwnerId, 
-            appName: props.appId
-          });
-        break;
-        case AppListItem.appType.TEAM: 
-          await AppsService.deleteTeamApp({
-            organizationName: props.organizationId, 
-            teamName: props.appOwnerId, 
-            appName: props.appId
-          });
-        break;
-        default:
-          Globals.assertNever(logName, props.appType);
-      }
-    } catch(e: any) {
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_APP, `delete app: ${props.appEntityId.displayName}`);
+    try {
+      await APAdminPortalAppsDisplayService.apiDelete_ApAppDisplay({
+        organizationId: props.organizationId,
+        appId: props.appEntityId.id
+      });
+    } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -71,7 +53,7 @@ export const DeleteApp: React.FC<IDeleteAppProps> = (props: IDeleteAppProps) => 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else props.onSuccess(apiCallStatus);
+      else props.onDeleteSuccess(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -87,53 +69,59 @@ export const DeleteApp: React.FC<IDeleteAppProps> = (props: IDeleteAppProps) => 
   }
 
   const onDeleteManagedObjectCancel = () => {
-    setShowManagedObjectDialog(false);
+    setShowManagedObjectDeleteDialog(false);
     props.onCancel();
   }
 
-  const renderManagedObjectDialogContent = (): JSX.Element => {
+  const renderDeleteManagedObjectConfirmDialogHeader = () => {
+    return (<span style={{ color: 'red' }}>{DeleteManagedObjectConfirmDialogHeader}</span>);
+  }
+
+  const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Delete APP: <b>{props.appDisplayName}</b>.</p>
+        <p>Deleting App: <b>{props.appEntityId.displayName}</b>.</p>
         <p>Are you sure you want to delete it?</p>
+        <p><b>This action is irreversible!</b></p>
       </React.Fragment>  
     );
   }
 
-  const renderManagedObjectDialogFooter = (): JSX.Element =>{
+  const renderDeleteManagedObjectDialogFooter = (): JSX.Element =>{
     return (
       <React.Fragment>
           <Button label="Cancel" className="p-button-text p-button-plain" onClick={onDeleteManagedObjectCancel} />
-          <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject}/>
+          <Button label="Delete" icon="pi pi-trash" className="p-button-text p-button-plain p-button-outlined" onClick={onDeleteManagedObject} style={{ color: "red", borderColor: 'red'}} />
       </React.Fragment>
     );
   } 
 
-  const renderManagedObjectDialog = (): JSX.Element => {
+  const renderManagedObjectDeleteDialog = (): JSX.Element => {
     return (
       <Dialog
         className="p-fluid"
-        visible={showManagedObjectDialog} 
+        visible={showManagedObjectDeleteDialog} 
         style={{ width: '450px' }} 
-        header={ManagedObjectConfirmDialogHeader}
+        header={renderDeleteManagedObjectConfirmDialogHeader}
         modal
         closable={false}
-        footer={renderManagedObjectDialogFooter}
+        footer={renderDeleteManagedObjectDialogFooter()}
         onHide={()=> {}}
+        contentClassName="apd-manage-user-apps-delete-confirmation-content"
       >
-        <div className="confirmation-content">
-            <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
-            {renderManagedObjectDialogContent()}
+        <div>
+          <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
+          {renderDeleteManagedObjectDialogContent()}
+          <ApiCallStatusError apiCallStatus={apiCallStatus} />
         </div>
-        <ApiCallStatusError apiCallStatus={apiCallStatus} />
       </Dialog>
     );
   } 
   
   return (
     <div className="ap-manage-apps">
-
-      {renderManagedObjectDialog()}
+  
+      {renderManagedObjectDeleteDialog()}
 
     </div>
   );

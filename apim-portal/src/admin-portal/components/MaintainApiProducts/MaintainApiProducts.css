@@ -1,0 +1,57 @@
+.ap-maintain-api-products .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ap-maintain-api-products .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.ap-maintain-api-products .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.ap-maintain-api-products .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ap-maintain-api-products .error {
+  border-color: #df2121;
+}
+.ap-maintain-api-products .card form {
+  margin-top: 2rem;
+}
+.ap-maintain-api-products .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .ap-maintain-api-products .card {
+    width: 80%;
+  }
+}
+.ap-maintain-api-products .view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-maintain-api-products .view .view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-maintain-api-products .view .view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}

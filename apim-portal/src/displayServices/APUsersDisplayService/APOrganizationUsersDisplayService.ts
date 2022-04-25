@@ -63,9 +63,13 @@ export type TAPOrganizationUserDisplayList = Array<TAPOrganizationUserDisplay>;
 export type TAPOrganizationUserDisplayListResponse = APSListResponseMeta & {
   apOrganizationUserDisplayList: TAPOrganizationUserDisplayList;
 }
+/**
+ * apOrganizationUserDisplay is set if existsInOrganization === true
+ */
 export type TAPCheckOrganizationUserIdExistsResult = {
   existsInOrganization: boolean;
   exists: boolean;
+  apOrganizationUserDisplay?: TAPOrganizationUserDisplay;
 }
 
 class APOrganizationUsersDisplayService extends APUsersDisplayService {
@@ -481,9 +485,10 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
   // APS API calls
   // ********************************************************************************************************************************
   
-  public async apsCheck_OrganizationUserIdExists({userId, organizationId}: {
+  public async apsCheck_OrganizationUserIdExists({ userId, organizationId, complete_ApOrganizationBusinessGroupDisplayList}: {
     organizationId: string;
     userId: string;
+    complete_ApOrganizationBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
   }): Promise<TAPCheckOrganizationUserIdExistsResult> {
     // const funcName = 'apsCheck_OrganizationUserIdExists';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -492,9 +497,21 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
       const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
         userId: userId
       });
+      const existsInOrganization: boolean = APMemberOfService.is_ApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse});
+      let apOrganizationUserDisplay: TAPOrganizationUserDisplay | undefined = undefined;
+      if(existsInOrganization) {
+        apOrganizationUserDisplay = await this.apsGet_ApOrganizationUserDisplay({
+          userId: userId,
+          organizationEntityId: { id: organizationId, displayName: organizationId },
+          fetch_ApOrganizationAssetInfoDisplayList: false,
+          apsUserResponse: apsUserResponse,
+          complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
+        });  
+      }
       return {
         exists: true,
-        existsInOrganization: APMemberOfService.is_ApsUserMemberOfOrganization({ organizationId: organizationId, apsUserResponse: apsUserResponse})
+        existsInOrganization: existsInOrganization,
+        apOrganizationUserDisplay: apOrganizationUserDisplay,
       }
      } catch(e: any) {
       if(APSClientOpenApi.isInstanceOfApiError(e)) {
@@ -505,25 +522,31 @@ class APOrganizationUsersDisplayService extends APUsersDisplayService {
     }
   }
 
-  public async apsGet_ApOrganizationUserDisplay({ organizationEntityId, userId, fetch_ApOrganizationAssetInfoDisplayList }:{
+  public async apsGet_ApOrganizationUserDisplay({ organizationEntityId, userId, fetch_ApOrganizationAssetInfoDisplayList, apsUserResponse, complete_ApOrganizationBusinessGroupDisplayList }:{
     organizationEntityId: TAPEntityId;
     userId: string;
     fetch_ApOrganizationAssetInfoDisplayList: boolean;
+    apsUserResponse?: APSUserResponse;
+    complete_ApOrganizationBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
   }): Promise<TAPOrganizationUserDisplay> {
 
-    // TODO: change this call once aps has the new organization user resource
-    const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUser({
-      userId: userId
-    });
+    if(apsUserResponse === undefined) {
+      // TODO: change this call once aps has the new organization user resource
+      apsUserResponse = await ApsUsersService.getApsUser({
+        userId: userId
+      });
+    }
+    if(complete_ApOrganizationBusinessGroupDisplayList === undefined) {
     // get the organization business group list
-    const completeApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-      organizationId: organizationEntityId.id
-    });  
+      complete_ApOrganizationBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+        organizationId: organizationEntityId.id
+      });  
+    }
     // create
     const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await this.create_ApOrganizationUserDisplay_From_ApiEntities({
       apsUserResponse: apsUserResponse,
       organizationEntityId: organizationEntityId,
-      completeApOrganizationBusinessGroupDisplayList: completeApOrganizationBusinessGroupDisplayList,
+      completeApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList,
       fetch_ApOrganizationAssetInfoDisplayList: fetch_ApOrganizationAssetInfoDisplayList
     });
     return apOrganizationUserDisplay;

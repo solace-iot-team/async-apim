@@ -36,7 +36,7 @@ export const APDisplayApControlledChannelParameters: React.FC<IAPDisplayApContro
           sortField={sortField} 
           sortOrder={1}
           scrollable 
-          // scrollHeight="200px" 
+          // scrollHeight="200px"
         >
           <Column 
             field={sortField}
@@ -61,13 +61,12 @@ export const APDisplayApControlledChannelParameters: React.FC<IAPDisplayApContro
 
   return (
     <div className={props.className ? props.className : 'card'}>
-    {props.apControlledChannelParameterList.length > 0 &&
-      renderComponent(props.apControlledChannelParameterList)
-    }
-    {(props.apControlledChannelParameterList.length === 0) && 
-      <span>{props.emptyMessage}</span>
-    }
-  </div>
-
+      {props.apControlledChannelParameterList.length > 0 &&
+        renderComponent(props.apControlledChannelParameterList)
+      }
+      {(props.apControlledChannelParameterList.length === 0) && 
+        <span>{props.emptyMessage}</span>
+      }
+    </div>
   );
 }

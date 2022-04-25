@@ -5,7 +5,7 @@ import { MenuItem } from "primereact/api";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { E_CALL_STATE_ACTIONS } from "./DeveloperPortalProductCatalogCommon";
+import { E_CALL_STATE_ACTIONS, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -16,6 +16,7 @@ import "./DeveloperPortalProductCatalog.css";
 
 export interface IDeveloperPortalViewApiProductProps {
   organizationId: string;
+  mode: E_Mode;
   apiProductEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
@@ -91,6 +92,7 @@ export const DeveloperPortalViewApiProduct: React.FC<IDeveloperPortalViewApiProd
 
       { managedObject && 
         <DisplayDeveloperPortalApiProduct
+          mode={props.mode}
           organizationId={props.organizationId}
           apDeveloperPortalApiProductDisplay={managedObject}
           userBusinessGroupId={userContext.runtimeSettings.currentBusinessGroupEntityId?.id}

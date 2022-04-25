@@ -38,6 +38,10 @@ class APRbacDisplayService {
     return AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathListString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover);
   }
 
+  public isAuthorized_To_ManageAllOrganizationApps(authorizedResourcePathListString: string): boolean {
+    return AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathListString, EUIAdminPortalResourcePaths.ManageOrganizationApps_AllOrganizationApps);
+  }
+
   private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     for(const rbacRole of APRbac.getAPRbacRoleList()) {
@@ -145,6 +149,14 @@ class APRbacDisplayService {
       if(isBusinessGroupRole) result.push(combinedRole);
     });
     return result;
+  }
+
+  public includes_Role({ businessGroupRoleEntityIdList, role }:{
+    businessGroupRoleEntityIdList: TAPEntityIdList;
+    role: EAPSOrganizationAuthRole | EAPSBusinessGroupAuthRole;
+  }): boolean {
+    const idList = APEntityIdsService.create_IdList(businessGroupRoleEntityIdList);
+    return idList.includes(role);
   }
 
   public async create_AuthorizedResourcePathListAsString({ apLoginUserDisplay, apOrganizationEntityId }:{
@@ -261,6 +273,66 @@ class APRbacDisplayService {
     // console.log(`${logName}: uniqueCombinedcResourcePathList = ${JSON.stringify(uniqueCombinedcResourcePathList)}`);
     return uniqueCombinedcResourcePathList.join(',');
   }
+
+  // ********************************************************************************************************************************
+  // has Access & can Manage
+  // ********************************************************************************************************************************
+
+  public hasAccess_BusinessGroupRoleEntityIdList_ManageAppAccess_For_External_Apps = ({ businessGroupRoleEntityIdList }:{
+    businessGroupRoleEntityIdList: TAPEntityIdList;
+  }): boolean => {
+    return this.includes_Role({
+      businessGroupRoleEntityIdList: businessGroupRoleEntityIdList,
+      role: EAPSOrganizationAuthRole.ORGANIZATION_ADMIN
+    });
+  }
+
+  /**
+   * Returns true if appOwnerId has the role of api consumer in the business group.
+   * - Get the user (appOwnerId) details.
+   * - Calculate appOwnerId roles in each business group
+   * - check if appOwnerId is member of the business group
+   * - check if appOwnerId has role of apiConsumer in business group
+   */
+  public canManage_UserApp_In_BusinessGroup = ({ organizationId, businessGroupId, apOrganizationUserDisplay }:{
+    organizationId: string;
+    businessGroupId: string;
+    apOrganizationUserDisplay: TAPOrganizationUserDisplay;
+  }): boolean => {
+    const funcName = 'hasUser_ApiConsumer_Role_In_BusinessGroup';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    if(apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList === undefined`);
+
+    // get the tree node list with calculated roles in each business group
+    const apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList = APMemberOfService.create_ApMemberOfBusinessGroupDisplayTreeNodeList({
+      organizationEntityId: { id: organizationId, displayName: organizationId },
+      apMemberOfBusinessGroupDisplayList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList,
+      apOrganizationRoleEntityIdList: apOrganizationUserDisplay.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList,
+      completeApOrganizationBusinessGroupDisplayList: apOrganizationUserDisplay.completeOrganizationBusinessGroupDisplayList,
+      pruneBusinessGroupsNotAMemberOf: false,
+      accessOnly_To_BusinessGroupManageAssets: false,
+    });
+
+    // get the business group details. discard if not found.
+    try {
+      const apMemberOfBusinessGroupDisplay: TAPMemberOfBusinessGroupDisplay = APMemberOfService.get_ApMemberOfBusinessGroupDisplay_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        businessGroupId: businessGroupId
+      });
+      if(apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList === undefined`);
+      // check if appOwnerId has role = api consumer in business group
+      const isApiConsumer: boolean = this.includes_Role({
+        businessGroupRoleEntityIdList: apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList,
+        role: EAPSBusinessGroupAuthRole.API_CONSUMER
+      }); 
+      return isApiConsumer;
+    } catch (e) {
+      // business group not found or roles not calculated
+      return false;
+    }
+  }
+
 
 }
 

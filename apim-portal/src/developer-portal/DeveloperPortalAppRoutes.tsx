@@ -5,14 +5,14 @@ import { ProtectedRoute } from "../auth/ProtectedRoute";
 import { EUIDeveloperPortalResourcePaths } from '../utils/Globals';
 
 import { DeveloperPortalUserHomePage } from "./pages/DeveloperPortalUserHomePage";
-import { DeveloperPortalManageUserAppsPage } from "./pages/DeveloperPortalManageUserAppsPage";
-import { ManageTeamApplicationsPage } from "./pages/ManageTeamApplicationsPage";
 import { DeveloperPortalExploreApisPage } from "./pages/DeveloperPortalExploreApisPage";
 import { DeveloperPortalHealthCheckViewPage } from "./pages/DeveloperPortalHealthCheckViewPage";
 import { DeveloperPortalExploreApiProductsPage } from "./pages/DeveloperPortalExploreApiProductsPage";
+import { DeveloperPortalManageUserAppsPage } from "./pages/DeveloperPortalManageUserAppsPage";
 
-
+import { DeveloperPortalManageUserAppsPage as DELETEME_DeveloperPortalManageUserAppsPage } from "./pages/deleteme.DeveloperPortalManageUserAppsPage";
 import { DeveloperPortalExploreApiProductsPage as DELETEME_DeveloperPortalExploreApiProductsPage} from "./pages/deleteme.DeveloperPortalExploreApiProductsPage";
+import { DeveloperPortalManageBusinessGroupAppsPage } from "./pages/DeveloperPortalManageBusinessGroupAppsPage";
 
 
 export const DeveloperPortalAppRoutes = (): Array<JSX.Element> => {
@@ -29,8 +29,13 @@ export const DeveloperPortalAppRoutes = (): Array<JSX.Element> => {
 
 
       <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ExploreApis} component={DeveloperPortalExploreApisPage} exact key={EUIDeveloperPortalResourcePaths.ExploreApis} />,
+
+
       <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ManageUserApplications} component={DeveloperPortalManageUserAppsPage} exact key={EUIDeveloperPortalResourcePaths.ManageUserApplications} />,
-      <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ManageTeamApplications} component={ManageTeamApplicationsPage} exact key={EUIDeveloperPortalResourcePaths.ManageTeamApplications} />,
+
+      <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications} component={DELETEME_DeveloperPortalManageUserAppsPage} exact key={EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications} />,
+
+      <ProtectedRouteWithRbacAndOrgAccess path={EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications} component={DeveloperPortalManageBusinessGroupAppsPage} exact key={EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications} />,
     ]
   );
 }

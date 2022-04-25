@@ -1,0 +1,15 @@
+.ap-monitor-app .ap-app-view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-monitor-app .ap-app-view .ap-app-view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-monitor-app .ap-app-view .ap-app-view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
