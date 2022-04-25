@@ -143,11 +143,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
           apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.LIVE;
           break;
         case AppStatus.PENDING:
-          // is this also true for api products = auto? 
-
-        // TODO: I think this is not correct, auto is always provisioned ...
-
-          // if not, then need to get the api product here
+          // if pending, then no auto api products associated
           apApp_ApiProduct_Status = EAPApp_ApiProduct_Status.APPROVAL_PENDING;
           break;
         case AppStatus.REVOKED:

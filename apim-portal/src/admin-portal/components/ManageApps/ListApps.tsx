@@ -103,7 +103,6 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     }
   }
 
-
   // * Api Calls *
 
   const apiGetManagedObjectList_For_Organization = async(): Promise<TApiCallState> => {
