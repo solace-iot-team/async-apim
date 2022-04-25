@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Apps &mdash; Solace Async API Management r0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/contentui.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer Portal" href="../developer-portal.html" />
+    <link rel="prev" title="Admin Portal Overview" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Solace Async API Management
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../managed-assets.html">Managed Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../admin-portal.html">Admin Portal</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="overview.html">Admin Portal Overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Manage Apps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-apps">List of Apps</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#apps-included-in-the-list">Apps included in the list</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#calculation-of-app-status">Calculation of App Status</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mapping-of-status-for-legacy-apps">Mapping of Status for Legacy Apps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-portal.html">Developer Portal</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://solace-iot-team.github.io/solace-axway-agent/">Axway Integration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Solace Async API Management</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../admin-portal.html">Admin Portal</a> &raquo;</li>
+      <li>Manage Apps</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/admin-portal-content/manage-apps.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="manage-apps">
+<span id="admin-portal-manage-apps"></span><h1>Manage Apps<a class="headerlink" href="#manage-apps" title="Permalink to this headline"></a></h1>
+<p>Apps can be managed only by users who have the role <strong>API Team</strong> in current business group.</p>
+<section id="list-of-apps">
+<h2>List of Apps<a class="headerlink" href="#list-of-apps" title="Permalink to this headline"></a></h2>
+<p>The list of apps that can be managed is determined by the following access rules:</p>
+<ul class="simple">
+<li><p>Logged-in user must have role <strong>API Team</strong> in selected <strong>Business Group</strong>.</p></li>
+<li><p>If logged-in user also has role <strong>Organization Admin</strong>, they can manage all organization apps.</p></li>
+</ul>
+<section id="apps-included-in-the-list">
+<h3>Apps included in the list<a class="headerlink" href="#apps-included-in-the-list" title="Permalink to this headline"></a></h3>
+<ul class="simple">
+<li><p>App is a team app and current business group id equals the team id</p></li>
+<li><p>App is a user app:</p>
+<ul>
+<li><p>if App ownerId is member of current business group and has the role <strong>API Consumer</strong></p></li>
+</ul>
+</li>
+</ul>
+<p>If logged-in user also has the role <strong>Organization Admin</strong>:</p>
+<ul class="simple">
+<li><p>all apps that are owned by external users or teams, i.e. the app ownerId is NOT known to the Admin Portal</p></li>
+<li><p>can select to view all organization apps or just the current business group apps</p></li>
+</ul>
+</section>
+</section>
+<section id="calculation-of-app-status">
+<h2>Calculation of App Status<a class="headerlink" href="#calculation-of-app-status" title="Permalink to this headline"></a></h2>
+<p>Each App has a <strong>Status</strong> with the following possible values:</p>
+<dl class="field-list simple">
+<dt class="field-odd">live</dt>
+<dd class="field-odd"><p>App is live and all associated API Products are live</p>
+</dd>
+<dt class="field-even">approval pending</dt>
+<dd class="field-even"><p>one or more associated API Products in the App are not live (could be waiting for approval or approval has been revoked)</p>
+</dd>
+<dt class="field-odd">No API Products</dt>
+<dd class="field-odd"><p>App does not contain any API Products</p>
+</dd>
+</dl>
+<section id="mapping-of-status-for-legacy-apps">
+<h3>Mapping of Status for Legacy Apps<a class="headerlink" href="#mapping-of-status-for-legacy-apps" title="Permalink to this headline"></a></h3>
+<p>Legacy Apps do not indicate a status per API Product. In this case, the following mapping rules apply:</p>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">Status Mapping for Legacy Apps</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Legacy App Status</p></th>
+<th class="head"><p>API Product Approval Type</p></th>
+<th class="head"><p>Portal App Status</p></th>
+<th class="head"><p>Portal API Product Status</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>approved</p></td>
+<td><p>auto or manual</p></td>
+<td><p>live</p></td>
+<td><p>live</p></td>
+</tr>
+<tr class="row-odd"><td><p>pending</p></td>
+<td><p>auto or manual</p></td>
+<td><p>approval pending</p></td>
+<td><p>approval pending</p></td>
+</tr>
+<tr class="row-even"><td><p>revoked</p></td>
+<td><p>auto or manual</p></td>
+<td><p>approval pending</p></td>
+<td><p>approval revoked</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview.html" class="btn btn-neutral float-left" title="Admin Portal Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../developer-portal.html" class="btn btn-neutral float-right" title="Developer Portal" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
+      <span class="lastupdated">Last updated on 25 Apr 2022 at 10:16.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
