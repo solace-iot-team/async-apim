@@ -5,7 +5,6 @@ import {
   AppResponse, 
   AppResponseGeneric, 
   AppsService, 
-  AppStatus, 
   CommonTimestampInteger, 
   Credentials, 
   Secret

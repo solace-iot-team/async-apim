@@ -38,6 +38,10 @@ class APRbacDisplayService {
     return AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathListString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover);
   }
 
+  public isAuthorized_To_ManageAllOrganizationApps(authorizedResourcePathListString: string): boolean {
+    return AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathListString, EUIAdminPortalResourcePaths.ManageOrganizationApps_AllOrganizationApps);
+  }
+
   private create_Scoped_RbacRoleList = (rbacScopeList: Array<EAPRbacRoleScope>): TAPRbacRoleList => {
     let rbacRoleList: TAPRbacRoleList = [];
     for(const rbacRole of APRbac.getAPRbacRoleList()) {

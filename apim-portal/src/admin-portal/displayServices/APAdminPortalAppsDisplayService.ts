@@ -394,19 +394,15 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
   }
 
   /**
-   * Create a list of IAPAdminPortalAppListDisplay objects with RBAC rules applied.
-   * Possible enhancement: optimize http gets if it becomes an issue: (browser should cache calls though)
-   *  - for every app user that is internal:
-   *    - retrieve user - ok
-   *    - retrieve business groups (could be cached)
-   *    - retrieve external systems (could be cached)
+   * Create a list of apps:
+   * - if loggedIn user can manage external apps, include also external apps
+   * - otherwise: only internal apps
    */
-  public apiGetList_ApAdminPortalAppListDisplayList = async({ organizationId, businessGroupId, businessGroupRoleEntityIdList }: {
+  public apiGetList_ApAdminPortalAppListDisplayList_For_Organization = async({ organizationId, loggedInUser_BusinessGroupRoleEntityIdList }: {
     organizationId: string;
-    businessGroupId: string;
-    businessGroupRoleEntityIdList: TAPEntityIdList;
+    loggedInUser_BusinessGroupRoleEntityIdList: TAPEntityIdList;
   }): Promise<TAPAdminPortalAppListDisplayList> => {
-    const funcName = 'apiGetList_ApAdminPortalAppListDisplayList';
+    const funcName = 'apiGetList_ApAdminPortalAppListDisplayList_For_Organization';
     const logName = `${this.ComponentName}.${funcName}()`;
 
     // get the complete apBusinessGroupDisplayList once
@@ -416,7 +412,107 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
     // get the access levels
     const canManage_ExternalApps: boolean = APRbacDisplayService.hasAccess_BusinessGroupRoleEntityIdList_ManageAppAccess_For_External_Apps({
-      businessGroupRoleEntityIdList: businessGroupRoleEntityIdList
+      businessGroupRoleEntityIdList: loggedInUser_BusinessGroupRoleEntityIdList
+    });
+
+    // keep a cache of known (internal) and not known(external) ownerIds
+    const cache_Internal_OwnerIdList: Array<string> = [];
+    const cache_External_OwnerIdList: Array<string> = [];
+    // keep a cache for internal user details
+    const cache_ApOrganizationUserDisplayList: TAPOrganizationUserDisplayList = [];
+
+    const apAdminPortalAppListDisplayList: TAPAdminPortalAppListDisplayList = [];
+
+    const connectorAppList: Array<AppListItem> = await AppsService.listApps({
+      organizationName: organizationId, 
+    });
+
+    for(const connectorAppListItem of connectorAppList) {
+      if(connectorAppListItem.name === undefined) throw new Error(`${logName}: connectorAppListItem.name === undefined`);
+      if(connectorAppListItem.ownerId === undefined) throw new Error(`${logName}: connectorAppListItem.ownerId === undefined`);
+      
+      // check if ownerId is known (internal) or not known (external)
+      let isOwnerInternal: boolean = false;
+      const foundAppOwnerIdInternal = cache_Internal_OwnerIdList.find( (x) => {
+        return x === connectorAppListItem.ownerId;
+      });
+      if(foundAppOwnerIdInternal !== undefined) isOwnerInternal = true;
+      else {
+        // check in cache if external
+        const foundAppOwnerIdExternal = cache_External_OwnerIdList.find( (x) => {
+          return x === connectorAppListItem.ownerId;
+        });
+        if(foundAppOwnerIdExternal !== undefined) isOwnerInternal = false;
+        else {
+          // check & add to correct cache
+          isOwnerInternal = await this.apiCheck_isOwnerIdInternal({ 
+            organizationId: organizationId, 
+            apAppType: this.map_ConnectorAppType_To_ApAppType({ connectorAppType: connectorAppListItem.appType }), 
+            ownerId: connectorAppListItem.ownerId,
+            cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+            complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
+          });
+          if(isOwnerInternal) cache_Internal_OwnerIdList.push(connectorAppListItem.ownerId);
+          else cache_External_OwnerIdList.push(connectorAppListItem.ownerId);
+        }  
+      }
+
+      const apAppMeta: TAPAppMeta = await this.create_ApAdminPortalAppDisplay_ApAppMeta({ 
+        organizationId: organizationId, 
+        connectorAppType: connectorAppListItem.appType,
+        connectorOwnerId: connectorAppListItem.ownerId,
+        isOwnerInternal: isOwnerInternal,
+        cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
+        connectorAppApiProductList: connectorAppListItem.apiProducts ? connectorAppListItem.apiProducts : [],
+        complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
+      });
+
+      let canManageApp: boolean = false;
+      // external user or team apps 
+      if(apAppMeta.apAppOwnerType === EAPApp_OwnerType.EXTERNAL && canManage_ExternalApps) canManageApp = true;
+      // it is an internal app
+      else canManageApp = true;
+
+      if(canManageApp) {
+        // add the app to list 
+        const apAdminPortalAppListDisplay: IAPAdminPortalAppListDisplay = this.create_ApAdminPortalAppListDisplay_From_ApiEntities({
+          apAppMeta: apAppMeta,
+          connectorAppListItem: connectorAppListItem,
+          apAdminPortalApp_Status: this.create_ApAdminPortalAppStatus({
+            connectorAppApiProductList: connectorAppListItem.apiProducts,
+            connectorAppStatus: connectorAppListItem.status
+          }),
+        });
+        apAdminPortalAppListDisplayList.push(apAdminPortalAppListDisplay);
+      }
+
+    }
+
+    return apAdminPortalAppListDisplayList;
+  }
+
+
+  /**
+   * Create a list of IAPAdminPortalAppListDisplay objects with RBAC rules applied.
+   * - if user is allowed to manage external apps: include them
+   * - if owner of internal app belongs to the business group with API Consumer role: include them
+   */
+  public apiGetList_ApAdminPortalAppListDisplayList_For_BusinessGroup = async({ organizationId, businessGroupId, loggedInUser_BusinessGroupRoleEntityIdList }: {
+    organizationId: string;
+    businessGroupId: string;
+    loggedInUser_BusinessGroupRoleEntityIdList: TAPEntityIdList;
+  }): Promise<TAPAdminPortalAppListDisplayList> => {
+    const funcName = 'apiGetList_ApAdminPortalAppListDisplayList_For_BusinessGroup';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    // get the complete apBusinessGroupDisplayList once
+    const complete_ApOrganizationBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId
+    });  
+
+    // get the access levels
+    const canManage_ExternalApps: boolean = APRbacDisplayService.hasAccess_BusinessGroupRoleEntityIdList_ManageAppAccess_For_External_Apps({
+      businessGroupRoleEntityIdList: loggedInUser_BusinessGroupRoleEntityIdList
     });
 
     // keep a cache of known (internal) and not known(external) ownerIds
@@ -477,8 +573,11 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       // determine if user is allowed to manage the app
       let canManageApp: boolean = false;
       // external user or team apps 
-      if(apAppMeta.apAppOwnerType === EAPApp_OwnerType.EXTERNAL && canManage_ExternalApps) canManageApp = true;
-      // team apps in this business group
+      if(apAppMeta.apAppOwnerType === EAPApp_OwnerType.EXTERNAL) {
+        if(canManage_ExternalApps) canManageApp = true;
+        else canManageApp = false;
+      }
+      // not external, team apps in this business group
       else if(apAppMeta.apAppType === EAPApp_Type.TEAM && businessGroupId === apAppMeta.appOwnerId) canManageApp = true;
       else if(apAppMeta.apAppType === EAPApp_Type.USER) {
         // it is a user app
@@ -498,17 +597,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
             const apOrganizationUserDisplay: TAPOrganizationUserDisplay | undefined = cache_ApOrganizationUserDisplayList.find( (x) => {
               return x.apEntityId.id === apAppMeta.appOwnerId;
             });
-            if(apOrganizationUserDisplay === undefined) throw new Error(`${logName}: apOrganizationUserDisplay === undefined`);
-
-
-            // const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
-            //   userId: apAppMeta.appOwnerId,
-            //   organizationEntityId: { id: organizationId, displayName: organizationId },
-            //   fetch_ApOrganizationAssetInfoDisplayList: false,
-            // });
-            // // add it to the cache
-            // cache_ApOrganizationUserDisplayList.push(apOrganizationUserDisplay);
-        
+            if(apOrganizationUserDisplay === undefined) throw new Error(`${logName}: apOrganizationUserDisplay === undefined, apAppMeta=${JSON.stringify(apAppMeta)}`);        
             const canManageAppsForOwnerId: boolean = APRbacDisplayService.canManage_UserApp_In_BusinessGroup({
               organizationId: organizationId,
               businessGroupId: businessGroupId,
