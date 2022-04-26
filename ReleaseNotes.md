@@ -2,6 +2,19 @@
 
 Solace Async API Management.
 
+## Version 0.1.6
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.6
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.11
+
+#### API-M Admin & Developer Portal
+**Fixes:**
+* **API Products**
+  - added validation of business group information stored in the attributes. if business group not found, then API Product is categorized as a Recovered Asset.
+* **Organization:Asset Maintenance:API Products**
+  - fixed recovery of API Products without any version information
+
 ## Version 0.1.5
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.5
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
