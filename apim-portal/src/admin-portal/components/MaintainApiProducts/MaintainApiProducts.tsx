@@ -68,31 +68,12 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPAdminPortalApiProductDisplay_AllowedActions>(APAdminPortalApiProductsDisplayService.get_Empty_AllowedActions());
 
-  // const [managedObjectHasReferences, setManagedObjectHasReferences] = React.useState<boolean>(false);
-
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   
-  // const MaintainApiProducts_onNavigateToCommand = (e: MenuItemCommandParams): void => {
-  //   const funcName = 'MaintainApiProducts_onNavigateToCommand';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   if(props.onNavigateToCommand === undefined) throw new Error(`${logName}: props.onNavigateToCommand === undefined`);
-  //   props.onNavigateToCommand(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_RECOVER);
-  // }
-
-  // const setBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-  //   props.setBreadCrumbItemList([
-  //     {
-  //       label: 'Recover API Products',
-  //       command: ManageRecoverApiProducts_onNavigateToCommand
-  //     },
-  //     ...itemList
-  //   ]);
-  // }
-
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);

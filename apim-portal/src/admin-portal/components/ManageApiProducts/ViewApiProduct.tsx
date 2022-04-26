@@ -39,13 +39,14 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apiProductEntityId.displayName}`);
     try { 
-      const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
+      const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
         apiProductId: props.apiProductEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         fetch_revision_list: true
       });
-      setManagedObject(object);
+      // console.log(`${logName}: apAdminPortalApiProductDisplay = ${JSON.stringify(apAdminPortalApiProductDisplay, null, 2)}`);
+      setManagedObject(apAdminPortalApiProductDisplay);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -94,16 +95,16 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
     <React.Fragment>
       <div className="manage-api-products">
 
-        { managedObject && 
-          <DisplayAdminPortalApiProduct
-            scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING}
-            organizationId={props.organizationId}
-            apAdminPortalApiProductDisplay={managedObject}
-            onError={props.onError}
-            onSuccess={props.onSuccess}
-            onLoadingChange={props.onLoadingChange}
-          />
-        }
+      { managedObject && 
+        <DisplayAdminPortalApiProduct
+          scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING}
+          organizationId={props.organizationId}
+          apAdminPortalApiProductDisplay={managedObject}
+          onError={props.onError}
+          onSuccess={props.onSuccess}
+          onLoadingChange={props.onLoadingChange}
+        />
+      }
 
       </div>
     </React.Fragment>

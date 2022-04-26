@@ -169,7 +169,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
               required: "Select owning business group.",
             }}
             render={( { field, fieldState }) => {
-              console.log(`${logName}: field=${JSON.stringify(field)}`);
+              // console.log(`${logName}: field=${JSON.stringify(field)}`);
               return(
                 <TreeSelect
                   id={field.name}

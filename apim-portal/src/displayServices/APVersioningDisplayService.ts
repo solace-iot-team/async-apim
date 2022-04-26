@@ -4,7 +4,7 @@ import { SemVer } from "semver";
 export interface IAPVersionInfo {
   apLastVersion: string;
   apCurrentVersion: string;
-  apVersionList?: TAPVersionList;
+  apVersionList: TAPVersionList;
 }
 export type TAPVersionList = Array<string>;
 
@@ -19,6 +19,16 @@ class APVersioningDisplayService {
     return {
       apLastVersion: '',
       apCurrentVersion: '',
+      apVersionList: []
+    };
+  }
+
+  private create_Legacy_ApVersionInfo = (): IAPVersionInfo => {
+    const defaultVersion = '1.0.1';
+    return {
+      apLastVersion: defaultVersion,
+      apCurrentVersion: defaultVersion,
+      apVersionList: [defaultVersion]
     };
   }
 
@@ -36,11 +46,13 @@ class APVersioningDisplayService {
     connectorRevisions?: Array<string>;
     currentVersion?: string;
   }): IAPVersionInfo {
-    if(connectorMeta === undefined) return this.create_Empty_ApVersionInfo();
+    if(connectorMeta === undefined) return this.create_Legacy_ApVersionInfo();
+    // connectorRevisions could be undefined or empty list
+    const lastVersion: string = connectorRevisions !== undefined ? this.get_LastVersion(connectorRevisions) : connectorMeta.version;
     return {
-      apLastVersion: connectorRevisions !== undefined ? this.get_LastVersion(connectorRevisions) : connectorMeta.version,
+      apLastVersion: lastVersion,
       apCurrentVersion: currentVersion ? currentVersion : connectorMeta.version,
-      apVersionList: connectorRevisions
+      apVersionList: connectorRevisions !== undefined && connectorRevisions.length > 0 ? connectorRevisions : [lastVersion],
     };
   }
 

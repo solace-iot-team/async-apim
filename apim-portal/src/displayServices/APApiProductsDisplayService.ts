@@ -23,6 +23,7 @@ import APAttributesDisplayService, {
   TAPAttributeDisplayList,
   TAPRawAttributeList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
+import { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
 import { 
   TAPEnvironmentDisplay, 
   TAPEnvironmentDisplayList 
@@ -253,13 +254,22 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apControlledChannelParameterList;
   }
 
-  protected async create_ApApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, default_ownerId, currentVersion }:{
+  protected async create_ApApiProductDisplay_From_ApiEntities({ 
+    organizationId, 
+    connectorApiProduct, 
+    connectorRevisions, 
+    completeApEnvironmentDisplayList, 
+    default_ownerId, 
+    currentVersion,
+    complete_ApBusinessGroupDisplayList
+   }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     connectorRevisions?: Array<string>;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
     default_ownerId: string;
     currentVersion?: string;
+    complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
   }): Promise<IAPApiProductDisplay> {
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -269,6 +279,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       displayName: connectorApiProduct.displayName,
       apRawAttributeList: connectorApiProduct.attributes,
       default_ownerId: default_ownerId,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
     });
     // get the used Apis
     const apApiDisplayList: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });

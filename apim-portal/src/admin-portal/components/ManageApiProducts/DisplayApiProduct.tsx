@@ -478,18 +478,12 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-        {/* <div>DEBUG: selectedVersion = {selectedVersion}</div> */}
+        {/* <div>DEBUG: selectedVersion = '{selectedVersion}'</div>
+        <div>DEBUG: managedObject.apVersionInfo={JSON.stringify(managedObject?.apVersionInfo)}</div> */}
 
-        {managedObject && selectedVersion && renderManagedObject() }
+        {managedObject && selectedVersion !== undefined && renderManagedObject() }
 
       </div>
-      {/* DEBUG */}
-      {/* <pre style={ { fontSize: '10px' }} >
-        {JSON.stringify(managedObject, null, 2)}
-      </pre> */}
-      {/* <pre style={ { fontSize: '10px' }} >
-        apSearchContent={JSON.stringify(managedObject?.apSearchContent.split(','), null, 2)}
-      </pre> */}
     </React.Fragment>
   );
 }
