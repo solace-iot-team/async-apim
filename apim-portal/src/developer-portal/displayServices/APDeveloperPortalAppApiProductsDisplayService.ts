@@ -8,6 +8,7 @@ import {
   ClientOptionsGuaranteedMessaging
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { EAPApprovalType } from '../../displayServices/APApiProductsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { 
   TAPEnvironmentDisplayList 
 } from '../../displayServices/APEnvironmentsDisplayService';
@@ -357,12 +358,20 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
   // API calls
   // ********************************************************************************************************************************
 
-  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ organizationId, ownerId, complete_apEnvironmentDisplayList, connectorAppResponse, connectorAppApiProduct }: {
+  public apiGet_DeveloperPortalApAppApiProductDisplay = async({ 
+    organizationId, 
+    ownerId, 
+    complete_apEnvironmentDisplayList, 
+    connectorAppResponse, 
+    connectorAppApiProduct,
+    complete_ApBusinessGroupDisplayList,
+  }: {
     organizationId: string;
     ownerId: string;
     complete_apEnvironmentDisplayList?: TAPEnvironmentDisplayList;
     connectorAppApiProduct: string | AppApiProductsComplex;
     connectorAppResponse: AppResponse;
+    complete_ApBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;    
   }): Promise<TAPDeveloperPortalAppApiProductDisplay> => {
     const funcName = 'apiGet_DeveloperPortalApAppApiProductDisplay';
     const logName = `${this.FinalComponentName}.${funcName}()`;
@@ -389,6 +398,13 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
         organizationId: organizationId
       });  
     }
+    // get the complete business group list for reference
+    if(complete_ApBusinessGroupDisplayList === undefined) {
+      complete_ApBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+        organizationId: organizationId,
+        fetchAssetReferences: false
+      });
+    }
 
     const apApp_ApiProduct_Status: EAPApp_ApiProduct_Status = this.create_ApApp_ApiProduct_Status({
       connectorAppStatus: connectorAppResponse.status,
@@ -400,6 +416,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       connectorApiProduct: connectorApiProduct,
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       default_ownerId: ownerId,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
     });
 
     return this.create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({

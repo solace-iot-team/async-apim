@@ -155,20 +155,11 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   // const approvalTypeTemplate = (row: TManagedObject): string => {
   //   return row.apApprovalType;
   // }
-  // const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return (
-  //     <div>
-  //       {row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}
-  //     </div>
-  //   );
-  // }
-
+  const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
+    return (<div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
+  }
   const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return (
-      <div>
-        {row.apVersionInfo.apLastVersion}
-      </div>
-    );
+    return (<div>{row.apVersionInfo.apLastVersion}</div>);
   }
   const sharedBodyTemplate = (row: TManagedObject): JSX.Element => {
     const sharingEntityIdList: TAPEntityIdList = row.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
@@ -198,6 +189,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
     const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
     const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleInfo('apLifecycleState');
+    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
     return (
       <div className="card">
         <DataTable
@@ -229,7 +221,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
 
           {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
-          {/* <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable /> */}
+          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
 
           <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
 

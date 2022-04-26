@@ -8,6 +8,7 @@ import {
   EAPApprovalType, 
   IAPApiProductDisplay 
 } from '../../displayServices/APApiProductsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { EAPLifecycleState } from '../../displayServices/APLifecycleDisplayService';
 import { E_ManagedAssetDisplay_BusinessGroupSharing_AccessType, TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
@@ -98,13 +99,22 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
   //   return true;
   // }
 
-  protected async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, currentVersion, default_ownerId }:{
+  protected async create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({ 
+    organizationId, 
+    connectorApiProduct, 
+    connectorRevisions, 
+    completeApEnvironmentDisplayList, 
+    currentVersion, 
+    default_ownerId,
+    complete_ApBusinessGroupDisplayList
+  }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     connectorRevisions?: Array<string>;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
     default_ownerId: string;
     currentVersion?: string;
+    complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
   }): Promise<TAPDeveloperPortalApiProductDisplay> {
     
     const base: IAPApiProductDisplay = await this.create_ApApiProductDisplay_From_ApiEntities({
@@ -114,6 +124,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
       completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: currentVersion,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
     });
 
     const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = {
@@ -168,6 +179,11 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId
     });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
 
     const apDeveloperPortalApiProductDisplayList: TAPDeveloperPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
@@ -178,6 +194,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: userId,
         currentVersion: apVersionInfo.apCurrentVersion,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
       });      
 
       // if this is a recovered API product, don't add to list
@@ -233,6 +250,11 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId
     });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
     
     const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
@@ -241,6 +263,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: revision,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
     });
     return apDeveloperPortalApiProductDisplay;
   }

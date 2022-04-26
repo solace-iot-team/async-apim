@@ -9,6 +9,7 @@ import {
   APApiProductsDisplayService, 
   IAPApiProductDisplay, 
 } from '../../displayServices/APApiProductsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
@@ -96,15 +97,28 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     };
   }
 
-  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ organizationId, connectorApiProduct, connectorRevisions, completeApEnvironmentDisplayList, default_ownerId, currentVersion }:{
+  private async create_ApAdminPortalApiProductDisplay_From_ApiEntities({ 
+    organizationId, 
+    connectorApiProduct, 
+    connectorRevisions, 
+    completeApEnvironmentDisplayList, 
+    default_ownerId, 
+    currentVersion,
+    complete_ApBusinessGroupDisplayList,
+  }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
     connectorRevisions?: Array<string>;
     completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
     default_ownerId: string;
     currentVersion?: string;
+    complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
   }): Promise<TAPAdminPortalApiProductDisplay> {
-    
+    // const funcName = 'create_ApAdminPortalApiProductDisplay_From_ApiEntities';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    // console.log(`${logName}: starting ...`);
+
     const base: IAPApiProductDisplay = await this.create_ApApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
@@ -112,7 +126,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: currentVersion,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
     });
+
+    // console.log(`${logName}: base=${JSON.stringify(base.apVersionInfo, null, 2)}`);
 
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = {
       ...base,
@@ -156,7 +173,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
   public apiGetMaintainanceList_ApAdminPortalApiProductDisplayList = async({ organizationId, default_ownerId }:{
     organizationId: string;
     default_ownerId: string;
-    // currentBusinessGroupId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
 
     const connectorApiProductList: Array<APIProduct> = await this.apiGetUnfilteredList_ConnectorApiProductList({
@@ -168,6 +184,12 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       organizationId: organizationId
     });
 
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
+
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
@@ -177,6 +199,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
       });
 
       // apply more filters if needed
@@ -212,6 +235,12 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       organizationId: organizationId
     });
 
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
+    
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
@@ -221,6 +250,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
       });
       // add only to list if this is a recoverable api product
       if(this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) {
@@ -255,6 +285,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId
     });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
 
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
@@ -265,6 +300,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
       });
       // if this is a recovered API product, don't add to list
       if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
@@ -316,6 +352,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     // get the revision list
     let connectorRevisions: Array<string> | undefined = undefined;
     if(fetch_revision_list) {
+      // for old api products, could be empty list
       connectorRevisions = await ApiProductsService.listApiProductRevisions({
         organizationName: organizationId,
         apiProductName: apiProductId
@@ -326,6 +363,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
       organizationId: organizationId
     });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
     
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
@@ -334,6 +376,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: revision,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
     });
     return apAdminPortalApiProductDisplay;
   }
