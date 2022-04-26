@@ -100,6 +100,9 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
     setShowApiEntityId(apAppApiDisplay.apEntityId);
   }
 
+  const apiBodyTemplate = (row: TAPAppApiDisplay) => {
+    return (<div className="p-ml-2">Async API: {row.apEntityId.displayName}</div>)
+  }
   const renderComponent = (): JSX.Element => {
     const rowGroupHeaderTemplate = (row: TAPAppApiDisplay) => {
       return(<span className="p-text-bold">API Product: {row.apApiProductEntityId.displayName}</span>);
@@ -136,7 +139,7 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
         onRowClick={onApAppApiDisplaySelect}
         onRowDoubleClick={(e) => onApAppApiDisplayOpen(e)}
       >
-        <Column header="API" field={apiField} sortable />
+        <Column header="API" body={apiBodyTemplate} field={apiField} sortable />
         <Column header="Version" field={versionField} style={{width: '10em', textAlign: 'center'}} />
       </DataTable>
     );
