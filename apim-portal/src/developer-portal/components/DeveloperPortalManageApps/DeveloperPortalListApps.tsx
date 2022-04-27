@@ -28,6 +28,7 @@ import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
+import { Config } from "../../../Config";
 
 export interface IDeveloperPortalListAppsProps {
   appType: EAppType;
@@ -197,6 +198,7 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
     const sortField = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apSearchContent');
     const statusField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
+    const develAppStatusField = 'devel_connectorAppResponses.smf.status';
 
     return (
       <div className="card">
@@ -224,8 +226,9 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
           >
             <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
             <Column header="Status" field={statusField} sortable style={{ width: "15%"}} />
-
-            {/* <Column header="Status" body={nameBodyTemplate} headerStyle={{width: '7em'}} field="apiAppResponse_smf.status" bodyStyle={{ textAlign: 'left', verticalAlign: 'top' }} sortable /> */}
+            {Config.getUseDevelTools() &&
+              <Column header="DEVEL:App Status" field={develAppStatusField} style={{ width: "15%"}} sortable />          
+            }
 
             {/* <Column header="API Products" body={apiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
             {/* <Column header="Environment(s)" body={environmentsBodyTemplate}  bodyStyle={{textAlign: 'left'}}/>

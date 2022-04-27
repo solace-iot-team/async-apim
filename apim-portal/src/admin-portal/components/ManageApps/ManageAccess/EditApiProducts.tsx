@@ -54,7 +54,9 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
       if(currentAppApiProductDisplay === undefined) throw new Error(`${logName}: currentAppApiProductDisplay === undefined`);
       if(moElem.apApp_ApiProduct_Status !== currentAppApiProductDisplay.apApp_ApiProduct_Status) hasChanged = true;
     });
-    return hasChanged;
+    // set to true to always enable save, seems easier to manage externally produced apps that are not approved
+    return true;
+    // return hasChanged;
   }
 
   const get_OriginalManagedObjectElement = (moElem: TManagedObjectElement): TManagedObjectElement => {
@@ -169,9 +171,12 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
       );
     }
     const managedObjectFormFooterRightToolbarTemplate = () => {
+      const isSaveDisabled: boolean = !hasApiProductListChanged();
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" disabled={!hasApiProductListChanged()} />
+          <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" 
+            disabled={isSaveDisabled} 
+          />
         </React.Fragment>
       );
     }  

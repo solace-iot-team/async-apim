@@ -29,6 +29,7 @@ import APRbacDisplayService from "../../../displayServices/APRbacDisplayService"
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
+import { Config } from "../../../Config";
 
 export interface IListAppsProps {
   organizationId: string;
@@ -260,7 +261,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     const ownerIdField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('appOwnerId');
     const ownerTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppOwnerType');
     const appTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppType');
-    // const develStatusField = APAdminPortalAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
+    const develAppStatusField = 'connectorAppListItem.status';
 
     return (
       <div className="card">
@@ -291,7 +292,9 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
             <Column header="Owner Id" body={ownerIdBodyTemplate} field={ownerIdField} sortable />
             <Column header="Owner Type" body={ownerTypeBodyTemplate} field={ownerTypeField} sortable style={{ width: '9em' }}/>
             <Column header="Status" field={statusField} sortable style={{ width: "13em"}} />
-            {/* <Column header="DEVEL:Status" field={develStatusField} sortable style={{ width: "13em"}} /> */}
+            {Config.getUseDevelTools() &&
+              <Column header="DEVEL:App Status" field={develAppStatusField} style={{ width: "15%"}} sortable />          
+            }
         </DataTable>
       </div>
     );

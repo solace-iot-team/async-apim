@@ -660,7 +660,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       apDeveloperPortalAppApiProductDisplayList: apDeveloperPortalAppApiProductDisplayList
     });
 
-    // set to approved, apiProducts list is correctly set here
+    // set to app to approved, apiProducts list is correctly set here
     const update: AppPatch = {
       status: AppStatus.APPROVED,
       apiProducts: connectorAppApiProductList,

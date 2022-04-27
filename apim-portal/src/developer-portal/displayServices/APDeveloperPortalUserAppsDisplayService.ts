@@ -6,6 +6,7 @@ import {
   AppPatch,
   AppResponse,
   AppsService,
+  AppStatus,
   DevelopersService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
@@ -305,7 +306,9 @@ class APDeveloperPortalUserAppsDisplayService extends APAppsDisplayService {
     });
 
     // patch the empty app with status approved
-    const update: AppPatch = {}
+    const update: AppPatch = {
+      status: AppStatus.APPROVED
+    };
     await this.apiUpdate({
       organizationId: organizationId,
       appId: apDeveloperPortalUserAppDisplay.apEntityId.id,
