@@ -138,6 +138,13 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
         </div>
       );
     }
+    if(node.data.apBusinessGroupAssetReference.apBusinessGroupAppReferenceEntityIdList.length > 0) {
+      jsxElementList.push(
+        <div>
+          Business Group Apps: {node.data.apBusinessGroupAssetReference.apBusinessGroupAppReferenceEntityIdList.length}
+        </div>
+      );
+    }
     if(jsxElementList.length === 0) {
       jsxElementList.push(
         <div>None.</div>

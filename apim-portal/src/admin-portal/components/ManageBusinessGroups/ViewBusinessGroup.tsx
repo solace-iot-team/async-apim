@@ -7,7 +7,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS } from "./ManageBusinessGroupsCommon";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay } from "../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupAssetReference, TAPBusinessGroupDisplay } from "../../../displayServices/APBusinessGroupsDisplayService";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
@@ -39,7 +39,8 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
     try { 
       const object: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
         organizationId: props.organizationId,
-        businessGroupId: props.businessGroupEntityId.id
+        businessGroupId: props.businessGroupEntityId.id,
+        fetchAssetReferences: true
       });
       setManagedObject(object);
     } catch(e: any) {
@@ -95,12 +96,57 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
     );
   }
   const renderMembers = (apUserEntityIdList: TAPEntityIdList): JSX.Element => {
+    if(apUserEntityIdList.length > 0) {
+      return (
+        <React.Fragment>
+          <div><b>Members:</b></div>
+          <div className="p-ml-2">
+            {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_DisplayNameList(apUserEntityIdList))}
+          </div>
+        </React.Fragment>
+      );  
+    }
+    return (
+      <div><b>Members</b>: None.</div>    
+    );
+  }
+  const renderAssetReferences = (apBusinessGroupAssetReference: TAPBusinessGroupAssetReference): JSX.Element => {
+    const jsxElementList: Array<JSX.Element> = [];
+    if(apBusinessGroupAssetReference.apApiProductReferenceEntityIdList.length > 0) {
+      jsxElementList.push(
+        <React.Fragment>
+          <div className="p-ml-2 p-mt-2">
+            <b>API Products:</b>
+            <div className="p-ml-2">
+              {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_DisplayNameList(apBusinessGroupAssetReference.apApiProductReferenceEntityIdList))}
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    }
+    if(apBusinessGroupAssetReference.apBusinessGroupAppReferenceEntityIdList.length > 0) {
+      jsxElementList.push(
+        <React.Fragment>
+          <div className="p-ml-2 p-mt-2">
+            <b>Business Group Apps:</b>
+            <div className="p-ml-2">
+              {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_DisplayNameList(apBusinessGroupAssetReference.apBusinessGroupAppReferenceEntityIdList))}
+            </div>
+          </div>
+        </React.Fragment>
+      );
+    }
+    if(jsxElementList.length === 0) {
+      jsxElementList.push(
+        <div>None.</div>
+      );
+    }
     return (
       <React.Fragment>
-        <div><b>Members:</b></div>
-        <div className="p-ml-2">
-          {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_DisplayNameList(apUserEntityIdList))}
-        </div>
+      <div><b>Assets:</b></div>
+      <div className="p-ml-2">
+        {jsxElementList}
+      </div>
       </React.Fragment>
     );
   }
@@ -125,6 +171,9 @@ export const ViewBusinessGroup: React.FC<IViewBusinessGroupProps> = (props: IVie
 
               <Divider />
               {renderMembers(managedObject.apMemberUserEntityIdList)}
+
+              <Divider />
+              {renderAssetReferences(managedObject.apBusinessGroupAssetReference)}
 
             </div>
             <div className="view-detail-right">

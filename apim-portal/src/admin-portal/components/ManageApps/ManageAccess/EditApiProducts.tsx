@@ -42,20 +42,20 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
 
 
   const hasApiProductListChanged = (): boolean => {
-    const funcName = 'hasApiProductListChanged';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    // compare original with managedObject
-    let hasChanged: boolean = false;
-    managedObject.forEach( (moElem: TManagedObjectElement) => {
-      const currentAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay | undefined = props.apAdminPortalAppDisplay.apAppApiProductDisplayList.find( (x) => {
-        return x.apEntityId.id === moElem.apEntityId.id;
-      });
-      if(currentAppApiProductDisplay === undefined) throw new Error(`${logName}: currentAppApiProductDisplay === undefined`);
-      if(moElem.apApp_ApiProduct_Status !== currentAppApiProductDisplay.apApp_ApiProduct_Status) hasChanged = true;
-    });
     // set to true to always enable save, seems easier to manage externally produced apps that are not approved
     return true;
+    // const funcName = 'hasApiProductListChanged';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // // compare original with managedObject
+    // let hasChanged: boolean = false;
+    // managedObject.forEach( (moElem: TManagedObjectElement) => {
+    //   const currentAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay | undefined = props.apAdminPortalAppDisplay.apAppApiProductDisplayList.find( (x) => {
+    //     return x.apEntityId.id === moElem.apEntityId.id;
+    //   });
+    //   if(currentAppApiProductDisplay === undefined) throw new Error(`${logName}: currentAppApiProductDisplay === undefined`);
+    //   if(moElem.apApp_ApiProduct_Status !== currentAppApiProductDisplay.apApp_ApiProduct_Status) hasChanged = true;
+    // });
     // return hasChanged;
   }
 

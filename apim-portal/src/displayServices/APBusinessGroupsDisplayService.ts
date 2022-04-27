@@ -1,4 +1,5 @@
 import APAdminPortalApiProductsDisplayService from '../admin-portal/displayServices/APAdminPortalApiProductsDisplayService';
+import APAdminPortalAppsDisplayService from '../admin-portal/displayServices/APAdminPortalAppsDisplayService';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList } from '../utils/APEntityIdsService';
 import { APSClientOpenApi } from '../utils/APSClientOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
@@ -43,6 +44,7 @@ export type TAPBusinessGroupDisplayReference = IAPEntityIdDisplay & {
 
 export type TAPBusinessGroupAssetReference = {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
+  apBusinessGroupAppReferenceEntityIdList: TAPEntityIdList;
 }
 
 export type TAPBusinessGroupDisplay_ExternalReference = APSExternalReference & {
@@ -111,7 +113,10 @@ class APBusinessGroupsDisplayService {
       externalSystemDisplayName: undefined,
       apParentBusinessGroupEntityId: apBusinessGroupParentEntityId,
       apBusinessGroupChildrenEntityIdList: [],
-      apApiProductReferenceEntityIdList: [],
+      apBusinessGroupAssetReference: {
+        apApiProductReferenceEntityIdList: [],
+        apBusinessGroupAppReferenceEntityIdList: []
+      },
     });
   }
 
@@ -151,6 +156,8 @@ class APBusinessGroupsDisplayService {
     if(apBusinessGroupDisplay.apExternalReference !== undefined) return false;
     if(apBusinessGroupDisplay.apsBusinessGroupResponse.businessGroupChildIds.length > 0) return false;
     if(apBusinessGroupDisplay.apMemberUserEntityIdList.length > 0) return false;
+    if(apBusinessGroupDisplay.apBusinessGroupAssetReference.apApiProductReferenceEntityIdList.length >0) return false;
+    if(apBusinessGroupDisplay.apBusinessGroupAssetReference.apBusinessGroupAppReferenceEntityIdList.length >0) return false;
     return true;
   }
 
@@ -275,13 +282,13 @@ class APBusinessGroupsDisplayService {
     externalSystemDisplayName, 
     apParentBusinessGroupEntityId, 
     apBusinessGroupChildrenEntityIdList,
-    apApiProductReferenceEntityIdList,
+    apBusinessGroupAssetReference,
   }: {
     apsBusinessGroupResponse: APSBusinessGroupResponse;
     externalSystemDisplayName?: string;
     apParentBusinessGroupEntityId?: TAPEntityId;
     apBusinessGroupChildrenEntityIdList: TAPEntityIdList;
-    apApiProductReferenceEntityIdList: TAPEntityIdList;
+    apBusinessGroupAssetReference: TAPBusinessGroupAssetReference;
   }): TAPBusinessGroupDisplay {
     const base: TAPBusinessGroupDisplay = {
       apEntityId: {
@@ -293,9 +300,7 @@ class APBusinessGroupsDisplayService {
       apBusinessGroupParentEntityId: apParentBusinessGroupEntityId,
       apBusinessGroupChildrenEntityIdList: APEntityIdsService.sort_byDisplayName(apBusinessGroupChildrenEntityIdList),
       apMemberUserEntityIdList: this.create_ApMemberUserEntityIdList_From_ApiEntities({ apsMemberUserIdList: apsBusinessGroupResponse.members }),
-      apBusinessGroupAssetReference: {
-        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList
-      }
+      apBusinessGroupAssetReference: apBusinessGroupAssetReference,
     };
     if(apsBusinessGroupResponse.externalReference !== undefined && externalSystemDisplayName !== undefined) {
       base.apExternalReference = {
@@ -418,6 +423,24 @@ class APBusinessGroupsDisplayService {
   //   return apBusinessGroupDisplay;
   // }
 
+  private async apsGet_AssetReferences({ organizationId, businessGroupId }:{
+    organizationId: string;
+    businessGroupId: string;
+  }): Promise<TAPBusinessGroupAssetReference> {
+    const apApiProductReferenceEntityIdList: TAPEntityIdList = await APAdminPortalApiProductsDisplayService.apiGetList_ApiProductEntityIdList_By_BusinessGroupId({
+      organizationId: organizationId,
+      businessGroupId: businessGroupId
+    });
+    const apTeamAppReferenceEntityIdList: TAPEntityIdList = await APAdminPortalAppsDisplayService.apiGetList_TeamAppEntityIdList({
+      organizationId: organizationId,
+      teamId: businessGroupId
+    });
+    return {
+      apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+      apBusinessGroupAppReferenceEntityIdList: apTeamAppReferenceEntityIdList
+    };
+  }
+
   public async apsGetList_ApBusinessGroupSystemDisplayList({ organizationId, fetchAssetReferences = false }: {
     organizationId: string;
     fetchAssetReferences?: boolean;
@@ -446,10 +469,13 @@ class APBusinessGroupsDisplayService {
         businessGroupIdList: apsBusinessGroupResponse.businessGroupChildIds
       });
 
-      // get the references: api products
-      let apApiProductReferenceEntityIdList: TAPEntityIdList = [];
+      // get the references
+      let apBusinessGroupAssetReference: TAPBusinessGroupAssetReference = {
+        apApiProductReferenceEntityIdList: [],
+        apBusinessGroupAppReferenceEntityIdList: []
+      };
       if(fetchAssetReferences) {
-        apApiProductReferenceEntityIdList = await APAdminPortalApiProductsDisplayService.apiGetList_ApiProductEntityIdList_By_BusinessGroupId({
+        apBusinessGroupAssetReference = await this.apsGet_AssetReferences({
           organizationId: organizationId,
           businessGroupId: apsBusinessGroupResponse.businessGroupId
         });
@@ -460,7 +486,7 @@ class APBusinessGroupsDisplayService {
         externalSystemDisplayName: this.getExternalSystemDisplayName(extSystemsListResponse.list, apsBusinessGroupResponse.externalReference),
         apParentBusinessGroupEntityId: parentBusinessGroupEntityId,
         apBusinessGroupChildrenEntityIdList: childrenEntityIdList,
-        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+        apBusinessGroupAssetReference: apBusinessGroupAssetReference,
       }));
     }
     return list;
@@ -528,9 +554,12 @@ class APBusinessGroupsDisplayService {
       } 
 
       // get the references: api products
-      let apApiProductReferenceEntityIdList: TAPEntityIdList = [];
+      let apBusinessGroupAssetReference: TAPBusinessGroupAssetReference = {
+        apApiProductReferenceEntityIdList: [],
+        apBusinessGroupAppReferenceEntityIdList: []
+      };
       if(fetchAssetReferences) {
-        apApiProductReferenceEntityIdList = await APAdminPortalApiProductsDisplayService.apiGetList_ApiProductEntityIdList_By_BusinessGroupId({
+        apBusinessGroupAssetReference = await this.apsGet_AssetReferences({
           organizationId: organizationId,
           businessGroupId: apsBusinessGroupResponse.businessGroupId
         });
@@ -541,7 +570,7 @@ class APBusinessGroupsDisplayService {
         externalSystemDisplayName: undefined,
         apParentBusinessGroupEntityId: parentBusinessGroupEntityId,
         apBusinessGroupChildrenEntityIdList: childrenEntityIdList,
-        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+        apBusinessGroupAssetReference: apBusinessGroupAssetReference
       }));
     }
     return list;
@@ -588,10 +617,13 @@ class APBusinessGroupsDisplayService {
       externalSystemDisplayName = apsExternalSystem.displayName;
     }
 
-    // get the references: api products
-    let apApiProductReferenceEntityIdList: TAPEntityIdList = [];
+    // get the references
+    let apBusinessGroupAssetReference: TAPBusinessGroupAssetReference = {
+      apApiProductReferenceEntityIdList: [],
+      apBusinessGroupAppReferenceEntityIdList: []
+    };
     if(fetchAssetReferences) {
-      apApiProductReferenceEntityIdList = await APAdminPortalApiProductsDisplayService.apiGetList_ApiProductEntityIdList_By_BusinessGroupId({
+      apBusinessGroupAssetReference = await this.apsGet_AssetReferences({
         organizationId: organizationId,
         businessGroupId: apsBusinessGroupResponse.businessGroupId
       });
@@ -602,7 +634,7 @@ class APBusinessGroupsDisplayService {
       externalSystemDisplayName: externalSystemDisplayName,
       apParentBusinessGroupEntityId: apsBusinessGroupResponse.businessGroupParentId !== undefined ? await this.getApBusinessGroupEntityId(organizationId, apsBusinessGroupResponse.businessGroupParentId) : undefined,
       apBusinessGroupChildrenEntityIdList: await this.getApBusinessGroupEntityIdList(organizationId, apsBusinessGroupResponse.businessGroupChildIds),
-      apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+      apBusinessGroupAssetReference: apBusinessGroupAssetReference
     });
   }
 
@@ -611,14 +643,19 @@ class APBusinessGroupsDisplayService {
     externalReferenceId: string;
     fetchAssetReferences?: boolean;
   }): Promise<TAPBusinessGroupDisplay> {
+
     const apsBusinessGroupResponse: APSBusinessGroupResponse = await ApsBusinessGroupsService.getApsBusinessGroupByExternalReference({
       organizationId: organizationId,
       externalReferenceId: externalReferenceId
     });
-    // get the references: api products
-    let apApiProductReferenceEntityIdList: TAPEntityIdList = [];
+
+    // get the references
+    let apBusinessGroupAssetReference: TAPBusinessGroupAssetReference = {
+      apApiProductReferenceEntityIdList: [],
+      apBusinessGroupAppReferenceEntityIdList: []
+    };
     if(fetchAssetReferences) {
-      apApiProductReferenceEntityIdList = await APAdminPortalApiProductsDisplayService.apiGetList_ApiProductEntityIdList_By_BusinessGroupId({
+      apBusinessGroupAssetReference = await this.apsGet_AssetReferences({
         organizationId: organizationId,
         businessGroupId: apsBusinessGroupResponse.businessGroupId
       });
@@ -629,7 +666,7 @@ class APBusinessGroupsDisplayService {
       externalSystemDisplayName: undefined,
       apParentBusinessGroupEntityId: apsBusinessGroupResponse.businessGroupParentId !== undefined ? await this.getApBusinessGroupEntityId(organizationId, apsBusinessGroupResponse.businessGroupParentId) : undefined,
       apBusinessGroupChildrenEntityIdList: await this.getApBusinessGroupEntityIdList(organizationId, apsBusinessGroupResponse.businessGroupChildIds),
-      apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+      apBusinessGroupAssetReference: apBusinessGroupAssetReference
     });
   }
 

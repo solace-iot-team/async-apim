@@ -1,4 +1,5 @@
 import { 
+  ApiError,
   AppApiProducts,
   AppApiProductsComplex,
   AppConnectionStatus,
@@ -30,6 +31,7 @@ import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APOrganizationUsersDisplayService, { 
   TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay, TAPOrganizationUserDisplayList
 } from '../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService';
+import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { IAPEntityIdDisplay, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { Globals } from '../../utils/Globals';
@@ -391,6 +393,35 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
 
     return apAdminPortalAppDisplay;
 
+  }
+
+  /**
+   * Returns the entityId list of business group / team apps.
+   * If team does not exist, returns empty list
+   */
+  public apiGetList_TeamAppEntityIdList = async({ organizationId, teamId }: {
+    organizationId: string;
+    teamId: string;
+  }): Promise<TAPEntityIdList> => {
+    try {
+      const connectorTeamAppList: Array<AppResponse> = await AppsService.listTeamApps({
+        organizationName: organizationId, 
+        teamName: teamId
+      });
+      const list: TAPEntityIdList = connectorTeamAppList.map( (x) => {
+        return {
+          id: x.name,
+          displayName: x.displayName ? x.displayName : x.name
+        };
+      });  
+      return list;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return [];
+      }
+      throw e;
+    }
   }
 
   /**
