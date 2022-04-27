@@ -14,22 +14,19 @@ import {
   E_CALL_STATE_ACTIONS, 
   E_MANAGE_APP_COMPONENT_STATE 
 } from "../DeveloperPortalManageAppsCommon";
-// import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
-// import { ManageNewUserApp } from "./EditNewUserApp/ManageNewUserApp";
-// import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
-// import { ManageEditUserApp } from "./EditNewUserApp/ManageEditUserApp";
-// import { ManageApiProducts } from "./ManageApiProducts/ManageApiProducts";
-// import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
-// import { DeveloperPortalMonitorUserApp } from "./DeveloperPortalMonitorUserApp";
-
-import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageApps.css";
-import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay, TAPDeveloperPortalTeamAppDisplay_AllowedActions } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
+import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay_AllowedActions } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { DeveloperPortalListApps } from "../DeveloperPortalListApps";
 import { TAPDeveloperPortalAppDisplay } from "../../../displayServices/APDeveloperPortalAppsDisplayService";
 import { DeveloperPortalViewApp } from "../DeveloperPortalViewApp";
 import { ManageNewApp } from "../EditNewApp/ManageNewApp";
 import { ManageEditApp } from "../EditNewApp/ManageEditApp";
+import { DeveloperPortalDeleteApp } from "../DeveloperPortalDeleteApp";
+import { ManageApiProducts } from "../ManageApiProducts/ManageApiProducts";
+import { ManageAppWebhooks } from "../ManageAppWebhooks/ManageAppWebhooks";
+import { DeveloperPortalMonitorApp } from "../DeveloperPortalMonitorApp";
+
+import '../../../../components/APComponents.css';
+import "../DeveloperPortalManageApps.css";
 
 export interface IDeveloperPortalManageTeamAppsProps {
   organizationEntityId: TAPEntityId;
@@ -443,16 +440,15 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-            <p>showDeleteComponent</p>
-
-        // <DeveloperPortalDeleteUserApp
-        //   organizationId={props.organizationEntityId.id}
-        //   appEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError} 
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   onDeleteSuccess={onDeleteManagedObjectSuccess}
-        // />
+        <DeveloperPortalDeleteApp
+          appType={EAppType.TEAM}
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
+        />
       }
       { showNewComponent &&
         <ManageNewApp
@@ -479,44 +475,41 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
         />
       }
       {showManageApiProductsComponent && managedObjectEntityId &&
-                        <p>showManageApiProductsComponent</p>
-
-        // <ManageApiProducts
-        //   organizationId={props.organizationEntityId.id}
-        //   appEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateToCommand={onSetManageUserAppComponentState_To_View}
-        //   onSaveSuccess={onManageApiProductsSuccess}
-        // />
+        <ManageApiProducts
+          appType={EAppType.TEAM}
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateToCommand={onSetManageUserAppComponentState_To_View}
+          onSaveSuccess={onManageApiProductsSuccess}
+        />
       }
       {showManageWebhooksComponent && managedObjectEntityId &&
-                        <p>showManageWebhooksComponent</p>
-        //                 <ManageUserAppWebhooks
-        //   key={`${ComponentName}_ManageUserAppWebhooks_${refreshCounter}`}
-        //   organizationId={props.organizationEntityId.id}
-        //   appEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onSuccessNotification={onSubComponentUserNotification}
-        //   onNavigateToApp={onSetManageUserAppComponentState_To_View}
-        //   onNavigateToCommand={onSetManageUserAppComponentState_To_ManageUserAppWebhooks}
-        // />
+        <ManageAppWebhooks
+          key={`${ComponentName}_ManageAppWebhooks_${refreshCounter}`}
+          appType={EAppType.TEAM}
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onSuccessNotification={onSubComponentUserNotification}
+          onNavigateToApp={onSetManageUserAppComponentState_To_View}
+          onNavigateToCommand={onSetManageUserAppComponentState_To_ManageUserAppWebhooks}
+        />
       }
       {showMonitorComponent && managedObjectEntityId &&
-                        <p>showMonitorComponent</p>
-
-        // <DeveloperPortalMonitorUserApp
-        //   organizationId={props.organizationEntityId.id}
-        //   appEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onLoadingChange={setIsLoading}
-        //   onNavigateToApp={onSetManageUserAppComponentState_To_View}
-        // />
+        <DeveloperPortalMonitorApp
+          organizationId={props.organizationEntityId.id}
+          appEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onLoadingChange={setIsLoading}
+          onNavigateToApp={onSetManageUserAppComponentState_To_View}
+        />
       }
     </div>
   );

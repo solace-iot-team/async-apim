@@ -22,6 +22,7 @@ export const DeveloperPortalDisplayAppHeaderInfo: React.FC<IDeveloperPortalDispl
           </div>
           <div className="apd-app-view-detail-right">
             <div>Id: {props.apAppDisplay.apEntityId.id}</div>
+            <div>App status:{props.apAppDisplay.devel_connectorAppResponses.smf.status}</div>
           </div>            
         </div>
       </div>  
