@@ -5,29 +5,28 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
-import { TApiCallState } from "../../../utils/ApiCallState";
-import { Loading } from "../../../components/Loading/Loading";
-import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import { TApiCallState } from "../../../../utils/ApiCallState";
+import { Loading } from "../../../../components/Loading/Loading";
+import { CheckConnectorHealth } from "../../../../components/SystemHealth/CheckConnectorHealth";
+import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { 
+  EAppType,
   E_CALL_STATE_ACTIONS, 
-  E_MANAGE_USER_APP_COMPONENT_STATE 
-} from "./DeveloperPortalManageUserAppsCommon";
-import { DeveloperPortalListUserApps } from "./DeveloperPortalListUserApps";
-import APDeveloperPortalUserAppsDisplayService, { 
-  TAPDeveloperPortalUserAppDisplay, 
-  TAPDeveloperPortalUserAppDisplay_AllowedActions 
-} from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import { DeveloperPortalViewUserApp } from "./DeveloperPortalViewUserApp";
-import { ManageNewUserApp } from "./EditNewUserApp/ManageNewUserApp";
-import { DeveloperPortalDeleteUserApp } from "./DeveloperPortalDeleteUserApp";
-import { ManageEditUserApp } from "./EditNewUserApp/ManageEditUserApp";
-import { ManageApiProducts } from "./ManageApiProducts/ManageApiProducts";
-import { ManageUserAppWebhooks } from "./ManageUserAppWebhooks/ManageUserAppWebhooks";
-import { DeveloperPortalMonitorUserApp } from "./DeveloperPortalMonitorUserApp";
+  E_MANAGE_APP_COMPONENT_STATE 
+} from "../DeveloperPortalManageAppsCommon";
+import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay_AllowedActions } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
+import { DeveloperPortalListApps } from "../DeveloperPortalListApps";
+import { TAPDeveloperPortalAppDisplay } from "../../../displayServices/APDeveloperPortalAppsDisplayService";
+import { DeveloperPortalViewApp } from "../DeveloperPortalViewApp";
+import { ManageNewApp } from "../EditNewApp/ManageNewApp";
+import { ManageEditApp } from "../EditNewApp/ManageEditApp";
+import { DeveloperPortalDeleteApp } from "../DeveloperPortalDeleteApp";
+import { ManageApiProducts } from "../ManageApiProducts/ManageApiProducts";
+import { ManageAppWebhooks } from "../ManageAppWebhooks/ManageAppWebhooks";
+import { DeveloperPortalMonitorApp } from "../DeveloperPortalMonitorApp";
 
-import '../../../components/APComponents.css';
-import "./DeveloperPortalManageUserApps.css";
+import '../../../../components/APComponents.css';
+import "../DeveloperPortalManageApps.css";
 
 export interface IDeveloperPortalManageUserAppsProps {
   organizationEntityId: TAPEntityId;
@@ -41,21 +40,21 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const ComponentName = 'DeveloperPortalManageUserApps';
 
   type TComponentState = {
-    previousState: E_MANAGE_USER_APP_COMPONENT_STATE,
-    currentState: E_MANAGE_USER_APP_COMPONENT_STATE
+    previousState: E_MANAGE_APP_COMPONENT_STATE,
+    currentState: E_MANAGE_APP_COMPONENT_STATE
   }
   const initialComponentState: TComponentState = {
-    previousState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED,
-    currentState: E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED
+    previousState: E_MANAGE_APP_COMPONENT_STATE.UNDEFINED,
+    currentState: E_MANAGE_APP_COMPONENT_STATE.UNDEFINED
   }
-  const setNewComponentState = (newState: E_MANAGE_USER_APP_COMPONENT_STATE) => {
+  const setNewComponentState = (newState: E_MANAGE_APP_COMPONENT_STATE) => {
     setComponentState({
       previousState: componentState.currentState,
       currentState: newState
     });
   }
   const setPreviousComponentState = () => {
-    const newCurrentState: E_MANAGE_USER_APP_COMPONENT_STATE = (componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED ? E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW : componentState.previousState);
+    const newCurrentState: E_MANAGE_APP_COMPONENT_STATE = (componentState.previousState === E_MANAGE_APP_COMPONENT_STATE.UNDEFINED ? E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW : componentState.previousState);
     setComponentState({
       previousState: componentState.currentState,
       currentState: newCurrentState
@@ -91,9 +90,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   
   React.useEffect(() => {    
     if(props.createAppWithApiProductEntityId !== undefined) {
-      setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+      setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
     } else {
-      setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+      setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     }    
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -109,9 +108,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_DELETE_USER_APP:
-          case E_CALL_STATE_ACTIONS.API_CREATE_USER_APP:
-          case E_CALL_STATE_ACTIONS.API_UPDATE_USER_APP:
+          case E_CALL_STATE_ACTIONS.API_DELETE_APP:
+          case E_CALL_STATE_ACTIONS.API_CREATE_APP:
+          case E_CALL_STATE_ACTIONS.API_UPDATE_APP:
               props.onSuccess(apiCallStatus);
             break;
           default:
@@ -121,18 +120,18 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay): void => {
+  const onViewManagedObject = (apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(apDeveloperPortalUserAppDisplay.apEntityId);
+    setManagedObjectEntityId(apDeveloperPortalAppDisplay.apEntityId);
     setManagedObject_AllowedActions(APDeveloperPortalUserAppsDisplayService.get_AllowedActions({
-      apAppDisplay: apDeveloperPortalUserAppDisplay
+      apAppDisplay: apDeveloperPortalAppDisplay
     }));
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New Object *
   const onNewManagedObject = () => {
     setApiCallStatus(null);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW);
   }
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
@@ -141,7 +140,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
   // * Edit Api Products *
   const onManageApiProductssManagedObjectFromToolbar = () => {
@@ -150,7 +149,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_API_PRODUCTS);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_API_PRODUCTS);
   }
   // * Edit Webhooks *
   const onManageWebhooksManagedObjectFromToolbar = () => {
@@ -159,7 +158,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS);
   }
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
@@ -168,7 +167,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE);
   }
   // * Monitor *
   const onMonitorManagedObjectFromToolbar = () => {
@@ -177,7 +176,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
     setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
   }
 
   // * Toolbar *
@@ -259,11 +258,11 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   // }
   const onSetManageUserAppComponentState_To_View = (apAppEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apAppEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
   const onSetManageUserAppComponentState_To_ManageUserAppWebhooks = () => {
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS);
     setRefreshCounter(refreshCounter + 1);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
@@ -272,13 +271,13 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   }
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
     setApiCallStatus(apiCallState);
     setManagedObjectEntityId(newMoEntityId);
-    setNewComponentState(E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onManageApiProductsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -297,7 +296,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
   const calculateShowStates = (componentState: TComponentState) => {
     const funcName = 'calculateShowStates';
     const logName = `${ComponentName}.${funcName}()`;
-    if(!componentState.currentState || componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.UNDEFINED) {
+    if(!componentState.currentState || componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.UNDEFINED) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -307,7 +306,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if(componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
+    else if(componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -317,8 +316,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if(  componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
-              componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+    else if(  componentState.previousState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
+              componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -328,7 +327,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
-    else if(  componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+    else if(  componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
@@ -338,8 +337,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false)
       setShowNewComponent(false);
     }
-    else if(  componentState.previousState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
-      componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+    else if(  componentState.previousState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
+      componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
@@ -349,7 +348,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(true);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
+    else if( componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
@@ -359,7 +358,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_API_PRODUCTS) {
+    else if( componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_API_PRODUCTS) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -369,7 +368,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS) {
+    else if( componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_WEBHOOKS) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -379,7 +378,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(false);
     }
-    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
+    else if( componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -389,7 +388,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       setShowDeleteComponent(false);
       setShowNewComponent(true);
     }
-    else if( componentState.currentState === E_MANAGE_USER_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR) {
+    else if( componentState.currentState === E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_MONITOR) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(false);
@@ -416,8 +415,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       {showListComponent && 
-        <DeveloperPortalListUserApps
-          key={`${ComponentName}_DeveloperPortalListUserApps_${refreshCounter}`}
+        <DeveloperPortalListApps
+          key={`${ComponentName}_DeveloperPortalListApps_${refreshCounter}`}
+          appType={EAppType.USER}
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
@@ -427,8 +427,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showViewComponent && managedObjectEntityId &&
-        <DeveloperPortalViewUserApp
-          key={`${ComponentName}_DeveloperPortalViewUserApp_${refreshCounter}`}
+      <DeveloperPortalViewApp
+          key={`${ComponentName}_DeveloperPortalViewApp_${refreshCounter}`}
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onSuccess={onSubComponentUserNotification}
@@ -439,7 +440,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-        <DeveloperPortalDeleteUserApp
+        <DeveloperPortalDeleteApp
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError} 
@@ -449,7 +451,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       { showNewComponent &&
-        <ManageNewUserApp
+        <ManageNewApp
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           onNewSuccess={onNewManagedObjectSuccess} 
           onError={onSubComponentError}
@@ -459,7 +462,8 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showEditComponent && managedObjectEntityId &&
-        <ManageEditUserApp
+        <ManageEditApp
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError}
@@ -472,6 +476,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
       }
       {showManageApiProductsComponent && managedObjectEntityId &&
         <ManageApiProducts
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError}
@@ -483,8 +488,9 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showManageWebhooksComponent && managedObjectEntityId &&
-        <ManageUserAppWebhooks
-          key={`${ComponentName}_ManageUserAppWebhooks_${refreshCounter}`}
+        <ManageAppWebhooks
+          key={`${ComponentName}_ManageAppWebhooks_${refreshCounter}`}
+          appType={EAppType.USER}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError}
@@ -496,7 +502,7 @@ export const DeveloperPortalManageUserApps: React.FC<IDeveloperPortalManageUserA
         />
       }
       {showMonitorComponent && managedObjectEntityId &&
-        <DeveloperPortalMonitorUserApp
+        <DeveloperPortalMonitorApp
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
           onError={onSubComponentError}

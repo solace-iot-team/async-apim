@@ -47,10 +47,10 @@ export const DeveloperPortalSideBar: React.FC<IDeveloperPortalSideBarProps> = (p
 
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
-        isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ManageUserApplications) && 
+        isDisabled(EUIDeveloperPortalResourcePaths.ManageUserApplications) && 
+        isDisabled(EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications) && 
         isDisabled(EUIDeveloperPortalResourcePaths.ExploreApis) &&
-        isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts) &&
-        isDisabled(EUIDeveloperPortalResourcePaths.DELETEME_ExploreApiProducts)
+        isDisabled(EUIDeveloperPortalResourcePaths.ExploreApiProducts)
       ) return [];
 
       let _items: Array<MenuItem> = [
