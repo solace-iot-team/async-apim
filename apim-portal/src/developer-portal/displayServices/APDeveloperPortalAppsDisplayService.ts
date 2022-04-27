@@ -1,27 +1,19 @@
 import { 
-  ApiError,
-  App,
   AppApiProductsComplex,
   AppConnectionStatus,
   AppPatch,
   AppResponse,
-  AppsService,
-  DevelopersService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
+import { TAPAppApiDisplayList } from '../../displayServices/APAppsDisplayService/APAppApisDisplayService';
 import APAppEnvironmentsDisplayService, { 
   TAPAppEnvironmentDisplayList 
 } from '../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService';
 import { 
   APAppsDisplayService,
-  EAPApp_OwnerType, 
-  EAPApp_Type, 
   IAPAppDisplay, 
   TAPAppDisplay_AllowedActions, 
   TAPAppMeta 
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
-import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
-import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import APDeveloperPortalAppApiProductsDisplayService, { 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from './APDeveloperPortalAppApiProductsDisplayService';
