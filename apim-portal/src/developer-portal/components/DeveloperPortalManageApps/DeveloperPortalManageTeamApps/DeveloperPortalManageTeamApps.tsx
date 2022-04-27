@@ -252,10 +252,6 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
   const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
     setBreadCrumbItemList(itemList);
   }
-  // const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-  //   props.setBreadCrumbItemList(newItemList);
-  // }
   const onSetManageUserAppComponentState_To_View = (apAppEntityId: TAPEntityId) => {
     setManagedObjectEntityId(apAppEntityId);
     setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
@@ -408,7 +404,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
 
       <CheckConnectorHealth />
       
-      <Loading show={isLoading} />      
+      <Loading key={ComponentName} show={isLoading} />      
       
       {!isLoading && renderToolbar() }
       
@@ -421,7 +417,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
-          onLoadingChange={setIsLoading} 
+          // onLoadingChange={setIsLoading} 
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onManagedObjectView={onViewManagedObject}
         />

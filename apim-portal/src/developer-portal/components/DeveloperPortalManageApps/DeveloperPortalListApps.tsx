@@ -24,6 +24,7 @@ import APDeveloperPortalTeamAppsDisplayService, {
   TAPDeveloperPortalTeamAppDisplayList 
 } from "../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { Globals } from "../../../utils/Globals";
+import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
@@ -33,7 +34,7 @@ export interface IDeveloperPortalListAppsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  // onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectView: (apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
@@ -51,6 +52,7 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
 
@@ -106,9 +108,9 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
   }
 
   const doInitialize = async () => {
-    props.onLoadingChange(true);
+    setIsLoading(true);
     await apiGetManagedObjectList();
-    props.onLoadingChange(false);
+    setIsLoading(false);
   }
 
   React.useEffect(() => {
@@ -256,12 +258,17 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
     if(props.appType === EAppType.USER) return 'My Apps:';
     return 'Business Group Apps:';
   }
+  const getLoadingHeader = (): JSX.Element => {
+    return (<div>Retrieving list of apps ...</div>);
+  }
   return (
     <div className="apd-manage-user-apps">
 
       <APComponentHeader header={getComponentHeader()} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
+      <Loading key={ComponentName} show={isLoading} header={getLoadingHeader()} />      
 
       <div className="p-mt-2">
         {isInitialized && renderContent()}
