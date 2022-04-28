@@ -8,7 +8,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/deleteme_ManageOrganizations';
 
 import "../../pages/Pages.css";
 
@@ -35,12 +35,12 @@ export const MonitorOrganizationStatusPage: React.FC = () => {
   const renderBreadcrumbs = (organizationDisplayName: string) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: `Organization: ${organizationDisplayName}`
+        label: `deleteme: Organization: ${organizationDisplayName}`
       },
       { 
-        label: 'Status',
+        label: 'deleteme: Status',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {

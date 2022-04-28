@@ -1,5 +1,5 @@
 import React from "react";
-import { TAPOrganization } from "../../utils/APOrganizationsService";
+import { TAPOrganization } from "../../utils/deleteme_APOrganizationsService";
 
 export type TAPOrganzationContext = TAPOrganization;
 

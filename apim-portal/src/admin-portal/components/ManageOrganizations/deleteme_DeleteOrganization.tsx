@@ -10,8 +10,8 @@ import {
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
-import { APOrganizationsService } from "../../../utils/APOrganizationsService";
+import { E_CALL_STATE_ACTIONS } from "./deleteme_ManageOrganizationsCommon";
+import { APOrganizationsService } from "../../../utils/deleteme_APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";

@@ -18,8 +18,8 @@ import {
   E_CALL_STATE_ACTIONS, 
   ManageOrganizationsCommon, 
   TAPOrganizationConfig, 
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganizationList } from "../../../utils/APOrganizationsService";
+} from "./deleteme_ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganizationList } from "../../../utils/deleteme_APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";

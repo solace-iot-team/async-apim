@@ -19,7 +19,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
-import { APOrganizationsService } from '../../utils/APOrganizationsService';
+import { APOrganizationsService } from '../../utils/deleteme_APOrganizationsService';
 import { Globals } from '../../utils/Globals';
 import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
 import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';

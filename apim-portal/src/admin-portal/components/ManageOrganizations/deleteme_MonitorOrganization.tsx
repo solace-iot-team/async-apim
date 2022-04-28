@@ -11,8 +11,8 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { 
   E_CALL_STATE_ACTIONS, 
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
+} from "./deleteme_ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganization } from "../../../utils/deleteme_APOrganizationsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";

@@ -3,7 +3,7 @@ import { TOrganizationContextAction } from '../components/APContextProviders/APO
 import { UserContextAction } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContextAction } from '../components/AuthContextProvider/AuthContextProvider';
 import { TAPEntityId } from '../utils/APEntityIdsService';
-import { APOrganizationsService } from '../utils/APOrganizationsService';
+import { APOrganizationsService } from '../utils/deleteme_APOrganizationsService';
 import { 
   APRbac, 
   EAPSCombinedAuthRole, 

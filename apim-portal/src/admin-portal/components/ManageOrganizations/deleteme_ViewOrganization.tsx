@@ -16,9 +16,9 @@ import {
   E_COMPONENT_STATE, 
   ManageOrganizationsCommon, 
   TAPOrganizationConfig 
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
-import { E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizations";
+} from "./deleteme_ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganization } from "../../../utils/deleteme_APOrganizationsService";
+import { E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./deleteme_ManageOrganizations";
 import { Globals } from "../../../utils/Globals";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";

@@ -7,7 +7,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/deleteme_ManageOrganizations';
 
 import "../../pages/Pages.css";
 
@@ -36,9 +36,9 @@ export const ManageSystemOrganizationsPage: React.FC = () => {
         label: `System`
       },
       { 
-        label: 'Organizations',
+        label: 'Deleteme: Organizations',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations)}
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations)}
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {

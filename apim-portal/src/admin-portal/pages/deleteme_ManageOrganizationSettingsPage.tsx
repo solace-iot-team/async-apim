@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -9,7 +10,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/deleteme_ManageOrganizations';
 
 import "../../pages/Pages.css";
 
@@ -36,12 +37,12 @@ export const ManageOrganizationSettingsPage: React.FC = () => {
   const renderBreadcrumbs = (organizationDisplayName: string) => {
     const breadcrumbItems: Array<MenuItem> = [
       { 
-        label: `Organization: ${organizationDisplayName}`
+        label: `deleteme: Organization: ${organizationDisplayName}`
       },
       { 
-        label: 'Settings',
+        label: 'deleteme: Settings',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings) }
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings) }
       }
     ];
     breadCrumbItemList.forEach( (item: MenuItem) => {

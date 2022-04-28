@@ -139,14 +139,14 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups); }
           },
           {
-            label: 'Settings',
-            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
+            label: 'DELETEME: Settings',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings); }
           },
           {
-            label: 'Status',
-            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
+            label: 'DELETEME: Status',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus); }
           },
           {
             label: 'Integration',
@@ -176,9 +176,9 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
           {
-            label: 'Organizations',
-            disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
+            label: 'DELETEME: Organizations',
+            disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations); }
           },
           {
             label: 'Setup',

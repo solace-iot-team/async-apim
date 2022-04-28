@@ -4,7 +4,7 @@ import {
   CommonName,
   SempV2Authentication, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { TAPOrganization } from '../../../utils/APOrganizationsService';
+import { TAPOrganization } from '../../../utils/deleteme_APOrganizationsService';
 import { Globals } from '../../../utils/Globals';
 
 export enum EAPReverseProxySempV2AuthType {

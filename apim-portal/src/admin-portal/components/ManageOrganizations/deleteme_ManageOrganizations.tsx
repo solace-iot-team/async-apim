@@ -10,13 +10,13 @@ import { CommonDisplayName, CommonName } from "@solace-iot-team/apim-connector-o
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { E_CALL_STATE_ACTIONS, E_CALL_STATE_ACTIONS_USERS, E_COMPONENT_STATE } from "./ManageOrganizationsCommon";
-import { ListOrganizations } from "./ListOrganizations";
-import { ViewOrganization } from "./ViewOrganization";
-import { EAction, EditNewOrganziation } from "./EditNewOrganization";
-import { DeleteOrganization } from "./DeleteOrganization";
+import { E_CALL_STATE_ACTIONS, E_CALL_STATE_ACTIONS_USERS, E_COMPONENT_STATE } from "./deleteme_ManageOrganizationsCommon";
+import { ListOrganizations } from "./deleteme_ListOrganizations";
+import { ViewOrganization } from "./deleteme_ViewOrganization";
+import { EAction, EditNewOrganziation } from "./deleteme_EditNewOrganization";
+import { DeleteOrganization } from "./deleteme_DeleteOrganization";
 import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
-import { MonitorOrganization } from "./MonitorOrganization";
+import { MonitorOrganization } from "./deleteme_MonitorOrganization";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
 
