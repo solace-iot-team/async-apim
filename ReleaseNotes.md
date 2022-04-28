@@ -2,6 +2,24 @@
 
 Solace Async API Management.
 
+## Version 0.1.8
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.8
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.11
+
+#### API-M Admin & Developer Portal
+
+**Enhancements:**
+* **Admin Portal:Manage Apps**
+  - owner for internal business group / team apps now shows the display name and not the id
+* **Healthcheck**
+  - increased timeout from 500ms to 1s when running healthcheck
+
+**Fixes:**
+* **Developer Portal:Business Group Apps: List**
+  - error handling when the team does not exist yet in the Connector
+
 ## Version 0.1.7
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.7
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
