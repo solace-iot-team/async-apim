@@ -26,10 +26,10 @@ import { Loading } from "../../../components/Loading/Loading";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APRbacDisplayService from "../../../displayServices/APRbacDisplayService";
+import { Config } from "../../../Config";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
-import { Config } from "../../../Config";
 
 export interface IListAppsProps {
   organizationId: string;

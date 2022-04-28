@@ -22,7 +22,8 @@ import {
 import { 
   APDeveloperPortalAppsDisplayService, 
   TAPDeveloperPortalAppDisplay, 
-  TAPDeveloperPortalAppDisplay_AllowedActions 
+  TAPDeveloperPortalAppDisplay_AllowedActions, 
+  TAPDeveloperPortalAppListDisplayList
 } from './APDeveloperPortalAppsDisplayService';
 
 export type TAPDeveloperPortalTeamAppDisplay = TAPDeveloperPortalAppDisplay & IAPSearchContent & {
@@ -188,69 +189,87 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     return apDeveloperPortalTeamAppDisplay;
   }
 
-  /**
-   * List of Team Apps. 
-   * NOTE: does not include api list.
-   */
-  public apiGetList_ApDeveloperPortalTeamAppDisplayList = async({ organizationId, teamId }: {
+  public apiGetList_ApDeveloperPortalTeamAppListDisplayList = async({ organizationId, teamId }: {
     organizationId: string;
     teamId: string;
-  }): Promise<TAPDeveloperPortalTeamAppDisplayList> => {
-    // const funcName = 'TAPDeveloperPortalTeamAppDisplayList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
+  }): Promise<TAPDeveloperPortalAppListDisplayList> => {
 
-    const exists_teamId: boolean = await this.apiCheck_TeamIdExists({
-      organizationId: organizationId,
-      teamId: teamId,
-    });
-    if(!exists_teamId) return [];
-
-    const apDeveloperPortalTeamAppDisplayList: TAPDeveloperPortalTeamAppDisplayList = [];
-
-    const connectorAppList: Array<App> = await AppsService.listTeamApps({
+    const connectorAppResponseList: Array<AppResponse> = await AppsService.listTeamApps({
       organizationName: organizationId, 
       teamName: teamId
     });
 
-    // get details for each App
-    for(const connectorApp of connectorAppList) {
+    return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
+      organizationId: organizationId,
+      ownerId: teamId,
+      connectorAppResponseList: connectorAppResponseList
+    });
 
-      const connectorAppResponse_smf: AppResponse = await AppsService.getTeamApp({
-        organizationName: organizationId,
-        teamName: teamId,
-        appName: connectorApp.name,
-        topicSyntax: 'smf'
-      });
-
-      // required to calculate the app status
-      const apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
-        organizationId: organizationId,
-        ownerId: teamId,
-        connectorAppResponse: connectorAppResponse_smf,
-      });
-    
-      // // create the app api display list
-      // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
-      //   organizationId: organizationId,
-      //   appId: connectorApp.name,
-      //   apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-      // });
-
-      const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = this.create_ApDeveloperPortalTeamAppDisplay_From_ApiEntities({
-        teamId: teamId,
-        connectorAppConnectionStatus: {},
-        connectorAppResponse_smf: connectorAppResponse_smf,
-        connectorAppResponse_mqtt: undefined,
-        apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
-        apAppApiDisplayList: [],
-      });
-
-      apDeveloperPortalTeamAppDisplayList.push(apDeveloperPortalTeamAppDisplay);
-
-    }
-
-    return apDeveloperPortalTeamAppDisplayList;
   }
+
+  /**
+   * List of Team Apps. 
+   * NOTE: does not include api list.
+   */
+  // public apiGetList_ApDeveloperPortalTeamAppDisplayList = async({ organizationId, teamId }: {
+  //   organizationId: string;
+  //   teamId: string;
+  // }): Promise<TAPDeveloperPortalTeamAppDisplayList> => {
+  //   // const funcName = 'TAPDeveloperPortalTeamAppDisplayList';
+  //   // const logName = `${this.ComponentName}.${funcName}()`;
+
+  //   const exists_teamId: boolean = await this.apiCheck_TeamIdExists({
+  //     organizationId: organizationId,
+  //     teamId: teamId,
+  //   });
+  //   if(!exists_teamId) return [];
+
+  //   const apDeveloperPortalTeamAppDisplayList: TAPDeveloperPortalTeamAppDisplayList = [];
+
+  //   const connectorAppList: Array<App> = await AppsService.listTeamApps({
+  //     organizationName: organizationId, 
+  //     teamName: teamId
+  //   });
+
+  //   // get details for each App
+  //   for(const connectorApp of connectorAppList) {
+
+  //     const connectorAppResponse_smf: AppResponse = await AppsService.getTeamApp({
+  //       organizationName: organizationId,
+  //       teamName: teamId,
+  //       appName: connectorApp.name,
+  //       topicSyntax: 'smf'
+  //     });
+
+  //     // required to calculate the app status
+  //     const apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+  //       organizationId: organizationId,
+  //       ownerId: teamId,
+  //       connectorAppResponse: connectorAppResponse_smf,
+  //     });
+    
+  //     // // create the app api display list
+  //     // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
+  //     //   organizationId: organizationId,
+  //     //   appId: connectorApp.name,
+  //     //   apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
+  //     // });
+
+  //     const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = this.create_ApDeveloperPortalTeamAppDisplay_From_ApiEntities({
+  //       teamId: teamId,
+  //       connectorAppConnectionStatus: {},
+  //       connectorAppResponse_smf: connectorAppResponse_smf,
+  //       connectorAppResponse_mqtt: undefined,
+  //       apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
+  //       apAppApiDisplayList: [],
+  //     });
+
+  //     apDeveloperPortalTeamAppDisplayList.push(apDeveloperPortalTeamAppDisplay);
+
+  //   }
+
+  //   return apDeveloperPortalTeamAppDisplayList;
+  // }
 
   public async apiCreate_ApDeveloperPortalTeamAppDisplay({ organizationId, teamId, apDeveloperPortalTeamAppDisplay }:{
     organizationId: string;

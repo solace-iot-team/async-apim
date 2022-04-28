@@ -15,28 +15,24 @@ import { EAppType, E_CALL_STATE_ACTIONS } from "./DeveloperPortalManageAppsCommo
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import APDeveloperPortalUserAppsDisplayService, { 
-  TAPDeveloperPortalUserAppDisplay, 
-  TAPDeveloperPortalUserAppDisplayList 
 } from "../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import { TAPDeveloperPortalAppDisplay } from "../../displayServices/APDeveloperPortalAppsDisplayService";
+import { IAPDeveloperPortalAppListDisplay, TAPDeveloperPortalAppListDisplayList } from "../../displayServices/APDeveloperPortalAppsDisplayService";
 import APDeveloperPortalTeamAppsDisplayService, { 
-  TAPDeveloperPortalTeamAppDisplay, 
-  TAPDeveloperPortalTeamAppDisplayList 
 } from "../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { Globals } from "../../../utils/Globals";
 import { Loading } from "../../../components/Loading/Loading";
+import { Config } from "../../../Config";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
-import { Config } from "../../../Config";
 
 export interface IDeveloperPortalListAppsProps {
   appType: EAppType;
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  // onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectView: (apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay) => void;
+  onManagedObjectView: (apDeveloperPortalAppListDisplay: IAPDeveloperPortalAppListDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -46,7 +42,7 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
   const MessageNoManagedObjectsFound = 'No Apps found - create a new App.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TAPDeveloperPortalTeamAppDisplay | TAPDeveloperPortalUserAppDisplay;
+  type TManagedObject =  IAPDeveloperPortalAppListDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
@@ -83,19 +79,19 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
     try { 
       switch(props.appType) {
         case EAppType.USER:
-          const apDeveloperPortalUserAppDisplayList: TAPDeveloperPortalUserAppDisplayList = await APDeveloperPortalUserAppsDisplayService.apiGetList_ApDeveloperPortalUserAppDisplayList({
+          const apDeveloperPortalUserAppListDisplayList: TAPDeveloperPortalAppListDisplayList = await APDeveloperPortalUserAppsDisplayService.apiGetList_ApDeveloperPortalUserAppListDisplayList({
             organizationId: props.organizationEntityId.id,
             userId: userContext.apLoginUserDisplay.apEntityId.id
           });
-          setManagedObjectList(apDeveloperPortalUserAppDisplayList);
+          setManagedObjectList(apDeveloperPortalUserAppListDisplayList);
           break;
         case EAppType.TEAM:
           if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: props.appType === EAppType.TEAM && userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
-          const apDeveloperPortalTeamAppDisplayList: TAPDeveloperPortalTeamAppDisplayList = await APDeveloperPortalTeamAppsDisplayService.apiGetList_ApDeveloperPortalTeamAppDisplayList({
+          const apDeveloperPortalTeamAppListDisplayList: TAPDeveloperPortalAppListDisplayList = await APDeveloperPortalTeamAppsDisplayService.apiGetList_ApDeveloperPortalTeamAppListDisplayList({
             organizationId: props.organizationEntityId.id,
             teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
           });
-          setManagedObjectList(apDeveloperPortalTeamAppDisplayList);
+          setManagedObjectList(apDeveloperPortalTeamAppListDisplayList);
           break;
         default:
           Globals.assertNever(logName, props.appType);
@@ -196,9 +192,9 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
   const renderManagedObjectDataTable = () => {
     const dataKey = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('id');
     const sortField = APDeveloperPortalUserAppsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apSearchContent');
-    const statusField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
-    const develAppStatusField = 'devel_connectorAppResponses.smf.status';
+    const filterField = APDisplayUtils.nameOf<TManagedObject>('apSearchContent');
+    const statusField = APDisplayUtils.nameOf<TManagedObject>('apAppStatus');
+    const develAppStatusField = 'connectorAppResponse.status';
 
     return (
       <div className="card">

@@ -26,6 +26,7 @@ import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/A
 import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
 import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 import { EAppType } from "./DeveloperPortalManageAppsCommon";
+import { TAPDeveloperPortalAppDisplay_AllowedActions } from "../../displayServices/APDeveloperPortalAppsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
@@ -34,6 +35,7 @@ export interface IDeveloperPortalViewAppProps {
   appType: EAppType;
   organizationId: string;
   appEntityId: TAPEntityId;
+  setAllowedActions: (apDeveloperPortalAppDisplay_AllowedActions: TAPDeveloperPortalAppDisplay_AllowedActions) => void;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -116,8 +118,24 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    const funcName = 'useEffect[managedObject]';
+    const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) return;
     setBreadCrumbItemList(managedObject.apEntityId.displayName);
+    switch(props.appType) {
+      case EAppType.USER:
+        props.setAllowedActions(APDeveloperPortalUserAppsDisplayService.get_AllowedActions({
+          apAppDisplay: managedObject
+        }));
+        break;
+      case EAppType.TEAM:
+        props.setAllowedActions(APDeveloperPortalTeamAppsDisplayService.get_AllowedActions({
+          apAppDisplay: managedObject
+        }));
+        break;
+      default:
+        Globals.assertNever(logName, props.appType);
+    }
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */  
 
   React.useEffect(() => {

@@ -354,6 +354,21 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     });
     return list;
   }
+
+  public get_AppApiProductId({ connectorAppApiProduct }:{
+    connectorAppApiProduct: string | AppApiProductsComplex;
+  }): string {
+    let apiProductId: string;
+    if(typeof connectorAppApiProduct === 'string') {
+      // old style, keep here for backwards compatibility
+      apiProductId = connectorAppApiProduct;
+    } else {
+      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
+      apiProductId = complexAppApiProduct.apiproduct;
+    }
+    return apiProductId;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -365,6 +380,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     connectorAppResponse, 
     connectorAppApiProduct,
     complete_ApBusinessGroupDisplayList,
+    create_skinny,
   }: {
     organizationId: string;
     ownerId: string;
@@ -372,24 +388,15 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     connectorAppApiProduct: string | AppApiProductsComplex;
     connectorAppResponse: AppResponse;
     complete_ApBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;    
+    create_skinny?: boolean;
   }): Promise<TAPDeveloperPortalAppApiProductDisplay> => {
     const funcName = 'apiGet_DeveloperPortalApAppApiProductDisplay';
     const logName = `${this.FinalComponentName}.${funcName}()`;
     if(connectorAppResponse.status === undefined) throw new Error(`${logName}: connectorAppResponse.status === undefined`);
 
-    // figure out the apiProductId and status with backwards compatibility
-    let apiProductId: string;
-    if(typeof connectorAppApiProduct === 'string') {
-      // old style, keep here for backwards compatibility
-      apiProductId = connectorAppApiProduct;
-    } else {
-      const complexAppApiProduct: AppApiProductsComplex = connectorAppApiProduct;
-      apiProductId = complexAppApiProduct.apiproduct;
-    }
-
     const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
       organizationName: organizationId,
-      apiProductName: apiProductId
+      apiProductName: this.get_AppApiProductId({ connectorAppApiProduct: connectorAppApiProduct }),
     });
     
     // get the complete env list for reference
@@ -416,7 +423,8 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       connectorApiProduct: connectorApiProduct,
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       default_ownerId: ownerId,
-      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      create_skinny: create_skinny
     });
 
     return this.create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({

@@ -14,9 +14,9 @@ import {
   E_CALL_STATE_ACTIONS, 
   E_MANAGE_APP_COMPONENT_STATE 
 } from "../DeveloperPortalManageAppsCommon";
-import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay_AllowedActions } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
+import APDeveloperPortalTeamAppsDisplayService, { } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { DeveloperPortalListApps } from "../DeveloperPortalListApps";
-import { TAPDeveloperPortalAppDisplay } from "../../../displayServices/APDeveloperPortalAppsDisplayService";
+import { IAPDeveloperPortalAppListDisplay, TAPDeveloperPortalAppDisplay_AllowedActions } from "../../../displayServices/APDeveloperPortalAppsDisplayService";
 import { DeveloperPortalViewApp } from "../DeveloperPortalViewApp";
 import { ManageNewApp } from "../EditNewApp/ManageNewApp";
 import { ManageEditApp } from "../EditNewApp/ManageEditApp";
@@ -73,7 +73,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-  const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPDeveloperPortalTeamAppDisplay_AllowedActions>(APDeveloperPortalTeamAppsDisplayService.get_Empty_AllowedActions());
+  const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPDeveloperPortalAppDisplay_AllowedActions>(APDeveloperPortalTeamAppsDisplayService.get_Empty_AllowedActions());
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -120,12 +120,9 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay): void => {
+  const onViewManagedObject = (apDeveloperPortalAppListDisplay: IAPDeveloperPortalAppListDisplay): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(apDeveloperPortalAppDisplay.apEntityId);
-    setManagedObject_AllowedActions(APDeveloperPortalTeamAppsDisplayService.get_AllowedActions({
-      apAppDisplay: apDeveloperPortalAppDisplay
-    }));
+    setManagedObjectEntityId(apDeveloperPortalAppListDisplay.apEntityId);
     setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New Object *
@@ -417,7 +414,6 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError} 
-          // onLoadingChange={setIsLoading} 
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onManagedObjectView={onViewManagedObject}
         />
@@ -428,6 +424,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
           appType={EAppType.TEAM}
           organizationId={props.organizationEntityId.id}
           appEntityId={managedObjectEntityId}
+          setAllowedActions={setManagedObject_AllowedActions}
           onSuccess={onSubComponentUserNotification}
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

@@ -10,10 +10,15 @@ import APAppEnvironmentsDisplayService, {
 } from '../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService';
 import { 
   APAppsDisplayService,
+  EAPApp_Status,
   IAPAppDisplay, 
   TAPAppDisplay_AllowedActions, 
   TAPAppMeta 
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
+import { IAPEntityIdDisplay } from '../../utils/APEntityIdsService';
+import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import APDeveloperPortalAppApiProductsDisplayService, { 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from './APDeveloperPortalAppApiProductsDisplayService';
@@ -21,7 +26,15 @@ import APDeveloperPortalAppApiProductsDisplayService, {
 export type TAPDeveloperPortalAppDisplay = IAPAppDisplay & {
   // nothing to add at the moment
 }
-export type TAPDeveloperPortalAppDisplayList = Array<TAPDeveloperPortalAppDisplay>;
+
+/**
+ * Display for list.
+ */
+ export interface IAPDeveloperPortalAppListDisplay extends IAPEntityIdDisplay, IAPSearchContent {
+  connectorAppResponse: AppResponse;
+  apAppStatus: EAPApp_Status;
+}
+export type TAPDeveloperPortalAppListDisplayList = Array<IAPDeveloperPortalAppListDisplay>;
 
 export type TAPDeveloperPortalAppDisplay_AllowedActions = TAPAppDisplay_AllowedActions & {
   isManageWebhooksAllowed: boolean;
@@ -106,6 +119,64 @@ export abstract class APDeveloperPortalAppsDisplayService extends APAppsDisplayS
   // API calls
   // ********************************************************************************************************************************
   
+  public apiGetList_ApDeveloperPortalAppListDisplayList = async({ organizationId, ownerId, connectorAppResponseList }: {
+    organizationId: string;
+    ownerId: string;
+    connectorAppResponseList: Array<AppResponse>;
+  }): Promise<TAPDeveloperPortalAppListDisplayList> => {
+
+    const apDeveloperPortalAppListDisplayList: TAPDeveloperPortalAppListDisplayList = [];
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
+
+    // cache passed to get app api product list call
+    const cache_apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = [];
+
+    for(const connectorAppResponse of connectorAppResponseList) {
+
+      // required to calculate the app status
+      // use and update the cache
+      const apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
+        organizationId: organizationId,
+        ownerId: ownerId,
+        connectorAppResponse: connectorAppResponse,
+        complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        create_skinny: true,
+        cache_apDeveloperPortalApp_ApiProductDisplayList: cache_apDeveloperPortalApp_ApiProductDisplayList
+      });
+
+      const apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay = this.create_ApDeveloperPortalAppDisplay_From_ApiEntities({
+        ownerId: ownerId,
+        connectorAppConnectionStatus: {},
+        connectorAppResponse_smf: connectorAppResponse,
+        connectorAppResponse_mqtt: undefined,
+        apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
+        apAppApiDisplayList: []
+      });
+
+      const apDeveloperPortalAppListDisplay: IAPDeveloperPortalAppListDisplay = {
+        apEntityId: apDeveloperPortalAppDisplay.apEntityId,
+        apAppStatus: apDeveloperPortalAppDisplay.apAppStatus,
+        connectorAppResponse: connectorAppResponse,
+        apSearchContent: ''
+      };
+
+      apDeveloperPortalAppListDisplayList.push(APSearchContentService.add_SearchContent<IAPDeveloperPortalAppListDisplay>(apDeveloperPortalAppListDisplay));
+
+    }
+
+    return apDeveloperPortalAppListDisplayList;
+  }
+
   public async apiUpdate_ApDeveloperPortalAppDisplay_AppApiProductDisplayList({ organizationId, apDeveloperPortalAppDisplay, apDeveloperPortalAppApiProductDisplayList }:{
     organizationId: string;
     apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay;

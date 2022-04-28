@@ -23,6 +23,7 @@ import { APOrganizationsService } from '../../utils/APOrganizationsService';
 import { Globals } from '../../utils/Globals';
 import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
 import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';
+import { TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
 import { TAPAppApiDisplayList } from './APAppApisDisplayService';
 import APAppEnvironmentsDisplayService, { 
@@ -533,29 +534,64 @@ export class APAppsDisplayService {
     return apAppDisplay;
   }
 
-  protected apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ organizationId, ownerId, connectorAppResponse }:{
+  /**
+   * Create a list of App Api Product display objects.
+   * 
+   * @param create_skinny: if true, omits details about envs, protocols, apis and api channel parameters
+   * @param cache_apDeveloperPortalApp_ApiProductDisplayList: an external cache, maintains the cache
+   */
+  protected apiGet_ApDeveloperPortalAppApiProductDisplayList = async({ 
+    organizationId, 
+    ownerId, 
+    connectorAppResponse, 
+    complete_apEnvironmentDisplayList, 
+    complete_ApBusinessGroupDisplayList,
+    create_skinny,
+    cache_apDeveloperPortalApp_ApiProductDisplayList,
+  }:{
     organizationId: string;
     ownerId: string;
     connectorAppResponse: AppResponse;
+    complete_apEnvironmentDisplayList?: TAPEnvironmentDisplayList;
+    complete_ApBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
+    create_skinny?: boolean;
+    cache_apDeveloperPortalApp_ApiProductDisplayList?: TAPDeveloperPortalAppApiProductDisplayList;
   }): Promise<TAPDeveloperPortalAppApiProductDisplayList> => {
     // const funcName = 'apiGet_ApDeveloperPortalAppApiProductDisplayList';
     // const logName = `${this.ComponentName}.${funcName}()`;
 
-    // get the complete env list for reference
-    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-      organizationId: organizationId
-    });
+    if(complete_apEnvironmentDisplayList === undefined) {
+      // get the complete env list for reference
+      complete_apEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+        organizationId: organizationId
+      });
+    }
     
     const apDeveloperPortalAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = [];
     
     for(const connectorAppApiProduct of connectorAppResponse.apiProducts) {
-      const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = await APDeveloperPortalAppApiProductsDisplayService.apiGet_DeveloperPortalApAppApiProductDisplay({
-        organizationId: organizationId,
-        ownerId: ownerId,
-        connectorAppApiProduct: connectorAppApiProduct,
-        connectorAppResponse: connectorAppResponse,
-        complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList
-      });
+
+      // check the cache if exists
+      let apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay | undefined = undefined;
+      if(cache_apDeveloperPortalApp_ApiProductDisplayList !== undefined) {
+        const apiProductId: string = APDeveloperPortalAppApiProductsDisplayService.get_AppApiProductId({ connectorAppApiProduct: connectorAppApiProduct });
+        apDeveloperPortalAppApiProductDisplay = cache_apDeveloperPortalApp_ApiProductDisplayList.find( (x) => {
+          return x.apEntityId.id === apiProductId;
+        });
+      }
+      if(apDeveloperPortalAppApiProductDisplay === undefined) {
+        apDeveloperPortalAppApiProductDisplay = await APDeveloperPortalAppApiProductsDisplayService.apiGet_DeveloperPortalApAppApiProductDisplay({
+          organizationId: organizationId,
+          ownerId: ownerId,
+          connectorAppApiProduct: connectorAppApiProduct,
+          connectorAppResponse: connectorAppResponse,
+          complete_apEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+          complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+          create_skinny: create_skinny
+        });  
+        // add it to the cache as well
+        if(cache_apDeveloperPortalApp_ApiProductDisplayList !== undefined) cache_apDeveloperPortalApp_ApiProductDisplayList.push(apDeveloperPortalAppApiProductDisplay);
+      }
       apDeveloperPortalAppApiProductDisplayList.push(apDeveloperPortalAppApiProductDisplay);
     }
 
