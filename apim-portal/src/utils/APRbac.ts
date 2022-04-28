@@ -79,8 +79,9 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageSystemUsers,
       
-      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
+      EUIAdminPortalResourcePaths.ManageSystemOrganizations,
 
+      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
 
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,

@@ -176,6 +176,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemUsers); }
           },
           {
+            label: 'Organizations',
+            disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
+          },
+          {
             label: 'DELETEME: Organizations',
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations); }

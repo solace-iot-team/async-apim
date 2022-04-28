@@ -22,11 +22,13 @@ import { MonitorOrganizationStatusPage as deleteme_MonitorOrganizationStatusPage
 import { ManageOrganizationSettingsPage as deleteme_ManageOrganizationSettingsPage } from "./pages/deleteme_ManageOrganizationSettingsPage";
 
 import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
-import { ManageSystemOrganizationsPage as deleteme_ManageSystemOrganizationsPage } from "./pages/deleteme_ManageSystemOrganizationsPage";
+import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
 import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 
+// DELETEME
 import { ManageApiProductsPage as deleteme_ManageApiProductsPage} from "./pages/deleteme.ManageApiProductsPage";
 import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
+import { ManageSystemOrganizationsPage as deleteme_ManageSystemOrganizationsPage } from "./pages/deleteme_ManageSystemOrganizationsPage";
 
 
 
@@ -42,6 +44,7 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} component={ManageConnectorsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigConnectors} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} component={ManageSystemSettingsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemUsers} component={ManageSystemUsersPage} exact key={EUIAdminPortalResourcePaths.ManageSystemUsers} />,
+        <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemOrganizations} component={ManageSystemOrganizationsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemOrganizations} />,
         
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations} component={deleteme_ManageSystemOrganizationsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations} />,
         
