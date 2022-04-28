@@ -16,6 +16,8 @@ import { Globals } from "../../../../utils/Globals";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 
 export interface IManageApiProductProps {
   appType: EAppType;
@@ -34,12 +36,18 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay | TAPDeveloperPortalTeamAppDisplay;
 
+  const HasChangedDialogHeader = "Unsaved Changes";
+  const DiscardChangesConfirmDialogButtonLabel = "Discard Changes";
+
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [hasApiProductListChanged, setHasApiProductListChanged] = React.useState<boolean>(false);
+  const [showHasChangedDialog, setShowHasChangedDialog] = React.useState<boolean>(false);
+
   const [userContext] = React.useContext(UserContext);
 
   const ManageApiProducts_onNavigateToCommand = (e: MenuItemCommandParams): void => {
-    props.onNavigateToCommand(props.appEntityId);
+    props.onNavigateToCommand(props.appEntityId);    
   }
 
   // * Api Calls *
@@ -121,6 +129,11 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
     props.onError(apiCallStatus);
   }
 
+  const onCancel = () => {
+    if(hasApiProductListChanged) setShowHasChangedDialog(true);
+    else props.onCancel();
+  }
+
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
@@ -153,21 +166,69 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
           apDeveloperPortalAppDisplay={managedObject}
           onSaveSuccess={onSaveSuccess}
           onError={onError}
-          onCancel={props.onCancel}
+          onCancel={onCancel}
           onLoadingChange={props.onLoadingChange}
+          onApiProductListChange={setHasApiProductListChanged}
         />
       </React.Fragment>
     ); 
   }
 
+  const renderHasChangedDialog = (): JSX.Element => {
+    const onDiscardOk = () => { setShowHasChangedDialog(false); props.onCancel(); }
+    const onCancel = () => { setShowHasChangedDialog(false); }
+    const renderHeader = () => {
+      return (<span style={{ color: 'red' }}>{HasChangedDialogHeader}</span>);
+    }
+    const renderContent = (): JSX.Element => {
+      return (
+        <React.Fragment>
+          <p>You have unsaved changes in list of API Products.</p>
+          <p>Are you sure you want to discard the changes?</p>
+        </React.Fragment>  
+      );
+    }  
+    const renderFooter = (): JSX.Element =>{
+      return (
+        <React.Fragment>
+          <Button label="Cancel" className="p-button-text p-button-plain" onClick={onCancel} />
+          <Button label={DiscardChangesConfirmDialogButtonLabel} icon="pi pi-times" className="p-button-text p-button-plain p-button-outlined" onClick={onDiscardOk} style={{ color: "red", borderColor: 'red'}} />
+        </React.Fragment>
+      );
+    } 
+    return (
+      <Dialog
+        className="p-fluid"
+        visible={showHasChangedDialog} 
+        style={{ width: '450px' }} 
+        header={renderHeader}
+        modal
+        closable={false}
+        footer={renderFooter()}
+        onHide={()=> {}}
+        contentClassName="apd-manage-user-apps-delete-confirmation-content"
+      >
+        <div>
+          <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
+          {renderContent()}
+        </div>
+      </Dialog>
+    );
+  } 
+
   return (
     <div className="apd-manage-user-apps">
+
+      {/* DEBUG */}
+      {/* <p>hasApiProductListChanged={String(hasApiProductListChanged)}</p> */}
 
       {managedObject && <APComponentHeader header={`Manage API Products for: ${managedObject.apEntityId.displayName}`} /> }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { managedObject && renderContent() }
+
+      { showHasChangedDialog && renderHasChangedDialog() }
 
     </div>
   );

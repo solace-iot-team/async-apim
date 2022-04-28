@@ -34,6 +34,7 @@ export interface IEditApiProductsProps {
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  onApiProductListChange: (hasListChanged: boolean) => void;
 }
 
 export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApiProductsProps) => {
@@ -68,6 +69,7 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     if(!hasChanged) {
       if(managedObject.length === 0 && props.apDeveloperPortalAppDisplay.apAppApiProductDisplayList.length > 0) hasChanged = true;
     }
+    props.onApiProductListChange(hasChanged);
     return hasChanged;
   }
 
@@ -246,9 +248,14 @@ export const EditApiProducts: React.FC<IEditApiProductsProps> = (props: IEditApi
     )
   }
 
+  const doAddApiProductToApp = async(apiProductEntityId: TAPEntityId) => {
+    props.onLoadingChange(true);
+    await apiAddApiProductToApp(apiProductEntityId);
+    props.onLoadingChange(false);
+  }
 
   const onAddApiProductToApp = (apiProductEntityId: TAPEntityId) => {
-    apiAddApiProductToApp(apiProductEntityId);
+    doAddApiProductToApp(apiProductEntityId);
   }
 
   const renderSearchApiProducts = (): JSX.Element => {
