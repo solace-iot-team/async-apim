@@ -419,7 +419,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
         />
       }
       {showViewComponent && managedObjectEntityId &&
-      <DeveloperPortalViewApp
+        <DeveloperPortalViewApp
           key={`${ComponentName}_DeveloperPortalViewApp_${refreshCounter}`}
           appType={EAppType.TEAM}
           organizationId={props.organizationEntityId.id}

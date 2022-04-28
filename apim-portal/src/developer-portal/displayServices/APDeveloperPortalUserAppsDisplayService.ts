@@ -42,7 +42,8 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     return {
       apAppType: EAPApp_Type.USER,
       apAppOwnerType: EAPApp_OwnerType.INTERNAL,
-      appOwnerId: ownerId
+      appOwnerId: ownerId,
+      appOwnerDisplayName: ownerId
     };  
   }
 

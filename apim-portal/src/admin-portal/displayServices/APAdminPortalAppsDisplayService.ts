@@ -26,7 +26,7 @@ import {
   TAPAppMeta, 
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
-import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APOrganizationUsersDisplayService, { 
   TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay, TAPOrganizationUserDisplayList
@@ -230,7 +230,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     if(ownerId === undefined) throw new Error(`${logName}: ownerId === undefined`);
     switch(apAppType) {
       case EAPApp_Type.USER:
-        console.log(`${logName}: looking for userId=${ownerId}`);
+        // console.log(`${logName}: looking for userId=${ownerId}`);
         // check cache if defined
         if(cache_ApOrganizationUserDisplayList !== undefined) {
           const cached_ApOrganizationUserDisplay: TAPOrganizationUserDisplay | undefined = cache_ApOrganizationUserDisplayList.find( (x) => {
@@ -238,7 +238,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
           });
           if(cached_ApOrganizationUserDisplay !== undefined) return true;
         }
-        console.log(`${logName}: not in cache, userId=${ownerId}`);
+        // console.log(`${logName}: not in cache, userId=${ownerId}`);
         // not in cache
         const result: TAPCheckOrganizationUserIdExistsResult = await APOrganizationUsersDisplayService.apsCheck_OrganizationUserIdExists({ 
           organizationId: organizationId, 
@@ -272,9 +272,10 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     connectorAppApiProductList: AppApiProducts;
     complete_ApOrganizationBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
   }): Promise<TAPAppMeta> {
-    const funcName = 'create_ApAppMeta';
+    const funcName = 'create_ApAdminPortalAppDisplay_ApAppMeta';
     const logName = `${this.ComponentName}.${funcName}()`;
     if(connectorOwnerId === undefined) throw new Error(`${logName}: connectorOwnerId === undefined`);
+
     const apAppType: EAPApp_Type = this.map_ConnectorAppType_To_ApAppType({ connectorAppType: connectorAppType });
     if(isOwnerInternal === undefined) isOwnerInternal = await this.apiCheck_isOwnerIdInternal({ 
       organizationId: organizationId, 
@@ -283,10 +284,28 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       cache_ApOrganizationUserDisplayList: cache_ApOrganizationUserDisplayList,
       complete_ApOrganizationBusinessGroupDisplayList: complete_ApOrganizationBusinessGroupDisplayList
     });
+    // need it to determined business group display name if a team app
+    let appOwnerDisplayName: string = connectorOwnerId;
+    if(apAppType === EAPApp_Type.TEAM && isOwnerInternal) {
+      if(complete_ApOrganizationBusinessGroupDisplayList === undefined) {
+        // get the organization business group list
+        complete_ApOrganizationBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+          organizationId: organizationId
+        });  
+      }
+      const apOrganizationBusinessGroupDisplay: TAPBusinessGroupDisplay | undefined = complete_ApOrganizationBusinessGroupDisplayList.find( (x) => {
+        return x.apEntityId.id === connectorOwnerId;
+      });
+      if(apOrganizationBusinessGroupDisplay === undefined) throw new Error(`${logName}: apOrganizationBusinessGroupDisplay === undefined`);
+      if(apOrganizationBusinessGroupDisplay.apExternalReference !== undefined) appOwnerDisplayName = apOrganizationBusinessGroupDisplay.apExternalReference.displayName;
+      else appOwnerDisplayName = apOrganizationBusinessGroupDisplay.apEntityId.displayName;
+    }
+  
     return {
       apAppType: apAppType,
       apAppOwnerType: isOwnerInternal ? EAPApp_OwnerType.INTERNAL : EAPApp_OwnerType.EXTERNAL,
       appOwnerId: connectorOwnerId,
+      appOwnerDisplayName: appOwnerDisplayName
     };
   }
 

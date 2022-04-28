@@ -63,6 +63,7 @@ export type TAPAppCredentialsDisplay = {
 export type TAPAppMeta = {
   apAppType: EAPApp_Type;
   appOwnerId: string;
+  appOwnerDisplayName: string;
   apAppOwnerType: EAPApp_OwnerType;
 }
 
@@ -140,13 +141,15 @@ export class APAppsDisplayService {
         return {
           apAppType: EAPApp_Type.USER,
           apAppOwnerType: EAPApp_OwnerType.UNKNOWN,
-          appOwnerId: connectorAppResponseGeneric.ownerId
+          appOwnerId: connectorAppResponseGeneric.ownerId,
+          appOwnerDisplayName: connectorAppResponseGeneric.ownerId,
         };
       case AppResponseGeneric.appType.TEAM:
         return {
           apAppType: EAPApp_Type.TEAM,
           apAppOwnerType: EAPApp_OwnerType.UNKNOWN,
-          appOwnerId: connectorAppResponseGeneric.ownerId
+          appOwnerId: connectorAppResponseGeneric.ownerId,
+          appOwnerDisplayName: connectorAppResponseGeneric.ownerId,
         };
       default:
         Globals.assertNever(logName, connectorAppResponseGeneric.appType);
@@ -175,6 +178,7 @@ export class APAppsDisplayService {
     return {
       apAppType: EAPApp_Type.UNKNOWN,
       appOwnerId: '',
+      appOwnerDisplayName: '',
       apAppOwnerType: EAPApp_OwnerType.UNKNOWN
     }
   }

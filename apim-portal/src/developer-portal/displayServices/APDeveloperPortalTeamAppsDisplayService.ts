@@ -44,7 +44,9 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     return {
       apAppType: EAPApp_Type.TEAM,
       apAppOwnerType: EAPApp_OwnerType.INTERNAL,
-      appOwnerId: ownerId
+      appOwnerId: ownerId,
+      // do we need the business group display name here?
+      appOwnerDisplayName: ownerId
     };
   }
 
@@ -189,22 +191,39 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     return apDeveloperPortalTeamAppDisplay;
   }
 
+  /**
+   * Returns list of team apps.
+   */
   public apiGetList_ApDeveloperPortalTeamAppListDisplayList = async({ organizationId, teamId }: {
     organizationId: string;
     teamId: string;
   }): Promise<TAPDeveloperPortalAppListDisplayList> => {
+    const funcName = 'apiGetList_ApDeveloperPortalTeamAppListDisplayList';
+    const logName = `${this.ComponentName}.${funcName}()`;
 
-    const connectorAppResponseList: Array<AppResponse> = await AppsService.listTeamApps({
-      organizationName: organizationId, 
-      teamName: teamId
-    });
-
-    return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
-      organizationId: organizationId,
-      ownerId: teamId,
-      connectorAppResponseList: connectorAppResponseList
-    });
-
+    let anyError: any = undefined;
+    try {
+      const connectorAppResponseList: Array<AppResponse> = await AppsService.listTeamApps({
+        organizationName: organizationId, 
+        teamName: teamId
+      });
+      return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
+        organizationId: organizationId,
+        ownerId: teamId,
+        connectorAppResponseList: connectorAppResponseList
+      });
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return [];
+        else anyError = e;
+      } else anyError = e;
+    }
+    if(anyError) {
+      APClientConnectorOpenApi.logError(logName, anyError);
+      throw anyError;
+    }
+    return [];
   }
 
   /**
