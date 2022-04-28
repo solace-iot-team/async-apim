@@ -14,8 +14,8 @@ import { DeveloperPortalHomePage } from "./developer-portal/pages/DeveloperPorta
 import { DeveloperPortalAppRoutes } from "./developer-portal/DeveloperPortalAppRoutes";
 import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperPortalSideBar";
 // * Public Developer Portal *
-import { PublicDeveloperPortalAppRoutes } from "./developer-portal/PublicDeveloperPortalAppRoutes";
-import { PublicDeveloperPortalSideBar } from "./developer-portal/components/PublicDeveloperPortalSideBar";
+// import { PublicDeveloperPortalAppRoutes } from "./developer-portal/PublicDeveloperPortalAppRoutes";
+// import { PublicDeveloperPortalSideBar } from "./developer-portal/components/PublicDeveloperPortalSideBar";
 
 import { 
   EUIDeveloperToolsResourcePaths, 
@@ -158,9 +158,9 @@ const App: React.FC = () => {
       { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
-          {showPublicDeveloperPortal &&
+          {/* {showPublicDeveloperPortal &&
             <PublicDeveloperPortalSideBar />
-          }
+          } */}
           {showDeveloperPortal &&
             <DeveloperPortalSideBar onSwitchToAdminPortal={onSwitchToAdminPortal} />
           }
@@ -188,7 +188,7 @@ const App: React.FC = () => {
               { showAdminPortal && AdminPortalAppRoutes() }
 
               {/* Public Developer Portal */}
-              { showPublicDeveloperPortal && PublicDeveloperPortalAppRoutes() }
+              {/* { showPublicDeveloperPortal && PublicDeveloperPortalAppRoutes() } */}
 
               {/* Developer Portal */}
               { showDeveloperPortal && DeveloperPortalAppRoutes() }

@@ -106,7 +106,8 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     completeApEnvironmentDisplayList, 
     currentVersion, 
     default_ownerId,
-    complete_ApBusinessGroupDisplayList
+    complete_ApBusinessGroupDisplayList,
+    create_skinny,
   }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
@@ -115,6 +116,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     default_ownerId: string;
     currentVersion?: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    create_skinny?: boolean;
   }): Promise<TAPDeveloperPortalApiProductDisplay> {
     
     const base: IAPApiProductDisplay = await this.create_ApApiProductDisplay_From_ApiEntities({
@@ -124,7 +126,8 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
       completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: currentVersion,
-      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      create_skinny: create_skinny
     });
 
     const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = {

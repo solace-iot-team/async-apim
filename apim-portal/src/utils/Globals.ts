@@ -112,13 +112,11 @@ export enum EUIAdminPortalResourcePaths {
 export enum EUIDeveloperPortalResourcePaths {
   Home = '/developer-portal',
   UserHome = '/developer-portal/user/home',
+  
   ExploreApiProducts = '/developer-portal/explore/api-products',
-  DELETEME_ExploreApiProducts = '/developer-portal/explore/deleteme-api-products',
   ExploreApis = '/developer-portal/explore/apis',
   
   ManageUserApplications = '/developer-portal/manage/user/applications',
-  DELETEME_ManageUserApplications = '/developer-portal/manage/user/deleteme-applications',
-
   ManageBusinessGroupApplications = '/developer-portal/manage/businessgroup/applications',
 
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'

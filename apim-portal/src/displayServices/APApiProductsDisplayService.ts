@@ -261,7 +261,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     completeApEnvironmentDisplayList, 
     default_ownerId, 
     currentVersion,
-    complete_ApBusinessGroupDisplayList
+    complete_ApBusinessGroupDisplayList,
+    create_skinny,
    }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
@@ -270,6 +271,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     default_ownerId: string;
     currentVersion?: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    create_skinny?: boolean;
   }): Promise<IAPApiProductDisplay> {
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -281,16 +283,24 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
     });
-    // get the used Apis
-    const apApiDisplayList: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });
-    // create the combined channel parameter list across all apis
-    const apCombinedApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
-      apApiDisplayList: apApiDisplayList
-    });
-    const apControlledChannelParameterList: TAPControlledChannelParameterList = this.extract_ApControlledChannelParameterList({
-      apAttributeDisplayList: _base.apExternal_ApAttributeDisplayList,
-      apCombinedApiChannelParameterList: apCombinedApiChannelParameterList
-    });
+
+    // allow to create a skinny version of the api product
+    let apApiDisplayList: TAPApiDisplayList = [];
+    let apCombinedApiChannelParameterList: TAPApiChannelParameterList = [];
+    let apControlledChannelParameterList: TAPControlledChannelParameterList = [];
+    if(create_skinny === undefined || create_skinny === false) {
+      // include all apis, parameter lists
+      // get the used Apis
+      apApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });
+      // create the combined channel parameter list across all apis
+      apCombinedApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
+        apApiDisplayList: apApiDisplayList
+      });
+      apControlledChannelParameterList = this.extract_ApControlledChannelParameterList({
+        apAttributeDisplayList: _base.apExternal_ApAttributeDisplayList,
+        apCombinedApiChannelParameterList: apCombinedApiChannelParameterList
+      });
+    }
 
     // get environments
     const apEnvironmentDisplayList: TAPEnvironmentDisplayList = [];

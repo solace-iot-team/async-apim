@@ -9,7 +9,7 @@ import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIDeveloperPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { TAPEntityId } from '../../utils/APEntityIdsService';
-import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageUserApps/DeveloperPortalManageUserApps';
+import { DeveloperPortalManageUserApps } from '../components/DeveloperPortalManageApps/DeveloperPortalManageUserApps/DeveloperPortalManageUserApps';
 
 import "../../pages/Pages.css";
 
