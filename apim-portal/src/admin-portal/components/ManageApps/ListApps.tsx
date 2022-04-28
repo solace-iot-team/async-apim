@@ -246,8 +246,8 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
   const appTypeBodyTemplate = (row: TManagedObject): string => {
     return row.apAppMeta.apAppType;
   }
-  const ownerIdBodyTemplate = (row: TManagedObject): string => {
-    return row.apAppMeta.appOwnerId;
+  const ownerDisplayNameBodyTemplate = (row: TManagedObject): string => {
+    return row.apAppMeta.appOwnerDisplayName;
   }
   const ownerTypeBodyTemplate = (row: TManagedObject): string => {
     return row.apAppMeta.apAppOwnerType;
@@ -258,7 +258,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
     const sortField = APAdminPortalAppsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APDisplayUtils.nameOf<TManagedObject>('apSearchContent');
     const statusField = APDisplayUtils.nameOf<TManagedObject>('apAdminPortalAppStatus');
-    const ownerIdField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('appOwnerId');
+    const ownerDisplayNameField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('appOwnerDisplayName');
     const ownerTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppOwnerType');
     const appTypeField = APAdminPortalAppsDisplayService.nameOf_ApAppMeta('apAppType');
     const develAppStatusField = 'connectorAppListItem.status';
@@ -289,7 +289,7 @@ export const ListApps: React.FC<IListAppsProps> = (props: IListAppsProps) => {
           >
             <Column header="Name" body={nameBodyTemplate} filterField={filterField} sortField={sortField} sortable />
             <Column header="Type" body={appTypeBodyTemplate} field={appTypeField} sortable />
-            <Column header="Owner Id" body={ownerIdBodyTemplate} field={ownerIdField} sortable />
+            <Column header="Owner" body={ownerDisplayNameBodyTemplate} field={ownerDisplayNameField} sortable />
             <Column header="Owner Type" body={ownerTypeBodyTemplate} field={ownerTypeField} sortable style={{ width: '9em' }}/>
             <Column header="Status" field={statusField} sortable style={{ width: "13em"}} />
             {Config.getUseDevelTools() &&

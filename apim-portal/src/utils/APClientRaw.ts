@@ -7,7 +7,7 @@ import { APTimeoutError } from './APError';
 import { APFetch, APFetchResult } from './APFetch';
 import { APSClientOpenApi } from './APSClientOpenApi';
 
-const FetchTimeout_ms: number = 500;
+const FetchTimeout_ms: number = 1000;
 
 export type APClientRawResult = {
   readonly url: string;
