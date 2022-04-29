@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { MenuItem } from "primereact/api";
+import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { Divider } from "primereact/divider";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -21,18 +21,19 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
-export interface IListSystemOrganizationsProps {
+export interface IListImportableSystemOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectView: (organizationEntityId: TAPEntityId) => void;
+  onManagedObjectOpen: (organizationEntityId: TAPEntityId) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  onNavigateHereCommand: () => void;
 }
 
-export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = (props: IListSystemOrganizationsProps) => {
-  const ComponentName = 'ListSystemOrganizations';
+export const ListImportableSystemOrganizations: React.FC<IListImportableSystemOrganizationsProps> = (props: IListImportableSystemOrganizationsProps) => {
+  const ComponentName = 'ListImportableSystemOrganizations';
   
-  const MessageNoManagedObjectsFound = 'No Organizations defined.'
+  const MessageNoManagedObjectsFound = 'No Importable Organizations found.'
   const GlobalSearchPlaceholder = 'search...';
 
   type TManagedObject = IAPSystemOrganizationDisplay;
@@ -51,7 +52,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_LIST, 'retrieve list of organizations');
     try { 
-      const apSystemOrganizationDisplayList: TAPSystemOrganizationDisplayList = await APSystemOrganizationsDisplayService.apiGetList_ApSystemOrganizationDisplayList();
+      const apSystemOrganizationDisplayList: TAPSystemOrganizationDisplayList = await APSystemOrganizationsDisplayService.apiGetList_Importable_ApSystemOrganizationDisplayList();
       setManagedObjectList(apSystemOrganizationDisplayList);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -61,23 +62,34 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     return callState;
   }
 
+  const ListImportableSystemOrganizations_onNavigateToCommand = (e: MenuItemCommandParams): void => {
+    props.onNavigateHereCommand();
+  }
+
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObjectList();
     props.onLoadingChange(false);
   }
 
+  const setBreadCrumbItemList = () => {
+    props.setBreadCrumbItemList([
+      {
+        label: 'Import an Organization',
+        command: ListImportableSystemOrganizations_onNavigateToCommand
+      },
+    ]);
+  }
+
   // * useEffect Hooks *
+
   React.useEffect(() => {
-    // const funcName = 'useEffect([])';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObjectList === undefined) return;
-    props.setBreadCrumbItemList([]);
+    setBreadCrumbItemList();
     setIsInitialized(true);
   }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -95,7 +107,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.apEntityId);
+    props.onManagedObjectOpen(mo.apEntityId);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -173,7 +185,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
   return (
     <div className="manage-organizations">
 
-      <APComponentHeader header='Organizations:' />
+      <APComponentHeader header='Import an Organization:' />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

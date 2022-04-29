@@ -21,10 +21,11 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 import { ListSystemOrganizations } from "./ListSystemOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";
+import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { ListImportableSystemOrganizations } from "./ListImportableSystemOrganizations";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -79,6 +80,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
   const [showManageOrganizationUsersComponent, setShowManageOrganizationUsersComponent] = React.useState<boolean>(false);
   const [showManageImportOrganizationsComponent, setShowManageImportOrganizationsComponent] = React.useState<boolean>(false);
+  const [showImportEditComponent, setShowImportEditComponent] = React.useState<boolean>(false);
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
@@ -306,6 +308,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setRefreshCounter(refreshCounter + 1);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
+  const onSetManageObjectComponentState_To_Import = () => {
+    setRefreshCounter(refreshCounter + 1);
+    setNewComponentState(E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS);
+  }
+  
+  // const onSetManageObjectComponentState_From_Edit = (organizationEntityId: TAPEntityId) => {
+  //   if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+
+  //   } else if(componentState.previousState === E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS)
+  // }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }  
@@ -334,6 +346,11 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setRefreshCounter(refreshCounter + 1);
     doLogoutAllOrganizationUsers(managedObjectEntityId.id);
   }
+  const onImportManagedObject = (organizationEntityId: TAPEntityId) => {
+    setApiCallStatus(null);
+    setManagedObjectEntityId(organizationEntityId);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EDIT);
+  }
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -360,6 +377,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -370,6 +388,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -380,6 +399,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -390,6 +410,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -400,6 +421,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MONITOR_OBJECT) {
       setShowListComponent(false);
@@ -410,6 +432,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(true);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGE_ORGANIZATION_USERS) {
       setShowListComponent(false);
@@ -420,6 +443,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(true);
       setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS) {
       setShowListComponent(false);
@@ -430,6 +454,18 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
       setShowManageImportOrganizationsComponent(true);
+      setShowImportEditComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EDIT) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
+      setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -523,14 +559,28 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         // />
       }
       {showManageImportOrganizationsComponent && 
-      <p>showManageImportOrganizationsComponent</p>
-        // <ManageSystemOrganizationUsers
-        //   organizationEntityId={{ id: managedObjectId, displayName: managedObjectDisplayName }}
-        //   onError={onSubComponentError} 
+        <ListImportableSystemOrganizations
+          key={`${ComponentName}_ListImportableSystemOrganizations_${refreshCounter}`}
+          onSuccess={onListManagedObjectsSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading} 
+          onManagedObjectOpen={onImportManagedObject}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHereCommand={onSetManageObjectComponentState_To_Import}
+        />
+      }
+      {showImportEditComponent && managedObjectEntityId &&
+        <p>showImportEditComponent</p>
+        // <ManageEditOrganization
+        //   // key={`${ComponentName}_ManageEditOrganization_${refreshCounter}`}
+        //   organizationEntityId={managedObjectEntityId}
+        //   scope={props.scope}
+        //   onSaveSuccess={onEditSaveManagedObjectSuccess} 
+        //   onError={onSubComponentError}
+        //   onCancel={onSubComponentCancel}
         //   onLoadingChange={setIsLoading}
-        //   onSuccess={onSubComponentSuccessKeepState}
-        //   setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
-        //   // onNavigateHere={onSetManageUsersComponentState}
+        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        //   onNavigateToCommand={onSetManageObjectComponentState_To_View}
         // />
       }
     </div>

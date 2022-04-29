@@ -1,4 +1,4 @@
-import { OrganizationResponse } from "@solace-iot-team/apim-connector-openapi-browser";
+import { AdministrationService, Organization, OrganizationResponse } from "@solace-iot-team/apim-connector-openapi-browser";
 import APSearchContentService, { IAPSearchContent } from "../../utils/APSearchContentService";
 import { 
   ApsAdministrationService, 
@@ -50,6 +50,16 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
     return APSearchContentService.add_SearchContent<IAPSystemOrganizationDisplay>(apSystemOrganizationDisplay);
   }
 
+  private create_ApsOrganization_From_ConnectorOrganization({ connectorOrganizationResponse }:{
+    connectorOrganizationResponse: OrganizationResponse;
+  }): APSOrganization {
+    const apsOrganization: APSOrganization = {
+      organizationId: connectorOrganizationResponse.name,
+      displayName: connectorOrganizationResponse.name
+    };
+    return apsOrganization;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -92,7 +102,41 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
     return apSystemOrganizationDisplayList;
   }
 
+  public apiGetList_Importable_ApSystemOrganizationDisplayList = async(): Promise<TAPSystemOrganizationDisplayList> => {
+    // const funcName = 'apiGetList_Importable_ApSystemOrganizationDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // test downstream error handling
+    // throw new Error(`${logName}: test error handling`);
 
+    // get all the connector orgs
+    const listConnectorOrganizations: Array<Organization> = await AdministrationService.listOrganizations({});
+    // get all the aps orgs
+    const listAPSOrganizationResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
+    // create the importable list
+    const importableOrganizationIdList: Array<string> = [];
+    for(const connectorOrgannization of listConnectorOrganizations) {
+      const found = listAPSOrganizationResponse.list.find( (x) => {
+        return x.organizationId === connectorOrgannization.name;
+      });
+      if(found === undefined) importableOrganizationIdList.push(connectorOrgannization.name);
+    }
+    // create object list
+    const apSystemOrganizationDisplayList: TAPSystemOrganizationDisplayList = [];
+    for(const organizationId of importableOrganizationIdList) {
+      // get the connector org
+      const connectorOrganizationResponse: OrganizationResponse = await this.apiGet_ConnectorOrganizationResponse({ organizationId: organizationId });
+      // create an apsOrg
+      const apsOrganization: APSOrganization = this.create_ApsOrganization_From_ConnectorOrganization({
+        connectorOrganizationResponse: connectorOrganizationResponse
+      });
+      const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay = this.create_ApSystemOrganizationDisplay_From_ApiEntities({
+        apsOrganization: apsOrganization,
+        connectorOrganizationResponse: connectorOrganizationResponse
+      });
+      apSystemOrganizationDisplayList.push(apSystemOrganizationDisplay);
+    }
+    return apSystemOrganizationDisplayList;
+  }
 
 }
 
