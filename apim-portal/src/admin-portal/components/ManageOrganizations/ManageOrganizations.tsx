@@ -23,6 +23,7 @@ import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 import { ListSystemOrganizations } from "./ListSystemOrganizations";
 import { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import { ViewOrganization } from "./ViewOrganization";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -131,7 +132,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     // console.log(`${logName}: mounting ...`);
     const _type = props.scope.type;
     switch(_type) {
-      case E_ManageOrganizations_Scope.ALL_ORGS:
+      case E_ManageOrganizations_Scope.SYSTEM_ORGS:
         setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
         break;
       case E_ManageOrganizations_Scope.ORG_SETTINGS:
@@ -228,7 +229,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(showViewComponent) {
       const _type = props.scope.type;
       switch(_type) {
-        case E_ManageOrganizations_Scope.ALL_ORGS:
+        case E_ManageOrganizations_Scope.SYSTEM_ORGS:
           return (
             <React.Fragment>
               <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
@@ -258,7 +259,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
     if(showListComponent) {
-      if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
+      if(props.scope.type === E_ManageOrganizations_Scope.SYSTEM_ORGS) {
         return(
           <Button label={ToolbarImportOrganizationsButtonLabel} icon="pi pi-cog" onClick={onImportOrganizationsFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
         );
@@ -267,7 +268,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(showViewComponent) {
       const _type = props.scope.type;
       switch(_type) {
-        case E_ManageOrganizations_Scope.ALL_ORGS:
+        case E_ManageOrganizations_Scope.SYSTEM_ORGS:
           return (
             <React.Fragment>
               <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" style={{ color: "red", borderColor: 'red'}}/>        
@@ -299,6 +300,11 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
     const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
     props.setBreadCrumbItemList(newItemList);
+  }
+  const onSetManageObjectComponentState_To_View = (organizationEntityId: TAPEntityId) => {
+    setManagedObjectEntityId(organizationEntityId);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -449,17 +455,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         />
       }
       {showViewComponent && managedObjectEntityId &&
-      <p>showViewComponent</p>
-        // <ViewOrganization
-        //   organizationId={managedObjectId}
-        //   organizationDisplayName={managedObjectDisplayName}
-        //   scope={props.scope}
-        //   onSuccess={onSubComponentSuccess} 
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateHere={onSetManageUsersComponentState}
-        // />      
+        <ViewOrganization
+          key={`${ComponentName}_showViewComponent_${refreshCounter}`}
+          organizationEntityId={managedObjectEntityId}
+          scope={props.scope}
+          onSuccess={onSubComponentSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageObjectComponentState_To_View}
+        />      
       }
       {showDeleteComponent && managedObjectEntityId &&
       <p>showDeleteComponent</p>

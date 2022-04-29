@@ -1,7 +1,7 @@
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 export enum E_ManageOrganizations_Scope {
-  ALL_ORGS = "ALL_ORGS",
+  SYSTEM_ORGS = "SYSTEM_ORGS",
   ORG_SETTINGS = "ORG_SETTINGS",
   ORG_STATUS = "ORG_STATUS"
 }
@@ -13,12 +13,12 @@ export type TMonitorOrganizationStatusScope = {
   type: E_ManageOrganizations_Scope.ORG_STATUS;
   organizationEntityId: TAPEntityId;
 };
-export type TManageAllOrganizationsScope = {
-  type: E_ManageOrganizations_Scope.ALL_ORGS;
+export type TManageSystemOrganizationsScope = {
+  type: E_ManageOrganizations_Scope.SYSTEM_ORGS;
 }
 export type TManageOrganizationsScope = 
   TManageOrganizationSettingsScope
-  | TManageAllOrganizationsScope
+  | TManageSystemOrganizationsScope
   | TMonitorOrganizationStatusScope;
 
 

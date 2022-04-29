@@ -45,6 +45,22 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   // API calls
   // ********************************************************************************************************************************
 
+  public apiGet_ApOrganizationDisplay = async({ organizationId }:{
+    organizationId: string;
+  }): Promise<IAPSystemOrganizationDisplay> => {
+    const apsOrganization: APSOrganization = await ApsAdministrationService.getApsOrganization({
+      organizationId: organizationId
+    });
+    const connectorOrganizationResponse: OrganizationResponse = await this.apiGet_ConnectorOrganizationResponse({ 
+      organizationId: organizationId 
+    });
+    const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay = this.create_ApSystemOrganizationDisplay_From_ApiEntities({
+      apsOrganization: apsOrganization,
+      connectorOrganizationResponse: connectorOrganizationResponse
+    });
+    return apSystemOrganizationDisplay;
+  }
+
   public apiGetList_ApSystemOrganizationDisplayList = async(): Promise<TAPSystemOrganizationDisplayList> => {
     // const funcName = 'apiGetList_ApSystemOrganizationDisplayList';
     // const logName = `${this.ComponentName}.${funcName}()`;

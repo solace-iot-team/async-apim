@@ -75,7 +75,7 @@ export const ManageSystemOrganizationsPage: React.FC = () => {
       {renderBreadcrumbs()}
 
       <ManageOrganizations 
-        scope={{ type: E_ManageOrganizations_Scope.ALL_ORGS }}
+        scope={{ type: E_ManageOrganizations_Scope.SYSTEM_ORGS }}
         onSuccess={onSuccess} 
         onError={onError}
         setBreadCrumbItemList={setBreadCrumbItemList}
