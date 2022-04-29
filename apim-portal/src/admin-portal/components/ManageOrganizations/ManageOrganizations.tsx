@@ -21,6 +21,8 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { ListSystemOrganizations } from "./ListSystemOrganizations";
+import { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -166,14 +168,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  // const onViewManagedObject = (apOrganizationDisplay: TAPOrganizationDisplay): void => {
-  //   setApiCallStatus(null);
-  //   setManagedObjectEntityId(apOrganizationDisplay.apEntityId);
-  //   setIsManagedObjectDeleteAllowed(APAdminPortalApiProductsDisplayService.get_IsDeleteAllowed({
-  //     apApiProductDisplay: apAdminPortalApiProductDisplay
-  //   }));
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  // }  
   const onViewManagedObject = (organizationEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(organizationEntityId);
@@ -240,8 +234,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
               <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
               <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
               <Button label={ToolbarManagedOrganizationUsersButtonLabel} onClick={onManageOrganizationUsersFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-              <Button label={ToolbarImportOrganizationsButtonLabel} onClick={onImportOrganizationsFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-              {/* <Button label={ToolbarDeleteManagedObjectButtonLabel} icon="pi pi-trash" onClick={onDeleteManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>         */}
             </React.Fragment>
           );    
         case E_ManageOrganizations_Scope.ORG_SETTINGS:
@@ -265,6 +257,13 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     const funcName = 'renderRightToolbarContent';
     const logName = `${ComponentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
+    if(showListComponent) {
+      if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
+        return(
+          <Button label={ToolbarImportOrganizationsButtonLabel} icon="pi pi-cog" onClick={onImportOrganizationsFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+        );
+      }
+    }
     if(showViewComponent) {
       const _type = props.scope.type;
       switch(_type) {
@@ -440,16 +439,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       {!isLoading && renderToolbar() }
 
       {showListComponent && 
-      <p>showListComponent</p>
-        // <ListOrganizations
-        //   key={refreshCounter}
-        //   onSuccess={onListManagedObjectsSuccess} 
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading} 
-        //   onManagedObjectEdit={onEditManagedObject}
-        //   onManagedObjectDelete={onDeleteManagedObject}
-        //   onManagedObjectView={onViewManagedObject}
-        // />
+        <ListSystemOrganizations
+          key={`${ComponentName}_ListSystemOrganizations_${refreshCounter}`}
+          onSuccess={onListManagedObjectsSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading} 
+          onManagedObjectView={onViewManagedObject}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        />
       }
       {showViewComponent && managedObjectEntityId &&
       <p>showViewComponent</p>
@@ -519,7 +516,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         //   // onNavigateHere={onSetManageUsersComponentState}
         // />
       }
-      {showManageImportOrganizationsComponent && managedObjectEntityId &&
+      {showManageImportOrganizationsComponent && 
       <p>showManageImportOrganizationsComponent</p>
         // <ManageSystemOrganizationUsers
         //   organizationEntityId={{ id: managedObjectId, displayName: managedObjectDisplayName }}
