@@ -18,12 +18,13 @@ import APContextsDisplayService from "../../../displayServices/APContextsDisplay
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { ListSystemOrganizations } from "./ListSystemOrganizations";
+import { ViewOrganization } from "./ViewOrganization";
+import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { ListSystemOrganizations } from "./ListSystemOrganizations";
-import { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
-import { ViewOrganization } from "./ViewOrganization";
+import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -98,10 +99,9 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGOUT_ORGANIZATION_ALL, `logout all users from this organization`);
     try {
-      alert(`${logName}: implement me`);
-      // await APLoginUsersDisplayService.apsLogoutOrganizationAll({
-      //   organizationId: organizationId
-      // });
+      await APLoginUsersDisplayService.apsLogoutOrganizationAll({
+        organizationId: organizationId
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -303,8 +303,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }
   const onSetManageObjectComponentState_To_View = (organizationEntityId: TAPEntityId) => {
     setManagedObjectEntityId(organizationEntityId);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -331,6 +331,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined`);
     setApiCallStatus(apiCallState);
+    setRefreshCounter(refreshCounter + 1);
     doLogoutAllOrganizationUsers(managedObjectEntityId.id);
   }
   const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
@@ -489,17 +490,17 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         // />
       }
       {showEditComponent && managedObjectEntityId &&
-      <p>showEditComponent</p>
-        // <EditNewOrganziation
-        //   action={EAction.EDIT}
-        //   organizationId={managedObjectId}
-        //   organizationDisplayName={managedObjectDisplayName}
-        //   onNewSuccess={onNewManagedObjectSuccess} 
-        //   onEditSuccess={onEditManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        <ManageEditOrganization
+          // key={`${ComponentName}_ManageEditOrganization_${refreshCounter}`}
+          organizationEntityId={managedObjectEntityId}
+          scope={props.scope}
+          onSaveSuccess={onEditSaveManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateToCommand={onSetManageObjectComponentState_To_View}
+        />
       }
       {showMonitorComponent && managedObjectEntityId &&
       <p>showMonitorComponent</p>

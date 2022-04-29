@@ -249,7 +249,7 @@ const renderOrganizationSempv2Auth = (apOrganizationSempv2Auth: TAPOrganizationS
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General'>
             <React.Fragment>
-              <p><b>MaxNumber of APIs per API Product: </b>{renderApis2ApiProductsRation(managedObject.apNumApis2ApiProductRatio)}</p>
+              <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRation(managedObject.apNumApis2ApiProductRatio)}</p>
               <p><b>App Credentials Expiration: </b>{APDisplayUtils.convertMilliseconds(managedObject.apAppCredentialsExpiryDuration)}</p>
             </React.Fragment>
           </TabPanel>
@@ -272,7 +272,7 @@ const renderOrganizationSempv2Auth = (apOrganizationSempv2Auth: TAPOrganizationS
   return (
     <div className="manage-organizations">
 
-      <APComponentHeader header={`Organization: ${props.organizationEntityId.displayName}`} />
+      { managedObject && <APComponentHeader header={`Organization: ${managedObject.apEntityId.displayName}`} /> }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

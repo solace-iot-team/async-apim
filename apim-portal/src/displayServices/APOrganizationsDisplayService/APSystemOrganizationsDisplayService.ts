@@ -1,13 +1,22 @@
 import { OrganizationResponse } from "@solace-iot-team/apim-connector-openapi-browser";
 import APSearchContentService, { IAPSearchContent } from "../../utils/APSearchContentService";
-import { ApsAdministrationService, APSOrganization, ListAPSOrganizationResponse } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { APOrganizationsDisplayService, IAPOrganizationDisplay } from "./APOrganizationsDisplayService";
+import { 
+  ApsAdministrationService, 
+  APSOrganization, 
+  ListAPSOrganizationResponse 
+} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { 
+  APOrganizationsDisplayService, 
+  IAPOrganizationDisplay, 
+  IAPOrganizationDisplay_General 
+} from "./APOrganizationsDisplayService";
 
 export interface IAPSystemOrganizationDisplay extends IAPOrganizationDisplay, IAPSearchContent {
   // nothing to add at the moment
 }
 export type TAPSystemOrganizationDisplayList = Array<IAPSystemOrganizationDisplay>;
 
+export interface IAPSystemOrganizationDisplay_General extends IAPOrganizationDisplay_General {};
 
 class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService {
   private readonly ComponentName = "APSystemOrganizationsDisplayService";

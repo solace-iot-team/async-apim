@@ -9,6 +9,7 @@ import {
   CloudToken, 
   CommonTimestampInteger, 
   Credentials, 
+  Organization, 
   OrganizationResponse, 
   OrganizationStatus, 
   Secret,
@@ -26,7 +27,7 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { APOrganizationsService } from '../../utils/deleteme_APOrganizationsService';
 import { Globals } from '../../utils/Globals';
-import { ApsAdministrationService, APSOrganization } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { ApsAdministrationService, APSOrganization, APSOrganizationUpdate } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
 import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';
 import { TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
@@ -128,12 +129,12 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   // TODO: OrganizationIntegrations
 }
 
+export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
+  apNumApis2ApiProductRatio: number; 
+  apAppCredentialsExpiryDuration: number;
+}
 // export type TAPAppDisplay_AllowedActions = {
 //   isMonitorStatsAllowed: boolean;
-// }
-
-// export type TAPAppDisplay_General = IAPEntityIdDisplay & {
-//   apAppMeta: TAPAppMeta;
 // }
 
 // export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
@@ -332,61 +333,47 @@ export class APOrganizationsDisplayService {
   //   return allowedActions;
   // }
 
-  // public get_ApAppDisplay_General({ apAppDisplay }: {
-  //   apAppDisplay: IAPAppDisplay;
-  // }): TAPAppDisplay_General {
-  //   return {
-  //     apEntityId: apAppDisplay.apEntityId,
-  //     apAppMeta: apAppDisplay.apAppMeta,
-  //   };
-  // }
-  // public set_ApAppDisplay_General({ apAppDisplay, apAppDisplay_General }:{
-  //   apAppDisplay: IAPAppDisplay;
-  //   apAppDisplay_General: TAPAppDisplay_General;
-  // }): IAPAppDisplay {
-  //   apAppDisplay.apEntityId = apAppDisplay_General.apEntityId;
-  //   return apAppDisplay;
-  // }
+  public get_ApOrganizationDisplay_General<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+    apOrganizationDisplay: T;
+  }): IAPOrganizationDisplay_General {
+    return {
+      apEntityId: apOrganizationDisplay.apEntityId,
+      apAppCredentialsExpiryDuration: apOrganizationDisplay.apAppCredentialsExpiryDuration,
+      apNumApis2ApiProductRatio: apOrganizationDisplay.apNumApis2ApiProductRatio
+    };
+  }
 
-  // public get_ApAppDisplay_Credentials({ apAppDisplay }: {
-  //   apAppDisplay: IAPAppDisplay;
-  // }): TAPAppDisplay_Credentials {
-  //   return {
-  //     apEntityId: apAppDisplay.apEntityId,
-  //     apAppMeta: apAppDisplay.apAppMeta,
-  //     apAppCredentials: apAppDisplay.apAppCredentials,
-  //   };
-  // }
-  // public set_ApAppDisplay_Credentials({ apAppDisplay, apAppDisplay_Credentials }:{
-  //   apAppDisplay: IAPAppDisplay;
-  //   apAppDisplay_Credentials: TAPAppDisplay_Credentials;
-  // }): IAPAppDisplay {
-  //   apAppDisplay.apAppCredentials = apAppDisplay_Credentials.apAppCredentials;
-  //   return apAppDisplay;
-  // }
+  public set_ApOrganizationDisplay_General<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_General>({ 
+    apOrganizationDisplay,
+    apOrganizationDisplay_General
+  }:{
+    apOrganizationDisplay: T;
+    apOrganizationDisplay_General: K;
+  }): T {
+    apOrganizationDisplay.apEntityId = apOrganizationDisplay_General.apEntityId;
+    apOrganizationDisplay.apAppCredentialsExpiryDuration = apOrganizationDisplay_General.apAppCredentialsExpiryDuration;
+    apOrganizationDisplay.apNumApis2ApiProductRatio = apOrganizationDisplay_General.apNumApis2ApiProductRatio;
+    return apOrganizationDisplay;
+  }
 
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
 
-  // public async apiCheck_AppId_Exists({ organizationId, appId }:{
-  //   organizationId: string;
-  //   appId: string;
-  // }): Promise<boolean> {
-  //   try {
-  //     await AppsService.getApp({
-  //       organizationName: organizationId,
-  //       appName: appId
-  //     });
-  //     return true;
-  //   } catch(e: any) {
-  //     if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
-  //       const apiError: ApiError = e;
-  //       if(apiError.status === 404) return false;
-  //     }
-  //     throw e;
-  //   }
-  // }
+  public async apiCheck_OrganizationId_Exists({ organizationId }:{
+    organizationId: string;
+  }): Promise<boolean> {
+    try {
+      await ApsAdministrationService.getApsOrganization({ organizationId: organizationId });
+      return  true;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
 
   protected apiGet_ConnectorOrganizationResponse = async({ organizationId }:{
     organizationId: string;
@@ -422,63 +409,41 @@ export class APOrganizationsDisplayService {
   }
 
 
-  // protected async apiUpdate({ organizationId, appId, apAppMeta, connectorAppPatch, apRawAttributeList }: {
-  //   organizationId: string;
-  //   appId: string;
-  //   apAppMeta: TAPAppMeta;
-  //   connectorAppPatch: AppPatch;
-  //   apRawAttributeList?: TAPRawAttributeList;
-  // }): Promise<void> {
-  //   const funcName = 'apiUpdate';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
+  protected async apiUpdate({ organizationId, apsUpdate, connectorOrganization }: {
+    organizationId: string;
+    apsUpdate: APSOrganizationUpdate;
+    connectorOrganization?: Organization;
+  }): Promise<void> {
+    const funcName = 'apiUpdate';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // test downstream error handling
+    // throw new Error(`${logName}: test error handling`);
 
-  //   const requestBody: AppPatch = {
-  //     ...connectorAppPatch,
-  //     attributes: apRawAttributeList
-  //   };
+    await ApsAdministrationService.updateApsOrganization({
+      organizationId: organizationId,
+      requestBody: apsUpdate
+    });
 
-  //   switch(apAppMeta.apAppType) {
-  //     case EAPApp_Type.USER:
-  //       await AppsService.updateDeveloperApp({
-  //         organizationName: organizationId,
-  //         developerUsername: apAppMeta.appOwnerId,
-  //         appName: appId,
-  //         requestBody: requestBody
-  //       });  
-  //       break;
-  //     case EAPApp_Type.TEAM:
-  //       await AppsService.updateTeamApp({
-  //         organizationName: organizationId,
-  //         teamName: apAppMeta.appOwnerId,
-  //         appName: appId,
-  //         requestBody: requestBody
-  //       });  
-  //       break;
-  //     case EAPApp_Type.UNKNOWN:
-  //       throw new Error(`${logName}: apAppMeta.apAppType = EAPApp_Type.UNKNOWN`);
-  //     default:
-  //       Globals.assertNever(logName, apAppMeta.apAppType);
-  //   }
+    if(connectorOrganization !== undefined) {
+      await AdministrationService.updateOrganization({
+        organizationName: organizationId, 
+        requestBody: connectorOrganization
+      });  
+    }
 
-  // }
+  }
 
-  // public async apiUpdate_ApAppDisplay_General({ organizationId, apAppDisplay_General }:{
-  //   organizationId: string;
-  //   apAppDisplay_General: TAPAppDisplay_General;
-  // }): Promise<void> {
-
-  //   const update: AppPatch = {
-  //     displayName: apAppDisplay_General.apEntityId.displayName
-  //   }
-
-  //   await this.apiUpdate({
-  //     organizationId: organizationId,
-  //     apAppMeta: apAppDisplay_General.apAppMeta,
-  //     appId: apAppDisplay_General.apEntityId.id,
-  //     connectorAppPatch: update
-  //   });
-
-  // }
+  public async apiUpdate_ApOrganizationDisplay_General({ apOrganizationDisplay_General }:{
+    apOrganizationDisplay_General: IAPOrganizationDisplay_General;
+  }): Promise<void> {
+    const apsUpdate: APSOrganizationUpdate = {
+      displayName: apOrganizationDisplay_General.apEntityId.displayName
+    };
+    await this.apiUpdate({ 
+      organizationId: apOrganizationDisplay_General.apEntityId.id,
+      apsUpdate: apsUpdate
+    });
+  }
 
   // public async apiDelete_ApAppDisplay({ organizationId, appId }:{
   //   organizationId: string;
