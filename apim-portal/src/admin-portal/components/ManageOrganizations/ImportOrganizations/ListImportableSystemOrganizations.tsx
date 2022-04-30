@@ -7,19 +7,19 @@ import { InputText } from 'primereact/inputtext';
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { Divider } from "primereact/divider";
 
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import APSystemOrganizationsDisplayService, { 
   IAPSystemOrganizationDisplay, 
   TAPSystemOrganizationDisplayList 
-} from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
-import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
-import { TAPEntityId } from "../../../utils/APEntityIdsService";
+} from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
+import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 
-import '../../../components/APComponents.css';
-import "./ManageOrganizations.css";
+import '../../../../components/APComponents.css';
+import "../ManageOrganizations.css";
 
 export interface IListImportableSystemOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;

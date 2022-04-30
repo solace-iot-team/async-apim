@@ -4,6 +4,7 @@ import { ApsAdministrationService, APSOrganization } from "../../_generated/@sol
 import { 
   APOrganizationsDisplayService, 
   IAPOrganizationDisplay, 
+  IAPOrganizationDisplay_Connectivity, 
   IAPOrganizationDisplay_General 
 } from "./APOrganizationsDisplayService";
 
@@ -13,7 +14,7 @@ export interface IAPSingleOrganizationDisplay extends IAPOrganizationDisplay, IA
 }
 
 export interface IAPSingleOrganizationDisplay_General extends IAPOrganizationDisplay_General {};
-
+export interface IAPSingleOrganizationDisplay_Connectivity extends IAPOrganizationDisplay_Connectivity {};
 
 class APSingleOrganizationDisplayService extends APOrganizationsDisplayService {
   private readonly ComponentName = "APSingleOrganizationDisplayService";

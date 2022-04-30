@@ -1,76 +1,19 @@
 import { 
   AdministrationService,
   ApiError,
-  AppConnectionStatus, 
-  AppPatch, 
-  AppResponse, 
-  AppResponseGeneric, 
-  AppsService, 
   CloudToken, 
-  CommonTimestampInteger, 
-  Credentials, 
   Organization, 
   OrganizationResponse, 
   OrganizationStatus, 
-  Secret,
   SempV2Authentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APDeveloperPortalAppApiProductsDisplayService, { 
-  EAPApp_ApiProduct_Status, 
-  TAPDeveloperPortalAppApiProductDisplay, 
-  TAPDeveloperPortalAppApiProductDisplayList 
-} from '../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
-import { APOrganizationsService } from '../../utils/deleteme_APOrganizationsService';
 import { Globals } from '../../utils/Globals';
 import { ApsAdministrationService, APSOrganization, APSOrganizationUpdate } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
-import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
-import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';
-import { TAPBusinessGroupDisplayList } from '../APBusinessGroupsDisplayService';
-import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
-
-
-// export enum EAPApp_Status {
-//   UNKNOWN = "UNKNOWN",
-//   NO_API_PRODUCTS = "No API Products",
-//   LIVE = "live",
-//   PARTIALLY_LIVE = "partially live",
-//   APPROVAL_REQUIRED = "approval required",
-// }
-
-// export enum EAPApp_Type {
-//   UNKNOWN = "UNKNOWN",
-//   USER = "User App",
-//   TEAM = "Business Group App"
-// }
-// export enum EAPApp_OwnerType {
-//   UNKNOWN = "UNKNOWN",
-//   INTERNAL = "internal",
-//   EXTERNAL = "external"
-// }
-
-// export type TAPAppCredentialsDisplay = {
-//   apConsumerKeyExiresIn: number; /** duration in millseconds  */
-//   expiresAt: number; /** millis since epoch */
-//   issuedAt: CommonTimestampInteger; /** millis since epoch */
-//   secret: Secret;
-//   devel_calculated_expiresAt: number; /** devel: cross check correct expiresAt calculation */
-//   devel_connector_app_expires_in: number; /** devel: duration in millseconds */
-// }
-
-// export type TAPAppMeta = {
-//   apAppType: EAPApp_Type;
-//   appOwnerId: string;
-//   appOwnerDisplayName: string;
-//   apAppOwnerType: EAPApp_OwnerType;
-// }
-
-// export type TAPAppChannelParameter = IAPAttributeDisplay;
-// export type TAPAppChannelParameterList = Array<TAPAppChannelParameter>;
 
 export enum EAPCloudConnectivityConfigType {
   SIMPLE = 'Simple',
@@ -95,14 +38,14 @@ export type TAPCloudConnectivityConfigAdvanced = {
 }
 export type TAPCloudConnectivityConfig = TAPCloudConnectivityConfigSimple | TAPCloudConnectivityConfigAdvanced;
 
-export enum EAPOrganizationStatus {
+export enum EAPOrganizationOperationalStatus {
   UNDEFINED = "not available",
   UP = "up",
   DOWN = "down",
 }
-export type TAPOrganizationStatus = {
-  cloudConnectivity: EAPOrganizationStatus;
-  eventPortalConnectivity: EAPOrganizationStatus;
+export type TAPOrganizationOperationalStatus = {
+  cloudConnectivity: EAPOrganizationOperationalStatus;
+  eventPortalConnectivity: EAPOrganizationOperationalStatus;
 }
 export enum EAPOrganizationSempv2AuthType {
   BASIC_AUTH = 'Basic Auth',
@@ -118,20 +61,30 @@ export type TAPOrganizationSempv2_ApiKeyAuth = {
 }
 export type TAPOrganizationSempv2Auth = TAPOrganizationSempv2_ApiKeyAuth | TAPOrganizationSempv2_BasicAuth;
 
+export enum EAPOrganizationConfigStatus {
+  UNDEFINED = "undefined",
+  OPERATIONAL = "operational",
+  NOT_OPERATIONAL = "not operational"
+}
+
 export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   connectorOrganizationResponse: OrganizationResponse;
+  apOrganizationConfigStatus: EAPOrganizationConfigStatus;
   apNumApis2ApiProductRatio: number; /** -1 = infinity, min = 1 (0 not allowed) */
   apAppCredentialsExpiryDuration: number;
   // add more settings over time from APS
   apCloudConnectivityConfig: TAPCloudConnectivityConfig;
   apOrganizationSempv2Auth: TAPOrganizationSempv2Auth;
-  apOrganizationStatus: TAPOrganizationStatus;
+  apOrganizationOperationalStatus: TAPOrganizationOperationalStatus;
   // TODO: OrganizationIntegrations
 }
 
 export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
   apNumApis2ApiProductRatio: number; 
   apAppCredentialsExpiryDuration: number;
+}
+export interface IAPOrganizationDisplay_Connectivity extends IAPEntityIdDisplay {
+  // add members here when done
 }
 // export type TAPAppDisplay_AllowedActions = {
 //   isMonitorStatsAllowed: boolean;
@@ -156,6 +109,7 @@ export class APOrganizationsDisplayService {
   private readonly DefaultNumApis2ApiProductRatio: number = -1; /** any number of Apis */
   private readonly DefaultAppCredentialsExpiryDuration: number = (6 * 30 * 24 * 3600 * 1000); /** 6 months in milliseconds */
   private readonly SecretMask = '***';
+  public readonly APOrganizationDisplay_EmptyString = "_APOrganizationDisplay_EmptyString_";
 
   public nameOf<T extends IAPOrganizationDisplay>(name: keyof T): string {
     return `${name}`;
@@ -198,25 +152,42 @@ export class APOrganizationsDisplayService {
       apAppCredentialsExpiryDuration: this.DefaultAppCredentialsExpiryDuration,
       apCloudConnectivityConfig: {
         configType: EAPCloudConnectivityConfigType.SIMPLE,
-        cloudToken: ''
+        cloudToken: this.APOrganizationDisplay_EmptyString
       },
       apOrganizationSempv2Auth: {
         apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH
       },
-      apOrganizationStatus: {
-        cloudConnectivity: EAPOrganizationStatus.UNDEFINED,
-        eventPortalConnectivity: EAPOrganizationStatus.UNDEFINED
-      }
+      apOrganizationOperationalStatus: {
+        cloudConnectivity: EAPOrganizationOperationalStatus.UNDEFINED,
+        eventPortalConnectivity: EAPOrganizationOperationalStatus.UNDEFINED
+      },
+      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED
     };
+    return apOrganizationDisplay;
+  }
+
+  protected set_ApOrganizationConfigStatus({ apOrganizationDisplay }:{
+    apOrganizationDisplay: IAPOrganizationDisplay;
+  }): IAPOrganizationDisplay {
+    apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
+    if(apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.SIMPLE) {
+      if(apOrganizationDisplay.apCloudConnectivityConfig.cloudToken === this.APOrganizationDisplay_EmptyString) apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
+    }
     return apOrganizationDisplay;
   }
 
   private create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken }:{
     connectorCloudToken: string | CloudToken | undefined;
   }): TAPCloudConnectivityConfig {
-    const funcName = 'create_ApCloudConnectivityConfig';
+    const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
-    if(connectorCloudToken === undefined) throw new Error(`${logName}: connectorCloudToken === undefined`);
+    if(connectorCloudToken === undefined) {
+      const apCloudConnectivityConfigSimple: TAPCloudConnectivityConfigSimple = {
+        configType: EAPCloudConnectivityConfigType.SIMPLE,
+        cloudToken: this.APOrganizationDisplay_EmptyString
+      };
+      return apCloudConnectivityConfigSimple;
+    }
     if(typeof connectorCloudToken === 'string') {
       const apCloudConnectivityConfigSimple: TAPCloudConnectivityConfigSimple = {
         configType: EAPCloudConnectivityConfigType.SIMPLE,
@@ -241,22 +212,22 @@ export class APOrganizationsDisplayService {
     }
   }
 
-  private create_ApOrganizationStatus_From_ApiEntities({ connectorOrganizationStatus }:{
+  private create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus }:{
     connectorOrganizationStatus: OrganizationStatus | undefined;
-  }): TAPOrganizationStatus {
-    let cloudConnectivity: EAPOrganizationStatus = EAPOrganizationStatus.UNDEFINED;
-    let eventPortalConnectivity: EAPOrganizationStatus = EAPOrganizationStatus.UNDEFINED;
+  }): TAPOrganizationOperationalStatus {
+    let cloudConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
+    let eventPortalConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
     if(connectorOrganizationStatus !== undefined) {
-      if(connectorOrganizationStatus.cloudConnectivity !== undefined && connectorOrganizationStatus.cloudConnectivity) cloudConnectivity = EAPOrganizationStatus.UP;
-      else cloudConnectivity = EAPOrganizationStatus.DOWN;
-      if(connectorOrganizationStatus.eventPortalConnectivity !== undefined && connectorOrganizationStatus.eventPortalConnectivity) eventPortalConnectivity = EAPOrganizationStatus.UP;
-      else eventPortalConnectivity = EAPOrganizationStatus.DOWN;  
+      if(connectorOrganizationStatus.cloudConnectivity !== undefined && connectorOrganizationStatus.cloudConnectivity) cloudConnectivity = EAPOrganizationOperationalStatus.UP;
+      else cloudConnectivity = EAPOrganizationOperationalStatus.DOWN;
+      if(connectorOrganizationStatus.eventPortalConnectivity !== undefined && connectorOrganizationStatus.eventPortalConnectivity) eventPortalConnectivity = EAPOrganizationOperationalStatus.UP;
+      else eventPortalConnectivity = EAPOrganizationOperationalStatus.DOWN;  
     }
-    const apOrganizationStatus: TAPOrganizationStatus = {
+    const apOrganizationOperationalStatus: TAPOrganizationOperationalStatus = {
       cloudConnectivity: cloudConnectivity,
       eventPortalConnectivity: eventPortalConnectivity
     };
-    return apOrganizationStatus;
+    return apOrganizationOperationalStatus;
   }
 
   private create_ApOrganizationSempv2Auth_From_ApiEntities({ connectorSempV2Authentication }:{
@@ -302,9 +273,12 @@ export class APOrganizationsDisplayService {
       apAppCredentialsExpiryDuration: this.DefaultAppCredentialsExpiryDuration,
       apCloudConnectivityConfig: this.create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken: connectorOrganizationResponse['cloud-token']}),
       apOrganizationSempv2Auth: this.create_ApOrganizationSempv2Auth_From_ApiEntities({ connectorSempV2Authentication: connectorOrganizationResponse.sempV2Authentication }),
-      apOrganizationStatus: this.create_ApOrganizationStatus_From_ApiEntities({ connectorOrganizationStatus: connectorOrganizationResponse.status})
+      apOrganizationOperationalStatus: this.create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus: connectorOrganizationResponse.status}),
+      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED
     };
-    return apOrganizationDisplay;
+    return this.set_ApOrganizationConfigStatus({
+      apOrganizationDisplay: apOrganizationDisplay
+    });
   }
 
   public get_DefaultAppCredentailsExpiryDuration(): number {
@@ -353,6 +327,26 @@ export class APOrganizationsDisplayService {
     apOrganizationDisplay.apEntityId = apOrganizationDisplay_General.apEntityId;
     apOrganizationDisplay.apAppCredentialsExpiryDuration = apOrganizationDisplay_General.apAppCredentialsExpiryDuration;
     apOrganizationDisplay.apNumApis2ApiProductRatio = apOrganizationDisplay_General.apNumApis2ApiProductRatio;
+    return apOrganizationDisplay;
+  }
+
+  public get_ApOrganizationDisplay_Connectivity<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+    apOrganizationDisplay: T;
+  }): IAPOrganizationDisplay_Connectivity {
+    return {
+      apEntityId: apOrganizationDisplay.apEntityId,
+      // more here
+    };
+  }
+
+  public set_ApOrganizationDisplay_Connectivity<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_Connectivity>({ 
+    apOrganizationDisplay,
+    apOrganizationDisplay_Connectivity
+  }:{
+    apOrganizationDisplay: T;
+    apOrganizationDisplay_Connectivity: K;
+  }): T {
+    // set properties
     return apOrganizationDisplay;
   }
 
@@ -444,41 +438,6 @@ export class APOrganizationsDisplayService {
       apsUpdate: apsUpdate
     });
   }
-
-  // public async apiDelete_ApAppDisplay({ organizationId, appId }:{
-  //   organizationId: string;
-  //   appId: string;
-  // }): Promise<void> {
-  //   const funcName = 'apiDelete_ApAppDisplay';
-  //   const logName = `${this.BaseComponentName}.${funcName}()`;
-
-  //   // what kind of app is it?
-  //   const connectorAppResponseGeneric: AppResponseGeneric = await AppsService.getApp({
-  //     organizationName: organizationId,
-  //     appName: appId
-  //   });
-  //   if(connectorAppResponseGeneric.appType === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.appType === undefined`);
-  //   if(connectorAppResponseGeneric.ownerId === undefined) throw new Error(`${logName}: connectorAppResponseGeneric.ownerId === undefined`);
-
-  //   switch(connectorAppResponseGeneric.appType) {
-  //     case AppResponseGeneric.appType.DEVELOPER:
-  //       await AppsService.deleteDeveloperApp({
-  //         organizationName: organizationId,
-  //         developerUsername: connectorAppResponseGeneric.ownerId,
-  //         appName: appId
-  //       });
-  //       break;
-  //     case AppResponseGeneric.appType.TEAM:
-  //       await AppsService.deleteTeamApp({
-  //         organizationName: organizationId,
-  //         teamName: connectorAppResponseGeneric.ownerId,
-  //         appName: appId
-  //       });
-  //       break;
-  //     default:
-  //       Globals.assertNever(logName, connectorAppResponseGeneric.appType);
-  //   }
-  // }
 
 }
 

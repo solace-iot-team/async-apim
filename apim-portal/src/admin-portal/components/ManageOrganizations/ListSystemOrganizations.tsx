@@ -114,10 +114,15 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     );
   }
 
+  const configTypeBodyTemplate = (mo: TManagedObject) => {
+    return 'TDB: simple/advanced'
+  }
   const renderManagedObjectDataTable = () => {
     const idField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('id');
     const nameField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('displayName');
     const filterField = APSystemOrganizationsDisplayService.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
+    // const configTypeField = APSystemOrganizationsDisplayService.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
+    const configStatusField = APSystemOrganizationsDisplayService.nameOf('apOrganizationConfigStatus');
 
     return (
       <div className="card">
@@ -144,8 +149,11 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
             dataKey={idField}
           >
             <Column header="Name" field={nameField} filterField={filterField} sortable />
-            {/* <Column field="configType" header="Type" sortable /> */}
-            <Column header="Id" field={idField} sortable />
+            <Column header="Type" body={configTypeBodyTemplate} 
+              // TODO: field={} 
+              sortable />
+            <Column header="Config Status" field={configStatusField} sortable />
+            {/* <Column header="Id" field={idField} sortable /> */}
         </DataTable>
       </div>
     );

@@ -2,12 +2,14 @@ import { AdministrationService, Organization, OrganizationResponse } from "@sola
 import APSearchContentService, { IAPSearchContent } from "../../utils/APSearchContentService";
 import { 
   ApsAdministrationService, 
+  ApsLoginService, 
   APSOrganization, 
   ListAPSOrganizationResponse 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
   APOrganizationsDisplayService, 
   IAPOrganizationDisplay, 
+  IAPOrganizationDisplay_Connectivity, 
   IAPOrganizationDisplay_General 
 } from "./APOrganizationsDisplayService";
 
@@ -18,12 +20,14 @@ export type TAPSystemOrganizationDisplayList = Array<IAPSystemOrganizationDispla
 
 export interface IAPSystemOrganizationDisplay_General extends IAPOrganizationDisplay_General {};
 
+export interface IAPSystemOrganizationDisplay_Connectivity extends IAPOrganizationDisplay_Connectivity {};
+
 class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService {
   private readonly ComponentName = "APSystemOrganizationsDisplayService";
 
-  protected create_Empty_ApOrganizationDisplay(): IAPSystemOrganizationDisplay {
+  public create_Empty_ApOrganizationDisplay(): IAPSystemOrganizationDisplay {
     const apOrganizationDisplay: IAPOrganizationDisplay = super.create_Empty_ApOrganizationDisplay();
-    const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay ={
+    const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay = {
       ...apOrganizationDisplay,
       apSearchContent: ''
     };
@@ -58,6 +62,19 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       displayName: connectorOrganizationResponse.name
     };
     return apsOrganization;
+  }
+
+  private create_ConnectorOrganizationCreate_From_ApSystemOrganzationDisplay({ apSystemOrganizationDisplay }:{
+    apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;
+  }): Organization {
+
+    const connectorOrganizationCreate: Organization = {
+      name: apSystemOrganizationDisplay.apEntityId.id,
+      // add others once connectivity is sorted
+    };
+
+    return connectorOrganizationCreate;
+
   }
 
   // ********************************************************************************************************************************
@@ -102,6 +119,23 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
     return apSystemOrganizationDisplayList;
   }
 
+  public apiGet_Importable_ApOrganizationDisplay = async({ organizationId }:{
+    organizationId: string;
+  }): Promise<IAPSystemOrganizationDisplay> => {
+    const connectorOrganizationResponse: OrganizationResponse = await this.apiGet_ConnectorOrganizationResponse({ 
+      organizationId: organizationId 
+    });
+    // create an apsOrg
+    const apsOrganization: APSOrganization = this.create_ApsOrganization_From_ConnectorOrganization({
+      connectorOrganizationResponse: connectorOrganizationResponse
+    });
+    const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay = this.create_ApSystemOrganizationDisplay_From_ApiEntities({
+      apsOrganization: apsOrganization,
+      connectorOrganizationResponse: connectorOrganizationResponse
+    });
+    return apSystemOrganizationDisplay;
+  }
+
   public apiGetList_Importable_ApSystemOrganizationDisplayList = async(): Promise<TAPSystemOrganizationDisplayList> => {
     // const funcName = 'apiGetList_Importable_ApSystemOrganizationDisplayList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -136,6 +170,51 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       apSystemOrganizationDisplayList.push(apSystemOrganizationDisplay);
     }
     return apSystemOrganizationDisplayList;
+  }
+
+  public async apiImport_ApOrganizationDisplay_General({ apOrganizationDisplay_General }:{
+    apOrganizationDisplay_General: IAPOrganizationDisplay_General;
+  }): Promise<void> {
+    const apsCreate: APSOrganization = {
+      organizationId: apOrganizationDisplay_General.apEntityId.id,
+      displayName: apOrganizationDisplay_General.apEntityId.displayName
+    };
+    await ApsAdministrationService.createApsOrganization({
+      requestBody: apsCreate
+    });
+  }
+
+  public async apiCreate_ApSystemOrganizationDisplay({ apSystemOrganizationDisplay }:{
+    apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;
+  }): Promise<void> {
+    const apsCreate: APSOrganization = {
+      organizationId: apSystemOrganizationDisplay.apEntityId.id,
+      displayName: apSystemOrganizationDisplay.apEntityId.displayName
+    };
+    await ApsAdministrationService.createApsOrganization({
+      requestBody: apsCreate
+    });
+    await AdministrationService.createOrganization({
+      requestBody: this.create_ConnectorOrganizationCreate_From_ApSystemOrganzationDisplay({ apSystemOrganizationDisplay: apSystemOrganizationDisplay })
+    });
+  }
+
+  public async apiDelete_ApSystemOrganizationDisplay({ organizationId }:{
+    organizationId: string;
+  }): Promise<void> {
+
+    await ApsLoginService.logoutOrganizationAll({
+      organizationId: organizationId
+    });
+
+    await AdministrationService.deleteOrganization({
+      organizationName: organizationId
+    });
+
+    await ApsAdministrationService.deleteApsOrganization({
+      organizationId: organizationId
+    });
+
   }
 
 }

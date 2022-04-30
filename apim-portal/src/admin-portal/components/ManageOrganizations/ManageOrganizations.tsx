@@ -9,10 +9,17 @@ import { MenuItem } from "primereact/api";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { E_CALL_STATE_ACTIONS, E_CALL_STATE_ACTIONS_USERS, E_COMPONENT_STATE } from "./deleteme_ManageOrganizationsCommon";
 import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { E_ManageOrganizations_Scope, TManageOrganizationSettingsScope, TManageOrganizationsScope, TMonitorOrganizationStatusScope } from "./ManageOrganizationsCommon";
+import { 
+  E_CALL_STATE_ACTIONS,
+  E_CALL_STATE_ACTIONS_USERS,
+  E_COMPONENT_STATE, 
+  E_ManageOrganizations_Scope, 
+  TManageOrganizationSettingsScope, 
+  TManageOrganizationsScope, 
+  TMonitorOrganizationStatusScope 
+} from "./ManageOrganizationsCommon";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
@@ -22,10 +29,13 @@ import { ListSystemOrganizations } from "./ListSystemOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";
 import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { ListImportableSystemOrganizations } from "./ImportOrganizations/ListImportableSystemOrganizations";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { ListImportableSystemOrganizations } from "./ListImportableSystemOrganizations";
+import { ManageNewOrganization } from "./EditNewOrganization/ManageNewOrganization";
+import { DeleteOrganization } from "./DeleteOrganization";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -84,34 +94,17 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
-  // /* eslint-disable @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
-  // /* eslint-enable @typescript-eslint/no-unused-vars */
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   
   const history = useHistory();
 
   const navigateTo = (path: string): void => { history.push(path); }
 
   
-  // * Api Calls *
-  const apiLogoutOrganizationAll = async(organizationId: string): Promise<TApiCallState> => {
-    const funcName = 'apiLogoutOrganizationAll';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGOUT_ORGANIZATION_ALL, `logout all users from this organization`);
-    try {
-      await APLoginUsersDisplayService.apsLogoutOrganizationAll({
-        organizationId: organizationId
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
-
   const doLogoutAllOrganizationUsers = async(organizationId: string) => {
     if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
       if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
@@ -124,7 +117,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         navigateTo(EUICommonResourcePaths.Home);    
       }
     }
-    await apiLogoutOrganizationAll(organizationId);
   }
 
   // * useEffect Hooks *
@@ -145,6 +137,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         const orgStatusScope = props.scope as TMonitorOrganizationStatusScope;
         onMonitorManagedObject(orgStatusScope.organizationEntityId);
         break;
+      case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:  
+        throw new Error(`${logName}: unsupported props.scope.type=${props.scope.type}`);
       default:
         Globals.assertNever(logName, _type);
     }
@@ -246,7 +240,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
             </React.Fragment>
           );
         case E_ManageOrganizations_Scope.ORG_STATUS:
-          throw new Error(`${logName}: viewComponent cannot display status`);
+        case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
+          throw new Error(`${logName}: viewComponent: unsupported props.scope.type=${props.scope.type}`);
         default:
           Globals.assertNever(logName, _type);
       }
@@ -278,7 +273,8 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           );    
         case E_ManageOrganizations_Scope.ORG_SETTINGS:
         case E_ManageOrganizations_Scope.ORG_STATUS:
-            return undefined;
+        case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
+          return undefined;
         default:
           Globals.assertNever(logName, _type);
       }
@@ -319,7 +315,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   //   } else if(componentState.previousState === E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS)
   // }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
+    // setApiCallStatus(apiCallState);
   }  
   const onDeleteManagedObjectSuccess = (apiCallState: TApiCallState) => {
     const funcName = 'onDeleteManagedObjectSuccess';
@@ -423,6 +419,18 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
+    else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
+              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
+      setShowListComponent(false);
+      setShowViewComponent(true);
+      setShowEditComponent(false);
+      setShowDeleteComponent(true);
+      setShowNewComponent(false);
+      setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
+      setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
+    }
     else if( componentState.currentState === E_COMPONENT_STATE.MONITOR_OBJECT) {
       setShowListComponent(false);
       setShowViewComponent(false);
@@ -481,10 +489,12 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       
       {!isLoading && renderToolbar() }
 
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
       {showListComponent && 
         <ListSystemOrganizations
           key={`${ComponentName}_ListSystemOrganizations_${refreshCounter}`}
-          onSuccess={onListManagedObjectsSuccess} 
+          onSuccess={() => {}}
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading} 
           onManagedObjectView={onViewManagedObject}
@@ -504,26 +514,23 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-      <p>showDeleteComponent</p>
-        // <DeleteOrganization
-        //   organizationId={managedObjectId}
-        //   organizationDisplayName={managedObjectDisplayName}
-        //   onSuccess={onDeleteManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        <DeleteOrganization
+          organizationEntityId={managedObjectEntityId}
+          onSuccess={onDeleteManagedObjectSuccess} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          onCancel={onSubComponentCancel}
+        />
       }
       { showNewComponent &&
-      <p>showNewComponent</p>
-        // <EditNewOrganziation
-        //   action={EAction.NEW}
-        //   onNewSuccess={onNewManagedObjectSuccess} 
-        //   onEditSuccess={onSubComponentSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        // />
+        <ManageNewOrganization
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNewSuccess={onNewManagedObjectSuccess}
+          onSuccessNotification={props.onSuccess}
+        />
       }
       {showEditComponent && managedObjectEntityId &&
         <ManageEditOrganization
@@ -536,6 +543,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateToCommand={onSetManageObjectComponentState_To_View}
+          onNavigateToImportList={onSetManageObjectComponentState_To_Import}
         />
       }
       {showMonitorComponent && managedObjectEntityId &&
@@ -570,18 +578,18 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         />
       }
       {showImportEditComponent && managedObjectEntityId &&
-        <p>showImportEditComponent</p>
-        // <ManageEditOrganization
-        //   // key={`${ComponentName}_ManageEditOrganization_${refreshCounter}`}
-        //   organizationEntityId={managedObjectEntityId}
-        //   scope={props.scope}
-        //   onSaveSuccess={onEditSaveManagedObjectSuccess} 
-        //   onError={onSubComponentError}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateToCommand={onSetManageObjectComponentState_To_View}
-        // />
+        <ManageEditOrganization
+          // key={`${ComponentName}_ManageEditOrganization_${refreshCounter}`}
+          organizationEntityId={managedObjectEntityId}
+          scope={{ type: E_ManageOrganizations_Scope.IMPORT_ORGANIZATION }}
+          onSaveSuccess={onEditSaveManagedObjectSuccess} 
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateToCommand={onSetManageObjectComponentState_To_View}
+          onNavigateToImportList={onSetManageObjectComponentState_To_Import}
+        />
       }
     </div>
   );

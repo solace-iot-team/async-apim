@@ -26,6 +26,7 @@ export interface IManageEditOrganizationProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateToCommand: (organizationEntityId: TAPEntityId) => void;
+  onNavigateToImportList: () => void;
 }
 
 export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (props: IManageEditOrganizationProps) => {
@@ -41,9 +42,6 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
   // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   // * Api Calls *
-
-
-  // TODO: two calls: one for edit existing, another one for edit import
 
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
@@ -62,6 +60,10 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
           break;
         case E_ManageOrganizations_Scope.ORG_STATUS:
           throw new Error(`${logName}: unsupported props.scope.type=${props.scope.type}`);  
+        case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
+          const apImportableSystemOrganizationDisplay: IAPSystemOrganizationDisplay = await APSystemOrganizationsDisplayService.apiGet_Importable_ApOrganizationDisplay({ organizationId: props.organizationEntityId.id });
+          setManagedObject(apImportableSystemOrganizationDisplay);
+          break;
         default:
           Globals.assertNever(logName, type);
       }
@@ -76,6 +78,9 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
   const ManagedEdit_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.organizationEntityId);
   }
+  const ManagedEdit_onNavigateToImportList = (e: MenuItemCommandParams): void => {
+    props.onNavigateToImportList();
+  }
 
   const doInitialize = async () => {
     props.onLoadingChange(true);
@@ -84,15 +89,27 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
   }
 
   const setBreadCrumbItemList = (moDisplayName: string) => {
-    props.setBreadCrumbItemList([
-      {
-        label: moDisplayName,
-        command: ManagedEdit_onNavigateToCommand
-      },
-      {
-        label: 'Edit'
-      }  
-    ]);
+    if(props.scope.type === E_ManageOrganizations_Scope.IMPORT_ORGANIZATION) {
+      props.setBreadCrumbItemList([
+        {
+          label: 'Import an Organization',
+          command: ManagedEdit_onNavigateToImportList
+        },  
+        {
+          label: moDisplayName,
+        },
+      ]);
+    } else {
+      props.setBreadCrumbItemList([
+        {
+          label: moDisplayName,
+          command: ManagedEdit_onNavigateToCommand
+        },
+        {
+          label: 'Edit'
+        }  
+      ]);
+    }
   }
 
   // * useEffect Hooks *
@@ -115,13 +132,56 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
 
   const onEdit_SaveSuccess = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
-    doInitialize();
+    if(props.scope.type === E_ManageOrganizations_Scope.IMPORT_ORGANIZATION) props.onCancel();
+    else doInitialize();
   }
 
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (<></>);
   }
 
+  const renderTabPanels = (): Array<JSX.Element> => {
+    const funcName = 'renderTabPanels';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+    const tabPanels: Array<JSX.Element> = [];
+
+    tabPanels.push(
+      <TabPanel header='General'>
+        <React.Fragment>
+          <EditGeneral
+            // key={`${ComponentName}_EditGeneral_${refreshCounter}`}
+            scope={props.scope}
+            apOrganizationDisplay={managedObject}
+            onCancel={props.onCancel}
+            onError={props.onError}
+            onSaveSuccess={onEdit_SaveSuccess}
+            onLoadingChange={props.onLoadingChange}
+          />
+        </React.Fragment>
+      </TabPanel>  
+    );
+
+    if(props.scope.type !== E_ManageOrganizations_Scope.IMPORT_ORGANIZATION) {
+      tabPanels.push(
+        <TabPanel header='Connectivity'>
+          <React.Fragment>
+            <p>EditConnectivity</p>
+            {/* <EditConnectivity
+              organizationId={props.organizationId}
+              apAdminPortalApiProductDisplay={managedObject}
+              onCancel={props.onCancel}
+              onError={props.onError}
+              onSaveSuccess={onEdit_SaveSuccess}
+              onLoadingChange={props.onLoadingChange}
+            /> */}
+          </React.Fragment>
+        </TabPanel>
+      );
+    } 
+    return tabPanels;
+  }
   const renderContent = () => {
     const funcName = 'renderContent';
     const logName = `${ComponentName}.${funcName}()`;
@@ -132,34 +192,8 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
         <div className="p-mt-2">
           {renderHeader(managedObject)}
         </div>              
-
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
-          <TabPanel header='General'>
-            <React.Fragment>
-              <EditGeneral
-                // key={`${ComponentName}_EditGeneral_${refreshCounter}`}
-                scope={props.scope}
-                apOrganizationDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={props.onError}
-                onSaveSuccess={onEdit_SaveSuccess}
-                onLoadingChange={props.onLoadingChange}
-              />
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Connectivity'>
-            <React.Fragment>
-              <p>EditConnectivity</p>
-              {/* <EditConnectivity
-                organizationId={props.organizationId}
-                apAdminPortalApiProductDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={props.onError}
-                onSaveSuccess={onEdit_SaveSuccess}
-                onLoadingChange={props.onLoadingChange}
-              /> */}
-            </React.Fragment>
-          </TabPanel>
+          { renderTabPanels() }
         </TabView>
       </React.Fragment>
     ); 
@@ -169,15 +203,25 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
     const funcName = 'renderEditHeader';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    return (
-      <React.Fragment>
-        <APComponentHeader 
-          // key={`${ComponentName}_APComponentHeader_${refreshCounter}`}
-          header={`Edit Organization: ${managedObject.apEntityId.displayName}`} 
-        />
-        <div className="p-mt-4 p-mb-4" style={{ color: 'red'}}>{LogoutAllOrganizationUsersMsg}</div>
-      </React.Fragment>
-    );
+    if(props.scope.type === E_ManageOrganizations_Scope.IMPORT_ORGANIZATION) {
+      return(
+        <React.Fragment>
+          <APComponentHeader 
+            header={`Import Organization: ${managedObject.apEntityId.displayName}`} 
+          />
+        </React.Fragment>
+      );
+    } else {
+      return (
+        <React.Fragment>
+          <APComponentHeader 
+            // key={`${ComponentName}_APComponentHeader_${refreshCounter}`}
+            header={`Edit Organization: ${managedObject.apEntityId.displayName}`} 
+          />
+          <div className="p-mt-4 p-mb-4" style={{ color: 'red'}}>{LogoutAllOrganizationUsersMsg}</div>
+        </React.Fragment>
+      );
+    }
   }
 
   return (

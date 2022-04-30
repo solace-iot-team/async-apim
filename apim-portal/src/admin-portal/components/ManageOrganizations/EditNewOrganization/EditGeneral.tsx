@@ -1,6 +1,5 @@
 
-import React, { Props } from "react";
-// import { useForm, Controller } from 'react-hook-form';
+import React from "react";
 
 import { Button } from 'primereact/button'; 
 import { Toolbar } from 'primereact/toolbar';
@@ -22,10 +21,10 @@ import {
   TManageOrganizationsScope 
 } from "../ManageOrganizationsCommon";
 import { Globals } from "../../../../utils/Globals";
+import { EditNewGeneralForm } from "./EditNewGeneralForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
 
 export interface IEditGeneralProps {
   scope: TManageOrganizationsScope;
@@ -41,6 +40,8 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
 
   type TManagedObject = IAPSingleOrganizationDisplay_General | IAPSystemOrganizationDisplay_General;
 
+  const ToolbarSaveButtonLabel = 'Save';
+  const ToolbarImportButtonLabel = 'Import';
   const FormId = `ManageOrganizations_EditNewOrganization_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -52,12 +53,18 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `update organization: ${mo.apEntityId.displayName}`);
+    const msg = props.scope.type === E_ManageOrganizations_Scope.IMPORT_ORGANIZATION ? 'import organization' : 'update organization';
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_ORGANIZATION, `${msg}: ${mo.apEntityId.displayName}`);
     const type: E_ManageOrganizations_Scope = props.scope.type;
     try {
       switch(type) {
         case E_ManageOrganizations_Scope.SYSTEM_ORGS:
           await APSystemOrganizationsDisplayService.apiUpdate_ApOrganizationDisplay_General({ 
+            apOrganizationDisplay_General: mo
+          });
+          break;
+        case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
+          await APSystemOrganizationsDisplayService.apiImport_ApOrganizationDisplay_General({ 
             apOrganizationDisplay_General: mo
           });
           break;
@@ -85,6 +92,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     const type: E_ManageOrganizations_Scope = props.scope.type;
     switch(type) {
       case E_ManageOrganizations_Scope.SYSTEM_ORGS:
+      case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
         setManagedObject(APSystemOrganizationsDisplayService.get_ApOrganizationDisplay_General<IAPSystemOrganizationDisplay>({ 
           apOrganizationDisplay: props.apOrganizationDisplay 
         }));
@@ -108,9 +116,6 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[apiCallStatus';
-    // const logName = `${ComponentName}.${funcName}()`;
-
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else {
@@ -134,10 +139,11 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }
 
   const managedObjectFormFooterRightToolbarTemplate = () => {
+    const buttonLabel = (props.scope.type === E_ManageOrganizations_Scope.IMPORT_ORGANIZATION) ? ToolbarImportButtonLabel: ToolbarSaveButtonLabel;
     return (
       <React.Fragment>
         <Button type="button" label="Cancel" className="p-button-text p-button-plain" onClick={onCancelManagedObjectForm} />
-        <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
+        <Button key={ComponentName+buttonLabel} form={FormId} type="submit" label={buttonLabel} icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
       </React.Fragment>
     );
   }

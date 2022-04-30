@@ -8,7 +8,8 @@ export enum EAction {
 export enum E_ManageOrganizations_Scope {
   SYSTEM_ORGS = "SYSTEM_ORGS",
   ORG_SETTINGS = "ORG_SETTINGS",
-  ORG_STATUS = "ORG_STATUS"
+  ORG_STATUS = "ORG_STATUS",
+  IMPORT_ORGANIZATION = "IMPORT_ORGANIZATION"
 }
 export type TManageOrganizationSettingsScope = {
   type: E_ManageOrganizations_Scope.ORG_SETTINGS;
@@ -21,11 +22,14 @@ export type TMonitorOrganizationStatusScope = {
 export type TManageSystemOrganizationsScope = {
   type: E_ManageOrganizations_Scope.SYSTEM_ORGS;
 }
+export type TManageImportOrganizationsScope = {
+  type: E_ManageOrganizations_Scope.IMPORT_ORGANIZATION;
+}
 export type TManageOrganizationsScope = 
   TManageOrganizationSettingsScope
   | TManageSystemOrganizationsScope
-  | TMonitorOrganizationStatusScope;
-
+  | TMonitorOrganizationStatusScope
+  | TManageImportOrganizationsScope;
 
 export enum E_COMPONENT_STATE {
   UNDEFINED = "UNDEFINED",
@@ -35,7 +39,9 @@ export enum E_COMPONENT_STATE {
   MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
   MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
   MONITOR_OBJECT = "MONITOR_OBJECT",
-  MANAGE_ORGANIZATION_USERS = "MANAGE_ORGANIZATION_USERS"
+  MANAGE_ORGANIZATION_USERS = "MANAGE_ORGANIZATION_USERS",
+  MANAGE_IMPORT_ORGANIZATIONS = "MANAGE_IMPORT_ORGANIZATIONS",
+  MANAGED_OBJECT_IMPORT_EDIT = "MANAGED_OBJECT_IMPORT_EDIT"
 }
 
 export enum E_CALL_STATE_ACTIONS {
@@ -47,6 +53,7 @@ export enum E_CALL_STATE_ACTIONS {
   API_UPDATE_ORGANIZATION = "API_UPDATE_ORGANIZATION",
   API_GET_ORGANIZATION_ASSETS = "API_GET_ORGANIZATION_ASSETS",
   API_LOGOUT_ORGANIZATION_ALL = "API_LOGOUT_ORGANIZATION_ALL",
+  API_GET_EMPTY_ORGANIZATION = "API_GET_EMPTY_ORGANIZATION"
 }
 
 export enum E_COMPONENT_STATE_USERS {
@@ -72,3 +79,15 @@ export enum E_CALL_STATE_ACTIONS_USERS {
   API_USER_LOGOUT = "API_USER_LOGOUT"
 }
 
+export enum E_COMPONENT_STATE_NEW {
+  UNDEFINED = "UNDEFINED",
+  GENERAL = "GENERAL",
+  CONNECTIVITY = "CONNECTIVITY",
+  REVIEW = "REVIEW"
+}
+
+export enum E_DISPLAY_ORGANIZATION_SCOPE {
+  REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
+  VIEW_SYSTEM_ORG = "VIEW_SYSTEM_ORG",
+  VIEW_ORG_SETTINGS = "VIEW_ORG_SETTINGS"
+}

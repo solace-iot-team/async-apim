@@ -3,22 +3,19 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from "primereact/inputtextarea";
 import { classNames } from 'primereact/utils';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
-import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -150,7 +147,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                       <InputText
                         id={field.name}
                         {...field}
-                        autoFocus={false}
+                        autoFocus={isNewObject}
                         disabled={!isNewObject}
                         className={classNames({ 'p-invalid': fieldState.invalid })}                       
                       />
@@ -172,7 +169,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                       <InputText
                         id={field.name}
                         {...field}
-                        autoFocus={true}
+                        autoFocus={!isNewObject}
                         className={classNames({ 'p-invalid': fieldState.invalid })}                       
                       />
                   )}}
@@ -180,6 +177,10 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.displayName })}>Display Name*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
+            </div>
+            <div>
+              <p>TODO: Max Number of APIs per API Product: not limited </p>
+              <p>TODO: App Credentials Expiration: 180 days, 00 hours, 00 mins</p>
             </div>
           </form>  
         </div>
