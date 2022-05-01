@@ -8,15 +8,14 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import APSystemOrganizationsDisplayService, { 
   IAPSystemOrganizationDisplay, 
   IAPSystemOrganizationDisplay_Connectivity, 
-  IAPSystemOrganizationDisplay_General 
 } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { 
   EAction,
 } from "../ManageOrganizationsCommon";
+import { EditNewConnectivityForm } from "./EditNewConnectivityForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { EditNewConnectivityForm } from "./EditNewConnectivityForm";
 
 export interface INewConnectivityProps {
   apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;

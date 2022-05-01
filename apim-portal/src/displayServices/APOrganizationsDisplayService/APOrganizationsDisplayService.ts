@@ -498,10 +498,9 @@ export class APOrganizationsDisplayService {
   public apiGet_ApOrganizationDisplay = async({ organizationId }:{
     organizationId: string;
   }): Promise<IAPOrganizationDisplay> => {
-    const funcName = 'apiGet_ApOrganizationDisplay';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
-
-    // // TEST upstream error handling
+    // const funcName = 'apiGet_ApOrganizationDisplay';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // TEST upstream error handling
     // throw new Error(`${logName}: test error handling`);
 
     // get the APS organzation first

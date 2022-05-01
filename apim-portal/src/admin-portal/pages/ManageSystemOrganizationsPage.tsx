@@ -7,16 +7,13 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-
-import "../../pages/Pages.css";
 import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 import { E_ManageOrganizations_Scope } from '../components/ManageOrganizations/ManageOrganizationsCommon';
 
-export const ManageSystemOrganizationsPage: React.FC = () => {
-  const ComponentName = 'ManageSystemOrganizationsPage';
+import "../../pages/Pages.css";
 
-  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+export const ManageSystemOrganizationsPage: React.FC = () => {
+  // const ComponentName = 'ManageSystemOrganizationsPage';
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
@@ -25,8 +22,6 @@ export const ManageSystemOrganizationsPage: React.FC = () => {
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-
-  // const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -59,13 +54,6 @@ export const ManageSystemOrganizationsPage: React.FC = () => {
       </React.Fragment>
     )
   }
-
-  // React.useEffect(() => {
-  //   const funcName = 'useEffect([])';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-  //   setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
-  // }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   return (
     <div className="ap-pages">

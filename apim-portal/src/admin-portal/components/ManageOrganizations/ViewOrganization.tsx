@@ -32,9 +32,6 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
-
-  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {

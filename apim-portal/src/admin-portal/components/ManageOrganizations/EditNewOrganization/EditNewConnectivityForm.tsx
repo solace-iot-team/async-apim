@@ -24,7 +24,7 @@ export interface IEditNewConnectivityFormProps {
 }
 
 export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = (props: IEditNewConnectivityFormProps) => {
-  const ComponentName = 'EditNewConnectivityForm';
+  // const ComponentName = 'EditNewConnectivityForm';
 
   type TManagedObject = IAPSingleOrganizationDisplay_Connectivity | IAPSystemOrganizationDisplay_Connectivity;
   type TManagedObjectFormData = {
@@ -51,7 +51,7 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
     const mo: TManagedObject = props.apOrganizationDisplay_Connectivity;
-    const fd: TManagedObjectFormData = formDataEnvelope.formData;
+    // const fd: TManagedObjectFormData = formDataEnvelope.formData;
     // mo.apEntityId.displayName = fd.displayName;
     return mo;
   }

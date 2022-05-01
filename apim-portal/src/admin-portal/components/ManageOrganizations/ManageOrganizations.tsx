@@ -346,9 +346,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setManagedObjectEntityId(organizationEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EDIT);
   }
-  const onSubComponentSuccessNoChange = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-  }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
