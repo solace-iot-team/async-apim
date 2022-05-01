@@ -18,8 +18,7 @@ import { ManageOrgEnvironmentsPage } from "./pages/ManageOrgEnvironmentsPage";
 import { ManageOrgAssetMaintenanceApiProductsPage } from "./pages/ManageOrgAssetMaintenanceApiProductsPage";
 import { ManageOrgIntegrationExternalSystemsPage } from "./pages/ManageOrgIntegrationExternalSystemsPage";
 import { ManageOrgBusinessGroupsPage } from "./pages/ManageOrgBusinessGroupsPage";
-import { MonitorOrganizationStatusPage as deleteme_MonitorOrganizationStatusPage } from "./pages/deleteme_MonitorOrganizationStatusPage";
-import { ManageOrganizationSettingsPage as deleteme_ManageOrganizationSettingsPage } from "./pages/deleteme_ManageOrganizationSettingsPage";
+import { MonitorOrganizationStatusPage } from "./pages/MonitorOrganizationStatusPage";
 
 import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
 import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
@@ -29,6 +28,8 @@ import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 import { ManageApiProductsPage as deleteme_ManageApiProductsPage} from "./pages/deleteme.ManageApiProductsPage";
 import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
 import { ManageSystemOrganizationsPage as deleteme_ManageSystemOrganizationsPage } from "./pages/deleteme_ManageSystemOrganizationsPage";
+import { MonitorOrganizationStatusPage as deleteme_MonitorOrganizationStatusPage } from "./pages/deleteme_MonitorOrganizationStatusPage";
+import { ManageOrganizationSettingsPage as deleteme_ManageOrganizationSettingsPage } from "./pages/deleteme_ManageOrganizationSettingsPage";
 
 
 
@@ -54,6 +55,7 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings} component={deleteme_ManageOrganizationSettingsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus} component={deleteme_MonitorOrganizationStatusPage} exact key={EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus} />,
 
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} component={MonitorOrganizationStatusPage} exact key={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} />,
 
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationUsers} component={ManageOrgUsersPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationUsers} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} component={ManageOrgBusinessGroupsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} />,

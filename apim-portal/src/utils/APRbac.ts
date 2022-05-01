@@ -105,6 +105,8 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings,
       EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus,
       
+      EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
+      
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,

@@ -6,18 +6,21 @@ import {
   BearerTokenAuthentication,
   CloudToken, 
   Organization, 
-  OrganizationNotifier, 
   OrganizationResponse, 
   OrganizationStatus, 
   SempV2Authentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { 
+  ApsAdministrationService, 
+  APSOrganization, 
+  APSOrganizationUpdate 
+} from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
 import { Globals } from '../../utils/Globals';
-import { ApsAdministrationService, APSOrganization, APSOrganizationUpdate } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 
 export enum EAPCloudConnectivityConfigType {
   SIMPLE = 'Simple',

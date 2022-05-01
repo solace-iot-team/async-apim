@@ -95,6 +95,7 @@ export enum EUIAdminPortalResourcePaths {
   deleteme_ManageOrganizationSettings = '/admin-portal/manage/organization/deleteme_settings',
   
   deleteme_MonitorOrganizationStatus = '/admin-portal/monitor/organization/deleteme_status',
+  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
 
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',

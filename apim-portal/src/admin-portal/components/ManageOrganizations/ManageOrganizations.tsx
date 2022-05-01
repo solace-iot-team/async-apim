@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
+import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
@@ -20,7 +20,6 @@ import {
   TManageOrganizationsScope, 
   TMonitorOrganizationStatusScope 
 } from "./ManageOrganizationsCommon";
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -28,12 +27,12 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 import { ListSystemOrganizations } from "./ListSystemOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";
-import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { ListImportableSystemOrganizations } from "./ImportOrganizations/ListImportableSystemOrganizations";
 import { ManageNewOrganization } from "./EditNewOrganization/ManageNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
+import { MonitorOrganization } from "./MonitorOrganization";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -105,7 +104,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
 
   const navigateTo = (path: string): void => { history.push(path); }
 
-  
   const doLogoutAllOrganizationUsers = async(organizationId: string) => {
     if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
       if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
@@ -548,13 +546,11 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         />
       }
       {showMonitorComponent && managedObjectEntityId &&
-      <p>showMonitorComponent</p>
-        // <MonitorOrganization
-        //   organizationId={managedObjectId}
-        //   organizationDisplayName={managedObjectDisplayName}
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading}
-        // />      
+        <MonitorOrganization
+          organizationEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+        />      
       }
       {showManageOrganizationUsersComponent && managedObjectEntityId &&
         <ManageSystemOrganizationUsers

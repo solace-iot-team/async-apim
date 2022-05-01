@@ -7,11 +7,11 @@ import { TAPEntityId } from "../../../../../utils/APEntityIdsService";
 import { TApiCallState } from "../../../../../utils/ApiCallState";
 import { TAPSystemUserDisplay } from "../../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { E_COMPONENT_STATE_ADD_USER } from "../../ManageOrganizationsCommon";
+import { ListSystemOrganizationUsersSystemUsers } from "./ListSystemOrganizationUsersSystemUsers";
+import { AddSystemOrganizationUserRoles } from "./AddSystemOrganizationUserRoles";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
-import { ListSystemOrganizationUsersSystemUsers } from "./ListSystemOrganizationUsersSystemUsers";
-import { AddSystemOrganizationUserRoles } from "./AddSystemOrganizationUserRoles";
 
 export interface IAddSystemOrganizationUserProps {
   organizationEntityId: TAPEntityId;
