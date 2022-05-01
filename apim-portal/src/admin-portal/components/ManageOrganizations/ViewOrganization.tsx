@@ -11,7 +11,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APSingleOrganizationDisplayService, { IAPSingleOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { E_CALL_STATE_ACTIONS, E_DISPLAY_ORGANIZATION_SCOPE, E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizationsCommon";
-import { DisplayOrganization } from "./DisplayOrganization";
+import { DisplayOrganization } from "./DisplayOrganization/DisplayOrganization";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -114,7 +114,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   return (
     <div className="manage-organizations">
 
-      { managedObject && <APComponentHeader header={`Organization: ${managedObject.apEntityId.displayName}`} /> }
+      {/* { managedObject && <APComponentHeader header={`Organization: ${managedObject.apEntityId.displayName}`} /> } */}
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

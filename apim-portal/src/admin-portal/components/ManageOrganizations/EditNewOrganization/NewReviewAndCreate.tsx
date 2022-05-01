@@ -9,7 +9,7 @@ import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { E_CALL_STATE_ACTIONS, E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
-import { DisplayOrganization } from "../DisplayOrganization";
+import { DisplayOrganization } from "../DisplayOrganization/DisplayOrganization";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";

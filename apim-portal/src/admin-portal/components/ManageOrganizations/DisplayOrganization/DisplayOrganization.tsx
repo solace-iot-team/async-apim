@@ -3,21 +3,22 @@ import React from "react";
 
 import { TabPanel, TabView } from "primereact/tabview";
 
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { E_DISPLAY_ORGANIZATION_SCOPE } from "./ManageOrganizationsCommon";
-import { IAPSingleOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
-import { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
+import { IAPSingleOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
+import { IAPSystemOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APOrganizationsDisplayService, { 
   EAPCloudConnectivityConfigType, 
   EAPOrganizationSempv2AuthType, 
   TAPCloudConnectivityConfig, 
   TAPOrganizationSempv2Auth 
-} from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import { Globals } from "../../../utils/Globals";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+} from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import { Globals } from "../../../../utils/Globals";
+import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import { DisplayIntegration } from "./DisplayIntegration";
 
-import '../../../components/APComponents.css';
-import "./ManageOrganizations.css";
+import '../../../../components/APComponents.css';
+import "../ManageOrganizations.css";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
@@ -139,13 +140,13 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
         <div id={Globals.getUUID()}><b>Config Status</b>: {managedObject.apOrganizationConfigStatus}</div>
       );
       jsxList.push(
-        <div id={Globals.getUUID()}><b>Type</b>: TODO: config type simple / advanced</div>
+        <div id={Globals.getUUID()}><b>TODO: move to connectivity tab: Type</b>: TODO: config type simple / advanced</div>
       );
       jsxList.push(
-        <div id={Globals.getUUID()}><b>Cloud Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.cloudConnectivity)}</div>
+        <div id={Globals.getUUID()}><b>TODO: move to connectivity tab: Cloud Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.cloudConnectivity)}</div>
       );
       jsxList.push(
-        <div id={Globals.getUUID()}><b>Event Portal Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.eventPortalConnectivity)}</div>
+        <div id={Globals.getUUID()}><b>TODO: move to connectivity tab: Event Portal Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.eventPortalConnectivity)}</div>
       )
       return jsxList;
     }
@@ -196,11 +197,11 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
               { renderOrganizationSempv2Auth(managedObject.apOrganizationSempv2Auth) }
             </React.Fragment>
           </TabPanel>
-          {/* <TabPanel header='OrganizationIntegrations'>
-            <React.Fragment>
-              <div>TODO</div>
-            </React.Fragment>
-          </TabPanel> */}
+          <TabPanel header='Integration'>
+            <DisplayIntegration
+              apNotificationHubConfig={managedObject.apNotificationHubConfig}
+            />
+          </TabPanel>
         </TabView> 
       </React.Fragment>
     );

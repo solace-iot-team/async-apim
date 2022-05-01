@@ -179,6 +179,21 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
           </React.Fragment>
         </TabPanel>
       );
+      tabPanels.push(
+        <TabPanel header='Integration'>
+          <React.Fragment>
+            <p>EditIntegration</p>
+            {/* <EditConnectivity
+              organizationId={props.organizationId}
+              apAdminPortalApiProductDisplay={managedObject}
+              onCancel={props.onCancel}
+              onError={props.onError}
+              onSaveSuccess={onEdit_SaveSuccess}
+              onLoadingChange={props.onLoadingChange}
+            /> */}
+          </React.Fragment>
+        </TabPanel>
+      );
     } 
     return tabPanels;
   }

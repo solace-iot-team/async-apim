@@ -1,8 +1,12 @@
 import { 
   AdministrationService,
   ApiError,
+  APIKeyAuthentication,
+  BasicAuthentication,
+  BearerTokenAuthentication,
   CloudToken, 
   Organization, 
+  OrganizationNotifier, 
   OrganizationResponse, 
   OrganizationStatus, 
   SempV2Authentication
@@ -61,6 +65,37 @@ export type TAPOrganizationSempv2_ApiKeyAuth = {
 }
 export type TAPOrganizationSempv2Auth = TAPOrganizationSempv2_ApiKeyAuth | TAPOrganizationSempv2_BasicAuth;
 
+export enum EAPNotificationHubAuthType {
+  UNDEFINED = "UNDEFINED",
+  BASIC_AUTH = 'Basic Auth',
+  API_KEY_AUTH = 'API Key',
+  BEARER_TOKEN_AUTH = "BEARER_TOKEN_AUTH",
+}
+export type TAPNotificationHub_Undefined = {
+  apAuthType: EAPNotificationHubAuthType.UNDEFINED;
+}
+export type TAPNotificationHub_BasicAuth = {
+  apAuthType: EAPNotificationHubAuthType.BASIC_AUTH;
+  username: string;
+  password: string;
+}
+export type TAPNotificationHub_ApiKeyAuth = {
+  apAuthType: EAPNotificationHubAuthType.API_KEY_AUTH;
+  apiKeyLocation: APIKeyAuthentication.location;
+  apiKeyFieldName: string;
+  apiKeyValue: string;
+}
+export type TAPNotificationHub_BearerTokenAuth = {
+  apAuthType: EAPNotificationHubAuthType.BEARER_TOKEN_AUTH;
+  token: string;
+}
+export type TAPNotificationHubAuth = TAPNotificationHub_Undefined | TAPNotificationHub_BasicAuth | TAPNotificationHub_ApiKeyAuth | TAPNotificationHub_BearerTokenAuth;
+
+export type TAPNotificationHubConfig = {
+  baseUrl: string;
+  apNotificationHubAuth: TAPNotificationHubAuth;
+}
+
 export enum EAPOrganizationConfigStatus {
   UNDEFINED = "undefined",
   OPERATIONAL = "operational",
@@ -76,6 +111,7 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   apCloudConnectivityConfig: TAPCloudConnectivityConfig;
   apOrganizationSempv2Auth: TAPOrganizationSempv2Auth;
   apOrganizationOperationalStatus: TAPOrganizationOperationalStatus;
+  apNotificationHubConfig?: TAPNotificationHubConfig;
   // TODO: OrganizationIntegrations
 }
 
@@ -86,23 +122,12 @@ export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
 export interface IAPOrganizationDisplay_Connectivity extends IAPEntityIdDisplay {
   // add members here when done
 }
+export interface IAPOrganizationDisplay_NofiticationHub extends IAPEntityIdDisplay {
+  apNotificationHubConfig?: TAPNotificationHubConfig;
+}
 // export type TAPAppDisplay_AllowedActions = {
 //   isMonitorStatsAllowed: boolean;
 // }
-
-// export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
-//   apAppMeta: TAPAppMeta;
-//   apAppCredentials: TAPAppCredentialsDisplay;
-// }
-
-// export type TAPAppDisplay_ChannelParameters = IAPEntityIdDisplay & {
-//   apAppMeta: TAPAppMeta;
-//   apAppChannelParameterList: TAPAppChannelParameterList;
-//   combined_ApAppApiProductsControlledChannelParameterList: TAPControlledChannelParameterList;
-// }
-
-
-// export type TAPAppDisplayList = Array<IAPAppDisplay>;
 
 export class APOrganizationsDisplayService {
   private readonly BaseComponentName = "APOrganizationsDisplayService";
@@ -133,6 +158,12 @@ export class APOrganizationsDisplayService {
       if( k.includes('token') && typeof value === 'string') {
         organizationObject[key] = this.SecretMask;
       }
+      if( k.includes('password') && typeof value === 'string') {
+        organizationObject[key] = this.SecretMask;
+      }
+      if( k.includes('key') && typeof value === 'string') {
+        organizationObject[key] = this.SecretMask;
+      }
       if(Array.isArray(value) || isObject(value)) this.maskOrganizationSecrets({ organizationObject: value });
     });
     return organizationObject;
@@ -144,6 +175,16 @@ export class APOrganizationsDisplayService {
     }
   }
   
+  public create_Empty_ApNotificationHubConfig(): TAPNotificationHubConfig {
+    const apNotificationHubConfig: TAPNotificationHubConfig = {
+      baseUrl: '',
+      apNotificationHubAuth : {
+        apAuthType: EAPNotificationHubAuthType.UNDEFINED
+      }
+    };
+    return apNotificationHubConfig;
+  }
+
   protected create_Empty_ApOrganizationDisplay(): IAPOrganizationDisplay {
     const apOrganizationDisplay: IAPOrganizationDisplay = {
       connectorOrganizationResponse: this.create_Empty_ConnectorOrganizationResponse(),
@@ -161,7 +202,8 @@ export class APOrganizationsDisplayService {
         cloudConnectivity: EAPOrganizationOperationalStatus.UNDEFINED,
         eventPortalConnectivity: EAPOrganizationOperationalStatus.UNDEFINED
       },
-      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED
+      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED,
+      apNotificationHubConfig: undefined,
     };
     return apOrganizationDisplay;
   }
@@ -260,6 +302,57 @@ export class APOrganizationsDisplayService {
     return apOrganizationSempv2_BasicAuth
   }
 
+  private create_ApNofiticationHubConfig_From_ApiEntities({ connectorOrganizationResponse }:{
+    connectorOrganizationResponse: OrganizationResponse;
+  }): TAPNotificationHubConfig | undefined {
+    const funcName = 'create_ApNofiticationHubConfig_From_ApiEntities';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    if(connectorOrganizationResponse.integrations === undefined) return undefined;
+    if(connectorOrganizationResponse.integrations.notifications === undefined) return undefined;
+    const connectorAuth: (BasicAuthentication | APIKeyAuthentication | BearerTokenAuthentication) = connectorOrganizationResponse.integrations.notifications.authentication;
+    let apNotificationHubAuth: TAPNotificationHubAuth | undefined = undefined;
+    // try basic auth
+    const basicAuth: BasicAuthentication = connectorAuth as BasicAuthentication;
+    if(basicAuth.userName !== undefined && basicAuth.password !== undefined) {
+      const apNotificationHub_BasicAuth: TAPNotificationHub_BasicAuth = {
+        apAuthType: EAPNotificationHubAuthType.BASIC_AUTH,
+        username: basicAuth.userName,
+        password: basicAuth.password
+      };
+      apNotificationHubAuth = apNotificationHub_BasicAuth;
+    } else {
+      // try api key auth
+      const apiKeyAuth: APIKeyAuthentication = connectorAuth as APIKeyAuthentication;
+      if(apiKeyAuth.location !== undefined && apiKeyAuth.key !== undefined && apiKeyAuth.name !== undefined) {
+        const apNotificationHub_ApiKeyAuth: TAPNotificationHub_ApiKeyAuth = {
+          apAuthType: EAPNotificationHubAuthType.API_KEY_AUTH,
+          apiKeyLocation: apiKeyAuth.location,
+          apiKeyFieldName: apiKeyAuth.name,
+          apiKeyValue: apiKeyAuth.key
+        };
+        apNotificationHubAuth = apNotificationHub_ApiKeyAuth;  
+      } else {
+        // try bearer token auth
+        const bearerTokenAuth: BearerTokenAuthentication = connectorAuth as BearerTokenAuthentication;
+        if(bearerTokenAuth.token !== undefined) {
+          const apNotificationHub_BearerTokenAuth: TAPNotificationHub_BearerTokenAuth = {
+            apAuthType: EAPNotificationHubAuthType.BEARER_TOKEN_AUTH,
+            token: bearerTokenAuth.token
+          };
+          apNotificationHubAuth = apNotificationHub_BearerTokenAuth;  
+        }
+      }
+    }
+    if(apNotificationHubAuth === undefined) throw new Error(`${logName}: unable to calculate OrganizationNotifier authentication, connectorAuth=${JSON.stringify(connectorAuth, null, 2)}`);
+
+    const apNotificationHubConfig: TAPNotificationHubConfig = {
+      baseUrl: connectorOrganizationResponse.integrations.notifications.baseUrl,
+      apNotificationHubAuth: apNotificationHubAuth
+    };
+    return apNotificationHubConfig;
+  }
+
   protected create_ApOrganizationDisplay_From_ApiEntities({ apsOrganization, connectorOrganizationResponse }: {
     connectorOrganizationResponse: OrganizationResponse;
     apsOrganization: APSOrganization;
@@ -274,7 +367,8 @@ export class APOrganizationsDisplayService {
       apCloudConnectivityConfig: this.create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken: connectorOrganizationResponse['cloud-token']}),
       apOrganizationSempv2Auth: this.create_ApOrganizationSempv2Auth_From_ApiEntities({ connectorSempV2Authentication: connectorOrganizationResponse.sempV2Authentication }),
       apOrganizationOperationalStatus: this.create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus: connectorOrganizationResponse.status}),
-      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED
+      apNotificationHubConfig: this.create_ApNofiticationHubConfig_From_ApiEntities({ connectorOrganizationResponse: connectorOrganizationResponse }),
+      apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED,
     };
     return this.set_ApOrganizationConfigStatus({
       apOrganizationDisplay: apOrganizationDisplay
@@ -350,6 +444,26 @@ export class APOrganizationsDisplayService {
     return apOrganizationDisplay;
   }
 
+  public get_ApOrganizationDisplay_NotificationHub<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+    apOrganizationDisplay: T;
+  }): IAPOrganizationDisplay_NofiticationHub {
+    return {
+      apEntityId: apOrganizationDisplay.apEntityId,
+      apNotificationHubConfig: apOrganizationDisplay.apNotificationHubConfig
+    };
+  }
+
+  public set_ApOrganizationDisplay_NotificationHub<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_NofiticationHub>({ 
+    apOrganizationDisplay,
+    apOrganizationDisplay_NotificationHub
+  }:{
+    apOrganizationDisplay: T;
+    apOrganizationDisplay_NotificationHub: K;
+  }): T {
+    apOrganizationDisplay.apNotificationHubConfig = apOrganizationDisplay_NotificationHub.apNotificationHubConfig;
+    return apOrganizationDisplay;
+  }
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -402,10 +516,9 @@ export class APOrganizationsDisplayService {
     return apOrganizationDisplay;
   }
 
-
   protected async apiUpdate({ organizationId, apsUpdate, connectorOrganization }: {
     organizationId: string;
-    apsUpdate: APSOrganizationUpdate;
+    apsUpdate?: APSOrganizationUpdate;
     connectorOrganization?: Organization;
   }): Promise<void> {
     const funcName = 'apiUpdate';
@@ -413,10 +526,14 @@ export class APOrganizationsDisplayService {
     // test downstream error handling
     // throw new Error(`${logName}: test error handling`);
 
-    await ApsAdministrationService.updateApsOrganization({
-      organizationId: organizationId,
-      requestBody: apsUpdate
-    });
+    if(apsUpdate === undefined && connectorOrganization === undefined) throw new Error(`${logName}: apsUpdate === undefined && connectorOrganization === undefined`);
+
+    if(apsUpdate !== undefined) {
+      await ApsAdministrationService.updateApsOrganization({
+        organizationId: organizationId,
+        requestBody: apsUpdate
+      });  
+    }
 
     if(connectorOrganization !== undefined) {
       await AdministrationService.updateOrganization({
@@ -436,6 +553,65 @@ export class APOrganizationsDisplayService {
     await this.apiUpdate({ 
       organizationId: apOrganizationDisplay_General.apEntityId.id,
       apsUpdate: apsUpdate
+    });
+  }
+
+  public async apiUpdate_ApOrganizationDisplay_NotificationHub({ apOrganizationDisplay_NotificationHub }:{
+    apOrganizationDisplay_NotificationHub: IAPOrganizationDisplay_NofiticationHub;
+  }): Promise<void> {
+    const funcName = 'apiUpdate_ApOrganizationDisplay_NotificationHub';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    if(apOrganizationDisplay_NotificationHub.apNotificationHubConfig === undefined) return;
+
+    let connectorAuth: (BasicAuthentication | APIKeyAuthentication | BearerTokenAuthentication | undefined) = undefined;
+    const apNotificationHubAuthType: EAPNotificationHubAuthType = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth.apAuthType;
+    switch(apNotificationHubAuthType) {
+      case EAPNotificationHubAuthType.BASIC_AUTH:
+        const apNotificationHub_BasicAuth: TAPNotificationHub_BasicAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BasicAuth;
+        const basicAuth: BasicAuthentication = {
+          userName: apNotificationHub_BasicAuth.username,
+          password: apNotificationHub_BasicAuth.password
+        }
+        connectorAuth = basicAuth;
+        break;
+      case EAPNotificationHubAuthType.API_KEY_AUTH:
+        const apNotificationHub_ApiKeyAuth: TAPNotificationHub_ApiKeyAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_ApiKeyAuth;
+        const apiKeyAuth: APIKeyAuthentication = {
+          location: apNotificationHub_ApiKeyAuth.apiKeyLocation,
+          name: apNotificationHub_ApiKeyAuth.apiKeyFieldName,
+          key: apNotificationHub_ApiKeyAuth.apiKeyValue,
+        }
+        connectorAuth = apiKeyAuth;
+        break;
+      case EAPNotificationHubAuthType.BEARER_TOKEN_AUTH:
+        const apNotificationHub_BearerTokenAuth: TAPNotificationHub_BearerTokenAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BearerTokenAuth;
+        const bearerAuth: BearerTokenAuthentication = {
+          token: apNotificationHub_BearerTokenAuth.token,
+        }
+        connectorAuth = bearerAuth;
+        break;
+      case EAPNotificationHubAuthType.UNDEFINED:
+        throw new Error(`${logName}: apNotificationHubAuthType=${apNotificationHubAuthType}`);
+      default:
+        Globals.assertNever(logName, apNotificationHubAuthType);
+    }
+    if(connectorAuth === undefined) throw new Error(`${logName}: connectorAuth === undefined`);
+
+    const connectorOrganizationUpdate: Organization = {
+      name: apOrganizationDisplay_NotificationHub.apEntityId.id,
+      integrations: {
+        importers: undefined,
+        notifications: {
+          baseUrl: apOrganizationDisplay_NotificationHub.apNotificationHubConfig.baseUrl,
+          authentication: connectorAuth
+        }
+      }
+    };
+
+    await this.apiUpdate({ 
+      organizationId: apOrganizationDisplay_NotificationHub.apEntityId.id,
+      connectorOrganization: connectorOrganizationUpdate
     });
   }
 

@@ -202,6 +202,11 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   public async apiDelete_ApSystemOrganizationDisplay({ organizationId }:{
     organizationId: string;
   }): Promise<void> {
+    const funcName = 'apiDelete_ApSystemOrganizationDisplay';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    alert(`${logName}: check if org is deletable first`);
+    return;
 
     await ApsLoginService.logoutOrganizationAll({
       organizationId: organizationId
