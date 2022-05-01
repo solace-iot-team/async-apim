@@ -5,13 +5,13 @@ import { MenuItem } from "primereact/api";
 
 import { TAPEntityId } from "../../../../../utils/APEntityIdsService";
 import { TApiCallState } from "../../../../../utils/ApiCallState";
+import { E_COMPONENT_STATE_ADD_USER } from "../../deleteme_ManageOrganizationsCommon";
 import { TAPSystemUserDisplay } from "../../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
-import { E_COMPONENT_STATE_ADD_USER } from "../../ManageOrganizationsCommon";
+import { ListSystemOrganizationUsersSystemUsers } from "./deleteme.ListSystemOrganizationUsersSystemUsers";
+import { AddSystemOrganizationUserRoles } from "./deleteme.AddSystemOrganizationUserRoles";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
-import { ListSystemOrganizationUsersSystemUsers } from "./ListSystemOrganizationUsersSystemUsers";
-import { AddSystemOrganizationUserRoles } from "./AddSystemOrganizationUserRoles";
 
 export interface IAddSystemOrganizationUserProps {
   organizationEntityId: TAPEntityId;
@@ -135,6 +135,16 @@ export const AddSystemOrganizationUser: React.FC<IAddSystemOrganizationUserProps
           onCancel={onAddUserRolesCancel}
           onLoadingChange={props.onLoadingChange}
         />
+        // <EditSystemOrganizationUserRoles      
+        //   organizationEntityId={props.organizationEntityId}
+        //   userEntityId={organizationUserToAdd.apEntityId}
+        //   onError={onSubComponentError}
+        //   onSaveSuccess={onAddUserSuccess}
+        //   onCancel={props.onCancel}
+        //   onLoadingChange={props.onLoadingChange}
+        //   // setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        //   // setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
+        // />
       }
     </div>
   );

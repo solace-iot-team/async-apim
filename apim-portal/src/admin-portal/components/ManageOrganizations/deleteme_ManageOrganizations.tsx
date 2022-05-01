@@ -18,7 +18,7 @@ import { DeleteOrganization } from "./deleteme_DeleteOrganization";
 import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
 import { MonitorOrganization } from "./deleteme_MonitorOrganization";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
+import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/deleteme.ManageSystemOrganizationUsers";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";

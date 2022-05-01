@@ -7,10 +7,10 @@ import { MenuItem } from "primereact/api";
 
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { TApiCallState } from "../../../../utils/ApiCallState";
-import { E_COMPONENT_STATE_USERS } from "../ManageOrganizationsCommon";
-import { ListSystemOrganizationUsers } from "./ListSystemOrganizationUsers";
-import { AddSystemOrganizationUser } from "./AddSystemOrganizationUser/AddSystemOrganizationUser";
-import { EditSystemOrganizationUserRoles } from "./EditSystemOrganizationUserRoles";
+import { E_COMPONENT_STATE_USERS } from "../deleteme_ManageOrganizationsCommon";
+import { ListSystemOrganizationUsers } from "./deleteme.ListSystemOrganizationUsers";
+import { EditSystemOrganizationUserRoles } from "./deleteme.EditSystemOrganizationUserRoles";
+import { AddSystemOrganizationUser } from "./AddSystemOrganizationUser/deleteme.AddSystemOrganizationUser";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -24,7 +24,7 @@ export interface IManageSystemOrganizationUsersProps {
 }
 
 export const ManageSystemOrganizationUsers: React.FC<IManageSystemOrganizationUsersProps> = (props: IManageSystemOrganizationUsersProps) => {
-  const ComponentName = 'ManageSystemOrganizationUsers';
+  // const ComponentName = 'ManageSystemOrganizationUsers';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE_USERS,
@@ -178,13 +178,12 @@ export const ManageSystemOrganizationUsers: React.FC<IManageSystemOrganizationUs
 
       {showListComponent && 
         <ListSystemOrganizationUsers        
-          key={`${ComponentName}_ListSystemOrganizationUsers_${refreshCounter}`}
+          key={refreshCounter}
           organizationEntityId={props.organizationEntityId}
           onError={onSubComponentError}
           onSuccess={onListManagedObjectsSuccess}
           onLoadingChange={props.onLoadingChange}
           onManagedObjectEdit={onEditRoles}
-          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
       }
       { showAddComponent && 

@@ -30,12 +30,13 @@ import { ViewOrganization } from "./ViewOrganization";
 import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";
 import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { ListImportableSystemOrganizations } from "./ImportOrganizations/ListImportableSystemOrganizations";
-
-import '../../../components/APComponents.css';
-import "./ManageOrganizations.css";
 import { ManageNewOrganization } from "./EditNewOrganization/ManageNewOrganization";
 import { DeleteOrganization } from "./DeleteOrganization";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
+
+import '../../../components/APComponents.css';
+import "./ManageOrganizations.css";
 
 export interface IManageOrganizationsProps {
   scope: TManageOrganizationsScope;
@@ -556,15 +557,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         // />      
       }
       {showManageOrganizationUsersComponent && managedObjectEntityId &&
-      <p>showManageOrganizationUsersComponent</p>
-        // <ManageSystemOrganizationUsers
-        //   organizationEntityId={{ id: managedObjectId, displayName: managedObjectDisplayName }}
-        //   onError={onSubComponentError} 
-        //   onLoadingChange={setIsLoading}
-        //   onSuccess={onSubComponentSuccessKeepState}
-        //   setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
-        //   // onNavigateHere={onSetManageUsersComponentState}
-        // />
+        <ManageSystemOrganizationUsers
+          organizationEntityId={managedObjectEntityId}
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading}
+          onSuccess={props.onSuccess}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
+          // onNavigateHere={onSetManageUsersComponentState}
+        />
       }
       {showManageImportOrganizationsComponent && 
         <ListImportableSystemOrganizations

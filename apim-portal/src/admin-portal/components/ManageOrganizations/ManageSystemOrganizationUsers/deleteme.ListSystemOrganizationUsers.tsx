@@ -5,19 +5,17 @@ import { DataTable, DataTableSortOrderType } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Divider } from "primereact/divider";
-import { MenuItem } from "primereact/api";
 
 import APEntityIdsService, { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APSystemUsersDisplayService, { TAPSystemUserDisplay, TAPSystemUserDisplayListResponse } from "../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { TAPUserDisplayLazyLoadingTableParameters } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
+import { E_CALL_STATE_ACTIONS_USERS } from "../deleteme_ManageOrganizationsCommon";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { Globals } from "../../../../utils/Globals";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import APMemberOfService, { TAPMemberOfOrganizationDisplay } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
-import { E_CALL_STATE_ACTIONS_USERS } from "../ManageOrganizationsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -28,12 +26,13 @@ export interface IListSystemOrganizationUsersProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectEdit: (managedObjectEntityId: TAPEntityId) => void;
+
   // onUserSelect: (userEntityId: TAPEntityId) => void;
-  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ListSystemOrganizationUsers: React.FC<IListSystemOrganizationUsersProps> = (props: IListSystemOrganizationUsersProps) => {
-  const ComponentName = 'ListSystemOrganizationUsers';
+  const componentName = 'ListSystemOrganizationUsers';
 
   type TManagedObject = TAPSystemUserDisplay;
   type TManagedObjectList = Array<TManagedObject>;
@@ -69,7 +68,7 @@ export const ListSystemOrganizationUsers: React.FC<IListSystemOrganizationUsersP
     searchWordList?: string;
   }): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectListPage';
-    const logName = `${ComponentName}.${funcName}()`;
+    const logName = `${componentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS_USERS.API_GET_USER_LIST, 'retrieve list of users');
     try {
       // TEST Error
@@ -113,7 +112,10 @@ export const ListSystemOrganizationUsers: React.FC<IListSystemOrganizationUsersP
   }
 
   React.useEffect(() => {
-    props.setBreadCrumbItemList([]);
+    // const funcName = 'useEffect([])';
+    // const logName = `${componentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
+    // props.setBreadCrumbItemList([]);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
 
@@ -274,14 +276,13 @@ export const ListSystemOrganizationUsers: React.FC<IListSystemOrganizationUsersP
       {(managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== '')) && 
         renderManagedObjectDataTable()
       }
-
-      { managedObjectList.length === 0 &&
-        <React.Fragment>
-          <Divider />
-          {MessageNoManagedObjectsFoundCreateNew}
-          <Divider />
-        </React.Fragment>
-      }
+      
+      {/* DEBUG */}
+      {/* {managedObjectList.length > 0 && selectedManagedObject && 
+        <pre style={ { fontSize: '12px' }} >
+          {JSON.stringify(selectedManagedObject, null, 2)}
+        </pre>
+      } */}
 
     </div>
   );
