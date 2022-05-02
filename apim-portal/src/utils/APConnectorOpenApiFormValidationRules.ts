@@ -48,6 +48,12 @@ export class APConnectorFormValidationRules {
     }
   }
 
+  public static isRequired = (msg: string, isActive: boolean): any => {
+    const rules: any = {};
+    rules['required'] = (isActive ? msg : false);
+    return rules;
+  }
+
   public static Organization_Token = (isRequired: boolean, requiredMessage: string, isActive: boolean): any => {
     // this is fragile, but let's use it for now
     const api_schema = $Organization.properties['cloud-token'].contains[0];
@@ -66,6 +72,16 @@ export class APConnectorFormValidationRules {
     rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
     rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined);
     rules['pattern'] = (isActive ? APConnectorFormValidationRules.getPatternRule(api_schema, 'Invalid Url format') : undefined);
+    return rules;
+  }
+
+  public static Organization_ApiKeyName = (isActive: boolean): any => {
+    const api_schema = $SempV2Authentication.properties.apiKeyName;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter Api Key Name.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid Api Key Name format') : undefined);
     return rules;
   }
 

@@ -10,7 +10,8 @@ import {
   APOrganizationsDisplayService, 
   IAPOrganizationDisplay, 
   IAPOrganizationDisplay_Connectivity, 
-  IAPOrganizationDisplay_General 
+  IAPOrganizationDisplay_General, 
+  IAPOrganizationDisplay_Integration
 } from "./APOrganizationsDisplayService";
 
 export interface IAPSystemOrganizationDisplay extends IAPOrganizationDisplay, IAPSearchContent {
@@ -21,6 +22,8 @@ export type TAPSystemOrganizationDisplayList = Array<IAPSystemOrganizationDispla
 export interface IAPSystemOrganizationDisplay_General extends IAPOrganizationDisplay_General {};
 
 export interface IAPSystemOrganizationDisplay_Connectivity extends IAPOrganizationDisplay_Connectivity {};
+
+export interface IAPSystemOrganizationDisplay_Integration extends IAPOrganizationDisplay_Integration {};
 
 class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService {
   private readonly ComponentName = "APSystemOrganizationsDisplayService";
@@ -70,7 +73,13 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
 
     const connectorOrganizationCreate: Organization = {
       name: apSystemOrganizationDisplay.apEntityId.id,
-      // add others once connectivity is sorted
+      "cloud-token": this.create_ConnectorCloudToken({
+        apCloudConnectivityConfig: apSystemOrganizationDisplay.apCloudConnectivityConfig,
+        apEventPortalConnectivityConfig: apSystemOrganizationDisplay.apEventPortalConnectivityConfig
+      }),
+      sempV2Authentication: this.create_ConnectorSempv2Authentication({
+        apOrganizationSempv2AuthConfig: apSystemOrganizationDisplay.apOrganizationSempv2AuthConfig
+      }),
     };
 
     return connectorOrganizationCreate;

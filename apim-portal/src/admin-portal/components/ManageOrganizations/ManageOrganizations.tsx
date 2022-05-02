@@ -349,6 +349,9 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
+  const onSubComponentError_Notification = (apiCallState: TApiCallState) => {
+    props.onError(apiCallState);
+  }
   const onSubComponentCancel = () => {
     setPreviousComponentState();
   }
@@ -491,7 +494,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
         <ListSystemOrganizations
           key={`${ComponentName}_ListSystemOrganizations_${refreshCounter}`}
           onSuccess={() => {}}
-          onError={onSubComponentError} 
+          onError={onSubComponentError_Notification} 
           onLoadingChange={setIsLoading} 
           onManagedObjectView={onViewManagedObject}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
@@ -520,7 +523,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       }
       { showNewComponent &&
         <ManageNewOrganization
-          onError={onSubComponentError}
+          onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}

@@ -5,7 +5,8 @@ import {
   APOrganizationsDisplayService, 
   IAPOrganizationDisplay, 
   IAPOrganizationDisplay_Connectivity, 
-  IAPOrganizationDisplay_General 
+  IAPOrganizationDisplay_General, 
+  IAPOrganizationDisplay_Integration
 } from "./APOrganizationsDisplayService";
 
 
@@ -15,6 +16,7 @@ export interface IAPSingleOrganizationDisplay extends IAPOrganizationDisplay, IA
 
 export interface IAPSingleOrganizationDisplay_General extends IAPOrganizationDisplay_General {};
 export interface IAPSingleOrganizationDisplay_Connectivity extends IAPOrganizationDisplay_Connectivity {};
+export interface IAPSingleOrganizationDisplay_Integration extends IAPOrganizationDisplay_Integration {};
 
 class APSingleOrganizationDisplayService extends APOrganizationsDisplayService {
   private readonly ComponentName = "APSingleOrganizationDisplayService";

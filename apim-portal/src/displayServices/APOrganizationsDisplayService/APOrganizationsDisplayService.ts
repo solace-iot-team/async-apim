@@ -5,6 +5,7 @@ import {
   BasicAuthentication,
   BearerTokenAuthentication,
   CloudToken, 
+  CustomCloudEndpoint, 
   Organization, 
   OrganizationResponse, 
   OrganizationStatus, 
@@ -22,28 +23,45 @@ import APEntityIdsService, {
 } from '../../utils/APEntityIdsService';
 import { Globals } from '../../utils/Globals';
 
-export enum EAPCloudConnectivityConfigType {
+export enum EAPOrganizationConnectivityConfigType {
   SIMPLE = 'Simple',
   ADVANCED = 'Advanced'
 }
-export type TAPCloudConnectivityConfigSimple = {
-  configType: EAPCloudConnectivityConfigType.SIMPLE;
-  cloudToken: string;
+
+export enum EAPEventPortalConnectivityConfigType {
+  UNDEFINED = "undefined",
+  CUSTOM = 'Custom',
 }
-export type TAPEventPortalConfig = {
+export type TAPEventPortalConnectivityConfigUndefined = {
+  configType: EAPEventPortalConnectivityConfigType.UNDEFINED;
   baseUrl: string;
-  cloudToken: string;
 }
-export type TAPSolaceCloudConfig = {
+export type TAPEventPortalConnectivityConfigCustom = {
+  configType: EAPEventPortalConnectivityConfigType.CUSTOM;
   baseUrl: string;
-  cloudToken: string;
+  token: string;
 }
-export type TAPCloudConnectivityConfigAdvanced = {
-  configType: EAPCloudConnectivityConfigType.ADVANCED;
-  apEventPortalConfig: TAPEventPortalConfig;
-  apSolaceCloudConfig: TAPSolaceCloudConfig;
+export type TAPEventPortalConnectivityConfig = TAPEventPortalConnectivityConfigCustom | TAPEventPortalConnectivityConfigUndefined;
+
+export enum EAPCloudConnectivityConfigType {
+  UNDEFINED = "undefined",
+  SOLACE_CLOUD = 'Solace Cloud',
+  CUSTOM = 'Custom'
 }
-export type TAPCloudConnectivityConfig = TAPCloudConnectivityConfigSimple | TAPCloudConnectivityConfigAdvanced;
+export type TAPCloudConnectivityConfigUndefined = {
+  configType: EAPCloudConnectivityConfigType.UNDEFINED;
+  baseUrl: string;
+}
+export type TAPCloudConnectivityConfigCustom = {
+  configType: EAPCloudConnectivityConfigType.CUSTOM;
+  baseUrl: string;
+  token: string;
+}
+export type TAPCloudConnectivityConfigSolaceCloud = {
+  configType: EAPCloudConnectivityConfigType.SOLACE_CLOUD;
+  token: string;
+}
+export type TAPCloudConnectivityConfig = TAPCloudConnectivityConfigSolaceCloud | TAPCloudConnectivityConfigCustom | TAPCloudConnectivityConfigUndefined;
 
 export enum EAPOrganizationOperationalStatus {
   UNDEFINED = "not available",
@@ -55,18 +73,24 @@ export type TAPOrganizationOperationalStatus = {
   eventPortalConnectivity: EAPOrganizationOperationalStatus;
 }
 export enum EAPOrganizationSempv2AuthType {
+  // UNDEFINED = "undefined",
   BASIC_AUTH = 'Basic Auth',
   API_KEY = 'API Key'
 }
-export type TAPOrganizationSempv2_BasicAuth = {
+// export type TAPOrganizationSempv2AuthConfig_Undefined = {
+//   apAuthType: EAPOrganizationSempv2AuthType.UNDEFINED;
+// }
+export type TAPOrganizationSempv2AuthConfig_BasicAuth = {
   apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH;
+  // username: string;
+  // password: string;
 }
-export type TAPOrganizationSempv2_ApiKeyAuth = {
+export type TAPOrganizationSempv2AuthConfig_ApiKeyAuth = {
   apAuthType: EAPOrganizationSempv2AuthType.API_KEY;
   apiKeyLocation: SempV2Authentication.apiKeyLocation;
   apiKeyName: string;
 }
-export type TAPOrganizationSempv2Auth = TAPOrganizationSempv2_ApiKeyAuth | TAPOrganizationSempv2_BasicAuth;
+export type TAPOrganizationSempv2AuthConfig = TAPOrganizationSempv2AuthConfig_ApiKeyAuth | TAPOrganizationSempv2AuthConfig_BasicAuth;
 
 export enum EAPNotificationHubAuthType {
   UNDEFINED = "UNDEFINED",
@@ -111,9 +135,14 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   apNumApis2ApiProductRatio: number; /** -1 = infinity, min = 1 (0 not allowed) */
   apAppCredentialsExpiryDuration: number;
   // add more settings over time from APS
+  
+  apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
   apCloudConnectivityConfig: TAPCloudConnectivityConfig;
-  apOrganizationSempv2Auth: TAPOrganizationSempv2Auth;
+  apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig;
+
+  apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig;
   apOrganizationOperationalStatus: TAPOrganizationOperationalStatus;
+
   apNotificationHubConfig?: TAPNotificationHubConfig;
   // TODO: OrganizationIntegrations
 }
@@ -123,21 +152,22 @@ export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
   apAppCredentialsExpiryDuration: number;
 }
 export interface IAPOrganizationDisplay_Connectivity extends IAPEntityIdDisplay {
-  // add members here when done
+  apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
+  apCloudConnectivityConfig: TAPCloudConnectivityConfig;
+  apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig;
+  apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig;
 }
-export interface IAPOrganizationDisplay_NofiticationHub extends IAPEntityIdDisplay {
+export interface IAPOrganizationDisplay_Integration extends IAPEntityIdDisplay {
   apNotificationHubConfig?: TAPNotificationHubConfig;
 }
-// export type TAPAppDisplay_AllowedActions = {
-//   isMonitorStatsAllowed: boolean;
-// }
 
 export class APOrganizationsDisplayService {
   private readonly BaseComponentName = "APOrganizationsDisplayService";
   private readonly DefaultNumApis2ApiProductRatio: number = -1; /** any number of Apis */
   private readonly DefaultAppCredentialsExpiryDuration: number = (6 * 30 * 24 * 3600 * 1000); /** 6 months in milliseconds */
   private readonly SecretMask = '***';
-  public readonly APOrganizationDisplay_EmptyString = "_APOrganizationDisplay_EmptyString_";
+  private readonly DefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0'; 
+  private readonly DefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal'; 
 
   public nameOf<T extends IAPOrganizationDisplay>(name: keyof T): string {
     return `${name}`;
@@ -145,6 +175,8 @@ export class APOrganizationsDisplayService {
   public nameOf_ApEntityId(name: keyof TAPEntityId): string {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
+
+  public get_SecretMask(): string { return this.SecretMask; }
 
   private maskOrganizationSecrets({ organizationObject }:{
     organizationObject: any;
@@ -188,19 +220,48 @@ export class APOrganizationsDisplayService {
     return apNotificationHubConfig;
   }
 
+  private create_Emtpy_ApCloudConnectivityConfig(): TAPCloudConnectivityConfigUndefined {
+    return {
+      configType: EAPCloudConnectivityConfigType.UNDEFINED,
+      baseUrl: this.DefaultSolaceCloudBaseUrlStr,
+    };
+  }
+  private create_Emtpy_ApEventPortalConnectivityConfig(): TAPEventPortalConnectivityConfigUndefined {
+    return {
+      configType: EAPEventPortalConnectivityConfigType.UNDEFINED,
+      baseUrl: this.DefaultEventPortalBaseUrlStr,
+    };
+  }
+  private create_Emtpy_ApOrganizationSempv2AuthConfig(): TAPOrganizationSempv2AuthConfig {
+    return {
+      apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH,
+    };
+  }
+  public create_Empty_ApOrganizationDisplay_Connectivity({ organizationEntityId }:{
+    organizationEntityId: TAPEntityId;
+  }): IAPOrganizationDisplay_Connectivity {
+    const apConnectivity: IAPOrganizationDisplay_Connectivity = {
+      apEntityId: organizationEntityId,
+      apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
+      apCloudConnectivityConfig: this.create_Emtpy_ApCloudConnectivityConfig(),
+      apEventPortalConnectivityConfig: this.create_Emtpy_ApEventPortalConnectivityConfig(),
+      apOrganizationSempv2AuthConfig: this.create_Emtpy_ApOrganizationSempv2AuthConfig()
+    };
+    return apConnectivity;
+  }
+
   protected create_Empty_ApOrganizationDisplay(): IAPOrganizationDisplay {
     const apOrganizationDisplay: IAPOrganizationDisplay = {
       connectorOrganizationResponse: this.create_Empty_ConnectorOrganizationResponse(),
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       apNumApis2ApiProductRatio: this.DefaultNumApis2ApiProductRatio,
       apAppCredentialsExpiryDuration: this.DefaultAppCredentialsExpiryDuration,
-      apCloudConnectivityConfig: {
-        configType: EAPCloudConnectivityConfigType.SIMPLE,
-        cloudToken: this.APOrganizationDisplay_EmptyString
-      },
-      apOrganizationSempv2Auth: {
-        apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH
-      },
+
+      apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
+      apCloudConnectivityConfig: this.create_Emtpy_ApCloudConnectivityConfig(),
+      apEventPortalConnectivityConfig: this.create_Emtpy_ApEventPortalConnectivityConfig(),
+      apOrganizationSempv2AuthConfig: this.create_Emtpy_ApOrganizationSempv2AuthConfig(),
+
       apOrganizationOperationalStatus: {
         cloudConnectivity: EAPOrganizationOperationalStatus.UNDEFINED,
         eventPortalConnectivity: EAPOrganizationOperationalStatus.UNDEFINED
@@ -215,8 +276,8 @@ export class APOrganizationsDisplayService {
     apOrganizationDisplay: IAPOrganizationDisplay;
   }): IAPOrganizationDisplay {
     apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
-    if(apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.SIMPLE) {
-      if(apOrganizationDisplay.apCloudConnectivityConfig.cloudToken === this.APOrganizationDisplay_EmptyString) apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
+    if(apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) {
+      apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;      
     }
     return apOrganizationDisplay;
   }
@@ -227,33 +288,56 @@ export class APOrganizationsDisplayService {
     const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
     if(connectorCloudToken === undefined) {
-      const apCloudConnectivityConfigSimple: TAPCloudConnectivityConfigSimple = {
-        configType: EAPCloudConnectivityConfigType.SIMPLE,
-        cloudToken: this.APOrganizationDisplay_EmptyString
-      };
-      return apCloudConnectivityConfigSimple;
+      return this.create_Emtpy_ApCloudConnectivityConfig();
     }
     if(typeof connectorCloudToken === 'string') {
-      const apCloudConnectivityConfigSimple: TAPCloudConnectivityConfigSimple = {
-        configType: EAPCloudConnectivityConfigType.SIMPLE,
-        cloudToken: connectorCloudToken,
+      const apCloudConnectivityConfigSolaceCloud: TAPCloudConnectivityConfigSolaceCloud = {
+        configType: EAPCloudConnectivityConfigType.SOLACE_CLOUD,
+        token: connectorCloudToken,
       };
-      return apCloudConnectivityConfigSimple;
+      return apCloudConnectivityConfigSolaceCloud;
     } else {
-      if(connectorCloudToken.eventPortal.token === undefined) throw new Error(`${logName}: connectorCloudToken.eventPortal.token === undefined`);
-      if(connectorCloudToken.cloud.token === undefined) throw new Error(`${logName}: connectorCloudToken.cloud.token === undefined`);
-      const apCloudConnectivityConfigAdvanced: TAPCloudConnectivityConfigAdvanced = {
-        configType: EAPCloudConnectivityConfigType.ADVANCED,
-        apEventPortalConfig: {
-          baseUrl: connectorCloudToken.eventPortal.baseUrl,
-          cloudToken: connectorCloudToken.eventPortal.token,
-        },
-        apSolaceCloudConfig: {
+      // it is a CustomCloudEndpoint
+      if(connectorCloudToken.cloud.token === undefined) {
+        return this.create_Emtpy_ApCloudConnectivityConfig();
+      } else {
+        const apCloudConnectivityConfigCustom: TAPCloudConnectivityConfigCustom = {
+          configType: EAPCloudConnectivityConfigType.CUSTOM,
           baseUrl: connectorCloudToken.cloud.baseUrl,
-          cloudToken: connectorCloudToken.cloud.token
-        }
+          token: connectorCloudToken.cloud.token
+        };
+        return apCloudConnectivityConfigCustom;  
+      }
+    }
+  }
+
+  private create_ApEventPortalConnectivityConfig_From_ApiEntities({ connectorCloudToken }:{
+    connectorCloudToken: string | CloudToken | undefined;
+  }): TAPEventPortalConnectivityConfig {
+    const funcName = 'create_ApEventPortalConnectivityConfig_From_ApiEntities';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    if(connectorCloudToken === undefined) {
+      return this.create_Emtpy_ApEventPortalConnectivityConfig();
+    }
+    if(typeof connectorCloudToken === 'string') {
+      // shared with solace cloud
+      const apConfig: TAPEventPortalConnectivityConfigUndefined = {
+        configType: EAPEventPortalConnectivityConfigType.UNDEFINED,
+        baseUrl: this.DefaultEventPortalBaseUrlStr
       };
-      return apCloudConnectivityConfigAdvanced;
+      return apConfig;
+    } else {
+      // it is a CustomCloudEndpoint
+      if(connectorCloudToken.eventPortal.token === undefined) {
+        return this.create_Emtpy_ApEventPortalConnectivityConfig();
+      } else {
+        const apConfig: TAPEventPortalConnectivityConfigCustom = {
+          configType: EAPEventPortalConnectivityConfigType.CUSTOM,
+          baseUrl: connectorCloudToken.eventPortal.baseUrl,
+          token: connectorCloudToken.eventPortal.token
+        }
+        return apConfig;
+      }
     }
   }
 
@@ -275,34 +359,34 @@ export class APOrganizationsDisplayService {
     return apOrganizationOperationalStatus;
   }
 
-  private create_ApOrganizationSempv2Auth_From_ApiEntities({ connectorSempV2Authentication }:{
+  private create_ApOrganizationSempv2AuthConfig_From_ApiEntities({ connectorSempV2Authentication }:{
     connectorSempV2Authentication?: SempV2Authentication;
-  }): TAPOrganizationSempv2Auth {
-    const funcName = 'create_ApOrganizationSempv2Auth_From_ApiEntities';
+  }): TAPOrganizationSempv2AuthConfig {
+    const funcName = 'create_ApOrganizationSempv2AuthConfig_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    const apOrganizationSempv2_BasicAuth: TAPOrganizationSempv2_BasicAuth = {
+    const apOrganizationSempv2AuthConfig_BasicAuth: TAPOrganizationSempv2AuthConfig_BasicAuth = {
       apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH
     }
     
-    if(connectorSempV2Authentication === undefined) return apOrganizationSempv2_BasicAuth;
+    if(connectorSempV2Authentication === undefined) return apOrganizationSempv2AuthConfig_BasicAuth;
 
     switch(connectorSempV2Authentication.authType) {
       case SempV2Authentication.authType.BASIC_AUTH:
-        return apOrganizationSempv2_BasicAuth;
+        return apOrganizationSempv2AuthConfig_BasicAuth;
       case SempV2Authentication.authType.APIKEY:
         if(connectorSempV2Authentication.apiKeyName === undefined) throw new Error(`${logName}: connectorSempV2Authentication.apiKeyName === undefined`);
-        const apOrganizationSempv2_ApiKeyAuth: TAPOrganizationSempv2_ApiKeyAuth = {
+        const apOrganizationSempv2AuthConfig_ApiKeyAuth: TAPOrganizationSempv2AuthConfig_ApiKeyAuth = {
           apAuthType: EAPOrganizationSempv2AuthType.API_KEY,
           apiKeyLocation: connectorSempV2Authentication.apiKeyLocation,
           apiKeyName: connectorSempV2Authentication.apiKeyName
         };
-        return apOrganizationSempv2_ApiKeyAuth;
+        return apOrganizationSempv2AuthConfig_ApiKeyAuth;
       default:
         Globals.assertNever(logName, connectorSempV2Authentication.authType);
     }
     // should never get here
-    return apOrganizationSempv2_BasicAuth
+    return apOrganizationSempv2AuthConfig_BasicAuth;
   }
 
   private create_ApNofiticationHubConfig_From_ApiEntities({ connectorOrganizationResponse }:{
@@ -356,6 +440,13 @@ export class APOrganizationsDisplayService {
     return apNotificationHubConfig;
   }
 
+  private calculate_ApConnectivityConfigType({ apCloudConnectivityConfig }:{
+    apCloudConnectivityConfig: TAPCloudConnectivityConfig;
+  }): EAPOrganizationConnectivityConfigType {
+    if(apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.CUSTOM) return EAPOrganizationConnectivityConfigType.ADVANCED;
+    return EAPOrganizationConnectivityConfigType.SIMPLE;
+  }
+
   protected create_ApOrganizationDisplay_From_ApiEntities({ apsOrganization, connectorOrganizationResponse }: {
     connectorOrganizationResponse: OrganizationResponse;
     apsOrganization: APSOrganization;
@@ -367,12 +458,20 @@ export class APOrganizationsDisplayService {
       // TODO: from apsOrganization
       apNumApis2ApiProductRatio: this.DefaultNumApis2ApiProductRatio,
       apAppCredentialsExpiryDuration: this.DefaultAppCredentialsExpiryDuration,
+
+      apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
       apCloudConnectivityConfig: this.create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken: connectorOrganizationResponse['cloud-token']}),
-      apOrganizationSempv2Auth: this.create_ApOrganizationSempv2Auth_From_ApiEntities({ connectorSempV2Authentication: connectorOrganizationResponse.sempV2Authentication }),
+      apEventPortalConnectivityConfig: this.create_ApEventPortalConnectivityConfig_From_ApiEntities( { connectorCloudToken: connectorOrganizationResponse['cloud-token']}),
+      apOrganizationSempv2AuthConfig: this.create_ApOrganizationSempv2AuthConfig_From_ApiEntities({ connectorSempV2Authentication: connectorOrganizationResponse.sempV2Authentication }),
+      
       apOrganizationOperationalStatus: this.create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus: connectorOrganizationResponse.status}),
       apNotificationHubConfig: this.create_ApNofiticationHubConfig_From_ApiEntities({ connectorOrganizationResponse: connectorOrganizationResponse }),
       apOrganizationConfigStatus: EAPOrganizationConfigStatus.UNDEFINED,
     };
+    // set the connectivity config type now
+    apOrganizationDisplay.apOrganizationConnectivityConfigType = this.calculate_ApConnectivityConfigType({
+      apCloudConnectivityConfig: apOrganizationDisplay.apCloudConnectivityConfig
+    });
     return this.set_ApOrganizationConfigStatus({
       apOrganizationDisplay: apOrganizationDisplay
     });
@@ -426,20 +525,17 @@ export class APOrganizationsDisplayService {
     apOrganizationDisplay.apNumApis2ApiProductRatio = apOrganizationDisplay_General.apNumApis2ApiProductRatio;
     return apOrganizationDisplay;
   }
-
+  
   public get_ApOrganizationDisplay_Connectivity<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
     apOrganizationDisplay: T;
   }): IAPOrganizationDisplay_Connectivity {
     return {
       apEntityId: apOrganizationDisplay.apEntityId,
-      // more here
+      apOrganizationConnectivityConfigType: this.calculate_ApConnectivityConfigType({ apCloudConnectivityConfig: apOrganizationDisplay.apCloudConnectivityConfig }),
+      apCloudConnectivityConfig: apOrganizationDisplay.apCloudConnectivityConfig,
+      apEventPortalConnectivityConfig: apOrganizationDisplay.apEventPortalConnectivityConfig,
+      apOrganizationSempv2AuthConfig: apOrganizationDisplay.apOrganizationSempv2AuthConfig
     };
-  }
-
-  public has_EventPortalConnectivity<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
-    apOrganizationDisplay: T;
-  }): boolean {
-    return (apOrganizationDisplay.apOrganizationOperationalStatus.eventPortalConnectivity === EAPOrganizationOperationalStatus.UP);
   }
 
   public set_ApOrganizationDisplay_Connectivity<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_Connectivity>({ 
@@ -449,27 +545,37 @@ export class APOrganizationsDisplayService {
     apOrganizationDisplay: T;
     apOrganizationDisplay_Connectivity: K;
   }): T {
-    // set properties
+    apOrganizationDisplay.apOrganizationConnectivityConfigType = apOrganizationDisplay_Connectivity.apOrganizationConnectivityConfigType;
+    apOrganizationDisplay.apCloudConnectivityConfig = apOrganizationDisplay_Connectivity.apCloudConnectivityConfig;
+    apOrganizationDisplay.apEventPortalConnectivityConfig = apOrganizationDisplay_Connectivity.apEventPortalConnectivityConfig;
+    apOrganizationDisplay.apOrganizationSempv2AuthConfig = apOrganizationDisplay_Connectivity.apOrganizationSempv2AuthConfig;
     return apOrganizationDisplay;
   }
 
-  public get_ApOrganizationDisplay_NotificationHub<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+  public has_EventPortalConnectivity<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
     apOrganizationDisplay: T;
-  }): IAPOrganizationDisplay_NofiticationHub {
+  }): boolean {
+    return (apOrganizationDisplay.apOrganizationOperationalStatus.eventPortalConnectivity === EAPOrganizationOperationalStatus.UP);
+  }
+
+
+  public get_ApOrganizationDisplay_Integration<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+    apOrganizationDisplay: T;
+  }): IAPOrganizationDisplay_Integration {
     return {
       apEntityId: apOrganizationDisplay.apEntityId,
       apNotificationHubConfig: apOrganizationDisplay.apNotificationHubConfig
     };
   }
 
-  public set_ApOrganizationDisplay_NotificationHub<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_NofiticationHub>({ 
+  public set_ApOrganizationDisplay_Integration<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_Integration>({ 
     apOrganizationDisplay,
-    apOrganizationDisplay_NotificationHub
+    apOrganizationDisplay_Integration
   }:{
     apOrganizationDisplay: T;
-    apOrganizationDisplay_NotificationHub: K;
+    apOrganizationDisplay_Integration: K;
   }): T {
-    apOrganizationDisplay.apNotificationHubConfig = apOrganizationDisplay_NotificationHub.apNotificationHubConfig;
+    apOrganizationDisplay.apNotificationHubConfig = apOrganizationDisplay_Integration.apNotificationHubConfig;
     return apOrganizationDisplay;
   }
 
@@ -495,10 +601,14 @@ export class APOrganizationsDisplayService {
   protected apiGet_ConnectorOrganizationResponse = async({ organizationId }:{
     organizationId: string;
   }): Promise<OrganizationResponse> => {
-    const organizationResponse: OrganizationResponse = await AdministrationService.getOrganization({
-      organizationName: organizationId
-    });
-    return this.maskOrganizationSecrets({ organizationObject: organizationResponse });
+    try {
+      const organizationResponse: OrganizationResponse = await AdministrationService.getOrganization({
+        organizationName: organizationId
+      }); 
+      return this.maskOrganizationSecrets({ organizationObject: organizationResponse });
+    } catch(e: any) {
+      return this.create_Empty_ConnectorOrganizationResponse();      
+    }
   }
 
   public apiGet_ApOrganizationDisplay = async({ organizationId }:{
@@ -513,7 +623,7 @@ export class APOrganizationsDisplayService {
     const apsOrganization: APSOrganization = await ApsAdministrationService.getApsOrganization({
       organizationId: organizationId
     });
-    // get the connector organzations
+    // get the connector organzation
     const connectorOrganizationResponse: OrganizationResponse = await this.apiGet_ConnectorOrganizationResponse({ organizationId: organizationId });
 
     const apOrganizationDisplay: IAPOrganizationDisplay = this.create_ApOrganizationDisplay_From_ApiEntities({
@@ -544,10 +654,17 @@ export class APOrganizationsDisplayService {
     }
 
     if(connectorOrganization !== undefined) {
-      await AdministrationService.updateOrganization({
-        organizationName: organizationId, 
-        requestBody: connectorOrganization
-      });  
+      try {      
+        await AdministrationService.updateOrganization({
+          organizationName: organizationId, 
+          requestBody: connectorOrganization
+        });  
+      } catch(e: any) {
+        // try a create
+        await AdministrationService.createOrganization({
+          requestBody: connectorOrganization
+        });  
+      }
     }
 
   }
@@ -564,19 +681,143 @@ export class APOrganizationsDisplayService {
     });
   }
 
-  public async apiUpdate_ApOrganizationDisplay_NotificationHub({ apOrganizationDisplay_NotificationHub }:{
-    apOrganizationDisplay_NotificationHub: IAPOrganizationDisplay_NofiticationHub;
+  protected create_ConnectorSempv2Authentication({ apOrganizationSempv2AuthConfig }:{
+    apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig;
+  }): SempV2Authentication | undefined {
+    const funcName = 'create_ConnectorSempv2Authentication';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // if(apOrganizationSempv2AuthConfig.apAuthType === EAPOrganizationSempv2AuthType.UNDEFINED) return undefined;
+
+    const apOrganizationSempv2AuthType: EAPOrganizationSempv2AuthType = apOrganizationSempv2AuthConfig.apAuthType;
+    switch(apOrganizationSempv2AuthType) {
+      case EAPOrganizationSempv2AuthType.API_KEY:
+        const apiKeyAuth: TAPOrganizationSempv2AuthConfig_ApiKeyAuth = apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_ApiKeyAuth;
+        return {
+          authType: SempV2Authentication.authType.APIKEY,
+          apiKeyLocation: apiKeyAuth.apiKeyLocation,
+          apiKeyName: apiKeyAuth.apiKeyName
+        };
+      case EAPOrganizationSempv2AuthType.BASIC_AUTH:
+        // const apBasicAuth: TAPOrganizationSempv2AuthConfig_BasicAuth = apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_BasicAuth;
+        return {
+          authType: SempV2Authentication.authType.BASIC_AUTH,
+          // unsure if this makes sense / is ever used by connector for basic auth
+          apiKeyLocation: SempV2Authentication.apiKeyLocation.HEADER,
+          // apiKeyName: 'is this ever used'
+        };
+      default:
+        Globals.assertNever(logName, apOrganizationSempv2AuthType);
+    }
+  }
+
+  protected create_ConnectorCloudToken({ apCloudConnectivityConfig, apEventPortalConnectivityConfig }:{
+    apCloudConnectivityConfig: TAPCloudConnectivityConfig;
+    apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig;
+  }): string | CloudToken | undefined {
+    const funcName = 'create_ConnectorCloudToken';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
+    if(apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) return undefined;
+    
+    let solaceCloudCustomCloudEndpoint: CustomCloudEndpoint | undefined;
+    const apCloudConfigType: EAPCloudConnectivityConfigType = apCloudConnectivityConfig.configType;
+    switch(apCloudConfigType) {
+      case EAPCloudConnectivityConfigType.SOLACE_CLOUD:
+        const apSolaceCloud: TAPCloudConnectivityConfigSolaceCloud = apCloudConnectivityConfig as TAPCloudConnectivityConfigSolaceCloud;
+        return apSolaceCloud.token;
+      case EAPCloudConnectivityConfigType.CUSTOM:
+        const apCustom: TAPCloudConnectivityConfigCustom = apCloudConnectivityConfig as TAPCloudConnectivityConfigCustom;
+        solaceCloudCustomCloudEndpoint = {
+          baseUrl: apCustom.baseUrl,
+          token: apCustom.token
+        };
+        break;
+      default:
+        Globals.assertNever(logName, apCloudConfigType);
+    }
+
+    let eventPortalCustomCloudEndpoint: CustomCloudEndpoint | undefined;
+    const apEPConfigType: EAPEventPortalConnectivityConfigType = apEventPortalConnectivityConfig.configType;
+    switch(apEPConfigType) {
+      case EAPEventPortalConnectivityConfigType.UNDEFINED:
+        const apEPUndefined: TAPEventPortalConnectivityConfigUndefined = apEventPortalConnectivityConfig as TAPEventPortalConnectivityConfigUndefined;
+        eventPortalCustomCloudEndpoint = {
+          baseUrl: apEPUndefined.baseUrl,
+          // should this be set or does it take the same as solace cloud?
+          token: solaceCloudCustomCloudEndpoint ? solaceCloudCustomCloudEndpoint.token : undefined,
+        };
+        break;
+      case EAPEventPortalConnectivityConfigType.CUSTOM:
+        const apEPCustom: TAPEventPortalConnectivityConfigCustom = apEventPortalConnectivityConfig as TAPEventPortalConnectivityConfigCustom;
+        eventPortalCustomCloudEndpoint = {
+          baseUrl: apEPCustom.baseUrl,
+          token: apEPCustom.token
+        };
+        break;
+      default:
+        Globals.assertNever(logName, apEPConfigType);
+    }
+
+    // now returning CloudToken
+    if(solaceCloudCustomCloudEndpoint === undefined) throw new Error(`${logName}: solaceCloudCustomCloudEndpoint === undefined`);
+    if(eventPortalCustomCloudEndpoint === undefined) throw new Error(`${logName}: eventPortalCustomCloudEndpoint === undefined`);
+    const connectorCloudToken: CloudToken = {
+      cloud: solaceCloudCustomCloudEndpoint,
+      eventPortal: eventPortalCustomCloudEndpoint
+    };
+    return connectorCloudToken;
+  }
+
+  protected create_ConnectorOrganizationProperties_For_Connectivity({ apOrganizationDisplay_Connectivity }:{
+    apOrganizationDisplay_Connectivity: IAPOrganizationDisplay_Connectivity;
+  }): Organization {
+
+    const connectorOrganization: Organization = {
+      name: apOrganizationDisplay_Connectivity.apEntityId.id,
+      sempV2Authentication: this.create_ConnectorSempv2Authentication({ apOrganizationSempv2AuthConfig: apOrganizationDisplay_Connectivity.apOrganizationSempv2AuthConfig }),
+      "cloud-token": this.create_ConnectorCloudToken({ 
+        apCloudConnectivityConfig: apOrganizationDisplay_Connectivity.apCloudConnectivityConfig,
+        apEventPortalConnectivityConfig: apOrganizationDisplay_Connectivity.apEventPortalConnectivityConfig
+      })
+    };
+    return connectorOrganization;
+  }
+
+  public async apiUpdate_ApOrganizationDisplay_Connectivity({ apOrganizationDisplay_Connectivity }: {
+    apOrganizationDisplay_Connectivity: IAPOrganizationDisplay_Connectivity;
+  }): Promise<void> {
+
+    const connectorOrganization: Organization = {
+      name: apOrganizationDisplay_Connectivity.apEntityId.id,
+      "cloud-token": this.create_ConnectorCloudToken({
+        apCloudConnectivityConfig: apOrganizationDisplay_Connectivity.apCloudConnectivityConfig,
+        apEventPortalConnectivityConfig: apOrganizationDisplay_Connectivity.apEventPortalConnectivityConfig
+      }),
+      sempV2Authentication: this.create_ConnectorSempv2Authentication({
+        apOrganizationSempv2AuthConfig: apOrganizationDisplay_Connectivity.apOrganizationSempv2AuthConfig
+      }),
+    };
+
+    await this.apiUpdate({ 
+      organizationId: apOrganizationDisplay_Connectivity.apEntityId.id,
+      connectorOrganization: connectorOrganization
+    });
+
+  }
+
+  public async apiUpdate_ApOrganizationDisplay_Integration({ apOrganizationDisplay_Integration }:{
+    apOrganizationDisplay_Integration: IAPOrganizationDisplay_Integration;
   }): Promise<void> {
     const funcName = 'apiUpdate_ApOrganizationDisplay_NotificationHub';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    if(apOrganizationDisplay_NotificationHub.apNotificationHubConfig === undefined) return;
+    if(apOrganizationDisplay_Integration.apNotificationHubConfig === undefined) return;
 
     let connectorAuth: (BasicAuthentication | APIKeyAuthentication | BearerTokenAuthentication | undefined) = undefined;
-    const apNotificationHubAuthType: EAPNotificationHubAuthType = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth.apAuthType;
+    const apNotificationHubAuthType: EAPNotificationHubAuthType = apOrganizationDisplay_Integration.apNotificationHubConfig.apNotificationHubAuth.apAuthType;
     switch(apNotificationHubAuthType) {
       case EAPNotificationHubAuthType.BASIC_AUTH:
-        const apNotificationHub_BasicAuth: TAPNotificationHub_BasicAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BasicAuth;
+        const apNotificationHub_BasicAuth: TAPNotificationHub_BasicAuth = apOrganizationDisplay_Integration.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BasicAuth;
         const basicAuth: BasicAuthentication = {
           userName: apNotificationHub_BasicAuth.username,
           password: apNotificationHub_BasicAuth.password
@@ -584,7 +825,7 @@ export class APOrganizationsDisplayService {
         connectorAuth = basicAuth;
         break;
       case EAPNotificationHubAuthType.API_KEY_AUTH:
-        const apNotificationHub_ApiKeyAuth: TAPNotificationHub_ApiKeyAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_ApiKeyAuth;
+        const apNotificationHub_ApiKeyAuth: TAPNotificationHub_ApiKeyAuth = apOrganizationDisplay_Integration.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_ApiKeyAuth;
         const apiKeyAuth: APIKeyAuthentication = {
           location: apNotificationHub_ApiKeyAuth.apiKeyLocation,
           name: apNotificationHub_ApiKeyAuth.apiKeyFieldName,
@@ -593,7 +834,7 @@ export class APOrganizationsDisplayService {
         connectorAuth = apiKeyAuth;
         break;
       case EAPNotificationHubAuthType.BEARER_TOKEN_AUTH:
-        const apNotificationHub_BearerTokenAuth: TAPNotificationHub_BearerTokenAuth = apOrganizationDisplay_NotificationHub.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BearerTokenAuth;
+        const apNotificationHub_BearerTokenAuth: TAPNotificationHub_BearerTokenAuth = apOrganizationDisplay_Integration.apNotificationHubConfig.apNotificationHubAuth as TAPNotificationHub_BearerTokenAuth;
         const bearerAuth: BearerTokenAuthentication = {
           token: apNotificationHub_BearerTokenAuth.token,
         }
@@ -607,18 +848,18 @@ export class APOrganizationsDisplayService {
     if(connectorAuth === undefined) throw new Error(`${logName}: connectorAuth === undefined`);
 
     const connectorOrganizationUpdate: Organization = {
-      name: apOrganizationDisplay_NotificationHub.apEntityId.id,
+      name: apOrganizationDisplay_Integration.apEntityId.id,
       integrations: {
         importers: undefined,
         notifications: {
-          baseUrl: apOrganizationDisplay_NotificationHub.apNotificationHubConfig.baseUrl,
+          baseUrl: apOrganizationDisplay_Integration.apNotificationHubConfig.baseUrl,
           authentication: connectorAuth
         }
       }
     };
 
     await this.apiUpdate({ 
-      organizationId: apOrganizationDisplay_NotificationHub.apEntityId.id,
+      organizationId: apOrganizationDisplay_Integration.apEntityId.id,
       connectorOrganization: connectorOrganizationUpdate
     });
   }

@@ -9,6 +9,7 @@ import {
   TAPNotificationHub_BearerTokenAuth, 
 } from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 import { Globals } from "../../../../utils/Globals";
+import { DisplaySectionHeader_NotificationHub } from "../ManageOrganizationsCommon";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -71,7 +72,7 @@ export const DisplayIntegration: React.FC<IDisplayIntegrationProps> = (props: ID
 
     return (
       <React.Fragment>
-        <div className="p-mb-2 p-mt-4 ap-display-component-header">Notification Hub:</div>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_NotificationHub}:</div>
         <div className="p-ml-4">
           { apNotificationHubConfig !== undefined && renderDetails(apNotificationHubConfig) }
           { apNotificationHubConfig === undefined && 

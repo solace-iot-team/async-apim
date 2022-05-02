@@ -13,6 +13,8 @@ import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } fro
 import { E_CALL_STATE_ACTIONS, E_ManageOrganizations_Scope, TManageOrganizationsScope } from "../ManageOrganizationsCommon";
 import { Globals } from "../../../../utils/Globals";
 import { EditGeneral } from "./EditGeneral";
+import { EditConnectivity } from "./EditConnectivity";
+import { EditIntegration } from "./EditIntegration";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -175,30 +177,28 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
       tabPanels.push(
         <TabPanel header='Connectivity'>
           <React.Fragment>
-            <p>EditConnectivity</p>
-            {/* <EditConnectivity
-              organizationId={props.organizationId}
-              apAdminPortalApiProductDisplay={managedObject}
+            <EditConnectivity
+              scope={props.scope}
+              apOrganizationDisplay={managedObject}
               onCancel={props.onCancel}
               onError={props.onError}
               onSaveSuccess={onEdit_SaveSuccess}
               onLoadingChange={props.onLoadingChange}
-            /> */}
+            />
           </React.Fragment>
         </TabPanel>
       );
       tabPanels.push(
         <TabPanel header='Integration'>
           <React.Fragment>
-            <p>EditIntegration</p>
-            {/* <EditConnectivity
-              organizationId={props.organizationId}
-              apAdminPortalApiProductDisplay={managedObject}
+            <EditIntegration
+              scope={props.scope}
+              apOrganizationDisplay={managedObject}
               onCancel={props.onCancel}
               onError={props.onError}
               onSaveSuccess={onEdit_SaveSuccess}
               onLoadingChange={props.onLoadingChange}
-            /> */}
+            />
           </React.Fragment>
         </TabPanel>
       );

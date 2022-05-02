@@ -20,6 +20,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
+import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 export interface IListSystemOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -114,8 +115,9 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     );
   }
 
-  const configTypeBodyTemplate = (mo: TManagedObject) => {
-    return 'TDB: simple/advanced'
+  const configStatusBodyTemplate = (row: TManagedObject): JSX.Element => {
+    const configStatusStyle: React.CSSProperties = row.apOrganizationConfigStatus === EAPOrganizationConfigStatus.NOT_OPERATIONAL ? {color: 'red'} : {};
+    return (<span style={configStatusStyle}>{row.apOrganizationConfigStatus}</span>);
   }
   const renderManagedObjectDataTable = () => {
     const idField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('id');
@@ -149,10 +151,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
             dataKey={idField}
           >
             <Column header="Name" field={nameField} filterField={filterField} sortable />
-            <Column header="Type" body={configTypeBodyTemplate} 
-              // TODO: field={} 
-              sortable />
-            <Column header="Config Status" field={configStatusField} sortable />
+            <Column header="Config Status" body={configStatusBodyTemplate} field={configStatusField} sortable />
             {/* <Column header="Id" field={idField} sortable /> */}
         </DataTable>
       </div>
