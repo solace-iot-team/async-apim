@@ -100,15 +100,23 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
         },
       ]);
     } else {
-      props.setBreadCrumbItemList([
-        {
-          label: moDisplayName,
-          command: ManagedEdit_onNavigateToCommand
-        },
-        {
-          label: 'Edit'
-        }  
-      ]);
+      if(props.scope.type === E_ManageOrganizations_Scope.ORG_SETTINGS) {
+        props.setBreadCrumbItemList([
+          {
+            label: 'Edit'
+          }
+        ]);
+      } else {  
+        props.setBreadCrumbItemList([
+          {
+            label: moDisplayName,
+            command: ManagedEdit_onNavigateToCommand
+          },
+          {
+            label: 'Edit'
+          }  
+        ]);
+      }
     }
   }
 

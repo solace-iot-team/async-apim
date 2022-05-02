@@ -91,11 +91,11 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
-  
-  deleteme_ManageOrganizationSettings = '/admin-portal/manage/organization/deleteme_settings',
-  
-  deleteme_MonitorOrganizationStatus = '/admin-portal/monitor/organization/deleteme_status',
+  ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
+  
+  deleteme_ManageOrganizationSettings = '/admin-portal/manage/organization/deleteme_settings',  
+  deleteme_MonitorOrganizationStatus = '/admin-portal/monitor/organization/deleteme_status',
 
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',

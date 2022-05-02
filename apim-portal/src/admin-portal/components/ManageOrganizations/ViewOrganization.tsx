@@ -74,12 +74,16 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   }
 
   const setBreadCrumbItemList = (moDisplayName: string) => {
-    props.setBreadCrumbItemList([
-      {
-        label: moDisplayName,
-        command: ViewOrganization_onNavigateHereCommand
-      }
-    ]);
+    if(props.scope.type === E_ManageOrganizations_Scope.ORG_SETTINGS) {
+      props.setBreadCrumbItemList([]);
+    } else {
+      props.setBreadCrumbItemList([
+        {
+          label: moDisplayName,
+          command: ViewOrganization_onNavigateHereCommand
+        }
+      ]);
+    }
   }
 
   // * useEffect Hooks *
