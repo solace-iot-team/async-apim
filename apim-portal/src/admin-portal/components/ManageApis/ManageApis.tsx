@@ -20,6 +20,7 @@ import { OrganizationContext } from "../../../components/APContextProviders/APOr
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 
 export interface IManageApisProps {
   organizationId: TAPOrganizationId;
@@ -165,7 +166,9 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     const funcName = 'renderLeftToolbarContent';
     const logName = `${componentName}.${funcName}()`;
     if(!componentState.currentState) return undefined;
-    const eventPortalConnectivity: boolean = organizationContext.status ? (organizationContext.status.eventPortalConnectivity ? organizationContext.status.eventPortalConnectivity : false) : false;
+    const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+      apOrganizationDisplay: organizationContext
+    });
     const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
     if(showListComponent) return (
       <React.Fragment>

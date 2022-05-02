@@ -3,13 +3,13 @@ import { TOrganizationContextAction } from '../components/APContextProviders/APO
 import { UserContextAction } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContextAction } from '../components/AuthContextProvider/AuthContextProvider';
 import { TAPEntityId } from '../utils/APEntityIdsService';
-import { APOrganizationsService } from '../utils/deleteme_APOrganizationsService';
 import { 
   APRbac, 
   EAPSCombinedAuthRole, 
   TAPRbacRole, 
 } from '../utils/APRbac';
 import { EAppState, EUICommonResourcePaths, Globals } from '../utils/Globals';
+import APSystemOrganizationsDisplayService from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APRbacDisplayService from './APRbacDisplayService';
 import { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
@@ -98,7 +98,10 @@ class APContextsDisplayService {
 
       // get the organization details only if connector is defined & healthy
       if(isConnectorAvailable) {
-        dispatchOrganizationContextAction({ type: 'SET_ORGANIZATION_CONTEXT', organizationContext: await APOrganizationsService.getOrganization(organizationEntityId.id)});
+        // dispatchOrganizationContextAction({ type: 'SET_ORGANIZATION_CONTEXT', organizationContext: await APOrganizationsService.getOrganization(organizationEntityId.id)});
+        dispatchOrganizationContextAction({ type: 'SET_ORGANIZATION_CONTEXT', organizationContext: await APSystemOrganizationsDisplayService.apiGet_ApOrganizationDisplay({
+          organizationId: organizationEntityId.id
+        })});
       }
     }
   }

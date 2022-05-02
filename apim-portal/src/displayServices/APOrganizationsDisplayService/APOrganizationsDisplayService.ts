@@ -436,6 +436,12 @@ export class APOrganizationsDisplayService {
     };
   }
 
+  public has_EventPortalConnectivity<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
+    apOrganizationDisplay: T;
+  }): boolean {
+    return (apOrganizationDisplay.apOrganizationOperationalStatus.eventPortalConnectivity === EAPOrganizationOperationalStatus.UP);
+  }
+
   public set_ApOrganizationDisplay_Connectivity<T extends IAPOrganizationDisplay, K extends IAPOrganizationDisplay_Connectivity>({ 
     apOrganizationDisplay,
     apOrganizationDisplay_Connectivity
