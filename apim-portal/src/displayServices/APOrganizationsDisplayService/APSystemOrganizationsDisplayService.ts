@@ -184,6 +184,11 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   public async apiImport_ApOrganizationDisplay_General({ apOrganizationDisplay_General }:{
     apOrganizationDisplay_General: IAPOrganizationDisplay_General;
   }): Promise<void> {
+    // const funcName = 'apiImport_ApOrganizationDisplay_General';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // // test downstream error handling
+    // throw new Error(`${logName}: test error handling`);
+
     const apsCreate: APSOrganization = {
       organizationId: apOrganizationDisplay_General.apEntityId.id,
       displayName: apOrganizationDisplay_General.apEntityId.displayName
@@ -213,9 +218,6 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   }): Promise<void> {
     const funcName = 'apiDelete_ApSystemOrganizationDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
-
-    alert(`${logName}: check if org is deletable first`);
-    return;
 
     await ApsLoginService.logoutOrganizationAll({
       organizationId: organizationId

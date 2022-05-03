@@ -299,6 +299,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     props.setBreadCrumbItemList(newItemList);
   }
   const onSetManageObjectComponentState_To_View = (organizationEntityId: TAPEntityId) => {
+    setApiCallStatus(null);
     setManagedObjectEntityId(organizationEntityId);
     setRefreshCounter(refreshCounter + 1);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);

@@ -47,6 +47,20 @@ class APDisplayUtils {
     );
   }
 
+  public convertMilliseconds_To_Days = (ms: number): number => {
+    let d, h, m, s: number;
+    s = Math.floor(ms / 1000);
+    m = Math.floor(s / 60);
+    s = s % 60;
+    h = Math.floor(m / 60);
+    m = m % 60;
+    d = Math.floor(h / 24);
+    h = h % 24;
+    return d;
+  }
+  public convertDays_To_Milliseconds = (days: number): number => {
+    return (days * 24 * 3600 * 1000);
+  }
   public convertMilliseconds = (ms: number): string => {
     let d, h, m, s;
     s = Math.floor(ms / 1000);

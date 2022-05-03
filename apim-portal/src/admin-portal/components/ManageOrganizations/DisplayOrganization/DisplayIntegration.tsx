@@ -49,8 +49,8 @@ export const DisplayIntegration: React.FC<IDisplayIntegrationProps> = (props: ID
           jsxList.push(
             <div id={Globals.getUUID()} className="p-ml-2">
               <div>Location: {apiKeyAuth.apiKeyLocation}</div>
-              <div>Api Key Fieldname: {apiKeyAuth.apiKeyFieldName}</div>
-              <div>Api Key Value: {apiKeyAuth.apiKeyValue}</div>
+              <div>API Key Name: {apiKeyAuth.apiKeyFieldName}</div>
+              <div>API Key Value: {apiKeyAuth.apiKeyValue}</div>
             </div>
           );
         break;

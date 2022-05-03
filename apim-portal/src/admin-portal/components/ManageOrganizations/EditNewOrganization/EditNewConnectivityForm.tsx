@@ -12,12 +12,11 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { DisplaySectionHeader_EventPortalServices, DisplaySectionHeader_SempV2Auth, DisplaySectionHeader_SolaceCloudServices, EAction } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay_Connectivity } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay_Connectivity } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
-import { 
+import APOrganizationsDisplayService, { 
   EAPCloudConnectivityConfigType,
   EAPEventPortalConnectivityConfigType,
   EAPOrganizationConnectivityConfigType, 
   EAPOrganizationSempv2AuthType, 
-  TAPCloudConnectivityConfig, 
   TAPCloudConnectivityConfigCustom, 
   TAPCloudConnectivityConfigSolaceCloud, 
   TAPEventPortalConnectivityConfigCustom,
@@ -44,18 +43,19 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
   const ComponentName = 'EditNewConnectivityForm';
 
   type TManagedObject = IAPSingleOrganizationDisplay_Connectivity | IAPSystemOrganizationDisplay_Connectivity;
+  type TManageObjectFormData_ConfigAdvanced = {
+    apCloudConnectivityConfigCustom: TAPCloudConnectivityConfigCustom;
+    apEventPortalConnectivityConfigCustom: TAPEventPortalConnectivityConfigCustom;
+    apOrganizationSempv2AuthType: EAPOrganizationSempv2AuthType;
+    apOrganzationSempv2AuthConfig_BasicAuth: TAPOrganizationSempv2AuthConfig_BasicAuth;
+    apOrganzationSempv2AuthConfig_ApiKeyAuth: TAPOrganizationSempv2AuthConfig_ApiKeyAuth;
+  }
   type TManagedObjectFormData = {
     configType: EAPOrganizationConnectivityConfigType;
     configSimple: {
       token: string;
     };
-    configAdvanced: {
-      apCloudConnectivityConfigCustom: TAPCloudConnectivityConfigCustom;
-      apEventPortalConnectivityConfigCustom: TAPEventPortalConnectivityConfigCustom;
-      apOrganizationSempv2AuthType: EAPOrganizationSempv2AuthType;
-      apOrganzationSempv2AuthConfig_BasicAuth: TAPOrganizationSempv2AuthConfig_BasicAuth;
-      apOrganzationSempv2AuthConfig_ApiKeyAuth: TAPOrganizationSempv2AuthConfig_ApiKeyAuth;
-    }
+    configAdvanced: TManageObjectFormData_ConfigAdvanced;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -66,21 +66,68 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
   }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
+    const funcName = 'transform_ManagedObject_To_FormDataEnvelope';
+    const logName = `${ComponentName}.${funcName}()`;
+
+    // preset everything with empty values for form
+    let configSimple_token: string = '';
+    const configAdvanced: TManageObjectFormData_ConfigAdvanced = {
+      apCloudConnectivityConfigCustom: {
+        configType: EAPCloudConnectivityConfigType.CUSTOM,
+        baseUrl: APOrganizationsDisplayService.get_DefaultSolaceCloudBaseUrlStr(),
+        token: '',
+      },
+      apEventPortalConnectivityConfigCustom: {
+        configType: EAPEventPortalConnectivityConfigType.CUSTOM,
+        baseUrl: APOrganizationsDisplayService.get_DefaultEventPortalBaseUrlStr(),
+        token: '',
+      },
+      apOrganizationSempv2AuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH,
+      apOrganzationSempv2AuthConfig_BasicAuth: {
+        apAuthType: EAPOrganizationSempv2AuthType.BASIC_AUTH,        
+      },
+      apOrganzationSempv2AuthConfig_ApiKeyAuth: {
+        apAuthType: EAPOrganizationSempv2AuthType.API_KEY,
+        apiKeyLocation: SempV2Authentication.apiKeyLocation.HEADER,
+        apiKeyName: ''
+      }
+    }
+    switch(mo.apOrganizationConnectivityConfigType) {
+      case EAPOrganizationConnectivityConfigType.SIMPLE:
+        configSimple_token = (mo.apCloudConnectivityConfig as TAPCloudConnectivityConfigSolaceCloud).token;
+        break;
+      case EAPOrganizationConnectivityConfigType.ADVANCED:
+        configAdvanced.apCloudConnectivityConfigCustom = mo.apCloudConnectivityConfig as TAPCloudConnectivityConfigCustom;
+        configAdvanced.apEventPortalConnectivityConfigCustom = mo.apEventPortalConnectivityConfig as TAPEventPortalConnectivityConfigCustom;
+        configAdvanced.apOrganizationSempv2AuthType = mo.apOrganizationSempv2AuthConfig.apAuthType;
+        // DEBUG
+        // alert(`${logName}: check console for logging...`);
+        // console.log(`${logName}: mo.apOrganizationSempv2AuthConfig=${JSON.stringify(mo.apOrganizationSempv2AuthConfig, null, 2)}`);
+        switch(configAdvanced.apOrganizationSempv2AuthType) {
+          case EAPOrganizationSempv2AuthType.BASIC_AUTH:
+            configAdvanced.apOrganzationSempv2AuthConfig_BasicAuth = mo.apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_BasicAuth;
+            break;
+          case EAPOrganizationSempv2AuthType.API_KEY:
+            configAdvanced.apOrganzationSempv2AuthConfig_ApiKeyAuth = mo.apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_ApiKeyAuth;
+            break;
+          default:
+            Globals.assertNever(logName, configAdvanced.apOrganizationSempv2AuthType);  
+        }
+        break;
+      default:
+        Globals.assertNever(logName, mo.apOrganizationConnectivityConfigType);
+    }
+
     const fd: TManagedObjectFormData = {
       configType: mo.apOrganizationConnectivityConfigType,
       configSimple: {
-        // never set the secrets in form
-        // token: ''
-        token: (mo.apCloudConnectivityConfig as TAPCloudConnectivityConfigSolaceCloud).token
+        token: configSimple_token
       },
-      configAdvanced: {
-        apCloudConnectivityConfigCustom: (mo.apCloudConnectivityConfig as TAPCloudConnectivityConfigCustom),
-        apEventPortalConnectivityConfigCustom: (mo.apEventPortalConnectivityConfig as TAPEventPortalConnectivityConfigCustom),
-        apOrganizationSempv2AuthType: mo.apOrganizationSempv2AuthConfig.apAuthType,
-        apOrganzationSempv2AuthConfig_BasicAuth: (mo.apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_BasicAuth),
-        apOrganzationSempv2AuthConfig_ApiKeyAuth: (mo.apOrganizationSempv2AuthConfig as TAPOrganizationSempv2AuthConfig_ApiKeyAuth)
-      }
+      configAdvanced: configAdvanced,
     };
+    // DEBUG
+    // alert(`${logName}: check console for logging...`);
+    // console.log(`${logName}: fd=${JSON.stringify(fd, null, 2)}`);
     return {
       formData: fd
     };
@@ -109,10 +156,12 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
           baseUrl: fd.configAdvanced.apCloudConnectivityConfigCustom.baseUrl,
           token: fd.configAdvanced.apCloudConnectivityConfigCustom.token
         };
+        // event portal token could be undefined as it is not mandatory
+        // alert(`${logName}: fd.configAdvanced.apEventPortalConnectivityConfigCustom.token = ${fd.configAdvanced.apEventPortalConnectivityConfigCustom.token}`)
         const apEventPortalConnectivityConfigCustom: TAPEventPortalConnectivityConfigCustom = {
           configType: EAPEventPortalConnectivityConfigType.CUSTOM,
-          baseUrl: fd.configAdvanced.apCloudConnectivityConfigCustom.baseUrl,
-          token: fd.configAdvanced.apCloudConnectivityConfigCustom.token
+          baseUrl: fd.configAdvanced.apEventPortalConnectivityConfigCustom.baseUrl,
+          token: fd.configAdvanced.apEventPortalConnectivityConfigCustom.token
         };
         let apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig_ApiKeyAuth | TAPOrganizationSempv2AuthConfig_BasicAuth = mo.apOrganizationSempv2AuthConfig;
         switch(fd.configAdvanced.apOrganizationSempv2AuthType) {
@@ -180,7 +229,11 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // placeholder
+    // check where the error is within the hidden forms
+    // const funcName = 'onInvalidSubmitManagedObjectForm';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: what is invalid? - see console`);
+    // console.log(`${logName}: managedObjectUseForm.formState.errors=${JSON.stringify(managedObjectUseForm.formState.errors, null, 2)}`);
   }
 
   const renderEventPortalCustomFields = (isActive: boolean) => {
@@ -214,7 +267,7 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
             <Controller
               control={managedObjectUseForm.control}
               name="formData.configAdvanced.apEventPortalConnectivityConfigCustom.token"
-              rules={APConnectorFormValidationRules.Organization_Token(true, 'Enter Event Portal Token.', isActive)}
+              // rules={APConnectorFormValidationRules.Organization_Token(true, 'Enter Event Portal Token.', isActive)}
               render={( { field, fieldState }) => {
                 return(
                   <InputTextarea
@@ -226,7 +279,7 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
                 );
               }}
             />
-            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.configAdvanced?.apEventPortalConnectivityConfigCustom?.token })}>Event Portal Token*</label>
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.configAdvanced?.apEventPortalConnectivityConfigCustom?.token })}>Event Portal Token</label>
           </span>
           {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.configAdvanced?.apEventPortalConnectivityConfigCustom?.token)}
         </div>
@@ -294,7 +347,7 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
         {/* nothing to render for isBasicAuthActive */}
 
         <div className="p-ml-2" hidden={!isApiKeyActive}>
-          <div className="p-mb-4 ap-display-sub-component-header">Api Key Details:</div>
+          <div className="p-mb-4 ap-display-sub-component-header">API Key Details:</div>
 
           {/* apiKeyLocation */}
           <div className="p-field">
@@ -328,7 +381,7 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
               <Controller
                 control={managedObjectUseForm.control}
                 name="formData.configAdvanced.apOrganzationSempv2AuthConfig_ApiKeyAuth.apiKeyName"
-                rules={APConnectorFormValidationRules.Organization_ApiKeyName(isActive)}
+                rules={APConnectorFormValidationRules.Organization_ApiKeyName(isApiKeyActive)}
                 render={( { field, fieldState }) => {
                   return(
                     <InputText
@@ -343,6 +396,8 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
               <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.configAdvanced?.apOrganzationSempv2AuthConfig_ApiKeyAuth?.apiKeyName })}>API Key Name*</label>
             </span>
             {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.configAdvanced?.apOrganzationSempv2AuthConfig_ApiKeyAuth?.apiKeyName)}
+            {/* Note */}
+            <div className="p-mt-2"><em>Note: API key value from Solace Cloud Services: Discovery Service response, field=username.</em></div>
           </div>
         </div>
       </React.Fragment>

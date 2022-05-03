@@ -64,7 +64,11 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     );
   }
 
-  const renderEventPortalConnectivityConfig = (apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig, apOperationalStatus: EAPOrganizationOperationalStatus) => {
+  const renderEventPortalConnectivityConfig = ({ apEventPortalConnectivityConfig, apOperationalStatus, apOrganizationConnectivityConfigType }:{
+    apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig;
+    apOperationalStatus: EAPOrganizationOperationalStatus;
+    apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
+  }) => {
     const funcName = 'renderEventPortalConnectivityConfig';
     const logName = `${ComponentName}.${funcName}()`;
 
@@ -80,16 +84,13 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
             </React.Fragment>
           );
         case EAPEventPortalConnectivityConfigType.UNDEFINED:
-          // const apUndefined: TAPEventPortalConnectivityConfigUndefined = apEventPortalConnectivityConfig as TAPEventPortalConnectivityConfigUndefined;
-          return(
-            <React.Fragment>
-              <div>
-                <em>Note: See Solace Cloud Connectivity.</em>
-              </div>
-              {/* <div>Base URL: {apUndefined.baseUrl}</div>
-              { renderToken('Token', 'same as Solace Cloud')} */}
-            </React.Fragment>
-          );
+          if(apOrganizationConnectivityConfigType === EAPOrganizationConnectivityConfigType.ADVANCED && apOperationalStatus === EAPOrganizationOperationalStatus.DOWN) {
+            return (<div><em>Not configured.</em></div>);
+          }
+          if(apOperationalStatus === EAPOrganizationOperationalStatus.UNDEFINED) {
+            return (<div><em>Not configured.</em></div>);
+          }
+          return(<div><em>Configured as part of Solace Cloud Services.</em></div>);
         default:
           Globals.assertNever(logName, configType);
       }
@@ -108,7 +109,11 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     );
   }
 
-  const renderCloudConnectivityConfig = (apCloudConnectivityConfig: TAPCloudConnectivityConfig, apOperationalStatus: EAPOrganizationOperationalStatus) => {
+  const renderCloudConnectivityConfig = ({ apCloudConnectivityConfig, apOperationalStatus, apOrganizationConnectivityConfigType }:{
+    apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
+    apCloudConnectivityConfig: TAPCloudConnectivityConfig;
+    apOperationalStatus: EAPOrganizationOperationalStatus;
+  }) => {
     const funcName = 'renderCloudConnectivityConfig';
     const logName = `${ComponentName}.${funcName}()`;
 
@@ -117,7 +122,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
       switch(configType) {
         case EAPCloudConnectivityConfigType.SOLACE_CLOUD:
           const apSolaceCloud: TAPCloudConnectivityConfigSolaceCloud = apCloudConnectivityConfig as TAPCloudConnectivityConfigSolaceCloud;
-          return renderToken('Cloud Token', apSolaceCloud.token);
+          return renderToken('Token', apSolaceCloud.token);
         case EAPCloudConnectivityConfigType.CUSTOM:
           const apCustom: TAPCloudConnectivityConfigCustom = apCloudConnectivityConfig as TAPCloudConnectivityConfigCustom;
           return(
@@ -127,7 +132,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
             </React.Fragment>
           );
         case EAPCloudConnectivityConfigType.UNDEFINED:
-          return renderToken('Cloud Token', 'not configured');
+          return renderToken('Token', 'not configured');
         default:
           Globals.assertNever(logName, configType);
       }
@@ -146,7 +151,10 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     );
   }
   
-  const renderOrganizationSempv2AuthConfig = (apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType,  apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig) => {
+  const renderOrganizationSempv2AuthConfig = ({ apOrganizationConnectivityConfigType, apOrganizationSempv2AuthConfig }:{
+    apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
+    apOrganizationSempv2AuthConfig: TAPOrganizationSempv2AuthConfig;
+  }) => {
     const funcName = 'renderOrganizationSempv2AuthConfig';
     const logName = `${ComponentName}.${funcName}()`;
   
@@ -159,7 +167,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
             <React.Fragment>
               <div><b>Auth Type: </b>{apOrganizationSempv2AuthConfig.apAuthType}</div>
               <div className="p-ml-2">
-                <em>Note: Credentials from discovery service response.</em>
+                <em>Note: Credentials from Solace Cloud Services: Discovery Service response.</em>
               </div>
             </React.Fragment>
           );
@@ -171,6 +179,9 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
               <div className="p-ml-2">
                 <div>API Key Location: {apApiKey.apiKeyLocation}</div>
                 <div>API Key Name: {apApiKey.apiKeyName}</div>
+                <div className="p-ml-2">
+                  <em>Note: API key value from Solace Cloud Services: Discovery Service response: field=username.</em>
+                </div>
               </div>
             </React.Fragment>
           );
@@ -251,17 +262,32 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     jsxTabPanelList.push(
       <TabPanel header='General' key={Globals.getUUID()}>
         <React.Fragment>
-          <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRation(managedObject.apNumApis2ApiProductRatio)}</p>
+          <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRation(managedObject.apMaxNumApis_Per_ApiProduct)}</p>
           <p><b>App Credentials Expiration: </b>{APDisplayUtils.convertMilliseconds(managedObject.apAppCredentialsExpiryDuration)}</p>
         </React.Fragment>
         </TabPanel>
     );
+    managedObject.apOrganizationConnectivityConfigType = EAPOrganizationConnectivityConfigType.ADVANCED
     jsxTabPanelList.push(
       <TabPanel header='Connectivity' key={Globals.getUUID()}>            
         <React.Fragment>
-          { renderCloudConnectivityConfig(managedObject.apCloudConnectivityConfig, managedObject.apOrganizationOperationalStatus.cloudConnectivity) }
-          { renderEventPortalConnectivityConfig(managedObject.apEventPortalConnectivityConfig, managedObject.apOrganizationOperationalStatus.eventPortalConnectivity) }
-          { renderOrganizationSempv2AuthConfig(managedObject.apOrganizationConnectivityConfigType, managedObject.apOrganizationSempv2AuthConfig) }
+          { renderCloudConnectivityConfig({
+              apCloudConnectivityConfig: managedObject.apCloudConnectivityConfig,
+              apOperationalStatus: managedObject.apOrganizationOperationalStatus.cloudConnectivity,
+              apOrganizationConnectivityConfigType: managedObject.apOrganizationConnectivityConfigType
+            }) 
+          }
+          { renderEventPortalConnectivityConfig({
+              apEventPortalConnectivityConfig: managedObject.apEventPortalConnectivityConfig,
+              apOperationalStatus: managedObject.apOrganizationOperationalStatus.eventPortalConnectivity,
+              apOrganizationConnectivityConfigType: managedObject.apOrganizationConnectivityConfigType
+            })
+          }
+          { renderOrganizationSempv2AuthConfig({
+              apOrganizationConnectivityConfigType: managedObject.apOrganizationConnectivityConfigType,
+              apOrganizationSempv2AuthConfig: managedObject.apOrganizationSempv2AuthConfig
+            })
+          }
         </React.Fragment>
       </TabPanel>
     );

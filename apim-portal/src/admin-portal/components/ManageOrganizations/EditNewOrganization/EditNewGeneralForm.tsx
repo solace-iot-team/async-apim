@@ -3,6 +3,7 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { InputText } from 'primereact/inputtext';
+import { Checkbox } from "primereact/checkbox";
 import { classNames } from 'primereact/utils';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
@@ -16,6 +17,7 @@ import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormV
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { InputNumber } from "primereact/inputnumber";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -33,6 +35,12 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
+
+    is_Configured_MaxNumApis_Per_ApiProduct: boolean;
+    maxNumApis_Per_ApiProduct: number;
+    
+    is_Configured_AppCredentialsExpiryDays: boolean;
+    appCredentialsExpiryDays: number;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -46,6 +54,12 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
+      
+      is_Configured_MaxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct > APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct(),
+      maxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct,
+
+      is_Configured_AppCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration(),
+      appCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration() ? APDisplayUtils.convertMilliseconds_To_Days(mo.apAppCredentialsExpiryDuration) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration(),
     };
     return {
       formData: fd
@@ -55,10 +69,18 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   const create_ManagedObject_From_FormEntities = ({formDataEnvelope}: {
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${ComponentName}.${funcName}()`;
+
     const mo: TManagedObject = props.apOrganizationDisplay_General;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
+    mo.apMaxNumApis_Per_ApiProduct = fd.is_Configured_MaxNumApis_Per_ApiProduct ? fd.maxNumApis_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct();
+    mo.apAppCredentialsExpiryDuration = fd.is_Configured_AppCredentialsExpiryDays ? APDisplayUtils.convertDays_To_Milliseconds(fd.appCredentialsExpiryDays) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration();
+    // DEBUG
+    // alert(`${logName}: check console for logging...`);
+    // console.log(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);
     return mo;
   }
   
@@ -113,7 +135,11 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   }
 
   const onInvalidSubmitManagedObjectForm = () => {
-    // placeholder
+    // check where the error is within the hidden forms
+    // const funcName = 'onInvalidSubmitManagedObjectForm';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: what is invalid? - see console`);
+    // console.log(`${logName}: managedObjectUseForm.formState.errors=${JSON.stringify(managedObjectUseForm.formState.errors, null, 2)}`);
   }
 
   const validate_Id = async(id: string): Promise<string | boolean> => {
@@ -125,8 +151,100 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     return true;
   }
 
+  const renderFields_MaxNumApis_Per_ApiProduct = (isActive: boolean) => {
+    const rules_MaxNumApis_Per_ApiProduct = (isActive: boolean): any => {
+      if(isActive) return {
+        required: "Enter Max Number of APIs per API Product.",
+        min: {
+          value: 1,
+          message: 'Max Number of APIs per API Product must be > 0.',
+        }
+      };
+      else return {
+        required: false,
+        min: undefined
+      };
+    }
+    if(isActive === undefined) return (<></>);
+    return (
+      <div className="p-ml-2 p-mt-4" hidden={!isActive}>
+        {/* maxNumApis_Per_ApiProduct */}
+        <div className="p-field">
+          <span className="p-float-label">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="formData.maxNumApis_Per_ApiProduct"
+              rules={rules_MaxNumApis_Per_ApiProduct(isActive)}
+              render={( { field, fieldState }) => {
+                return(
+                  <InputNumber
+                    id={field.name}
+                    {...field}
+                    onChange={(e) => field.onChange(e.value)}
+                    mode="decimal" 
+                    useGrouping={false}
+                    className={classNames({ 'p-invalid': fieldState.invalid })}      
+                  />
+                );
+              }}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.maxNumApis_Per_ApiProduct })}>Max Number of APIs per API Product*</label>
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.maxNumApis_Per_ApiProduct)}
+        </div>
+      </div>
+    );
+  }
+
+  const renderFields_AppCredentialsExpiryDays = (isActive: boolean) => {
+    const rules = (isActive: boolean): any => {
+      if(isActive) return {
+        required: "Enter App Credentials Expiry in days.",
+        min: {
+          value: 14,
+          message: 'Expiry days must be > 14.',
+        }
+      };
+      else return {
+        required: false,
+        min: undefined
+      };
+    }
+    if(isActive === undefined) return (<></>);
+    return (
+      <div className="p-ml-2 p-mt-4" hidden={!isActive}>
+        {/* appCredentialsExpiryDays */}
+        <div className="p-field">
+          <span className="p-float-label">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="formData.appCredentialsExpiryDays"
+              rules={rules(isActive)}
+              render={( { field, fieldState }) => {
+                return(
+                  <InputNumber
+                    id={field.name}
+                    {...field}
+                    onChange={(e) => field.onChange(e.value)}
+                    mode="decimal" 
+                    useGrouping={false}
+                    className={classNames({ 'p-invalid': fieldState.invalid })}      
+                  />
+                );
+              }}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.appCredentialsExpiryDays })}>App Credentials Expiry (days)*</label>
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.appCredentialsExpiryDays)}
+        </div>
+      </div>
+    );
+  }
+
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
+    const is_Configured_MaxNumApis_Per_ApiProduct = managedObjectUseForm.watch('formData.is_Configured_MaxNumApis_Per_ApiProduct');
+    const is_Configured_AppCredentialsExpiryDays = managedObjectUseForm.watch('formData.is_Configured_AppCredentialsExpiryDays');
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -178,10 +296,57 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
             </div>
-            <div>
-              <p>TODO: Max Number of APIs per API Product: not limited </p>
-              <p>TODO: App Credentials Expiration: 180 days, 00 hours, 00 mins</p>
+            {/* set max num apis per api product */}
+            <div className="p-field-checkbox">
+              <span>
+                <Controller
+                  control={managedObjectUseForm.control}
+                  name="formData.is_Configured_MaxNumApis_Per_ApiProduct"
+                  render={( { field, fieldState }) => {
+                    return(
+                      <Checkbox
+                        inputId={field.name}
+                        checked={field.value}
+                        // onChange={(e) => field.onChange(e.checked)}     
+                        onChange={(e) => {                           
+                          field.onChange(e.checked);
+                          managedObjectUseForm.clearErrors('formData.maxNumApis_Per_ApiProduct');
+                        }}    
+                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                      />
+                  )}}
+                />
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct })}> Configure Max Number of APIs per API Product</label>
+              </span>
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct)}
             </div>
+            { renderFields_MaxNumApis_Per_ApiProduct(is_Configured_MaxNumApis_Per_ApiProduct) }
+
+            {/* set max num apis per api product */}
+            <div className="p-field-checkbox">
+              <span>
+                <Controller
+                  control={managedObjectUseForm.control}
+                  name="formData.is_Configured_AppCredentialsExpiryDays"
+                  render={( { field, fieldState }) => {
+                    return(
+                      <Checkbox
+                        inputId={field.name}
+                        checked={field.value}
+                        // onChange={(e) => field.onChange(e.checked)}     
+                        onChange={(e) => {                           
+                          field.onChange(e.checked);
+                          managedObjectUseForm.clearErrors('formData.appCredentialsExpiryDays');
+                        }}    
+                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                      />
+                  )}}
+                />
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays })}> Configure App Credentials Expiry</label>
+              </span>
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays)}
+            </div>
+            { renderFields_AppCredentialsExpiryDays(is_Configured_AppCredentialsExpiryDays) }
           </form>  
         </div>
       </div>

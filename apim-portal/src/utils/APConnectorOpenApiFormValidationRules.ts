@@ -9,7 +9,10 @@ import {
   $WebHookBasicAuth, 
   $WebHookHeaderAuth,
   $SemVer,
-  $CommonDisplayName
+  $CommonDisplayName,
+  $BasicAuthentication,
+  $APIKeyAuthentication,
+  $BearerTokenAuthentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APConnectorApiHelper } from "./APConnectorApiCalls";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from './APTypes';
@@ -75,6 +78,56 @@ export class APConnectorFormValidationRules {
     return rules;
   }
 
+  public static Notifier_BasicAuthentication_Username = (isActive: boolean): any => {
+    const api_schema = $BasicAuthentication.properties.userName;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter username.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid username format') : undefined);
+    return rules;
+  }
+
+  public static Notifier_BasicAuthentication_Password = (isActive: boolean): any => {
+    const api_schema = $BasicAuthentication.properties.password;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter passwored.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid password format') : undefined);
+    return rules;
+  }
+
+  public static Notifier_ApiKeyAuthentication_ApiKeyFieldName = (isActive: boolean): any => {
+    const api_schema = $APIKeyAuthentication.properties.name;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter API Key Name.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid API Key Name format') : undefined);
+    return rules;
+  }
+
+  public static Notifier_BearerTokenAuthentication_Token = (isActive: boolean): any => {
+    const api_schema = $BearerTokenAuthentication.properties.token;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter Bearer Token.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid Bearer Token format') : undefined);
+    return rules;
+  }
+
+  public static Notifier_ApiKeyAuthentication_ApiKeyValue = (isActive: boolean): any => {
+    const api_schema = $APIKeyAuthentication.properties.key;
+    const rules: any = {};
+    rules['required'] = (isActive ? 'Enter API Key Value.' : false);
+    rules['maxLength'] = (isActive ? APConnectorFormValidationRules.getMaxLengthRule(api_schema) : undefined);
+    rules['minLength'] = (isActive ? APConnectorFormValidationRules.getMinLengthRule(api_schema) : undefined) ;
+    rules['pattern'] = (isActive ? APConnectorFormValidationRules.getFormPatternRule(api_schema, 'Invalid API Key Value format') : undefined);
+    return rules;
+  }
+
   public static Organization_ApiKeyName = (isActive: boolean): any => {
     const api_schema = $SempV2Authentication.properties.apiKeyName;
     const rules: any = {};
@@ -106,7 +159,7 @@ export class APConnectorFormValidationRules {
         value: 0,
         message: 'Max TTL must be >= 0.',
       }
-    }
+    };
   }
 
   public static ClientOptionsGuaranteedMessaging_MaxSpoolUsage = (): any => {
