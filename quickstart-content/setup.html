@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup &mdash; Solace Async API Management r0.0.2 documentation</title>
+  <title>Setup &amp; Getting Started &mdash; Solace Async API Management r0.0.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
@@ -43,9 +43,13 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../quickstart.html">Quickstart</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup &amp; Getting Started</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#login">Login</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#create-organization">Create Organization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-admin-user">Create Admin User</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-organization-organization-users">Create Organization &amp; Organization Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-environments">Create Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-api-product">Create API Product</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-app">Create App</a></li>
 </ul>
 </li>
 </ul>
@@ -79,7 +83,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../quickstart.html">Quickstart</a> &raquo;</li>
-      <li>Setup</li>
+      <li>Setup &amp; Getting Started</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/quickstart-content/setup.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -89,35 +93,100 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="setup">
-<span id="quickstart-content-setup"></span><h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h1>
+  <section id="setup-getting-started">
+<span id="quickstart-content-setup"></span><h1>Setup &amp; Getting Started<a class="headerlink" href="#setup-getting-started" title="Permalink to this headline"></a></h1>
 <section id="login">
 <h2>Login<a class="headerlink" href="#login" title="Permalink to this headline"></a></h2>
-<p>Login with the bootstrapped master user.</p>
-<p>Defaults:</p>
-<dl class="field-list simple">
-<dt class="field-odd">user id</dt>
-<dd class="field-odd"><p><cite>master.user&#64;async-apim-quickstart.com</cite></p>
-</dd>
-<dt class="field-even">password</dt>
-<dd class="field-even"><p><cite>master.user&#64;async-apim-quickstart.com</cite></p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json">bootstrap user list</a> - default details of the bootstrapped users.</p></li>
-</ul>
-</div>
+<p>Login with the root user.</p>
 </section>
-<section id="create-organization">
-<h2>Create Organization<a class="headerlink" href="#create-organization" title="Permalink to this headline"></a></h2>
-<p>The bootstrapped user is member of the organization <cite>apim-quickstart</cite>.</p>
+<section id="create-admin-user">
+<h2>Create Admin User<a class="headerlink" href="#create-admin-user" title="Permalink to this headline"></a></h2>
+<p>As a first step, it is advisable to create a system admin user:</p>
 <ul class="simple">
-<li><p>Create an Organization with the Name <cite>apim-quickstart</cite>.</p></li>
-<li><p>Logout and Login again</p></li>
-<li><p>Start creating entities …</p></li>
+<li><p>Go to System &gt; Users</p></li>
+<li><p>New:</p>
+<ul>
+<li><p>Fill out the userId &amp; profile info</p></li>
+<li><p>Add System Role = System Admin</p></li>
+<li><p>Ensure user is activated</p></li>
+<li><p>Review &amp; Create the user</p></li>
 </ul>
+</li>
+<li><p>Logout</p></li>
+<li><p>Login with the new system admin user</p></li>
+</ul>
+</section>
+<section id="create-organization-organization-users">
+<h2>Create Organization &amp; Organization Users<a class="headerlink" href="#create-organization-organization-users" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Create a new Organization: System &gt; Organizations</p>
+<ul>
+<li><p>Using Solace Cloud, have the Solace Cloud Token ready</p></li>
+</ul>
+</li>
+<li><p>Create Users: System &gt; Users</p>
+<ul>
+<li><p>Add users to your new Organization with the roles of</p>
+<ul>
+<li><p>Organization Admin</p></li>
+<li><p>API Team</p></li>
+<li><p>API Consumer</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="create-environments">
+<h2>Create Environments<a class="headerlink" href="#create-environments" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Login with Organization Admin user</p></li>
+<li><p>Organization &gt; Environments</p>
+<ul>
+<li><p>Create a new Environment</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="create-api-product">
+<h2>Create API Product<a class="headerlink" href="#create-api-product" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Login with API Team user</p></li>
+<li><p>APIs</p>
+<ul>
+<li><p>Create a new API and upload an Async API Spec</p></li>
+</ul>
+</li>
+<li><p>API Products</p>
+<ul>
+<li><p>Create a new API Product</p>
+<ul>
+<li><p>choose the API Spec</p></li>
+<li><p>choose the Environment</p></li>
+<li><p>mark approval = auto</p></li>
+</ul>
+</li>
+<li><p>Mark API Product as released</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="create-app">
+<h2>Create App<a class="headerlink" href="#create-app" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Login with API Consumer user</p></li>
+<li><p>Explore API Products</p>
+<ul>
+<li><p>You should see the released API Product</p></li>
+</ul>
+</li>
+<li><p>Create a new App</p>
+<ul>
+<li><p>Select the API Product</p></li>
+</ul>
+</li>
+</ul>
+<p>Your App is ready to use.</p>
 </section>
 </section>
 
@@ -133,7 +202,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 04 May 2022 at 10:58.
+      <span class="lastupdated">Last updated on 04 May 2022 at 16:03.
       </span></p>
   </div>
 
