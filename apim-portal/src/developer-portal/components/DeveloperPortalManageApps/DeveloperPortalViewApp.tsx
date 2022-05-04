@@ -27,6 +27,7 @@ import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplay
 import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 import { EAppType } from "./DeveloperPortalManageAppsCommon";
 import { TAPDeveloperPortalAppDisplay_AllowedActions } from "../../displayServices/APDeveloperPortalAppsDisplayService";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
@@ -51,6 +52,8 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
   const MessageNoWebhooksFound = 'No Webhooks configured.';
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
@@ -69,7 +72,8 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
           const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
             organizationId: props.organizationId,
             userId: userContext.apLoginUserDisplay.apEntityId.id,
-            appId: props.appEntityId.id
+            appId: props.appEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObject(apDeveloperPortalUserAppDisplay);
           break;
@@ -78,7 +82,8 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
           const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = await APDeveloperPortalTeamAppsDisplayService.apiGet_ApDeveloperPortalTeamAppDisplay({
             organizationId: props.organizationId,
             appId: props.appEntityId.id,
-            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
           });
           setManagedObject(apDeveloperPortalTeamAppDisplay);
           break;

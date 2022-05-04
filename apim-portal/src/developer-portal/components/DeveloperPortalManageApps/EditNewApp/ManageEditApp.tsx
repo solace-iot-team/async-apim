@@ -17,6 +17,7 @@ import { EditCredentials } from "./EditCredentials";
 import { DeveloperPortalDisplayAppHeaderInfo } from "../DeveloperPortalDisplayAppHeaderInfo";
 import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { Globals } from "../../../../utils/Globals";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -38,11 +39,14 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay | TAPDeveloperPortalTeamAppDisplay;
 
+  const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [userContext] = React.useContext(UserContext);
+
 
   const ManagedEditApp_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.appEntityId);
@@ -59,7 +63,8 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
           const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
             organizationId: props.organizationId,
             userId: userContext.apLoginUserDisplay.apEntityId.id,
-            appId: props.appEntityId.id
+            appId: props.appEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObject(apDeveloperPortalUserAppDisplay);
           break;
@@ -68,7 +73,8 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
           const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = await APDeveloperPortalTeamAppsDisplayService.apiGet_ApDeveloperPortalTeamAppDisplay({
             organizationId: props.organizationId,
             appId: props.appEntityId.id,
-            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
           });
           setManagedObject(apDeveloperPortalTeamAppDisplay);
           break;

@@ -28,6 +28,7 @@ import { Config } from "../../../Config";
 import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
 import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -53,6 +54,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -62,7 +64,8 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
     try { 
       const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await APAdminPortalAppsDisplayService.apiGet_ApAdminPortalAppDisplay({
         organizationId: props.organizationId,
-        appId: props.appEntityId.id
+        appId: props.appEntityId.id,
+        apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
       });
       setManagedObject(apAdminPortalAppDisplay);
     } catch(e: any) {

@@ -62,7 +62,9 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   }): APSOrganization {
     const apsOrganization: APSOrganization = {
       organizationId: connectorOrganizationResponse.name,
-      displayName: connectorOrganizationResponse.name
+      displayName: connectorOrganizationResponse.name,
+      appCredentialsExpiryDuration: this.get_DefaultAppCredentialsExpiryDuration_Millis(),
+      maxNumApisPerApiProduct: this.get_DefaultMaxNumApis_Per_ApiProduct(),
     };
     return apsOrganization;
   }
@@ -191,7 +193,9 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
 
     const apsCreate: APSOrganization = {
       organizationId: apOrganizationDisplay_General.apEntityId.id,
-      displayName: apOrganizationDisplay_General.apEntityId.displayName
+      displayName: apOrganizationDisplay_General.apEntityId.displayName,
+      appCredentialsExpiryDuration: apOrganizationDisplay_General.apAppCredentialsExpiryDuration_millis,
+      maxNumApisPerApiProduct: apOrganizationDisplay_General.apMaxNumApis_Per_ApiProduct,
     };
     await ApsAdministrationService.createApsOrganization({
       requestBody: apsCreate
@@ -203,7 +207,9 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   }): Promise<void> {
     const apsCreate: APSOrganization = {
       organizationId: apSystemOrganizationDisplay.apEntityId.id,
-      displayName: apSystemOrganizationDisplay.apEntityId.displayName
+      displayName: apSystemOrganizationDisplay.apEntityId.displayName,
+      appCredentialsExpiryDuration: apSystemOrganizationDisplay.apAppCredentialsExpiryDuration_millis,
+      maxNumApisPerApiProduct: apSystemOrganizationDisplay.apMaxNumApis_Per_ApiProduct,
     };
     await ApsAdministrationService.createApsOrganization({
       requestBody: apsCreate

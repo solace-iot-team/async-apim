@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from "primereact/checkbox";
 import { classNames } from 'primereact/utils';
+import { InputNumber } from "primereact/inputnumber";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
@@ -17,7 +18,6 @@ import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormV
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { InputNumber } from "primereact/inputnumber";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -58,8 +58,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
       is_Configured_MaxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct > APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct(),
       maxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct,
 
-      is_Configured_AppCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration(),
-      appCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration() ? APDisplayUtils.convertMilliseconds_To_Days(mo.apAppCredentialsExpiryDuration) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration(),
+      is_Configured_AppCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration_millis > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration_Millis(),
+      appCredentialsExpiryDays: mo.apAppCredentialsExpiryDuration_millis > APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration_Millis() ? APDisplayUtils.convertMilliseconds_To_Days(mo.apAppCredentialsExpiryDuration_millis) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration_Millis(),
     };
     return {
       formData: fd
@@ -77,7 +77,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
     mo.apMaxNumApis_Per_ApiProduct = fd.is_Configured_MaxNumApis_Per_ApiProduct ? fd.maxNumApis_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct();
-    mo.apAppCredentialsExpiryDuration = fd.is_Configured_AppCredentialsExpiryDays ? APDisplayUtils.convertDays_To_Milliseconds(fd.appCredentialsExpiryDays) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration();
+    mo.apAppCredentialsExpiryDuration_millis = fd.is_Configured_AppCredentialsExpiryDays ? APDisplayUtils.convertDays_To_Milliseconds(fd.appCredentialsExpiryDays) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration_Millis();
     // DEBUG
     // alert(`${logName}: check console for logging...`);
     // console.log(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);

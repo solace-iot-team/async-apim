@@ -14,6 +14,7 @@ import APAppsDisplayService, { IAPAppDisplay } from "../../displayServices/APApp
 import { E_CALL_STATE_ACTIONS } from "./APMonitorUserAppCommon";
 import APAppStatusDisplayService, { IAPAppStatusDisplay } from "../../displayServices/APAppsDisplayService/APAppStatusDisplayService";
 import { APMonitorAppViewStats } from "./APMonitorAppViewStats";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 
 import '../APComponents.css';
 import "./APMonitorApp.css";
@@ -59,6 +60,7 @@ export const APMonitorApp: React.FC<IAPMonitorAppProps> = (props: IAPMonitorAppP
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);  
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   // * Api Calls *
 
@@ -70,6 +72,7 @@ export const APMonitorApp: React.FC<IAPMonitorAppProps> = (props: IAPMonitorAppP
       const apAppDisplay: IAPAppDisplay = await APAppsDisplayService.apiGet_ApAppDisplay({ 
         organizationId: props.organizationId,
         appId: props.appEntityId.id,
+        apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
       });
       const apAppStatusDisplay: IAPAppStatusDisplay = await APAppStatusDisplayService.apiGet_ApAppStatusDisplay({
         organizationId: props.organizationId,

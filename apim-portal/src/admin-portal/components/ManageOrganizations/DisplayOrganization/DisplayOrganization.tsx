@@ -253,17 +253,22 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     
-    const renderApis2ApiProductsRation = (ratio: number): string => {
+    const renderApis2ApiProductsRatio = (ratio: number): string => {
       if(ratio === -1) return 'not limited';
       return ratio.toString();
     }
-    
+
+    const render_apAppCredentialsExpiryDuration = (duration: number): string => {
+      if(duration === -1) return 'no expiry';
+      return APDisplayUtils.convertMilliseconds_To_Days(duration).toString();
+    }
+
     const jsxTabPanelList: Array<JSX.Element> = [];
     jsxTabPanelList.push(
       <TabPanel header='General' key={Globals.getUUID()}>
         <React.Fragment>
-          <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRation(managedObject.apMaxNumApis_Per_ApiProduct)}</p>
-          <p><b>App Credentials Expiration: </b>{APDisplayUtils.convertMilliseconds(managedObject.apAppCredentialsExpiryDuration)}</p>
+          <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRatio(managedObject.apMaxNumApis_Per_ApiProduct)}</p>
+          <p><b>App Credentials Expiration: </b>{render_apAppCredentialsExpiryDuration(managedObject.apAppCredentialsExpiryDuration_millis)} days</p>
         </React.Fragment>
         </TabPanel>
     );

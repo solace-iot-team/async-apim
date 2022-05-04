@@ -15,6 +15,7 @@ import APDeveloperPortalUserAppsDisplayService, {
 import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { NewGeneral } from "./NewGeneral";
 import { Globals } from "../../../../utils/Globals";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -38,6 +39,7 @@ export const ManageNewApp: React.FC<IManageNewAppProps> = (props: IManageNewAppP
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   // * Api Calls * 
 
@@ -50,7 +52,8 @@ export const ManageNewApp: React.FC<IManageNewAppProps> = (props: IManageNewAppP
       switch(props.appType) {
         case EAppType.USER:
           const empty_apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = APDeveloperPortalUserAppsDisplayService.create_Empty_ApDeveloperPortalUserAppDisplay({
-            userId: userContext.apLoginUserDisplay.apEntityId.id
+            userId: userContext.apLoginUserDisplay.apEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObject(empty_apDeveloperPortalUserAppDisplay);
           break;
@@ -58,6 +61,7 @@ export const ManageNewApp: React.FC<IManageNewAppProps> = (props: IManageNewAppP
           if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: props.appType === EAppType.TEAM && userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
           const empty_apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = APDeveloperPortalTeamAppsDisplayService.create_Empty_ApDeveloperPortalTeamAppDisplay({
             teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
           });
           setManagedObject(empty_apDeveloperPortalTeamAppDisplay);
           break;
