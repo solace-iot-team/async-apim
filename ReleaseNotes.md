@@ -2,6 +2,33 @@
 
 Solace Async API Management.
 
+## Version 0.1.9
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.9
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.1.1
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.11
+
+#### API-M Admin & Developer Portal
+
+**Enhancements:**
+* **Admin-Portal:System:Manage Orgs & Admin-Portal:Organization:Settings**
+  - refactored list, view, create & edit forms
+  - added Integration section with Notification Hub Configuration
+* **Admin-Portal:Organization:Settings**
+  - added number of APIs per API Product restriction possibility
+  - added App credentials expiry duration
+* **Admin-Portal:System:Manage Orgs: Import Orgs**
+  - allows for importing Connector Orgs to APIM Portal
+* **Admin & Developer Portal: Apps**
+  - added using the configured appCredentialsExpiryDuration for the organization
+* **Admin Portal: API Products**
+  - control number of apis per api product using the configured maxNumApisPerApiProduct for the organization
+
+#### API-M Server / OpenAPI
+
+* **Organization**
+  - added maxNumApisPerApiProduct and appCredentialsExpiryDuration properties to Organzation
+
 ## Version 0.1.8
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.1.8
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.1.0
