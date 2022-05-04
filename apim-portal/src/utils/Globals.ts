@@ -87,6 +87,8 @@ export enum EUIAdminPortalResourcePaths {
 
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
 
+  ManageBusinessGroup = '/admin-porta/manage/business-group',
+
   ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
@@ -124,6 +126,7 @@ export enum EUIDeveloperPortalResourcePaths {
   
   ManageUserApplications = '/developer-portal/manage/user/applications',
   ManageBusinessGroupApplications = '/developer-portal/manage/businessgroup/applications',
+  ViewBusinessGroupApplications = '/developer-portal/view/businessgroup/applications',
 
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }

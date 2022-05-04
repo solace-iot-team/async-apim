@@ -59,15 +59,15 @@ const rbacRoleList: TAPRbacRoleList = [
       EUICommonResourcePaths.ManageUserAccount,
     ]
   },
-  {
-    id: EAPSSystemAuthRole.LOGIN_AS,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
-    displayName: 'Login As',
-    description: 'Login as any User.',
-    uiResourcePaths: [
-      EUIAdminPortalResourcePaths.LoginAs
-    ]
-  },
+  // {
+  //   id: EAPSSystemAuthRole.LOGIN_AS,
+  //   scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
+  //   displayName: 'Login As',
+  //   description: 'Login as any User.',
+  //   uiResourcePaths: [
+  //     EUIAdminPortalResourcePaths.LoginAs
+  //   ]
+  // },
   {
     id: EAPSSystemAuthRole.SYSTEM_ADMIN,
     scopeList: [EAPRbacRoleScope.SYSTEM],
@@ -122,6 +122,15 @@ const rbacRoleList: TAPRbacRoleList = [
     ]
   },
   {
+    id: EAPSOrganizationAuthRole.BUSINESS_GROUP_ADMIN,
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
+    displayName: 'Business Group Admin',
+    description: 'Manage Business Group.',
+    uiResourcePaths: [
+      EUIAdminPortalResourcePaths.ManageBusinessGroup,
+    ]
+  },
+  {
     id: EAPSOrganizationAuthRole.API_TEAM,
     scopeList: [EAPRbacRoleScope.BUSINESS_GROUP, EAPRbacRoleScope.BUSINESS_GROUP_MANAGE_ASSETS],
     displayName: 'API Team',
@@ -143,7 +152,7 @@ const rbacRoleList: TAPRbacRoleList = [
     id: EAPSOrganizationAuthRole.API_CONSUMER,
     scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Consumer',
-    description: 'Consume APIs, manage individual and team Apps.',
+    description: 'Consume APIs, manage Individual and Business Group Apps.',
     uiResourcePaths: [
       EUICommonResourcePaths.ManageUserAccount,
       EUIDeveloperPortalResourcePaths.Home,
@@ -153,7 +162,23 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
       EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications,
     ]
+  },
+  {
+    id: EAPSOrganizationAuthRole.API_VIEWER,
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
+    displayName: 'API Viewer',
+    description: 'View APIs and Business Group Apps.',
+    uiResourcePaths: [
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIDeveloperPortalResourcePaths.Home,
+      EUIDeveloperPortalResourcePaths.UserHome,
+      EUIDeveloperPortalResourcePaths.ExploreApis,
+      EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+      // not sure if they should be able to see apps, probably not
+      // EUIDeveloperPortalResourcePaths.ViewBusinessGroupApplications,
+    ]
   }
+
 ];
 
 
