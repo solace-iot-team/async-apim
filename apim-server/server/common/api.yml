@@ -1702,23 +1702,24 @@ components:
     EAPSBusinessGroupAuthRole:
       type: string
       enum:
-      - loginAs
       - organizationAdmin
+      - businessGroupAdmin
       - apiTeam
       - apiConsumer
+      - apiViewer
     EAPSOrganizationAuthRole:
       type: string
       enum:
-      - loginAs
       - organizationAdmin
+      - businessGroupAdmin
       - apiTeam
       - apiConsumer
+      - apiViewer
     EAPSSystemAuthRole:
       type: string
       enum:
       - root
       - systemAdmin
-      - loginAs
     APSOrganizationAuthRoleList:
       type: array
       items:

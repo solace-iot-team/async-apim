@@ -47,7 +47,7 @@ const createUser_DB_0_List = (numberOfUsers: number): Array<APSUser_DB_0> => {
         first: 'first',
         last: 'last'
       },
-      roles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+      roles: [EAPSSystemAuthRole.SYSTEM_ADMIN],
       memberOfOrganizations: [ OrganizationId ]
     }
     userList.push(user);
@@ -70,15 +70,15 @@ const createUser_DB_1_List = (numberOfUsers: number): Array<APSUser_DB_1> => {
         first: 'first',
         last: 'last'
       },
-      systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+      systemRoles: [EAPSSystemAuthRole.SYSTEM_ADMIN],
       memberOfOrganizations: [ 
         {
           organizationId: OrganizationId,
-          roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.LOGIN_AS, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
+          roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
         },
         {
           organizationId: OrganizationId2,
-          roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.LOGIN_AS, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
+          roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
         },
       ]
     }
@@ -116,7 +116,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should create user DB 0 list`, async () => {
+  xit(`${scriptName}: should create user DB 0 list`, async () => {
     try {
       const userList = createUser_DB_0_List(NumberOfUsers);
       for(const user of userList) {
@@ -134,7 +134,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should migrate all DB 0 users`, async () => {
+  xit(`${scriptName}: should migrate all DB 0 users`, async () => {
     try {
       const numUsersMigrated = await APSUsersDBMigrate.migrate(APSUsersService);
       expect(numUsersMigrated, TestLogger.createTestFailMessage(`incorrect numUsersMigrated=${numUsersMigrated}`)).to.equal(NumberOfUsers);
@@ -144,7 +144,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should get all migrated DB 0 users via API`, async () => {
+  xit(`${scriptName}: should get all migrated DB 0 users via API`, async () => {
     try {
       const expectedTotalCount = NumberOfUsers;
       const searchResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({        
@@ -188,7 +188,9 @@ describe(`${scriptName}`, () => {
 
   it(`${scriptName}: should get all migrated DB 1 users via API`, async () => {
     try {
-      const expectedTotalCount = NumberOfUsers * 2;
+      // with db_0 users
+      // const expectedTotalCount = NumberOfUsers * 2;
+      const expectedTotalCount = NumberOfUsers;
       const searchResponse: ListApsUsersResponse = await ApsUsersService.listApsUsers({        
         pageSize: 100
       });

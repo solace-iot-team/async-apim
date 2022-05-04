@@ -35,7 +35,7 @@ const apsUserLoginTemplate: APSUserCreate = {
     first: `${scriptName}-first`,
     last: `${scriptName}-last`
   },
-  systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+  systemRoles: [ EAPSSystemAuthRole.SYSTEM_ADMIN ],
   memberOfOrganizations: [ 
     {
       organizationId: OrganizationId,

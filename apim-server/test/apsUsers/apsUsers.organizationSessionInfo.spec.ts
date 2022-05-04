@@ -24,6 +24,7 @@ import {
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { APSOrganizationSessionInfo } from '../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfo';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -164,7 +165,9 @@ describe(`${scriptName}`, () => {
         // create the one reference org
         const apsOrg: APSOrganizationCreate = {
           organizationId: OrganizationIdTemplate,
-          displayName: createOrganizationDisplayName(OrganizationIdTemplate)
+          displayName: createOrganizationDisplayName(OrganizationIdTemplate),
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
         await ApsAdministrationService.createApsOrganization({
           requestBody: apsOrg
@@ -175,7 +178,9 @@ describe(`${scriptName}`, () => {
           const orgDisplayName: APSDisplayName = createOrganizationDisplayName(orgId);
           const apsOrg: APSOrganizationCreate = {
             organizationId: orgId,
-            displayName: orgDisplayName
+            displayName: orgDisplayName,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
           const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
             requestBody: apsOrg

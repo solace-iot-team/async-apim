@@ -47,7 +47,7 @@ const apsUserCreateTemplate: APSUserCreate = {
     first: 'first',
     last: 'last'
   },
-  systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+  systemRoles: [EAPSSystemAuthRole.SYSTEM_ADMIN],
   memberOfOrganizations: [
     { 
       organizationId: ReferenceOrg_1,
@@ -606,11 +606,11 @@ describe(`${scriptName}`, () => {
         first: 'first',
         last: 'last'
       },
-      systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+      systemRoles: [ EAPSSystemAuthRole.SYSTEM_ADMIN ],
       memberOfOrganizations: [ 
         {
           organizationId: ReferenceOrg_2,
-          roles: [ EAPSOrganizationAuthRole.LOGIN_AS]
+          roles: [ EAPSOrganizationAuthRole.ORGANIZATION_ADMIN]
          }
       ]
     }

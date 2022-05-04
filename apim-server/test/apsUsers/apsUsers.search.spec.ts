@@ -91,7 +91,7 @@ const createUserBatches = (numberOfBatches: number, numberUsersPerBatch: number)
           first: 'first',
           last: 'last'
         },
-        systemRoles: [EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN],
+        systemRoles: [EAPSSystemAuthRole.SYSTEM_ADMIN],
         memberOfOrganizations: [
           ...commonOrgRolesList,
           { 
