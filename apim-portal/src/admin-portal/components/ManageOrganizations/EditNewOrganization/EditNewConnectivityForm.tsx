@@ -61,10 +61,6 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
     formData: TManagedObjectFormData;
   }
 
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
-
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const funcName = 'transform_ManagedObject_To_FormDataEnvelope';
     const logName = `${ComponentName}.${funcName}()`;
@@ -194,7 +190,6 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
   
   const [managedObject] = React.useState<TManagedObject>(props.apOrganizationDisplay_Connectivity);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doInitialize = async () => {
@@ -215,12 +210,6 @@ export const EditNewConnectivityForm: React.FC<IEditNewConnectivityFormProps> = 
       managedObjectUseForm.setValue('formData.configAdvanced.apOrganizationSempv2AuthType', managedObjectFormDataEnvelope.formData.configAdvanced.apOrganizationSempv2AuthType);
     }
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     props.onSubmit(create_ManagedObject_From_FormEntities({

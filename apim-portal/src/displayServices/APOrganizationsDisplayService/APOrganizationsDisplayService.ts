@@ -296,8 +296,9 @@ export class APOrganizationsDisplayService {
   private create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken }: {
     connectorCloudToken: string | CloudToken | undefined;
   }): TAPCloudConnectivityConfig {
-    const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+
     if (connectorCloudToken === undefined) {
       return this.create_Emtpy_ApCloudConnectivityConfig();
     }
@@ -325,8 +326,9 @@ export class APOrganizationsDisplayService {
   private create_ApEventPortalConnectivityConfig_From_ApiEntities({ connectorCloudToken }: {
     connectorCloudToken: string | CloudToken | undefined;
   }): TAPEventPortalConnectivityConfig {
-    const funcName = 'create_ApEventPortalConnectivityConfig_From_ApiEntities';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'create_ApEventPortalConnectivityConfig_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+
     if (connectorCloudToken === undefined) {
       return this.create_Emtpy_ApEventPortalConnectivityConfig();
     }

@@ -69,8 +69,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   const create_ManagedObject_From_FormEntities = ({formDataEnvelope}: {
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
-    const funcName = 'create_ManagedObject_From_FormEntities';
-    const logName = `${ComponentName}.${funcName}()`;
+    // const funcName = 'create_ManagedObject_From_FormEntities';
+    // const logName = `${ComponentName}.${funcName}()`;
 
     const mo: TManagedObject = props.apOrganizationDisplay_General;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;

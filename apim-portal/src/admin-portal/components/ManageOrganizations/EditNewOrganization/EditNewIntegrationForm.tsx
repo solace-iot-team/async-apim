@@ -59,10 +59,6 @@ export const EditNewIntegrationForm: React.FC<IEditNewIntegrationFormProps> = (p
     formData: TManagedObjectFormData;
   }
 
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
-
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const funcName = 'transform_ManagedObject_To_FormDataEnvelope';
     const logName = `${ComponentName}.${funcName}()`;
@@ -165,7 +161,6 @@ export const EditNewIntegrationForm: React.FC<IEditNewIntegrationFormProps> = (p
   
   const [managedObject] = React.useState<TManagedObject>(props.apOrganizationDisplay_Integration);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
-  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doInitialize = async () => {
@@ -185,12 +180,6 @@ export const EditNewIntegrationForm: React.FC<IEditNewIntegrationFormProps> = (p
       managedObjectUseForm.setValue('formData.notificationHub.apAuthType', managedObjectFormDataEnvelope.formData.notificationHub.apAuthType);
     }
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-    }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     props.onSubmit(create_ManagedObject_From_FormEntities({
@@ -429,7 +418,6 @@ export const EditNewIntegrationForm: React.FC<IEditNewIntegrationFormProps> = (p
   }
 
   const renderManagedObjectForm = () => {
-    const isNewObject: boolean = isNewManagedObject();
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
