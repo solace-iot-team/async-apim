@@ -197,7 +197,10 @@ export class APSUsersService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
-  public bootstrap = async(): Promise<void> => {
+  /**
+   * deprecated
+   */
+  public xbootstrap = async(): Promise<void> => {
     const funcName = 'bootstrap';
     const logName = `${APSUsersService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));

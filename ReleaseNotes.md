@@ -33,6 +33,8 @@ Solace Async API Management.
 **Retired:**
 * **Role: loginAs**
   - removed role loginAs from list of roles
+* **Bootstrap: Users**
+  - removed bootstrap users feature
 
 #### API-M Server / OpenAPI
 

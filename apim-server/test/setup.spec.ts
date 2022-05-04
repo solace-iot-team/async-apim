@@ -54,7 +54,7 @@ const setTestEnv = (scriptDir: string): TTestEnv => {
     startMongoScript: path.join(testRootDir, 'mongodb/start.mongo.sh'),
     stopMongoScript: path.join(testRootDir, 'mongodb/stop.mongo.sh'),
     bootstrapFiles: {
-      apsUserListFile: path.join(bootstrapDataDir, 'apsUsers/apsUserList.json'),
+      // apsUserListFile: path.join(bootstrapDataDir, 'apsUsers/apsUserList.json'),
       apsConnectorListFile: path.join(bootstrapDataDir, 'apsConfig/apsConnectors/apsConnectorList.json'),
       quickstart: {
         apsUserListFile: path.join(projectRootDir, 'quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json'),
@@ -78,7 +78,7 @@ before(async() => {
   expect(fs.existsSync(TestEnv.teardownMongoScript), TestLogger.createTestFailMessage(`teardownMongoScript does not exist = ${TestEnv.teardownMongoScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.startMongoScript), TestLogger.createTestFailMessage(`startMongoScript does not exist = ${TestEnv.startMongoScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.stopMongoScript), TestLogger.createTestFailMessage(`stopMongoScript does not exist = ${TestEnv.stopMongoScript}`)).to.be.true;
-  expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
+  // expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsConnectorListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsUserListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile
