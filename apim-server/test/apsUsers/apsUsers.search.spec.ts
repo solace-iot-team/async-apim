@@ -20,6 +20,7 @@ import {
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { ApsUsersHelper } from '../lib/apsUsers.helper';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
@@ -156,7 +157,9 @@ describe(`${scriptName}`, () => {
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: orgId,
-            displayName: orgId
+            displayName: orgId,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
       }
@@ -165,7 +168,9 @@ describe(`${scriptName}`, () => {
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: orgId,
-            displayName: orgId
+            displayName: orgId,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
       }

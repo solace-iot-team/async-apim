@@ -27,6 +27,7 @@ import {
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { ApsUsersHelper } from '../lib/apsUsers.helper';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -161,25 +162,33 @@ describe(`${scriptName}`, () => {
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: ReferenceOrg_1,
-            displayName: ReferenceOrg_1
+            displayName: ReferenceOrg_1,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: ReferenceOrg_2,
-            displayName: ReferenceOrg_2
+            displayName: ReferenceOrg_2,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: ReferenceOrg_Updated,
-            displayName: ReferenceOrg_Updated
+            displayName: ReferenceOrg_Updated,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
         await ApsAdministrationService.createApsOrganization({
           requestBody: {
             organizationId: ReferenceOrg_Replaced,
-            displayName: ReferenceOrg_Replaced
+            displayName: ReferenceOrg_Replaced,
+            appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
           }
         });
       } catch (e) {

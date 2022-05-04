@@ -10,25 +10,24 @@ import {
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsServiceEventEmitter from './APSOrganizationsServiceEvent';
 import { APSOrganizationsDBMigrate } from './APSOrganizationsDBMigrate';
+import { RequestValidationServerError, TRequestValidationServerErrorMetaList } from '../../../common/ServerError';
 
 export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
-  private static collectionSchemaVersion = 0;
+  private static collectionSchemaVersion = 1;
   private persistenceService: MongoPersistenceService;
+  private readonly DefaultMaxNumApis_Per_ApiProduct: number = -1; /** any number of Apis */
+  private readonly DefaultAppCredentialsExpiryDuration: number = -1; /** no expiry */
   
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSOrganizationsService.collectionName);
   }
 
-  public getPersistenceService = (): MongoPersistenceService => {
-    return this.persistenceService;
-  }
-  public getCollectionName = (): string => {
-    return APSOrganizationsService.collectionName;
-  }
-  public getDBObjectSchemaVersion = (): number => {
-    return APSOrganizationsService.collectionSchemaVersion;
-  }
+  public getPersistenceService = (): MongoPersistenceService => { return this.persistenceService; }
+  public getCollectionName = (): string => { return APSOrganizationsService.collectionName; }
+  public getDBObjectSchemaVersion = (): number => { return APSOrganizationsService.collectionSchemaVersion; }
+  public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.DefaultMaxNumApis_Per_ApiProduct; }
+  public get_DefaultAppCredentialsExpiryDuration(): number { return this.DefaultAppCredentialsExpiryDuration; }
 
   public initialize = async() => {
     const funcName = 'initialize';
@@ -101,6 +100,9 @@ export class APSOrganizationsService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSOrganizationCreate', details: apsOrganizationCreate }));
 
+    // validate request
+    this.validateRequest({ logName: logName, requestBody: apsOrganizationCreate });
+
     const created: APSOrganization = await this.persistenceService.create({
       collectionDocumentId: apsOrganizationCreate.organizationId,
       collectionDocument: apsOrganizationCreate,
@@ -127,6 +129,9 @@ export class APSOrganizationsService {
       apsOrganizationId: apsOrganizationId,
       apsOrganizationUpdateRequest: apsOrganizationUpdateRequest 
     }}));
+
+    // validate request
+    this.validateRequest({ logName: logName, requestBody: apsOrganizationUpdateRequest });
 
     const updated: APSOrganization = await this.persistenceService.update({
       collectionDocumentId: apsOrganizationId,
@@ -168,6 +173,52 @@ export class APSOrganizationsService {
 
   }
 
+  private validateRequest = ({ logName, requestBody }:{
+    logName: string;
+    requestBody: APSOrganizationCreate | APSOrganizationUpdate;
+  }): void => {
+    const requestValidationServerErrorMetaList: TRequestValidationServerErrorMetaList = [];
+    const appCredentialsExpiryDuration_ValidMsg = 'allowed values: -1: no expiration, > 0: expiration in milliseconds';
+    const maxNumApisPerApiProduct_ValidMsg = 'allowed values: -1: no limit, > 0: limit';
+    if(requestBody.appCredentialsExpiryDuration !== undefined) {
+      if(requestBody.appCredentialsExpiryDuration < -1) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'appCredentialsExpiryDuration',
+          errorDescription: 'requestBody.appCredentialsExpiryDuration < -1',
+          validDescription: appCredentialsExpiryDuration_ValidMsg
+        });
+      }
+      if(requestBody.appCredentialsExpiryDuration === 0) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'appCredentialsExpiryDuration',
+          errorDescription: 'requestBody.appCredentialsExpiryDuration === 0',
+          validDescription: appCredentialsExpiryDuration_ValidMsg
+        });    
+      }  
+    }
+    if(requestBody.maxNumApisPerApiProduct !== undefined) {
+      if(requestBody.maxNumApisPerApiProduct < -1) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'maxNumApisPerApiProduct',
+          errorDescription: 'requestBody.maxNumApisPerApiProduct < -1',
+          validDescription: maxNumApisPerApiProduct_ValidMsg
+        });
+      }
+      if(requestBody.maxNumApisPerApiProduct === 0) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'maxNumApisPerApiProduct',
+          errorDescription: 'requestBody.maxNumApisPerApiProduct === 0',
+          validDescription: maxNumApisPerApiProduct_ValidMsg
+        });    
+      }  
+    }
+    if(requestValidationServerErrorMetaList.length > 0) {
+      throw new RequestValidationServerError(logName, undefined, {
+        requestBody: requestBody,
+        errorList: requestValidationServerErrorMetaList
+      });
+    }
+  }
 }
 
 export default new APSOrganizationsService();
