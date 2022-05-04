@@ -24,6 +24,16 @@ Solace Async API Management.
 * **Admin Portal: API Products**
   - control number of apis per api product using the configured maxNumApisPerApiProduct for the organization
 
+**New Features:**
+* **Business Group Roles**
+  - added Business Group roles in preparation to extend/enhance RBAC in the future
+    - role=businessGroupAdmin
+    - role=apiViewer
+
+**Retired:**
+* **Role: loginAs**
+  - removed role loginAs from list of roles
+
 #### API-M Server / OpenAPI
 
 * **Organization**
