@@ -3,7 +3,7 @@ import React from "react";
 
 import { InputText } from "primereact/inputtext";
 import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { Column, ColumnSelectionModeType } from "primereact/column";
 import { Button } from 'primereact/button';
 
 import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
@@ -17,9 +17,11 @@ import {
   TAPApiDisplayList 
 } from "../../../../displayServices/APApisDisplayService";
 import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 export interface ISearchSelectApisProps {
   organizationId: string;
@@ -36,14 +38,21 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   type TManagedObject = TAPApiDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const DialogHeader = 'Search & Select API(s):';
+  const DialogHeaderPlural = 'Search & Select API(s):';
+  const DialogHeaderSingular = 'Search & Select one API:';
   const MessageNoManagedObjectsFound = "No APIs found."
   const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
+  const [organizationContext] = React.useContext(OrganizationContext);
+
+  const isSingleSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+
+  const [isMaxExceeded, setIsMaxExceeded] = React.useState<boolean>(false);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [selectedManagedObjectList, setSelectedManagedObjectList] = React.useState<TManagedObjectList>();
+  const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
@@ -79,16 +88,18 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
 
   React.useEffect(() => {
     if(managedObjectList === undefined) return;
-    setSelectedManagedObjectList(APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList({
+    const selectedList: TAPApiDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList({
       apDisplayObjectList: managedObjectList,
       filterByEntityIdList: props.selectedApiEntityIdList
-    }));
+    });
+    if(isSingleSelection && selectedList.length > 0) setSelectedManagedObject(selectedList[0]);
+    setSelectedManagedObjectList(selectedList);
   }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if(selectedManagedObjectList === undefined) return;
     setIsInitialized(true);
-  }, [selectedManagedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [selectedManagedObjectList, selectedManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -101,8 +112,13 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   const onSaveSelectedApis = () => {
     const funcName = 'onSaveSelectedApis';
     const logName = `${ComponentName}.${funcName}()`;
-    if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
-    props.onSave(selectedManagedObjectList);
+    if(isSingleSelection) {
+      if(selectedManagedObject === undefined) throw new Error(`${logName}: isSingleSelection && selectedManagedObject === undefined`);
+      props.onSave([selectedManagedObject]);
+    } else {
+      if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
+      props.onSave(selectedManagedObjectList);
+    }
   }
 
   // * Data Table *
@@ -115,7 +131,8 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     const funcName = 'renderDataTableHeader';
     const logName = `${ComponentName}.${funcName}()`;
     if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
-    const isSaveDisabled: boolean = selectedManagedObjectList.length === 0;
+    // const isSaveDisabled: boolean = selectedManagedObjectList.length === 0;
+    const isSaveDisabled: boolean = isSingleSelection ? selectedManagedObject === undefined : selectedManagedObjectList.length === 0;
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
@@ -137,8 +154,22 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     );
   }
 
-  const onSelectionChange = (event: any): void => {
-    setSelectedManagedObjectList(event.value);
+  const onListSelectionChange = (event: any): void => {
+    const moList: TManagedObjectList = event.value;
+    if(APOrganizationsDisplayService.is_NumApis_Per_ApiProduct_Limited(organizationContext.apMaxNumApis_Per_ApiProduct)) {
+      if(moList.length > organizationContext.apMaxNumApis_Per_ApiProduct) setIsMaxExceeded(true);
+      else {
+        setIsMaxExceeded(false);
+        setSelectedManagedObjectList(event.value);
+      }
+    } else {
+      setIsMaxExceeded(false);
+      setSelectedManagedObjectList(event.value);
+    }
+  }
+
+  const onSingleSelectionChange = (event: any): void => {
+    setSelectedManagedObject(event.value);
   }
 
   const renderManagedObjectTableEmptyMessage = () => {
@@ -146,59 +177,117 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     else return MessageNoManagedObjectsFound;
   }
 
-  const renderManagedObjectDataTable = (): JSX.Element => {
+  const renderManagedObjectDataTableMultiple = (): JSX.Element => {
     const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
     const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
     return (
-      <div className="card">
-          <DataTable
-            ref={dt}
-            className="p-datatable-sm"
-            autoLayout={true}
-            resizableColumns 
-            columnResizeMode="fit"
-            showGridlines={false}
-            header={renderDataTableHeader()}
-            value={managedObjectList}
-            globalFilter={globalFilter}
-            scrollable 
-            scrollHeight="800px" 
-            dataKey={dataKey}
-            emptyMessage={renderManagedObjectTableEmptyMessage()}
-            // selection
-            selection={selectedManagedObjectList}
-            onSelectionChange={onSelectionChange}
-            // sorting
-            sortMode='single'
-            sortField={sortField}
-            sortOrder={1}
-          >
-            <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
-            <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
-            <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
-            <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
-            {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
+      <div className="card p-mt-2">
+        <DataTable
+          ref={dt}
+          className="p-datatable-sm"
+          autoLayout={true}
+          resizableColumns 
+          columnResizeMode="fit"
+          showGridlines={false}
+          header={renderDataTableHeader()}
+          value={managedObjectList}
+          globalFilter={globalFilter}
+          scrollable 
+          scrollHeight="800px" 
+          dataKey={dataKey}
+          emptyMessage={renderManagedObjectTableEmptyMessage()}
+          // selection
+          selection={selectedManagedObjectList}
+          onSelectionChange={onListSelectionChange}              
+          // sorting
+          sortMode='single'
+          sortField={sortField}
+          sortOrder={1}
+        >
+          <Column selectionMode="multiple" style={{width:'3em'}}/>
+          <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
+          <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
+          <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
+          <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
+          {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
         </DataTable>
       </div>
     );
   }
 
+  const renderManagedObjectDataTableSingle = (): JSX.Element => {
+    const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
+    return (
+      <div className="card p-mt-2">
+        <DataTable
+          ref={dt}
+          className="p-datatable-sm"
+          autoLayout={true}
+          resizableColumns 
+          columnResizeMode="fit"
+          showGridlines={false}
+          header={renderDataTableHeader()}
+          value={managedObjectList}
+          globalFilter={globalFilter}
+          scrollable 
+          scrollHeight="800px" 
+          dataKey={dataKey}
+          emptyMessage={renderManagedObjectTableEmptyMessage()}
+          // selection
+          selectionMode="single"
+          selection={selectedManagedObject}
+          onSelectionChange={onSingleSelectionChange}              
+          // sorting
+          sortMode='single'
+          sortField={sortField}
+          sortOrder={1}
+        >
+          <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
+          <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
+          <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
+          <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
+          {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
+        </DataTable>
+      </div>
+    );
+  }
+
+  const renderManagedObjectDataTable = (): JSX.Element => {
+    if(isSingleSelection) return renderManagedObjectDataTableSingle();
+    else return renderManagedObjectDataTableMultiple();
+  }
+
+  const renderHeader = () => {
+    if(isSingleSelection) {
+      return (
+        <APComponentHeader header={DialogHeaderSingular} />  
+      ); 
+    } else {
+      return (
+        <APComponentHeader header={DialogHeaderPlural} />  
+      );
+    }
+  }
+
+  const renderMaxExceededMessage = () => {
+    return(
+      <div style={{ color: 'red' }}>
+        Max number of APIs per API Product exceeded. Max: {organizationContext.apMaxNumApis_Per_ApiProduct}.
+      </div>
+    )
+  }
+
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header={DialogHeader} />  
+      { renderHeader() }
+
+      { isMaxExceeded && renderMaxExceededMessage() }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { isInitialialized && renderManagedObjectDataTable() }
-
-      {/* DEBUG */}
-      {/* {managedObjectTableDataList.length > 0 && selectedManagedObjectTableDataList && 
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedObjectTableDataList, null, 2)}
-        </pre>
-      } */}
 
     </div>
   );

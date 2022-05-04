@@ -167,7 +167,7 @@ export interface IAPOrganizationDisplay_Integration extends IAPEntityIdDisplay {
 
 export class APOrganizationsDisplayService {
   private readonly BaseComponentName = "APOrganizationsDisplayService";
-  private readonly DefaultMaxNumApis_Per_ApiProduct: number = -1; /** any number of Apis */
+  private readonly UnlimitedMaxNumApis_Per_ApiProduct: number = -1; /** any number of Apis */
   private readonly DefaultAppCredentialsExpiryDuration_Millis: number = -1; /** no expiry */
   private readonly SecretMask = '***';
   private readonly DefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0';
@@ -180,7 +180,10 @@ export class APOrganizationsDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
 
-  public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.DefaultMaxNumApis_Per_ApiProduct; }
+  public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.UnlimitedMaxNumApis_Per_ApiProduct; }
+  public is_NumApis_Per_ApiProduct_Limited(maxNumApisPerApiProduct: number): boolean { 
+    return maxNumApisPerApiProduct !== this.UnlimitedMaxNumApis_Per_ApiProduct; 
+  }
   public get_DefaultAppCredentialsExpiryDuration_Millis(): number { return this.DefaultAppCredentialsExpiryDuration_Millis; }
   public get_SecretMask(): string { return this.SecretMask; }
   public get_DefaultSolaceCloudBaseUrlStr(): string { return this.DefaultSolaceCloudBaseUrlStr; }
@@ -262,7 +265,7 @@ export class APOrganizationsDisplayService {
     const apOrganizationDisplay: IAPOrganizationDisplay = {
       connectorOrganizationResponse: this.create_Empty_ConnectorOrganizationResponse(),
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
-      apMaxNumApis_Per_ApiProduct: this.DefaultMaxNumApis_Per_ApiProduct,
+      apMaxNumApis_Per_ApiProduct: this.get_DefaultMaxNumApis_Per_ApiProduct(),
       apAppCredentialsExpiryDuration_millis: this.DefaultAppCredentialsExpiryDuration_Millis,
 
       apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
