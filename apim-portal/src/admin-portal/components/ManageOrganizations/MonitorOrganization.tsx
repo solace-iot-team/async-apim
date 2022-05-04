@@ -1,34 +1,29 @@
 
 import React from "react";
 
-import { 
-  CommonName,
-  CommonDisplayName
-} from '@solace-iot-team/apim-connector-openapi-browser';
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { 
-  E_CALL_STATE_ACTIONS, 
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import APOrganizationsDisplayService, { 
+  IAPOrganizationDisplay 
+} from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export interface IMonitorOrganizationProps {
-  organizationId: CommonName;
-  organizationDisplayName: CommonDisplayName;
+  organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
-  // onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const MonitorOrganization: React.FC<IMonitorOrganizationProps> = (props: IMonitorOrganizationProps) => {
   const componentName = 'MonitorOrganization';
 
-  type TManagedObject = TAPOrganization;
+  type TManagedObject = IAPOrganizationDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -37,10 +32,12 @@ export const MonitorOrganization: React.FC<IMonitorOrganizationProps> = (props: 
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationEntityId.displayName}`);
     try {
-      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganizationStatus(props.organizationId, props.organizationDisplayName);
-      setManagedObject(apOrganization);
+      const apOrganizationDisplay: IAPOrganizationDisplay = await APOrganizationsDisplayService.apiGet_ApOrganizationDisplay({
+        organizationId: props.organizationEntityId.id
+      });
+      setManagedObject(apOrganizationDisplay);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -77,11 +74,14 @@ export const MonitorOrganization: React.FC<IMonitorOrganizationProps> = (props: 
         <div className="p-col-12">
           <div className="organization-view">
             <div className="detail-left">
-              <div><b>Cloud Connectivity</b>: {String(managedObject.status?.cloudConnectivity)}</div>
-              <div><b>Event Portal Connectivity</b>: {String(managedObject.status?.eventPortalConnectivity)}</div>
+              <div><b>Operational Status</b>: {managedObject.apOrganizationConfigStatus}</div>
+              <div className="p-ml-2 p-mt-2">
+                <div><b>Solace Cloud Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.cloudConnectivity)}</div>
+                <div><b>Event Portal Connectivity</b>: {String(managedObject.apOrganizationOperationalStatus.eventPortalConnectivity)}</div>
+              </div>
             </div>
             <div className="detail-right">
-              <div>Id: {managedObject.name}</div>
+              <div>Id: {managedObject.apEntityId.id}</div>
             </div>            
           </div>
         </div>    
@@ -92,7 +92,7 @@ export const MonitorOrganization: React.FC<IMonitorOrganizationProps> = (props: 
   return (
     <div className="manage-organizations">
 
-      <APComponentHeader header={`Organization: ${props.organizationDisplayName}`} />
+      <APComponentHeader header={`Organization: ${props.organizationEntityId.displayName}`} />
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 

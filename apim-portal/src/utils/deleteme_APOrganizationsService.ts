@@ -179,7 +179,9 @@ export class APOrganizationsService {
     });
     const apsRequestBody: APSOrganizationCreate = {
       organizationId: requestBody.name,
-      displayName: requestBody.displayName
+      displayName: requestBody.displayName,
+      appCredentialsExpiryDuration: -1,
+      maxNumApisPerApiProduct: -1
     }
     const createdApsOrg = await ApsAdministrationService.createApsOrganization({
       requestBody: apsRequestBody
@@ -213,7 +215,9 @@ export class APOrganizationsService {
       // create it if it doesn't exist
       const apsRequestBody: APSOrganizationCreate = {
         organizationId: organizationId,
-        displayName: requestBody.displayName
+        displayName: requestBody.displayName,
+        appCredentialsExpiryDuration: -1,
+        maxNumApisPerApiProduct: -1  
       }
       updatedApsOrg = await ApsAdministrationService.createApsOrganization({
         requestBody: apsRequestBody

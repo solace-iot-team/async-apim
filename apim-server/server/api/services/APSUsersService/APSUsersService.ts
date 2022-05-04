@@ -41,12 +41,6 @@ import APSOrganizationsService from '../apsAdministration/APSOrganizationsServic
 import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
 
-// replace system roles with 1 additional role='root' for root user
-// const RootSystemRoles = 'root';
-// type APSUserCreate_NoSystemRoles = Omit<APSUserCreate, 'systemRoles'>;
-// type APSRootUser = APSUserCreate_NoSystemRoles & {
-//   systemRoles: string;
-// }
 export type APSRootUser = APSUserCreate;
 export type APSRootUserResponse = APSUserResponse;
 type APSUserCreateList = Array<APSUserCreate>;
@@ -55,7 +49,7 @@ export class APSUsersService {
   private static collectionName = "apsUsers";
   private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
-  private static collectionSchemaVersion = 2;
+  private static collectionSchemaVersion = 3;
   private static rootApsUser: APSRootUser;
   private persistenceService: MongoPersistenceService;
   private collectionMutex = new Mutex();
@@ -203,7 +197,10 @@ export class APSUsersService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
-  public bootstrap = async(): Promise<void> => {
+  /**
+   * deprecated
+   */
+  public xbootstrap = async(): Promise<void> => {
     const funcName = 'bootstrap';
     const logName = `${APSUsersService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));

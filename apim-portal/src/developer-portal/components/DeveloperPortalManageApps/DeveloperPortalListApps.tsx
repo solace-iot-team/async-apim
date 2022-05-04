@@ -23,6 +23,7 @@ import { Globals } from "../../../utils/Globals";
 import { Loading } from "../../../components/Loading/Loading";
 import { Config } from "../../../Config";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalManageApps.css";
@@ -46,6 +47,7 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
@@ -81,7 +83,8 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
         case EAppType.USER:
           const apDeveloperPortalUserAppListDisplayList: TAPDeveloperPortalAppListDisplayList = await APDeveloperPortalUserAppsDisplayService.apiGetList_ApDeveloperPortalUserAppListDisplayList({
             organizationId: props.organizationEntityId.id,
-            userId: userContext.apLoginUserDisplay.apEntityId.id
+            userId: userContext.apLoginUserDisplay.apEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObjectList(apDeveloperPortalUserAppListDisplayList);
           break;
@@ -89,7 +92,8 @@ export const DeveloperPortalListApps: React.FC<IDeveloperPortalListAppsProps> = 
           if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: props.appType === EAppType.TEAM && userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
           const apDeveloperPortalTeamAppListDisplayList: TAPDeveloperPortalAppListDisplayList = await APDeveloperPortalTeamAppsDisplayService.apiGetList_ApDeveloperPortalTeamAppListDisplayList({
             organizationId: props.organizationEntityId.id,
-            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
           });
           setManagedObjectList(apDeveloperPortalTeamAppListDisplayList);
           break;

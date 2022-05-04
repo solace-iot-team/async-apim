@@ -4,21 +4,18 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { 
-  CommonDisplayName, CommonName, 
-} from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
-import { APOrganizationsService } from "../../../utils/APOrganizationsService";
+import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export interface IDeleteOrganizationProps {
-  organizationId: CommonName;
-  organizationDisplayName: CommonDisplayName;
+  organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -53,10 +50,10 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete organization: ${props.organizationDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete organization: ${props.organizationEntityId.displayName}`);
     try { 
-      await APOrganizationsService.deleteOrganization({
-        organizationId: props.organizationId
+      await APSystemOrganizationsDisplayService.apiDelete_ApSystemOrganizationDisplay({
+        organizationId: props.organizationEntityId.id
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -97,7 +94,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Deleting organization <b>{props.organizationDisplayName}</b> will also delete all it's assets!</p>
+        <p>Deleting organization <b>{props.organizationEntityId.displayName}</b> will also delete all it's assets!</p>
         <p>Are you sure you want to delete it?</p>
         <p><b>This action is irreversible!</b></p>
       </React.Fragment>  

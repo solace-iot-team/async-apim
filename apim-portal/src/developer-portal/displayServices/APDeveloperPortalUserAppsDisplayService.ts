@@ -15,7 +15,8 @@ import {
   EAPApp_Type, 
   IAPAppDisplay, 
   TAPAppDisplay_AllowedActions, 
-  TAPAppMeta 
+  TAPAppMeta, 
+  TAPOrganizationAppSettings
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
@@ -47,11 +48,15 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     };  
   }
 
-  public create_Empty_ApDeveloperPortalUserAppDisplay({ userId }:{
+  public create_Empty_ApDeveloperPortalUserAppDisplay({ userId, apOrganizationAppSettings }:{
     userId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPDeveloperPortalUserAppDisplay {
 
-    const apAppDisplay: IAPAppDisplay = this.create_Empty_ApAppDisplay({ apAppMeta: this.create_ApDeveloperPortalApp_ApAppMeta({ ownerId: userId }) });
+    const apAppDisplay: IAPAppDisplay = this.create_Empty_ApAppDisplay({ 
+      apAppMeta: this.create_ApDeveloperPortalApp_ApAppMeta({ ownerId: userId }),
+      apOrganizationAppSettings: apOrganizationAppSettings,
+    });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
       ...apAppDisplay,
@@ -67,6 +72,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     connectorAppConnectionStatus,
     apDeveloperPortalUserApp_ApiProductDisplayList,
     apAppApiDisplayList,
+    apOrganizationAppSettings,
   }: {
     userId: string;
     connectorAppResponse_smf: AppResponse;
@@ -74,6 +80,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     connectorAppConnectionStatus: AppConnectionStatus;
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPDeveloperPortalUserAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
@@ -82,7 +89,8 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apAppApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-      apAppApiDisplayList: apAppApiDisplayList
+      apAppApiDisplayList: apAppApiDisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings,
     });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
@@ -92,36 +100,12 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalUserAppDisplay>(apDeveloperPortalUserAppDisplay);
   }
 
-  // public get_ApDeveloperPortalApp_ApiProductDisplayList({ apDeveloperPortalUserAppDisplay }:{
-  //   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
-  // }): TAPDeveloperPortalAppApiProductDisplayList {
-  //   return apDeveloperPortalUserAppDisplay.apAppApiProductDisplayList;
-  // }
-
   public get_Empty_AllowedActions(): TAPDeveloperPortalUserAppDisplay_AllowedActions {
     return {
       ...super.get_Empty_AllowedActions(),
       isManageWebhooksAllowed: false
     };
   }
-
-  // private is_ManageWebhooks_Allowed({ apAppEnvironmentDisplayList }:{
-  //   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
-  // }): boolean {
-  //   return APAppEnvironmentsDisplayService.isAny_ApAppEnvironmentDisplay_Webhook_Capable({
-  //     apAppEnvironmentDisplayList: apAppEnvironmentDisplayList
-  //   });
-  // }
-
-  // public get_AllowedActions({ apAppDisplay }: {
-  //   apAppDisplay: IAPAppDisplay;
-  // }): TAPDeveloperPortalUserAppDisplay_AllowedActions {
-  //   const allowedActions: TAPDeveloperPortalUserAppDisplay_AllowedActions = {
-  //     ...super.get_AllowedActions({ apAppDisplay: apAppDisplay }),
-  //     isManageWebhooksAllowed: this.is_ManageWebhooks_Allowed({ apAppEnvironmentDisplayList: apAppDisplay.apAppEnvironmentDisplayList }),
-  //   };
-  //   return allowedActions;
-  // }
 
   // ********************************************************************************************************************************
   // API calls
@@ -155,10 +139,11 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     return false;
   } 
 
-  public apiGet_ApDeveloperPortalUserAppDisplay = async({ organizationId, userId, appId }:{
+  public apiGet_ApDeveloperPortalUserAppDisplay = async({ organizationId, userId, appId, apOrganizationAppSettings }:{
     organizationId: string;
     userId: string;
     appId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPDeveloperPortalUserAppDisplay> => {
     const funcName = 'apiGet_ApDeveloperPortalUserAppDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -212,14 +197,16 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings,
     });
 
     return apDeveloperPortalUserAppDisplay;
   }
 
-  public apiGetList_ApDeveloperPortalUserAppListDisplayList = async({ organizationId, userId }: {
+  public apiGetList_ApDeveloperPortalUserAppListDisplayList = async({ organizationId, userId, apOrganizationAppSettings }: {
     organizationId: string;
     userId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPDeveloperPortalAppListDisplayList> => {
 
     // const apDeveloperPortalUserAppListDisplayList: TAPDeveloperPortalUserAppListDisplayList = [];
@@ -232,105 +219,11 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
       organizationId: organizationId,
       ownerId: userId,
-      connectorAppResponseList: connectorAppResponseList
+      connectorAppResponseList: connectorAppResponseList,
+      apOrganizationAppSettings: apOrganizationAppSettings,
     });
 
-    // for(const connectorAppResponse of connectorAppResponseList) {
-
-    //   // TODO: create a cache of the api products
-    //   // required to calculate the app status
-    //   const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
-    //     organizationId: organizationId,
-    //     ownerId: userId,
-    //     connectorAppResponse: connectorAppResponse,
-    //   });
-      
-    //   const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
-    //     userId: userId,
-    //     connectorAppConnectionStatus: {},
-    //     connectorAppResponse_smf: connectorAppResponse,
-    //     connectorAppResponse_mqtt: undefined,
-    //     apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-    //     apAppApiDisplayList: [],
-    //   });
-
-    //   const apDeveloperPortalUserAppListDisplay: IAPDeveloperPortalUserAppListDisplay = {
-    //     apEntityId: apDeveloperPortalUserAppDisplay.apEntityId,
-    //     apAppStatus: apDeveloperPortalUserAppDisplay.apAppStatus,
-    //     connectorAppResponse: connectorAppResponse,
-    //     apSearchContent: apDeveloperPortalUserAppDisplay.apSearchContent
-    //   };
-
-    //   apDeveloperPortalUserAppListDisplayList.push(apDeveloperPortalUserAppListDisplay);
-
-    // }
-
-    // return apDeveloperPortalUserAppListDisplayList;
   }
-
-  /**
-   * List of User Apps. 
-   * NOTE: does not include api list.
-   */
-  // public apiGetList_ApDeveloperPortalUserAppDisplayList = async({ organizationId, userId }: {
-  //   organizationId: string;
-  //   userId: string;
-  // }): Promise<TAPDeveloperPortalUserAppDisplayList> => {
-  //   // const funcName = 'apiGetList_ApDeveloperPortalUserAppDisplayList';
-  //   // const logName = `${this.ComponentName}.${funcName}()`;
-
-  //   const exists_userId: boolean = await this.apiCheck_UserIdExists({
-  //     organizationId: organizationId,
-  //     userId: userId,
-  //   });
-  //   if(!exists_userId) return [];
-
-  //   const apDeveloperPortalUserAppDisplayList: TAPDeveloperPortalUserAppDisplayList = [];
-
-  //   const connectorAppList: Array<AppResponse> = await AppsService.listDeveloperApps({
-  //     organizationName: organizationId, 
-  //     developerUsername: userId
-  //   });
-
-  //   // get details for each App
-  //   for(const connectorApp of connectorAppList) {
-
-  //     const connectorAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
-  //       organizationName: organizationId,
-  //       developerUsername: userId,
-  //       appName: connectorApp.name,
-  //       topicSyntax: 'smf'
-  //     });
-
-  //     // required to calculate the app status
-  //     const apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList = await this.apiGet_ApDeveloperPortalAppApiProductDisplayList({
-  //       organizationId: organizationId,
-  //       ownerId: userId,
-  //       connectorAppResponse: connectorAppResponse_smf,
-  //     });
-    
-  //     // // create the app api display list
-  //     // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
-  //     //   organizationId: organizationId,
-  //     //   appId: connectorApp.name,
-  //     //   apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-  //     // });
-
-  //     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = this.create_ApDeveloperPortalUserAppDisplay_From_ApiEntities({
-  //       userId: userId,
-  //       connectorAppConnectionStatus: {},
-  //       connectorAppResponse_smf: connectorAppResponse_smf,
-  //       connectorAppResponse_mqtt: undefined,
-  //       apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-  //       apAppApiDisplayList: [],
-  //     });
-
-  //     apDeveloperPortalUserAppDisplayList.push(apDeveloperPortalUserAppDisplay);
-
-  //   }
-
-  //   return apDeveloperPortalUserAppDisplayList;
-  // }
 
   public async apiCreate_ApDeveloperPortalUserAppDisplay({ organizationId, userId, apDeveloperPortalUserAppDisplay }:{
     organizationId: string;

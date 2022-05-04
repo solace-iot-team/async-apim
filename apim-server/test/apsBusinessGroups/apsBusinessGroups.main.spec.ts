@@ -26,6 +26,7 @@ import {
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -103,7 +104,9 @@ describe(`${scriptName}`, () => {
       const orgDisplayName: APSDisplayName = createOrganizationDisplayName(orgId);
       const apsOrg: APSOrganizationCreate = {
         organizationId: orgId,
-        displayName: orgDisplayName
+        displayName: orgDisplayName,
+        appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+        maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
       }
       const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
         requestBody: apsOrg
@@ -186,7 +189,9 @@ describe(`${scriptName}`, () => {
         const orgDisplayName: APSDisplayName = createOrganizationDisplayName(orgId);
         const apsOrg: APSOrganizationCreate = {
           organizationId: orgId,
-          displayName: orgDisplayName
+          displayName: orgDisplayName,
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
         const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
           requestBody: apsOrg

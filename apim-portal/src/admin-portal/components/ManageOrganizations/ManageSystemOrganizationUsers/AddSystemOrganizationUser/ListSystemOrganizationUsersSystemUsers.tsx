@@ -10,12 +10,12 @@ import { TAPEntityId } from "../../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../../utils/ApiCallState";
 import APSystemUsersDisplayService, { TAPSystemUserDisplay, TAPSystemUserDisplayListResponse } from "../../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { TAPUserDisplayLazyLoadingTableParameters } from "../../../../../displayServices/APUsersDisplayService/APUsersDisplayService";
-import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 import { APSClientOpenApi } from "../../../../../utils/APSClientOpenApi";
 import { APComponentHeader } from "../../../../../components/APComponentHeader/APComponentHeader";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
+import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 
 export interface IListSystemOrganizationUsersSystemUsersProps {
   excludeOrganizationEntityId: TAPEntityId;
@@ -221,13 +221,6 @@ export const ListSystemOrganizationUsersSystemUsers: React.FC<IListSystemOrganiz
       {(managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== '')) && 
         renderManagedObjectDataTable()
       }
-
-      {/* DEBUG */}
-      {/* {managedObjectList.length > 0 && selectedManagedObject && 
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedObject, null, 2)}
-        </pre>
-      } */}
 
     </div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
-import { TAPOrganization } from "../../utils/APOrganizationsService";
+import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } from "../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 
-export type TAPOrganzationContext = TAPOrganization;
+export type TAPOrganzationContext = IAPSystemOrganizationDisplay;
 
 export interface IOrganizationContextProviderProps {
   children: any
@@ -24,10 +24,8 @@ const OrganizationContextReducer = (state: TAPOrganzationContext, action: TOrgan
       return state;  
   }
 }
-const initialContext: TAPOrganzationContext = {
-  name: '',
-  displayName: '',
-}
+const initialContext: TAPOrganzationContext = APSystemOrganizationsDisplayService.create_Empty_ApOrganizationDisplay();
+
 const initialAction: React.Dispatch<TOrganizationContextAction> = (value: TOrganizationContextAction) => {};
 
 export const OrganizationContext = React.createContext<[TAPOrganzationContext, React.Dispatch<TOrganizationContextAction>]>([initialContext, initialAction]);

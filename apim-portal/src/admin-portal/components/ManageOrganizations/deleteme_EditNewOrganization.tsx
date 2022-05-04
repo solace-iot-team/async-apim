@@ -27,8 +27,8 @@ import {
   E_CALL_STATE_ACTIONS, 
   ManageOrganizationsCommon, 
   TAPOrganizationConfig,
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
+} from "./deleteme_ManageOrganizationsCommon";
+import { APOrganizationsService, TAPOrganization } from "../../../utils/deleteme_APOrganizationsService";
 import { APSOpenApiFormValidationRules } from "../../../utils/APSOpenApiFormValidationRules";
 import { Globals } from "../../../utils/Globals";
 

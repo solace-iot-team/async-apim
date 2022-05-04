@@ -47,13 +47,6 @@ All other variables are set directly in the `docker.compose.yml`_ file.
   export APIM_SERVER_ROOT_USER_PWD="admin123!"
 
 
-The quickstart also contains a master user which is automatically bootstrapped at start-up time.
-The full user details are in `bootstrap user list`_.
-
-Change the user name / pwd if required.
-
-
-
 Start, Stop, Update
 +++++++++++++++++++
 
@@ -130,6 +123,3 @@ Browser connections:
 
 .. _docker.compose.yml :
   https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml
-
-.. _bootstrap user list :
-  https://github.com/solace-iot-team/async-apim/tree/main/quickstart/docker-volumes/apim-server/bootstrap/apsUsers/apsUserList.json

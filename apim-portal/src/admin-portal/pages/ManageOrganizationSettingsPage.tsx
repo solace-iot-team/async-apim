@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -9,9 +10,10 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
-import { E_ManageOrganizations_Scope, ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
+import { E_ManageOrganizations_Scope } from '../components/ManageOrganizations/ManageOrganizationsCommon';
 
 import "../../pages/Pages.css";
+import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 
 export const ManageOrganizationSettingsPage: React.FC = () => {
   // const componentName = 'ManageOrganizationSettingsPage';

@@ -19,7 +19,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
-import { APOrganizationsService } from '../../utils/APOrganizationsService';
+// import { APOrganizationsService } from '../../utils/deleteme_APOrganizationsService';
 import { Globals } from '../../utils/Globals';
 import { TAPControlledChannelParameterList } from '../APApiProductsDisplayService';
 import APAttributesDisplayService, { IAPAttributeDisplay, TAPAttributeDisplayList, TAPRawAttributeList } from '../APAttributesDisplayService/APAttributesDisplayService';
@@ -51,6 +51,9 @@ export enum EAPApp_OwnerType {
   EXTERNAL = "external"
 }
 
+export type TAPOrganizationAppSettings = {
+  apAppCredentialsExpiryDuration_millis: number;
+}
 export type TAPAppCredentialsDisplay = {
   apConsumerKeyExiresIn: number; /** duration in millseconds  */
   expiresAt: number; /** millis since epoch */
@@ -182,7 +185,9 @@ export class APAppsDisplayService {
       apAppOwnerType: EAPApp_OwnerType.UNKNOWN
     }
   }
-  private create_Empty_ApCredentialsDisplay(): TAPAppCredentialsDisplay {
+  private create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings }:{
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
+  }): TAPAppCredentialsDisplay {
     return {
       expiresAt: -1,
       issuedAt: -1,
@@ -190,13 +195,14 @@ export class APAppsDisplayService {
         consumerKey: '',
         consumerSecret: ''
       },
-      apConsumerKeyExiresIn: APOrganizationsService.get_Default_DeveloperPortalApp_CredentailsExpiryDuration(),
+      apConsumerKeyExiresIn: apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       devel_calculated_expiresAt: -1,
       devel_connector_app_expires_in: -1,
     }
   }
-  protected create_Empty_ApAppDisplay({ apAppMeta }:{
+  protected create_Empty_ApAppDisplay({ apAppMeta, apOrganizationAppSettings }:{
     apAppMeta?: TAPAppMeta;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): IAPAppDisplay {
     const apAppDisplay: IAPAppDisplay = {
       apEntityId: APEntityIdsService.create_EmptyObject(),
@@ -208,7 +214,7 @@ export class APAppsDisplayService {
         appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
       },
       apAppStatus: EAPApp_Status.UNKNOWN,
-      apAppCredentials: this.create_Empty_ApCredentialsDisplay(),
+      apAppCredentials: this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings}),
       apAppEnvironmentDisplayList: [],
       apAppApiProductDisplayList: [],
       apAppApiDisplayList: [],
@@ -285,14 +291,15 @@ export class APAppsDisplayService {
     return apAppChannelParameterList;
   }
 
-  private create_ApAppCredentials_From_ApiEntities({ connectorAppResponse }:{
+  private create_ApAppCredentials_From_ApiEntities({ connectorAppResponse, apOrganizationAppSettings }:{
     connectorAppResponse: AppResponse;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPAppCredentialsDisplay {
     // const funcName = 'create_ApAppCredentials_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
     // console.log(`${logName}: connectorAppResponse.credentials=${JSON.stringify(connectorAppResponse.credentials, null, 2)}, \nconnectorAppResponse.expiresIn=${connectorAppResponse.expiresIn}`);
 
-    const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay();
+    const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings });
     if(connectorAppResponse.credentials.expiresAt) appCredentials.expiresAt = connectorAppResponse.credentials.expiresAt;
     if(connectorAppResponse.credentials.issuedAt) appCredentials.issuedAt = connectorAppResponse.credentials.issuedAt;
     if(connectorAppResponse.credentials.secret) {
@@ -313,6 +320,7 @@ export class APAppsDisplayService {
     apAppMeta, 
     apAppApiProductDisplayList,
     apAppApiDisplayList,
+    apOrganizationAppSettings,
   }: {
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
@@ -320,9 +328,10 @@ export class APAppsDisplayService {
     apAppMeta: TAPAppMeta;
     apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): IAPAppDisplay {
 
-    const appCredentials: TAPAppCredentialsDisplay = this.create_ApAppCredentials_From_ApiEntities({ connectorAppResponse: connectorAppResponse_smf });
+    const appCredentials: TAPAppCredentialsDisplay = this.create_ApAppCredentials_From_ApiEntities({ connectorAppResponse: connectorAppResponse_smf, apOrganizationAppSettings: apOrganizationAppSettings });
 
     // map raw attributes to ApAppDisplay entities
     // create the working list
@@ -472,9 +481,10 @@ export class APAppsDisplayService {
     }
   }
 
-  public apiGet_ApAppDisplay = async({ organizationId, appId }:{
+  public apiGet_ApAppDisplay = async({ organizationId, appId, apOrganizationAppSettings }:{
     organizationId: string;
     appId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<IAPAppDisplay> => {
     const funcName = 'apiGet_ApAppDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -532,7 +542,8 @@ export class APAppsDisplayService {
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: undefined,
       apAppApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
-      apAppApiDisplayList: []
+      apAppApiDisplayList: [],
+      apOrganizationAppSettings: apOrganizationAppSettings
     });
 
     return apAppDisplay;

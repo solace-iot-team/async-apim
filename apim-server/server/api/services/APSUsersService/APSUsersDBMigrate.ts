@@ -62,6 +62,19 @@ export type APSUser_DB_2 = {
   memberOfOrganizations?: Array<APSOrganizationRoles_DB_1>;
   memberOfOrganizationGroups?: Array<APSMemberOfOrganizationGroups_DB_2>;
 }
+// * Schema 3 *
+export type EAPSBusinessGroupAuthRole_DB_3 = "organizationAdmin" | "apiTeam" | "apiConsumer";
+export type APSUser_DB_3 = {
+  _id: string;
+  _schemaVersion: number;
+  isActivated: boolean;
+  userId: string;
+  password: string;
+  profile: any;
+  systemRoles: Array<string>;
+  memberOfOrganizations?: Array<APSOrganizationRoles_DB_1>;
+  memberOfOrganizationGroups?: Array<APSMemberOfOrganizationGroups_DB_2>;
+}
 
 export class APSUsersDBMigrate {
 
@@ -84,8 +97,124 @@ export class APSUsersDBMigrate {
       if(currentDBSchemaVersion === 1) {
         currentDBRawUser = await APSUsersDBMigrate.migrate_1_to_2(apsUsersService.getPersistenceService(), currentDBRawUser);
       }
+      if(currentDBSchemaVersion === 2) {
+        currentDBRawUser = await APSUsersDBMigrate.migrate_2_to_3(apsUsersService.getPersistenceService(), currentDBRawUser);
+      }
     }
+    const allDBRawUserList = await apsUsersService.getPersistenceService().allRawLessThanTargetSchemaVersion(targetDBSchemaVersion + 1);
+    for(const dbRawUser of allDBRawUserList) {
+      // adjust roles regardless of schema version
+      await APSUsersDBMigrate.update_roles(apsUsersService, dbRawUser);
+    }
+
     return currentDBRawUserListToMigrate.length;
+  }
+
+  /**
+   * Remove role=loginAs from all users
+   * @param persistenceService 
+   * @param dbUser_1 
+   * @returns 
+   */
+  private static update_roles = async(apsUsersService: APSUsersService, dbUser: APSUser_DB_3): Promise<APSUser_DB_3> => {
+    const funcName = 'update_roles';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    const userId = dbUser.userId;
+
+    // remove loginAs from systemRoles
+    if(dbUser.systemRoles !== undefined) {
+      for(let idx=0; idx < dbUser.systemRoles.length; idx++) {
+        if(dbUser.systemRoles[idx] === 'loginAs') {
+          dbUser.systemRoles.splice(idx, 1);
+          idx--;
+        }
+      }  
+      const dbUser_3: APSUser_DB_3 = {
+        ...dbUser,
+      }
+      const replaced: APSUserCreate = await apsUsersService.getPersistenceService().replace({
+        collectionDocumentId: userId, 
+        collectionDocument: dbUser_3, 
+        collectionSchemaVersion: apsUsersService.getDBObjectSchemaVersion()
+      });
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+        apsUser: replaced,
+      }}));  
+    }
+    
+    if(dbUser.memberOfOrganizations !== undefined) {
+      const memberOfOrganizationGroupsList: Array<APSMemberOfOrganizationGroups_DB_2> = [];
+      for(const apsOrganizationRoles_DB_1 of dbUser.memberOfOrganizations) {
+        // remove loginAs from organization roles
+        for(let idx=0; idx < apsOrganizationRoles_DB_1.roles.length; idx++) {
+          if(apsOrganizationRoles_DB_1.roles[idx] === 'loginAs') {
+            apsOrganizationRoles_DB_1.roles.splice(idx, 1);
+            idx--;
+          }
+        }
+        const memberOfBusinessGroup: APSMemberOfBusinessGroup_DB_2 = {
+          businessGroupId: apsOrganizationRoles_DB_1.organizationId,
+          roles: apsOrganizationRoles_DB_1.roles
+        }
+        const memberOfOrganizationGroups: APSMemberOfOrganizationGroups_DB_2 = {
+          organizationId: apsOrganizationRoles_DB_1.organizationId,
+          memberOfBusinessGroupList: [memberOfBusinessGroup]          
+        }
+        memberOfOrganizationGroupsList.push(memberOfOrganizationGroups);
+      }
+      const dbUser_3: APSUser_DB_3 = {
+        ...dbUser,
+        memberOfOrganizationGroups: memberOfOrganizationGroupsList
+      }
+      const replaced: APSUserCreate = await apsUsersService.getPersistenceService().replace({
+        collectionDocumentId: userId, 
+        collectionDocument: dbUser_3, 
+        collectionSchemaVersion: apsUsersService.getDBObjectSchemaVersion()
+      });
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+        apsUser: replaced,
+      }}));  
+    }
+
+    const newRawDBDocument = await apsUsersService.getPersistenceService().byIdRaw({
+      documentId: userId
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
+      old_dbUser: dbUser,
+      new_dbUser: newRawDBDocument
+    }}));
+    return newRawDBDocument;
+  }
+
+  private static migrate_2_to_3 = async(persistenceService: MongoPersistenceService, dbUser_2: APSUser_DB_2): Promise<APSUser_DB_3> => {
+    const funcName = 'migrate_2_to_3';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    const newSchemaVersion = 3;
+    const userId = dbUser_2.userId;
+
+    const dbUser_3: APSUser_DB_3 = {
+      ...dbUser_2,
+      _schemaVersion: newSchemaVersion,
+    }
+    const replaced: APSUserCreate = await persistenceService.replace({
+      collectionDocumentId: userId, 
+      collectionDocument: dbUser_3, 
+      collectionSchemaVersion: newSchemaVersion
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+      apsUser: replaced,
+    }}));  
+
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: userId
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
+      dbUser_2: dbUser_2,
+      dbUser_3: newRawDBDocument
+    }}));
+    return newRawDBDocument;
   }
 
   private static migrate_1_to_2 = async(persistenceService: MongoPersistenceService, dbUser_1: APSUser_DB_1): Promise<APSUser_DB_2> => {

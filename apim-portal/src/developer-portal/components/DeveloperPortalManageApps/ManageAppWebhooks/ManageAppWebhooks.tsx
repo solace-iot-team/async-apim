@@ -21,6 +21,7 @@ import { ListAppWebhooks } from "./ListAppWebhooks";
 import { ViewAppWebhook } from "./ViewAppWebhook";
 import { DeleteAppWebhook } from "./DeleteAppWebhook";
 import { EditNewAppWebhook } from "./EditNewAppWebhook";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -68,6 +69,7 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [managedApAppDisplay, setManagedApAppDisplay] = React.useState<TManagedManageAppDisplay>();  
@@ -102,7 +104,8 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
           const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
             organizationId: props.organizationId,
             userId: userContext.apLoginUserDisplay.apEntityId.id,
-            appId: props.appEntityId.id
+            appId: props.appEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           const user_apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay({
             organizationId: props.organizationId,
@@ -117,7 +120,8 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
           const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = await APDeveloperPortalTeamAppsDisplayService.apiGet_ApDeveloperPortalTeamAppDisplay({
             organizationId: props.organizationId,
             teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
-            appId: props.appEntityId.id
+            appId: props.appEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           const team_apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = await APAppWebhooksDisplayService.apiGetList_WebhookAvailableApEnvironmentDisplayList_For_ApAppDisplay({
             organizationId: props.organizationId,

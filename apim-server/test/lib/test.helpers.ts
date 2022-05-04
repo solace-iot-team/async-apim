@@ -253,7 +253,7 @@ export type TTestEnv = {
   startMongoScript: string;
   stopMongoScript: string;
   bootstrapFiles: {
-    apsUserListFile: string;
+    // apsUserListFile: string;
     apsConnectorListFile: string;
     quickstart: {
       apsUserListFile: string;

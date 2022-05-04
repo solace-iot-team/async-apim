@@ -16,6 +16,7 @@ import {
   APSUserResponseList, 
   ApsUsersService, 
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -42,6 +43,8 @@ const apsUserCreateLoginTemplate: APSUserCreate = {
 const apsOrganizationCreate: APSOrganizationCreate = {
   organizationId: 'logoutAllOrganization',
   displayName: 'logoutAllOrganization',
+  appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+  maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
 }
 
 

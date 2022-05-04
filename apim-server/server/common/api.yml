@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.1.0
+  version: 0.1.1
 servers:
 - url: /apim-server/v1
 tags:
@@ -119,7 +119,6 @@ paths:
         content:
           application/json:
             schema:
-              # $ref: "#/components/schemas/APSOrganizationUpdate"
               $ref: "#/components/schemas/APSExternalSystemUpdate"
       responses:
         '200':
@@ -1600,6 +1599,7 @@ components:
       - invalidObjectReferences
       - dependantObjects
       - organizationNotFound
+      - requestValidation
     APSErrorMeta:
       type: object
       description: Additional details about the error.
@@ -1702,23 +1702,24 @@ components:
     EAPSBusinessGroupAuthRole:
       type: string
       enum:
-      - loginAs
       - organizationAdmin
+      - businessGroupAdmin
       - apiTeam
       - apiConsumer
+      - apiViewer
     EAPSOrganizationAuthRole:
       type: string
       enum:
-      - loginAs
       - organizationAdmin
+      - businessGroupAdmin
       - apiTeam
       - apiConsumer
+      - apiViewer
     EAPSSystemAuthRole:
       type: string
       enum:
       - root
       - systemAdmin
-      - loginAs
     APSOrganizationAuthRoleList:
       type: array
       items:
@@ -1911,6 +1912,14 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/APSOrganization'
+    APSMaxNumApisPerApiProduct:
+      type: integer
+      description:
+        Value of '-1' indicates no restriction. Value > 0 restricts the number of APIs each API Product can use.
+    APSAppCredentialsExpiryDuration:
+      type: integer
+      description:
+        The expiry of API consumer app credentials in milliseconds. Value of '-1' indicates no expiry. Value > 0 indicates expiry after Value milliseconds, min of 1 day.
     APSOrganization:
       type: object
       additionalProperties: false
@@ -1919,9 +1928,15 @@ components:
           $ref: "#/components/schemas/APSId"
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        maxNumApisPerApiProduct:
+          $ref: "#/components/schemas/APSMaxNumApisPerApiProduct"
+        appCredentialsExpiryDuration:
+          $ref: "#/components/schemas/APSAppCredentialsExpiryDuration"
       required:
         - organizationId
         - displayName
+        - maxNumApisPerApiProduct
+        - appCredentialsExpiryDuration
     APSOrganizationCreate:
       allOf:
       - description: Create request for an APSOrganization object.
@@ -1933,6 +1948,10 @@ components:
       properties:
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        maxNumApisPerApiProduct:
+          $ref: "#/components/schemas/APSMaxNumApisPerApiProduct"
+        appCredentialsExpiryDuration:
+          $ref: "#/components/schemas/APSAppCredentialsExpiryDuration"
     APSUserLoginCredentials:
       type: object
       description: Login credentials.

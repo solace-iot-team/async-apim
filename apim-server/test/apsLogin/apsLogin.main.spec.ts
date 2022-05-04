@@ -19,6 +19,7 @@ import {
   EAPSSystemAuthRole, 
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -34,7 +35,7 @@ const apsUserLoginTemplate: APSUserCreate = {
     first: `${scriptName}-first`,
     last: `${scriptName}-last`
   },
-  systemRoles: [ EAPSSystemAuthRole.LOGIN_AS, EAPSSystemAuthRole.SYSTEM_ADMIN ],
+  systemRoles: [ EAPSSystemAuthRole.SYSTEM_ADMIN ],
   memberOfOrganizations: [ 
     {
       organizationId: OrganizationId,
@@ -85,7 +86,9 @@ describe(`${scriptName}`, () => {
       await ApsAdministrationService.createApsOrganization({
         requestBody: {
           organizationId: OrganizationId,
-          displayName: OrganizationId
+          displayName: OrganizationId,
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
       });
     } catch (e) {

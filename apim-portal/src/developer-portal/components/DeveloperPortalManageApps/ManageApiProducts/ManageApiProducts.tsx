@@ -1,6 +1,8 @@
 import React from "react";
 
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
+import { Dialog } from "primereact/dialog";
+import { Button } from "primereact/button";
 
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
@@ -13,11 +15,10 @@ import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDispl
 import { EAppType, E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageAppsCommon";
 import { EditApiProducts } from "./EditApiProducts";
 import { Globals } from "../../../../utils/Globals";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
-import { Dialog } from "primereact/dialog";
-import { Button } from "primereact/button";
 
 export interface IManageApiProductProps {
   appType: EAppType;
@@ -45,6 +46,7 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
   const [showHasChangedDialog, setShowHasChangedDialog] = React.useState<boolean>(false);
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   const ManageApiProducts_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.appEntityId);    
@@ -61,7 +63,8 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
           const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = await APDeveloperPortalUserAppsDisplayService.apiGet_ApDeveloperPortalUserAppDisplay({
             organizationId: props.organizationId,
             userId: userContext.apLoginUserDisplay.apEntityId.id,
-            appId: props.appEntityId.id
+            appId: props.appEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObject(apDeveloperPortalUserAppDisplay);
           break;
@@ -70,7 +73,8 @@ export const ManageApiProducts: React.FC<IManageApiProductProps> = (props: IMana
           const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = await APDeveloperPortalTeamAppsDisplayService.apiGet_ApDeveloperPortalTeamAppDisplay({
             organizationId: props.organizationId,
             appId: props.appEntityId.id,
-            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id
+            teamId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+            apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis },
           });
           setManagedObject(apDeveloperPortalTeamAppDisplay);
           break;

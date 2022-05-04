@@ -38,7 +38,10 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.ManageSystemUsers, 
-      EUIAdminPortalResourcePaths.ManageSystemOrganizations,
+      
+      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
+
+
       EUIAdminPortalResourcePaths.LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
@@ -56,15 +59,15 @@ const rbacRoleList: TAPRbacRoleList = [
       EUICommonResourcePaths.ManageUserAccount,
     ]
   },
-  {
-    id: EAPSSystemAuthRole.LOGIN_AS,
-    scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
-    displayName: 'Login As',
-    description: 'Login as any User.',
-    uiResourcePaths: [
-      EUIAdminPortalResourcePaths.LoginAs
-    ]
-  },
+  // {
+  //   id: EAPSSystemAuthRole.LOGIN_AS,
+  //   scopeList: [EAPRbacRoleScope.SYSTEM, EAPRbacRoleScope.ORGANIZATION],
+  //   displayName: 'Login As',
+  //   description: 'Login as any User.',
+  //   uiResourcePaths: [
+  //     EUIAdminPortalResourcePaths.LoginAs
+  //   ]
+  // },
   {
     id: EAPSSystemAuthRole.SYSTEM_ADMIN,
     scopeList: [EAPRbacRoleScope.SYSTEM],
@@ -75,7 +78,11 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageSystemUsers,
+      
       EUIAdminPortalResourcePaths.ManageSystemOrganizations,
+
+      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
+
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
@@ -96,6 +103,12 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups,
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
       EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
+
+      // DELETEME
+      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings,
+      EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus,
+      
+      
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,
@@ -106,6 +119,15 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
       EUIAdminPortalResourcePaths.ManageOrganizationApps_AllOrganizationApps,
+    ]
+  },
+  {
+    id: EAPSOrganizationAuthRole.BUSINESS_GROUP_ADMIN,
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
+    displayName: 'Business Group Admin',
+    description: 'Manage Business Group.',
+    uiResourcePaths: [
+      EUIAdminPortalResourcePaths.ManageBusinessGroup,
     ]
   },
   {
@@ -130,7 +152,7 @@ const rbacRoleList: TAPRbacRoleList = [
     id: EAPSOrganizationAuthRole.API_CONSUMER,
     scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
     displayName: 'API Consumer',
-    description: 'Consume APIs, manage individual and team Apps.',
+    description: 'Consume APIs, manage Individual and Business Group Apps.',
     uiResourcePaths: [
       EUICommonResourcePaths.ManageUserAccount,
       EUIDeveloperPortalResourcePaths.Home,
@@ -140,7 +162,23 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIDeveloperPortalResourcePaths.ManageUserApplications,
       EUIDeveloperPortalResourcePaths.ManageBusinessGroupApplications,
     ]
+  },
+  {
+    id: EAPSOrganizationAuthRole.API_VIEWER,
+    scopeList: [EAPRbacRoleScope.BUSINESS_GROUP],
+    displayName: 'API Viewer',
+    description: 'View APIs and Business Group Apps.',
+    uiResourcePaths: [
+      EUICommonResourcePaths.ManageUserAccount,
+      EUIDeveloperPortalResourcePaths.Home,
+      EUIDeveloperPortalResourcePaths.UserHome,
+      EUIDeveloperPortalResourcePaths.ExploreApis,
+      EUIDeveloperPortalResourcePaths.ExploreApiProducts,
+      // not sure if they should be able to see apps, probably not
+      // EUIDeveloperPortalResourcePaths.ViewBusinessGroupApplications,
+    ]
   }
+
 ];
 
 

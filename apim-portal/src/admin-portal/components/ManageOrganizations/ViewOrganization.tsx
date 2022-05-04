@@ -1,63 +1,60 @@
 
 import React from "react";
 
-import { 
-  CommonName,
-  CommonDisplayName
-} from '@solace-iot-team/apim-connector-openapi-browser';
-import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { 
-  EAPBrokerServiceDiscoveryProvisioningType, 
-  EAPOrganizationConfigType, 
-  E_CALL_STATE_ACTIONS, 
-  E_COMPONENT_STATE, 
-  ManageOrganizationsCommon, 
-  TAPOrganizationConfig 
-} from "./ManageOrganizationsCommon";
-import { APOrganizationsService, TAPOrganization } from "../../../utils/APOrganizationsService";
-import { E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizations";
 import { Globals } from "../../../utils/Globals";
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
+import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import APSingleOrganizationDisplayService, { IAPSingleOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
+import { E_CALL_STATE_ACTIONS, E_DISPLAY_ORGANIZATION_SCOPE, E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizationsCommon";
+import { DisplayOrganization } from "./DisplayOrganization/DisplayOrganization";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 
 export interface IViewOrganizationProps {
-  organizationId: CommonName;
-  organizationDisplayName: CommonDisplayName;
+  organizationEntityId: TAPEntityId;
   scope: TManageOrganizationsScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  onNavigateHere: (manageUsersComponentState: E_COMPONENT_STATE, organizationEntityId: TAPEntityId) => void;
+  onNavigateHere: (organizationEntityId: TAPEntityId) => void;
 }
 
 export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewOrganizationProps) => {
   const componentName = 'ViewOrganization';
 
-  type TManagedObject = TAPOrganizationConfig;
+  type TManagedObject = IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-
-  const ManageOrganizations_ViewOrganization_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-    props.onNavigateHere(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW, { id: props.organizationId, displayName: props.organizationDisplayName });
-  }
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationDisplayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION, `retrieve details for organization: ${props.organizationEntityId.displayName}`);
+    const type: E_ManageOrganizations_Scope = props.scope.type;
     try {
-      const apOrganization: TAPOrganization = await APOrganizationsService.getOrganization(props.organizationId);
-      setManagedObject(ManageOrganizationsCommon.transformAPOrganizationToAPOrganizationConfig(apOrganization));
+      switch(type) {
+        case E_ManageOrganizations_Scope.SYSTEM_ORGS:
+        case E_ManageOrganizations_Scope.IMPORT_ORGANIZATION:
+          const apSystemOrganizationDisplay: IAPSystemOrganizationDisplay = await APSystemOrganizationsDisplayService.apiGet_ApOrganizationDisplay({ organizationId: props.organizationEntityId.id });
+          setManagedObject(apSystemOrganizationDisplay);
+          break;
+        case E_ManageOrganizations_Scope.ORG_SETTINGS:
+          const apSingleOrganizationDisplay: IAPSingleOrganizationDisplay = await APSingleOrganizationDisplayService.apiGet_ApOrganizationDisplay({ organizationId: props.organizationEntityId.id });
+          setManagedObject(apSingleOrganizationDisplay);
+          break;
+        case E_ManageOrganizations_Scope.ORG_STATUS:
+          throw new Error(`${logName}: unsupported props.scope.type=${props.scope.type}`);  
+        default:
+          Globals.assertNever(logName, type);
+      }
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -66,27 +63,39 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     return callState;
   }
 
-  // * useEffect Hooks *
+  const ViewOrganization_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
+    props.onNavigateHere(props.organizationEntityId);
+  }
+
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
   }
 
+  const setBreadCrumbItemList = (moDisplayName: string) => {
+    if(props.scope.type === E_ManageOrganizations_Scope.ORG_SETTINGS) {
+      props.setBreadCrumbItemList([]);
+    } else {
+      props.setBreadCrumbItemList([
+        {
+          label: moDisplayName,
+          command: ViewOrganization_onNavigateHereCommand
+        }
+      ]);
+    }
+  }
+
+  // * useEffect Hooks *
+
   React.useEffect(() => {
-    setBreadCrumbItemList([{
-      label: props.organizationDisplayName,
-      command: ManageOrganizations_ViewOrganization_onNavigateHereCommand
-    }]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    props.setBreadCrumbItemList([{
-      label: props.organizationDisplayName,
-      command: ManageOrganizations_ViewOrganization_onNavigateHereCommand
-    }]);
-  }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(managedObject === undefined) return;
+    setBreadCrumbItemList(managedObject.apEntityId.displayName);
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -94,121 +103,27 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderToken = (title: string, token: string): JSX.Element => {
-    return (
-      <React.Fragment>
-        <div>{title}:</div>
-          <div className="p-ml-2" style={{ fontSize: '12px', maxWidth: '1000px', overflowWrap: 'break-word', wordWrap: 'break-word' }}>{token}</div>
-      </React.Fragment>
-    );
-  }
-  const renderSimple = (mo: TManagedObject): JSX.Element => {
-    const isActive: boolean = (mo.configType === EAPOrganizationConfigType.SIMPLE);
-    if(!isActive) return (<></>);
-    return (
-      <React.Fragment>
-        {renderToken('Cloud Token', mo.configSimple.cloudToken)}
-      </React.Fragment>
-    );
-  }
-  const renderAdvanced_SolaceCloud = (mo: TManagedObject): JSX.Element => {
-    const isActive: boolean = (mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.SOLACE_CLOUD);
-    if(!isActive) return (<></>);
-    return (
-      <React.Fragment>
-        <div><b>Type</b>: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type}</div>
-        <div>Base URL: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.baseUrl}</div>
-        {renderToken('Cloud Token', mo.configAdvancedServiceDiscoveryProvisioning.bsdp_SolaceCloud.cloudToken)}
-      </React.Fragment>
-    );
-  }
-  const renderAdvanced_ReverseProxy = (mo: TManagedObject): JSX.Element => {
-    const isActive: boolean = (mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type === EAPBrokerServiceDiscoveryProvisioningType.REVERSE_PROXY);
-    if(!isActive) return (<></>);
-    return (
-      <React.Fragment>
-        <div><b>Type</b>: {mo.configAdvancedServiceDiscoveryProvisioning.bsdp_Type}</div>
-        <div style={{ fontSize: '12px' }}>{JSON.stringify(mo.configAdvancedServiceDiscoveryProvisioning.bsdp_ReverseProxy)}</div>
-      </React.Fragment>
-    );
-  }
-  const renderAdvanced_EventPortal = (mo: TManagedObject): JSX.Element => {
-    return (
-      <React.Fragment>
-        <div>Base URL: {mo.configAdvancedEventPortal.baseUrl}</div>
-        {renderToken('Cloud Token', mo.configAdvancedEventPortal.cloudToken)}
-      </React.Fragment>
-    );
-  }
-  const renderAdvanced = (mo: TManagedObject): JSX.Element => {
-    const isActive: boolean = (mo.configType === EAPOrganizationConfigType.ADVANCED);
-    if(!isActive) return (<></>);
-    return (
-      <React.Fragment>
-        <div className="p-mb-2 p-mt-4 ap-display-component-header">
-          Broker Gateway Service Discovery &amp; Provisioning:
-        </div>
-        <div className="p-ml-4">
-          {renderAdvanced_SolaceCloud(mo)}
-          {renderAdvanced_ReverseProxy(mo)}
-        </div>
-        <div className="p-mb-2 p-mt-4 ap-display-component-header">
-          Event Portal:
-        </div>
-        <div className="p-ml-4">
-          {renderAdvanced_EventPortal(mo)}
-        </div>
-      </React.Fragment>
-    );
-  }
-  const renderGeneralInfo = (mo: TManagedObject): Array<JSX.Element> => {
-    const jsxList: Array<JSX.Element> = [];
-    jsxList.push(
-      <div id={Globals.getUUID()}><b>Type</b>: {mo.configType}</div>
-    );
-    if(props.scope.type === E_ManageOrganizations_Scope.ALL_ORGS) {
-      jsxList.push(
-        <div id={Globals.getUUID()}><b>Cloud Connectivity</b>: {String(mo.apOrganization.status?.cloudConnectivity)}</div>
-      );
-      jsxList.push(
-        <div id={Globals.getUUID()}><b>Event Portal Connectivity</b>: {String(mo.apOrganization.status?.eventPortalConnectivity)}</div>
-      )
-    }
-    return jsxList;
-  }
-
-  const renderManagedObject = () => {
-    const funcName = 'renderManagedObject';
+  const get_DisplayOrganizationScope = (): E_DISPLAY_ORGANIZATION_SCOPE => {
+    const funcName = 'get_DisplayOrganizationScope';
     const logName = `${componentName}.${funcName}()`;
-
-    if(!managedObject) throw new Error(`${logName}: managedObject is undefined`);
-
-    return (
-      <React.Fragment>
-        <div className="p-col-12">
-          <div className="organization-view">
-            <div className="detail-left">
-              {renderGeneralInfo(managedObject)}
-              {renderSimple(managedObject)}
-              {renderAdvanced(managedObject)}
-            </div>
-            <div className="detail-right">
-              <div>Id: {managedObject.name}</div>
-            </div>            
-          </div>
-        </div>    
-      </React.Fragment>
-    );
+    if(props.scope.type === E_ManageOrganizations_Scope.SYSTEM_ORGS) return E_DISPLAY_ORGANIZATION_SCOPE.VIEW_SYSTEM_ORG;
+    if(props.scope.type === E_ManageOrganizations_Scope.ORG_SETTINGS) return E_DISPLAY_ORGANIZATION_SCOPE.VIEW_ORG_SETTINGS;
+    throw new Error(`${logName}: unsupported props.scope.type = ${props.scope.type}`);
   }
 
   return (
     <div className="manage-organizations">
 
-      <APComponentHeader header={`Organization: ${props.organizationDisplayName}`} />
+      {/* { managedObject && <APComponentHeader header={`Organization: ${managedObject.apEntityId.displayName}`} /> } */}
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && renderManagedObject() }
+      {managedObject && 
+        <DisplayOrganization
+          scope={get_DisplayOrganizationScope()}
+          apOrganizationDisplay={managedObject}
+        />
+      }
 
     </div>
   );

@@ -13,7 +13,6 @@ import { TAPSystemUserDisplay } from "../../../../../displayServices/APUsersDisp
 import { UserContext } from "../../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../../components/AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../../../../../components/APContextProviders/APOrganizationContextProvider";
-import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 import { APSClientOpenApi } from "../../../../../utils/APSClientOpenApi";
 import APMemberOfService, { TAPMemberOfOrganizationDisplay } from "../../../../../displayServices/APUsersDisplayService/APMemberOfService";
 import { EUICommonResourcePaths } from "../../../../../utils/Globals";
@@ -22,6 +21,7 @@ import APContextsDisplayService from "../../../../../displayServices/APContextsD
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
+import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 
 export interface IAddSystemOrganizationUserRolesProps {
   apSystemUserDisplay: TAPSystemUserDisplay;

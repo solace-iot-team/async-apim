@@ -148,6 +148,16 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
           },
+          // {
+          //   label: 'DELETEME: Settings',
+          //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings),
+          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings); }
+          // },
+          // {
+          //   label: 'DELETEME: Status',
+          //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus),
+          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus); }
+          // },
           {
             label: 'Integration',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationIntegration),
@@ -180,6 +190,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
           },
+          // {
+          //   label: 'DELETEME: Organizations',
+          //   disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations),
+          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations); }
+          // },
           {
             label: 'Setup',
             items: [
@@ -188,11 +203,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
                 disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemConfigConnectors),
                 command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemConfigConnectors); }
               },    
-              // {
-              //   label: 'Settings',
-              //   disabled: isDisabled(EUIAdminPortalResourcePaths.ManageSystemConfigSettings),
-              //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemConfigSettings); }
-              // }        
             ]
           },
           {

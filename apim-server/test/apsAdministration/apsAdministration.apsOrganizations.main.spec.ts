@@ -18,6 +18,7 @@ import {
   APSErrorIds,
   APSOrganizationCreate,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -89,7 +90,9 @@ describe(`${scriptName}`, () => {
         const orgDisplayName: APSDisplayName = createOrganizationDisplayName(orgId);
         const apsOrg: APSOrganizationCreate = {
           organizationId: orgId,
-          displayName: orgDisplayName
+          displayName: orgDisplayName,
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
         const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
           requestBody: apsOrg
@@ -135,7 +138,9 @@ describe(`${scriptName}`, () => {
         });
         const expectedUpdatedOrg: APSOrganization = {
           organizationId: org.organizationId,
-          displayName: orgUpdate.displayName
+          displayName: orgUpdate.displayName,
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
         expect(updatedOrg, TestLogger.createTestFailMessage('response does not equal request')).to.deep.equal(expectedUpdatedOrg);
       }
@@ -172,13 +177,17 @@ describe(`${scriptName}`, () => {
       await ApsAdministrationService.createApsOrganization({
         requestBody: {
           organizationId: orgId,
-          displayName:'d'
+          displayName:'d',
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
       });
       await ApsAdministrationService.createApsOrganization({
         requestBody: {
           organizationId: orgId,
-          displayName:'d'
+          displayName:'d',
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -209,6 +218,120 @@ describe(`${scriptName}`, () => {
     }
   });
 
+  it(`${scriptName}: should return validation error on creation for appCredentialsExpiryDuration`, async() => {
+    const orgId: APSId = createOrganizationId(0);
+    try {
+      await ApsAdministrationService.createApsOrganization({
+        requestBody: {
+          organizationId: orgId,
+          displayName:'d',
+          appCredentialsExpiryDuration: -2,
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+        }
+      });
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('appCredentialsExpiryDuration < -1');
+    }
+  });
+
+  it(`${scriptName}: should return validation error on creation for appCredentialsExpiryDuration`, async() => {
+    const orgId: APSId = createOrganizationId(0);
+    try {
+      await ApsAdministrationService.createApsOrganization({
+        requestBody: {
+          organizationId: orgId,
+          displayName:'d',
+          appCredentialsExpiryDuration: 0,
+          maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+        }
+      });
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('appCredentialsExpiryDuration === 0');
+    }
+  });
+
+  it(`${scriptName}: should return validation error on creation for maxNumApisPerApiProduct`, async() => {
+    const orgId: APSId = createOrganizationId(0);
+    try {
+      await ApsAdministrationService.createApsOrganization({
+        requestBody: {
+          organizationId: orgId,
+          displayName:'d',
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: -2,
+        }
+      });
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('maxNumApisPerApiProduct < -1');
+    }
+  });
+
+  it(`${scriptName}: should return validation error on creation for maxNumApisPerApiProduct`, async() => {
+    const orgId: APSId = createOrganizationId(0);
+    try {
+      await ApsAdministrationService.createApsOrganization({
+        requestBody: {
+          organizationId: orgId,
+          displayName:'d',
+          appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          maxNumApisPerApiProduct: 0,
+        }
+      });
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('maxNumApisPerApiProduct === 0');
+    }
+  });
+
+  it(`${scriptName}: should return validation error on creation for maxNumApisPerApiProduct & appCredentialsExpiryDuration`, async() => {
+    const orgId: APSId = createOrganizationId(0);
+    try {
+      await ApsAdministrationService.createApsOrganization({
+        requestBody: {
+          organizationId: orgId,
+          displayName:'d',
+          appCredentialsExpiryDuration: 0,
+          maxNumApisPerApiProduct: 0,
+        }
+      });
+      expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('maxNumApisPerApiProduct === 0');
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('appCredentialsExpiryDuration === 0');
+    }
+  });
+
+  // it(`${scriptName}: continue here`, async () => {
+  //   expect(false, 'continue here').to.be.true;
+  // });
 
     // xit(`${scriptName}: should return unauthorized request`, async() => {
     //   // TODO

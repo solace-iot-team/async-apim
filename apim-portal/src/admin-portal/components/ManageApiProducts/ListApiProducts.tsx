@@ -78,9 +78,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   React.useEffect(() => {
-    // const funcName = 'useEffect([])';
-    // const logName = `${ComponentName}.${funcName}()`;
-    // alert(`${logName}: mounting ...`);
     props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -261,20 +258,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     } 
   }
 
-  // const renderDebugSelectedManagedObject = (): JSX.Element => {
-  //   if(managedObjectList.length > 0 && selectedManagedObject) {
-  //     const _d = {
-  //       ...selectedManagedObject,
-  //       globalSearch: 'not shown...'
-  //     }
-  //     return (
-  //       <pre style={ { fontSize: '10px' }} >
-  //         {JSON.stringify(_d, null, 2)}
-  //       </pre>
-  //     );
-  //   } else return (<></>);
-  // }
-
   const renderBusinessGroupInfo = (): JSX.Element => {
     return(
       <div>
@@ -296,9 +279,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         {isInitialized && renderContent()}
       </div>
       
-      {/* DEBUG OUTPUT         */}
-      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
-
     </div>
   );
 }

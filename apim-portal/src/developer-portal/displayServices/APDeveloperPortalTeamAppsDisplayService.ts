@@ -12,7 +12,8 @@ import APAppApisDisplayService, { TAPAppApiDisplayList } from '../../displayServ
 import { 
   EAPApp_OwnerType, 
   EAPApp_Type, 
-  TAPAppMeta 
+  TAPAppMeta, 
+  TAPOrganizationAppSettings
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
@@ -50,12 +51,14 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     };
   }
 
-  public create_Empty_ApDeveloperPortalTeamAppDisplay({ teamId }:{
+  public create_Empty_ApDeveloperPortalTeamAppDisplay({ teamId, apOrganizationAppSettings }:{
     teamId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPDeveloperPortalTeamAppDisplay {
 
     const apDevPortalAppDisplay: TAPDeveloperPortalAppDisplay = this.create_Empty_ApDeveloperPortalAppDisplay({
-      ownerId: teamId
+      ownerId: teamId,
+      apOrganizationAppSettings: apOrganizationAppSettings
     });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalTeamAppDisplay = {
@@ -72,6 +75,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     connectorAppConnectionStatus,
     apDeveloperPortalApp_ApiProductDisplayList,
     apAppApiDisplayList,
+    apOrganizationAppSettings,
   }: {
     teamId: string;
     connectorAppResponse_smf: AppResponse;
@@ -79,6 +83,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     connectorAppConnectionStatus: AppConnectionStatus;
     apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPDeveloperPortalTeamAppDisplay {
 
     const apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay = this.create_ApDeveloperPortalAppDisplay_From_ApiEntities({
@@ -87,7 +92,8 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
-      apAppApiDisplayList: apAppApiDisplayList
+      apAppApiDisplayList: apAppApiDisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings
     });
 
     const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = {
@@ -129,10 +135,11 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     return false;
   } 
 
-  public apiGet_ApDeveloperPortalTeamAppDisplay = async({ organizationId, teamId, appId }:{
+  public apiGet_ApDeveloperPortalTeamAppDisplay = async({ organizationId, teamId, appId, apOrganizationAppSettings }:{
     organizationId: string;
     teamId: string;
     appId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPDeveloperPortalTeamAppDisplay> => {
     const funcName = 'apiGet_ApDeveloperPortalTeamAppDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -186,6 +193,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings,
     });
 
     return apDeveloperPortalTeamAppDisplay;
@@ -194,9 +202,10 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
   /**
    * Returns list of team apps.
    */
-  public apiGetList_ApDeveloperPortalTeamAppListDisplayList = async({ organizationId, teamId }: {
+  public apiGetList_ApDeveloperPortalTeamAppListDisplayList = async({ organizationId, teamId, apOrganizationAppSettings }: {
     organizationId: string;
     teamId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPDeveloperPortalAppListDisplayList> => {
     const funcName = 'apiGetList_ApDeveloperPortalTeamAppListDisplayList';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -210,7 +219,8 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
         organizationId: organizationId,
         ownerId: teamId,
-        connectorAppResponseList: connectorAppResponseList
+        connectorAppResponseList: connectorAppResponseList,
+        apOrganizationAppSettings: apOrganizationAppSettings
       });
     } catch(e: any) {
       if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {

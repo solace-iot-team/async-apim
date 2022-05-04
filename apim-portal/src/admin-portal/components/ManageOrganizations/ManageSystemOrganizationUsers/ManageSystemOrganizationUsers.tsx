@@ -9,8 +9,8 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import { E_COMPONENT_STATE_USERS } from "../ManageOrganizationsCommon";
 import { ListSystemOrganizationUsers } from "./ListSystemOrganizationUsers";
-import { EditSystemOrganizationUserRoles } from "./EditSystemOrganizationUserRoles";
 import { AddSystemOrganizationUser } from "./AddSystemOrganizationUser/AddSystemOrganizationUser";
+import { EditSystemOrganizationUserRoles } from "./EditSystemOrganizationUserRoles";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -24,7 +24,7 @@ export interface IManageSystemOrganizationUsersProps {
 }
 
 export const ManageSystemOrganizationUsers: React.FC<IManageSystemOrganizationUsersProps> = (props: IManageSystemOrganizationUsersProps) => {
-  // const ComponentName = 'ManageSystemOrganizationUsers';
+  const ComponentName = 'ManageSystemOrganizationUsers';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE_USERS,
@@ -178,12 +178,13 @@ export const ManageSystemOrganizationUsers: React.FC<IManageSystemOrganizationUs
 
       {showListComponent && 
         <ListSystemOrganizationUsers        
-          key={refreshCounter}
+          key={`${ComponentName}_ListSystemOrganizationUsers_${refreshCounter}`}
           organizationEntityId={props.organizationEntityId}
           onError={onSubComponentError}
           onSuccess={onListManagedObjectsSuccess}
           onLoadingChange={props.onLoadingChange}
           onManagedObjectEdit={onEditRoles}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
       }
       { showAddComponent && 

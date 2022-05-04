@@ -16,6 +16,7 @@ import { EditApiProducts } from "./EditApiProducts";
 import { EditCredentials } from "./EditCredentials";
 import { EditChannelParameters } from "./EditChannelParameters";
 import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
@@ -40,6 +41,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   const ManagedAccess_onNavigateToCommand = (e: MenuItemCommandParams): void => {
     props.onNavigateToCommand(props.appEntityId);
@@ -53,7 +55,8 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     try { 
       const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await APAdminPortalAppsDisplayService.apiGet_ApAdminPortalAppDisplay({
         organizationId: props.organizationId,
-        appId: props.appEntityId.id
+        appId: props.appEntityId.id,
+        apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
       });
       setManagedObject(apAdminPortalAppDisplay);
     } catch(e: any) {

@@ -87,12 +87,17 @@ export enum EUIAdminPortalResourcePaths {
 
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
 
+  ManageBusinessGroup = '/admin-porta/manage/business-group',
+
   ManageOrganization = '/admin-portal/manage/organization',
   ManageOrganizationUsers = '/admin-portal/manage/organization/users',
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
+  
+  deleteme_ManageOrganizationSettings = '/admin-portal/manage/organization/deleteme_settings',  
+  deleteme_MonitorOrganizationStatus = '/admin-portal/monitor/organization/deleteme_status',
 
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
@@ -102,7 +107,10 @@ export enum EUIAdminPortalResourcePaths {
 
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
+  
   ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
+  deleteme_ManageSystemOrganizations = '/admin-portal/manage/system/deleteme_organizations',
+  
   ManageSystemConfigConnectors = '/admin-portal/manage/system/config/connectors',
   ManageSystemConfigSettings = '/admin-portal/manage/system/config/settings',
   MonitorSystemHealth = '/admin-portal/monitor/system/health',
@@ -118,6 +126,7 @@ export enum EUIDeveloperPortalResourcePaths {
   
   ManageUserApplications = '/developer-portal/manage/user/applications',
   ManageBusinessGroupApplications = '/developer-portal/manage/businessgroup/applications',
+  ViewBusinessGroupApplications = '/developer-portal/view/businessgroup/applications',
 
   DeveloperPortalConnectorUnavailable = '/developer-portal/healthcheck/view'
 }

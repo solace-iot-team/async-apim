@@ -24,6 +24,7 @@ import {
   IAPAppDisplay, 
   TAPAppDisplay_AllowedActions, 
   TAPAppMeta, 
+  TAPOrganizationAppSettings, 
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
@@ -168,6 +169,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     connectorAppConnectionStatus,
     apApp_ApiProduct_DisplayList,
     apApp_Api_DisplayList,
+    apOrganizationAppSettings,
   }: {
     apAppMeta: TAPAppMeta;
     apAdminPortalApp_Status: EAPAdminPortalApp_Status;
@@ -176,6 +178,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     connectorAppConnectionStatus: AppConnectionStatus;
     apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apApp_Api_DisplayList: TAPAppApiDisplayList;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPAdminPortalAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
@@ -184,7 +187,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       connectorAppResponse_smf: connectorAppResponse_smf,
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apAppApiProductDisplayList: apApp_ApiProduct_DisplayList,
-      apAppApiDisplayList: apApp_Api_DisplayList
+      apAppApiDisplayList: apApp_Api_DisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings
     });
 
     const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = {
@@ -345,9 +349,10 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     return connectorAppResponse;
   }
 
-  public apiGet_ApAdminPortalAppDisplay = async({ organizationId, appId }:{
+  public apiGet_ApAdminPortalAppDisplay = async({ organizationId, appId, apOrganizationAppSettings }:{
     organizationId: string;
     appId: string;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPAdminPortalAppDisplay> => {
     // const funcName = 'apiGet_ApAdminPortalAppDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -408,6 +413,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       apApp_ApiProduct_DisplayList: apAppApiProductDisplayList,
       apApp_Api_DisplayList: apAppApiDisplayList,
+      apOrganizationAppSettings: apOrganizationAppSettings
     });
 
     return apAdminPortalAppDisplay;

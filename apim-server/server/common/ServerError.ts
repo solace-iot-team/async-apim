@@ -463,3 +463,27 @@ export class ApiPathNotFoundServerError extends ApiServerError {
     super(internalLogName, ApiPathNotFoundServerError.name, ApiPathNotFoundServerError.apiStatusCode, ApiPathNotFoundServerError.apiErrorId, apiDescription, apiMeta);
   }  
 }
+
+/**
+ * Use for validation within the service.
+ */
+export type TRequestValidationServerErrorMetaElement = {
+  errorFieldName: string;
+  errorDescription: string;
+  validDescription: string;
+}
+export type TRequestValidationServerErrorMetaList = Array<TRequestValidationServerErrorMetaElement>;
+export type TRequestValidationServerErrorMeta = {
+  requestBody: any;
+  errorList: TRequestValidationServerErrorMetaList
+}
+
+export class RequestValidationServerError extends ApiServerError {
+  private static apiStatusCode = 400;
+  private static apiErrorId: APSErrorIds = APSErrorIds.REQUEST_VALIDATION;
+  private static apiDefaultDescription = 'invalid request';
+
+  constructor(internalLogName: string, apiDescription: string = RequestValidationServerError.apiDefaultDescription, apiMeta: TRequestValidationServerErrorMeta) {
+    super(internalLogName, RequestValidationServerError.name, RequestValidationServerError.apiStatusCode, RequestValidationServerError.apiErrorId, apiDescription, apiMeta);
+  }  
+}
