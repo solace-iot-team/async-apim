@@ -44,6 +44,7 @@ export class APFetch {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout_ms);
     const response = await window.fetch(resource, {
+      credentials: 'include',
       signal: controller.signal  
     });
     clearTimeout(id);
@@ -59,6 +60,7 @@ export class APFetch {
     });
     const response = await window.fetch(resource, {
       headers: headers,
+      credentials: 'include',
       signal: controller.signal  
     });
     clearTimeout(id);

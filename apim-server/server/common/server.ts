@@ -15,10 +15,14 @@ import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
 
+import session from 'express-session';
+
 const app = express();
 
 const corsOptions: cors.CorsOptions = {
-  origin: true
+  origin: /.*localhost:[0-9]*$/,
+  credentials: true
+
 };
 
 export class ExpressServer {
@@ -33,6 +37,14 @@ export class ExpressServer {
 
     // app.set("etag", false);
     app.set("etag", "strong");
+
+    app.use(session({
+      secret: 'keyboard cat',
+      resave: true,
+      saveUninitialized: true,
+      cookie: { secure: false, sameSite: false, signed: false, maxAge: 1800000 }
+    }));
+
     // app.use(nocache());
     app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
@@ -54,8 +66,8 @@ export class ExpressServer {
     // TODO: max age as well?
     app.use(`${this.config.apiBase}/spec`, express.static(apiSpecFile));
     // validate responses 
-    const validateResponseOpts: ValidateResponseOpts = {      
-      onError: ( (err, body, req) => {
+    const validateResponseOpts: ValidateResponseOpts = {
+      onError: ((err, body, req) => {
         const logName = `${ExpressServer.name}.OpenApiValidator.validateResponse.onError()`;
         // * DEBUG * 
         // ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INTERNAL_ERROR, message: 'testing response validation', details: {
@@ -67,7 +79,7 @@ export class ExpressServer {
         throw new ApiServerErrorFromOpenApiResponseValidatorError(logName, err, body, ServerLogger.getRequestInfo(req));
       })
     }
-    let validateResponseValue: ValidateResponseOpts | boolean; 
+    let validateResponseValue: ValidateResponseOpts | boolean;
     if (this.config.enableOpenApiResponseValidation) {
       validateResponseValue = validateResponseOpts;
     } else validateResponseValue = false;
@@ -89,11 +101,11 @@ export class ExpressServer {
   }
 
   router(routes: (app: Application, apiBase: string) => void): ExpressServer {
-    
+
     routes(app, this.config.apiBase);
     // app.use('/auth', OIDCDIscoveryRouter);
     // app.options('*', cors(corsOptions));
- 
+
     // catch all:
     app.use('*', ApsCatchAllController.all);
     app.use(errorHandler);
@@ -101,7 +113,7 @@ export class ExpressServer {
     return this;
   }
 
-  public start = ( initialize: () => Promise<void>): Application => {
+  public start = (initialize: () => Promise<void>): Application => {
     const funcName = 'start';
     const logName = `${ExpressServer.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING, message: 'http server', details: { config: this.config } }));

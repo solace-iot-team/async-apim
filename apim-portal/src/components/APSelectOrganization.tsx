@@ -25,7 +25,9 @@ export const APSelectOrganization: React.FC<IAPSelectOrganizationProps> = (props
   }
 
   const renderComponent = () => {
+    
     return (
+     
       <div className="card">
         <DataTable
             ref={dt}

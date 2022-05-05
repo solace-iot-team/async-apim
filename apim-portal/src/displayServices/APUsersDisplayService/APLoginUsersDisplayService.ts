@@ -1,16 +1,16 @@
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-import { 
+import {
   ApiError,
   ApsLoginService,
-  APSUserLoginCredentials, 
-  APSUserResponse, 
-  ApsUsersService, 
-  APSUserUpdate, 
+  APSUserLoginCredentials,
+  APSUserResponse,
+  ApsUsersService,
+  APSUserUpdate,
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APMemberOfService, { TAPMemberOfOrganizationDisplayList } from './APMemberOfService';
-import { 
-  APUsersDisplayService, 
-  IAPUserDisplay, 
+import {
+  APUsersDisplayService,
+  IAPUserDisplay,
 } from './APUsersDisplayService';
 
 export type TAPUserLoginCredentials = APSUserLoginCredentials;
@@ -67,7 +67,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       memberOfOrganizationGroups: [],
       organizationSessionInfoList: []
     }
-    return this.create_ApLoginUserDisplay_From_ApiEntities({ 
+    return this.create_ApLoginUserDisplay_From_ApiEntities({
       apsUserResponse: apsUserResponse
     });
   }
@@ -78,14 +78,14 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       ...base,
       apMemberOfOrganizationDisplayList: [],
     }
-    return apLoginUserDisplay;    
+    return apLoginUserDisplay;
   }
 
   // ********************************************************************************************************************************
   // APS API calls
   // ********************************************************************************************************************************
 
-  public async apsGet_ApLoginUserDisplay({ userId }:{
+  public async apsGet_ApLoginUserDisplay({ userId }: {
     userId: string;
   }): Promise<TAPLoginUserDisplay> {
 
@@ -100,7 +100,18 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     return apLoginUserDisplay;
   }
 
-  public async apsLogin({ apUserLoginCredentials }:{
+  public async apsGet_ApLoginUserInfo(): Promise<TAPLoginUserDisplay> {
+
+    const apsUserResponse: APSUserResponse = await ApsUsersService.getApsUserInfo();
+
+    const apLoginUserDisplay: TAPLoginUserDisplay = this.create_ApLoginUserDisplay_From_ApiEntities({
+      apsUserResponse: apsUserResponse,
+    });
+
+    return apLoginUserDisplay;
+  }
+
+  public async apsLogin({ apUserLoginCredentials }: {
     apUserLoginCredentials: TAPUserLoginCredentials;
   }): Promise<TAPLoginUserDisplay | undefined> {
     let apsUser: APSUserResponse | undefined = undefined;
@@ -112,23 +123,23 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       apsUser = await ApsLoginService.login({
         requestBody: request,
       });
-    } catch(e: any) {
-      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+    } catch (e: any) {
+      if (APSClientOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
-        if(apiError.status === 401) return undefined;
+        if (apiError.status === 401) return undefined;
       }
       throw e;
     }
     // now get the full APSUserResponse
     // Note: it might be the root user, in which case, this will throw an error 404
     try {
-      return await this.apsGet_ApLoginUserDisplay({ 
+      return await this.apsGet_ApLoginUserDisplay({
         userId: apUserLoginCredentials.userId,
-      });  
-    } catch(e: any) {
-      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+      });
+    } catch (e: any) {
+      if (APSClientOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
-        if(apiError.status === 404) return this.create_ApLoginUserDisplay_From_ApsUser({
+        if (apiError.status === 404) return this.create_ApLoginUserDisplay_From_ApsUser({
           apsUser: apsUser
         });
       }
@@ -136,7 +147,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     }
   }
 
-  public async apsLoginAs({ userId }:{
+  public async apsLoginAs({ userId }: {
     userId: string;
   }): Promise<TAPLoginUserDisplay | undefined> {
     // const funcName = 'apsLoginAs';
@@ -152,22 +163,22 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
         apsUserResponse: apsUserResponse,
       });
       return apLoginUserDisplay;
-    } catch(e: any) {
-      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+    } catch (e: any) {
+      if (APSClientOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
-        if(apiError.status === 401) return undefined;
+        if (apiError.status === 401) return undefined;
       }
       throw e;
     }
   }
 
-  public async apsLogout({ userId }:{
+  public async apsLogout({ userId }: {
     userId: string;
   }): Promise<void> {
     // const funcName = 'apsLogout';
     // const logName = `${this.ComponentName}.${funcName}()`;
 
-    await ApsLoginService.logout({ 
+    await ApsLoginService.logout({
       userId: userId
     });
 
@@ -181,7 +192,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
 
   }
 
-  public async apsLogoutOrganizationAll({ organizationId }:{
+  public async apsLogoutOrganizationAll({ organizationId }: {
     organizationId: string;
   }): Promise<void> {
     // const funcName = 'apsLogoutOrganizationAll';
@@ -203,7 +214,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
 
     await ApsUsersService.updateApsUser({
-      userId: userId, 
+      userId: userId,
       requestBody: apsUserUpdate
     });
   }

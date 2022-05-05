@@ -20,6 +20,8 @@ export default function errorHandler(
 ): void {
   const funcName = 'errorHandler';
   const logName = `${componentName}.${funcName}()`;
+  // const logEntry: TServerLogEntry = ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.API_SERVICE_ERROR, message: err.message, details: err });
+  // ServerLogger.error(logEntry);
   if(err instanceof ApiServerError) serverErrorHandler(err, req, res, next);
   else {
     let internalServerError: ApiServerError;

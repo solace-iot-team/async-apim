@@ -120,24 +120,29 @@ class APContextsDisplayService {
   }): void {
     const funcName = 'setup_App';
     const logName = `${this.BaseComponentName}.${funcName}()`;
-
-    if(!isConnectorAvailable) {
-      // no access to admin portal ==> redirect to system unavailable
-      if(!AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)) {
-        navigateTo(EUICommonResourcePaths.HealthCheckView);
-        return;
-      }
-    }
+      console.log(logName);
+    // if(!isConnectorAvailable) {
+    //   // no access to admin portal ==> redirect to system unavailable
+    //   console.log(`${logName} no connector`)
+    //   if(!AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)) {
+    //     navigateTo(EUICommonResourcePaths.HealthCheckView);
+    //     return;
+    //   }
+    // }
     let originAppState: EAppState = userContextOriginAppState;
     let newCurrentAppState: EAppState = userContextCurrentAppState;
 
     if(userContextCurrentAppState !== EAppState.UNDEFINED) {
-      newCurrentAppState = userContextCurrentAppState;
+       console.log(`${logName}current state is not undefined`)
+     newCurrentAppState = userContextCurrentAppState;
       // catch state management errors
       if(originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: orginAppState is undefined, currentAppState=${newCurrentAppState}`);
     } else {
+       console.log(`${logName}current state is  undefined`)
       // came directly to /login url
       // if access to admin portal ==> admin portal, if access to developer portal ==> developer portal, if no access ==> developer portal
+      console.log(`AuthorizedAdminPorta; ${AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)}`)
+      console.log(`AuthorizedDevPorta; ${AuthHelper.isAuthorizedToAccessDeveloperPortal(authorizedResourcePathsAsString)}`)
       if(AuthHelper.isAuthorizedToAccessAdminPortal(authorizedResourcePathsAsString)) {
         originAppState = EAppState.ADMIN_PORTAL; 
         newCurrentAppState = EAppState.ADMIN_PORTAL;
@@ -147,12 +152,14 @@ class APContextsDisplayService {
       } else {
         originAppState = EAppState.DEVELOPER_PORTAL; 
         newCurrentAppState = EAppState.DEVELOPER_PORTAL;
+        console.log('default set dev portal');
         // throw new Error(`${logName}: user not authorized to access developer portal nor admin portal.\nauthContext=${JSON.stringify(authContext, null, 2)}\nuserContext=${JSON.stringify(userContext, null, 2)}`);
       }
     }
     dispatchUserContextAction({ type: 'SET_ORIGIN_APP_STATE', appState: originAppState});
     dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: newCurrentAppState});
     navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
+    console.log(`${logName}${JSON.stringify(newCurrentAppState)} `);    
   }
 
   /** Setup the contexts after user login */

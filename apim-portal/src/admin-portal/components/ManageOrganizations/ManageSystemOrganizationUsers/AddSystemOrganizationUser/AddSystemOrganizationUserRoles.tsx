@@ -95,9 +95,7 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS_USERS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
     try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
+      window.location.href = 'http://localhost:3001/logout';
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -113,9 +111,9 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
         dispatchUserContextAction: dispatchUserContextAction,
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
       });
-      navigateTo(EUICommonResourcePaths.Login);
+      window.location.href = 'http://localhost:3001/logout';
     }
-    await apiLogout(props.apSystemUserDisplay.apEntityId);
+    //await apiLogout(props.apSystemUserDisplay.apEntityId);
   }
 
   const doInitialize = async () => {

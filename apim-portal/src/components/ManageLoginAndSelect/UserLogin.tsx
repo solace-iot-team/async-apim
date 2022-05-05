@@ -11,9 +11,9 @@ import { Divider } from 'primereact/divider';
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import { APSOpenApiFormValidationRules } from "../../utils/APSOpenApiFormValidationRules";
-import APLoginUsersDisplayService, { 
-  TAPLoginUserDisplay, 
-  TAPUserLoginCredentials 
+import APLoginUsersDisplayService, {
+  TAPLoginUserDisplay,
+  TAPUserLoginCredentials
 } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import APDisplayUtils from "../../displayServices/APDisplayUtils";
 import { E_CALL_STATE_ACTIONS } from "./ManageLoginAndSelectCommon";
@@ -52,7 +52,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     };
   }
 
-  const create_ManagedObject_From_FormEntities = ({orginalManagedObject, formDataEnvelope}: {
+  const create_ManagedObject_From_FormEntities = ({ orginalManagedObject, formDataEnvelope }: {
     orginalManagedObject: TManagedObject;
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
@@ -73,29 +73,50 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
   const formId = ComponentName;
 
-  const apiLogin = async(mo: TManagedObject, isLoginAs: boolean = false): Promise<TApiCallState> => {
+  const apiLoginOld = async (mo: TManagedObject, isLoginAs: boolean = false): Promise<TApiCallState> => {
     const funcName = 'apiLogin';
     const logName = `${ComponentName}.${funcName}()`;
     const userMessage: string = isLoginAs ? `login as ${mo.userId}` : `login ${mo.userId}`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, userMessage);
-    try { 
+    try {
       let apLoginUserDisplay: TAPLoginUserDisplay | undefined = undefined;
-      if(isLoginAs) {
+      if (isLoginAs) {
         apLoginUserDisplay = await APLoginUsersDisplayService.apsLoginAs({
           userId: mo.userId
-        });  
+        });
       } else {
         apLoginUserDisplay = await APLoginUsersDisplayService.apsLogin({
           apUserLoginCredentials: mo
-        });  
+        });
       }
       setLoggedIn_ApLoginUserDisplay(apLoginUserDisplay);
-      if(apLoginUserDisplay === undefined) {
+      if (apLoginUserDisplay === undefined) {
         setLoginSuccess(false);
       } else {
         setLoginSuccess(true);
       }
-    } catch(e: any) {
+    } catch (e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+  const apiLogin = async (mo: TManagedObject, isLoginAs: boolean = false): Promise<TApiCallState> => {
+    const funcName = 'apiLogin';
+    const logName = `${ComponentName}.${funcName}()`;
+    const userMessage: string = 'login';
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, userMessage);
+    try {
+      let apLoginUserDisplay: TAPLoginUserDisplay | undefined = undefined;
+      apLoginUserDisplay =await APLoginUsersDisplayService.apsGet_ApLoginUserInfo();
+      setLoggedIn_ApLoginUserDisplay(apLoginUserDisplay);
+      if (apLoginUserDisplay === undefined) {
+        setLoginSuccess(false);
+      } else {
+        setLoginSuccess(true);
+      }
+    } catch (e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
@@ -103,15 +124,18 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     return callState;
   }
 
-  const doAutoLogin = async(mo: TManagedObject) => {
+  const doAutoLogin = async () => {
     props.onLoadingChange(true);
-    await apiLogin(mo, true);
+    await apiLogin({
+      userId: '',
+      userPwd: ''
+    }, true);
     props.onLoadingChange(false);
     setIsAutoLogin(true);
     setLoginAttempts(loginAttempts + 1);
   }
 
-  const doManualLogin = async(mo: TManagedObject) => {
+  const doManualLogin = async (mo: TManagedObject) => {
     props.onLoadingChange(true);
     await apiLogin(mo);
     props.onLoadingChange(false);
@@ -119,12 +143,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }
 
   const doInitialize = async () => {
-    if(props.userCredentials !== undefined) {
-      await doAutoLogin(props.userCredentials);
-    }
-    else {
-      setManagedObject(APLoginUsersDisplayService.create_Empty_ApUserLoginCredentials());
-    }
+    await doAutoLogin();
   }
 
   // * useEffect Hooks *
@@ -134,25 +153,25 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
-    if(managedObject !== undefined && !isAutoLogin) {
+    if (managedObject !== undefined && !isAutoLogin) {
       setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
     }
   }, [managedObject, isAutoLogin]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if (managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
+    if (apiCallStatus !== null) {
+      if (!apiCallStatus.success) props.onError(apiCallStatus);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(loggedIn_ApLoginUserDisplay !== undefined && loginSuccess) {
+    if (loggedIn_ApLoginUserDisplay !== undefined && loginSuccess) {
       props.onSuccess(loggedIn_ApLoginUserDisplay);
-    } else if(isAutoLogin && !loginSuccess) {
+    } else if (isAutoLogin && !loginSuccess) {
       // simulate manual login
       setIsAutoLogin(false);
       setLoginAttempts(loginAttempts + 1);
@@ -163,14 +182,14 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
     const funcName = 'onSubmitManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if (managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     const newMo: TManagedObject = create_ManagedObject_From_FormEntities({
       orginalManagedObject: managedObject,
       formDataEnvelope: newMofde,
     });
     setManagedObject(newMo);
     doManualLogin(newMo);
-  } 
+  }
 
   const onInvalidSubmitManagedObjectForm = () => {
     // placeholder
@@ -186,7 +205,7 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
     return (
       <div className="p-mt-4">
         <div className="p-fluid">
-          <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
+          <form id={formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">
             {/* UserId */}
             <div className="p-field">
               <span className="p-float-label p-input-icon-right">
@@ -194,17 +213,18 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
                 <Controller
                   name="formData.userId"
                   control={managedObjectUseForm.control}
-                  rules={APSOpenApiFormValidationRules.APSEmail("Enter user id (your e-mail).", true) }
-                  render={( { field, fieldState }) => {
+                  rules={APSOpenApiFormValidationRules.APSEmail("Enter user id (your e-mail).", true)}
+                  render={({ field, fieldState }) => {
                     // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
-                    return(
+                    return (
                       <InputText
                         id={field.name}
                         {...field}
                         autoFocus={true}
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        className={classNames({ 'p-invalid': fieldState.invalid })}
                       />
-                  )}}
+                    )
+                  }}
                 />
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.userId })}>E-Mail*</label>
               </span>
@@ -219,25 +239,26 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
                   rules={{
                     required: "Enter password.",
                   }}
-                  render={( { field, fieldState }) => {
+                  render={({ field, fieldState }) => {
                     // console.log(`field=${field.name}, fieldState=${JSON.stringify(fieldState)}`);
-                    return(
+                    return (
                       <Password
                         id={field.name}
                         toggleMask={true}
                         feedback={false}
                         {...field}
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        className={classNames({ 'p-invalid': fieldState.invalid })}
                       />
-                  )}}
+                    )
+                  }}
                 />
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.userPwd })}>Password*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.userPwd)}
             </div>
-          </form>  
+          </form>
           {/* footer */}
-          { renderManagedObjectFormFooter() }
+          {renderManagedObjectFormFooter()}
         </div>
       </div>
     );
@@ -255,13 +276,13 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   return (
 
     <div className="user-login">
-        <div className="p-d-flex p-jc-center">
-          <div className="card">
-            <h2 className="p-text-center">Login</h2>
-            { managedObjectFormDataEnvelope && renderManagedObjectForm() }
-            { loginAttempts > 0 && !loginSuccess && renderLoginFailed() }
-          </div>
+      <div className="p-d-flex p-jc-center">
+        <div className="card">
+          <h2 className="p-text-center">Login</h2>
+          {managedObjectFormDataEnvelope && renderManagedObjectForm()}
+          {loginAttempts > 0 && !loginSuccess && renderLoginFailed()}
         </div>
+      </div>
     </div>
 
   );

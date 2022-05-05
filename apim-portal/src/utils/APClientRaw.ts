@@ -7,7 +7,7 @@ import { APTimeoutError } from './APError';
 import { APFetch, APFetchResult } from './APFetch';
 import { APSClientOpenApi } from './APSClientOpenApi';
 
-const FetchTimeout_ms: number = 500;
+const FetchTimeout_ms: number = 5000;
 
 export type APClientRawResult = {
   readonly url: string;
@@ -63,11 +63,14 @@ export class APClientServerRaw {
     let responseBody: any;
     try {
       try {
-        response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(basePath, FetchTimeout_ms);
+        response = await APFetch.fetchWithTimeout(basePath, FetchTimeout_ms);
       } catch (e: any) {
         if(e.name === 'AbortError') {
           throw new APTimeoutError(logName, "fetch timeout", { url: basePath, timeout_ms: FetchTimeout_ms});
-        } else throw e;
+        } else {
+          console.log(e);
+          throw e;
+        }
       }
       const result: APFetchResult = await APFetch.getFetchResult(response);
       responseBody = result.body;
@@ -110,7 +113,7 @@ export class APClientConnectorRaw {
     let responseBody: any;
     try {
       try {
-        response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, FetchTimeout_ms);
+        response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(`${APClientConnectorRaw.basePath}/healthcheck`, FetchTimeout_ms);
       } catch (e: any) {
         if(e.name === 'AbortError') {
           throw new APTimeoutError(logName, "fetch timeout", { url: APClientConnectorRaw.basePath, timeout_ms: FetchTimeout_ms});

@@ -17,12 +17,12 @@ import { DeveloperPortalSideBar } from "./developer-portal/components/DeveloperP
 import { PublicDeveloperPortalAppRoutes } from "./developer-portal/PublicDeveloperPortalAppRoutes";
 import { PublicDeveloperPortalSideBar } from "./developer-portal/components/PublicDeveloperPortalSideBar";
 
-import { 
-  EUIDeveloperToolsResourcePaths, 
-  EUICommonResourcePaths, 
-  EUIAdminPortalResourcePaths, 
-  EUIDeveloperPortalResourcePaths, 
-  EAppState, 
+import {
+  EUIDeveloperToolsResourcePaths,
+  EUICommonResourcePaths,
+  EUIAdminPortalResourcePaths,
+  EUIDeveloperPortalResourcePaths,
+  EAppState,
   TLocationStateAppState,
   Globals,
 } from './utils/Globals';
@@ -49,13 +49,29 @@ import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.css';
 
+import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "./displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import { APSClientOpenApi } from "./utils/APSClientOpenApi";
+import { ApiCallState, TApiCallState } from "./utils/ApiCallState";
+import { TAPEntityId, TAPEntityIdList } from "./utils/APEntityIdsService";
+import APContextsDisplayService from "./displayServices/APContextsDisplayService";
+import { ConfigContext } from "./components/ConfigContextProvider/ConfigContextProvider";
+import { OrganizationContext } from "./components/APContextProviders/APOrganizationContextProvider";
+import { EAPHealthCheckSuccess } from "./utils/APHealthCheck";
+import { APHealthCheckSummaryContext } from "./components/APHealthCheckSummaryContextProvider";
+
+
 const App: React.FC = () => {
   const componentName = 'App';
-  
+  enum E_CALL_STATE_ACTIONS {
+    API_USER_LOGOUT = "API_USER_LOGOUT",
+    API_LOGIN = "API_LOGIN",
+    API_SETUP_LOGIN_CONTEXTS = "API_SETUP_LOGIN_CONTEXTS"
+  }
+
   const IS_DEBUG: boolean = false;
 
   const [isDebug] = React.useState<boolean>(IS_DEBUG);
-  const [authContext] = React.useContext(AuthContext);
+  //const [authContext] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [showDeveloperPortal, setShowDeveloperPortal] = React.useState<boolean>(false);
   const [showPublicDeveloperPortal, setShowPublicDeveloperPortal] = React.useState<boolean>(false);
@@ -63,43 +79,52 @@ const App: React.FC = () => {
   const [showDeveloperTools] = React.useState<boolean>(Config.getUseDevelTools());
   const appPortalHistory = useHistory<TLocationStateAppState>();
 
-  const navigateToWithoutStateChange = (path: string): void => { 
+  //
+  const [configContext] = React.useContext(ConfigContext);
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  //
+
+  const navigateToWithoutStateChange = (path: string): void => {
     appPortalHistory.push({
       pathname: path,
       state: {
         setAppState: false
       }
-    }); 
+    });
   }
 
   React.useEffect(() => {
     calculateShowStates(userContext.currentAppState);
-  }, [userContext.currentAppState, authContext]); 
+  }, [userContext.currentAppState, authContext]);
+
 
   const onSwitchToDeveloperPortal = () => {
     const funcName = 'onSwitchToDeveloperPortal';
     const logName = `${componentName}.${funcName}()`;
-    if(userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
+    if (userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
     // leave origin, set current
-    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.DEVELOPER_PORTAL});
-    if(authContext.isLoggedIn) navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.UserHome);
+    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.DEVELOPER_PORTAL });
+    if (authContext.isLoggedIn) navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.UserHome);
     else navigateToWithoutStateChange(EUIDeveloperPortalResourcePaths.Home);
   }
 
   const onSwitchToAdminPortal = () => {
     const funcName = 'onSwitchToAdminPortal';
     const logName = `${componentName}.${funcName}()`;
-    if(userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
+    if (userContext.originAppState === EAppState.UNDEFINED) throw new Error(`${logName}: userContext.orginAppState=${userContext.originAppState}`);
     // leave origin, set current
-    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.ADMIN_PORTAL});
-    if(authContext.isLoggedIn) navigateToWithoutStateChange(EUIAdminPortalResourcePaths.UserHome);
+    dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: EAppState.ADMIN_PORTAL });
+    if (authContext.isLoggedIn) navigateToWithoutStateChange(EUIAdminPortalResourcePaths.UserHome);
     else navigateToWithoutStateChange(EUIAdminPortalResourcePaths.Home);
   }
 
   const calculateShowStates = (appState: EAppState) => {
     const funcName = 'calculateShowStates';
     const logName = `${componentName}.${funcName}()`;
-    switch(appState) {
+    console.log(JSON.stringify(appState));
+    switch (appState) {
       case EAppState.ADMIN_PORTAL:
         setShowAdminPortal(true);
         setShowDeveloperPortal(false);
@@ -122,7 +147,7 @@ const App: React.FC = () => {
         break;
       default:
         Globals.assertNever(logName, appState);
-      }
+    }
     // if(appState === EAppState.ADMIN_PORTAL) {
     //   setShowAdminPortal(true);
     //   setShowDeveloperPortal(false);
@@ -141,12 +166,12 @@ const App: React.FC = () => {
       <p>
         authContext.isLoggedIn={String(authContext.isLoggedIn)},
         authContext.authorizedResourcePathsAsString.length={authContext.authorizedResourcePathsAsString.length},
-        userContext.originAppState={userContext.originAppState}, 
-        userContext.currentAppState={userContext.currentAppState}, 
-        showDeveloperPortal={String(showDeveloperPortal)}, 
+        userContext.originAppState={userContext.originAppState},
+        userContext.currentAppState={userContext.currentAppState},
+        showDeveloperPortal={String(showDeveloperPortal)},
         showAdminPortal={String(showAdminPortal)},
         showPublicDeveloperPortal={String(showPublicDeveloperPortal)}
-      </p>  
+      </p>
     );
   }
 
@@ -155,7 +180,7 @@ const App: React.FC = () => {
       <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
-      { isDebug && userContext && displayStateInfo() }
+      {isDebug && userContext && displayStateInfo()}
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
           {showPublicDeveloperPortal &&
@@ -164,8 +189,8 @@ const App: React.FC = () => {
           {showDeveloperPortal &&
             <DeveloperPortalSideBar onSwitchToAdminPortal={onSwitchToAdminPortal} />
           }
-          {showAdminPortal && 
-            <AdminPortalSideBar onSwitchToDeveloperPortal={onSwitchToDeveloperPortal} />          
+          {showAdminPortal &&
+            <AdminPortalSideBar onSwitchToDeveloperPortal={onSwitchToDeveloperPortal} />
           }
         </div>
         <div className="ap-app-grid-right">
@@ -179,22 +204,22 @@ const App: React.FC = () => {
               <Route path={EUICommonResourcePaths.Unauthorized} component={UnauthorizedPage} exact />
               <Route path={EUICommonResourcePaths.NoOrganization} component={NoOrganizationPage} exact />
               <Route path={EUICommonResourcePaths.HealthCheckView} component={HealthCheckViewPage} exact />
-              
+
               {/* User */}
               <Route path={EUICommonResourcePaths.Login} component={UserLoginPage} exact />
               <ProtectedRouteWithRbac path={EUICommonResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
 
               {/* Admin Portal */}
-              { showAdminPortal && AdminPortalAppRoutes() }
+              {showAdminPortal && AdminPortalAppRoutes()}
 
               {/* Public Developer Portal */}
-              { showPublicDeveloperPortal && PublicDeveloperPortalAppRoutes() }
+              {showPublicDeveloperPortal && PublicDeveloperPortalAppRoutes()}
 
               {/* Developer Portal */}
-              { showDeveloperPortal && DeveloperPortalAppRoutes() }
-              
+              {showDeveloperPortal && DeveloperPortalAppRoutes()}
+
               {/* Developer Tools */}
-              { showDeveloperTools && 
+              {showDeveloperTools &&
                 [
                   <ProtectedRouteWithRbac path={EUIDeveloperToolsResourcePaths.TestRoles} key={EUIDeveloperToolsResourcePaths.TestRoles} component={RolesTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,

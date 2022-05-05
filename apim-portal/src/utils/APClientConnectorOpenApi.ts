@@ -57,6 +57,7 @@ export class APClientConnectorOpenApi {
     OpenAPI.BASE = APClientConnectorOpenApi.constructOpenApiBase(APClientConnectorOpenApi.config);
     OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
     OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
+    OpenAPI.WITH_CREDENTIALS = true;
     APClientConnectorOpenApi.isInitialized = true;
     // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
   } 

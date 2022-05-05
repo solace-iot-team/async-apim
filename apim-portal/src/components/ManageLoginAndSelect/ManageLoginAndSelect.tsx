@@ -104,6 +104,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   }
 
   const doInitialize = async () => {
+
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
@@ -179,7 +180,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     doSetupLoggedInUser(managedObject, organizationEntityId);
   }
-
+  
   return (
     <div className="user-login">
 
