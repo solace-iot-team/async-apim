@@ -5,7 +5,11 @@ import ServerConfig, { TRootUserConfig } from '../../../common/ServerConfig';
 import { ServerUtils } from '../../../common/ServerUtils';
 import { 
   APSId,
+  APSUserId,
+  ApiError,
+  ApsUsersService,
   APSUserLoginCredentials,
+  APSUserReplace,
   APSUserUpdate,
   ListApsUsersResponse,
   APSUserResponseList,
@@ -22,7 +26,11 @@ import {
 import { 
   ApiBadQueryParameterCombinationServerError, 
   ApiInternalServerError, 
+  ApiInternalServerErrorFromError, 
   ApiInvalidObjectReferencesServerError, 
+  ApiKeyNotFoundServerError, 
+  BootstrapErrorFromApiError, 
+  BootstrapErrorFromError, 
   ServerErrorFromError, 
   TApiInvalidObjectReferenceError
 } from '../../../common/ServerError';
@@ -32,38 +40,23 @@ import { Mutex } from "async-mutex";
 import APSOrganizationsService from '../apsAdministration/APSOrganizationsService';
 import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
-import APSSecretsService from '../../../common/authstrategies/APSSecretsService';
 
-export type APSRefreshTokenInternal = {
-  refreshToken: string;
-}
-export type APSRefreshTokenInternalList = Array<APSRefreshTokenInternal>;
-export type APSUserInternal = APSUserCreate & {
-  refreshTokenList: APSRefreshTokenInternalList;
-}
-export type APSUserInternalList = Array<APSUserInternal>;
+export type APSRootUser = APSUserCreate;
+export type APSRootUserResponse = APSUserResponse;
+type APSUserCreateList = Array<APSUserCreate>;
 
 export class APSUsersService {
   private static collectionName = "apsUsers";
+  private static boostrapApsUserListPath = 'bootstrap/apsUsers/apsUserList.json';
   private static apiObjectName = "APSUser";
-  private static collectionSchemaVersion = 4;
-  private static rootApsUser: APSUserInternal;
+  private static collectionSchemaVersion = 3;
+  private static rootApsUser: APSRootUser;
   private persistenceService: MongoPersistenceService;
   private collectionMutex = new Mutex();
 
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSUsersService.collectionName, true);
     APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
-  }
-
-  public getPersistenceService = (): MongoPersistenceService => {
-    return this.persistenceService;
-  }
-  public getCollectionName = (): string => {
-    return APSUsersService.collectionName;
-  }
-  public getDBObjectSchemaVersion = (): number => {
-    return APSUsersService.collectionSchemaVersion;
   }
 
   private wait4CollectionUnlock = async() => {
@@ -118,30 +111,30 @@ export class APSUsersService {
         searchInfo: mongoSearchInfo_organizationSessionInfoList
       });
 
-      const apsUserInternalList: APSUserInternalList = mongoAllReturn_memberOfOrganizations.documentList as APSUserInternalList;
-      apsUserInternalList.push(...(mongoAllReturn_organizationSessionInfoList.documentList as APSUserInternalList));
+      const apsUserList: APSUserCreateList = mongoAllReturn_memberOfOrganizations.documentList as APSUserCreateList;
+      apsUserList.push(...(mongoAllReturn_organizationSessionInfoList.documentList as APSUserCreateList));
 
-      for(const apsUserInternal of apsUserInternalList) {
+      for(const apsUser of apsUserList) {
         // memberOfOrganizations
-        const memberOfOrganizationRolesList: APSOrganizationRolesList = apsUserInternal.memberOfOrganizations ? apsUserInternal.memberOfOrganizations : [];
+        const memberOfOrganizationRolesList: APSOrganizationRolesList = apsUser.memberOfOrganizations ? apsUser.memberOfOrganizations : [];
         const idx = memberOfOrganizationRolesList.findIndex((organizationRoles: APSOrganizationRoles) => {
           return organizationRoles.organizationId === apsOrganizationId;
         });
         if(idx > -1) memberOfOrganizationRolesList.splice(idx, 1);  
         // last Session info
-        const apsOrganizationSessionInfoList: APSOrganizationSessionInfoList = apsUserInternal.organizationSessionInfoList ? apsUserInternal.organizationSessionInfoList : [];
+        const apsOrganizationSessionInfoList: APSOrganizationSessionInfoList = apsUser.organizationSessionInfoList ? apsUser.organizationSessionInfoList : [];
         const sessionInfoList_idx = apsOrganizationSessionInfoList.findIndex((x) => {
           return x.organizationId === apsOrganizationId;
         });
         if(sessionInfoList_idx > -1) apsOrganizationSessionInfoList.splice(sessionInfoList_idx, 1);
 
-        const update: APSUserInternal = {
-          ...apsUserInternal,
+        const update: APSUserUpdate = {
+          ...apsUser,
           memberOfOrganizations: memberOfOrganizationRolesList,
           organizationSessionInfoList: apsOrganizationSessionInfoList,
         };
         await this.persistenceService.update({
-          collectionDocumentId: apsUserInternal.userId,
+          collectionDocumentId: apsUser.userId,
           collectionDocument: update,
           collectionSchemaVersion: APSUsersService.collectionSchemaVersion
         });
@@ -157,6 +150,15 @@ export class APSUsersService {
     } 
   }
 
+  public getPersistenceService = (): MongoPersistenceService => {
+    return this.persistenceService;
+  }
+  public getCollectionName = (): string => {
+    return APSUsersService.collectionName;
+  }
+  public getDBObjectSchemaVersion = (): number => {
+    return APSUsersService.collectionSchemaVersion;
+  }
   public initialize = async(rootUserConfig: TRootUserConfig) => {
     const funcName = 'initialize';
     const logName = `${APSUsersService.name}.${funcName}()`;
@@ -169,14 +171,13 @@ export class APSUsersService {
     APSUsersService.rootApsUser = {
       isActivated: true,
       userId: rootUserConfig.userId,
-      password: APSSecretsService.createHash(rootUserConfig.password),
+      password: rootUserConfig.password,
       profile: {
         first: 'root',
         last: 'admin',
         email: rootUserConfig.userId
       },
-      systemRoles: [EAPSSystemAuthRole.ROOT],
-      refreshTokenList: []
+      systemRoles: [EAPSSystemAuthRole.ROOT]
     }
 
     // custom, one time maintenance
@@ -196,30 +197,82 @@ export class APSUsersService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
+  /**
+   * deprecated
+   */
+  public xbootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+
+    if(ServerConfig.getConfig().dataPath) {
+      const bootstrapApsUserListFileName = `${ServerConfig.getConfig().dataPath}/${APSUsersService.boostrapApsUserListPath}`;
+      const bootstrapApsUserListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsUserListFileName);
+      if(bootstrapApsUserListFile) {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap user list file', details: { file: bootstrapApsUserListFile } }));  
+        // read file
+        const bootstrapApsUserListData = ServerUtils.readFileContentsAsJson(bootstrapApsUserListFile);
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user list', details: { bootstrapUserList: bootstrapApsUserListData } }));  
+
+        const bootstrapApsUserList: APSUserCreateList = bootstrapApsUserListData;
+        for(const bootstrapApsUser of bootstrapApsUserList) {
+          let found = false;
+          try {
+            await this.byId(bootstrapApsUser.userId);
+            found = true;
+          } catch(e) {
+            if(e instanceof ApiKeyNotFoundServerError) {
+              found = false;
+            } else {
+              throw new ApiInternalServerErrorFromError(e, logName);
+            }
+          }
+          if(found) {
+            ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user already exists', details: { bootstrapApsUser: bootstrapApsUser } }));  
+          } else {
+            try {
+              await ApsUsersService.createApsUser({
+                requestBody: bootstrapApsUser
+              });
+            } catch (e: any) {
+              ServerLogger.debug(ServerLogger.createLogEntry(logName, { 
+                  code: EServerStatusCodes.BOOTSTRAP_ERROR, 
+                  message: 'creating user', 
+                  details: { 
+                    bootstrapUser: bootstrapApsUser,
+                    error: e
+                   } 
+                }));  
+              if(e instanceof ApiError) throw new BootstrapErrorFromApiError(e, logName, 'creating user');
+              else throw new BootstrapErrorFromError(e, logName, 'creating user');
+            }
+          }
+        }
+      } else {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap user list file not found, skipping', details: { file: bootstrapApsUserListFileName } }));  
+      }
+    } else {
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping user list bootstrap, no data path' }));  
+    }
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
   public getRootApsUserLoginCredentials = (): APSUserLoginCredentials => {
     return {
-      username: APSUsersService.rootApsUser.userId,
-      password: APSUsersService.rootApsUser.password
+      userId: APSUsersService.rootApsUser.userId,
+      userPwd: APSUsersService.rootApsUser.password
     }
   }
 
-  public getRootApsUserInternal = (): APSUserInternal => {
+  public getRootApsUser = (): APSRootUser => {
     return APSUsersService.rootApsUser;
   }
 
-  public updateRootApsUserInternal = ({ refreshToken }:{
-    refreshToken: string;
-  }): APSUserInternal => {
-    APSUsersService.rootApsUser.refreshTokenList.push({refreshToken: refreshToken });
-    return APSUsersService.rootApsUser;
-  }
-
-
-  public getRootApsUserResponse = async(): Promise<APSUserResponse> => {
+  public getRootApsUserResponse = async(): Promise<APSRootUserResponse> => {
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({
-      apsUserInternal: this.getRootApsUserInternal(),
+      apsUserCreate: this.getRootApsUser(), 
       apsOrganizationList: apsOrganizationList
     });
     return apsUserResponse;
@@ -250,9 +303,9 @@ export class APSUsersService {
     const mongoAllReturn: TMongoAllReturn = await this.persistenceService.all({
       searchInfo: mongoSearchInfo
     });
-    const apsUserInternalList: APSUserInternalList = mongoAllReturn.documentList;
+    const apsUserCreateList: APSUserCreateList = mongoAllReturn.documentList;
     const apsUserResponseList: APSUserResponseList = await this.createAPSUserResponseList({
-      apsUserInternalList: apsUserInternalList
+      apsUserCreateList: apsUserCreateList
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserResponseList', details: apsUserResponseList }));
@@ -265,11 +318,7 @@ export class APSUsersService {
     }
   }
 
-  public all = async({ pagingInfo, sortInfo, searchInfo }:{
-    pagingInfo: TApiPagingInfo;
-    sortInfo: TApiSortInfo;
-    searchInfo: TApiSearchInfo;
-  }): Promise<ListApsUsersResponse> => {
+  public all = async(pagingInfo: TApiPagingInfo, sortInfo: TApiSortInfo, searchInfo: TApiSearchInfo): Promise<ListApsUsersResponse> => {
     const funcName = 'all';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
@@ -281,9 +330,10 @@ export class APSUsersService {
       searchInfo: searchInfo
      }}));
 
-    const apsUserSortFieldNameValidationSchema: Partial<APSUserInternal> = {
+    const apsUserSortFieldNameValidationSchema: Partial<APSUserCreate> = {
       isActivated: false,
       userId: 'string',
+      password: 'string',
       profile: {
         email: 'string',
         first: 'string',
@@ -335,9 +385,9 @@ export class APSUsersService {
       sortInfo: mongoSortInfo,
       searchInfo: mongoSearchInfo
     });
-    const apsUserInternalList: APSUserInternalList = mongoAllReturn.documentList;
+    const apsUserCreateList: APSUserCreateList = mongoAllReturn.documentList;
     const apsUserResponseList: APSUserResponseList = await this.createAPSUserResponseList({
-      apsUserInternalList: apsUserInternalList
+      apsUserCreateList: apsUserCreateList
     });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserResponseList', details: apsUserResponseList }));
@@ -350,24 +400,21 @@ export class APSUsersService {
     }
   }
 
-  public byId = async({ userId }: {
-    userId: string;
-  }): Promise<APSUserResponse> => {
+  public byId = async(apsUserId: APSUserId): Promise<APSUserResponse> => {
     const funcName = 'byId';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserResponse', details: { userId: userId } }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserResponse', details: apsUserId }));
 
-    const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
-      documentId: userId
-    });
-
+    const apsUserCreate: APSUserCreate = await this.persistenceService.byId({
+      documentId: apsUserId
+    }) as APSUserCreate;
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({
-      apsUserInternal: apsUserInternal, 
+      apsUserCreate: apsUserCreate, 
       apsOrganizationList: apsOrganizationList
     });
 
@@ -376,9 +423,7 @@ export class APSUsersService {
     return apsUserResponse;
   }
 
-  public create = async({ apsUserCreate }:{
-    apsUserCreate: APSUserCreate;
-  }): Promise<APSUserResponse> => {
+  public create = async(apsUserCreate: APSUserCreate): Promise<APSUserResponse> => {
     const funcName = 'create';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
@@ -388,18 +433,18 @@ export class APSUsersService {
       apsUserCreate: apsUserCreate
     }}));
 
-    await this.validateReferences({ apsUserInternalPartial: apsUserCreate });
+    await this.validateReferences(apsUserCreate);
 
-    const created: APSUserInternal = await this.persistenceService.create({
+    const created: APSUserCreate = await this.persistenceService.create({
       collectionDocumentId: apsUserCreate.userId,
-      collectionDocument: this.map_APSUserCreate_To_APSUserInternal({ apsUserCreate: apsUserCreate }),
+      collectionDocument: apsUserCreate,
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSUserCreate', details: created }));
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({ 
-      apsUserInternal: created,
+      apsUserCreate: apsUserCreate,
       apsOrganizationList: apsOrganizationList,
     });
 
@@ -408,40 +453,34 @@ export class APSUsersService {
     return apsUserResponse;
   }
 
-  public update = async({ userId, apsUserUpdate }:{
-    userId: string;
-    apsUserUpdate: APSUserUpdate;
-  }): Promise<APSUserResponse> => {
+  public update = async(apsUserId: APSUserId, apsUserUpdate: APSUserUpdate): Promise<APSUserResponse> => {
     const funcName = 'update';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSUserUpdate', details: {
-      userId: userId,
+      apsUserId: apsUserId,
       apsUserUpdate: apsUserUpdate
     }}));
 
-    const validationDoc: Partial<APSUserInternal> = {
+    const apsDocument: Partial<APSUserCreate> = {
       ...apsUserUpdate,
       profile: undefined,
-      userId: userId,
-      refreshTokenList: undefined
-    };
-    await this.validateReferences({ apsUserInternalPartial: validationDoc });
-
-    if(apsUserUpdate.password !== undefined) {
-      apsUserUpdate.password = APSSecretsService.createHash(apsUserUpdate.password);
+      userId: apsUserId
     }
-    const updatedInternal: APSUserInternal = await this.persistenceService.update({
-      collectionDocumentId: userId,
+
+    await this.validateReferences(apsDocument);
+
+    const updated: APSUserCreate = await this.persistenceService.update({
+      collectionDocumentId: apsUserId,
       collectionDocument: apsUserUpdate,
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({ 
-      apsUserInternal: updatedInternal,
+      apsUserCreate: updated,
       apsOrganizationList: apsOrganizationList,
     });
 
@@ -450,38 +489,68 @@ export class APSUsersService {
     return apsUserResponse;
   }
 
-  public delete = async({ userId }:{
-    userId: string;
-  }): Promise<void> => {
+  public replace = async(apsUserId: APSUserId, apsUserReplace: APSUserReplace): Promise<APSUserResponse> => {
+    const funcName = 'replace';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACING, message: 'APSUserReplace', details: {
+      apsUserId: apsUserId,
+      apsUserReplace: apsUserReplace
+    }}));
+
+    const apsDocument: Partial<APSUserCreate> = {
+      ...apsUserReplace,
+      userId: apsUserId
+    }
+    await this.validateReferences(apsDocument);
+
+    const replaced: APSUserCreate = await this.persistenceService.replace({
+      collectionDocumentId: apsUserId, 
+      collectionDocument: apsDocument, 
+      collectionSchemaVersion: APSUsersService.collectionSchemaVersion  
+    });
+    const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
+    const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
+    const apsUserResponse: APSUserResponse = this.createAPSUserResponse({ 
+      apsUserCreate: replaced,
+      apsOrganizationList: apsOrganizationList,
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REPLACED, message: 'APSUserResponse', details: apsUserResponse }));
+
+    return apsUserResponse;
+  }
+
+  public delete = async(apsUserId: APSUserId): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
     await this.wait4CollectionUnlock();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETING, message: 'keys', details: {
-      userId: userId 
+      apsUserId: apsUserId 
     }}));
 
-    const deletedInternal: APSUserInternal = (await this.persistenceService.delete({
-      documentId: userId
-    }) as unknown) as APSUserInternal;
+    const deletedUser: APSUserCreate = (await this.persistenceService.delete({
+      documentId: apsUserId
+    }) as unknown) as APSUserCreate;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSUserInternal', details: deletedInternal }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSUserCreate', details: deletedUser }));
 
   }
 
-  private validateReferences = async({ apsUserInternalPartial }:{
-    apsUserInternalPartial: Partial<APSUserInternal>
-  }): Promise<void> => {
+  private validateReferences = async(apsUserPartial: Partial<APSUserCreate>): Promise<void> => {
     const funcName = 'validateReferences';
     const logName = `${APSUsersService.name}.${funcName}()`;
 
-    if(apsUserInternalPartial.userId === undefined) throw new ApiInternalServerError(logName, 'userId not found');
+    if(apsUserPartial.userId === undefined) throw new ApiInternalServerError(logName, 'userId not found');
 
     const invalidReferencesList: Array<TApiInvalidObjectReferenceError> = [];
     // check memberOfOrganizations
-    if(apsUserInternalPartial.memberOfOrganizations !== undefined) {
-      for(const apsOrganizationRoles of apsUserInternalPartial.memberOfOrganizations) {
+    if(apsUserPartial.memberOfOrganizations !== undefined) {
+      for(const apsOrganizationRoles of apsUserPartial.memberOfOrganizations) {
         try {
           await APSOrganizationsService.byId(apsOrganizationRoles.organizationId);
         } catch(e) {
@@ -493,8 +562,8 @@ export class APSUsersService {
       }
     }
     // check last session info
-    if(apsUserInternalPartial.organizationSessionInfoList !== undefined) {
-      for(const organizationSessionInfo of apsUserInternalPartial.organizationSessionInfoList) {
+    if(apsUserPartial.organizationSessionInfoList !== undefined) {
+      for(const organizationSessionInfo of apsUserPartial.organizationSessionInfoList) {
         try {
           await APSOrganizationsService.byId(organizationSessionInfo.organizationId);
         } catch(e) {
@@ -519,7 +588,7 @@ export class APSUsersService {
     // create error 
     if(invalidReferencesList.length > 0) {
       throw new ApiInvalidObjectReferencesServerError(logName, 'invalid user references', { 
-        id: apsUserInternalPartial.userId,
+        id: apsUserPartial.userId,
         collectionName: APSUsersService.collectionName,
         invalidReferenceList: invalidReferencesList
       });      
@@ -527,32 +596,22 @@ export class APSUsersService {
 
   }
 
-  private map_APSUserCreate_To_APSUserInternal({ apsUserCreate }:{
-    apsUserCreate: APSUserCreate;
-  }): APSUserInternal {
-    return {
-      ...apsUserCreate,
-      password: APSSecretsService.createHash(apsUserCreate.password),
-      refreshTokenList: [],
-    }
-  }
-  private map_APSUserInternal_To_APSUserResponse({ apsUserInternal }:{ 
-    apsUserInternal: APSUserInternal;
+  private map_ApsUserCreate_To_ApsUserResponse({ apsUserCreate }:{ 
+    apsUserCreate: APSUserCreate; 
   }): APSUserResponse {
-    const partial: Partial<APSUserInternal> = {
-      ...apsUserInternal
+    const partial: Partial<APSUserCreate> = {
+      ...apsUserCreate
     };
     delete partial.password;
-    delete partial.refreshTokenList;
     return partial as APSUserResponse;
   }
 
-  public createAPSUserResponse = ({ apsUserInternal, apsOrganizationList }:{
-    apsUserInternal: APSUserInternal;
+  public createAPSUserResponse = ({ apsUserCreate, apsOrganizationList }:{
+    apsUserCreate: APSUserCreate;
     apsOrganizationList: APSOrganizationList;
   }): APSUserResponse => {
-    const apsUserResponse: APSUserResponse = this.map_APSUserInternal_To_APSUserResponse({
-      apsUserInternal: apsUserInternal
+    const apsUserResponse: APSUserResponse = this.map_ApsUserCreate_To_ApsUserResponse({
+      apsUserCreate: apsUserCreate
     });
     if(apsUserResponse.memberOfOrganizations !== undefined) {
       const memberOfOrganizationResponse: APSOrganizationRolesResponseList = [];
@@ -583,24 +642,26 @@ export class APSUsersService {
     if(apsUserResponse.organizationSessionInfoList === undefined) {
       apsUserResponse.organizationSessionInfoList = [];
     }
-    return apsUserResponse;  
+    return apsUserResponse;
+  
   }
 
-  private createAPSUserResponseList = async({ apsUserInternalList }:{
-    apsUserInternalList: APSUserInternalList;
+  private createAPSUserResponseList = async({ apsUserCreateList }:{
+    apsUserCreateList: APSUserCreateList;
   }): Promise<APSUserResponseList> => {
     // retrieve all orgs and add org displayName to membersOfOrganizations for each user
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponseList: APSUserResponseList = [];
-    for(const apsUserInternal of apsUserInternalList) {
+    for(const apsUserCreate of apsUserCreateList) {
       const apsUserResponse: APSUserResponse = this.createAPSUserResponse({
-        apsUserInternal: apsUserInternal, 
+        apsUserCreate: apsUserCreate, 
         apsOrganizationList: apsOrganizationList
       });  
       apsUserResponseList.push(apsUserResponse);
     }
     return apsUserResponseList;
+  
   }
 
 }

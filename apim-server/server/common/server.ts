@@ -1,25 +1,20 @@
 import express, { Application } from 'express';
-import cors from 'cors';
 import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
 import cookieParser from 'cookie-parser';
 // import nocache from 'nocache';
 import { AuditLogger4Audit, EServerStatusCodes, ServerLogger } from './ServerLogger';
-
 import errorHandler from '../api/middlewares/error.handler';
 import * as OpenApiValidator from 'express-openapi-validator';
-import { TExpressServerConfig } from './ServerConfig';
+import ServerConfig, { TExpressServerConfig } from './ServerConfig';
 import { ApiServerErrorFromOpenApiResponseValidatorError } from './ServerError';
 import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
+import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
 
-const app = express();
-
-const corsOptions: cors.CorsOptions = {
-  origin: true
-};
+const app: Application = express();
 
 export class ExpressServer {
   private config: TExpressServerConfig;
@@ -33,17 +28,19 @@ export class ExpressServer {
 
     // app.set("etag", false);
     app.set("etag", "strong");
+
     // app.use(nocache());
-    app.use(cors(corsOptions));
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
+    // app.use(bodyParser.urlencoded({ extended: false }));
     app.use(
       bodyParser.urlencoded({
         extended: true,
         limit: this.config.requestSizeLimit,
       })
     );
-    app.use(cookieParser(this.config.serverSecret));
+    app.use(cookieParser(this.config.cookieSecret));
+
     // serve public
     // TODO:TEST max age
     // app.use(express.static(path.join(this.root, "public"), { maxAge: 31557600000 }));
@@ -90,9 +87,16 @@ export class ExpressServer {
 
   router(routes: (app: Application, apiBase: string) => void): ExpressServer {
     
+    APSAuthStrategyService.initialize({
+      app: app,
+      config: ServerConfig.getExpressServerConfig()
+    });  
+
+
+    const strategyName: string = APSAuthStrategyService.getApsStrategyName();
+
+
     routes(app, this.config.apiBase);
-    // app.use('/auth', OIDCDIscoveryRouter);
-    // app.options('*', cors(corsOptions));
  
     // catch all:
     app.use('*', ApsCatchAllController.all);

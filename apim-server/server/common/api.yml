@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.1.1
+  version: 0.2.0
 servers:
 - url: /apim-server/v1
 tags:
@@ -1055,40 +1055,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    put:
-      operationId: replaceApsUser
-      description: Replace an APSUser object by user id.
-      tags:
-      - APSUsers
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/APSUserReplace"
-      responses:
-        '200':
-          description: The APSUser object.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APSUserResponse'
-        '422':
-          description: "Invalid object reference"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
     delete:
       operationId: deleteApsUser
       description: Delete an APSUser object by user id.
@@ -1103,6 +1069,34 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsSession/login:
+    post:
+      operationId: apsLogin
+      description: Login.
+      tags:
+      - APSSession
+      requestBody:
+        description: The login credentials.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSUserLoginCredentials'
+      responses:
+        '200':
+          description: Successful login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSSessionLoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -1956,13 +1950,26 @@ components:
       type: object
       description: Login credentials.
       properties:
-        userId:
+        username:
           type: string
-        userPwd:
+        password:
           type: string
       required:
-      - userId
-      - userPwd
+      - username
+      - password
+
+
+    APSSessionLoginResponse:
+      type: object
+      description: temporary for testing.
+      allOf:
+      - $ref: '#/components/schemas/APSUserResponse'
+      properties:
+        token:
+          type: string
+      required:
+        - token
+
     APSUserLoginAsRequest:
       type: object
       description: Login as request.
@@ -1971,6 +1978,7 @@ components:
           $ref: '#/components/schemas/APSUserId'
       required:
       - userId
+
     APSUserName:
       type: string
       minLength: 2
@@ -2089,33 +2097,6 @@ components:
           $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
         organizationSessionInfoList:
           $ref: '#/components/schemas/APSOrganizationSessionInfoList'
-    APSUserReplace:
-      description: Replace an existing APSUser object.
-      type: object
-      additionalProperties: false
-      properties:
-        isActivated:
-          type: boolean
-        password:
-          type: string
-        profile:
-          $ref: "#/components/schemas/APSUserProfile"
-        systemRoles:
-          allOf:
-            - description: System roles applicable across any organization.
-            - $ref: '#/components/schemas/APSSystemAuthRoleList'
-        memberOfOrganizations:
-          allOf:
-            - $ref: '#/components/schemas/APSOrganizationRolesList'
-            - description: List of organizations the user is a member of include organization roles.
-        memberOfOrganizationGroups:
-          $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
-        organizationSessionInfoList:
-          $ref: '#/components/schemas/APSOrganizationSessionInfoList'
-      required:
-        - isActivated
-        - password
-        - profile
     #
     # Business Groups
     #

@@ -2,7 +2,7 @@ import { Mutex } from "async-mutex";
 import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
 import { MongoPersistenceService } from '../../common/MongoPersistenceService';
 import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError, ServerErrorFromError } from '../../common/ServerError';
-import APSUsersService from './APSUsersService/APSUsersService';
+import APSUsersService, { APSUserInternal } from './APSUsersService/APSUsersService';
 import { 
   APSOrganizationList, 
   APSUserCreate, 
@@ -14,6 +14,7 @@ import {
 import { APSUserLoginAsRequest } from '../../../src/@solace-iot-team/apim-server-openapi-node/models/APSUserLoginAsRequest';
 import APSOrganizationsService from './apsAdministration/APSOrganizationsService';
 import { ValidationUtils } from '../utils/ValidationUtils';
+import APSSecretsService from "../../common/authstrategies/APSSecretsService";
 
 export class APSLoginService {
   private static collectionName = "apsUsers";
@@ -86,27 +87,35 @@ export class APSLoginService {
     }}));
 
     // check if root
-    if (apsUserLoginCredentials.userId === APSUsersService.getRootApsUserLoginCredentials().userId) {
+    if (apsUserLoginCredentials.username === APSUsersService.getRootApsUserLoginCredentials().username) {
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'isRootUser', details: undefined }));
-      if (apsUserLoginCredentials.userPwd === APSUsersService.getRootApsUserLoginCredentials().userPwd) {
+      if (apsUserLoginCredentials.password === APSUsersService.getRootApsUserLoginCredentials().password) {
         return await APSUsersService.getRootApsUserResponse();
       } else {
         ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'noPasswordMatch', details: undefined }));
-        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.userId });
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.username });
       }
     }
+    
     // check internal DB 
     try {
-      const loggedIn: APSUserCreate = await this.persistenceService.byId({
-        documentId: apsUserLoginCredentials.userId
-      }) as APSUserCreate;
-      if (!loggedIn.isActivated || loggedIn.password !== apsUserLoginCredentials.userPwd) {
-        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.userId });
+
+      const loggedIn: APSUserInternal = await this.persistenceService.byId({
+        documentId: apsUserLoginCredentials.username
+      }) as APSUserInternal;
+
+      if (!loggedIn.isActivated) {
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.username });
       }
+
+      if(!APSSecretsService.isMatch({ secret: apsUserLoginCredentials.password, hashed: loggedIn.password })) {
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.username });
+      }
+
       const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
       const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
       const apsUserResponse: APSUserResponse = APSUsersService.createAPSUserResponse({
-        apsUserCreate: loggedIn, 
+        apsUserInternal: loggedIn, 
         apsOrganizationList: apsOrganizationList
       });
   
@@ -116,7 +125,7 @@ export class APSLoginService {
       return apsUserResponse;
     } catch (e) {
       if (e instanceof ApiKeyNotFoundServerError) {
-        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.userId });
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginCredentials.username });
       } else {
         throw e;
       }
@@ -134,16 +143,16 @@ export class APSLoginService {
     }}));
 
     // check if root
-    if (apsUserLoginAsRequest.userId === APSUsersService.getRootApsUserLoginCredentials().userId) {
+    if (apsUserLoginAsRequest.userId === APSUsersService.getRootApsUserLoginCredentials().username) {
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_AS_USER, message: 'isRootUser', details: undefined }));
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_AS_USER, message: 'isRootUser, not allowed', details: undefined }));
       throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginAsRequest.userId });
     }
     // check internal DB 
     try {
-      const loggedIn: APSUserCreate = await this.persistenceService.byId({
+      const loggedIn: APSUserInternal = await this.persistenceService.byId({
         documentId: apsUserLoginAsRequest.userId
-      }) as APSUserCreate;
+      }) as APSUserInternal;
       // TODO: check if user has given consent
       // if (!loggedIn.hasGivenConsent) {
       //   throw new ApiNotAuthorizedServerError(logName, undefined, { userId: apsUserLoginAsRequest.userId });
@@ -151,7 +160,7 @@ export class APSLoginService {
       const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
       const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
       const apsUserResponse: APSUserResponse = APSUsersService.createAPSUserResponse({
-        apsUserCreate: loggedIn, 
+        apsUserInternal: loggedIn, 
         apsOrganizationList: apsOrganizationList
       });
 

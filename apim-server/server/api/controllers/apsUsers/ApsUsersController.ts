@@ -8,8 +8,11 @@ export class ApsUsersController {
   private static className = 'ApsUsersController';
 
   public static all = (req: Request, res: Response, next: NextFunction): void => {
-
-    APSUsersService.all(ApiQueryHelper.getPagingInfoFromQuery(req.query), ApiQueryHelper.getSortInfoFromQuery(req.query), ApiQueryHelper.getSearchInfoFromQuery(req.query))
+    APSUsersService.all({
+      pagingInfo: ApiQueryHelper.getPagingInfoFromQuery(req.query),
+      searchInfo: ApiQueryHelper.getSearchInfoFromQuery(req.query),
+      sortInfo: ApiQueryHelper.getSortInfoFromQuery(req.query),
+    })
     .then( (r: ListApsUsersResponse) => {
       // res.status(200).type('application/json').json(r);
       res.status(200).json(r);
@@ -24,7 +27,7 @@ export class ApsUsersController {
     const logName = `${ApsUsersController.className}.${funcName}()`;
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
-    APSUsersService.byId(userId)
+    APSUsersService.byId({ userId: userId })
     .then( (r: APSUserResponse) => {
       res.status(200).json(r);
     })
@@ -34,7 +37,7 @@ export class ApsUsersController {
   }
 
   public static create = (req: Request, res: Response, next: NextFunction): void => {
-    APSUsersService.create(req.body)
+    APSUsersService.create({ apsUserCreate: req.body })
     .then((r: APSUserResponse) => {
       res.status(201).json(r);
     })
@@ -48,21 +51,10 @@ export class ApsUsersController {
     const logName = `${ApsUsersController.className}.${funcName}()`;
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
-    APSUsersService.update(userId, req.body)
-    .then((r: APSUserResponse) => {
-      res.status(200).json(r);
+    APSUsersService.update({ 
+      userId: userId, 
+      apsUserUpdate: req.body
     })
-    .catch( (e) => {
-      next(e);
-    });
-  }
-
-  public static replace = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'replace';
-    const logName = `${ApsUsersController.className}.${funcName}()`;
-    const userId: string = req.params.user_id;
-    if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
-    APSUsersService.replace(userId, req.body)
     .then((r: APSUserResponse) => {
       res.status(200).json(r);
     })
@@ -76,7 +68,7 @@ export class ApsUsersController {
     const logName = `${ApsUsersController.className}.${funcName}()`;
     const userId: string = req.params.user_id;
     if(!userId) throw new ApiMissingParameterServerError(logName, undefined, { parameter: 'user_id' });
-    APSUsersService.delete(userId)
+    APSUsersService.delete({ userId: userId })
     .then( (_r) => {
       res.status(204).send();
     })

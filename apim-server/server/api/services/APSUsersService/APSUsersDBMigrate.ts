@@ -76,6 +76,15 @@ export type APSUser_DB_3 = {
   memberOfOrganizationGroups?: Array<APSMemberOfOrganizationGroups_DB_2>;
 }
 
+// * Schema 4 *
+export type APSRefreshTokenInternal = {
+  refreshToken: string;
+}
+export type APSRefreshTokenInternalList = Array<APSRefreshTokenInternal>;
+export type APSUser_DB_4 = APSUser_DB_3 & {
+  refreshTokenList: APSRefreshTokenInternalList;
+}
+
 export class APSUsersDBMigrate {
 
   public static migrate = async(apsUsersService: APSUsersService): Promise<number> => {
@@ -96,9 +105,15 @@ export class APSUsersDBMigrate {
       }
       if(currentDBSchemaVersion === 1) {
         currentDBRawUser = await APSUsersDBMigrate.migrate_1_to_2(apsUsersService.getPersistenceService(), currentDBRawUser);
+        currentDBSchemaVersion = 2;
       }
       if(currentDBSchemaVersion === 2) {
         currentDBRawUser = await APSUsersDBMigrate.migrate_2_to_3(apsUsersService.getPersistenceService(), currentDBRawUser);
+        currentDBSchemaVersion = 3;
+      }
+      if(currentDBSchemaVersion === 3) {
+        currentDBRawUser = await APSUsersDBMigrate.migrate_3_to_4(apsUsersService.getPersistenceService(), currentDBRawUser);
+        currentDBSchemaVersion = 4;
       }
     }
     const allDBRawUserList = await apsUsersService.getPersistenceService().allRawLessThanTargetSchemaVersion(targetDBSchemaVersion + 1);
@@ -183,6 +198,37 @@ export class APSUsersDBMigrate {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
       old_dbUser: dbUser,
       new_dbUser: newRawDBDocument
+    }}));
+    return newRawDBDocument;
+  }
+
+  private static migrate_3_to_4 = async(persistenceService: MongoPersistenceService, dbUser_3: APSUser_DB_3): Promise<APSUser_DB_4> => {
+    const funcName = 'migrate_3_to_4';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    const newSchemaVersion = 3;
+    const userId = dbUser_3.userId;
+
+    const dbUser_4: APSUser_DB_4 = {
+      ...dbUser_3,
+      _schemaVersion: newSchemaVersion,
+      refreshTokenList: [],
+    }
+    const replaced: APSUser_DB_4 = await persistenceService.replace({
+      collectionDocumentId: userId, 
+      collectionDocument: dbUser_4, 
+      collectionSchemaVersion: newSchemaVersion
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+      apsUser: replaced,
+    }}));  
+
+    const newRawDBDocument = await persistenceService.byIdRaw({
+      documentId: userId
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
+      dbUser_3: dbUser_3,
+      dbUser_4: newRawDBDocument
     }}));
     return newRawDBDocument;
   }

@@ -1,17 +1,42 @@
 import path from 'path';
 import { OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import { ConfigEnvVarNotANumberServerError, ConfigMissingEnvVarServerError } from './ServerError';
+import { ConfigEnvVarNotANumberServerError, ConfigEnvVarValueServerError, ConfigInvalidEnvVarValueFromListServerError, ConfigMissingEnvVarServerError, ServerError } from './ServerError';
 
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ServerUtils } from './ServerUtils';
+
+export enum EAuthConfigType {
+  UNDEFINED = "UNDEFINED",
+  INTERNAL = "internal",
+  OIDC = "oidc",
+}
+const ValidEnvAuthConfigType = {
+  INTERNAL: EAuthConfigType.INTERNAL,
+  OIDC: EAuthConfigType.OIDC,
+}
+export type TAuthConfigUndefined = {
+  type: EAuthConfigType.UNDEFINED;
+}
+export type TAuthConfigOidc = {
+  type: EAuthConfigType.OIDC;
+}
+export type TAuthConfigInternal = {
+  type: EAuthConfigType.INTERNAL;
+  authJwtSecret: string;
+  authJwtExpirySecs: number;
+  refreshJwtSecret: string;
+  refreshJwtExpirySecs: number;
+}
+export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc | TAuthConfigUndefined;
 
 export type TExpressServerConfig = {
   rootDir: string;
   port: number;
   apiBase: string;
   requestSizeLimit: string;
-  serverSecret: string;
   enableOpenApiResponseValidation: boolean;
+  cookieSecret: string;
+  authConfig: TAuthConfig;
 }
 export type TServerLoggerConfig = {
   appId: string,
@@ -45,10 +70,16 @@ enum EEnvVars {
   APIM_SERVER_LOGGER_LOG_LEVEL= 'APIM_SERVER_LOGGER_LOG_LEVEL',
   APIM_SERVER_LOGGER_APP_ID = 'APIM_SERVER_LOGGER_APP_ID',
   APIM_SERVER_REQUEST_SIZE_LIMIT = 'APIM_SERVER_REQUEST_SIZE_LIMIT',
-  APIM_SERVER_SECRET = 'APIM_SERVER_SECRET',
   APIM_SERVER_ROOT_USER = 'APIM_SERVER_ROOT_USER',
   APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD',
-  APIM_SERVER_DATA_PATH = 'APIM_SERVER_DATA_PATH'
+  APIM_SERVER_DATA_PATH = 'APIM_SERVER_DATA_PATH',
+  APIM_SERVER_COOKIE_SECRET = 'APIM_SERVER_COOKIE_SECRET',
+  // auth
+  APIM_SERVER_AUTH_TYPE = "APIM_SERVER_AUTH_TYPE",
+  APIM_SERVER_AUTH_INTERNAL_JWT_SECRET = "APIM_SERVER_AUTH_INTERNAL_JWT_SECRET",
+  APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS",
+  APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET",
+  APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS",
 }
 
 export class ServerConfig {
@@ -58,6 +89,15 @@ export class ServerConfig {
     appId: 'apim-server',
     level: 'trace'
   }
+
+  private getMandatoryEnvVarValueAsString_From_List = (envVarName: string, list: Array<string>): string => {
+    const funcName = 'getMandatoryEnvVarValueAsString_From_List';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+    const value: string | undefined = process.env[envVarName];
+    if (!value) throw new ConfigMissingEnvVarServerError(logName, 'mandatory env var missing', envVarName);    
+    if(!list.includes(value.toLowerCase())) throw new ConfigInvalidEnvVarValueFromListServerError(logName, 'invalid value', envVarName, value, list);    
+    return value.toLowerCase();
+  };
 
   private getMandatoryEnvVarValueAsString = (envVarName: string): string => {
     const funcName = 'getMandatoryEnvVarValueAsString';
@@ -94,33 +134,79 @@ export class ServerConfig {
 
   // constructor() { }
 
+  private initializeAuthConfig = (): TAuthConfig => {
+    const funcName = 'initializeAuthConfig';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+
+    let authConfig: TAuthConfig = { type: EAuthConfigType.UNDEFINED };
+    const authType: EAuthConfigType = this.getMandatoryEnvVarValueAsString_From_List(EEnvVars.APIM_SERVER_AUTH_TYPE, Object.values(ValidEnvAuthConfigType)) as EAuthConfigType;
+    switch(authType) {
+      case EAuthConfigType.UNDEFINED:
+        // should never get here
+        throw new ConfigInvalidEnvVarValueFromListServerError(logName, 'invalid value', EEnvVars.APIM_SERVER_AUTH_TYPE, EAuthConfigType.UNDEFINED, Object.values(ValidEnvAuthConfigType));    
+      case EAuthConfigType.INTERNAL:
+        const internalAuthConfig: TAuthConfigInternal = {
+          type: EAuthConfigType.INTERNAL,
+          authJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_SECRET),
+          authJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS),
+          refreshJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET),
+          refreshJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS),      
+        };
+        // validate values
+        if(internalAuthConfig.refreshJwtExpirySecs < internalAuthConfig.authJwtExpirySecs) {
+          throw new ConfigEnvVarValueServerError(
+            logName, 
+            `${EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS}=${internalAuthConfig.refreshJwtExpirySecs} must not be less than ${EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS}=${internalAuthConfig.authJwtExpirySecs}`, 
+            EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS, String(internalAuthConfig.authJwtExpirySecs)
+          );
+        }
+        return internalAuthConfig;
+      case EAuthConfigType.OIDC:
+        throw new ServerError(logName, 'currently not implemented');
+      default:
+        ServerUtils.assertNever(logName, authType);
+    }
+    return authConfig;
+  }
+
   public initialize = (): void => {
-    this.config = {
-      dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
-      expressServer: {
-        rootDir: path.normalize(__dirname + '/../..'),
-        port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
-        apiBase: OpenAPI.BASE,
-        requestSizeLimit: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_REQUEST_SIZE_LIMIT),
-        serverSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_SECRET),
-        enableOpenApiResponseValidation: this.getOptionalEnvVarValueAsBoolean(EEnvVars.APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION, true),
-      },
-      mongoDB: {
-        mongoConnectionString: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_CONNECTION_STRING),
-        serverMongoDatabaseName: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_DB)
-      },
-      serverLogger: {
-        appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_APP_ID),
-        level: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_LOG_LEVEL),
-      },
-      rootUser: {
-        userId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER),
-        password: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER_PWD)
-      },
-      monitorConfig: {
-        connectionTestInterval_secs: 60
+    const funcName = 'initialize';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+    try {
+      this.config = {
+        dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
+        expressServer: {
+          rootDir: path.normalize(__dirname + '/../..'),
+          port: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_PORT),
+          apiBase: OpenAPI.BASE,
+          requestSizeLimit: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_REQUEST_SIZE_LIMIT),
+          enableOpenApiResponseValidation: this.getOptionalEnvVarValueAsBoolean(EEnvVars.APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION, true),
+          cookieSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_COOKIE_SECRET),
+          authConfig: this.initializeAuthConfig(),
+        },
+        mongoDB: {
+          mongoConnectionString: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_CONNECTION_STRING),
+          serverMongoDatabaseName: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_DB)
+        },
+        serverLogger: {
+          appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_APP_ID),
+          level: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_LOG_LEVEL),
+        },
+        rootUser: {
+          userId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER),
+          password: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_ROOT_USER_PWD)
+        },
+        monitorConfig: {
+          connectionTestInterval_secs: 60
+        }
+      };
+    } catch(e) {
+      if(e instanceof ServerError) {
+        const se: ServerError = e as ServerError;
+        ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING, message: 'env', details: se.toObject() }));
       }
-    };
+      throw e;
+    }
   }
 
   public logConfig = (): void => {
@@ -147,6 +233,10 @@ export class ServerConfig {
 
   public getExpressServerConfig = (): TExpressServerConfig => {
     return this.config.expressServer;
+  }
+
+  public getAuthConfig = (): TAuthConfig => {
+    return this.config.expressServer.authConfig;
   }
 
   public getRootUserConfig = (): TRootUserConfig => {

@@ -95,6 +95,28 @@ export class ConfigMissingEnvVarServerError extends ServerError {
   }
 }
 
+export class ConfigEnvVarValueServerError extends ServerError {
+  private envVarName: string;
+  private envVarValue: string;
+  constructor(internalLogName: string, internalMessage: string, envVarName: string, envVarValue: string) {
+    super(internalLogName, `${internalMessage}: ${envVarName}`);
+    this.envVarName = envVarName;
+    this.envVarValue = envVarValue;
+  }
+}
+
+export class ConfigInvalidEnvVarValueFromListServerError extends ServerError {
+  private envVarName: string;
+  private envVarValue: string;
+  private allowedValues: string;
+  constructor(internalLogName: string, internalMessage: string, envVarName: string, envVarValue: string, allowedValueList: Array<string>) {
+    super(internalLogName, internalMessage);
+    this.envVarName = envVarName;
+    this.envVarValue = envVarValue;
+    this.allowedValues = allowedValueList.join(', ');
+  }
+}
+
 export class ConfigEnvVarNotANumberServerError extends ServerError {
   private envVarName: string;
   private envVarValue: string;
