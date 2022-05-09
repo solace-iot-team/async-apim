@@ -93,7 +93,7 @@ export class ExpressServer {
     });  
 
 
-    const strategyName: string = APSAuthStrategyService.getApsStrategyName();
+    // const strategyName: string = APSAuthStrategyService.getApsStrategyName();
 
 
     routes(app, this.config.apiBase);

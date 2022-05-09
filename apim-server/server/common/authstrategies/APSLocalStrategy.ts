@@ -1,11 +1,5 @@
-import passport from "passport";
 import { IVerifyOptions, Strategy as LocalStrategy }  from "passport-local";
-import { APSUserResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node";
-import APSLoginService from "../../api/services/APSLoginService";
 import APSSessionService from "../../api/services/APSSessionService";
-import APSUsersService from "../../api/services/APSUsersService/APSUsersService";
-import { ServerFatalError } from "../ServerError";
-import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 
 /**
  * from: https://www.wlaurance.com/2018/09/async-await-passportjs-local-strategy
@@ -21,6 +15,10 @@ class APSLocalStrategy {
         password: password,
       });
       // throw new Error(`${logName}: continue here: authenticatedUserId = ${JSON.stringify(authenticatedUserId, null, 2)}`);
+
+      // should add user to req and user={ _id: authenticatedUserId}
+      // user and user._id
+
       return done(undefined, authenticatedUserId);
     } catch(e) {
       return done(e, undefined, undefined);

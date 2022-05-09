@@ -349,7 +349,8 @@ export type TApiObjectNotFoundServerErrorMeta = {
   collectionName: string
 }
 export type TApiNotAuthorizedServerErrorMeta = {
-  userId: string
+  userId: string;
+  resource?: string;
 }
 
 export class ApiDuplicateKeyServerError extends ApiServerError {

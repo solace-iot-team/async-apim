@@ -1,46 +1,81 @@
 import { Application } from "express";
-import passport from "passport";
 import jwt from 'jsonwebtoken';
 import cors from "cors";
 
-import ServerConfig, { EAuthConfigType, TAuthConfig, TExpressServerConfig } from "../ServerConfig";
+import ServerConfig, { EAuthConfigType, TAuthConfig, TAuthConfigInternal, TExpressServerConfig } from "../ServerConfig";
 import { ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
-import APSPassportFactory from "./APSPassportFactory";
+import APSPassportFactory, { TPassportBuildInternalResult } from "./APSPassportFactory";
+import passport, { AuthenticateOptions } from "passport";
 
-export enum EAuthStrategyName {
-  INTERNAL = "internal",
+export enum ERegisteredStrategyName {
+  INTERNAL_LOCAL = "internal_local",
+  INTERNAL_JWT = "internal_jwt",
   OIDC = "oidc"
 }
-export type TTokenContents = {
+export type TTokenPayload = {
   _id: string;
 }
 
 class APSAuthStrategyService {
-  private apsPassport: passport.PassportStatic | undefined = undefined;
-  private apsStrategy: passport.Strategy | undefined = undefined;
-  private apsStrategyName: EAuthStrategyName | undefined = undefined;
+  // private apsPassport: passport.PassportStatic | undefined = undefined;
+  // private apsStrategy: passport.Strategy | undefined = undefined;
+  private apsInternal_LocalRegsiteredStrategyName: ERegisteredStrategyName.INTERNAL_LOCAL | undefined = undefined;
+  private apsInternal_JwtRegisteredStrategyName: ERegisteredStrategyName.INTERNAL_JWT | undefined = undefined;
+  // private apsVerifyUserFunc: IVerifyUserFunc | undefined;
+  private readonly apsInternal_JwtStrategyAuthenticateOptions: AuthenticateOptions = {
+    session: false,
+    // failureRedirect
+  };
+  public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
 
-  public getApsPassport = (): passport.PassportStatic => {
-    const funcName = 'getApsPassport';
+
+  // public getApsPassport = (): passport.PassportStatic => {
+  //   const funcName = 'getApsPassport';
+  //   const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+  //   if(this.apsPassport === undefined) throw new ServerError(logName, 'this.apsPassport === undefined');
+  //   return this.apsPassport;
+  // }
+
+  // public getApsStrategy = (): passport.Strategy => {
+  //   const funcName = 'getApsStrategy';
+  //   const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+  //   if(this.apsStrategy === undefined) throw new ServerError(logName, 'this.apsStrategy === undefined');
+  //   return this.apsStrategy;
+  // }
+
+
+  // public getVerifyUserFunc = () => {
+  //   const funcName = 'getVerifyUserFunc';
+  //   const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+  //   if(this.apsVerifyUserFunc === undefined) throw new ServerError(logName, 'this.apsVerifyUserFunc === undefined');
+  //   return this.apsVerifyUserFunc;
+  // }
+
+  public getApsRegisteredAuthStrategyName = (): ERegisteredStrategyName => {
+    const funcName = 'getApsRegisteredAuthStrategyName';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
-    if(this.apsPassport === undefined) throw new ServerError(logName, 'this.apsPassport === undefined');
-    return this.apsPassport;
+    const configAuthType: EAuthConfigType = ServerConfig.getAuthConfig().type;
+    switch(configAuthType) {
+      case EAuthConfigType.INTERNAL:
+        if(this.apsInternal_LocalRegsiteredStrategyName === undefined) throw new ServerError(logName, 'this.apsInternal_LocalRegsiteredStrategyName === undefined');
+        return this.apsInternal_LocalRegsiteredStrategyName;
+      case EAuthConfigType.OIDC:
+        throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
+      case EAuthConfigType.UNDEFINED:
+        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
+      default:
+        ServerUtils.assertNever(logName, configAuthType);
+    }
+    throw new ServerError(logName, `configAuthType = ${configAuthType}`);    
   }
 
-  public getApsStrategy = (): passport.Strategy => {
-    const funcName = 'getApsStrategy';
-    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
-    if(this.apsStrategy === undefined) throw new ServerError(logName, 'this.apsStrategy === undefined');
-    return this.apsStrategy;
-  }
-
-  public getApsStrategyName = (): EAuthStrategyName => {
-    const funcName = 'getApsStrategyName';
-    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
-    if(this.apsStrategyName === undefined) throw new ServerError(logName, 'this.apsStrategyName === undefined');
-    return this.apsStrategyName;
-  }
+  // public getApsInternal_JwtStrategyName = (): EAuthStrategyName.INTERNAL_JWT => {
+  //   const funcName = 'getApsInternal_JwtStrategyName';
+  //   const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+  //   if(this.apsInternal_JwtStrategyName === undefined) throw new ServerError(logName, 'this.apsInternal_JwtStrategyName === undefined');
+  //   return this.apsInternal_JwtStrategyName;
+  // }
 
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {
@@ -67,12 +102,16 @@ class APSAuthStrategyService {
     config: TExpressServerConfig;
   }) => {
 
-    const { apsPassport, apsStrategy } = APSPassportFactory.buildInternal({ name: EAuthStrategyName.INTERNAL });
-    this.apsStrategy = apsStrategy;
-    this.apsPassport = apsPassport;
-    this.apsStrategyName = EAuthStrategyName.INTERNAL;
+    const _buildInternalResult: TPassportBuildInternalResult  = APSPassportFactory.buildInternal({ 
+      authConfigInternal: config.authConfig as TAuthConfigInternal,
+      internalLocalStrategyName: ERegisteredStrategyName.INTERNAL_LOCAL,
+      internalJwtStrategyName: ERegisteredStrategyName.INTERNAL_JWT  
+    });
+    // this.apsStrategy = apsStrategy;
+    // this.apsPassport = apsPassport;
 
-    app.use(apsPassport.initialize());
+    // app.use(apsPassport.initialize());
+    app.use(passport.initialize());
     // app.use(session({
     //   secret: 'keyboard cat',
     //   resave: true,
@@ -83,6 +122,11 @@ class APSAuthStrategyService {
     app.use(cors(this.getCorsOptions_InternalAuth(config)));
     // TODO: why / where did I find this?
     // app.use(bodyParser.urlencoded({ extended: false }));
+
+    // indicates module is initialized
+    this.apsInternal_LocalRegsiteredStrategyName = ERegisteredStrategyName.INTERNAL_LOCAL;
+    this.apsInternal_JwtRegisteredStrategyName = ERegisteredStrategyName.INTERNAL_JWT;
+    // this.apsVerifyUserFunc = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, { session: false });
 
   }
 
@@ -97,14 +141,8 @@ class APSAuthStrategyService {
     switch(authConfigType) {
       case EAuthConfigType.UNDEFINED:
         throw new ServerError(logName, `authConfigType = ${authConfigType}`);
-      case EAuthConfigType.INTERNAL:
-        
+      case EAuthConfigType.INTERNAL:        
         this.initializeInternalAuth({ app: app, config: config });
-        
-
-        // app.post('/apsSession/login', passport.authenticate('local'));
-
-
         return;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `authConfigType = ${authConfigType} not supported`);
@@ -128,7 +166,8 @@ class APSAuthStrategyService {
       // Since localhost is not having https protocol,
       // secure cookies do not work correctly (in postman)
       // secure: !dev,
-      secure: true,
+      // secure: true,
+      secure: false,
       signed: true,
       maxAge: authConfig.refreshJwtExpirySecs,
       sameSite: "none",
@@ -145,11 +184,11 @@ class APSAuthStrategyService {
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
-    const tokenContents: TTokenContents = {
+    const payload: TTokenPayload = {
       _id: userId
     };
 
-    return jwt.sign(tokenContents, authConfig.authJwtSecret, {
+    return jwt.sign(payload, authConfig.authJwtSecret, {
       expiresIn: authConfig.authJwtExpirySecs
     });
   }
@@ -162,14 +201,27 @@ class APSAuthStrategyService {
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
-    const tokenContents: TTokenContents = {
+    const payload: TTokenPayload = {
       _id: userId
     };
 
-    return jwt.sign(tokenContents, authConfig.refreshJwtSecret, {
+    return jwt.sign(payload, authConfig.refreshJwtSecret, {
       expiresIn: authConfig.refreshJwtExpirySecs
     });
   }
+
+  public getUserId_From_RefreshToken = ({ refreshToken }:{
+    refreshToken: string;
+  }): string => {
+    const funcName = 'getUserId_From_RefreshToken';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    
+    const payload = jwt.verify(refreshToken, authConfig.refreshJwtSecret) as TTokenPayload;
+    return payload._id;
+  }
+
 
 }
 

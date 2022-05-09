@@ -1101,6 +1101,69 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /apsSession/refreshToken:
+    get:
+      operationId: apsRefreshToken
+      description: Refresh auth token.
+      tags:
+      - APSSession
+      responses:
+        '200':
+          description: Successful login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSSessionRefreshTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsSession/logout:
+    get:
+      operationId: apsLogout
+      description: Logout user.
+      tags:
+      - APSSession
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSSessionLogoutResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsSession/test:
+    get:
+      operationId: apsTest
+      description: Test protected resource.
+      tags:
+      - APSSession
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSSessionTestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsLogin/login:
     post:
       operationId: login
@@ -1969,7 +2032,31 @@ components:
           type: string
       required:
         - token
-
+    APSSessionRefreshTokenResponse:
+      type: object
+      description: The refreshed token.
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+      required:
+      - success
+      - token
+    APSSessionLogoutResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+      - success
+    APSSessionTestResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+      - success
     APSUserLoginAsRequest:
       type: object
       description: Login as request.

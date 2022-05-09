@@ -1,10 +1,11 @@
 import { Mutex } from "async-mutex";
 import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
 import { MongoPersistenceService } from '../../common/MongoPersistenceService';
-import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError, ServerErrorFromError } from '../../common/ServerError';
-import APSUsersService, { APSUserInternal } from './APSUsersService/APSUsersService';
+import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError, ServerError, ServerErrorFromError } from '../../common/ServerError';
+import APSUsersService, { APSRefreshTokenInternal, APSUserInternal } from './APSUsersService/APSUsersService';
 import { 
   APSOrganizationList, 
+  APSSessionLogoutResponse, 
   APSUserCreate, 
   APSUserLoginCredentials, 
   APSUserResponse, 
@@ -15,6 +16,13 @@ import { APSUserLoginAsRequest } from '../../../src/@solace-iot-team/apim-server
 import APSOrganizationsService from './apsAdministration/APSOrganizationsService';
 import { ValidationUtils } from '../utils/ValidationUtils';
 import APSSecretsService from "../../common/authstrategies/APSSecretsService";
+import APSAuthStrategyService from "../../common/authstrategies/APSAuthStrategyService";
+import { APSSessionTestResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node/models/APSSessionTestResponse";
+
+export type TRefreshTokenInternalResponse = {
+  userId: string;
+  newRefreshToken: string;
+}
 
 export class APSSessionService {
   // private static collectionName = "apsUsers";
@@ -76,7 +84,6 @@ export class APSSessionService {
     // do initialization
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
-
 
   public authenticateInternal = async({ username, password }:{
     username: string;
@@ -142,12 +149,10 @@ export class APSSessionService {
     
   }
 
-
   public login = async({ userId, refreshToken }:{
     userId: string;
     refreshToken: string;
-  }
-  ): Promise<APSUserResponse> => {
+  }): Promise<APSUserResponse> => {
     const funcName = 'login';
     const logName = `${APSSessionService.name}.${funcName}()`;
 
@@ -209,6 +214,143 @@ export class APSSessionService {
     }
   }
 
+  // public refreshToken = async
+  //   existingRefreshToken: refreshToken,
+  //   newRefreshToken: newRefreshToken
+  // })
+
+  public refreshToken = async({ existingRefreshToken }:{
+    existingRefreshToken: string;
+  }): Promise<TRefreshTokenInternalResponse> => {
+    const funcName = 'refreshToken';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    const userId: string = APSAuthStrategyService.getUserId_From_RefreshToken({ refreshToken: existingRefreshToken });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'userId', details: {
+      userId: userId
+    }}));
+
+    const newRefreshToken: string = APSAuthStrategyService.generateRefreshToken_For_InternalAuth({ userId: userId });
+
+    // get the user details
+    // check if root
+    if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'isRootUser', details: undefined }));
+      const rootUser: APSUserInternal = APSUsersService.getRootApsUserInternal();
+      const tokenIndex = rootUser.refreshTokenList.findIndex( (apsRefreshTokenInternal: APSRefreshTokenInternal) => {
+        return apsRefreshTokenInternal.refreshToken === existingRefreshToken;
+      });
+      if (tokenIndex === -1) {
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'no token match', details: {
+          userId: userId
+        }}));
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
+      // replace refreshToken in list
+      rootUser.refreshTokenList[tokenIndex] = { refreshToken: newRefreshToken };
+      return {
+        newRefreshToken: newRefreshToken,
+        userId: userId
+      };
+    }
+    // check DB
+    try {
+      // get the user from DB
+      const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
+        documentId: userId
+      }) as APSUserInternal;
+
+      if (!apsUserInternal.isActivated) {
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
+      const tokenIndex = apsUserInternal.refreshTokenList.findIndex( (apsRefreshTokenInternal: APSRefreshTokenInternal) => {
+        return apsRefreshTokenInternal.refreshToken === existingRefreshToken;
+      });
+      if (tokenIndex === -1) {
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'no token match', details: {
+          userId: userId
+        }}));
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
+      // replace refreshToken in list
+      apsUserInternal.refreshTokenList[tokenIndex] = { refreshToken: newRefreshToken };
+      const updateInternal: Partial<APSUserInternal> = {
+        refreshTokenList: apsUserInternal.refreshTokenList,
+      };
+      await this.persistenceService.update({ 
+        collectionDocumentId: userId,
+        collectionDocument: updateInternal,
+        collectionSchemaVersion: APSUsersService.getDBObjectSchemaVersion(),
+      });
+      return {
+        newRefreshToken: newRefreshToken,
+        userId: userId
+      };
+    } catch (e) {
+      if (e instanceof ApiKeyNotFoundServerError) {
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  public logout = async({ userId }:{
+    userId: string;
+  }): Promise<APSSessionLogoutResponse> => {    
+    const funcName = 'logout';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    // check if root
+    if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_OUT_USER, message: 'isRootUser', details: undefined }));
+      const rootUser: APSUserInternal = APSUsersService.getRootApsUserInternal();
+      // delete refreshToken
+      rootUser.refreshTokenList = [];
+    }
+    // check DB
+    try {
+      // get the user from DB
+      const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
+        documentId: userId
+      }) as APSUserInternal;
+      // delete refreshToken
+      const updateInternal: Partial<APSUserInternal> = {
+        refreshTokenList: [],
+      };
+      await this.persistenceService.update({ 
+        collectionDocumentId: userId,
+        collectionDocument: updateInternal,
+        collectionSchemaVersion: APSUsersService.getDBObjectSchemaVersion(),
+      });
+    } catch (e) {
+      if (e instanceof ApiKeyNotFoundServerError) {
+        throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      } else {
+        throw e;
+      }
+    }
+    
+    const apsSessionLogoutResponse: APSSessionLogoutResponse = {
+      success: true
+    };
+    return apsSessionLogoutResponse;
+  }
+
+  public test = async(): Promise<APSSessionTestResponse> => {
+    const funcName = 'test';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+    const response: APSSessionTestResponse = {
+      success: true
+    };
+    return response;
+  }
+
   /**
    * Invalidates all user sessions for this organization.
    */
@@ -222,11 +364,12 @@ export class APSSessionService {
       apsOrganizationId: apsOrganizationId
     } }));
 
-    // FUTURE: invalidate all user token currently logged into this organization
+    throw new ServerError(logName, 'not implemented');
+    // delete all refreshTokens from all users who are members of this organization
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGED_OUT_ORGANIZATION_ALL, message: 'apsOrganizationId', details: {
-      apsOrganizationId: apsOrganizationId
-    } }));
+    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGED_OUT_ORGANIZATION_ALL, message: 'apsOrganizationId', details: {
+    //   apsOrganizationId: apsOrganizationId
+    // } }));
 
   } 
   
