@@ -1,7 +1,7 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { MongoPersistenceService, TMongoAllReturn, TMongoPagingInfo, TMongoSearchInfo, TMongoSortInfo } from '../../../common/MongoPersistenceService';
 import { TApiPagingInfo, TApiSearchInfo, TApiSortInfo } from '../../utils/ApiQueryHelper';
-import ServerConfig, { TRootUserConfig } from '../../../common/ServerConfig';
+import { TRootUserConfig } from '../../../common/ServerConfig';
 import { ServerUtils } from '../../../common/ServerUtils';
 import { 
   APSId,
@@ -34,12 +34,13 @@ import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBu
 import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
 import APSSecretsService from '../../../common/authstrategies/APSSecretsService';
 
-export type APSRefreshTokenInternal = {
-  refreshToken: string;
+export type APSUserSessionInfo = {
+  /** using array for convenient deletion, possible values: 1 element or none */
+  refreshToken: Array<string>;
+  lastLoginTimestamp?: number;
 }
-export type APSRefreshTokenInternalList = Array<APSRefreshTokenInternal>;
-export type APSUserInternal = APSUserCreate & {
-  refreshTokenList: APSRefreshTokenInternalList;
+export interface APSUserInternal extends APSUserCreate {
+  sessionInfo: APSUserSessionInfo;
 }
 export type APSUserInternalList = Array<APSUserInternal>;
 
@@ -65,8 +66,10 @@ export class APSUsersService {
   public getDBObjectSchemaVersion = (): number => {
     return APSUsersService.collectionSchemaVersion;
   }
-
-  private wait4CollectionUnlock = async() => {
+  public getCollectionMutex = (): Mutex => {
+    return this.collectionMutex;
+  }
+  public wait4CollectionUnlock = async() => {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSUsersService.name}.${funcName}()`;
     
@@ -176,7 +179,9 @@ export class APSUsersService {
         email: rootUserConfig.userId
       },
       systemRoles: [EAPSSystemAuthRole.ROOT],
-      refreshTokenList: []
+      sessionInfo: {
+        refreshToken: []
+      }
     }
 
     // custom, one time maintenance
@@ -196,6 +201,20 @@ export class APSUsersService {
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED }));
   }
 
+  public bootstrap = async(): Promise<void> => {
+    const funcName = 'bootstrap';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
+    // remove sessionInfo
+    const updateInternal: Partial<APSUserInternal> = {
+      sessionInfo: {
+        refreshToken: []
+      }
+    };
+    await this.persistenceService.updateAll({ update: updateInternal });
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
   public getRootApsUserLoginCredentials = (): APSUserLoginCredentials => {
     return {
       username: APSUsersService.rootApsUser.userId,
@@ -210,10 +229,15 @@ export class APSUsersService {
   public updateRootApsUserInternal = ({ refreshToken }:{
     refreshToken: string;
   }): APSUserInternal => {
-    APSUsersService.rootApsUser.refreshTokenList.push({refreshToken: refreshToken });
+    APSUsersService.rootApsUser.sessionInfo = {
+      refreshToken: [refreshToken],
+      lastLoginTimestamp: Date.now(),
+    };
     return APSUsersService.rootApsUser;
   }
-
+  public deleteRefreshTokenRootApsUserInternal = (): void => {
+    APSUsersService.rootApsUser.sessionInfo.refreshToken = [];
+  }
 
   public getRootApsUserResponse = async(): Promise<APSUserResponse> => {
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
@@ -408,25 +432,15 @@ export class APSUsersService {
     return apsUserResponse;
   }
 
-  public update = async({ userId, apsUserUpdate }:{
+  public update_internal = async({ userId, apsUserUpdate }:{
     userId: string;
     apsUserUpdate: APSUserUpdate;
   }): Promise<APSUserResponse> => {
-    const funcName = 'update';
-    const logName = `${APSUsersService.name}.${funcName}()`;
-
-    await this.wait4CollectionUnlock();
-
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSUserUpdate', details: {
-      userId: userId,
-      apsUserUpdate: apsUserUpdate
-    }}));
-
     const validationDoc: Partial<APSUserInternal> = {
       ...apsUserUpdate,
       profile: undefined,
       userId: userId,
-      refreshTokenList: undefined
+      sessionInfo: undefined,
     };
     await this.validateReferences({ apsUserInternalPartial: validationDoc });
 
@@ -444,6 +458,24 @@ export class APSUsersService {
       apsUserInternal: updatedInternal,
       apsOrganizationList: apsOrganizationList,
     });
+    return apsUserResponse;
+  }
+  
+  public update = async({ userId, apsUserUpdate }:{
+    userId: string;
+    apsUserUpdate: APSUserUpdate;
+  }): Promise<APSUserResponse> => {
+    const funcName = 'update';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, message: 'APSUserUpdate', details: {
+      userId: userId,
+      apsUserUpdate: apsUserUpdate
+    }}));
+
+    const apsUserResponse: APSUserResponse = await this.update_internal({ userId: userId, apsUserUpdate: apsUserUpdate });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSUserResponse', details: apsUserResponse }));
 
@@ -533,7 +565,9 @@ export class APSUsersService {
     return {
       ...apsUserCreate,
       password: APSSecretsService.createHash(apsUserCreate.password),
-      refreshTokenList: [],
+      sessionInfo: {
+        refreshToken: []
+      },
     }
   }
   private map_APSUserInternal_To_APSUserResponse({ apsUserInternal }:{ 
@@ -543,7 +577,7 @@ export class APSUsersService {
       ...apsUserInternal
     };
     delete partial.password;
-    delete partial.refreshTokenList;
+    delete partial.sessionInfo;
     return partial as APSUserResponse;
   }
 

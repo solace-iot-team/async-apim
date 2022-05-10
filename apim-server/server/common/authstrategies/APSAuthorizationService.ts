@@ -1,21 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
-import { APSUserResponse } from '../../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApiNotAuthorizedServerError, ServerError } from '../ServerError';
+import { APSSessionUser } from '../../api/services/APSSessionService';
 import { EServerStatusCodes, ServerLogger } from '../ServerLogger';
 
 
 export class APSAuthorizationService {
 
-  private static verifyUserIsAuthorized = async({ apsUserResponse, resource, organizationId, businessGroupId }:{
+  private static verifyUserIsAuthorized = async({ apsSessionUser, resource, organizationId, businessGroupId }:{
     resource: string;
-    apsUserResponse: APSUserResponse;
+    apsSessionUser: APSSessionUser;
     organizationId?: string;
     businessGroupId?: string;
   }): Promise<void> => {
     const funcName = 'verifyUserIsAuthorized';
     const logName = `${APSAuthorizationService.name}.${funcName}()`;
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHORIZING_USER, message: 'request', details: {
-      userId: apsUserResponse.userId,
+      userId: apsSessionUser.userId,
       resource: resource,
       organizationId: organizationId,
       businessGroupId: businessGroupId
@@ -51,7 +50,7 @@ export class APSAuthorizationService {
     //   "path": "/apsSession/test",
 
     const anyReq: any = req as any;
-    const apsUserResponse: APSUserResponse = anyReq.user;
+    const apsSessionUser: APSSessionUser = anyReq.user;
     const path: string = anyReq._parsedUrl.path;
 
     // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHORIZING_USER, message: 'request', details: {
@@ -64,7 +63,7 @@ export class APSAuthorizationService {
     // throw new ServerError(logName, `continue with ${logName}`);
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHORIZING_USER, message: 'request', details: {
-      userId: apsUserResponse.userId,
+      userId: apsSessionUser.userId,
       resource: path,
       openApiOperationId: anyReq.openapi.schema.operationId,
     } }));
@@ -77,7 +76,7 @@ export class APSAuthorizationService {
     // check if authorized 
     // todo: extract organizationId and businessGroupId from request ...
     APSAuthorizationService.verifyUserIsAuthorized({
-      apsUserResponse: apsUserResponse,
+      apsSessionUser: apsSessionUser,
       resource: path
     })
     .then(() => {

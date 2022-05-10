@@ -6,7 +6,7 @@ import ServerConfig, { EAuthConfigType } from '../../../common/ServerConfig';
 import { ApiNotAuthorizedServerError, ServerError, ServerFatalError } from '../../../common/ServerError';
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { ServerUtils } from '../../../common/ServerUtils';
-import APSSessionService, { TRefreshTokenInternalResponse } from '../../services/APSSessionService';
+import APSSessionService, { APSSessionUser, TRefreshTokenInternalResponse } from '../../services/APSSessionService';
 
 export type UserId_Params = Pick<Components.PathParameters, 'user_id'>;
 export type OrganizationId_Params = Pick<Components.PathParameters, 'organization_id'>;
@@ -141,12 +141,16 @@ export class ApsSessionController {
     // } }));
 
     const anyReq: any = req as any;
-    const userId: string = anyReq.user.userId;
+    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_OUT_USER, message: 'request', details: {
+    //   user: anyReq.user,
+    // } }));
+    // throw new ServerError(logName, `continue with ${logName}`);
+    const apsSessionUser: APSSessionUser = anyReq.user;
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_OUT_USER, message: 'request', details: {
       _passport: anyReq._passport,
       session: anyReq.session,
-      userId: userId
+      userId: apsSessionUser.userId
     } }));
     // throw new ServerError(logName, `continue with ${logName}`);
 
@@ -154,7 +158,7 @@ export class ApsSessionController {
     // const { refreshToken } = signedCookies;
 
     APSSessionService.logout({
-      userId: userId
+      userId: apsSessionUser.userId
     })
     .then( (apsSessionLogoutResponse: APSSessionLogoutResponse) => {
 

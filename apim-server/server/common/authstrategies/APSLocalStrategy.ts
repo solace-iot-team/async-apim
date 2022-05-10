@@ -1,9 +1,6 @@
 import { IVerifyOptions, Strategy as LocalStrategy }  from "passport-local";
 import APSSessionService from "../../api/services/APSSessionService";
 
-/**
- * from: https://www.wlaurance.com/2018/09/async-await-passportjs-local-strategy
- */
 class APSLocalStrategy {
 
   private async authenticate(username: string, password: string, done: (error: any, user?: any, options?: IVerifyOptions) => void  ): Promise<void> {

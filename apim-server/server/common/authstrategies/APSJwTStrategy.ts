@@ -5,14 +5,13 @@ import {
   VerifyCallback 
 }  from "passport-jwt";
 import { TTokenPayload } from "./APSAuthStrategyService";
-import { APSUserResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node";
-import APSUsersService from "../../api/services/APSUsersService/APSUsersService";
 import { TAuthConfigInternal } from "../ServerConfig";
-import { ServerError } from "../ServerError";
+import { ApiNotAuthorizedServerError, ServerError } from "../ServerError";
+import APSSessionService, { APSSessionUser } from "../../api/services/APSSessionService";
 
 
 interface IVerifiedCallback {
-  (error: any, user?: APSUserResponse, info?: any): void;
+  (error: any, user?: APSSessionUser, info?: any): void;
 }
 
 /**
@@ -42,8 +41,9 @@ class APSJwtStrategy {
     const logName = `${APSJwtStrategy.name}.${funcName}()`;
     try {
       // throw new Error(`${logName}: continue here: jwt_payload = ${JSON.stringify(jwt_payload, null, 2)}`);
-      const apsUserResponse: APSUserResponse = await APSUsersService.byId({ userId: jwt_payload._id });
-      return done(undefined, apsUserResponse, undefined);
+      const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id });
+      if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
+      return done(undefined, apsSessionUser, undefined);
     } catch(e) {
       return done(e, undefined, undefined);
     }
