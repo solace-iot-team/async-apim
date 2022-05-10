@@ -26,7 +26,7 @@ export class ApsSessionController {
         return ApsSessionController.loginInternal(req, res, next);
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
-      case EAuthConfigType.UNDEFINED:
+      case EAuthConfigType.NONE:
         throw new ServerError(logName, `configAuthType = ${configAuthType}`);
       default:
         ServerUtils.assertNever(logName, configAuthType);

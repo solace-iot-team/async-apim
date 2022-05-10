@@ -13,6 +13,7 @@ import audit from 'express-requests-logger';
 import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/types';
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
 import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
+import cors from 'cors';
 
 const app: Application = express();
 
@@ -28,7 +29,7 @@ export class ExpressServer {
 
     // app.set("etag", false);
     app.set("etag", "strong");
-
+    app.use(cors({ origin: true }));
     // app.use(nocache());
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));
     app.use(bodyParser.text({ limit: this.config.requestSizeLimit }));
@@ -91,10 +92,6 @@ export class ExpressServer {
       app: app,
       config: ServerConfig.getExpressServerConfig()
     });  
-
-
-    // const strategyName: string = APSAuthStrategyService.getApsStrategyName();
-
 
     routes(app, this.config.apiBase);
  

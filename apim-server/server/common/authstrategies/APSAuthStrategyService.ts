@@ -7,6 +7,7 @@ import { ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory, { TPassportBuildInternalResult } from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
+import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
@@ -16,6 +17,7 @@ export enum ERegisteredStrategyName {
 export type TTokenPayload = {
   _id: string;
 }
+type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
 
 class APSAuthStrategyService {
   // private apsPassport: passport.PassportStatic | undefined = undefined;
@@ -27,6 +29,8 @@ class APSAuthStrategyService {
     session: false,
     // failureRedirect
   };
+  private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
+  private static corsWhitelistedDomainList: Array<string> = [];
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
 
 
@@ -62,7 +66,7 @@ class APSAuthStrategyService {
         return this.apsInternal_LocalRegsiteredStrategyName;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
-      case EAuthConfigType.UNDEFINED:
+      case EAuthConfigType.NONE:
         throw new ServerError(logName, `configAuthType = ${configAuthType}`);
       default:
         ServerUtils.assertNever(logName, configAuthType);
@@ -77,10 +81,38 @@ class APSAuthStrategyService {
   //   return this.apsInternal_JwtStrategyName;
   // }
 
+  // type CustomOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => void;
+  private static checkCorsOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => {
+    // const funcName = 'checkCorsOrigin';
+    // const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'continue here', details: {
+    //   requestOrigin: requestOrigin,
+    // } }));
+    // throw new ServerError(logName, `continue with ${logName}`);
+
+    if(requestOrigin !== undefined) {
+      // localhost always allowed
+      if(APSAuthStrategyService.localhostRegExp.test(requestOrigin)) return callback(null, true);
+      // check whitelist
+      if(APSAuthStrategyService.corsWhitelistedDomainList.indexOf(requestOrigin) !== -1) return callback(null, true);
+    }
+    // error
+    // return callback(new Error(`CORS check failure: ${requestOrigin}`));
+    return callback(new Error('Not allowed by CORS'));
+  }
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {
-      origin: true,
+      origin: APSAuthStrategyService.checkCorsOrigin,
     };
+  }
+  private getCorsOptions_NoAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
+    return { origin: true };
+  }
+  private initializeNoAuth = ({ app, config }:{
+    app: Application;
+    config: TExpressServerConfig;
+  }) => {
+    app.use(cors(this.getCorsOptions_NoAuth(config)));
   }
   private getCorsOptions_InternalAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
     const funcName = 'getCorsOptions_InternalAuth';
@@ -139,8 +171,9 @@ class APSAuthStrategyService {
 
     const authConfigType: EAuthConfigType = config.authConfig.type;
     switch(authConfigType) {
-      case EAuthConfigType.UNDEFINED:
-        throw new ServerError(logName, `authConfigType = ${authConfigType}`);
+      case EAuthConfigType.NONE:
+        this.initializeNoAuth({ app: app, config: config });
+        return;
       case EAuthConfigType.INTERNAL:        
         this.initializeInternalAuth({ app: app, config: config });
         return;

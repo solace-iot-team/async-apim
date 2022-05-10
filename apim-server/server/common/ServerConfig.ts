@@ -7,15 +7,17 @@ import { ServerUtils } from './ServerUtils';
 
 export enum EAuthConfigType {
   UNDEFINED = "UNDEFINED",
+  NONE = "none",
   INTERNAL = "internal",
   OIDC = "oidc",
 }
 const ValidEnvAuthConfigType = {
+  NONE: EAuthConfigType.NONE,
   INTERNAL: EAuthConfigType.INTERNAL,
   OIDC: EAuthConfigType.OIDC,
 }
-export type TAuthConfigUndefined = {
-  type: EAuthConfigType.UNDEFINED;
+export type TAuthConfigNone = {
+  type: EAuthConfigType.NONE;
 }
 export type TAuthConfigOidc = {
   type: EAuthConfigType.OIDC;
@@ -27,7 +29,7 @@ export type TAuthConfigInternal = {
   refreshJwtSecret: string;
   refreshJwtExpirySecs: number;
 }
-export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc | TAuthConfigUndefined;
+export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc | TAuthConfigNone;
 
 export type TExpressServerConfig = {
   rootDir: string;
@@ -138,7 +140,7 @@ export class ServerConfig {
     const funcName = 'initializeAuthConfig';
     const logName = `${ServerConfig.name}.${funcName}()`;
 
-    let authConfig: TAuthConfig = { type: EAuthConfigType.UNDEFINED };
+    let authConfig: TAuthConfig = { type: EAuthConfigType.NONE };
     const authType: EAuthConfigType = this.getMandatoryEnvVarValueAsString_From_List(EEnvVars.APIM_SERVER_AUTH_TYPE, Object.values(ValidEnvAuthConfigType)) as EAuthConfigType;
     switch(authType) {
       case EAuthConfigType.UNDEFINED:
@@ -163,6 +165,8 @@ export class ServerConfig {
         return internalAuthConfig;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, 'currently not implemented');
+      case EAuthConfigType.NONE:
+        break;
       default:
         ServerUtils.assertNever(logName, authType);
     }

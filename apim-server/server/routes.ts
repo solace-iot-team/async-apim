@@ -14,14 +14,17 @@ import passport from 'passport';
 import { ApsSessionController } from './api/controllers/apsSession/ApsSessionController';
 import APSAuthStrategyService from './common/authstrategies/APSAuthStrategyService';
 import { APSAuthorizationService } from './common/authstrategies/APSAuthorizationService';
+import ServerConfig, { EAuthConfigType } from './common/ServerConfig';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
 
   // Public Routes
   // app.get('/login') ==> re-direct to correct login system
-  app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
-  app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
+  if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
+    app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
+    app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
+  }
 
   // available even if server not operational
   router.use('/apsMonitor', apsMonitorRouter);
@@ -29,7 +32,9 @@ export default function routes(app: Application, apiBase: string): void {
   router.use(verifyServerStatus);
 
   // sessions
-  router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
+  if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
+    router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
+  }
   // System Admin routes
   router.use('/apsUsers', apsUsersRouter);
 
