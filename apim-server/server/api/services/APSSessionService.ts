@@ -9,7 +9,6 @@ import {
  import APSOrganizationsServiceEventEmitter from './apsAdministration/APSOrganizationsServiceEvent';
 import APSSecretsService from "../../common/authstrategies/APSSecretsService";
 import APSAuthStrategyService from "../../common/authstrategies/APSAuthStrategyService";
-import { APSSessionTestResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node/models/APSSessionTestResponse";
 
 export type TRefreshTokenInternalResponse = {
   userId: string;
@@ -375,11 +374,13 @@ export class APSSessionService {
     return apsSessionLogoutResponse;
   }
 
-  public test = async(): Promise<APSSessionTestResponse> => {
-    const response: APSSessionTestResponse = {
-      success: true
-    };
-    return response;
+  public logoutAll = async(): Promise<void> => {    
+
+    await this.wait4CollectionUnlock();
+
+    await this.logoutAll_internal({ });
+
+    return;
   }
   
 }

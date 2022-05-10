@@ -3,11 +3,10 @@ import jwt from 'jsonwebtoken';
 import cors from "cors";
 
 import ServerConfig, { EAuthConfigType, TAuthConfig, TAuthConfigInternal, TExpressServerConfig } from "../ServerConfig";
-import { ServerError, ServerFatalError } from "../ServerError";
+import { ApiCorsServerError, ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory, { TPassportBuildInternalResult } from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
-import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
@@ -29,7 +28,8 @@ class APSAuthStrategyService {
     session: false,
     // failureRedirect
   };
-  private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
+  // private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
+  private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
 
@@ -83,8 +83,8 @@ class APSAuthStrategyService {
 
   // type CustomOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => void;
   private static checkCorsOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => {
-    // const funcName = 'checkCorsOrigin';
-    // const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const funcName = 'checkCorsOrigin';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
     // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'continue here', details: {
     //   requestOrigin: requestOrigin,
     // } }));
@@ -98,7 +98,7 @@ class APSAuthStrategyService {
     }
     // error
     // return callback(new Error(`CORS check failure: ${requestOrigin}`));
-    return callback(new Error('Not allowed by CORS'));
+    return callback(new ApiCorsServerError(logName));
   }
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {

@@ -10,4 +10,15 @@ export class ApimServerAPIClient {
       // OpenAPI.USERNAME = PlatformAPIClient.getOpenApiUser;
       // OpenAPI.PASSWORD = PlatformAPIClient.getOpenApiPwd;
     }
+
+    public static initializeAuthConfigInternal = ({ protocol, host, port }:{
+      protocol: string;
+      host: string;
+      port: number;
+    }) => {
+      OpenAPI.WITH_CREDENTIALS = true;
+      OpenAPI.HEADERS = { 
+        'Origin': `${protocol}://${host}:${port}`
+      };
+    }
 }

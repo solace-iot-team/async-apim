@@ -15,6 +15,7 @@ import { ApsSessionController } from './api/controllers/apsSession/ApsSessionCon
 import APSAuthStrategyService from './common/authstrategies/APSAuthStrategyService';
 import { APSAuthorizationService } from './common/authstrategies/APSAuthorizationService';
 import ServerConfig, { EAuthConfigType } from './common/ServerConfig';
+import ApsSecureTestsRouter from './api/controllers/apsSecureTests/ApsSecureTestsRouter';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
@@ -31,9 +32,10 @@ export default function routes(app: Application, apiBase: string): void {
   // check that server is ready
   router.use(verifyServerStatus);
 
-  // sessions
+  // secure routes
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
     router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
+    router.use('/apsSecureTests', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], ApsSecureTestsRouter);
   }
   // System Admin routes
   router.use('/apsUsers', apsUsersRouter);

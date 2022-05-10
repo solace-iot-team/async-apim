@@ -20,6 +20,7 @@ import {
   ApsMonitorService, 
   APSStatus,
 } from '../src/@solace-iot-team/apim-server-openapi-node';
+import ServerConfig, { EAuthConfigType } from "../server/common/ServerConfig";
 
 // ensure any unhandled exception cause exit = 1
 function onUncaught(err: any){
@@ -113,6 +114,17 @@ describe(`${scriptName}`, () => {
       const res = await request(Server).get(apiStartupBase);
       TestLogger.logMessageWithId(`res = ${JSON.stringify(res, null, 2)}`);
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
+    });
+
+    it(`${scriptName}: should initialize open api`, async() => {
+      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
+      if(isInternalIdp) {
+        ApimServerAPIClient.initializeAuthConfigInternal({ 
+          host: TestEnv.host, 
+          port: TestEnv.port,
+          protocol: TestEnv.protocol
+        });
+      }
     });
 
     it(`${scriptName}: should wait until server ready`, async() => {

@@ -675,32 +675,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/APSStatus'
         '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: "Forbidden."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
+          $ref: '#/components/responses/InternalServerError'
   /apsBusinessGroups/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -1143,19 +1126,39 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /apsSession/test:
+  /apsSession/logoutAll:
+    post:
+      operationId: apsLogoutAll
+      description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
+      tags:
+      - APSSession
+      responses:
+        '204':
+          description: Successful logout.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /apsSecureTests/test:
     get:
       operationId: apsTest
       description: Test protected resource.
       tags:
-      - APSSession
+      - APSSecureTests
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/APSSessionTestResponse'
+                $ref: '#/components/schemas/APSSecureTestResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1650,6 +1653,7 @@ components:
       - openApiResponseValidation
       - objectNotFound
       - notAuthorized
+      - corsNotAllowed
       - pathNotFound
       - invalidSortFieldName
       - invalidQueryParameterCombination
@@ -2050,7 +2054,7 @@ components:
           type: boolean
       required:
       - success
-    APSSessionTestResponse:
+    APSSecureTestResponse:
       type: object
       properties:
         success:

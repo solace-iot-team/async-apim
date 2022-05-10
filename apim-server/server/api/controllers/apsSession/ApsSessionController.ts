@@ -172,15 +172,19 @@ export class ApsSessionController {
     });
   }
 
-  public static test = (_req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'test';
+  public static logoutAll = (_req: Request, res: Response, next: NextFunction): void => {
+    const funcName = 'logoutAll';
     const logName = `${ApsSessionController.name}.${funcName}()`;
-    APSSessionService.test()
-    .then( (r) => {
-      res.status(200).json(r);
+
+    APSSessionService.logoutAll()
+    .then( () => {
+
+      res.status(200).send();
+
     })
     .catch( (e) => {
       next(e);
     });
   }
+
 }

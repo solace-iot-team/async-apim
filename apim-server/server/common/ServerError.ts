@@ -420,6 +420,16 @@ export class ApiOrganizationNotFoundServerError extends ApiServerError {
   }
 }
 
+export class ApiCorsServerError extends ApiServerError {
+  private static apiStatusCode = 403;
+  private static apiErrorId: APSErrorIds = APSErrorIds.CORS_NOT_ALLOWED;
+  private static apiDefaultDescription = 'not allowed by CORS';
+
+  constructor(internalLogName: string, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
+    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription);
+  }
+}
+
 export type TApiMissingParameterServerErrorMeta = {
   parameter: string
 }
