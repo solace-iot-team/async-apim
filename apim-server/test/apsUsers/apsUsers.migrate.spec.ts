@@ -48,7 +48,8 @@ const createUser_DB_0_List = (numberOfUsers: number): Array<APSUser_DB_0> => {
         last: 'last'
       },
       roles: [EAPSSystemAuthRole.SYSTEM_ADMIN],
-      memberOfOrganizations: [ OrganizationId ]
+      memberOfOrganizations: [ OrganizationId ],
+      _searchContent: ''
     }
     userList.push(user);
   }
@@ -80,7 +81,8 @@ const createUser_DB_1_List = (numberOfUsers: number): Array<APSUser_DB_1> => {
           organizationId: OrganizationId2,
           roles: [EAPSOrganizationAuthRole.ORGANIZATION_ADMIN, EAPSOrganizationAuthRole.API_TEAM, EAPSOrganizationAuthRole.API_CONSUMER]
         },
-      ]
+      ],
+      _searchContent: ''
     }
     userList.push(user);
   }

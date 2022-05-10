@@ -11,10 +11,10 @@ import {
   ApsLoginService, 
   APSUserCreate, 
   APSUserLoginCredentials, 
-  APSUserReplace, 
   APSUserResponse, 
   APSUserResponseList,
   ApsUsersService, 
+  APSUserUpdate, 
   EAPSOrganizationAuthRole, 
   EAPSSystemAuthRole, 
   ListApsUsersResponse
@@ -151,7 +151,7 @@ describe(`${scriptName}`, () => {
     let loggedIn: APSUserResponse;
     try {
       loggedIn = await ApsLoginService.login({
-        requestBody: { userId: loginUserId, userPwd: loginPwd }
+        requestBody: { username: loginUserId, password: loginPwd }
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -176,7 +176,7 @@ describe(`${scriptName}`, () => {
     let loggedIn: APSUserResponse;
     try {
       loggedIn = await ApsLoginService.login({
-        requestBody: { userId: loginUserId, userPwd: loginPwd }
+        requestBody: { username: loginUserId, password: loginPwd }
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -193,7 +193,7 @@ describe(`${scriptName}`, () => {
     let loggedIn: APSUserResponse;
     try {
       loggedIn = await ApsLoginService.login({
-        requestBody: { userId: loginUserId, userPwd: loginPwd }
+        requestBody: { username: loginUserId, password: loginPwd }
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -208,8 +208,8 @@ describe(`${scriptName}`, () => {
     const loginUserId: string = TestContext.getTestEnv().rootUsername;
     const loginPwd: string = TestContext.getTestEnv().rootUserPassword;
     const loginCredentials: APSUserLoginCredentials = {
-      userId: loginUserId,
-      userPwd: loginPwd
+      username: loginUserId,
+      password: loginPwd
     }
     try {
       const loggedIn: APSUserResponse = await ApsLoginService.login({
@@ -228,12 +228,12 @@ describe(`${scriptName}`, () => {
     const loginUserId: string = TestContext.getTestEnv().rootUsername;
     const loginPwd: string = TestContext.getTestEnv().rootUserPassword;
     const loginCredentials: APSUserLoginCredentials = {
-      userId: loginUserId,
-      userPwd: loginPwd
+      username: loginUserId,
+      password: loginPwd
     }
     try {
       const loggedIn: APSUserResponse = await ApsLoginService.login({
-        requestBody: { userId: 'unknown', userPwd: loginCredentials.userPwd }
+        requestBody: { username: 'unknown', password: loginCredentials.password }
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -248,12 +248,12 @@ describe(`${scriptName}`, () => {
     const loginUserId: string = TestContext.getTestEnv().rootUsername;
     const loginPwd: string = TestContext.getTestEnv().rootUserPassword;
     const loginCredentials: APSUserLoginCredentials = {
-      userId: loginUserId,
-      userPwd: loginPwd
+      username: loginUserId,
+      password: loginPwd
     }
     try {
       const loggedIn: APSUserResponse = await ApsLoginService.login({
-        requestBody: { userId: loginCredentials.userId, userPwd: 'wrong' }
+        requestBody: { username: loginCredentials.username, password: 'wrong' }
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
@@ -265,23 +265,22 @@ describe(`${scriptName}`, () => {
   });
 
   it(`${scriptName}: should set login user to not active`, async() => {
-    let replaced: APSUserResponse;
-    const replaceRequest: APSUserReplace = {
-      ...apsUserLoginTemplate,
-      isActivated: false,
+    let updated: APSUserResponse;
+    const updateRequest: APSUserUpdate = {
+      isActivated: false
     }
-    const anyReplaceRequest: any = replaceRequest;
-    anyReplaceRequest.userId = undefined;
+    const anyUpdateRequest: any = updateRequest;
+    anyUpdateRequest.userId = undefined;
     try {
-      replaced = await ApsUsersService.replaceApsUser({
+      updated = await ApsUsersService.updateApsUser({
         userId: apsUserLoginTemplate.userId, 
-        requestBody: replaceRequest
+        requestBody: updateRequest
       });
     } catch (e) {
       expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
       expect(false, TestLogger.createTestFailMessage('error')).to.be.true;
     }
-    expect(replaced.isActivated, TestLogger.createTestFailMessage('isActivated not false')).to.be.false;
+    expect(updated.isActivated, TestLogger.createTestFailMessage('isActivated not false')).to.be.false;
     // expect(replaced, TestLogger.createTestFailMessage('replaced object is not equal to expected object')).to.deep.equal({ ...replaceRequest, userId: apsUserLoginTemplate.userId });
   });
 
@@ -291,7 +290,7 @@ describe(`${scriptName}`, () => {
     let loggedIn: APSUserResponse;
     try {
       loggedIn = await ApsLoginService.login({
-        requestBody: { userId: loginUserId, userPwd: loginPwd }
+        requestBody: { username: loginUserId, password: loginPwd }
       });
       expect(false, TestLogger.createTestFailMessage('should not have logged in successfully, user is not active')).to.be.true;
     } catch (e) {
