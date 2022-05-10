@@ -44,8 +44,8 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      userId: mo.userId,
-      userPwd: mo.userPwd,
+      userId: mo.username,
+      userPwd: mo.password,
     };
     return {
       formData: fd
@@ -58,8 +58,8 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   }): TManagedObject => {
     const mo: TManagedObject = orginalManagedObject;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.userId = fd.userId;
-    mo.userPwd = fd.userPwd;
+    mo.username = fd.userId;
+    mo.password = fd.userPwd;
     return mo;
   }
 
@@ -76,13 +76,13 @@ export const UserLogin: React.FC<IUserLoginProps> = (props: IUserLoginProps) => 
   const apiLogin = async(mo: TManagedObject, isLoginAs: boolean = false): Promise<TApiCallState> => {
     const funcName = 'apiLogin';
     const logName = `${ComponentName}.${funcName}()`;
-    const userMessage: string = isLoginAs ? `login as ${mo.userId}` : `login ${mo.userId}`;
+    const userMessage: string = isLoginAs ? `login as ${mo.username}` : `login ${mo.username}`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, userMessage);
     try { 
       let apLoginUserDisplay: TAPLoginUserDisplay | undefined = undefined;
       if(isLoginAs) {
         apLoginUserDisplay = await APLoginUsersDisplayService.apsLoginAs({
-          userId: mo.userId
+          userId: mo.username
         });  
       } else {
         apLoginUserDisplay = await APLoginUsersDisplayService.apsLogin({

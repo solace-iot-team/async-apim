@@ -28,8 +28,8 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
 
   public create_Empty_ApUserLoginCredentials(): TAPUserLoginCredentials {
     const apUserLoginCredentials: TAPUserLoginCredentials = {
-      userId: '',
-      userPwd: ''
+      username: '',
+      password: ''
     };
     return apUserLoginCredentials;
   }
@@ -106,8 +106,8 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     let apsUser: APSUserResponse | undefined = undefined;
     try {
       const request: APSUserLoginCredentials = {
-        userId: apUserLoginCredentials.userId,
-        userPwd: apUserLoginCredentials.userPwd,
+        username: apUserLoginCredentials.username,
+        password: apUserLoginCredentials.password,
       };
       apsUser = await ApsLoginService.login({
         requestBody: request,
@@ -123,7 +123,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     // Note: it might be the root user, in which case, this will throw an error 404
     try {
       return await this.apsGet_ApLoginUserDisplay({ 
-        userId: apUserLoginCredentials.userId,
+        userId: apUserLoginCredentials.username,
       });  
     } catch(e: any) {
       if(APSClientOpenApi.isInstanceOfApiError(e)) {
