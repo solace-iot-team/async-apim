@@ -1086,6 +1086,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /apsSession/refreshToken:
     get:
+      security:
+      - InternalAuth: []
       operationId: apsRefreshToken
       description: Refresh auth token.
       tags:
@@ -1308,6 +1310,11 @@ paths:
           description: Return the API specification
           content: {}
 components:
+  securitySchemes:
+    InternalAuth:
+      type: apiKey
+      in: cookie
+      name: refreshToken
   responses:
     BadRequest:
       description: "Bad Request."

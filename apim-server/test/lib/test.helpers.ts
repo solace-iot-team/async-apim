@@ -7,9 +7,11 @@ import { v4 } from 'uuid';
 import * as sinon from 'sinon';
 import request from 'supertest';
 import * as __requestLib from '../../src/@solace-iot-team/apim-server-openapi-node/core/request';
+// import * as __customRequestLib from './customOpenApiRequest';
+import { customRequest } from './customOpenApiRequest';
 import { ApiRequestOptions } from '../../src/@solace-iot-team/apim-server-openapi-node/core/ApiRequestOptions';
 import { ApiResult } from "../../src/@solace-iot-team/apim-server-openapi-node/core/ApiResult";
-import { ApiError } from "../../src/@solace-iot-team/apim-server-openapi-node";
+import { ApiError, CancelablePromise, OpenAPIConfig } from "../../src/@solace-iot-team/apim-server-openapi-node";
 
 export const testHelperSleep = async(millis = 500) => {
   if(millis > 0) await new Promise(resolve => setTimeout(resolve, millis));
@@ -280,8 +282,9 @@ export class TestContext {
       const response: any = JSON.parse(JSON.stringify(res));
       TestContext.apiRequestOptions = {
         method: response.req.method,
-        path: response.req.url,
-        headers: response.req.headers
+        // path: response.req.url,
+        headers: response.req.headers,
+        url: response.req.url,
       };
       let body:any = res.text;
       let isBodyJSON = false;
@@ -340,21 +343,52 @@ export class TestContext {
 
 // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // Stubbing global request from openapi
-let requestStub = sinon.stub(__requestLib, 'request')
-.callsFake(
-  async(options: ApiRequestOptions): Promise<ApiResult> => {
-    TestContext.setApiRequestOptions(options);
-    TestContext.setApiResult(undefined);
-    TestContext.setApiError(undefined);
-    TestLogger.logApiRequestOptions(TestContext.getItId(), TestContext.getApiRequestOptions());    
-    try {
-      TestContext.setApiResult(await (__requestLib.request as any).wrappedMethod(options));
-      TestLogger.logApiResult(TestContext.getItId(), TestContext.getApiResult());
-    } catch(e) {
-      TestContext.setApiError(e);
-      TestLogger.logApiError(TestContext.getItId(), TestContext.getApiError());
-      throw e;
-    }
-    return TestContext.getApiResult();  
-});
+// export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions): CancelablePromise<T> => {
+  const stub = sinon.stub(__requestLib, 'request');
+  stub.callsFake((config: OpenAPIConfig, options: ApiRequestOptions): CancelablePromise<ApiResult> => {
+  
+      TestContext.setApiRequestOptions(options);
+      TestLogger.logApiRequestOptions(TestContext.getItId(), options);
+  
+      TestContext.setApiResult(undefined);
+      TestContext.setApiError(undefined);
 
+      // const cancelablePromise = stub.wrappedMethod(config, options) as CancelablePromise<ApiResult>;
+      // call my own request
+      
+      const cancelablePromise = customRequest(config, options) as CancelablePromise<ApiResult>;
+
+
+      cancelablePromise.then((value: ApiResult) => {
+          TestContext.setApiResult(value);
+          TestLogger.logApiResult(TestContext.getItId(), TestContext.getApiResult());
+      }, (reason) => {
+          TestContext.setApiError(reason);
+          TestLogger.logApiError(TestContext.getItId(), TestContext.getApiError());
+      });
+  
+      return cancelablePromise;
+  });
+  
+  
+// // export const request = <T>(config: OpenAPIConfig, options: ApiRequestOptions): Promise<T> => {
+//   let requestStub = sinon.stub(__requestLib, 'request')
+//   .callsFake(
+//     // async(config: OpenAPIConfig, options: ApiRequestOptions): CancelablePromise<ApiResult> => {
+//     (config: OpenAPIConfig, options: ApiRequestOptions): CancelablePromise<ApiResult> => {
+//         TestContext.setApiRequestOptions(options);
+//       TestContext.setApiResult(undefined);
+//       TestContext.setApiError(undefined);
+//       TestLogger.logApiRequestOptions(TestContext.getItId(), TestContext.getApiRequestOptions());    
+//       try {
+//         TestContext.setApiResult(await (__requestLib.request as any).wrappedMethod(config, options));
+//         TestLogger.logApiResult(TestContext.getItId(), TestContext.getApiResult());
+//       } catch(e) {
+//         TestContext.setApiError(e);
+//         TestLogger.logApiError(TestContext.getItId(), TestContext.getApiError());
+//         throw e;
+//       }
+//       return TestContext.getApiResult();  
+//   });
+  
+  

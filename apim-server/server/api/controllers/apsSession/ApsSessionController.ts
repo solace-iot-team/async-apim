@@ -97,6 +97,7 @@ export class ApsSessionController {
     // has no session info
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'request', details: {
       _passport: anyReq._passport,
+      signedCookies: anyReq.signedCookies,
       session: anyReq.session
     } }));
     // throw new ServerError(logName, `continue with ${logName}`);

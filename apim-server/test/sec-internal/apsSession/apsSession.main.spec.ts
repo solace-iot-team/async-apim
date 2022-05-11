@@ -108,6 +108,27 @@ describe(`${scriptName}`, () => {
     ApimServerAPIClient.setCredentials({ bearerToken: loggedIn.token });  
   });
 
+  // it(`${scriptName}: continue here`, async() => {
+  //   expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  // });
+
+  it(`${scriptName}: should get new token`, async() => {
+    let response: APSSessionRefreshTokenResponse;
+    try {
+      response = await ApsSessionService.apsRefreshToken();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+    expect(response.token, TestLogger.createTestFailMessage('response.token is undefined')).not.to.be.undefined;
+    ApimServerAPIClient.setCredentials({ bearerToken: response.token });  
+  });
+
+  // it(`${scriptName}: continue here`, async() => {
+  //   expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  // });
+
   it(`${scriptName}: should get /test`, async() => {
     let response: APSSecureTestResponse;
     try {
@@ -187,9 +208,9 @@ describe(`${scriptName}`, () => {
     ApimServerAPIClient.setCredentials({ bearerToken: response.token });  
   });
 
-  it(`${scriptName}: continue here`, async() => {
-    expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
-  });
+  // it(`${scriptName}: continue here`, async() => {
+  //   expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  // });
 
 
   it(`${scriptName}: should get /test`, async() => {

@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target":"ES2018",
+    "target":"es2020",
     "module": "commonjs",
     "lib": ["es2020"],
     "declaration": true,
@@ -14,13 +14,14 @@
     "alwaysStrict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": false,
     "skipLibCheck": true,
     "sourceMap": true,
     "strictPropertyInitialization":false,
     "resolveJsonModule": true,
     "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
     "typeRoots": [
       "../node_modules/@types", 
       "../server/@types"
@@ -28,5 +29,6 @@
   },
   "include": [
     "./**/*.ts"
-  ]
+  ],
+  "exclude": ["node_modules"]
 }
