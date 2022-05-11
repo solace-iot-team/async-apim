@@ -4,26 +4,19 @@ import path from 'path';
 import { TestContext, TestLogger } from '../../lib/test.helpers';
 import { 
   ApiError, 
-  ApsAdministrationService, 
   APSError, 
   APSErrorIds, 
-  APSListResponseMeta, 
-  ApsLoginService, 
   APSUserCreate, 
-  APSUserLoginCredentials, 
-  APSUserResponse, 
-  APSUserResponseList,
   ApsUsersService, 
-  APSUserUpdate, 
-  EAPSOrganizationAuthRole, 
   EAPSSystemAuthRole, 
-  ListApsUsersResponse,
   ApsSessionService,
-  APSSessionLoginResponse
+  APSSessionLoginResponse,
+  ApsSecureTestsService,
+  APSSecureTestResponse,
+  APSSessionLogoutResponse,
+  APSSessionRefreshTokenResponse
 } from '../../../src/@solace-iot-team/apim-server-openapi-node';
-import APSOrganizationsService from '../../../server/api/services/apsAdministration/APSOrganizationsService';
 import { ApimServerAPIClient } from '../../lib/api.helpers';
-import ServerConfig, { EAuthConfigType } from '../../../server/common/ServerConfig';
 
 
 const scriptName: string = path.basename(__filename);
@@ -85,20 +78,14 @@ describe(`${scriptName}`, () => {
   // * OpenApi API Tests *
   // ****************************************************************************************************************
 
-  // it(`${scriptName}: sec setup`, async() => {
-  //   const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
-  //   expect(isInternalIdp, TestLogger.createTestFailMessage(`isInternalIdp=${isInternalIdp}`)).to.be.true;
-  //   ApimServerAPIClient.initializeAuthConfigInternal();
-  // });
-
   it(`${scriptName}: should create login user`, async() => {
     try {
       await ApsUsersService.createApsUser({
         requestBody: apsUserLoginTemplate
       });
     } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
   });
 
@@ -107,37 +94,140 @@ describe(`${scriptName}`, () => {
     const loginPwd: string = apsUserLoginTemplate.password;
     let loggedIn: APSSessionLoginResponse;
     try {
-
-      const apsSessionLoginResponse: APSSessionLoginResponse = await ApsSessionService.apsLogin({
+      loggedIn = await ApsSessionService.apsLogin({
         requestBody: {
           username: loginUserId,
           password: loginPwd
         }
       });
-
     } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
+    expect(loggedIn.token, TestLogger.createTestFailMessage('loggedIn.token is undefined')).not.to.be.undefined;
+    ApimServerAPIClient.setCredentials({ bearerToken: loggedIn.token });  
+  });
 
-    expect(false, TestLogger.createTestFailMessage(`loggedIn = ${JSON.stringify(loggedIn, null, 2)}`)).to.be.true;
+  it(`${scriptName}: should get /test`, async() => {
+    let response: APSSecureTestResponse;
+    try {
+      response = await ApsSecureTestsService.apsTest();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+  });
 
+  it(`${scriptName}: should logout`, async() => {
+    let response: APSSessionLogoutResponse;
+    try {
+      response = await ApsSessionService.apsLogout();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+  });
 
-    expect(loggedIn.systemRoles).to.be.an('array');
-    expect(loggedIn.systemRoles).to.eql(apsUserLoginTemplate.systemRoles);
-    expect(loggedIn.memberOfOrganizations).to.be.an('array');
-    for(const apsOrganizationRolesResponse of loggedIn.memberOfOrganizations) {
-      // check organizationId and roles are the same as template
-      const found = apsUserLoginTemplate.memberOfOrganizations.find( (x) => {
-        return x.organizationId === apsOrganizationRolesResponse.organizationId;
-      });
-      expect(found !== undefined, TestLogger.createTestFailMessage('organization not found')).to.be.true;
-      expect(found.roles, TestLogger.createTestFailMessage('roles not equal')).to.deep.equal(apsOrganizationRolesResponse.roles);
+  it(`${scriptName}: should fail to get /test`, async() => {
+    let response: APSSecureTestResponse;
+    try {
+      response = await ApsSecureTestsService.apsTest();
+      expect(false, TestLogger.createTestFailMessage('should never get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError,TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('errorId mismatch')).equal(APSErrorIds.NOT_AUTHORIZED);
     }
   });
 
-  // test
-  // logout
+  it(`${scriptName}: should login as user`, async() => {
+    const loginUserId: string = apsUserLoginTemplate.userId;
+    const loginPwd: string = apsUserLoginTemplate.password;
+    let loggedIn: APSSessionLoginResponse;
+    try {
+      loggedIn = await ApsSessionService.apsLogin({
+        requestBody: {
+          username: loginUserId,
+          password: loginPwd
+        }
+      });
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(loggedIn.token, TestLogger.createTestFailMessage('loggedIn.token is undefined')).not.to.be.undefined;
+    ApimServerAPIClient.setCredentials({ bearerToken: loggedIn.token });  
+  });
+
+  it(`${scriptName}: should get /test`, async() => {
+    let response: APSSecureTestResponse;
+    try {
+      response = await ApsSecureTestsService.apsTest();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+  });
+
+  it(`${scriptName}: should get new token`, async() => {
+    let response: APSSessionRefreshTokenResponse;
+    try {
+      response = await ApsSessionService.apsRefreshToken();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+    expect(response.token, TestLogger.createTestFailMessage('response.token is undefined')).not.to.be.undefined;
+    ApimServerAPIClient.setCredentials({ bearerToken: response.token });  
+  });
+
+  it(`${scriptName}: continue here`, async() => {
+    expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  });
+
+
+  it(`${scriptName}: should get /test`, async() => {
+    let response: APSSecureTestResponse;
+    try {
+      response = await ApsSecureTestsService.apsTest();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+  });
+
+  it(`${scriptName}: should logout`, async() => {
+    let response: APSSessionLogoutResponse;
+    try {
+      response = await ApsSessionService.apsLogout();
+    } catch (e) {
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
+    }
+    expect(response.success, TestLogger.createTestFailMessage('failed')).to.be.true;
+  });
+
+  it(`${scriptName}: should fail to get /test`, async() => {
+    let response: APSSecureTestResponse;
+    try {
+      response = await ApsSecureTestsService.apsTest();
+      expect(false, TestLogger.createTestFailMessage('should never get here')).to.be.true;
+    } catch (e) {
+      expect(e instanceof ApiError,TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      const apiError: ApiError = e;
+      expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
+      const apsError: APSError = apiError.body;
+      expect(apsError.errorId, TestLogger.createTestFailMessage('errorId mismatch')).equal(APSErrorIds.NOT_AUTHORIZED);
+    }
+  });
+
 
 });
 

@@ -17,8 +17,16 @@ export class ApimServerAPIClient {
       port: number;
     }) => {
       OpenAPI.WITH_CREDENTIALS = true;
+      // OpenAPI.CREDENTIALS = 'include';
       OpenAPI.HEADERS = { 
         'Origin': `${protocol}://${host}:${port}`
       };
     }
+
+    public static setCredentials = ({ bearerToken }:{
+      bearerToken: string;
+    }) => {
+      OpenAPI.TOKEN = bearerToken;
+    }
+
 }

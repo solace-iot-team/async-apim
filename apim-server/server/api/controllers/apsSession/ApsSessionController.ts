@@ -103,14 +103,14 @@ export class ApsSessionController {
 
     const { signedCookies = {} } = req;
     const { refreshToken } = signedCookies;
-  
+
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'refreshToken', details: {
-      refreshToken: refreshToken
+      refreshToken: `${refreshToken}`
     } }));
 
     // throw new ServerError(logName, `continue with ${logName}`);
 
-    if(refreshToken === undefined) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: 'userId'});
+    if(refreshToken === undefined) throw new ApiNotAuthorizedServerError(logName, 'cannot read refreshToken from cookie', { userId: 'unknown'});
 
     APSSessionService.refreshToken({
       existingRefreshToken: refreshToken,
