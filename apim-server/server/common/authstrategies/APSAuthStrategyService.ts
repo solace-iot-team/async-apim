@@ -5,7 +5,7 @@ import cors from "cors";
 import ServerConfig, { EAuthConfigType, TAuthConfig, TAuthConfigInternal, TExpressServerConfig } from "../ServerConfig";
 import { ApiCorsServerError, ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
-import APSPassportFactory, { TPassportBuildInternalResult } from "./APSPassportFactory";
+import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
 
 export enum ERegisteredStrategyName {
@@ -115,8 +115,8 @@ class APSAuthStrategyService {
     app.use(cors(this.getCorsOptions_NoAuth(config)));
   }
   private getCorsOptions_InternalAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
-    const funcName = 'getCorsOptions_InternalAuth';
-    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    // const funcName = 'getCorsOptions_InternalAuth';
+    // const logName = `${APSAuthStrategyService.name}.${funcName}()`;
 
     // TODO: use whitelisted client IP/domains?
     // //Add the client URL to the CORS policy
@@ -134,7 +134,7 @@ class APSAuthStrategyService {
     config: TExpressServerConfig;
   }) => {
 
-    const _buildInternalResult: TPassportBuildInternalResult  = APSPassportFactory.buildInternal({ 
+    APSPassportFactory.buildInternal({ 
       authConfigInternal: config.authConfig as TAuthConfigInternal,
       internalLocalStrategyName: ERegisteredStrategyName.INTERNAL_LOCAL,
       internalJwtStrategyName: ERegisteredStrategyName.INTERNAL_JWT  

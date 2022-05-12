@@ -22,8 +22,8 @@ export default class APSPassportFactory {
     // serializeUser(): (user: T, cb: (err: any, id?: any) => void) => void;
     // deserializeUser(): (username: string, cb: (err: any, user?: any) => void) => void;
     passport.serializeUser<string>((user: Express.User, done: (err: any, user?: string | undefined) => void) => {
-      const _funcName = 'passport.serializeUser';
-      const _logName = `${logName}.${_funcName}()`;  
+      // const _funcName = 'passport.serializeUser';
+      // const _logName = `${logName}.${_funcName}()`;  
       // throw new Error(`${_logName}: continue here: user = ${JSON.stringify(user, null, 2)}`);
       
       // what to store in the session
@@ -57,8 +57,8 @@ export default class APSPassportFactory {
     name: string;
     authConfigInternal: TAuthConfigInternal;
   }): JwtStrategy {
-    const funcName = 'buildInternal_Jwt';
-    const logName = `${APSPassportFactory.name}.${funcName}()`;
+    // const funcName = 'buildInternal_Jwt';
+    // const logName = `${APSPassportFactory.name}.${funcName}()`;
 
     const jwtStrategy: JwtStrategy = APSJwTStrategy.build({ authConfigInternal: authConfigInternal });
     passport.use(name, jwtStrategy);
@@ -71,8 +71,8 @@ export default class APSPassportFactory {
     internalLocalStrategyName: string;
     internalJwtStrategyName: string;
   }): TPassportBuildInternalResult {
-    const funcName = 'buildInternal';
-    const logName = `${APSPassportFactory.name}.${funcName}()`;
+    // const funcName = 'buildInternal';
+    // const logName = `${APSPassportFactory.name}.${funcName}()`;
 
     const localStrategy: LocalStrategy = APSPassportFactory.buildInternal_Local({ name: internalLocalStrategyName });
 

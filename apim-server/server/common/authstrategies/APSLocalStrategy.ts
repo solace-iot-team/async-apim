@@ -4,8 +4,8 @@ import APSSessionService from "../../api/services/APSSessionService";
 class APSLocalStrategy {
 
   private async authenticate(username: string, password: string, done: (error: any, user?: any, options?: IVerifyOptions) => void  ): Promise<void> {
-    const funcName = 'authenticate';
-    const logName = `${APSLocalStrategy.name}.${funcName}()`;
+    // const funcName = 'authenticate';
+    // const logName = `${APSLocalStrategy.name}.${funcName}()`;
     try {
       const authenticatedUserId: string = await APSSessionService.authenticateInternal({
         username: username,

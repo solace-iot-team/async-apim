@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { APSSessionLoginResponse, APSSessionLogoutResponse, APSSessionRefreshTokenResponse, APSUserResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSAuthStrategyService from '../../../common/authstrategies/APSAuthStrategyService';
 import ServerConfig, { EAuthConfigType } from '../../../common/ServerConfig';
@@ -174,8 +173,8 @@ export class ApsSessionController {
   }
 
   public static logoutAll = (_req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'logoutAll';
-    const logName = `${ApsSessionController.name}.${funcName}()`;
+    // const funcName = 'logoutAll';
+    // const logName = `${ApsSessionController.name}.${funcName}()`;
 
     APSSessionService.logoutAll()
     .then( () => {

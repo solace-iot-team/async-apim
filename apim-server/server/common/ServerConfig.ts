@@ -140,7 +140,7 @@ export class ServerConfig {
     const funcName = 'initializeAuthConfig';
     const logName = `${ServerConfig.name}.${funcName}()`;
 
-    let authConfig: TAuthConfig = { type: EAuthConfigType.NONE };
+    const authConfig: TAuthConfig = { type: EAuthConfigType.NONE };
     const authType: EAuthConfigType = this.getMandatoryEnvVarValueAsString_From_List(EEnvVars.APIM_SERVER_AUTH_TYPE, Object.values(ValidEnvAuthConfigType)) as EAuthConfigType;
     switch(authType) {
       case EAuthConfigType.UNDEFINED:
