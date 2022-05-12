@@ -19,7 +19,7 @@
     "test:devel:pretty": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/apsUsers/apsUsers.bootstrap-data.spec.ts | pino-pretty && unset_source_env",
     "test:devel:t": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/apsUsers/apsUsers.search.spec.ts | npx pino-pretty && unset_source_env",
     "test:debug": "mocha -r ts-node/register --inspect-brk test/**/*.ts --exit",
-    "test-sec-internal": ". ./test/source.env-sec-internal.sh && mocha --config test/.mocharc.yml test/sec-internal/**/**.*.spec.ts && unset_source_env"
+    "test:sec-internal": ". ./test/source.env-sec-internal.sh && mocha --config test/.mocharc.yml test/sec-internal/**/**.*.spec.ts && unset_source_env"
   },
   "repository": {
     "type": "git",
