@@ -29,10 +29,12 @@ export class APSClientOpenApi {
   public static set = (): void => {
     const funcName = 'set';
     const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
-    if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
+    if(!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
+      APSOpenAPI.WITH_CREDENTIALS = false;
+      APSOpenAPI.CREDENTIALS = "omit";
     }
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
   }

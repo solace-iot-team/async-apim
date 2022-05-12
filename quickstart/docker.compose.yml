@@ -17,7 +17,7 @@ services:
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
     image : "solaceiotteam/async-apim-admin-portal:latest"
-    # image : "solaceiotteam/async-apim-admin-portal:0.0.21"
+    # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
     ports:
       - 5080:80
     restart: unless-stopped
@@ -33,6 +33,7 @@ services:
       - qs-async-apim-connector
       - qs-async-apim-server-mongodb
     image: "solaceiotteam/async-apim-server:latest"
+    # image: "solaceiotteam/async-apim-server:0.1.1"
     ports:
       - 5002:3000
     volumes:
@@ -47,10 +48,11 @@ services:
       - APIM_SERVER_LOGGER_APP_ID=qs-async-apim-server
       - APIM_SERVER_LOGGER_LOG_LEVEL=trace
       - APIM_SERVER_REQUEST_SIZE_LIMIT=100kb
-      - APIM_SERVER_SECRET=mySecret
+      - APIM_SERVER_COOKIE_SECRET=myCookieSecret
       - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
       - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
       - APIM_SERVER_DATA_PATH=/data
+      - APIM_SERVER_AUTH_TYPE=none
     logging:
       options:
         max-size: "10m"
