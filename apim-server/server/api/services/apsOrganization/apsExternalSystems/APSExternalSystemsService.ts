@@ -18,8 +18,6 @@ import APSOrganizationsServiceEventEmitter from '../../apsAdministration/APSOrga
 import APSExternalSystemsServiceEventEmitter from "./APSExternalSystemsServiceEvent";
 import { APSExternalSystemsDBMigrate } from "./APSExternalSystemsDBMigrate";
 import { ValidationUtils } from "../../../utils/ValidationUtils";
-import APSOrganizationId = Components.Schemas.APSId;
-import APSExternalSystemId = Components.Schemas.APSId;
 import APSBusinessGroupsService from "../apsBusinessGroups/APSBusinessGroupsService";
 
 
@@ -46,7 +44,7 @@ export class APSExternalSystemsService {
     if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
 
   }
-  private onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  private onOrganizationDeleted = async(apsOrganizationId: string): Promise<void> => {
     // TODO: test without arrow function
     // await this.collectionMutex.runExclusive(async () => {
     //   await this._onOrganizationDeleted(apsOrganizationId);
@@ -57,7 +55,7 @@ export class APSExternalSystemsService {
     await this.collectionMutex.runExclusive(x);
   }
 
-  private _onOrganizationDeleted = async(apsOrganizationId: APSOrganizationId): Promise<void> => {
+  private _onOrganizationDeleted = async(apsOrganizationId: string): Promise<void> => {
     const funcName = '_onOrganizationDeleted';
     const logName = `${APSExternalSystemsService.name}.${funcName}()`;
 
@@ -125,7 +123,7 @@ export class APSExternalSystemsService {
   }
 
   public all = async({ apsOrganizationId }: {
-    apsOrganizationId: APSOrganizationId
+    apsOrganizationId: string;
   }): Promise<ListAPSExternalSystemsResponse> => {
     const funcName = 'all';
     const logName = `${APSExternalSystemsService.name}.${funcName}()`;
@@ -154,8 +152,8 @@ export class APSExternalSystemsService {
   }
 
   public byId = async({ apsOrganizationId, apsExternalSystemId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsExternalSystemId: APSExternalSystemId;    
+    apsOrganizationId: string;
+    apsExternalSystemId: string;    
   }): Promise<APSExternalSystem> => {
     const funcName = 'byId';
     const logName = `${APSExternalSystemsService.name}.${funcName}()`;
@@ -180,7 +178,7 @@ export class APSExternalSystemsService {
   }
 
   public create = async({ apsOrganizationId, apsExternalSystemCreate }: {
-    apsOrganizationId: APSOrganizationId;
+    apsOrganizationId: string;
     apsExternalSystemCreate: APSExternalSystemCreate;
   }): Promise<APSExternalSystem> => {
     const funcName = 'create';
@@ -209,8 +207,8 @@ export class APSExternalSystemsService {
   }
 
   public update = async({ apsOrganizationId, apsExternalSystemId, apsExternalSystemUpdate }: {
-    apsOrganizationId: APSOrganizationId;
-    apsExternalSystemId: APSExternalSystemId;
+    apsOrganizationId: string;
+    apsExternalSystemId: string;
     apsExternalSystemUpdate: APSExternalSystemUpdate;
   }): Promise<APSExternalSystem> => {
     const funcName = 'update';
@@ -239,8 +237,8 @@ export class APSExternalSystemsService {
   }
 
   public delete = async({apsOrganizationId, apsExternalSystemId }: {
-    apsOrganizationId: APSOrganizationId;
-    apsExternalSystemId: APSExternalSystemId;
+    apsOrganizationId: string;
+    apsExternalSystemId: string;
   }): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSExternalSystemsService.name}.${funcName}()`;

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.2.0
+  version: 0.2.1
 servers:
 - url: /apim-server/v1
 tags:
@@ -1948,6 +1948,9 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/APSExternalSystem'
+    APSIsMarketPlaceDestination:
+      description: Flag to indicate whether this system is also an external marketplace where to publish entities to. Defaults to false.
+      type: boolean
     APSExternalSystem:
       type: object
       additionalProperties: false
@@ -1958,6 +1961,8 @@ components:
           $ref: "#/components/schemas/APSDisplayName"
         description:
           $ref: "#/components/schemas/APSDescription"
+        isMarketplaceDestination:
+          $ref: "#/components/schemas/APSIsMarketPlaceDestination"
       required:
         - externalSystemId
         - displayName
@@ -1975,6 +1980,8 @@ components:
           $ref: "#/components/schemas/APSDisplayName"
         description:
           $ref: "#/components/schemas/APSDescription"
+        isMarketplaceDestination:
+          $ref: "#/components/schemas/APSIsMarketPlaceDestination"
 
     ListAPSOrganizationResponse:
       type: object
