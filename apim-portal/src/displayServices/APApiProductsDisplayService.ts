@@ -28,11 +28,13 @@ import {
   TAPEnvironmentDisplay, 
   TAPEnvironmentDisplayList 
 } from './APEnvironmentsDisplayService';
+import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
 import { 
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay,
   TAPManagedAssetDisplay_AccessAndState,
   TAPManagedAssetLifecycleInfo,
+  TAPManagedAssetPublishDestinationInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APProtocolsDisplayService, { 
@@ -68,6 +70,7 @@ export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
 export type TAPApiProductDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
   apLifecycleInfo: TAPManagedAssetLifecycleInfo;
   apAccessLevel: APIProductAccessLevel;
+  apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo;
 }
 
 export type TAPClientOptionsGuaranteedMessagingDisplay = {
@@ -262,6 +265,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     default_ownerId, 
     currentVersion,
     complete_ApBusinessGroupDisplayList,
+    complete_ApExternalSystemDisplayList,
     create_skinny,
    }:{
     organizationId: string;
@@ -271,6 +275,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     default_ownerId: string;
     currentVersion?: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
     create_skinny?: boolean;
   }): Promise<IAPApiProductDisplay> {
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
@@ -282,6 +287,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apRawAttributeList: connectorApiProduct.attributes,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
 
     // allow to create a skinny version of the api product
@@ -515,6 +521,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEntityId: apApiProductDisplay.apEntityId,
       apAccessLevel: apApiProductDisplay.apAccessLevel,
       apLifecycleInfo: apApiProductDisplay.apLifecycleInfo,
+      apPublishDestinationInfo: apApiProductDisplay.apPublishDestinationInfo,
     };
     return apApiProductDisplay_AccessAndState;
   }
@@ -531,6 +538,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiProductDisplay, apManagedAssetDisplay_AccessAndState: apApiProductDisplay_AccessAndState });
     apApiProductDisplay.apAccessLevel = apApiProductDisplay_AccessAndState.apAccessLevel;
     apApiProductDisplay.apLifecycleInfo = apApiProductDisplay_AccessAndState.apLifecycleInfo;
+    apApiProductDisplay.apPublishDestinationInfo = apApiProductDisplay_AccessAndState.apPublishDestinationInfo;
     return apApiProductDisplay;
   }
 

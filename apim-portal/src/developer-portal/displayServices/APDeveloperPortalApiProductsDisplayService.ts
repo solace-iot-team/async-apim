@@ -127,6 +127,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
       default_ownerId: default_ownerId,
       currentVersion: currentVersion,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: [],
       create_skinny: create_skinny
     });
 

@@ -11,6 +11,7 @@ import {
 } from '../../displayServices/APApiProductsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
@@ -105,6 +106,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     default_ownerId, 
     currentVersion,
     complete_ApBusinessGroupDisplayList,
+    complete_ApExternalSystemDisplayList,
   }:{
     organizationId: string;
     connectorApiProduct: APIProduct;
@@ -113,6 +115,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     default_ownerId: string;
     currentVersion?: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
   }): Promise<TAPAdminPortalApiProductDisplay> {
     // const funcName = 'create_ApAdminPortalApiProductDisplay_From_ApiEntities';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -126,7 +129,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: currentVersion,
-      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
 
     // console.log(`${logName}: base=${JSON.stringify(base.apVersionInfo, null, 2)}`);
@@ -190,6 +194,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       fetchAssetReferences: false
     });
 
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
+
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
@@ -199,7 +208,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       });
 
       // apply more filters if needed
@@ -241,6 +251,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       fetchAssetReferences: false
     });
     
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
+    
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
@@ -250,7 +265,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       });
       // add only to list if this is a recoverable api product
       if(this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) {
@@ -290,7 +306,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       organizationId: organizationId,
       fetchAssetReferences: false
     });
-
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
+    
     const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
@@ -300,7 +320,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
         default_ownerId: default_ownerId,
         currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       });
       // if this is a recovered API product, don't add to list
       if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
@@ -368,6 +389,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       organizationId: organizationId,
       fetchAssetReferences: false
     });
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
     
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
       organizationId: organizationId,
@@ -376,7 +401,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
       default_ownerId: default_ownerId,
       currentVersion: revision,
-      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
     return apAdminPortalApiProductDisplay;
   }

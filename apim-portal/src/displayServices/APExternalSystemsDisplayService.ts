@@ -1,6 +1,8 @@
 import { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import { APSClientOpenApi } from '../utils/APSClientOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
+  ApiError,
   APSExternalSystem, 
   ApsExternalSystemsService, 
   APSExternalSystemUpdate, 
@@ -11,7 +13,8 @@ import APBusinessGroupsDisplayService, {
 } from './APBusinessGroupsDisplayService';
 
 export type TAPExternalSystemDisplay = IAPEntityIdDisplay & IAPSearchContent & {
-  apsExternalSystem: APSExternalSystem;
+  description: string;
+  isMarketplaceDestination: boolean;
   apBusinessGroupExternalDisplayList: TAPBusinessGroupDisplayList;
 }
 export type TAPExternalSystemDisplayList = Array<TAPExternalSystemDisplay>;
@@ -40,7 +43,8 @@ class APExternalSystemsDisplayService {
         id: apsExternalSystem.externalSystemId,
         displayName: apsExternalSystem.displayName
       },
-      apsExternalSystem: apsExternalSystem,
+      description: apsExternalSystem.description,
+      isMarketplaceDestination: apsExternalSystem.isMarketplaceDestination !== undefined ? apsExternalSystem.isMarketplaceDestination : false,
       apBusinessGroupExternalDisplayList: apBusinessGroupDisplayList,
       apSearchContent: ''
     };
@@ -50,6 +54,25 @@ class APExternalSystemsDisplayService {
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+  public async apiCheck_Id_Exists({ organizationId, externalSystemId }:{
+    organizationId: string;
+    externalSystemId: string;
+  }): Promise<boolean> {
+    try {
+      await ApsExternalSystemsService.getApsExternalSystem({
+        organizationId: organizationId,
+        externalSystemId: externalSystemId
+      });
+      return true;
+     } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
 
   public async listApExternalSystemDisplay_ByCapability_InteractiveImportBusinessGroups({ organizationId}: {
     organizationId: string;
@@ -112,7 +135,12 @@ class APExternalSystemsDisplayService {
   }): Promise<void> {
     await ApsExternalSystemsService.createApsExternalSystem({
       organizationId: organizationId,
-      requestBody: apExternalSystemDisplay.apsExternalSystem
+      requestBody: {
+        externalSystemId: apExternalSystemDisplay.apEntityId.id,
+        displayName: apExternalSystemDisplay.apEntityId.displayName,
+        description: apExternalSystemDisplay.description,
+        isMarketplaceDestination: apExternalSystemDisplay.isMarketplaceDestination
+      }
     });
   }
 
@@ -121,8 +149,9 @@ class APExternalSystemsDisplayService {
     apExternalSystemDisplay: TAPExternalSystemDisplay
   }): Promise<void> {
     const patch: APSExternalSystemUpdate = {
-      displayName: apExternalSystemDisplay.apsExternalSystem.displayName,
-      description: apExternalSystemDisplay.apsExternalSystem.description,
+      displayName: apExternalSystemDisplay.apEntityId.displayName,
+      description: apExternalSystemDisplay.description,
+      isMarketplaceDestination: apExternalSystemDisplay.isMarketplaceDestination,
     }
     await ApsExternalSystemsService.updateApsExternalSystem({
       organizationId: organizationId,
