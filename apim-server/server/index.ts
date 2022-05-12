@@ -47,7 +47,7 @@ const bootstrapComponents = async(): Promise<void> => {
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
   try {
     await APSConnectorsService.bootstrap();
-    // await APSUsersService.bootstrap();
+    await APSUsersService.bootstrap();
     await APSOrganizationsService.bootstrap();
     await APSBusinessGroupsService.bootstrap();
     await APSExternalSystemsService.bootstrap();

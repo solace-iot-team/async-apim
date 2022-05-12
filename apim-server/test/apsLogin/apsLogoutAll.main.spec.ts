@@ -96,7 +96,7 @@ describe(`${scriptName}`, () => {
     let loggedIn: APSUserResponse;
     try {
       loggedIn = await ApsLoginService.login({
-        requestBody: { userId: loginUserId, userPwd: loginPwd }
+        requestBody: { username: loginUserId, password: loginPwd }
       });
     } catch (e) {
       expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;

@@ -160,8 +160,8 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     loginAsHistory.push( { 
       pathname: EUICommonResourcePaths.Login,
       state: {
-        userId: mo.apEntityId.id,
-        userPwd: mo.apUserAuthenticationDisplay.password,
+        username: mo.apEntityId.id,
+        password: mo.apUserAuthenticationDisplay.password,
       }
     });
   }

@@ -401,13 +401,35 @@ export class MongoPersistenceService {
     // else return undefined;
   }
 
+  public updateAll = async({ update }:{
+    update: any;
+  }): Promise<void> => {
+    const funcName = 'updateAll';
+    const logName = `${MongoPersistenceService.name}.${funcName}()`;
+    const opts: UpdateOptions = {
+      fullResponse: true,
+      writeConcern: { w: 1, j: true }
+    };
+    const filter: Filter<any> = {};
+    const collection: mongodb.Collection = this.getCollection();
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING_ALL, details: {
+      collectionName: this.collectionName,
+      update: update
+    }}));
+    const updateResult: UpdateResult | Document = await collection.updateMany(filter, { $set: update }, opts);
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED_ALL, details: {
+      updateResult: updateResult
+    }}));
+  }
+
   public update = async(options: TMongoUpdateOptions): Promise<any> => {
     const funcName = 'update';
     const logName = `${MongoPersistenceService.name}.${funcName}()`;
     const opts: UpdateOptions = {
       fullResponse: true,
       writeConcern: { w: 1, j: true }
-    }  
+    }
+    
     const collection: mongodb.Collection = this.getCollection();
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATING, details: {

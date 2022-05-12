@@ -95,6 +95,28 @@ export class ConfigMissingEnvVarServerError extends ServerError {
   }
 }
 
+export class ConfigEnvVarValueServerError extends ServerError {
+  private envVarName: string;
+  private envVarValue: string;
+  constructor(internalLogName: string, internalMessage: string, envVarName: string, envVarValue: string) {
+    super(internalLogName, `${internalMessage}: ${envVarName}`);
+    this.envVarName = envVarName;
+    this.envVarValue = envVarValue;
+  }
+}
+
+export class ConfigInvalidEnvVarValueFromListServerError extends ServerError {
+  private envVarName: string;
+  private envVarValue: string;
+  private allowedValues: string;
+  constructor(internalLogName: string, internalMessage: string, envVarName: string, envVarValue: string, allowedValueList: Array<string>) {
+    super(internalLogName, internalMessage);
+    this.envVarName = envVarName;
+    this.envVarValue = envVarValue;
+    this.allowedValues = allowedValueList.join(', ');
+  }
+}
+
 export class ConfigEnvVarNotANumberServerError extends ServerError {
   private envVarName: string;
   private envVarValue: string;
@@ -327,7 +349,8 @@ export type TApiObjectNotFoundServerErrorMeta = {
   collectionName: string
 }
 export type TApiNotAuthorizedServerErrorMeta = {
-  userId: string
+  userId: string;
+  resource?: string;
 }
 
 export class ApiDuplicateKeyServerError extends ApiServerError {
@@ -394,6 +417,16 @@ export class ApiOrganizationNotFoundServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiOrganizationNotFoundServerError.apiDefaultDescription, apiMeta: TOrganizationNotFoundServerErrorMeta) {
     super(internalLogName, ApiOrganizationNotFoundServerError.name, ApiOrganizationNotFoundServerError.apiStatusCode, ApiOrganizationNotFoundServerError.apiErrorId, apiDescription, apiMeta);
+  }
+}
+
+export class ApiCorsServerError extends ApiServerError {
+  private static apiStatusCode = 403;
+  private static apiErrorId: APSErrorIds = APSErrorIds.CORS_NOT_ALLOWED;
+  private static apiDefaultDescription = 'not allowed by CORS';
+
+  constructor(internalLogName: string, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
+    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription);
   }
 }
 

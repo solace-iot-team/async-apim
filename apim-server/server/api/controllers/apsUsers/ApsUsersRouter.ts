@@ -6,7 +6,6 @@ export default express
   .get('/:user_id', ApsUsersController.byId)
   .post('/', ApsUsersController.create)
   .patch('/:user_id', ApsUsersController.update)
-  .put('/:user_id', ApsUsersController.replace)
   .delete('/:user_id', ApsUsersController.delete)
 
 

@@ -139,8 +139,8 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
     loginAsHistory.push( { 
       pathname: EUICommonResourcePaths.Login,
       state: {
-        userId: mo.apEntityId.id,
-        userPwd: pwd
+        username: mo.apEntityId.id,
+        password: pwd
       }
     });
   }

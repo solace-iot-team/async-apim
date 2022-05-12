@@ -16,7 +16,6 @@ import {
   APSOrganizationRolesResponse, 
   APSOrganizationRolesResponseList, 
   APSUserCreate, 
-  APSUserReplace, 
   APSUserResponse, 
   APSUserResponseList, 
   ApsUsersService, 
@@ -559,9 +558,9 @@ describe(`${scriptName}`, () => {
     });
 
     it(`${scriptName}: should validate email pattern`, async() => {
-      let replacedApsUser: APSUserResponse;
+      let updated: APSUserResponse;
       const userId = apsUserCreateTemplate.userId;
-      const replaceRequest: APSUserReplace = {
+      const updateRequest: APSUserUpdate = {
         isActivated: true,
         password: 'replaced',
         memberOfOrganizations: [ 
@@ -577,9 +576,9 @@ describe(`${scriptName}`, () => {
         }
       }
       try {
-        replacedApsUser = await ApsUsersService.replaceApsUser({
+        updated = await ApsUsersService.updateApsUser({
           userId: userId, 
-          requestBody: replaceRequest
+          requestBody: updateRequest
         });
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
