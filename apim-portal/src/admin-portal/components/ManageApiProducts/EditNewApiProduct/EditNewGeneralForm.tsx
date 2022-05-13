@@ -36,7 +36,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     id: string;
     displayName: string;
     description: string;
-    version: string;
+    revision: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -51,7 +51,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
       description: mo.apDescription,
-      version: mo.apVersionInfo.apCurrentVersion,
+      revision: mo.apVersionInfo.apCurrentVersion,
     };
     return {
       formData: fd
@@ -66,7 +66,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
     mo.apDescription = fd.description;
-    mo.apVersionInfo.apCurrentVersion = fd.version;
+    mo.apVersionInfo.apCurrentVersion = fd.revision;
     return mo;
   }
   
@@ -182,12 +182,12 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.id)}
             </div>
-            {/* version */}
+            {/* revision */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
-                  name="formData.version"
+                  name="formData.revision"
                   rules={{
                     ...APConnectorFormValidationRules.SemVer(),
                     validate: validate_SemVer
@@ -202,9 +202,9 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                       />
                   )}}
                 />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.version })}>Version*</label>
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.revision })}>New Revision*</label>
               </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.version)}
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.revision)}
             </div>
             {/* Display Name */}
             <div className="p-field">

@@ -75,3 +75,9 @@
 .button-set-footer .p-button-label {
   display: flex;
 }
+
+hr.vertical {
+  height:100%; /* you might need some positioning for this to work, see other questions about 100% height */
+  width:0;
+  border:1px solid black;
+}

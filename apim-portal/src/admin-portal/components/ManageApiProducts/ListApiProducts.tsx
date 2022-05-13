@@ -155,7 +155,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
   }
-  const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
+  // const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return (<div>{row.apVersionInfo.apLastVersion}</div>);
+  // }  
+  const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apVersionInfo.apLastVersion}</div>);
   }
   const sharedBodyTemplate = (row: TManagedObject): JSX.Element => {
@@ -217,7 +220,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         >
           {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+          {/* <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+          <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable />
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
           <Column header="Published" headerStyle={{width: '7em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />

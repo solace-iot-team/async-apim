@@ -44,26 +44,25 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
   type TManagedObject = TAPDeveloperPortalApiProductDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [selectedRevision, setSelectedRevision] = React.useState<string>();
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
-  // version
-  const [selectedVersion, setSelectedVersion] = React.useState<string>();
 
   // * Api Calls *
-  const apiGetManagedObject = async(version: string): Promise<TApiCallState> => {
+  const apiGetManagedObject = async(revision: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for api product: ${props.apDeveloperPortalApiProductDisplay.apEntityId.displayName}, version: ${version}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT, `retrieve details for api product: ${props.apDeveloperPortalApiProductDisplay.apEntityId.displayName}, revision: ${revision}`);
     try { 
       const object: TAPDeveloperPortalApiProductDisplay = await APDeveloperPortalApiProductsDisplayService.apiGet_DeveloperPortalApApiProductDisplay({
         organizationId: props.organizationId,
         apiProductId: props.apDeveloperPortalApiProductDisplay.apEntityId.id,
         default_ownerId: props.apDeveloperPortalApiProductDisplay.apOwnerInfo.id,
         fetch_revision_list: true,
-        revision: version,
+        revision: revision,
       });
       setManagedObject(object);
     } catch(e) {
@@ -98,9 +97,9 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     setManagedObject(props.apDeveloperPortalApiProductDisplay);
   }
 
-  const doFetchVersion = async (version: string) => {
+  const doFetchRevision = async (revision: string) => {
     props.onLoadingChange(true);
-    await apiGetManagedObject(version);
+    await apiGetManagedObject(revision);
     props.onLoadingChange(false);
   }
 
@@ -112,14 +111,14 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setSelectedVersion(managedObject.apVersionInfo.apCurrentVersion);
+    setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(selectedVersion === undefined) return;
+    if(selectedRevision === undefined) return;
     if(managedObject === undefined) return;
-    if(selectedVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedVersion);
-  }, [selectedVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(selectedRevision !== managedObject.apVersionInfo.apCurrentVersion) doFetchRevision(selectedRevision);
+  }, [selectedRevision]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -194,41 +193,39 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     );
   }
 
-  const renderVersionSelect = (): JSX.Element => {
-    const funcName = 'renderVersionSelect';
+  const renderRevisionSelect = (): JSX.Element => {
+    const funcName = 'renderRevisionSelect';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
     if(managedObject.apVersionInfo.apVersionList === undefined) throw new Error(`${logName}: managedObject.apVersionInfo.apVersionList is undefined`);
 
-    const onVersionSelect = (e: DropdownChangeParams) => {
-      setSelectedVersion(e.value);
+    const onRevisionSelect = (e: DropdownChangeParams) => {
+      setSelectedRevision(e.value);
     }
 
     const isSelectDisabled: boolean = props.mode === E_Mode.ADD_TO_APP;
     if(isSelectDisabled) {
-      return (<span><b> {selectedVersion}</b></span>)
+      return (<span><b> {selectedRevision}</b></span>)
     } else {
       return(
         <Dropdown
-          value={selectedVersion}
+          value={selectedRevision}
           options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
-          onChange={onVersionSelect}
+          onChange={onRevisionSelect}
           disabled={isSelectDisabled}
         />                          
       );  
     }
   }
 
-  const renderVersion = (mo: TManagedObject): JSX.Element => {
-    return (<div><b>Version: </b>{renderVersionSelect()}</div>);
+  const renderRevision = (mo: TManagedObject): JSX.Element => {
+    return (<div><b>Revision: </b>{renderRevisionSelect()}</div>);
   }
-
   const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
     return(
       <span><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</span>
     );
   }
-
   const renderAccess = (mo: TManagedObject): JSX.Element => {
     return(
       <span><b>Access: </b>
@@ -242,7 +239,6 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
       </span>
     );
   }
-
   const renderMeta = (mo: TManagedObject): JSX.Element => {
     return (
       <React.Fragment>  
@@ -269,7 +265,7 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
 
           </div>
           <div className="api-product-view-detail-right">
-            <div>{renderVersion(mo)}</div>
+            <div>{renderRevision(mo)}</div>
           </div>            
         </div>
       </div>  
@@ -369,7 +365,7 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
 
         {/* <div>DEBUG: selectedVersion = {selectedVersion}</div> */}
 
-        {managedObject && selectedVersion !== undefined && renderManagedObject() }
+        {managedObject && selectedRevision !== undefined && renderManagedObject() }
 
       </div>
     </React.Fragment>

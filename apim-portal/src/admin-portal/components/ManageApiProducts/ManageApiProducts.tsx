@@ -55,9 +55,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New';
-  const ToolbarEditManagedObjectButtonLabel = 'Edit';
-  const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
+  const ToolbarNewManagedObjectButtonLabel = 'New API Product';
+  const ToolbarEditManagedObjectButtonLabel = 'Create New Revision';
+  const ToolbarDeleteManagedObjectButtonLabel = 'Delete API Product';
 
   const [userContext] = React.useContext(UserContext);
   const [authContext] = React.useContext(AuthContext);
@@ -163,13 +163,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+          <div className="p-ml-2 p-mr-2"></div>
           <Button 
             label={ToolbarEditManagedObjectButtonLabel} 
             icon="pi pi-pencil" 
             onClick={onEditManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
             disabled={!managedObject_AllowedActions.isEditAllowed}
-          />        
+          />   
         </React.Fragment>
       );
     }

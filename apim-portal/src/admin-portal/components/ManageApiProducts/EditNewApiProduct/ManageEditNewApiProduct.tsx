@@ -7,7 +7,7 @@ import { Globals } from "../../../../utils/Globals";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
@@ -19,7 +19,12 @@ import {
   TAPApiProductDisplay_General, 
   TAPApiProductDisplay_Policies 
 } from "../../../../displayServices/APApiProductsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes, TAPManagedAssetLifecycleInfo } from "../../../../displayServices/APManagedAssetDisplayService";
+import { 
+  TAPManagedAssetBusinessGroupInfo, 
+  TAPManagedAssetDisplay_Attributes, 
+  TAPManagedAssetLifecycleInfo, 
+  TAPManagedAssetPublishDestinationInfo 
+} from "../../../../displayServices/APManagedAssetDisplayService";
 import { EditNewGeneral } from "./EditNewGeneral";
 import { EditNewPolicies } from "./EditNewPolicies";
 import { EditNewApis } from "./EditNewApis";
@@ -32,11 +37,11 @@ import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 import { EditNewAccessAndState } from "./EditNewAccessAndState";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
+import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 export interface IManageEditNewApiProductProps {
   /** both */
@@ -198,7 +203,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         apManagedAssetDisplay: empty,
         apOwnerInfo: userContext.apLoginUserDisplay.apEntityId
       });
-      // create a suggested next version
+      // create a suggested next revision
       empty.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NewVersion();
       setManagedObject(empty);
       setOriginal_ManagedObject(empty); // not a copy, to see the headers ...?
@@ -269,12 +274,12 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
           command: ManagedEditApiProduct_onNavigateToCommand
         },
         {
-          label: 'Edit'
+          label: 'Create New Revision'
         }  
       ]);  
     } else {
       props.setBreadCrumbItemList([{
-        label: 'New API Product'
+        label: 'Create New API Product'
       }]);  
     }
   }
@@ -480,9 +485,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     );
   }
 
-  const renderVersionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
+  const renderRevisionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
     if(props.action === EAction.NEW) return (<></>);
-    return (<div><b>Current Version:</b> {apVersionInfo.apLastVersion}</div>);
+    return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
   }
 
   const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
@@ -492,6 +497,16 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
     if(props.action === EAction.NEW) return (<></>);
     return(<div><b>Access: </b>{accessLevel}</div>);
+  }
+  const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
+    const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
+      if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
+      return APEntityIdsService.create_SortedDisplayNameList(apExternalSystemEntityIdList).join(', ');
+    }
+    if(props.action === EAction.NEW) return (<></>);
+    return(
+      <span><b>Publish Destination(s): </b>{renderValue(apPublishDestinationInfo.apExternalSystemEntityIdList)}</span>
+    );
   }
 
   const renderComponent = (mo: TManagedObject) => {
@@ -503,9 +518,10 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       <React.Fragment>
         <div className="p-mt-4">
           {renderBusinessGroupInfo(original_ManagedObject.apBusinessGroupInfo)}
-          {renderVersionInfo(original_ManagedObject.apVersionInfo)}
+          {renderRevisionInfo(original_ManagedObject.apVersionInfo)}
           {renderState(original_ManagedObject.apLifecycleInfo)}
           {renderAccessLevel(original_ManagedObject.apAccessLevel)}
+          {renderPublishDestinationInfo(original_ManagedObject.apPublishDestinationInfo)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
@@ -628,7 +644,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
   
     if(props.action === EAction.NEW) return 'Create New API Product';
-    else return `Edit API Product: ${original_ManagedObject.apEntityId.displayName}`
+    else return `Create New Revision of: ${original_ManagedObject.apEntityId.displayName}`
   }
 
   return (
