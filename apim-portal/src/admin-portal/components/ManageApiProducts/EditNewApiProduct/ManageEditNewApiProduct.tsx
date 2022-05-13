@@ -7,7 +7,7 @@ import { Globals } from "../../../../utils/Globals";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
@@ -35,6 +35,8 @@ import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APD
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 export interface IManageEditNewApiProductProps {
   /** both */
@@ -146,12 +148,30 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [original_ManagedObject, setOriginal_ManagedObject] = React.useState<TManagedObject>();
+  const [availablePublishDestinationExternalSystemEntityIdList, setAvailablePublishDestinationExternalSystemEntityIdList] = React.useState<TAPEntityIdList>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [userContext] = React.useContext(UserContext);
 
   // * Api Calls * 
+
+  const apiGetPublishDestinations = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetPublishDestinations';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PUBLISH_DESTINATIONS, 'get publish destinations');
+    try {
+      const publishDestinationList: TAPEntityIdList = await APExternalSystemsDisplayService.apiGetList_PublishDestinations({
+        organizationId: props.organizationId
+      });
+      setAvailablePublishDestinationExternalSystemEntityIdList(publishDestinationList);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
 
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
     if(props.action === EAction.NEW) return apiGetManagedObject_New();
@@ -216,6 +236,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
+    await apiGetPublishDestinations();
     props.onLoadingChange(false);
     setNewComponentState(E_COMPONENT_STATE_EDIT_NEW.GENERAL);  
   }
@@ -477,7 +498,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
-
+    if(availablePublishDestinationExternalSystemEntityIdList === undefined) throw new Error(`${logName}: availablePublishDestinationExternalSystemEntityIdList === undefined`);
     return (
       <React.Fragment>
         <div className="p-mt-4">
@@ -563,6 +584,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
                 action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
+                apAvailablePublishDestinationExternalSystemEntityIdList={availablePublishDestinationExternalSystemEntityIdList}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
@@ -616,31 +638,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {managedObject && original_ManagedObject && renderComponent(managedObject)}
-
-      {/* DEBUG */}
-      {/* {managedObject && 
-        <React.Fragment>
-          <hr />
-          <p><b>{ComponentName}:</b></p>
-          <p><b>managedObject.apUserProfileDisplay=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apUserProfileDisplay, null, 2)}
-          </pre>
-          <p><b>managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList, null, 2)}
-          </pre>
-          <p><b>managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList, null, 2)}
-          </pre>
-          <p><b>managedObject.apUserAuthenticationDisplay.password=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apUserAuthenticationDisplay.password, null, 2)}
-          </pre>
-        </React.Fragment>
-      } */}
+      {managedObject && original_ManagedObject && availablePublishDestinationExternalSystemEntityIdList && renderComponent(managedObject)}
 
     </div>
   );

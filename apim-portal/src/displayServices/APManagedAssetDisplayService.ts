@@ -247,7 +247,8 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  private create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string {
+  private create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
+    if(apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return undefined;
     return APEntityIdsService.create_IdList(apPublishDestinationInfo.apExternalSystemEntityIdList).join(',');
   }
 
@@ -691,10 +692,13 @@ export abstract class APManagedAssetDisplayService {
       value: apManagedAssetDisplay.apLifecycleInfo.apLifecycleState
     }));
     // publishDestination info
-    _complete_ApAttributeList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
-      name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.PUBLISH, tag: EAPManagedAssetAttribute_Publish_Tag.DESTINATION }), 
-      value: this.create_PublishDestinationInfoString(apManagedAssetDisplay.apPublishDestinationInfo)
-    }));
+    const publishDestinationInfoStr: string | undefined = this.create_PublishDestinationInfoString(apManagedAssetDisplay.apPublishDestinationInfo);
+    if(publishDestinationInfoStr !== undefined) {
+      _complete_ApAttributeList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+        name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.PUBLISH, tag: EAPManagedAssetAttribute_Publish_Tag.DESTINATION }), 
+        value: publishDestinationInfoStr
+      }));  
+    }
   
     return _complete_ApAttributeList;
   }

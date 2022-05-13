@@ -1,4 +1,4 @@
-import { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import { IAPEntityIdDisplay, TAPEntityIdList } from '../utils/APEntityIdsService';
 import { APSClientOpenApi } from '../utils/APSClientOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { 
@@ -109,7 +109,20 @@ class APExternalSystemsDisplayService {
     // alert(`${logName}: see console log`);
     return list;
   }
-  
+
+  public async apiGetList_PublishDestinations({ organizationId}: {
+    organizationId: string;
+  }): Promise<TAPEntityIdList> {
+    const response: ListAPSExternalSystemsResponse = await ApsExternalSystemsService.listApsExternalSystems({
+      organizationId: organizationId
+    });
+    const list: TAPEntityIdList = [];
+    for(const apsExternalSystem of response.list) {
+      if(apsExternalSystem.isMarketplaceDestination) list.push({ id: apsExternalSystem.externalSystemId, displayName: apsExternalSystem.displayName});
+    }
+    return list;
+  }
+
   public async apiGet_ApExternalSystemDisplay({ organizationId, externalSystemId }: {
     organizationId: string;
     externalSystemId: string;

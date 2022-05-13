@@ -20,7 +20,7 @@ import APEntityIdsService, {
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
@@ -304,6 +304,16 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
+  const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
+    const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
+      if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
+      return APEntityIdsService.create_SortedDisplayNameList(apExternalSystemEntityIdList).join(', ');
+    }
+    return(
+      <span><b>Publish Destination(s): </b>{renderValue(apPublishDestinationInfo.apExternalSystemEntityIdList)}</span>
+    );
+  }
+
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
@@ -314,6 +324,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
+            <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
 
             {/* DEBUG */}
             {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}

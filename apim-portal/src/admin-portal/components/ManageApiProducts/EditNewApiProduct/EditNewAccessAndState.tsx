@@ -12,6 +12,7 @@ import APAdminPortalApiProductsDisplayService, {
 import { TAPApiProductDisplay_AccessAndState } from "../../../../displayServices/APApiProductsDisplayService";
 import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
 import { EditNewAccessAndStateForm } from "./EditNewAccessAndStateForm";
+import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -20,6 +21,7 @@ export interface IEditNewAccessAndStateProps {
   action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  apAvailablePublishDestinationExternalSystemEntityIdList: TAPEntityIdList;
   onSaveChanges: (apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState) => void;
   onBack: () => void;
   onCancel: () => void;
@@ -85,6 +87,7 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
             formId={FormId}
             action={props.action}
             apApiProductDisplay_AccessAndState={mo}
+            apAvailablePublishDestinationExternalSystemEntityIdList={props.apAvailablePublishDestinationExternalSystemEntityIdList}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
