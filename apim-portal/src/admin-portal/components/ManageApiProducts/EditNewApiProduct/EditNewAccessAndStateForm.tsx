@@ -4,15 +4,13 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
-import { MultiSelect } from "primereact/multiselect";
 import { TreeSelect } from "primereact/treeselect";
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APIProductAccessLevel, MetaEntityStage } from "@solace-iot-team/apim-connector-openapi-browser";
 import { EAction} from "../ManageApiProductsCommon";
 import { TAPApiProductDisplay_AccessAndState } from "../../../../displayServices/APApiProductsDisplayService";
-import APLifecycleDisplayService, { EAPLifecycleState } from "../../../../displayServices/APLifecycleDisplayService";
 import APAccessLevelDisplayService from "../../../../displayServices/APAccessLevelDisplayService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APMemberOfService, { 
@@ -26,7 +24,8 @@ import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { EditNewBusinessGroupSharingListForm } from "./EditNewBusinessGroupSharingListForm";
 import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../displayServices/APManagedAssetDisplayService";
 import APBusinessGroupsDisplayService from "../../../../displayServices/APBusinessGroupsDisplayService";
-import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import APLifecycleStageInfoDisplayService, { TAPLifecycleStageList } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -47,9 +46,8 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   type TManagedObject = TAPApiProductDisplay_AccessAndState;
   type TManagedObjectFormData = {
     accessLevel: APIProductAccessLevel;
-    lifecycleState: EAPLifecycleState;
+    lifecycleState: MetaEntityStage;
     owningBusinessGroupId?: string;
-    publishDestinationIdList: Array<string>;
   };
   type TManagedObjectFormDataEnvelope = {
     businessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList; /** not managed by form */
@@ -59,8 +57,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
       accessLevel: mo.apAccessLevel,
-      lifecycleState: mo.apLifecycleInfo.apLifecycleState,
-      publishDestinationIdList: APEntityIdsService.create_IdList(mo.apPublishDestinationInfo.apExternalSystemEntityIdList),
+      lifecycleState: mo.apLifecycleStageInfo.stage,
       owningBusinessGroupId: (mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id === APBusinessGroupsDisplayService.get_recovered_BusinessGroupId() ? undefined : mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id),
     };
     return {
@@ -87,16 +84,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     if(apOwningMemberOfBusinessGroupDisplay === undefined) throw new Error(`${logName}: apOwningMemberOfBusinessGroupDisplay === undefined`);
 
     mo.apAccessLevel = fd.accessLevel;
-    mo.apLifecycleInfo.apLifecycleState = fd.lifecycleState;
-    // publish destination
-    mo.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
-    fd.publishDestinationIdList.forEach( (selectedId: string) => {
-      const foundExternalSystemEntityId = props.apAvailablePublishDestinationExternalSystemEntityIdList.find( (x) => {
-        return x.id === selectedId;
-      });
-      if(foundExternalSystemEntityId === undefined) throw new Error(`${logName}: foundExternalSystemEntityId === undefined`);
-      mo.apPublishDestinationInfo.apExternalSystemEntityIdList.push(foundExternalSystemEntityId);
-    });
+    mo.apLifecycleStageInfo.stage = fd.lifecycleState;
     // business group info
     mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId = apOwningMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId;
     // ensure owning business group is removed from sharing business group list
@@ -116,6 +104,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
   const [apMemberOfBusinessGroupTreeTableNodeList, setApMemberOfBusinessGroupTreeTableNodeList] = React.useState<TAPMemberOfBusinessGroupTreeTableNodeList>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
+  const NextApLifecycleStageList: TAPLifecycleStageList = APLifecycleStageInfoDisplayService.getList_NextStages({ currentStage: props.apApiProductDisplay_AccessAndState.apLifecycleStageInfo.stage });
 
   const doInitialize = async () => {
     setApMemberOfBusinessGroupDisplayTreeNodeList(APMemberOfService.create_pruned_ApMemberOfBusinessGroupDisplayTreeNodeList({
@@ -148,7 +137,6 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
     if(managedObjectFormDataEnvelope === undefined) return;
     managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
     // set arrays explicitely
-    managedObjectUseForm.setValue('formData.publishDestinationIdList', managedObjectFormDataEnvelope.formData.publishDestinationIdList);
     managedObjectUseForm.setValue('businessGroupSharingList', managedObjectFormDataEnvelope.businessGroupSharingList);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -238,30 +226,6 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
         {/* <div>managedObjectFormDataEnvelope.businessGroupSharingList = <pre>{JSON.stringify(managedObjectFormDataEnvelope.businessGroupSharingList, null, 2)}</pre></div> */}
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
-            {/* Publish Destinations */}
-            <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  control={managedObjectUseForm.control}
-                  name="formData.publishDestinationIdList"
-                  render={( { field, fieldState }) => {
-                    return(
-                      <MultiSelect
-                        display="chip"
-                        value={field.value ? [...field.value] : []} 
-                        options={props.apAvailablePublishDestinationExternalSystemEntityIdList} 
-                        onChange={(e) => field.onChange(e.value)}
-                        optionLabel={APEntityIdsService.nameOf('displayName')}
-                        optionValue={APEntityIdsService.nameOf('id')}
-                        // style={{width: '500px'}} 
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                      />
-                  )}}
-                />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.publishDestinationIdList })}>Publish Destination(s)</label>
-              </span>
-              {APDisplayUtils.displayFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.formData?.publishDestinationIdList)}
-            </div>
             {/* State */}
             <div className="p-field">
               <span className="p-float-label">
@@ -276,7 +240,7 @@ export const EditNewAccessAndStateForm: React.FC<IEditNewAccessAndStateFormProps
                       <Dropdown
                         id={field.name}
                         {...field}
-                        options={APLifecycleDisplayService.get_SelectList()} 
+                        options={NextApLifecycleStageList} 
                         onChange={(e) => field.onChange(e.value)}
                         className={classNames({ 'p-invalid': fieldState.invalid })}                       
                       />                        

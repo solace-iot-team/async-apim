@@ -3,6 +3,7 @@ import {
   APIProductAccessLevel,
   ApiProductsService, 
   CommonEntityNameList,
+  MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { AuthHelper } from '../../auth/AuthHelper';
 import { 
@@ -22,6 +23,7 @@ export type TAPAdminPortalApiProductDisplay_AllowedActions = {
   isDeleteAllowed: boolean;
   isEditAllowed: boolean;
   isViewAllowed: boolean;
+  isManagePublishAllowed: boolean;
 }
 export type TAPAdminPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {
   apAppReferenceEntityIdList: TAPEntityIdList;
@@ -35,7 +37,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return {
       isDeleteAllowed: false,
       isEditAllowed: false,
-      isViewAllowed: false
+      isViewAllowed: false,
+      isManagePublishAllowed: false,
     };
   }
   /**
@@ -56,6 +59,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       isEditAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit),
       isDeleteAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete),
       isViewAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View),
+      isManagePublishAllowed: this.get_IsManagePublishAllowed({ apApiProductDisplay: apAdminPortalApiProductDisplay }),
     };
     if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
       // check if owned by user
@@ -157,6 +161,13 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return true;
   }
 
+  public get_IsManagePublishAllowed({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): boolean {
+    if(apApiProductDisplay.apLifecycleStageInfo.stage === MetaEntityStage.RELEASED) return true;
+    if(apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList.length > 0) return true;
+    return false;
+  }
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************

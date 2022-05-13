@@ -51,9 +51,9 @@ export const EditNewExternalSystem: React.FC<IEditNewExternalSystemProps> = (pro
     formData: TManagedObjectFormData;
   }
   
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
+  // const isNewManagedObject = (): boolean => {
+  //   return props.action === EAction.NEW;
+  // }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {

@@ -104,7 +104,7 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
   }
   const versionBodyTemplate = (row: TManagedObjectElement): JSX.Element => {
     return (
-      <div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleInfo.apLifecycleState})`}</div>
+      <div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleStageInfo.stage})`}</div>
     );
   }
   const statusBodyTemplate = (row: TManagedObjectElement): JSX.Element => {

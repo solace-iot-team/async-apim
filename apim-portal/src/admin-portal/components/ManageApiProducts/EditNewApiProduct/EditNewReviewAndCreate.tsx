@@ -39,8 +39,8 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
     const funcName = 'apiCreateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState;
-    if(props.action === EAction.NEW) callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
-    else callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create new version of api product: ${mo.apEntityId.displayName}`); 
+    if(props.action === EAction.NEW) callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
+    else callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `create new version of api product: ${mo.apEntityId.displayName}`); 
     try { 
       if(props.action === EAction.NEW) {
         await APAdminPortalApiProductsDisplayService.apiCreate_ApApiProductDisplay({
@@ -76,7 +76,7 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
     const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT) {
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT) {
         if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
         props.onCreateSuccess(apiCallStatus, managedObject.apEntityId);
       }

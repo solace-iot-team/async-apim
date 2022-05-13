@@ -23,6 +23,7 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -55,8 +56,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New API Product';
-  const ToolbarEditManagedObjectButtonLabel = 'Create New Revision';
+  const ToolbarNewManagedObjectButtonLabel = 'New';
+  const ToolbarEditManagedObjectButtonLabel = 'Edit';
+  const ToolbarPublishManagedObjectButtonLabel = 'Publish';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete API Product';
 
   const [userContext] = React.useContext(UserContext);
@@ -73,6 +75,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [showManagePublishComponent, setShowManagePublishComponent] = React.useState<boolean>(false);
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
@@ -93,7 +96,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if (apiCallStatus !== null) {
       if(apiCallStatus.success) {
         switch (apiCallStatus.context.action) {
-          case E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT:
+          case E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT:
           case E_CALL_STATE_ACTIONS.API_DELETE_API_PRODUCT:
             props.onSuccess(apiCallStatus);
             break;
@@ -134,6 +137,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(moEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
+  const onPublishManagedObjectFromToolbar = () => {
+    const funcName = 'onPublishManagedObjectFromToolbar';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
+    setApiCallStatus(null);
+    setManagedObjectEntityId(managedObjectEntityId);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_PUBLISH);
+  }
   // * Delete Object *
   const onDeleteManagedObjectFromToolbar = () => {
     const funcName = 'onDeleteManagedObjectFromToolbar';
@@ -163,13 +174,19 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          <div className="p-ml-2 p-mr-2"></div>
           <Button 
             label={ToolbarEditManagedObjectButtonLabel} 
             icon="pi pi-pencil" 
             onClick={onEditManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
             disabled={!managedObject_AllowedActions.isEditAllowed}
+          />   
+          <Button 
+            label={ToolbarPublishManagedObjectButtonLabel} 
+            icon="pi pi-cloud-upload" 
+            onClick={onPublishManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+            disabled={!managedObject_AllowedActions.isManagePublishAllowed}
           />   
         </React.Fragment>
       );
@@ -241,6 +258,10 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
+  const onSavePublishDestinationManagedObjectSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+  }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
@@ -260,6 +281,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowManagePublishComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -267,6 +289,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowManagePublishComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -275,6 +298,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowManagePublishComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -282,6 +306,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowManagePublishComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -290,12 +315,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowManagePublishComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
       setShowDeleteComponent(false);
+      setShowManagePublishComponent(false);
       setShowNewComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
@@ -304,6 +331,15 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+      setShowManagePublishComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_PUBLISH) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowManagePublishComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -386,6 +422,18 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           apiProductEntityId={managedObjectEntityId}
           onNavigateToCommand={onSetManageObjectComponentState_To_View}
           onUserNotification={onSubComponentUserNotification}
+        />
+      }
+      {showManagePublishComponent && managedObjectEntityId &&
+        <ManagePublishApiProduct
+          organizationId={props.organizationEntityId.id}
+          apiProductEntityId={managedObjectEntityId}
+          onError={onSubComponentError}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onSaveSuccess={onSavePublishDestinationManagedObjectSuccess}
+          onNavigateToCommand={onSetManageObjectComponentState_To_View}
         />
       }
     </div>

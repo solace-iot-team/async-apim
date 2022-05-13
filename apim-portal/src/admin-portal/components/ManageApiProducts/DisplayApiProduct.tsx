@@ -20,7 +20,7 @@ import APEntityIdsService, {
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
@@ -31,6 +31,7 @@ import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplay
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
+import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -292,9 +293,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return (<></>);
   }
 
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     return(
-      <span><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</span>
+      <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
     );
   }
 
@@ -322,7 +323,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
-            <div>{renderState(mo.apLifecycleInfo)}</div>
+            <div>{renderState(mo.apLifecycleStageInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
             <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
 

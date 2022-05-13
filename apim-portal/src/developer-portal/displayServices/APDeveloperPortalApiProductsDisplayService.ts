@@ -2,6 +2,7 @@ import {
   APIProduct,
   APIProductAccessLevel,
   ApiProductsService,
+  MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { 
   APApiProductsDisplayService, 
@@ -10,7 +11,7 @@ import {
 } from '../../displayServices/APApiProductsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
-import { EAPLifecycleState } from '../../displayServices/APLifecycleDisplayService';
+import APLifecycleStageInfoDisplayService from '../../displayServices/APLifecycleStageInfoDisplayService';
 import { E_ManagedAssetDisplay_BusinessGroupSharing_AccessType, TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
@@ -73,7 +74,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     userBusinessGroupId?: string;
     apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
   }): boolean {
-    if(apDeveloperPortalApiProductDisplay.apLifecycleInfo.apLifecycleState !== EAPLifecycleState.RELEASED) return false;
+    if(apDeveloperPortalApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) return false;
     if(userId === undefined) return false;
     // user is logged in
     if(apDeveloperPortalApiProductDisplay.apAccessLevel === APIProductAccessLevel.PUBLIC) return true;
@@ -147,7 +148,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
    * - in the business group
    * - any  public or internal API product
    * - api products shared with this business group (regardless of visibility)
-   * - lifecycle not = draft
+   * - lifecycle stage === released
    * - optionally: filtered by isAllowed_To_CreateApp
    * - optionally: exclude list of api product ids
    */
@@ -191,31 +192,33 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
 
     const apDeveloperPortalApiProductDisplayList: TAPDeveloperPortalApiProductDisplayList = [];
     for(const connectorApiProduct of connectorApiProductList) {
-      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
-      const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
-        organizationId: organizationId,
-        connectorApiProduct: connectorApiProduct,
-        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-        default_ownerId: userId,
-        currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
-      });      
-
-      // if this is a recovered API product, don't add to list
-      if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apDeveloperPortalApiProductDisplay })) {
-        // check if lifecycle status != draft
-        if(apDeveloperPortalApiProductDisplay.apLifecycleInfo.apLifecycleState !== EAPLifecycleState.DRAFT) {
-          if(filterByIsAllowed_To_CreateApp && this.isAllowed_To_CreateApp({
-            apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
-            userBusinessGroupId: businessGroupId,
-            userId: userId
-          })) {
-            apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
-          } else {
-            apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+      if(APLifecycleStageInfoDisplayService.isLifecycleStage_Released({ connectorMeta: connectorApiProduct.meta })) {
+        const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
+        const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
+          organizationId: organizationId,
+          connectorApiProduct: connectorApiProduct,
+          completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+          default_ownerId: userId,
+          currentVersion: apVersionInfo.apCurrentVersion,
+          complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+        });      
+  
+        // if this is a recovered API product, don't add to list
+        if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apDeveloperPortalApiProductDisplay })) {
+          // check if lifecycle status != draft
+          if(apDeveloperPortalApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DRAFT) {
+            if(filterByIsAllowed_To_CreateApp && this.isAllowed_To_CreateApp({
+              apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
+              userBusinessGroupId: businessGroupId,
+              userId: userId
+            })) {
+              apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+            } else {
+              apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+            }
           }
-        }
-      } 
+        }   
+      }
     }
     return apDeveloperPortalApiProductDisplayList;
   }

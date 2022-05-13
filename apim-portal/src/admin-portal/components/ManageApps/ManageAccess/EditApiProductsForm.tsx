@@ -122,7 +122,7 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
     return (<div>{row.apEntityId.displayName}</div>);
   }
   const versionBodyTemplate = (row: TManagedObjectElement): JSX.Element => {
-    return (<div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleInfo.apLifecycleState})`}</div>);
+    return (<div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleStageInfo.stage})`}</div>);
   }
   const ownerBodyTemplate = (row: TManagedObjectElement): JSX.Element => {
     return (<div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);

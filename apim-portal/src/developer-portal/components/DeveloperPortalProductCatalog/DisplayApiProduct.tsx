@@ -15,13 +15,14 @@ import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayC
 import APEntityIdsService, { 
 } from "../../../utils/APEntityIdsService";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
+import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -221,9 +222,9 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
   const renderRevision = (mo: TManagedObject): JSX.Element => {
     return (<div><b>Revision: </b>{renderRevisionSelect()}</div>);
   }
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     return(
-      <span><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</span>
+      <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
     );
   }
   const renderAccess = (mo: TManagedObject): JSX.Element => {
@@ -257,7 +258,7 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
           <div className="api-product-view-detail-left">
 
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
-            <div>{renderState(mo.apLifecycleInfo)}</div>
+            <div>{renderState(mo.apLifecycleStageInfo)}</div>
             <div>{renderAccess(mo)}</div>
 
             {/* DEBUG */}

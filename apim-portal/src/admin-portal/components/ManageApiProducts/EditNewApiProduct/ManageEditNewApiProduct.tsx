@@ -22,7 +22,6 @@ import {
 import { 
   TAPManagedAssetBusinessGroupInfo, 
   TAPManagedAssetDisplay_Attributes, 
-  TAPManagedAssetLifecycleInfo, 
   TAPManagedAssetPublishDestinationInfo 
 } from "../../../../displayServices/APManagedAssetDisplayService";
 import { EditNewGeneral } from "./EditNewGeneral";
@@ -39,6 +38,7 @@ import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-b
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
+import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -274,12 +274,12 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
           command: ManagedEditApiProduct_onNavigateToCommand
         },
         {
-          label: 'Create New Revision'
+          label: 'Edit'
         }  
       ]);  
     } else {
       props.setBreadCrumbItemList([{
-        label: 'Create New API Product'
+        label: 'New API Product'
       }]);  
     }
   }
@@ -490,10 +490,11 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
   }
 
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
-    if(props.action === EAction.NEW) return (<></>);
-    return(<div><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</div>);
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
+    // if(props.action === EAction.NEW) return (<></>);
+    return(<div><b>State: </b>{apLifecycleStageInfo.stage}</div>);
   }
+
   const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
     if(props.action === EAction.NEW) return (<></>);
     return(<div><b>Access: </b>{accessLevel}</div>);
@@ -519,7 +520,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         <div className="p-mt-4">
           {renderBusinessGroupInfo(original_ManagedObject.apBusinessGroupInfo)}
           {renderRevisionInfo(original_ManagedObject.apVersionInfo)}
-          {renderState(original_ManagedObject.apLifecycleInfo)}
+          {renderState(original_ManagedObject.apLifecycleStageInfo)}
           {renderAccessLevel(original_ManagedObject.apAccessLevel)}
           {renderPublishDestinationInfo(original_ManagedObject.apPublishDestinationInfo)}
         </div>
@@ -644,7 +645,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
   
     if(props.action === EAction.NEW) return 'Create New API Product';
-    else return `Create New Revision of: ${original_ManagedObject.apEntityId.displayName}`
+    else return `Edit: ${original_ManagedObject.apEntityId.displayName}`
   }
 
   return (

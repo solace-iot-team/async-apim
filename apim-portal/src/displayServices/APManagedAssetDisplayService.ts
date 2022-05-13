@@ -15,7 +15,6 @@ import APBusinessGroupsDisplayService, {
   TAPBusinessGroupDisplay_ExternalReference
 } from './APBusinessGroupsDisplayService';
 import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
-import APLifecycleDisplayService, { EAPLifecycleState } from './APLifecycleDisplayService';
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
 const CAPManagedAssetAttribute_Prefix = "AP";
@@ -23,7 +22,6 @@ enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
   BUSINESS_GROUP = "BUSINESS_GROUP",
   CLASSIFICATION = "CLASSIFICATION",
-  LIFECYLE = "LIFECYLE",
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
 }
@@ -44,9 +42,6 @@ enum EAPManagedAssetAttribute_Classification_Tag {
   C3 = "C3",
   C4 = "C4"
 }
-enum EAPManagedAssetAttribute_Lifecycle_Tag {
-  STATE = "STATE",
-}
 enum EAPManagedAssetAttribute_Publish_Tag {
   DESTINATION = "DESTINATION",
 }
@@ -54,7 +49,6 @@ type TManagedAssetAttribute_Tag =
 EAPManagedAssetAttribute_BusinessGroup_Tag
 | EAPManagedAssetAttribute_Owner_Tag
 | EAPManagedAssetAttribute_Classification_Tag
-| EAPManagedAssetAttribute_Lifecycle_Tag
 | EAPManagedAssetAttribute_Publish_Tag;
 
 export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
@@ -77,9 +71,6 @@ export type TAPManagedAssetBusinessGroupInfo = {
 }
 export type TAPManagedAssetOwnerInfo = TAPEntityId;
 
-export type TAPManagedAssetLifecycleInfo = {
-  apLifecycleState: EAPLifecycleState;
-}
 export type TAPManagedAssetPublishDestinationInfo = {
   apExternalSystemEntityIdList: TAPEntityIdList;
 }
@@ -89,7 +80,6 @@ export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
   apOwnerInfo: TAPManagedAssetOwnerInfo;
-  apLifecycleInfo: TAPManagedAssetLifecycleInfo;
   apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo;
   // classification
   // ...
@@ -117,9 +107,6 @@ export abstract class APManagedAssetDisplayService {
   }
   public nameOf_ApEntityId(name: keyof TAPEntityId) {
     return `${this.nameOf('apEntityId')}.${name}`;
-  }
-  public nameOf_ApLifecycleInfo(name: keyof TAPManagedAssetLifecycleInfo) {
-    return `${this.nameOf('apLifecycleInfo')}.${name}`;
   }
   private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
     return `${this.nameOf('apBusinessGroupInfo')}.${name}`;
@@ -185,9 +172,6 @@ export abstract class APManagedAssetDisplayService {
         apBusinessGroupSharingList: [],
       },
       apOwnerInfo: APEntityIdsService.create_EmptyObject_NoId(),
-      apLifecycleInfo: {
-        apLifecycleState: APLifecycleDisplayService.get_Default_LifecycleState()
-      },
       apPublishDestinationInfo: {
         apExternalSystemEntityIdList: []
       }
@@ -384,24 +368,6 @@ export abstract class APManagedAssetDisplayService {
     return apManagedAssetOwnerInfo;
   }
 
-  private create_ApManagedAsset_LifecycleInfo({ apAttributeDisplayList }:{
-    apAttributeDisplayList: TAPAttributeDisplayList;
-  }): TAPManagedAssetLifecycleInfo {
-    const apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo = {
-      apLifecycleState: APLifecycleDisplayService.get_Default_LifecycleState()
-    };
-    const lifecycleList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-      prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.LIFECYLE, tag: EAPManagedAssetAttribute_Lifecycle_Tag.STATE }),
-      apAttributeDisplayList: apAttributeDisplayList
-    });
-    if(lifecycleList.length > 0) {
-      const state: string = lifecycleList[0].value;
-      if(APLifecycleDisplayService.isValid(state)) apManagedAssetLifecycleInfo.apLifecycleState = state as EAPLifecycleState;
-      // otherwise keep the default state
-    }
-    return apManagedAssetLifecycleInfo;
-  }
-
   private create_ApManagedAsset_PublishDestinationInfo({ apAttributeDisplayList, complete_ApExternalSystemDisplayList }:{
     apAttributeDisplayList: TAPAttributeDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
@@ -463,10 +429,6 @@ export abstract class APManagedAssetDisplayService {
       apAttributeDisplayList: working_ApAttributeDisplayList,
       default_ownerId: default_ownerId
     });
-    // create the lifecycle info
-    const apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo = this.create_ApManagedAsset_LifecycleInfo({ 
-      apAttributeDisplayList: working_ApAttributeDisplayList,
-    });
     // create publishDestinationInfo
     const apManagedAssetPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo = this.create_ApManagedAsset_PublishDestinationInfo({ 
       apAttributeDisplayList: working_ApAttributeDisplayList,
@@ -482,7 +444,6 @@ export abstract class APManagedAssetDisplayService {
       apCustom_ApAttributeDisplayList: _apCustom_AttributeDisplayList,
       apBusinessGroupInfo: apBusinessGroupInfo,
       apOwnerInfo: apManagedAssetOwnerInfo,
-      apLifecycleInfo: apManagedAssetLifecycleInfo,
       apPublishDestinationInfo: apManagedAssetPublishDestinationInfo,
     };
     return result;
@@ -536,22 +497,6 @@ export abstract class APManagedAssetDisplayService {
     apOwnerInfo: TAPManagedAssetOwnerInfo;
   }): IAPManagedAssetDisplay {
     apManagedAssetDisplay.apOwnerInfo = JSON.parse(JSON.stringify(apOwnerInfo));
-    return apManagedAssetDisplay;
-  }
-
-  public get_ApLifecycleInfo({ apManagedAssetDisplay }:{
-    apManagedAssetDisplay: IAPManagedAssetDisplay;
-  }): TAPManagedAssetLifecycleInfo {
-    return apManagedAssetDisplay.apLifecycleInfo;
-  }
-  /**
-   * Makes a copy of apManagedAssetLifecycleInfo and sets it in apManagedAssetDisplay.
-   */
-  public set_ApLifecycleInfo({ apManagedAssetDisplay, apManagedAssetLifecycleInfo }: {
-    apManagedAssetDisplay: IAPManagedAssetDisplay;
-    apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo;
-  }): IAPManagedAssetDisplay {
-    apManagedAssetDisplay.apLifecycleInfo = JSON.parse(JSON.stringify(apManagedAssetLifecycleInfo));
     return apManagedAssetDisplay;
   }
 
@@ -686,11 +631,6 @@ export abstract class APManagedAssetDisplayService {
         value: apManagedAssetDisplay.apOwnerInfo.id
     }));
 
-    // lifecycle info
-    _complete_ApAttributeList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
-      name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.LIFECYLE, tag: EAPManagedAssetAttribute_Lifecycle_Tag.STATE }), 
-      value: apManagedAssetDisplay.apLifecycleInfo.apLifecycleState
-    }));
     // publishDestination info
     const publishDestinationInfoStr: string | undefined = this.create_PublishDestinationInfoString(apManagedAssetDisplay.apPublishDestinationInfo);
     if(publishDestinationInfoStr !== undefined) {
