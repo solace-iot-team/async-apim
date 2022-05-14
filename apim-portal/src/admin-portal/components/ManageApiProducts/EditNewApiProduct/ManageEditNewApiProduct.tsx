@@ -36,8 +36,6 @@ import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 import { EditNewAccessAndState } from "./EditNewAccessAndState";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
-import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
-import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../../components/APComponents.css';

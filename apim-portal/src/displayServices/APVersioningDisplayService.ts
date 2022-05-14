@@ -68,6 +68,14 @@ class APVersioningDisplayService {
     return '1.0.0';
   }
 
+  public create_NextMajorVersion(version: string): string {
+    const versionSemVer = new SemVer(version);
+    versionSemVer.inc("major");
+    versionSemVer.minor = 0;
+    versionSemVer.patch = 1;
+    return versionSemVer.format();
+  }
+
   public create_NextVersion(version: string): string {
     const versionSemVer = new SemVer(version);
     versionSemVer.inc("patch");

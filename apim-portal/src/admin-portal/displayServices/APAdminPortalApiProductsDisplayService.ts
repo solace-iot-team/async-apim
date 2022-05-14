@@ -15,9 +15,17 @@ import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../d
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
-import APEntityIdsService, { TAPEntityIdList } from '../../utils/APEntityIdsService';
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths } from '../../utils/Globals';
+
+export type TAPAdminPortalApiProductDisplay_CloningInfo = {
+  apOriginalEntityId: TAPEntityId;
+  apOriginalVersionString: string;
+  apCloneEntityId: TAPEntityId;
+  apCloneDescription: string;
+  apCloneVersionString: string;
+}
 
 export type TAPAdminPortalApiProductDisplay_AllowedActions = {
   isDeleteAllowed: boolean;
@@ -32,6 +40,22 @@ export type TAPAdminPortalApiProductDisplayList = Array<TAPAdminPortalApiProduct
 
 class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
+
+  public get_CloningInfo({ apAdminPortalApiProductDisplay }:{
+    apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  }): TAPAdminPortalApiProductDisplay_CloningInfo {
+    const cloningInfo: TAPAdminPortalApiProductDisplay_CloningInfo = {
+      apOriginalEntityId: apAdminPortalApiProductDisplay.apEntityId,
+      apOriginalVersionString: apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion,
+      apCloneEntityId: {
+        ...APEntityIdsService.create_EmptyObject(),
+        displayName: `Clone of ${apAdminPortalApiProductDisplay.apEntityId.displayName}`
+      },
+      apCloneDescription: `Clone of ${apAdminPortalApiProductDisplay.apDescription}`,
+      apCloneVersionString: APVersioningDisplayService.create_NextMajorVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion),
+    };
+    return cloningInfo;
+  }
 
   public get_Empty_AllowedActions(): TAPAdminPortalApiProductDisplay_AllowedActions {
     return {
