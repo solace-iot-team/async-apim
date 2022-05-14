@@ -20,10 +20,11 @@ import { DeleteApiProduct } from "./DeleteApiProduct";
 import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
+import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -256,7 +257,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setRefreshCounter(refreshCounter + 1);
   }
   const onSavePublishDestinationManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -366,16 +367,6 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
       }
-      {/* {showListRecoverComponent && 
-        <ManageRecoverApiProducts
-          key={`${ComponentName}_ListRecoverableApiProducts_${refreshCounter}`}
-          organizationEntityId={props.organizationEntityId}
-          onSuccess={onMangeRecoverManagedObjectsSuccess} 
-          onError={onSubComponentError} 
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onNavigateToCommand={onSetManageObjectComponentState_From_List}
-        />
-      } */}
       {showViewComponent && managedObjectEntityId &&
         <ViewApiProduct
           key={`${ComponentName}_showViewComponent_${refreshCounter}`}
@@ -411,17 +402,15 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         />
       }
       {showEditComponent && managedObjectEntityId &&
-        <ManageEditNewApiProduct
-          action={EAction.EDIT}
+        <ManageEditApiProduct
           organizationId={props.organizationEntityId.id}
+          apiProductEntityId={managedObjectEntityId}
           onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onEditNewSuccess={onEditSaveManagedObjectSuccess}
-          apiProductEntityId={managedObjectEntityId}
-          onNavigateToCommand={onSetManageObjectComponentState_To_View}
-          onUserNotification={onSubComponentUserNotification}
+          onSaveSuccess={onEditSaveManagedObjectSuccess}
+          onNavigateToCommand={onSetManageObjectComponentState_To_View}    
         />
       }
       {showManagePublishComponent && managedObjectEntityId &&

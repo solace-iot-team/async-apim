@@ -24,7 +24,6 @@ import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { EditNewBusinessGroupSharingListForm } from "./EditNewBusinessGroupSharingListForm";
 import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../displayServices/APManagedAssetDisplayService";
 import APBusinessGroupsDisplayService from "../../../../displayServices/APBusinessGroupsDisplayService";
-import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import APLifecycleStageInfoDisplayService, { TAPLifecycleStageList } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../../components/APComponents.css';
@@ -34,7 +33,6 @@ export interface IEditNewAccessAndStateFormProps {
   action: EAction;
   formId: string;
   apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
-  apAvailablePublishDestinationExternalSystemEntityIdList: TAPEntityIdList;
   onSubmit: (apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
