@@ -17,6 +17,7 @@ import "../ManageApiProducts.css";
 export interface IEditApisProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  isSingleApiSelection: boolean;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -111,6 +112,7 @@ export const EditApis: React.FC<IEditApisProps> = (props: IEditApisProps) => {
           <EditNewApisForm
             formId={FormId}
             organizationId={props.organizationId}
+            isSingleApiSelection={props.isSingleApiSelection}
             action={EAction.EDIT}
             apApiProductDisplay_Apis={mo}
             onError={props.onError}

@@ -21,10 +21,11 @@ import { EditApis } from "./EditApis";
 import { EditPolicies } from "./EditPolicies";
 import { EditEnvironments } from "./EditEnvironments";
 import { EditAttributes } from "./EditAttributes";
+import { EditAccessAndState } from "./EditAccessAndState";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditAccessAndState } from "./EditAccessAndState";
 
 export interface IManageEditApiProductProps {
   organizationId: string;
@@ -46,6 +47,10 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [userContext] = React.useContext(UserContext);
+
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
 
   // * Api Calls *
 
@@ -179,11 +184,12 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       </TabPanel>  
     );
     tabPanels.push(
-      <TabPanel header='API(s)'>
+      <TabPanel header={ApiTabHeader}>
         <React.Fragment>
           <EditApis
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
+            isSingleApiSelection={IsSingleApiSelection}
             onError={onError_SubComponent}
             onCancel={props.onCancel}
             onLoadingChange={props.onLoadingChange}

@@ -252,6 +252,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setBreadCrumbItemList(itemList);
   }
   const onSetManageObjectComponentState_To_View = (apiProductEntityId: TAPEntityId) => {
+    setApiCallStatus(null);
     setManagedObjectEntityId(apiProductEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);

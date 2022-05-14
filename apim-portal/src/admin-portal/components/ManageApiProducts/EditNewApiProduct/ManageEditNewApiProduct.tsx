@@ -37,6 +37,7 @@ import { EditNewAccessAndState } from "./EditNewAccessAndState";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -155,6 +156,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
 
   // * Api Calls * 
 
@@ -517,11 +521,12 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='APIs' disabled={!showApis}>
+          <TabPanel header={ApiTabHeader} disabled={!showApis}>
             <React.Fragment>
               <EditNewApis
                 action={props.action}
                 organizationId={props.organizationId}
+                isSingleApiSelection={IsSingleApiSelection}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}

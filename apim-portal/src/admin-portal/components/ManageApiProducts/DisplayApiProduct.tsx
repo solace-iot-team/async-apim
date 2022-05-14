@@ -35,6 +35,7 @@ import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStage
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -63,6 +64,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   // version
   const [selectedRevision, setSelectedRevision] = React.useState<string>();
+
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
 
   // * Api Calls *
   const apiGetManagedObject = async(revision: string): Promise<TApiCallState> => {
@@ -407,7 +412,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
             </div>  
           </React.Fragment>
           </TabPanel>
-          <TabPanel header='APIs'>
+          <TabPanel header={ApiTabHeader}>
             <React.Fragment>
               <div>
                 {renderShowApiButtons()}

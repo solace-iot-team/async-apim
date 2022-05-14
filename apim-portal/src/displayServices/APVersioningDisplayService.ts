@@ -64,6 +64,14 @@ class APVersioningDisplayService {
     });
   }
 
+  // public get_Sorted_ApMinorList(list: TAPVersionList): Array<number> {
+  //   const minorList: Array<number> = list.map( (versionStr: string) => {
+  //     const semVer = new SemVer(versionStr);
+  //     return semVer.minor;
+  //   });
+  //   return minorList.sort();
+  // }
+
   public create_NewVersion(): string {
     return '1.0.0';
   }
@@ -78,7 +86,7 @@ class APVersioningDisplayService {
 
   public create_NextVersion(version: string): string {
     const versionSemVer = new SemVer(version);
-    versionSemVer.inc("patch");
+    versionSemVer.inc("minor");
     return versionSemVer.format();
   }
   
