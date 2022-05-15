@@ -2,6 +2,25 @@
 
 Solace Async API Management.
 
+## Version 0.2.2
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.2
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.2.1
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.12
+
+**Enhancements:**
+* **AdminPortal:API Products**
+  - renamed version to revision to more accurately reflect semantics
+  - new attribute: _AP_PUBLISH_DESTINATION_="{comma separated list of externalSystemIds}"
+    - attribute is not present if api product is not published
+  - separate component to publish / unpublish api product to marketplaces
+    - marketplaces are registered external systems which are enabled to be a marketplace
+    - only released api products can be published
+    - if api product state is changed from released, then it is automatically unpublished from all marketplaces
+  - reworked edit api product component: user can now select each tab individually and update api product in tab
+* **External Systems**
+  - added flag to indicate if the external system is a marketplace or not
+
 ## Version 0.2.1
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.1
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.0
