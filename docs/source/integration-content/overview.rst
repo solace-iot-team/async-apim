@@ -24,17 +24,20 @@ A suggested approach for integration of assets is to subscribe to asset create/u
 Filtering:
 ----------
 
-A suggested filtering approach:
+* External system connectors should only import / publish assets that are in `released` stage AND its publish destination contains the correct external system id.
+* If a previously imported asset changes stage to `deprecated` or `retired`, external system connectors should remove the asset.
 
-* discard event if access level !== `public`
-* discard event if attribute `_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_` !== <configured external system>
-* discard event if attribute: `_AP_LIFECYLE_STATE_` === `draft`
+**Adding an Asset to external systems:**
+
+* check if attribute `_AP_PUBLISH_DESTINATION_` is present and contains <configured external system id>
+
+  - add the asset if lifecycle stage === `released`
 
 
-Extracting Lifecycle Status:
-----------------------------
+**Removing an Asset from external systems:**
 
-* extract value from attribute: `_AP_LIFECYLE_STATE_` (`released` or `deprecated`)
+* remove the asset if attribute `_AP_PUBLISH_DESTINATION_` is absent or does not contain <configured external system id>, regardless of stage.
+
 
 Extracting Business Group information:
 --------------------------------------
