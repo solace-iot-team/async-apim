@@ -112,6 +112,15 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
+  const onChangedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
+    setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
+      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+    }));
+    setRefreshCounter(refreshCounter + 1);
+  }
   const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
@@ -150,8 +159,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(managedObjectEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_PUBLISH);
   }
-  const onClonehManagedObjectFromToolbar = () => {
-    const funcName = 'onClonehManagedObjectFromToolbar';
+  const onCloneManagedObjectFromToolbar = () => {
+    const funcName = 'onCloneManagedObjectFromToolbar';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
     setApiCallStatus(null);
@@ -190,7 +199,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           <Button 
             label={ToolbarCloneManagedObjectButtonLabel} 
             icon="pi pi-plus" 
-            onClick={onClonehManagedObjectFromToolbar} 
+            onClick={onCloneManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
           />   
           <Button 
@@ -454,6 +463,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onSaveSuccess={onEditSaveManagedObjectSuccess}
           onNavigateToCommand={onSetManageObjectComponentState_To_View}    
+          onChanged={onChangedManagedObject}
         />
       }
       {showManagePublishComponent && managedObjectEntityId &&

@@ -13,7 +13,6 @@ import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpe
 import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -36,7 +35,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     id: string;
     displayName: string;
     description: string;
-    revision: string;
+    // user cannot edit revision
+    // revision: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -51,7 +51,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
       description: mo.apDescription,
-      revision: mo.apVersionInfo.apCurrentVersion,
+      // revision: mo.apVersionInfo.apCurrentVersion,
     };
     return {
       formData: fd
@@ -66,7 +66,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
     mo.apDescription = fd.description;
-    mo.apVersionInfo.apCurrentVersion = fd.revision;
+    // mo.apVersionInfo.apCurrentVersion = fd.revision;
     return mo;
   }
   
@@ -129,17 +129,17 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     // placeholder
   }
 
-  const validate_SemVer = (newVersion: string): string | boolean => {
-    const funcName = 'validate_SemVer';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    if(isNewManagedObject()) return true;
-    if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
-      lastVersion: managedObject.apVersionInfo.apLastVersion, 
-      newVersion: newVersion
-    })) return true;
-    return `New version must be greater than current version: ${managedObject.apVersionInfo.apLastVersion}.`
-  }
+  // const validate_SemVer = (newVersion: string): string | boolean => {
+  //   const funcName = 'validate_SemVer';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+  //   if(isNewManagedObject()) return true;
+  //   if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
+  //     lastVersion: managedObject.apVersionInfo.apLastVersion, 
+  //     newVersion: newVersion
+  //   })) return true;
+  //   return `New version must be greater than current version: ${managedObject.apVersionInfo.apLastVersion}.`
+  // }
 
   const validate_Id = async(id: string): Promise<string | boolean> => {
     if(props.action !== EAction.NEW) return true;
@@ -183,7 +183,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.id)}
             </div>
             {/* revision */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
@@ -205,7 +205,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.revision })}>New Revision*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.revision)}
-            </div>
+            </div> */}
             {/* Display Name */}
             <div className="p-field">
               <span className="p-float-label">

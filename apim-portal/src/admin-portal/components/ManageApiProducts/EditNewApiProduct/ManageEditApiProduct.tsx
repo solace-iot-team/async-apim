@@ -35,6 +35,7 @@ export interface IManageEditApiProductProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
+  onChanged: (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => void;
   onNavigateToCommand: (apiProductEntityId: TAPEntityId) => void;
 }
 
@@ -105,6 +106,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
+    props.onChanged(managedObject);
     setBreadCrumbItemList();
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

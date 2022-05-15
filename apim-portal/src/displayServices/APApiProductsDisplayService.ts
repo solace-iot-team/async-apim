@@ -6,6 +6,7 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
+  MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
@@ -766,10 +767,22 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   
   }
 
+  protected apiUpdate_ApplyRules({apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): IAPApiProductDisplay {
+    // only allow state=released to be published on marketplaces
+    if(apApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
+      apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
+    }
+    return apApiProductDisplay;
+  }
+
   public async apiUpdate_ApApiProductDisplay({ organizationId, apApiProductDisplay }:{
     organizationId: string;
     apApiProductDisplay: IAPApiProductDisplay;
   }): Promise<void> { 
+
+    apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
 
     const update: APIProductPatch = {
       displayName: apApiProductDisplay.apEntityId.displayName,

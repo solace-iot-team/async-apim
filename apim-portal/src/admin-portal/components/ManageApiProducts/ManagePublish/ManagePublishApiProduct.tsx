@@ -19,7 +19,7 @@ import {
   TAPManagedAssetBusinessGroupInfo, 
 } from "../../../../displayServices/APManagedAssetDisplayService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import APVersioningDisplayService, { IAPVersionInfo } from "../../../../displayServices/APVersioningDisplayService";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
@@ -217,9 +217,9 @@ export const ManagePublishApiProduct: React.FC<IManagePublishApiProductProps> = 
       />
     );
   }
-  const renderRevisionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
-    return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
-  }
+  // const renderRevisionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
+  //   return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
+  // }
   const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     // if(props.action === EAction.NEW) return (<></>);
     return(<div><b>State: </b>{apLifecycleStageInfo.stage}</div>);

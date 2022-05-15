@@ -189,7 +189,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     apApiProductDisplay: IAPApiProductDisplay;
   }): boolean {
     if(apApiProductDisplay.apLifecycleStageInfo.stage === MetaEntityStage.RELEASED) return true;
-    if(apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList.length > 0) return true;
+    // if(apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList.length > 0) return true;
     return false;
   }
   // ********************************************************************************************************************************
