@@ -6,7 +6,7 @@ Solace Async API Management.
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.2
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.1
   * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.2.1
-  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.12
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.13
 
 **Enhancements:**
 * **AdminPortal:API Products**
