@@ -31,7 +31,6 @@ export class ExpressServer {
     app.set("etag", "strong");
     app.use(cors({ 
       origin: true,
-      // methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS']
     }));
     // app.use(nocache());
     app.use(bodyParser.json({ limit: this.config.requestSizeLimit }));

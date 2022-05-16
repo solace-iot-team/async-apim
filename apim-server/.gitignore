@@ -4,3 +4,4 @@ server/@types
 .devel-stash
 public/*about.json
 portal
+_todo*

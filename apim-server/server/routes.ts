@@ -25,6 +25,7 @@ export default function routes(app: Application, apiBase: string): void {
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
     app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
     app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
+    // app.get(`${apiBase}/apsSession/refreshToken`, passport.session, ApsSessionController.refreshToken);
   }
 
   // available even if server not operational
