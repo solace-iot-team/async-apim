@@ -1,4 +1,5 @@
-import { AdministrationService, Organization, OrganizationResponse } from "@solace-iot-team/apim-connector-openapi-browser";
+import { AdministrationService, ApiError, Organization, OrganizationResponse } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import APSearchContentService, { IAPSearchContent } from "../../utils/APSearchContentService";
 import { 
   ApsAdministrationService, 
@@ -229,9 +230,16 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       organizationId: organizationId
     });
 
-    await AdministrationService.deleteOrganization({
-      organizationName: organizationId
-    });
+    try {
+      await AdministrationService.deleteOrganization({
+        organizationName: organizationId
+      });
+    } catch (e: any) {
+      if (APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if (apiError.status !== 404) throw e;
+      } else throw e;
+    }
 
     await ApsAdministrationService.deleteApsOrganization({
       organizationId: organizationId
