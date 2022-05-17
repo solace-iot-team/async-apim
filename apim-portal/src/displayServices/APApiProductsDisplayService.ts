@@ -6,7 +6,6 @@ import {
   ApiProductsService,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
-  MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
@@ -71,6 +70,7 @@ export type TAPApiProductDisplay_Apis = IAPEntityIdDisplay & {
 export type TAPApiProductDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
   apLifecycleStageInfo: IAPLifecycleStageInfo;
   apAccessLevel: APIProductAccessLevel;
+  apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo;
 }
 
 export type TAPApiProductDisplay_PublishDestinationInfo = IAPEntityIdDisplay & {
@@ -554,6 +554,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apEntityId: apApiProductDisplay.apEntityId,
       apAccessLevel: apApiProductDisplay.apAccessLevel,
       apLifecycleStageInfo: apApiProductDisplay.apLifecycleStageInfo,
+      apPublishDestinationInfo: apApiProductDisplay.apPublishDestinationInfo,
     };
     return apApiProductDisplay_AccessAndState;
   }
@@ -570,6 +571,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiProductDisplay, apManagedAssetDisplay_AccessAndState: apApiProductDisplay_AccessAndState });
     apApiProductDisplay.apAccessLevel = apApiProductDisplay_AccessAndState.apAccessLevel;
     apApiProductDisplay.apLifecycleStageInfo = apApiProductDisplay_AccessAndState.apLifecycleStageInfo;
+    apApiProductDisplay.apPublishDestinationInfo = apApiProductDisplay_AccessAndState.apPublishDestinationInfo;
     return apApiProductDisplay;
   }
 
@@ -770,17 +772,21 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   protected apiUpdate_ApplyRules({apApiProductDisplay }:{
     apApiProductDisplay: IAPApiProductDisplay;
   }): IAPApiProductDisplay {
-    // only allow state=released to be published on marketplaces
-    if(apApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
-      apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
-    }
+    // // only allow state=released to be published on marketplaces
+    // if(apApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
+    //   apApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
+    // }
     return apApiProductDisplay;
   }
 
-  public async apiUpdate_ApApiProductDisplay({ organizationId, apApiProductDisplay }:{
+  public async apiUpdate_ApApiProductDisplay({ organizationId, apApiProductDisplay, userId }:{
     organizationId: string;
     apApiProductDisplay: IAPApiProductDisplay;
+    userId: string;
   }): Promise<void> { 
+    // const funcName = 'apiUpdate_ApApiProductDisplay';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
 
     apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
 
@@ -797,6 +803,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       meta: {
         version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
         stage: apApiProductDisplay.apLifecycleStageInfo.stage,
+        lastModifiedBy: userId,
       },
       accessLevel: apApiProductDisplay.apAccessLevel
     };
@@ -814,12 +821,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   }
 
-  public async apiCreate_ApApiProductDisplay({ organizationId, apApiProductDisplay }: {
+  public async apiCreate_ApApiProductDisplay({ organizationId, apApiProductDisplay, userId }: {
     organizationId: string;
     apApiProductDisplay: IAPApiProductDisplay;
+    userId: string;
   }): Promise<void> {
     // const funcName = 'apiCreate_ApApiProductDisplay';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+    // alert(`${logName}: dont include version`);
 
     const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
       organizationId: organizationId,
@@ -850,6 +860,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       meta: {
         version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
         stage: apApiProductDisplay.apLifecycleStageInfo.stage,
+        createdBy: userId
       }
     }
 

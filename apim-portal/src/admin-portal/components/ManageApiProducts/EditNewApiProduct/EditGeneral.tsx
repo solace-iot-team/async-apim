@@ -10,6 +10,7 @@ import { EditNewGeneralForm } from "./EditNewGeneralForm";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPApiProductDisplay_General } from "../../../../displayServices/APApiProductsDisplayService";
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -32,7 +33,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -46,7 +47,8 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
         apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApiProductDisplay_General({
           apApiProductDisplay: props.apAdminPortalApiProductDisplay,
           apApiProductDisplay_General: mo
-        })
+        }),
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
       });  
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -63,6 +65,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // alert(`${ComponentName}.React.useEffect([]): ${JSON.stringify(props.apAdminPortalApiProductDisplay.apVersionInfo, null, 2)}`)
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

@@ -97,6 +97,15 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  // * initialized object *
+  const onInitializedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
+    setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
+      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+    }));
+  }
   //  * View Object *
   const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
@@ -272,6 +281,7 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
           key={`${ComponentName}_showViewComponent_${refreshCounter}`}
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
+          onInitialized={onInitializedManagedObject}
           onSuccess={onSubComponentUserNotification} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}

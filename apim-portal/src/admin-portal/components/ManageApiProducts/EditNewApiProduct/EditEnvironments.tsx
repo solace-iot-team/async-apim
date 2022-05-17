@@ -10,6 +10,7 @@ import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay
 import { TAPApiProductDisplay_Environments } from "../../../../displayServices/APApiProductsDisplayService";
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { EditNewEnvironmentsForm } from "./EditNewEnvironmentsForm";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -32,7 +33,7 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -46,7 +47,8 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
         apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_Environments({
           apApiProductDisplay: props.apAdminPortalApiProductDisplay,
           apApiProductDisplay_Environments: mo
-        })
+        }),
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
       });  
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

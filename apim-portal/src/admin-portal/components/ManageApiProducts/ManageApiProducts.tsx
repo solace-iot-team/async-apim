@@ -61,9 +61,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   
   const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
-  const ToolbarPublishManagedObjectButtonLabel = 'Publish Destination(s)';
-  const ToolbarCloneManagedObjectButtonLabel = 'Create New Version';
-  const ToolbarDeleteManagedObjectButtonLabel = 'Delete API Product';
+  // const ToolbarPublishManagedObjectButtonLabel = 'Publish Destination(s)';
+  const ToolbarCloneManagedObjectButtonLabel = 'Clone';
+  const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
   const [userContext] = React.useContext(UserContext);
   const [authContext] = React.useContext(AuthContext);
@@ -111,7 +111,16 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  //  * View Object *
+  // * initialized object *
+  const onInitializedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
+    setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
+      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+    }));
+  }
+  // * Changed object *
   const onChangedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
     setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
@@ -121,6 +130,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     }));
     setRefreshCounter(refreshCounter + 1);
   }
+  //  * View Object *
   const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
@@ -151,14 +161,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(moEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_EDIT);
   }
-  const onPublishManagedObjectFromToolbar = () => {
-    const funcName = 'onPublishManagedObjectFromToolbar';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
-    setApiCallStatus(null);
-    setManagedObjectEntityId(managedObjectEntityId);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_PUBLISH);
-  }
+  // const onPublishManagedObjectFromToolbar = () => {
+  //   const funcName = 'onPublishManagedObjectFromToolbar';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined, componentState=${componentState}`);
+  //   setApiCallStatus(null);
+  //   setManagedObjectEntityId(managedObjectEntityId);
+  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MANAGE_PUBLISH);
+  // }
   const onCloneManagedObjectFromToolbar = () => {
     const funcName = 'onCloneManagedObjectFromToolbar';
     const logName = `${ComponentName}.${funcName}()`;
@@ -209,13 +219,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
             className="p-button-text p-button-plain p-button-outlined"
             disabled={!managedObject_AllowedActions.isEditAllowed}
           />   
-          <Button 
+          {/* <Button 
             label={ToolbarPublishManagedObjectButtonLabel} 
             icon="pi pi-pencil" 
             onClick={onPublishManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined"
             disabled={!managedObject_AllowedActions.isManagePublishAllowed}
-          />   
+          />    */}
         </React.Fragment>
       );
     }
@@ -277,11 +287,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
     setApiCallStatus(apiCallState);
-    if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-      setManagedObjectEntityId(newMoEntityId);
-      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    }
-    else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    // always go to view the new api product
+    setManagedObjectEntityId(newMoEntityId);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+  // if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
+  //     setManagedObjectEntityId(newMoEntityId);
+  //     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+  //   }
+  //   else setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -299,8 +312,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentError = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
+  const onSubComponentError_Notification = (apiCallState: TApiCallState) => {
+    props.onError(apiCallState);
   }
   const onSubComponentCancel = () => {
     setPreviousComponentState();
@@ -402,7 +415,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
       <CheckConnectorHealth />
       
-      <Loading show={isLoading} />      
+      <Loading key={ComponentName} show={isLoading} />      
       
       { !isLoading && renderToolbar() }
 
@@ -413,8 +426,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           key={`${ComponentName}_ListApiProducts_${refreshCounter}`}
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
-          onError={onSubComponentError} 
-          onLoadingChange={setIsLoading} 
+          onError={onSubComponentError_Notification} 
           onManagedObjectView={onViewManagedObject}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
@@ -424,8 +436,9 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           key={`${ComponentName}_showViewComponent_${refreshCounter}`}
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
+          onInitialized={onInitializedManagedObject}
           onSuccess={onSubComponentUserNotification} 
-          onError={onSubComponentError} 
+          onError={onSubComponentError_Notification} 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
@@ -433,19 +446,19 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       }
       {showDeleteComponent && managedObjectEntityId &&
         <DeleteApiProduct
-        organizationId={props.organizationEntityId.id}
-        apiProductEntityId={managedObjectEntityId}
-        onError={onSubComponentError} 
-        onLoadingChange={setIsLoading}
-        onCancel={onSubComponentCancel}
-        onDeleteSuccess={onDeleteManagedObjectSuccess}
+          organizationId={props.organizationEntityId.id}
+          apiProductEntityId={managedObjectEntityId}
+          onError={onSubComponentError_Notification} 
+          onLoadingChange={setIsLoading}
+          onCancel={onSubComponentCancel}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
         />
       }
       {showNewComponent &&
         <ManageEditNewApiProduct
           action={EAction.NEW}
           organizationId={props.organizationEntityId.id}
-          onError={onSubComponentError}
+          onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
@@ -457,7 +470,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         <ManageEditApiProduct
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
-          onError={onSubComponentError}
+          onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
@@ -470,7 +483,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         <ManagePublishApiProduct
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
-          onError={onSubComponentError}
+          onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
@@ -482,7 +495,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         <ManageCloneApiProduct
           organizationId={props.organizationEntityId.id}
           apiProductEntityId={managedObjectEntityId}
-          onError={onSubComponentError}
+          onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}

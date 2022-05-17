@@ -19,6 +19,7 @@ import APAdminPortalApiProductsDisplayService, {
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { Loading } from "../../../components/Loading/Loading"; 
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -27,7 +28,6 @@ export interface IListApiProductsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectView: (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
@@ -47,6 +47,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
@@ -72,9 +73,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   const doInitialize = async () => {
-    props.onLoadingChange(true);
+    setIsLoading(true);
     await apiGetManagedObjectList();
-    props.onLoadingChange(false);
+    setIsLoading(false);
   }
 
   React.useEffect(() => {
@@ -277,6 +278,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
 
   return (
     <div className="manage-api-products">
+
+      <Loading key={ComponentName} show={isLoading} />      
 
       <APComponentHeader header='API Products:' />
 

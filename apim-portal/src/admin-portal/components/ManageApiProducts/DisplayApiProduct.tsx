@@ -28,7 +28,7 @@ import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApi
 import { Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
-import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
@@ -346,12 +346,19 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
   const renderMeta = (mo: TManagedObject): JSX.Element => {
     if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE) return (<></>);
+    const renderDerivedFrom = (derivedFrom?: MetaEntityReference): JSX.Element => {
+      if(derivedFrom === undefined) return (<></>);
+      const _name: string | undefined = derivedFrom.displayName !== undefined ? derivedFrom.displayName : derivedFrom.name;
+      return (<div>Cloned from: {`${_name} (${derivedFrom.revision})`}</div>);
+    }
     return (
       <React.Fragment>  
         <div>Created by: {mo.apMetaInfo.apCreatedBy}</div>
         <div>Created on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apCreatedOn)}</div>
         <div>Last Modified by: {mo.apMetaInfo.apLastModifiedBy}</div>
-        <div>Last Modifined on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>
+        <div>Last Modified on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>        
+        { renderDerivedFrom(mo.apMetaInfo.apDerivedFrom) }
+        {/* <div>Clones: TODO: list of id/displaynames? - needs another API call</div> */}
       </React.Fragment>
     );
   }

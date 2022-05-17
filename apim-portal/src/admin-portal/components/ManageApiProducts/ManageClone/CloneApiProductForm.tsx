@@ -3,7 +3,6 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { InputText } from "primereact/inputtext";
-import { InputTextarea } from "primereact/inputtextarea";
 import { classNames } from 'primereact/utils';
 
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
@@ -11,7 +10,6 @@ import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 
 import '../../../../components/APComponents.css';
@@ -28,12 +26,16 @@ export interface ICloneApiProductFormProps {
 export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: ICloneApiProductFormProps) => {
   const ComponentName = 'CloneApiProductForm';
 
+
+  // cloning info: contain the userId
   type TManagedObject = TAPAdminPortalApiProductDisplay_CloningInfo;
+
+
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
-    description: string;
-    version: string;
+    // description: string;
+    // version: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -43,8 +45,8 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
     const fd: TManagedObjectFormData = {
       id: mo.apCloneEntityId.id,
       displayName: mo.apCloneEntityId.displayName,
-      description: mo.apCloneDescription,
-      version: mo.apCloneVersionString,
+      // description: mo.apCloneDescription,
+      // version: mo.apCloneVersionString,
     };
     return {
       formData: fd
@@ -64,7 +66,7 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
       id: fd.id,
       displayName: fd.displayName
     };
-    mo.apCloneVersionString = fd.version;
+    // mo.apCloneVersionString = fd.version;
     return mo;
   }
   
@@ -125,13 +127,13 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
     // placeholder
   }
 
-  const validate_SemVer = (newVersion: string): string | boolean => {
-    if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
-      lastVersion: managedObject.apOriginalVersionString,
-      newVersion: newVersion
-    })) return true;
-    return `New version must be greater than last version: ${managedObject.apOriginalVersionString}.`
-  }
+  // const validate_SemVer = (newVersion: string): string | boolean => {
+  //   if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
+  //     lastVersion: managedObject.apOriginalVersionString,
+  //     newVersion: newVersion
+  //   })) return true;
+  //   return `New version must be greater than last version: ${managedObject.apOriginalVersionString}.`
+  // }
 
   const validate_Id = async(id: string): Promise<string | boolean> => {
     // check if id exists
@@ -198,7 +200,7 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
             </div>
             {/* description */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
@@ -218,9 +220,9 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.description })}>Description*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.description)}
-            </div>
+            </div> */}
             {/* version */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
@@ -242,7 +244,7 @@ export const CloneApiProductForm: React.FC<ICloneApiProductFormProps> = (props: 
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.version })}>New Version*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.version)}
-            </div>
+            </div> */}
           </form>
         </div>
       </div>

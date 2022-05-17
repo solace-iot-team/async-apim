@@ -3,6 +3,7 @@ import {
   APIProductAccessLevel,
   ApiProductsService, 
   CommonEntityNameList,
+  EntityDeriveRequest,
   MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { AuthHelper } from '../../auth/AuthHelper';
@@ -23,7 +24,7 @@ export type TAPAdminPortalApiProductDisplay_CloningInfo = {
   apOriginalEntityId: TAPEntityId;
   apOriginalVersionString: string;
   apCloneEntityId: TAPEntityId;
-  apCloneDescription: string;
+  // apCloneDescription: string;
   apCloneVersionString: string;
 }
 
@@ -44,6 +45,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
   public get_CloningInfo({ apAdminPortalApiProductDisplay }:{
     apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   }): TAPAdminPortalApiProductDisplay_CloningInfo {
+    // const funcName = 'get_CloningInfo';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
     const cloningInfo: TAPAdminPortalApiProductDisplay_CloningInfo = {
       apOriginalEntityId: apAdminPortalApiProductDisplay.apEntityId,
       apOriginalVersionString: apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion,
@@ -51,8 +55,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         ...APEntityIdsService.create_EmptyObject(),
         displayName: `Clone of ${apAdminPortalApiProductDisplay.apEntityId.displayName}`
       },
-      apCloneDescription: `Clone of ${apAdminPortalApiProductDisplay.apDescription}`,
-      apCloneVersionString: APVersioningDisplayService.create_NextMajorVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion),
+      // apCloneDescription: `Clone of ${apAdminPortalApiProductDisplay.apDescription}`,
+      apCloneVersionString: APVersioningDisplayService.create_NewVersion(),
     };
     return cloningInfo;
   }
@@ -323,7 +327,10 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     businessGroupId: string;
     default_ownerId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
-    
+    // const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
       organizationId: organizationId,
       businessGroupId: businessGroupId,
@@ -391,6 +398,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     fetch_revision_list?: boolean;    
     revision?: string;
   }): Promise<TAPAdminPortalApiProductDisplay> => {
+    // const funcName = 'apiGet_AdminPortalApApiProductDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
 
     let connectorApiProduct: APIProduct;
     if(revision === undefined) {
@@ -440,6 +450,53 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
     return apAdminPortalApiProductDisplay;
+  }
+
+  public apiClone_AdminPortalApApiProductDisplay = async({ organizationId, userId, apAdminPortalApiProductDisplay_CloningInfo }:{
+    organizationId: string;
+    userId: string;
+    apAdminPortalApiProductDisplay_CloningInfo: TAPAdminPortalApiProductDisplay_CloningInfo;
+  }): Promise<void> => {
+    // const funcName = 'apiClone_AdminPortalApApiProductDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+    // alert(`${logName}: remove patch call once connector fixed`);
+
+    const clone: EntityDeriveRequest = {
+      names: {
+        name: apAdminPortalApiProductDisplay_CloningInfo.apCloneEntityId.id,
+        displayName: apAdminPortalApiProductDisplay_CloningInfo.apCloneEntityId.displayName
+      },
+      meta: {
+        createdBy: userId,
+        version: apAdminPortalApiProductDisplay_CloningInfo.apCloneVersionString
+      }
+    };
+    
+    // const connectorApiProduct: APIProduct = await ApiProductsService.createDerivedApiProduct({
+    await ApiProductsService.createDerivedApiProduct({
+      organizationName: organizationId,
+      apiProductName: apAdminPortalApiProductDisplay_CloningInfo.apOriginalEntityId.id,
+      requestBody: clone
+    });
+
+    // // get the api product to patch it
+    // const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.apiGet_AdminPortalApApiProductDisplay({
+    //   organizationId: organizationId,
+    //   apiProductId: connectorApiProduct.name,
+    //   default_ownerId: userId,
+    // });
+    // // unpublish
+    // apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion);
+    // // apAdminPortalApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
+    // // stage=draft
+    // apAdminPortalApiProductDisplay.apLifecycleStageInfo.stage = MetaEntityStage.DRAFT;
+    // await this.apiUpdate_ApApiProductDisplay({
+    //   organizationId: organizationId,
+    //   apApiProductDisplay: apAdminPortalApiProductDisplay,
+    //   userId: userId,
+    // });  
+
   }
 
 }

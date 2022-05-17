@@ -11,6 +11,7 @@ import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } f
 import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
 import { IAPApiProductDisplay } from "../../../../displayServices/APApiProductsDisplayService";
 import { EditNewAttributesForm } from "./EditNewAttributesForm";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -33,7 +34,7 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -47,7 +48,8 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
         apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApManagedAssetDisplay_Attributes({
           apManagedAssetDisplay: props.apAdminPortalApiProductDisplay,
           apManagedAssetDisplay_Attributes: mo
-        }) as IAPApiProductDisplay
+        }) as IAPApiProductDisplay,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
       });  
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

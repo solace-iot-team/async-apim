@@ -47,8 +47,8 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [userContext] = React.useContext(UserContext);
-
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
@@ -80,9 +80,10 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
     props.onNavigateToCommand(props.apiProductEntityId);
   }
 
-  const doInitialize = async () => {
+  const doInitialize = async (doRefresh: boolean = false) => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
+    if(doRefresh) setRefreshCounter(refreshCounter + 1);
     props.onLoadingChange(false);
   }
 
@@ -122,7 +123,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
 
   const onEdit_SaveSuccess = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
-    doInitialize();
+    doInitialize(true);
   }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
@@ -175,6 +176,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header='General'>
         <React.Fragment>
           <EditGeneral
+            key={`${ComponentName}_EditGeneral_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}
@@ -189,6 +191,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header={ApiTabHeader}>
         <React.Fragment>
           <EditApis
+            key={`${ComponentName}_EditApis_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             isSingleApiSelection={IsSingleApiSelection}
@@ -204,6 +207,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header='Policies'>
         <React.Fragment>
           <EditPolicies
+            key={`${ComponentName}_EditPolicies_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}
@@ -218,6 +222,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header='Environments'>
         <React.Fragment>
           <EditEnvironments
+            key={`${ComponentName}_EditEnvironments_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}
@@ -232,6 +237,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header='Attributes'>
         <React.Fragment>
           <EditAttributes
+            key={`${ComponentName}_EditAttributes_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}
@@ -246,6 +252,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       <TabPanel header='Access & State'>
         <React.Fragment>
           <EditAccessAndState
+            // key={`${ComponentName}_EditAccessAndState_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}

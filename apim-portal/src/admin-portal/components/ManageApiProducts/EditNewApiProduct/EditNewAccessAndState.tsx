@@ -5,16 +5,19 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
-import { TApiCallState } from "../../../../utils/ApiCallState";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPApiProductDisplay_AccessAndState } from "../../../../displayServices/APApiProductsDisplayService";
-import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
+import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { EditNewAccessAndStateForm } from "./EditNewAccessAndStateForm";
+import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APExternalSystemsDisplayService from "../../../../displayServices/APExternalSystemsDisplayService";
+import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 
 export interface IEditNewAccessAndStateProps {
   action: EAction;
@@ -33,13 +36,37 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
   type TManagedObject = TAPApiProductDisplay_AccessAndState;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [availablePublishDestinationExternalSystemEntityIdList, setAvailablePublishDestinationExternalSystemEntityIdList] = React.useState<TAPEntityIdList>();
+  const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const FormId = `ManageApiProducts_EditNewApiProduct_${ComponentName}`;
 
+  // * Api Calls * 
+
+  const apiGetPublishDestinations = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetPublishDestinations';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PUBLISH_DESTINATIONS, 'get publish destinations');
+    try {
+      const publishDestinationList: TAPEntityIdList = await APExternalSystemsDisplayService.apiGetList_PublishDestinations({
+        organizationId: props.organizationId
+      });
+      setAvailablePublishDestinationExternalSystemEntityIdList(publishDestinationList);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
   const doInitialize = async () => {
+    props.onLoadingChange(true);
+    await apiGetPublishDestinations();
     setManagedObject(APAdminPortalApiProductsDisplayService.get_ApApiProductDisplay_AccessAndState({
       apApiProductDisplay: props.apAdminPortalApiProductDisplay
     }));
+    props.onLoadingChange(false);
   }
 
   // * useEffect Hooks *
@@ -47,6 +74,12 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
   React.useEffect(() => {
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if (apiCallStatus !== null) {
+      if(!apiCallStatus.success) props.onError(apiCallStatus);
+    }
+  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const doSubmitManagedObject = async (mo: TManagedObject) => {
     props.onSaveChanges(mo);
@@ -77,14 +110,20 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
     )
   }
 
-  const renderManagedObjectForm = (mo: TManagedObject) => {
+  const renderManagedObjectForm = () => {
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(availablePublishDestinationExternalSystemEntityIdList === undefined) throw new Error(`${logName}: availablePublishDestinationExternalSystemEntityIdList === undefined`);
+
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
           <EditNewAccessAndStateForm
             formId={FormId}
             action={props.action}
-            apApiProductDisplay_AccessAndState={mo}
+            apApiProductDisplay_AccessAndState={managedObject}
+            apAvailablePublishDestinationExternalSystemEntityIdList={availablePublishDestinationExternalSystemEntityIdList}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
@@ -101,9 +140,10 @@ export const EditNewAccessAndState: React.FC<IEditNewAccessAndStateProps> = (pro
   return (
     <div className="manage-api-products">
 
-      {managedObject && 
-        renderManagedObjectForm(managedObject)
+      {managedObject &&  availablePublishDestinationExternalSystemEntityIdList && 
+        renderManagedObjectForm()
       }
+
     </div>
   );
 }

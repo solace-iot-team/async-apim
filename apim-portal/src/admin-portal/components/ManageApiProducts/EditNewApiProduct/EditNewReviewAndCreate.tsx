@@ -10,6 +10,7 @@ import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -32,6 +33,7 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
   type  TManagedObject = TAPAdminPortalApiProductDisplay;
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -46,11 +48,13 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
         await APAdminPortalApiProductsDisplayService.apiCreate_ApApiProductDisplay({
           organizationId: props.organizationId,
           apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+          userId: userContext.apLoginUserDisplay.apEntityId.id,
         });
       } else {
         await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
           organizationId: props.organizationId,
           apApiProductDisplay: mo,
+          userId: userContext.apLoginUserDisplay.apEntityId.id,
         });  
       }
     } catch(e: any) {

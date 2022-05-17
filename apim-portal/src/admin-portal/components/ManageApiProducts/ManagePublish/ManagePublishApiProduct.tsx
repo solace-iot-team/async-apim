@@ -109,6 +109,7 @@ export const ManagePublishApiProduct: React.FC<IManagePublishApiProductProps> = 
           apApiProductDisplay: apAdminPortalApiProductDisplay,
           apApiProductDisplay_PublishDestinationInfo: mo
         }),
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
       });  
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

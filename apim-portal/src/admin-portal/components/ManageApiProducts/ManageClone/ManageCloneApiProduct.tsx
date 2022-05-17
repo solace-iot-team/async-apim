@@ -7,13 +7,13 @@ import { Toolbar } from "primereact/toolbar";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { ButtonLabel_Cancel, ButtonLabel_Clone, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, TAPAdminPortalApiProductDisplay_CloningInfo 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { 
-  TAPManagedAssetBusinessGroupInfo, 
+  TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo, 
 } from "../../../../displayServices/APManagedAssetDisplayService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { IAPVersionInfo } from "../../../../displayServices/APVersioningDisplayService";
@@ -78,16 +78,13 @@ export const ManageCloneApiProduct: React.FC<IManageCloneApiProductProps> = (pro
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CLONE_API_PRODUCT, `clone api product: ${props.apiProductEntityId.displayName}`); 
     try { 
-      alert(`${logName} - implement me: new id=${mo.apCloneEntityId.id}`);
-      // // create a suggested next version
-      // apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion);
-      // await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
-      //   organizationId: props.organizationId,
-      //   apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_PublishDestinationInfo({ 
-      //     apApiProductDisplay: apAdminPortalApiProductDisplay,
-      //     apApiProductDisplay_PublishDestinationInfo: mo
-      //   }),
-      // });  
+
+      await APAdminPortalApiProductsDisplayService.apiClone_AdminPortalApApiProductDisplay({
+        organizationId: props.organizationId,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
+        apAdminPortalApiProductDisplay_CloningInfo: mo
+      });  
+
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -113,7 +110,7 @@ export const ManageCloneApiProduct: React.FC<IManageCloneApiProductProps> = (pro
         command: ManagedCloneApiProduct_onNavigateToCommand
       },
       {
-        label: 'Create New Version'
+        label: 'Clone'
       }  
     ]);  
   }
@@ -208,6 +205,15 @@ export const ManageCloneApiProduct: React.FC<IManageCloneApiProductProps> = (pro
   const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
     return(<div><b>Access: </b>{accessLevel}</div>);
   }
+  const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
+    const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
+      if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
+      return APEntityIdsService.create_SortedDisplayNameList(apExternalSystemEntityIdList).join(', ');
+    }
+    return(
+      <span><b>Publish Destination(s): </b>{renderValue(apPublishDestinationInfo.apExternalSystemEntityIdList)}</span>
+    );
+  }
 
   const renderComponent = () => {
     const funcName = 'renderComponent';
@@ -219,9 +225,9 @@ export const ManageCloneApiProduct: React.FC<IManageCloneApiProductProps> = (pro
         <div className="p-mt-4 p-mb-4">
           {renderBusinessGroupInfo(apAdminPortalApiProductDisplay.apBusinessGroupInfo)}
           {renderRevisionInfo(apAdminPortalApiProductDisplay.apVersionInfo)}
-          {/* {renderState(apAdminPortalApiProductDisplay.apLifecycleStageInfo)} */}
-          {/* {renderAccessLevel(apAdminPortalApiProductDisplay.apAccessLevel)} */}
-          {/* {renderPublishDestinationInfo(apAdminPortalApiProductDisplay.apPublishDestinationInfo)} */}
+          {renderState(apAdminPortalApiProductDisplay.apLifecycleStageInfo)}
+          {renderAccessLevel(apAdminPortalApiProductDisplay.apAccessLevel)}
+          {renderPublishDestinationInfo(apAdminPortalApiProductDisplay.apPublishDestinationInfo)}
         </div>
         <div className="p-mt-6">
           {renderManagedObjectForm()}
@@ -240,7 +246,7 @@ export const ManageCloneApiProduct: React.FC<IManageCloneApiProductProps> = (pro
   }
 
   const getHeader = (): string => {
-    return `Create new version from: ${managedObject?.apOriginalEntityId.displayName}`;
+    return `Clone from: ${managedObject?.apOriginalEntityId.displayName}`;
   }
   return (
     <div className="manage-api-products">
