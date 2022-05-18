@@ -45,7 +45,7 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../managed-assets.html">Managed Assets</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Managed Assets Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#general">General</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#versioning">Versioning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#revision-history">Revision History</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#attributes">Attributes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#business-group-sharing-list">Business Group Sharing List</a></li>
 </ul>
@@ -97,15 +97,12 @@
 <h2>General<a class="headerlink" href="#general" title="Permalink to this headline"></a></h2>
 <p>Managed assets are:</p>
 <ul class="simple">
-<li><p>API Products</p></li>
+<li><p><a class="reference internal" href="api-products.html#managed-assets-api-products"><span class="std std-ref">API Products</span></a></p></li>
 </ul>
 </section>
-<section id="versioning">
-<h2>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline"></a></h2>
-<p>Managed assets are versioned using semantic versioning.</p>
-<ul class="simple">
-<li><p>each update requires a new version of the asset</p></li>
-</ul>
+<section id="revision-history">
+<h2>Revision History<a class="headerlink" href="#revision-history" title="Permalink to this headline"></a></h2>
+<p>Managed asset revisions are tracked from one update to the next. Revision numbers are presented using semantic versioning.</p>
 </section>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline"></a></h2>
@@ -132,8 +129,8 @@
 <dt class="field-odd">_AP_BUSINESS_GROUP_SHARING_LIST_</dt>
 <dd class="field-odd"><p>list of business group information the asset is shared with. see below for details.</p>
 </dd>
-<dt class="field-even">_AP_LIFECYLE_STATE_</dt>
-<dd class="field-even"><p>state of the asset. values: <cite>draft</cite>, <cite>released</cite>, <cite>deprecated</cite></p>
+<dt class="field-even">_AP_PUBLISH_DESTINATION_</dt>
+<dd class="field-even"><p>comma separated list of external system Ids the asset is published to. if asset is not published, attribute is absent.</p>
 </dd>
 </dl>
 <div class="admonition seealso">
@@ -189,7 +186,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 12 May 2022 at 11:23.
+      <span class="lastupdated">Last updated on 18 May 2022 at 05:52.
       </span></p>
   </div>
 

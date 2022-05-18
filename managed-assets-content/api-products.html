@@ -46,6 +46,7 @@
 <li class="toctree-l2"><a class="reference internal" href="overview.html">Managed Assets Overview</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">API Products</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#access-level">Access Level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lifecycle-stage">Lifecycle Stage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#managing-api-products">Managing API Products</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#view-api-product">View API Product</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#create-api-product">Create API Product</a></li>
@@ -114,6 +115,24 @@
 </dd>
 </dl>
 </section>
+<section id="lifecycle-stage">
+<h2>Lifecycle Stage<a class="headerlink" href="#lifecycle-stage" title="Permalink to this headline"></a></h2>
+<p>API Products have a lifecycle stage property with the following values:</p>
+<dl class="field-list simple">
+<dt class="field-odd">draft</dt>
+<dd class="field-odd"><p>the API Product is in draft mode, Apps cannot add it</p>
+</dd>
+<dt class="field-even">released</dt>
+<dd class="field-even"><p>the API Product is released, Apps can add it and it can be published to marketplaces</p>
+</dd>
+<dt class="field-odd">deprecated</dt>
+<dd class="field-odd"><p>the API Product is deprecated, Apps which already include it are unaffected, but it cannot be added any more</p>
+</dd>
+<dt class="field-even">retired</dt>
+<dd class="field-even"><p>the API Product is retired. It will be deprovisioned automatically from all Apps that include it</p>
+</dd>
+</dl>
+</section>
 <section id="managing-api-products">
 <h2>Managing API Products<a class="headerlink" href="#managing-api-products" title="Permalink to this headline"></a></h2>
 <section id="view-api-product">
@@ -175,7 +194,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 12 May 2022 at 11:23.
+      <span class="lastupdated">Last updated on 18 May 2022 at 05:52.
       </span></p>
   </div>
 

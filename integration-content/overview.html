@@ -49,7 +49,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#external-business-groups">External Business Groups</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#subscribing-to-asset-change-events">Subscribing to Asset Change Events</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#filtering">Filtering:</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#extracting-lifecycle-status">Extracting Lifecycle Status:</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#extracting-business-group-information">Extracting Business Group information:</a></li>
 </ul>
 </li>
@@ -109,17 +108,29 @@
 <p>A suggested approach for integration of assets is to subscribe to asset create/update/delete events.</p>
 <section id="filtering">
 <h3>Filtering:<a class="headerlink" href="#filtering" title="Permalink to this headline"></a></h3>
-<p>A suggested filtering approach:</p>
 <ul class="simple">
-<li><p>discard event if access level !== <cite>public</cite></p></li>
-<li><p>discard event if attribute <cite>_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_</cite> !== &lt;configured external system&gt;</p></li>
-<li><p>discard event if attribute: <cite>_AP_LIFECYLE_STATE_</cite> === <cite>draft</cite></p></li>
+<li><p>External system connectors should only import / publish assets that are in <cite>released</cite> stage AND its publish destination contains the correct external system id.</p></li>
+<li><p>If a previously imported asset changes stage to <cite>deprecated</cite> or <cite>retired</cite>, external system connectors should remove the asset.</p></li>
 </ul>
-</section>
-<section id="extracting-lifecycle-status">
-<h3>Extracting Lifecycle Status:<a class="headerlink" href="#extracting-lifecycle-status" title="Permalink to this headline"></a></h3>
+<p><strong>Adding an Asset to external systems:</strong></p>
 <ul class="simple">
-<li><p>extract value from attribute: <cite>_AP_LIFECYLE_STATE_</cite> (<cite>released</cite> or <cite>deprecated</cite>)</p></li>
+<li><p>check if attribute <cite>_AP_PUBLISH_DESTINATION_</cite> is present and contains &lt;configured external system id&gt;</p>
+<ul>
+<li><p>add the asset if lifecycle stage === <cite>released</cite></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Updating an Asset in external systems:</strong></p>
+<ul class="simple">
+<li><p>if asset is present in external system</p>
+<ul>
+<li><p>update asset according to stage</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Removing an Asset from external systems:</strong></p>
+<ul class="simple">
+<li><p>remove the asset if attribute <cite>_AP_PUBLISH_DESTINATION_</cite> is absent or does not contain &lt;configured external system id&gt;, regardless of stage.</p></li>
 </ul>
 </section>
 <section id="extracting-business-group-information">
@@ -150,7 +161,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 12 May 2022 at 11:23.
+      <span class="lastupdated">Last updated on 18 May 2022 at 05:52.
       </span></p>
   </div>
 
