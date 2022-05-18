@@ -33,6 +33,11 @@ Filtering:
 
   - add the asset if lifecycle stage === `released`
 
+**Updating an Asset in external systems:**
+
+* if asset is present in external system
+
+  - update asset according to stage
 
 **Removing an Asset from external systems:**
 
