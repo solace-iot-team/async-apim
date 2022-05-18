@@ -27,6 +27,10 @@
     ]
   },
   "include": ["server/**/*.ts", "dev-build.ts", "dev-build-types.ts", "build.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "_todo",
+    "**/_todo.*"
+  ]
 }
  
