@@ -1,4 +1,4 @@
-import { Meta } from "@solace-iot-team/apim-connector-openapi-browser";
+import { Meta, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 
 const EmptyTimestamp = -1;
 export type TAPMetaInfo = {
@@ -6,6 +6,7 @@ export type TAPMetaInfo = {
   apCreatedOn: number;
   apLastModifiedBy: string;
   apLastModifiedOn: number;
+  apDerivedFrom?: MetaEntityReference;
 }
 
 class APMetaInfoDisplayService {
@@ -33,6 +34,7 @@ class APMetaInfoDisplayService {
       apCreatedOn: connectorMeta.created ? connectorMeta.created : EmptyTimestamp,
       apLastModifiedBy: connectorMeta.lastModifiedBy ? connectorMeta.lastModifiedBy : '',
       apLastModifiedOn: connectorMeta.lastModified ? connectorMeta.lastModified : EmptyTimestamp,
+      apDerivedFrom: connectorMeta.derivedFrom,
     };
   }
   

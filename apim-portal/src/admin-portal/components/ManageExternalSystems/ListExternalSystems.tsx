@@ -139,8 +139,11 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
     if(rowData.apBusinessGroupExternalDisplayList.length === 0) return (<>Business Groups: None.</>);
     return (<>{`Business Groups: ${rowData.apBusinessGroupExternalDisplayList.length}`}</>);
   }
-  const desriptionByBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
-    return (<>{rowData.apsExternalSystem.description}</>);
+  const desriptionBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return (<>{rowData.description}</>);
+  }
+  const marketplaceBodyTemplate = (rowData: TManagedObjectTableDataRow): JSX.Element => {
+    return (<>{String(rowData.isMarketplaceDestination)}</>);
   }
   const nameBodyTemplate = (rowData: TManagedObjectTableDataRow): string => {
     return rowData.apEntityId.displayName;
@@ -172,7 +175,8 @@ export const ListExternalSystems: React.FC<IListExternalSystemsProps> = (props: 
             sortOrder={1}
           >
             <Column header="Name" headerStyle={{width: '25em' }} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField="globalSearch" sortField="apEntityId.displayName" sortable />
-            <Column header="Description" body={desriptionByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Description" body={desriptionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+            <Column header="Marketplace" body={marketplaceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
             <Column header="References" headerStyle={{width: '15em' }} body={referencedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
       </div>

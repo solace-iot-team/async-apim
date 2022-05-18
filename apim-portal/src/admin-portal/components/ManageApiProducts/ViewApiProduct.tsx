@@ -17,6 +17,7 @@ import "./ManageApiProducts.css";
 export interface IViewApiProductProps {
   organizationId: string;
   apiProductEntityId: TAPEntityId;
+  onInitialized: (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => void;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -83,6 +84,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setBreadCrumbItemList(managedObject.apEntityId.displayName);
+    props.onInitialized(managedObject);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

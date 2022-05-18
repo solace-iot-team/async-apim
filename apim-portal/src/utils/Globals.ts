@@ -74,10 +74,6 @@ export enum EUIAdminPortalResourcePaths {
   DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
   ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
-  
-  
-  deleteme_ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/deletemeapiproducts',
-
   ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
   ManageOrganizationApiProducts_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apiproducts/edit_owningBusinessGroup',
   ManageOrganizationApiProducts_Edit = '/admin-portal/manage/apim/organization/apiproducts/edit',

@@ -46,12 +46,17 @@ class APVersioningDisplayService {
     connectorRevisions?: Array<string>;
     currentVersion?: string;
   }): IAPVersionInfo {
+    const funcName = 'create_ApVersionInfo_From_ApiEntities';
+    const logName = `${this.ComponentName}.${funcName}()`;
     if(connectorMeta === undefined) return this.create_Legacy_ApVersionInfo();
     // connectorRevisions could be undefined or empty list
-    const lastVersion: string = connectorRevisions !== undefined ? this.get_LastVersion(connectorRevisions) : connectorMeta.version;
+    const lastVersion: string | undefined = connectorRevisions !== undefined ? this.get_LastVersion(connectorRevisions) : connectorMeta.version;
+    if(lastVersion === undefined) throw new Error(`${logName}: lastVersion === undefined`);
+    const _currentVersion: string | undefined = currentVersion ? currentVersion : connectorMeta.version;
+    if(_currentVersion === undefined) throw new Error(`${logName}: _currentVersion === undefined`);
     return {
       apLastVersion: lastVersion,
-      apCurrentVersion: currentVersion ? currentVersion : connectorMeta.version,
+      apCurrentVersion: _currentVersion,
       apVersionList: connectorRevisions !== undefined && connectorRevisions.length > 0 ? connectorRevisions : [lastVersion],
     };
   }
@@ -64,8 +69,24 @@ class APVersioningDisplayService {
     });
   }
 
+  // public get_Sorted_ApMinorList(list: TAPVersionList): Array<number> {
+  //   const minorList: Array<number> = list.map( (versionStr: string) => {
+  //     const semVer = new SemVer(versionStr);
+  //     return semVer.minor;
+  //   });
+  //   return minorList.sort();
+  // }
+
   public create_NewVersion(): string {
     return '1.0.0';
+  }
+
+  public create_NextMajorVersion(version: string): string {
+    const versionSemVer = new SemVer(version);
+    versionSemVer.inc("major");
+    versionSemVer.minor = 0;
+    versionSemVer.patch = 1;
+    return versionSemVer.format();
   }
 
   public create_NextVersion(version: string): string {

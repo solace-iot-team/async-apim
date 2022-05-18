@@ -27,7 +27,7 @@ export class MongoDatabaseAccess {
       if(MongoDatabaseAccess.mongoClient && MongoDatabaseAccess.mongoDatabase) {
         const serverInfo = await MongoDatabaseAccess.mongoDatabase.admin().serverInfo();
         const clientInfo = MongoDatabaseAccess.mongoClient.options;
-        ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DB_INFO, message: 'DB server info', details: { 
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DB_INFO, message: 'DB server info', details: { 
           serverInfo: serverInfo,
           clientInfo: clientInfo
         } } ));  

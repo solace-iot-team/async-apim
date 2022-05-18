@@ -32,6 +32,7 @@ export interface IEditNewApisFormProps {
   action: EAction;
   organizationId: string;
   apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
+  isSingleApiSelection: boolean;
   onSubmit: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -55,8 +56,6 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     extFormData: TManagedObjectExtFormData;
   }
   
-  const ButtonLabelSelectApis = 'Select API(s)';
-
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const ufd: TManagedObjectUseFormData = {
       apisDisplay: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apApiDisplayList).join(', '),
@@ -138,6 +137,9 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   const[isFormSubmitted, setIsFormSubmitted] = React.useState<boolean>(false);
   const [selectedApis_RefreshCounter, setSelectedApis_RefreshCounter] = React.useState<number>(0);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
+
+  const ButtonLabelSelectApis = props.isSingleApiSelection ? 'Select API' : 'Select API(s)';
+  const HeaderFormElementApis = props.isSingleApiSelection ? 'API' : 'API(s)';
 
   const doInitialize = async () => {
     setManagedObject(props.apApiProductDisplay_Apis);
@@ -281,7 +283,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
             {/* apis */}
-            <div className="p-text-bold p-mb-3">API(s):</div>
+            <div className="p-text-bold p-mb-3">{HeaderFormElementApis}:</div>
             {/* <div className="p-ml-3 p-mt-3"> */}
             <div className="p-field">
               <span className="p-float-label">

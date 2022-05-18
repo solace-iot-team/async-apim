@@ -7,7 +7,7 @@ import { Globals } from "../../../../utils/Globals";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_EDIT_NEW } from "../ManageApiProductsCommon";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay 
@@ -19,7 +19,11 @@ import {
   TAPApiProductDisplay_General, 
   TAPApiProductDisplay_Policies 
 } from "../../../../displayServices/APApiProductsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes, TAPManagedAssetLifecycleInfo } from "../../../../displayServices/APManagedAssetDisplayService";
+import { 
+  TAPManagedAssetBusinessGroupInfo, 
+  TAPManagedAssetDisplay_Attributes, 
+  TAPManagedAssetPublishDestinationInfo 
+} from "../../../../displayServices/APManagedAssetDisplayService";
 import { EditNewGeneral } from "./EditNewGeneral";
 import { EditNewPolicies } from "./EditNewPolicies";
 import { EditNewApis } from "./EditNewApis";
@@ -32,6 +36,8 @@ import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
 import { EditNewAccessAndState } from "./EditNewAccessAndState";
 import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
+import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -150,6 +156,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
 
   // * Api Calls * 
 
@@ -178,7 +187,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         apManagedAssetDisplay: empty,
         apOwnerInfo: userContext.apLoginUserDisplay.apEntityId
       });
-      // create a suggested next version
+      // create a suggested next revision
       empty.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NewVersion();
       setManagedObject(empty);
       setOriginal_ManagedObject(empty); // not a copy, to see the headers ...?
@@ -459,32 +468,43 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     );
   }
 
-  const renderVersionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
+  const renderRevisionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
     if(props.action === EAction.NEW) return (<></>);
-    return (<div><b>Current Version:</b> {apVersionInfo.apLastVersion}</div>);
+    return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
   }
 
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
-    if(props.action === EAction.NEW) return (<></>);
-    return(<div><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</div>);
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
+    // if(props.action === EAction.NEW) return (<></>);
+    return(<div><b>State: </b>{apLifecycleStageInfo.stage}</div>);
   }
+
   const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
     if(props.action === EAction.NEW) return (<></>);
     return(<div><b>Access: </b>{accessLevel}</div>);
+  }
+  const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
+    const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
+      if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
+      return APEntityIdsService.create_SortedDisplayNameList(apExternalSystemEntityIdList).join(', ');
+    }
+    if(props.action === EAction.NEW) return (<></>);
+    return(
+      <span><b>Publish Destination(s): </b>{renderValue(apPublishDestinationInfo.apExternalSystemEntityIdList)}</span>
+    );
   }
 
   const renderComponent = (mo: TManagedObject) => {
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
-
     return (
       <React.Fragment>
         <div className="p-mt-4">
           {renderBusinessGroupInfo(original_ManagedObject.apBusinessGroupInfo)}
-          {renderVersionInfo(original_ManagedObject.apVersionInfo)}
-          {renderState(original_ManagedObject.apLifecycleInfo)}
+          {renderRevisionInfo(original_ManagedObject.apVersionInfo)}
+          {renderState(original_ManagedObject.apLifecycleStageInfo)}
           {renderAccessLevel(original_ManagedObject.apAccessLevel)}
+          {renderPublishDestinationInfo(original_ManagedObject.apPublishDestinationInfo)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
@@ -501,11 +521,12 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='APIs' disabled={!showApis}>
+          <TabPanel header={ApiTabHeader} disabled={!showApis}>
             <React.Fragment>
               <EditNewApis
                 action={props.action}
                 organizationId={props.organizationId}
+                isSingleApiSelection={IsSingleApiSelection}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
@@ -606,7 +627,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
     if(original_ManagedObject === undefined) throw new Error(`${logName}: original_ManagedObject === undefined`);
   
     if(props.action === EAction.NEW) return 'Create New API Product';
-    else return `Edit API Product: ${original_ManagedObject.apEntityId.displayName}`
+    else return `Edit: ${original_ManagedObject.apEntityId.displayName}`
   }
 
   return (
@@ -617,30 +638,6 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {managedObject && original_ManagedObject && renderComponent(managedObject)}
-
-      {/* DEBUG */}
-      {/* {managedObject && 
-        <React.Fragment>
-          <hr />
-          <p><b>{ComponentName}:</b></p>
-          <p><b>managedObject.apUserProfileDisplay=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apUserProfileDisplay, null, 2)}
-          </pre>
-          <p><b>managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apMemberOfBusinessGroupDisplayList, null, 2)}
-          </pre>
-          <p><b>managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.memberOfOrganizationDisplay.apOrganizationRoleEntityIdList, null, 2)}
-          </pre>
-          <p><b>managedObject.apUserAuthenticationDisplay.password=</b></p>
-          <pre style={ { fontSize: '10px', width: '500px' }} >
-            {JSON.stringify(managedObject.apUserAuthenticationDisplay.password, null, 2)}
-          </pre>
-        </React.Fragment>
-      } */}
 
     </div>
   );

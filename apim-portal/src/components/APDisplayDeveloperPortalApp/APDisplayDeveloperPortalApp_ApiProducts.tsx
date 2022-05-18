@@ -75,7 +75,7 @@ export const APDisplayDeveloperPortalAppApiProducts: React.FC<IAPDisplayDevelope
   }
   const versionBodyTemplate = (row: TAPDeveloperPortalAppApiProductDisplay): JSX.Element => {
     return (
-      <div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleInfo.apLifecycleState})`}</div>
+      <div>{`${row.apVersionInfo.apLastVersion} (${row.apLifecycleStageInfo.stage})`}</div>
     );
   }
   const statusBodyTemplate = (row: TAPDeveloperPortalAppApiProductDisplay): JSX.Element => {

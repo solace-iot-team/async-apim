@@ -9,15 +9,13 @@ General
 
 Managed assets are:
 
-* API Products
+* :ref:`API Products<managed-assets-api-products>`
 
 
-Versioning
-++++++++++
+Revision History
+++++++++++++++++
 
-Managed assets are versioned using semantic versioning.
-
-* each update requires a new version of the asset
+Managed asset revisions are tracked from one update to the next. Revision numbers are presented using semantic versioning.
 
 Attributes
 ++++++++++
@@ -31,7 +29,8 @@ Assets are tagged with the following, reserved attributes:
 :_AP_BUSINESS_GROUP_OWNING_EXTERNAL_DISPLAY_NAME_: the external system's business group display name, if the business group was imported from an external system
 :_AP_BUSINESS_GROUP_EXTERNAL_SYSTEM_ID_: the external system's id the external business group information relates to
 :_AP_BUSINESS_GROUP_SHARING_LIST_: list of business group information the asset is shared with. see below for details.
-:_AP_LIFECYLE_STATE_: state of the asset. values: `draft`, `released`, `deprecated`
+:_AP_PUBLISH_DESTINATION_: comma separated list of external system Ids the asset is published to. if asset is not published, attribute is absent.
+
 
 .. seealso::
 

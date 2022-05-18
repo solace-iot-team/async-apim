@@ -26,7 +26,6 @@ import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizations
 import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 
 // DELETEME
-import { ManageApiProductsPage as deleteme_ManageApiProductsPage} from "./pages/deleteme.ManageApiProductsPage";
 import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
 import { ManageSystemOrganizationsPage as deleteme_ManageSystemOrganizationsPage } from "./pages/deleteme_ManageSystemOrganizationsPage";
 import { MonitorOrganizationStatusPage as deleteme_MonitorOrganizationStatusPage } from "./pages/deleteme_MonitorOrganizationStatusPage";
@@ -66,9 +65,6 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         /* API Team*/
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApis} component={ManageApisPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApis} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
-
-        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} component={deleteme_ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApiProducts} />,
-
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
 
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} component={deleteme_ManageAppsPage} exact key={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} />,

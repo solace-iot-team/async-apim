@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js",
@@ -11,6 +11,7 @@
     "compile": "tsc",
     "dev": "nodemon server/index.ts | pino-pretty",
     "dev:nopretty": "nodemon server/index.ts",
+    "dev:debug-session": "DEBUG=express-session && nodemon server/index.ts | pino-pretty",
     "dev:debug": "nodemon --exec \"node -r ts-node/register --inspect-brk\" server/index.ts | pino-pretty",
     "lint": "eslint -c .eslintrc.js \"{server, test}/**/*.{js,ts}\" --quiet",
     "test": ". ./test/source.env.sh && mocha --config test/.mocharc.yml test/**/**.*.spec.ts && unset_source_env",

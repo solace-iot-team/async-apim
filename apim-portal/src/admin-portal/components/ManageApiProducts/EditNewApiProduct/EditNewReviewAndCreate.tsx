@@ -8,8 +8,9 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
-import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, ButtonLabel_CreateNewVersion, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
+import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../DisplayApiProduct";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -32,6 +33,7 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
   type  TManagedObject = TAPAdminPortalApiProductDisplay;
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -39,18 +41,20 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
     const funcName = 'apiCreateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState;
-    if(props.action === EAction.NEW) callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
-    else callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT, `create new version of api product: ${mo.apEntityId.displayName}`); 
+    if(props.action === EAction.NEW) callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `create api product: ${mo.apEntityId.displayName}`);
+    else callState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `create new version of api product: ${mo.apEntityId.displayName}`); 
     try { 
       if(props.action === EAction.NEW) {
         await APAdminPortalApiProductsDisplayService.apiCreate_ApApiProductDisplay({
           organizationId: props.organizationId,
           apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+          userId: userContext.apLoginUserDisplay.apEntityId.id,
         });
       } else {
         await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
           organizationId: props.organizationId,
           apApiProductDisplay: mo,
+          userId: userContext.apLoginUserDisplay.apEntityId.id,
         });  
       }
     } catch(e: any) {
@@ -76,7 +80,7 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
     const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
-      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE_VERSION_API_PRODUCT) {
+      else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT) {
         if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
         props.onCreateSuccess(apiCallStatus, managedObject.apEntityId);
       }
@@ -106,10 +110,9 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
   }
 
   const componentFooterRightToolbarTemplate = () => {
-    const buttonLabel: string = props.action === EAction.EDIT ? ButtonLabel_CreateNewVersion : ButtonLabel_Create;
     return (
       <React.Fragment>
-        <Button key={ComponentName+buttonLabel} label={buttonLabel} icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
+        <Button key={ComponentName+ButtonLabel_Create} label={ButtonLabel_Create} icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" onClick={onCreate}/>
       </React.Fragment>
     );
   }
@@ -131,16 +134,6 @@ export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (p
           onSuccess={props.onUserNotification}
           onLoadingChange={props.onLoadingChange}
         />
-        {/* DEBUG */}
-        {/* <p><b>{ComponentName}:mo=</b></p>
-        <pre style={ { fontSize: '10px', width: '500px' }} >
-          {JSON.stringify(mo., null, 2)}
-        </pre> */}
-
-        {/* <p><b>{ComponentName}:mo=</b></p>
-        <pre style={ { fontSize: '10px', width: '500px' }} >
-          {JSON.stringify(mo, null, 2)}
-        </pre> */}
       </React.Fragment>
     );
   }

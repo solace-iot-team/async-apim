@@ -427,7 +427,7 @@ export class APSBusinessGroupsService {
     const listApsUsersResponse: ListApsUsersResponse = await APSUsersService.allByOrganizationId({
       apsOrganizationId: apsOrganizationId
     });
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'apsOrganizationUserList', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'apsOrganizationUserList', details: {
       apsOrganizationUserList: listApsUsersResponse,
     }}));
     const apsUserResponseList: APSUserResponseList = listApsUsersResponse.list;
@@ -511,7 +511,7 @@ export class APSBusinessGroupsService {
     // collect all the members
     responseGroup.members = await this._allMembers({ apsOrganizationId: apsOrganizationId, apsBusinessGroupId: responseGroup.businessGroupId});
 
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponse', details: responseGroup }));
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSBusinessGroupResponse', details: responseGroup }));
     
     return responseGroup;
   }

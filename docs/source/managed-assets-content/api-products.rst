@@ -14,6 +14,17 @@ API Products have an access level property with the following values:
 :public: the API Product can be viewed in public marketplaces, regardless of login status
 
 
+Lifecycle Stage
++++++++++++++++
+
+API Products have a lifecycle stage property with the following values:
+
+:draft: the API Product is in draft mode, Apps cannot add it
+:released: the API Product is released, Apps can add it and it can be published to marketplaces
+:deprecated: the API Product is deprecated, Apps which already include it are unaffected, but it cannot be added any more
+:retired: the API Product is retired. It will be deprovisioned automatically from all Apps that include it
+
+
 Managing API Products
 +++++++++++++++++++++
 

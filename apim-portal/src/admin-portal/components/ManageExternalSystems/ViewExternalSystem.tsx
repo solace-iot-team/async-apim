@@ -78,8 +78,10 @@ export const ViewExternalSystem: React.FC<IViewExternalSystemProps> = (props: IV
           <div className="view">
             <div className="view-detail-left">
               
+              <div><b>Marketplace Destination:</b> {String(managedObject.isMarketplaceDestination)}</div>
+    
               <div className="p-text-bold">Description:</div>
-              <div className="p-ml-2">{managedObject.apsExternalSystem.description}</div>
+              <div className="p-ml-2">{managedObject.description}</div>
 
               <Divider />
               <div className="p-text-bold">Business Groups:</div>

@@ -16,6 +16,7 @@ module.exports = {
     // e.g. "@typescript-eslint/explicit-function-return-type": "off",
   },
   ignorePatterns: [
-    "server/@types/*"
+    "server/@types/*",
+    "**/_todo.*"
   ]
 };

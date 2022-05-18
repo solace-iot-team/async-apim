@@ -172,7 +172,7 @@ export const ListMaintainApiProducts: React.FC<IListMaintainApiProductsProps> = 
     return row.apAccessLevel;
   }
   const stateTemplate = (row: TManagedObject): string => {
-    return row.apLifecycleInfo.apLifecycleState;
+    return row.apLifecycleStageInfo.stage;
   }
   const renderManagedObjectDataTable = () => {
     const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
@@ -180,7 +180,7 @@ export const ListMaintainApiProducts: React.FC<IListMaintainApiProductsProps> = 
     const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
     // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
     const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');    
-    const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleInfo('apLifecycleState');
+    const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
     const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
     return (
       <div className="card">

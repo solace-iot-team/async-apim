@@ -1,3 +1,4 @@
+import { $attributes } from "@solace-iot-team/apim-connector-openapi-browser";
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 /** not defined in connector API */
@@ -50,6 +51,12 @@ class APAttributesDisplayService {
     };
   }
   
+  private validateAttributeValue = (value: string): boolean => {
+    const schema = $attributes.contains.properties.value;
+    if(value.length < schema.minLength) return false;
+    if(value.length > schema.maxLength) return false;
+    return true;
+  }
   public create_ApAttributeDisplay(apRawAttribute: TAPRawAttribute): IAPAttributeDisplay {
     return {
       apEntityId: {
@@ -80,6 +87,15 @@ class APAttributesDisplayService {
   }
 
   public create_ApRawAttribute(apAttributeDisplay: IAPAttributeDisplay): TAPRawAttribute {
+    const funcName = 'create_ApRawAttribute';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // validate value if not empty
+    if(
+      apAttributeDisplay.apEntityId.id !== '' &&
+      !this.validateAttributeValue(apAttributeDisplay.value)
+    ) {
+      throw new Error(`${logName}: invalid attribute value, attribute=${JSON.stringify(apAttributeDisplay)}`);
+    }
     return {
       name: apAttributeDisplay.apEntityId.id,
       // value: this.construct_RawAttributeValue(apAttributeDisplay.value)

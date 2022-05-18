@@ -48,7 +48,7 @@ export const APDisplayApApiProductListControlledChannelParameterList: React.FC<I
         const mo: TManagedObject = {
           apEntityId: apApiProductDisplay.apEntityId,
           apControlledChannelParameter: apControlledChannelParameter,
-          apiProductInfo: `v${apApiProductDisplay.apVersionInfo.apLastVersion} (${apApiProductDisplay.apApp_ApiProduct_Status}, ${apApiProductDisplay.apLifecycleInfo.apLifecycleState})`,
+          apiProductInfo: `v${apApiProductDisplay.apVersionInfo.apLastVersion} (${apApiProductDisplay.apApp_ApiProduct_Status}, ${apApiProductDisplay.apLifecycleStageInfo.stage})`,
         };        
         moList.push(mo);
       }

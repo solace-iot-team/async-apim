@@ -20,7 +20,7 @@ import APEntityIdsService, {
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
-import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetLifecycleInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
@@ -28,12 +28,14 @@ import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApi
 import { Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
-import { APIProductAccessLevel } from "@solace-iot-team/apim-connector-openapi-browser";
+import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
+import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -61,20 +63,24 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   // version
-  const [selectedVersion, setSelectedVersion] = React.useState<string>();
+  const [selectedRevision, setSelectedRevision] = React.useState<string>();
+
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
 
   // * Api Calls *
-  const apiGetManagedObject = async(version: string): Promise<TApiCallState> => {
+  const apiGetManagedObject = async(revision: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apAdminPortalApiProductDisplay.apEntityId.displayName}, version: ${version}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT, `retrieve details for api product: ${props.apAdminPortalApiProductDisplay.apEntityId.displayName}, revision: ${revision}`);
     try { 
       const object: TAPAdminPortalApiProductDisplay = await APAdminPortalApiProductsDisplayService.apiGet_AdminPortalApApiProductDisplay({
         organizationId: props.organizationId,
         apiProductId: props.apAdminPortalApiProductDisplay.apEntityId.id,
         default_ownerId: props.apAdminPortalApiProductDisplay.apOwnerInfo.id,
         fetch_revision_list: true,
-        revision: version,
+        revision: revision,
       });
       setManagedObject(object);
     } catch(e) {
@@ -122,9 +128,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     setManagedObject(props.apAdminPortalApiProductDisplay);
   }
 
-  const doFetchVersion = async (version: string) => {
+  const doFetchRevision = async (revision: string) => {
     props.onLoadingChange(true);
-    await apiGetManagedObject(version);
+    await apiGetManagedObject(revision);
     props.onLoadingChange(false);
   }
 
@@ -136,14 +142,14 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setSelectedVersion(managedObject.apVersionInfo.apCurrentVersion);
+    setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(selectedVersion === undefined) return;
+    if(selectedRevision === undefined) return;
     if(managedObject === undefined) return;
-    if(selectedVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedVersion);
-  }, [selectedVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(selectedRevision !== managedObject.apVersionInfo.apCurrentVersion) doFetchRevision(selectedRevision);
+  }, [selectedRevision]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -255,36 +261,36 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return (<></>);
   }
 
-  const renderVersionSelect = (): JSX.Element => {
-    const funcName = 'renderVersionSelect';
+  const renderRevisionSelect = (): JSX.Element => {
+    const funcName = 'renderRevisionSelect';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
     if(managedObject.apVersionInfo.apVersionList === undefined) throw new Error(`${logName}: managedObject.apVersionInfo.apVersionList is undefined`);
 
-    const onVersionSelect = (e: DropdownChangeParams) => {
-      setSelectedVersion(e.value);
+    const onRevisionSelect = (e: DropdownChangeParams) => {
+      setSelectedRevision(e.value);
     }
 
     return(
       <Dropdown
-        value={selectedVersion}
+        value={selectedRevision}
         options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
-        onChange={onVersionSelect}
+        onChange={onRevisionSelect}
       />                          
     );
   }
 
-  const renderVersion = (mo: TManagedObject): JSX.Element => {
-    const funcName = 'renderVersion';
+  const renderRevision = (mo: TManagedObject): JSX.Element => {
+    const funcName = 'renderRevision';
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
         return (
-          <div><b>Version: </b>{renderVersionSelect()}</div>
+          <div><b>Revision: </b>{renderRevisionSelect()}</div>
         );
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
         return (
-          <div><b>New Version: {mo.apVersionInfo.apCurrentVersion}</b></div>
+          <div><b>New Revision: {mo.apVersionInfo.apCurrentVersion}</b></div>
         );
       default:
         Globals.assertNever(logName, props.scope);
@@ -292,15 +298,25 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return (<></>);
   }
 
-  const renderState = (apManagedAssetLifecycleInfo: TAPManagedAssetLifecycleInfo): JSX.Element => {
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     return(
-      <span><b>State: </b>{apManagedAssetLifecycleInfo.apLifecycleState}</span>
+      <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
     );
   }
 
   const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
     return(
       <span><b>Access: </b>{accessLevel}</span>
+    );
+  }
+
+  const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
+    const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
+      if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
+      return APEntityIdsService.create_SortedDisplayNameList(apExternalSystemEntityIdList).join(', ');
+    }
+    return(
+      <span><b>Publish Destination(s): </b>{renderValue(apPublishDestinationInfo.apExternalSystemEntityIdList)}</span>
     );
   }
 
@@ -312,15 +328,16 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
-            <div>{renderState(mo.apLifecycleInfo)}</div>
+            <div>{renderState(mo.apLifecycleStageInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
+            <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
 
             {/* DEBUG */}
             {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}
 
           </div>
           <div className="api-product-view-detail-right">
-            <div>{renderVersion(mo)}</div>
+            <div>{renderRevision(mo)}</div>
           </div>            
         </div>
       </div>  
@@ -329,12 +346,19 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
   const renderMeta = (mo: TManagedObject): JSX.Element => {
     if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE) return (<></>);
+    const renderDerivedFrom = (derivedFrom?: MetaEntityReference): JSX.Element => {
+      if(derivedFrom === undefined) return (<></>);
+      const _name: string | undefined = derivedFrom.displayName !== undefined ? derivedFrom.displayName : derivedFrom.name;
+      return (<div>Cloned from: {`${_name} (${derivedFrom.revision})`}</div>);
+    }
     return (
       <React.Fragment>  
         <div>Created by: {mo.apMetaInfo.apCreatedBy}</div>
         <div>Created on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apCreatedOn)}</div>
         <div>Last Modified by: {mo.apMetaInfo.apLastModifiedBy}</div>
-        <div>Last Modifined on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>
+        <div>Last Modified on: {APMetaInfoDisplayService.create_Timestamp_DisplayString(mo.apMetaInfo.apLastModifiedOn)}</div>        
+        { renderDerivedFrom(mo.apMetaInfo.apDerivedFrom) }
+        {/* <div>Clones: TODO: list of id/displaynames? - needs another API call</div> */}
       </React.Fragment>
     );
   }
@@ -395,7 +419,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
             </div>  
           </React.Fragment>
           </TabPanel>
-          <TabPanel header='APIs'>
+          <TabPanel header={ApiTabHeader}>
             <React.Fragment>
               <div>
                 {renderShowApiButtons()}
@@ -481,7 +505,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         {/* <div>DEBUG: selectedVersion = '{selectedVersion}'</div>
         <div>DEBUG: managedObject.apVersionInfo={JSON.stringify(managedObject?.apVersionInfo)}</div> */}
 
-        {managedObject && selectedVersion !== undefined && renderManagedObject() }
+        {managedObject && selectedRevision !== undefined && renderManagedObject() }
 
       </div>
     </React.Fragment>
