@@ -134,6 +134,9 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       />
     );
   }
+  const renderOwner = (apOwnerInfo: TAPEntityId): JSX.Element => {
+    return (<div><b>Owner</b>: {apOwnerInfo.displayName}</div>);
+  }
   const renderRevisionInfo = (apVersionInfo: IAPVersionInfo): JSX.Element => {
     return (<div><b>Last Revision:</b> {apVersionInfo.apLastVersion}</div>);
   }
@@ -157,6 +160,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
     return (
       <React.Fragment>
         {renderBusinessGroupInfo(mo.apBusinessGroupInfo)}
+        {renderOwner(mo.apOwnerInfo)}
         {renderRevisionInfo(mo.apVersionInfo)}
         {renderState(mo.apLifecycleStageInfo)}
         {renderAccessLevel(mo.apAccessLevel)}
