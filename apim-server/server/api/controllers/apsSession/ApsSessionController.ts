@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { APSSessionLoginResponse, APSSessionLogoutResponse, APSSessionRefreshTokenResponse, APSUserResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSLoginInternal, APSSessionLoginResponse, APSSessionLogoutResponse, APSSessionRefreshTokenResponse, APSUserResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSAuthStrategyService from '../../../common/authstrategies/APSAuthStrategyService';
 import ServerConfig, { EAuthConfigType } from '../../../common/ServerConfig';
 import { ApiNotAuthorizedServerError, ServerError, ServerFatalError } from '../../../common/ServerError';
@@ -11,6 +11,33 @@ export type UserId_Params = Pick<Components.PathParameters, 'user_id'>;
 export type OrganizationId_Params = Pick<Components.PathParameters, 'organization_id'>;
 
 export class ApsSessionController {
+
+  public static getLogin = (_req: Request, res: Response, _next: NextFunction): void => {
+    const funcName = 'getLogin';
+    const logName = `${ApsSessionController.name}.${funcName}()`;
+    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    //   req: req,
+    // } }));
+    // throw new ServerError(logName, `continue with ${logName}`);
+
+    const configAuthType: EAuthConfigType = ServerConfig.getAuthConfig().type;
+    switch(configAuthType) {
+      case EAuthConfigType.INTERNAL:
+        const apsLoginInternal: APSLoginInternal = {
+          loginInternal: true
+        }
+        res.status(200).send(apsLoginInternal);
+        // this creates a CORS error
+        // res.redirect(`${req.headers.origin}/?login=true`);
+        break;
+      case EAuthConfigType.OIDC:
+        throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
+      case EAuthConfigType.NONE:
+        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
+      default:
+        ServerUtils.assertNever(logName, configAuthType);
+    }
+  }
 
   public static login = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'login';

@@ -23,6 +23,7 @@ export default function routes(app: Application, apiBase: string): void {
   // Public Routes
   // app.get('/login') ==> re-direct to correct login system
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
+    app.get(`${apiBase}/apsSession/login`, ApsSessionController.getLogin);
     app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
     app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
     // app.get(`${apiBase}/apsSession/refreshToken`, passport.session, ApsSessionController.refreshToken);

@@ -1,7 +1,12 @@
+import { TSessionContextAction } from '../../components/APContextProviders/APSessionContextProvider';
+import { APFetch, APFetchResult } from '../../utils/APFetch';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { 
   ApiError,
   ApsLoginService,
+  APSSessionLoginResponse,
+  APSSessionRefreshTokenResponse,
+  ApsSessionService,
   APSUserLoginCredentials, 
   APSUserResponse, 
   ApsUsersService, 
@@ -17,6 +22,11 @@ export type TAPUserLoginCredentials = APSUserLoginCredentials;
 
 export type TAPLoginUserDisplay = IAPUserDisplay & {
   apMemberOfOrganizationDisplayList: TAPMemberOfOrganizationDisplayList;
+};
+
+export type TAPSecLoginUserResponse = {
+  apLoginUserDisplay: TAPLoginUserDisplay;
+  apsApitoken: string;
 };
 
 class APLoginUsersDisplayService extends APUsersDisplayService {
@@ -58,11 +68,11 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
    * Create the login user from APSUser instead from APSUserResponse. 
    * Used when root user logs in, cannot get the full APSUserResponse.
    */
-  private create_ApLoginUserDisplay_From_ApsUser({ apsUser }: {
-    apsUser: APSUserResponse;
+  private create_ApLoginUserDisplay_From_ApsUserResponse({ apsUserResponse }: {
+    apsUserResponse: APSUserResponse;
   }): TAPLoginUserDisplay {
-    const apsUserResponse: APSUserResponse = {
-      ...apsUser,
+    const _apsUserResponse: APSUserResponse = {
+      ...apsUserResponse,
       memberOfOrganizations: [],
       memberOfOrganizationGroups: [],
       organizationSessionInfoList: []
@@ -100,16 +110,97 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     return apLoginUserDisplay;
   }
 
-  public async apsLogin({ apUserLoginCredentials }:{
+
+  // public async apsSecRefreshToken({ dispatchSessionContextAction }:{
+  //   dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
+  // }): Promise<APSSessionRefreshTokenResponse> {
+
+  public async apsSecRefreshToken(): Promise<APSSessionRefreshTokenResponse> {
+    const funcName = 'apsSecRefreshToken';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await ApsSessionService.apsRefreshToken();
+    
+    // // interim solution until sec fully implemented
+    // const res: Response = await APFetch.fetchSec({
+    //   method: "GET",
+    //   resource: `${APSClientOpenApi.getOpenApiInfo().base}/apsSession/refreshToken`,
+    // });
+    // const apFetchResult: APFetchResult = await APFetch.getFetchResult(res);
+    // console.log(`${logName}: apFetchResult = ${JSON.stringify(apFetchResult, null, 2)}`);
+
+    // if(apFetchResult.status !== 200) return {
+    //   success: false,
+    //   token: ''
+    // };
+
+    // const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
+    //   ...apFetchResult.body
+    // }
+    return apsSessionRefreshTokenResponse;
+
+  }
+
+  public async apsSecLogin({ apUserLoginCredentials }:{
     apUserLoginCredentials: TAPUserLoginCredentials;
-  }): Promise<TAPLoginUserDisplay | undefined> {
-    let apsUser: APSUserResponse | undefined = undefined;
+  }): Promise<TAPSecLoginUserResponse | undefined> {
+
+    let apsSessionLoginResponse: APSSessionLoginResponse | undefined = undefined;
     try {
       const request: APSUserLoginCredentials = {
         username: apUserLoginCredentials.username,
         password: apUserLoginCredentials.password,
       };
-      apsUser = await ApsLoginService.login({
+      apsSessionLoginResponse = await ApsSessionService.apsLogin({
+        requestBody: request
+      });
+    } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 401) return undefined;
+      }
+      throw e;
+    }
+    // now get the full APSUserResponse
+    // Note: it might be the root user, in which case, this will throw an error 404
+    try {
+      const apLoginUserDisplay: TAPLoginUserDisplay = await this.apsGet_ApLoginUserDisplay({ 
+        userId: apUserLoginCredentials.username,
+      });  
+      return {
+        apLoginUserDisplay: apLoginUserDisplay,
+        apsApitoken: apsSessionLoginResponse.token
+      };
+    } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) {
+          const {token, ...rest} = apsSessionLoginResponse;
+          const apsUserResponse: APSUserResponse = {
+            ...rest,
+          };
+          return {
+            apLoginUserDisplay: this.create_ApLoginUserDisplay_From_ApsUserResponse({
+              apsUserResponse: apsUserResponse
+            }),
+            apsApitoken: apsSessionLoginResponse.token,
+          };
+        }
+      }
+      throw e;
+    }
+  }
+
+  public async apsLogin({ apUserLoginCredentials }:{
+    apUserLoginCredentials: TAPUserLoginCredentials;
+  }): Promise<TAPLoginUserDisplay | undefined> {
+    let apsUserResponse: APSUserResponse | undefined = undefined;
+    try {
+      const request: APSUserLoginCredentials = {
+        username: apUserLoginCredentials.username,
+        password: apUserLoginCredentials.password,
+      };
+      apsUserResponse = await ApsLoginService.login({
         requestBody: request,
       });
     } catch(e: any) {
@@ -128,8 +219,8 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     } catch(e: any) {
       if(APSClientOpenApi.isInstanceOfApiError(e)) {
         const apiError: ApiError = e;
-        if(apiError.status === 404) return this.create_ApLoginUserDisplay_From_ApsUser({
-          apsUser: apsUser
+        if(apiError.status === 404) return this.create_ApLoginUserDisplay_From_ApsUserResponse({
+          apsUserResponse: apsUserResponse
         });
       }
       throw e;

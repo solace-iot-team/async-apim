@@ -29,6 +29,8 @@ import {
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { HomePage } from './pages/HomePage';
 import { UserLoginPage } from './pages/UserLoginPage';
+import { UserSecLoginPage } from "./pages/UserSecLoginPage";
+import { UserGetLoginPage } from "./pages/UserGetLoginPage";
 import { ManageUserAccountPage } from "./pages/ManageUserAccountPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { NoOrganizationPage } from "./pages/NoOrganizationPage";
@@ -48,6 +50,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './App.css';
+import { UserSecVerify } from "./components/ManageLoginAndSelect/UserSecVerify";
 
 const App: React.FC = () => {
   const componentName = 'App';
@@ -155,6 +158,7 @@ const App: React.FC = () => {
       <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
+      <UserSecVerify />
       { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
@@ -181,6 +185,9 @@ const App: React.FC = () => {
               <Route path={EUICommonResourcePaths.HealthCheckView} component={HealthCheckViewPage} exact />
               
               {/* User */}
+              <Route path={EUICommonResourcePaths.GetLogin} component={UserGetLoginPage} exact />
+              <Route path={EUICommonResourcePaths.SecLogin} component={UserSecLoginPage} exact />
+
               <Route path={EUICommonResourcePaths.Login} component={UserLoginPage} exact />
               <ProtectedRouteWithRbac path={EUICommonResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
 

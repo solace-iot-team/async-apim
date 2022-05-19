@@ -1,23 +1,19 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 
 import { TApiCallState } from '../utils/ApiCallState';
-import { ManageLoginAndSelect } from '../components/ManageLoginAndSelect/ManageLoginAndSelect';
-import { TAPUserLoginCredentials } from '../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
+import { ManageSecLoginAndSelect } from '../components/ManageLoginAndSelect/ManageSecLoginAndSelect';
 
 import "./Pages.css";
 
-export const UserLoginPage: React.FC = () => {
+export const UserSecLoginPage: React.FC = () => {
   // const componentName="UserLoginPage";
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
-  const location = useLocation<TAPUserLoginCredentials>();
-  
   const onSuccess = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
   }
@@ -30,11 +26,10 @@ export const UserLoginPage: React.FC = () => {
     <div className="ap-pages">
       
       <Toast ref={toast} />
-      
-      <ManageLoginAndSelect
+
+      <ManageSecLoginAndSelect
         onSuccess={onSuccess} 
         onError={onError} 
-        userCredentials={location.state}
       />
 
     </div>

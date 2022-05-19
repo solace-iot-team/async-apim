@@ -1,5 +1,6 @@
 import { AuthHelper } from '../auth/AuthHelper';
 import { TOrganizationContextAction } from '../components/APContextProviders/APOrganizationContextProvider';
+import { TAPSessionContext, TSessionContextAction } from '../components/APContextProviders/APSessionContextProvider';
 import { UserContextAction } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContextAction } from '../components/AuthContextProvider/AuthContextProvider';
 import { TAPEntityId } from '../utils/APEntityIdsService';
@@ -21,6 +22,13 @@ class APContextsDisplayService {
   public get_RoleDisplayName(apsRole: EAPSCombinedAuthRole): string {
     const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
     return rbacRole.displayName;
+  }
+
+  public setup_SessionContext({ apSessionContext, dispatchSessionContextAction }:{
+    apSessionContext: TAPSessionContext;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
+  }): void {
+    dispatchSessionContextAction({ type: 'SET_SESSION_CONTEXT', apSessionContext: apSessionContext });
   }
 
   private setup_AuthContext({ authorizedResourcePathsAsString, dispatchAuthContextAction }:{
@@ -161,6 +169,7 @@ class APContextsDisplayService {
   /** Setup the contexts after user login */
   public async setup_LoginContexts({
     apLoginUserDisplay,
+    apSessionContext,
     organizationEntityId,
     isConnectorAvailable,
     dispatchAuthContextAction,
@@ -168,9 +177,11 @@ class APContextsDisplayService {
     userContextOriginAppState,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
+    dispatchSessionContextAction,
     navigateTo,
   }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
+    apSessionContext: TAPSessionContext;
     organizationEntityId: TAPEntityId | undefined;
     isConnectorAvailable: boolean;
     dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
@@ -178,12 +189,18 @@ class APContextsDisplayService {
     userContextOriginAppState: EAppState;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
     navigateTo: (path: string) => void;
     // onLoadingChange: (isLoading: boolean) => void;
   }): Promise<void> {
 
     // test show loading
     // await Globals.sleep(5000);
+
+    this.setup_SessionContext({
+      apSessionContext: apSessionContext,
+      dispatchSessionContextAction: dispatchSessionContextAction
+    });
 
     const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
       apLoginUserDisplay: apLoginUserDisplay,
@@ -219,12 +236,15 @@ class APContextsDisplayService {
     dispatchAuthContextAction,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
+    dispatchSessionContextAction,
   }:{
     dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
   }): void {
 
+    dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
     dispatchOrganizationContextAction({ type: 'CLEAR_ORGANIZATION_CONTEXT' });

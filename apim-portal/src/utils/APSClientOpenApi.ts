@@ -33,8 +33,13 @@ export class APSClientOpenApi {
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
-      APSOpenAPI.WITH_CREDENTIALS = false;
-      APSOpenAPI.CREDENTIALS = "omit";
+      
+      // APSOpenAPI.WITH_CREDENTIALS = false;
+      // APSOpenAPI.CREDENTIALS = "omit";
+
+      APSOpenAPI.WITH_CREDENTIALS = true;
+      APSOpenAPI.CREDENTIALS = "include";
+
     }
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
   }

@@ -13,6 +13,7 @@ import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsServi
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
 import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";
 import { EUICommonResourcePaths } from "../../../../utils/Globals";
 import APSystemUsersDisplayService, { 
@@ -56,6 +57,8 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -169,6 +172,7 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
         dispatchAuthContextAction: dispatchAuthContextAction,
         dispatchUserContextAction: dispatchUserContextAction,
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        dispatchSessionContextAction: dispatchSessionContextAction,
       });
       navigateTo(EUICommonResourcePaths.Login);
     }

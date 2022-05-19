@@ -12,6 +12,7 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
+import { SessionContext } from "../../../components/APContextProviders/APSessionContextProvider";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 import { ListConnectors } from "./ListConnectors";
@@ -100,6 +101,8 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
 
   const history = useHistory();
 
@@ -125,6 +128,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
     navigateTo(EUICommonResourcePaths.Home);
     await apiLogoutAll();

@@ -50,6 +50,24 @@ export class APFetch {
     return response;
   }
 
+  /**
+   * Interim helper function until sec is fully implemented
+   */
+  public static fetchSec = async({ method, resource }:{
+    method: string;
+    resource: string;
+  }): Promise<Response> =>  {
+    // function fetch(input: RequestInfo, init?: RequestInit | undefined): Promise<Response>
+    // (method) fetch(input: RequestInfo, init?: RequestInit | undefined): Promise<Response>
+    const init: RequestInit = {
+      method: method,
+      credentials: 'include',
+      headers: { "Content-Type": "application/json" },
+    }
+    const response: Response = await window.fetch(resource, init);
+    return response;
+  }
+
   public static fetchWithTimeoutAndRandomBasicAuth = async(resource: string, timeout_ms: number): Promise<Response> =>  {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout_ms);

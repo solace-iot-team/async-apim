@@ -11,8 +11,7 @@ import { OrganizationContext } from "../APContextProviders/APOrganizationContext
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
-import { TAPLoginUserDisplay, TAPUserLoginCredentials } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
-import { UserLogin } from "./UserLogin";
+import { TAPSecLoginUserResponse } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 import APMemberOfService from "../../displayServices/APUsersDisplayService/APMemberOfService";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
@@ -21,21 +20,21 @@ import APContextsDisplayService from "../../displayServices/APContextsDisplaySer
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { Loading } from "../Loading/Loading";
-import { EmptySessionContext, SessionContext } from "../APContextProviders/APSessionContextProvider";
+import { UserSecLogin } from "./UserSecLogin";
+import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 
 import '../APComponents.css';
 import "./ManageLoginAndSelect.css";
 
-export interface IManageLoginAndSelectProps {
-  userCredentials?: TAPUserLoginCredentials;
+export interface IManageSecLoginAndSelectProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
 }
 
-export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props: IManageLoginAndSelectProps) => {
-  const ComponentName = 'ManageLoginAndSelect';
+export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = (props: IManageSecLoginAndSelectProps) => {
+  const ComponentName = 'ManageSecLoginAndSelect';
 
-  type TManagedObject = TAPLoginUserDisplay;
+  type TManagedObject = TAPSecLoginUserResponse;
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -77,11 +76,11 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     // alert(`${logName}: organizationEntityId = ${JSON.stringify(organizationEntityId)}`);
 
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SETUP_LOGIN_CONTEXTS, `setup user: ${mo.apEntityId.id}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SETUP_LOGIN_CONTEXTS, `setup user: ${mo.apLoginUserDisplay.apEntityId.id}`);
     try { 
       await APContextsDisplayService.setup_LoginContexts({
-        apLoginUserDisplay: mo,
-        apSessionContext: EmptySessionContext,
+        apLoginUserDisplay: mo.apLoginUserDisplay,
+        apSessionContext: { apsApiToken: mo.apsApitoken },
         organizationEntityId: organizationEntityId,
         isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
         dispatchAuthContextAction: dispatchAuthContextAction,
@@ -103,7 +102,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   const doSetupLoggedInUser = async (mo: TManagedObject, organizationEntityId: TAPEntityId | undefined) => {
     setIsLoading(true);
     await apiSetupLoginContexts(mo, organizationEntityId);
-    dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo });
+    dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: mo.apLoginUserDisplay });
     setIsLoading(false);
   }
 
@@ -112,7 +111,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
-      dispatchSessionContextAction: dispatchSessionContextAction
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
     setNewComponentState(E_COMPONENT_STATE.LOGIN_SCREEN);
   }
@@ -123,20 +122,19 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObject !== undefined) {
-      const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
-        apMemberOfOrganizationDisplayList: managedObject.apMemberOfOrganizationDisplayList,
-      });
-      // alert(`${logName}: memberOfOrganizationEntityIdList = ${JSON.stringify(memberOfOrganizationEntityIdList, null, 2)}`);
+    if(managedObject === undefined) return;
+    const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
+      apMemberOfOrganizationDisplayList: managedObject.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
+    });
+    // alert(`${logName}: memberOfOrganizationEntityIdList = ${JSON.stringify(memberOfOrganizationEntityIdList, null, 2)}`);
 
-      if(memberOfOrganizationEntityIdList.length === 0) {
-        doSetupLoggedInUser(managedObject, undefined);
-      } else if(memberOfOrganizationEntityIdList.length === 1) {
-        doSetupLoggedInUser(managedObject, memberOfOrganizationEntityIdList[0]);
-      } else {
-        setNewComponentState(E_COMPONENT_STATE.SELECT_ORGANIZATION);        
-      }  
-    }
+    if(memberOfOrganizationEntityIdList.length === 0) {
+      doSetupLoggedInUser(managedObject, undefined);
+    } else if(memberOfOrganizationEntityIdList.length === 1) {
+      doSetupLoggedInUser(managedObject, memberOfOrganizationEntityIdList[0]);
+    } else {
+      setNewComponentState(E_COMPONENT_STATE.SELECT_ORGANIZATION);        
+    }  
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -169,8 +167,8 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
     }
   }
 
-  const onLoginSuccess = (apLoginUserDisplay: TAPLoginUserDisplay) => {
-    setManagedObject(apLoginUserDisplay);
+  const onLoginSuccess = (apSecLoginUserResponse: TAPSecLoginUserResponse) => {
+    setManagedObject(apSecLoginUserResponse);
   }
 
   const onLoginError = (apiCallStatus: TApiCallState) => {
@@ -193,10 +191,9 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       {showUserLogin &&
-        <UserLogin
+        <UserSecLogin
           onSuccess={onLoginSuccess}
           onError={onLoginError}
-          userCredentials={props.userCredentials}
           // onLoadingChange={props.onLoadingChange} 
           onLoadingChange={setIsLoading} 
         />
@@ -213,7 +210,7 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
         >
           <APSelectOrganization
             apMemberOfOrganizationEntityIdList={APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
-              apMemberOfOrganizationDisplayList: managedObject.apMemberOfOrganizationDisplayList,
+              apMemberOfOrganizationDisplayList: managedObject.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
             })}
             onSuccess={onSelectOrganizationSuccess} 
           />

@@ -38,10 +38,6 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.ManageSystemUsers, 
-      
-      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
-
-
       EUIAdminPortalResourcePaths.LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
@@ -78,11 +74,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageSystemUsers,
-      
       EUIAdminPortalResourcePaths.ManageSystemOrganizations,
-
-      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
-
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
@@ -102,13 +94,7 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationUsers,
       EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups,
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
-      EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
-
-      // DELETEME
-      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings,
-      EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus,
-      
-      
+      EUIAdminPortalResourcePaths.MonitorOrganizationStatus,      
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,

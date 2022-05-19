@@ -27,9 +27,6 @@ import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 
 // DELETEME
 import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
-import { ManageSystemOrganizationsPage as deleteme_ManageSystemOrganizationsPage } from "./pages/deleteme_ManageSystemOrganizationsPage";
-import { MonitorOrganizationStatusPage as deleteme_MonitorOrganizationStatusPage } from "./pages/deleteme_MonitorOrganizationStatusPage";
-import { ManageOrganizationSettingsPage as deleteme_ManageOrganizationSettingsPage } from "./pages/deleteme_ManageOrganizationSettingsPage";
 
 
 
@@ -45,18 +42,10 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} component={ManageSystemSettingsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemConfigSettings} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemUsers} component={ManageSystemUsersPage} exact key={EUIAdminPortalResourcePaths.ManageSystemUsers} />,
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.ManageSystemOrganizations} component={ManageSystemOrganizationsPage} exact key={EUIAdminPortalResourcePaths.ManageSystemOrganizations} />,
-        
-        <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations} component={deleteme_ManageSystemOrganizationsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations} />,
-        
         <ProtectedRouteWithRbac path={EUIAdminPortalResourcePaths.MonitorSystemHealth} component={MonitorSystemHealthPage} exact key={EUIAdminPortalResourcePaths.MonitorSystemHealth} />,
         /* Organization */
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationSettings} component={ManageOrganizationSettingsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationSettings} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} component={MonitorOrganizationStatusPage} exact key={EUIAdminPortalResourcePaths.MonitorOrganizationStatus} />,
-        
-        // DELETEME
-        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings} component={deleteme_ManageOrganizationSettingsPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings} />,
-        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus} component={deleteme_MonitorOrganizationStatusPage} exact key={EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus} />,
-
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationUsers} component={ManageOrgUsersPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationUsers} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} component={ManageOrgBusinessGroupsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} component={ManageOrgEnvironmentsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationEnvironments} />,

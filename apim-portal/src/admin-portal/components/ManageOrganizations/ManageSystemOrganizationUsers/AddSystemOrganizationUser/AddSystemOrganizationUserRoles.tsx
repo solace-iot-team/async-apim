@@ -18,10 +18,11 @@ import APMemberOfService, { TAPMemberOfOrganizationDisplay } from "../../../../.
 import { EUICommonResourcePaths } from "../../../../../utils/Globals";
 import APLoginUsersDisplayService from "../../../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import APContextsDisplayService from "../../../../../displayServices/APContextsDisplayService";
+import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
+import { SessionContext } from "../../../../../components/APContextProviders/APSessionContextProvider";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
-import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 
 export interface IAddSystemOrganizationUserRolesProps {
   apSystemUserDisplay: TAPSystemUserDisplay;
@@ -47,6 +48,8 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   // const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -112,6 +115,7 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
         dispatchAuthContextAction: dispatchAuthContextAction,
         dispatchUserContextAction: dispatchUserContextAction,
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        dispatchSessionContextAction: dispatchSessionContextAction,
       });
       navigateTo(EUICommonResourcePaths.Login);
     }

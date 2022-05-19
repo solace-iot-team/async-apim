@@ -28,6 +28,7 @@ import { ManageBusinessGroupSelect } from "../ManageBusinessGroupSelect/ManageBu
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -47,6 +48,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const history = useHistory();
   const userOverlayPanel = React.useRef<any>(null);
   const organizationOverlayPanel = React.useRef<any>(null);
@@ -101,6 +104,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
     navigateTo(EUICommonResourcePaths.Home);
     await apiLogout(userContext.apLoginUserDisplay.apEntityId);
@@ -120,6 +124,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     setIsLoading(true);
     await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: userContext.apLoginUserDisplay,
+      apSessionContext: sessionContext,
       organizationEntityId: organizationEntityId,
       isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
       dispatchAuthContextAction: dispatchAuthContextAction,
@@ -127,6 +132,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       userContextOriginAppState: userContext.originAppState,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
       navigateTo: navigateToCurrentHome,
       // onLoadingChange: setIsLoading
     });
@@ -371,6 +377,16 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       </React.Fragment>
     );
   }
+
+  const getLoginButton = (): JSX.Element => {
+    if(Config.getUseDevelTools()) {
+      return (
+        <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="GET Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
+      );
+    }
+    return (<></>);
+  }
+
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
@@ -380,7 +396,10 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     return (
       <React.Fragment>
         {!authContext.isLoggedIn && 
-          <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo('/login')} />
+          <React.Fragment>
+            {getLoginButton()}  
+            <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.Login)} />
+          </React.Fragment>
         }
         {authContext.isLoggedIn &&
           <React.Fragment>

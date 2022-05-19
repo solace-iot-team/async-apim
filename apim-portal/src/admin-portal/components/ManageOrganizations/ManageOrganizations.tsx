@@ -22,6 +22,7 @@ import {
 } from "./ManageOrganizationsCommon";
 import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
+import { SessionContext } from "../../../components/APContextProviders/APSessionContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { ListSystemOrganizations } from "./ListSystemOrganizations";
@@ -98,6 +99,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   /* eslint-enable @typescript-eslint/no-unused-vars */
   
   const history = useHistory();
@@ -112,6 +114,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           dispatchAuthContextAction: dispatchAuthContextAction,
           dispatchUserContextAction: dispatchUserContextAction,
           dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+          dispatchSessionContextAction: dispatchSessionContextAction,
         });
         navigateTo(EUICommonResourcePaths.Home);    
       }

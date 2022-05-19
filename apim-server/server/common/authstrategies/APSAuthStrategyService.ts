@@ -199,13 +199,22 @@ class APSAuthStrategyService {
       // Since localhost is not having https protocol,
       // secure cookies do not work correctly (in postman)
       // secure: !dev,
+
+      // does not work for localhost
       // secure: true,
-      secure: false,
+      // sameSite: "none",
+
+      // for localhost
+      secure: true,
+      sameSite: "none",
+
       signed: true,
       maxAge: authConfig.refreshJwtExpirySecs,
-      sameSite: "none",
       path: '/'
     };
+
+
+
   }
 
   public generateBearerToken_For_InternalAuth = ({ userId }:{

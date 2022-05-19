@@ -11,6 +11,7 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
 import { EUICommonResourcePaths } from "../../../../utils/Globals";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { EditOrganizationUserOrganizationRoles, EEditOrganzationUserOrganizationRolesAction } from "../../ManageOrganizationUsers/EditNewOrganizationUser/EditOrganizationUserOrganizationRoles";
@@ -44,6 +45,8 @@ export const EditSystemOrganizationUserRoles: React.FC<IEditSystemOrganizationUs
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const [editingYourself, setEditingYourself] = React.useState<boolean>(false);
   // const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -92,6 +95,7 @@ export const EditSystemOrganizationUserRoles: React.FC<IEditSystemOrganizationUs
         dispatchAuthContextAction: dispatchAuthContextAction,
         dispatchUserContextAction: dispatchUserContextAction,
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+        dispatchSessionContextAction: dispatchSessionContextAction,
       });
       navigateTo(EUICommonResourcePaths.Login);
     }
