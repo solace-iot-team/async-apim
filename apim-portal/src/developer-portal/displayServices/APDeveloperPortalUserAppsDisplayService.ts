@@ -209,12 +209,20 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): Promise<TAPDeveloperPortalAppListDisplayList> => {
 
-    // const apDeveloperPortalUserAppListDisplayList: TAPDeveloperPortalUserAppListDisplayList = [];
-
-    const connectorAppResponseList: Array<AppResponse> = await AppsService.listDeveloperApps({
-      organizationName: organizationId, 
-      developerUsername: userId
-    });
+    // developer may not yet exist in connector => return empty list
+    let connectorAppResponseList: Array<AppResponse> | undefined = undefined;
+    try {
+      connectorAppResponseList = await AppsService.listDeveloperApps({
+        organizationName: organizationId, 
+        developerUsername: userId
+      });
+    } catch (e: any) {
+      if (APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if (apiError.status === 404) return [];
+        else throw e;
+      } else throw e;
+    }
 
     return await this.apiGetList_ApDeveloperPortalAppListDisplayList({
       organizationId: organizationId,
