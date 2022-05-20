@@ -6,7 +6,7 @@ import { APComponentHeader } from "../../../components/APComponentHeader/APCompo
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./deleteme_ManageApisCommon";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../../../utils/APTypes";

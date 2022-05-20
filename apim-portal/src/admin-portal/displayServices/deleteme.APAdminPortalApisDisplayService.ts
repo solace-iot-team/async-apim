@@ -1,5 +1,5 @@
 
-import { APApisDisplayService } from '../../displayServices/APApisDisplayService';
+import { APApisDisplayService } from '../../displayServices/deleteme.APApisDisplayService';
 
 class APAdminPortalApisDisplayService extends APApisDisplayService {
   private readonly ComponentName = "APAdminPortalApisDisplayService";

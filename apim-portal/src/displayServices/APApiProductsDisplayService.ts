@@ -17,7 +17,7 @@ import APApisDisplayService, {
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
   TAPApiDisplayList 
-} from './APApisDisplayService';
+} from './deleteme.APApisDisplayService';
 import APAttributesDisplayService, {
   IAPAttributeDisplay,
   TAPAttributeDisplayList,

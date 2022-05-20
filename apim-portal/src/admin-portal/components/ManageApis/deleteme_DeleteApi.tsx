@@ -8,7 +8,7 @@ import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./deleteme_ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 
 import '../../../components/APComponents.css';

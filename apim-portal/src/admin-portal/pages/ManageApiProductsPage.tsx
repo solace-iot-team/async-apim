@@ -17,8 +17,7 @@ import "../../pages/Pages.css";
 export const ManageApiProductsPage: React.FC = () => {
   const componentName = 'ManageApiProductsPage';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;

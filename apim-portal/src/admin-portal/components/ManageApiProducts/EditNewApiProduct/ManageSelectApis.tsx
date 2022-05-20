@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 
 import { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { TApiCallState } from "../../../../utils/ApiCallState";
-import { TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
+import { TAPApiDisplayList } from "../../../../displayServices/deleteme.APApisDisplayService";
 import { SearchSelectApis } from "./SearchSelectApis";
 
 import '../../../../components/APComponents.css';

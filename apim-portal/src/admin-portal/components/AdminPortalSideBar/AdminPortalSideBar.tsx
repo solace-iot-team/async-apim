@@ -48,10 +48,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
+      // isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis) &&
       
-      isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) && 
-      
-      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
+      isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) &&       
+      isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis)
+
       ) return [];
 
     let _items: Array<MenuItem> = [
@@ -74,6 +75,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         label: 'APIs',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+      },
+      {
+        label: 'DELETEME APIs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
       },
     ];
     return _items;

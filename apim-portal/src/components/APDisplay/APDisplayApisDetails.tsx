@@ -2,7 +2,7 @@ import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
 
-import { TAPApiDisplayList } from "../../displayServices/APApisDisplayService";
+import { TAPApiDisplayList } from "../../displayServices/deleteme.APApisDisplayService";
 import { APDisplayApApiListChannelParameterList } from "./APDisplayApApiListApChannelParameterList";
 
 import "../APComponents.css";

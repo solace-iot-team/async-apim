@@ -5,7 +5,7 @@ import { APIInfo, ApisService, CommonEntityNameList } from "@solace-iot-team/api
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./deleteme_ManageApisCommon";
 import { APConnectorApiCalls, TGetAsyncApiSpecResult } from "../../../utils/APConnectorApiCalls";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APRenderUtils } from "../../../utils/APRenderUtils";

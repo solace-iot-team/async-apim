@@ -10,7 +10,7 @@ import { ManageSystemSettingsPage } from "./pages/ManageSystemSettingsPage";
 import { MonitorSystemHealthPage } from "./pages/MonitorSystemHealthPage";
 
 import { ManageAppsPage } from "./pages/ManageAppsPage";
-import { ManageApisPage } from "./pages/ManageApisPage";
+// import { ManageApisPage } from "./pages/ManageApisPage";
 
 import { AdminPortalHealthCheckViewPage } from "./pages/AdminPortalHealthCheckViewPage";
 import { ManageOrgUsersPage } from "./pages/ManageOrgUsersPage";
@@ -23,10 +23,12 @@ import { ManageOrganizationSettingsPage } from "./pages/ManageOrganizationSettin
 
 import { ManageSystemUsersPage } from "./pages/ManageSystemUsersPage";
 import { ManageSystemOrganizationsPage } from "./pages/ManageSystemOrganizationsPage";
+import { ManageApisPage } from "./pages/ManageApisPage";
 import { ManageApiProductsPage } from "./pages/ManageApiProductsPage";
 
 // DELETEME
 import { ManageAppsPage as deleteme_ManageAppsPage} from './pages/deleteme.ManageAppsPage';
+import { ManageApisPage as deleteme_ManageApisPage} from "./pages/deleteme_ManageApisPage";
 
 
 
@@ -56,7 +58,11 @@ export const AdminPortalAppRoutes = (): Array<JSX.Element> => {
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} component={ManageApiProductsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApiProducts} />,
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.ManageOrganizationApps} component={ManageAppsPage} exact key={EUIAdminPortalResourcePaths.ManageOrganizationApps} />,
 
+        // DELETEME
         <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} component={deleteme_ManageAppsPage} exact key={EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps} />,
+        <ProtectedRouteWithRbacAndOrgAccess path={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis} component={deleteme_ManageApisPage} exact key={EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis} />,
+
+
 
 
 

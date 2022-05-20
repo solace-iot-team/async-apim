@@ -1,11 +1,11 @@
 
 import React from "react";
 
-import { TAPApiChannelParameter, TAPApiChannelParameterList, TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
+import { TAPApiChannelParameter, TAPApiChannelParameterList, TAPApiDisplayList } from "../../../../displayServices/deleteme.APApisDisplayService";
 import { TAPControlledChannelParameter, TAPControlledChannelParameterList } from "../../../../displayServices/APApiProductsDisplayService";
 import { SelectApiChannelParameter } from "./SelectApiChannelParameter";
 import { EditNewApAttributeListForm } from "../../../../components/APManageAttributes/EditNewApAttributeListForm";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';

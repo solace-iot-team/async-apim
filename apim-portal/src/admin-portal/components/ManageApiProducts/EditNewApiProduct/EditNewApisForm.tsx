@@ -17,9 +17,9 @@ import {
 import { 
   TAPApiChannelParameterList, 
   TAPApiDisplayList 
-} from "../../../../displayServices/APApisDisplayService";
+} from "../../../../displayServices/deleteme.APApisDisplayService";
 import { ManageSelectApis } from "./ManageSelectApis";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EditControlledChannelParameters } from "./EditControlledChannelParameters";
 import { APDisplayApisDetails } from "../../../../components/APDisplay/APDisplayApisDetails";

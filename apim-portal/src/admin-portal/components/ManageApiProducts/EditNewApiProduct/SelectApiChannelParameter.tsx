@@ -9,8 +9,8 @@ import {
   TAPApiChannelParameter,
   TAPApiChannelParameterList,
   TAPApiDisplayList 
-} from "../../../../displayServices/APApisDisplayService";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+} from "../../../../displayServices/deleteme.APApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";

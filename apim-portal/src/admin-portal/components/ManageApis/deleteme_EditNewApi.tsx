@@ -17,7 +17,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./ManageApisCommon";
+import { E_CALL_STATE_ACTIONS, TManagedObjectId } from "./deleteme_ManageApisCommon";
 import { APButtonLoadFileContents } from "../../../components/APButtons/APButtonLoadFileContents";
 import { APRenderUtils } from "../../../utils/APRenderUtils";
 import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from "../../../utils/APTypes";

@@ -15,8 +15,8 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { 
   TAPApiDisplay, 
   TAPApiDisplayList 
-} from "../../../../displayServices/APApisDisplayService";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
+} from "../../../../displayServices/deleteme.APApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 

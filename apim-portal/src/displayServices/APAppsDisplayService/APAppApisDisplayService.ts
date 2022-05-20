@@ -6,7 +6,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, 
   TAPEntityId 
 } from '../../utils/APEntityIdsService';
-import { TAPApiDisplay } from '../APApisDisplayService';
+import { TAPApiDisplay } from '../deleteme.APApisDisplayService';
 
 export type TAPAppApiDisplay = IAPEntityIdDisplay & {
   apVersion: string;

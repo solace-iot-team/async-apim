@@ -7,7 +7,7 @@ import { Column } from "primereact/column";
 import { 
   TAPApiChannelParameter, 
   TAPApiDisplayList 
-} from "../../displayServices/APApisDisplayService";
+} from "../../displayServices/deleteme.APApisDisplayService";
 import { IAPEntityIdDisplay, TAPEntityId } from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";

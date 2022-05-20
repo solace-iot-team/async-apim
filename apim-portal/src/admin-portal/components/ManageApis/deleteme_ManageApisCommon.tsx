@@ -1,11 +1,15 @@
-export enum E_COMPONENT_STATE {
-  UNDEFINED = "UNDEFINED",
-  MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
-  MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
-  MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
-  MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
-  MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
-  MANAGED_OBJECT_IMPORT_EVENT_PORTAL= "MANAGED_OBJECT_IMPORT_EVENT_PORTAL"
+import { APIInfo, CommonEntityNameList } from '@solace-iot-team/apim-connector-openapi-browser';
+
+export type TManagedObjectId = string;
+export type TViewApiObject = string;
+
+export type TViewManagedObject = {
+  id: TManagedObjectId,
+  displayName: string,
+  apiObject: TViewApiObject,
+  apiInfo: APIInfo,
+  apiUsedBy_ApiProductEntityNameList: CommonEntityNameList,
+  globalSearch: string
 }
 
 export enum E_CALL_STATE_ACTIONS {

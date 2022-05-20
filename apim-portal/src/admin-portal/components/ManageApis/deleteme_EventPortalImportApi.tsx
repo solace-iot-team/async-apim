@@ -5,12 +5,12 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../utils/ApiCallState";
-import { TManagedObjectId } from "./ManageApisCommon";
+import { TManagedObjectId } from "./deleteme_ManageApisCommon";
 import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
-import { EventPortalListEventApiProducts } from "./EventPortalListEventApiProducts";
-import { EventPortalImportApiDialog } from "./EventPortalImportApiDialog";
+import { EventPortalListEventApiProducts } from "./deleteme_EventPortalListEventApiProducts";
+import { EventPortalImportApiDialog } from "./deleteme_EventPortalImportApiDialog";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { EventPortalViewEventApiProduct } from "./EventPortalViewEventApiProduct";
+import { EventPortalViewEventApiProduct } from "./deleteme_EventPortalViewEventApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
