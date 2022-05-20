@@ -209,7 +209,7 @@ class APSAuthStrategyService {
       sameSite: "none",
 
       signed: true,
-      maxAge: authConfig.refreshJwtExpirySecs,
+      maxAge: authConfig.refreshJwtExpiryMilliSecs,
       path: '/'
     };
 
@@ -231,7 +231,7 @@ class APSAuthStrategyService {
     };
 
     return jwt.sign(payload, authConfig.authJwtSecret, {
-      expiresIn: authConfig.authJwtExpirySecs
+      expiresIn: authConfig.authJwtExpiryMilliSecs
     });
   }
 
@@ -248,7 +248,7 @@ class APSAuthStrategyService {
     };
 
     return jwt.sign(payload, authConfig.refreshJwtSecret, {
-      expiresIn: authConfig.refreshJwtExpirySecs
+      expiresIn: authConfig.refreshJwtExpiryMilliSecs
     });
   }
 
