@@ -206,10 +206,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
         >
           <Column selectionMode="multiple" style={{width:'3em'}}/>
           <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
-          <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
-          <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
-          <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
-          {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
         </DataTable>
       </div>
     );
@@ -244,10 +240,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
           sortOrder={1}
         >
           <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
-          <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
-          <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
-          <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
-          {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
         </DataTable>
       </div>
     );
