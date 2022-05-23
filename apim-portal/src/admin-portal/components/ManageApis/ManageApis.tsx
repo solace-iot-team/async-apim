@@ -21,6 +21,7 @@ import { AuthContext } from "../../../components/AuthContextProvider/AuthContext
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { ViewApi } from "./ViewApi";
 
 export interface IManageApisProps {
   organizationEntityId: TAPEntityId;
@@ -107,14 +108,19 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * initialized object *
-  // const onInitializedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
-  //   setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
-  //     apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
-  //     authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-  //     userId: userContext.apLoginUserDisplay.apEntityId.id,
-  //     userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
-  //   }));
-  // }
+  const onInitializedManagedObject = (apApiDisplay: IAPApiDisplay) => {
+    const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
+      apApiDisplay: apApiDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+        apOrganizationDisplay: organizationContext
+      }),
+      isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+    });
+    setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
+  }
 
   // * Changed object *
   // const onChangedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
@@ -375,18 +381,17 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         />
       }
       {showViewComponent && managedObjectEntityId &&
-        <p>showViewComponent</p>
-        // <ViewApi
-        //   key={`${ComponentName}_showViewComponent_${refreshCounter}`}
-        //   organizationId={props.organizationEntityId.id}
-        //   apiProductEntityId={managedObjectEntityId}
-        //   onInitialized={onInitializedManagedObject}
-        //   onSuccess={onSubComponentUserNotification} 
-        //   onError={onSubComponentError_Notification} 
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNavigateHere={onSetManageObjectComponentState_To_View}
-        // />      
+        <ViewApi
+          key={`${ComponentName}_showViewComponent_${refreshCounter}`}
+          organizationId={props.organizationEntityId.id}
+          apiEntityId={managedObjectEntityId}
+          onInitialized={onInitializedManagedObject}
+          onSuccess={onSubComponentUserNotification} 
+          onError={onSubComponentError_Notification} 
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNavigateHere={onSetManageObjectComponentState_To_View}
+        />      
       }
       {showDeleteComponent && managedObjectEntityId &&
       <p>showDeleteComponent</p>

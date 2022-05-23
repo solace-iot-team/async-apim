@@ -12,7 +12,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, TAPEntityIdList, 
+  IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
@@ -25,6 +25,8 @@ import {
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
+import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
+import APApiSpecsDisplayService from './APApiSpecsDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {
@@ -45,13 +47,15 @@ export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent 
   connectorApiInfo: APIInfo;
   // version(s)
   apVersionInfo: IAPVersionInfo;
-  // apVersion: string; /** in SemVer format */
 
   // meta
   apMetaInfo: TAPMetaInfo;
 
   // stage
   apLifecycleStageInfo: IAPLifecycleStageInfo;
+
+  // spec
+  apApiSpecDisplay?: TAPApiSpecDisplay;
 }
 export type TAPApiDisplayList = Array<IAPApiDisplay>;
 
@@ -136,6 +140,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     default_ownerId, 
     complete_ApBusinessGroupDisplayList,
     complete_ApExternalSystemDisplayList,
+    apApiSpecDisplay,
   }:{
     connectorApiInfo: APIInfo;
     connectorRevisions?: Array<string>;
@@ -144,6 +149,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     default_ownerId: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
+    apApiSpecDisplay?: TAPApiSpecDisplay;
   }): IAPApiDisplay => {
     const funcName = 'create_ApApiDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -170,6 +176,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         currentVersion: currentVersion,
       }),
       apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
+      apApiSpecDisplay: apApiSpecDisplay,
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<IAPApiDisplay>(apApiDisplay);
@@ -355,20 +362,39 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const list: TAPApiDisplayList = [];
     // TODO: PARALLELIZE
     for(const apiInfo of apiInfoList) {
-      // const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
-      //   organizationId: organizationId, 
-      //   apiId: apiInfo.name
-      // });
+      // TODO: when connector ready: get reference list for this version
+      const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
+        organizationId: organizationId, 
+        apiId: apiInfo.name
+      });
       list.push(this.create_ApApiDisplay_From_ApiEntities({
         connectorApiInfo: apiInfo,
-        // apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
-        apApiProductReferenceEntityIdList: [],
+        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+        // apApiProductReferenceEntityIdList: [],
         default_ownerId: default_ownerId,
         complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
         complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       }));
     }
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
+  }
+
+  private async apiGetList_ApiVersions({ organizationId, apiId }:{
+    organizationId: string;
+    apiId: string;
+  }): Promise<Array<string>> {
+    // list may consit of number strings or semVer strings
+    // convert all number strings to semVer strings
+    const connectorRevisions: Array<string> = await ApisService.listApiRevisions({
+      organizationName: organizationId,
+      apiName: apiId
+    });
+    const semVerStringList: Array<string> = [];
+    connectorRevisions.forEach( (x: string) => {
+      // is semVer?
+      semVerStringList.push(APVersioningDisplayService.create_SemVerString(x));
+    });  
+    return semVerStringList;
   }
 
   public async apiGet_ApApiDisplay({ 
@@ -379,17 +405,20 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     fetch_revision_list, 
     complete_ApBusinessGroupDisplayList,
     complete_ApExternalSystemDisplayList,
+    fetch_async_api_spec,
   }: {
     organizationId: string;
     apiId: string;
     default_ownerId: string;
     fetch_revision_list?: boolean;    
     version?: string;
+    fetch_async_api_spec?: boolean;
     complete_ApBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
     complete_ApExternalSystemDisplayList?: TAPExternalSystemDisplayList;    
   }): Promise<IAPApiDisplay> {
     const funcName = 'apiGet_ApApiDisplay';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
 
     // TODO: rework the versions, not implemented in Connector yet
     let connectorApiInfo: APIInfo;
@@ -424,10 +453,24 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     let connectorRevisions: Array<string> | undefined = undefined;
     if(fetch_revision_list) {
       // for old apis, list could be empty
-      connectorRevisions = await ApisService.listApiRevisions({
-        organizationName: organizationId,
-        apiName: apiId
+      connectorRevisions = await this.apiGetList_ApiVersions({ 
+        organizationId: organizationId,
+        apiId: apiId,
       });
+    }
+
+    // get the spec
+    let apApiSpecDisplay: TAPApiSpecDisplay | undefined = undefined;
+    if(fetch_async_api_spec) {
+      const apiEntityId: TAPEntityId = {
+        id: connectorApiInfo.name,
+        displayName: connectorApiInfo.name,
+      };
+      apApiSpecDisplay = await APApiSpecsDisplayService.apiGet_Api_ApiSpec({
+        organizationId: organizationId,
+        apiEntityId: apiEntityId,
+        version: version
+      });  
     }
 
     return this.create_ApApiDisplay_From_ApiEntities({
@@ -438,6 +481,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       connectorRevisions: connectorRevisions,
+      apApiSpecDisplay: apApiSpecDisplay,
     });
   }
 

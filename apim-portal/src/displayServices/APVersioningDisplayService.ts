@@ -56,9 +56,24 @@ class APVersioningDisplayService {
     if(_currentVersion === undefined) throw new Error(`${logName}: _currentVersion === undefined`);
     return {
       apLastVersion: lastVersion,
-      apCurrentVersion: _currentVersion,
+      apCurrentVersion: this.create_SemVerString(_currentVersion),
       apVersionList: connectorRevisions !== undefined && connectorRevisions.length > 0 ? connectorRevisions : [lastVersion],
     };
+  }
+
+  public create_SemVerString(versionString: string): string {
+    const funcName = 'create_SemVerString';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    try {
+      // semVer?
+      const semVer = new SemVer(versionString);
+      return  versionString;
+    } catch (e) {
+      // number string?
+      const num: number = parseInt(versionString);
+      if(isNaN(num)) throw new Error(`${logName}: cannot parse version as semVer or number, version=${versionString}`);
+      return `${num}.0.0`;
+    }
   }
 
   public get_Sorted_ApVersionList(list: TAPVersionList): TAPVersionList {

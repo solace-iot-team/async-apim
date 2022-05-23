@@ -10,7 +10,7 @@ import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { APDisplayAsyncApiSpec } from "../APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import APEntityIdsService, { TAPEntityId } from "../../utils/APEntityIdsService";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../displayServices/APApiSpecsDisplayService";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../displayServices/deleteme.APApiSpecsDisplayService";
 import { TAPAppApiDisplay, TAPAppApiDisplayList } from "../../displayServices/APAppsDisplayService/APAppApisDisplayService";
 import APDisplayUtils from "../../displayServices/APDisplayUtils";
 

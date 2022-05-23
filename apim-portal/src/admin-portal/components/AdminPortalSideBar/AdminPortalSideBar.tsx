@@ -71,13 +71,13 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
+      // {
+      //   label: 'NEW APIs',
+      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
+      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+      // },
       {
         label: 'APIs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
-      },
-      {
-        label: 'DELETEME APIs',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
       },

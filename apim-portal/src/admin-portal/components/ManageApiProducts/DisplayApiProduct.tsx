@@ -19,7 +19,7 @@ import APEntityIdsService, {
 } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/deleteme.APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
@@ -32,10 +32,10 @@ import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/api
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -240,7 +240,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
       return (
         <div>
-          {APEntityIdsService.create_DisplayNameList(apAppReferenceEntityIdList).join(', ')}
+          {APEntityIdsService.create_SortedDisplayNameList(apAppReferenceEntityIdList).join(', ')}
         </div>
       );
     }

@@ -14,7 +14,7 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import APEntityIdsService, { 
 } from "../../../utils/APEntityIdsService";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/deleteme.APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
