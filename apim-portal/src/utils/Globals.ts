@@ -134,7 +134,8 @@ export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
   ViewContexts = '/devel/view/contexts',
-  TestBusinessGroups = '/devel/test/business-groups'  
+  TestBusinessGroups = '/devel/test/business-groups',
+  TestSec = '/devel/test/sec-response',
 }
 
 export class Globals {
@@ -160,6 +161,14 @@ export class Globals {
     const funcName = 'assertNever';
     const logName = `${Globals.name}.${funcName}()`;
     throw new Error(`${logName}:${extLogName}: unexpected object: ${JSON.stringify(x)}`);
+  }
+
+  public static get_CurrentAppState_From_Path({ path }: {
+    path: string;
+  }): EAppState {
+    if(path.includes(EUIAdminPortalResourcePaths.Home)) return EAppState.ADMIN_PORTAL;
+    if(path.includes(EUIDeveloperPortalResourcePaths.Home)) return EAppState.DEVELOPER_PORTAL;
+    return EAppState.UNDEFINED;
   }
 
   public static getCurrentHomePath = (isUserLoggedIn: boolean, currentAppState: EAppState): string => {

@@ -1,7 +1,9 @@
 import React from "react";
+import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 
 export type TAPSessionContext = {
   apsApiToken: string | undefined;
+  organizationId: string | undefined;
 }
 
 export interface ISessionContextProviderProps {
@@ -16,6 +18,7 @@ export type TSessionContextAction =
 const SessionContextReducer = (state: TAPSessionContext, action: TSessionContextAction): TAPSessionContext => {
   switch (action.type) {
     case 'SET_SESSION_CONTEXT': {
+      APSClientOpenApi.setToken(action.apSessionContext.apsApiToken);
       return JSON.parse(JSON.stringify(action.apSessionContext));
     }
     case 'CLEAR_SESSION_CONTEXT': {
@@ -27,6 +30,7 @@ const SessionContextReducer = (state: TAPSessionContext, action: TSessionContext
 }
 export const EmptySessionContext: TAPSessionContext = {
   apsApiToken: undefined,
+  organizationId: undefined,
 };
 
 const initialAction: React.Dispatch<TSessionContextAction> = (value: TSessionContextAction) => {};

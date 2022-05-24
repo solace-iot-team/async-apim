@@ -151,8 +151,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
     apApiSpecDisplay?: TAPApiSpecDisplay;
   }): IAPApiDisplay => {
-    const funcName = 'create_ApApiDisplay_From_ApiEntities';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'create_ApApiDisplay_From_ApiEntities';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiInfo.name,

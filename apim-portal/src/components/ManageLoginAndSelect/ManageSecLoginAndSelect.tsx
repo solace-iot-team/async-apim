@@ -80,7 +80,7 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
     try { 
       await APContextsDisplayService.setup_LoginContexts({
         apLoginUserDisplay: mo.apLoginUserDisplay,
-        apSessionContext: { apsApiToken: mo.apsApitoken },
+        apSessionContext: { apsApiToken: mo.apsApitoken, organizationId: mo.lastOrganizationId },
         organizationEntityId: organizationEntityId,
         isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
         dispatchAuthContextAction: dispatchAuthContextAction,

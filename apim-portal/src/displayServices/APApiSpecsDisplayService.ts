@@ -1,4 +1,4 @@
-import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 
 export enum EAPApiSpecFormat {

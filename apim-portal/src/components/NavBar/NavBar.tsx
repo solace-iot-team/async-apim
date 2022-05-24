@@ -168,6 +168,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           label: 'Test Business Groups',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestBusinessGroups); }
+        },
+        {
+          label: 'Test Sec Response',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestSec); }
         }
       ]
     };

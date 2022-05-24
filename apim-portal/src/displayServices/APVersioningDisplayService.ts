@@ -66,7 +66,7 @@ class APVersioningDisplayService {
     const logName = `${this.ComponentName}.${funcName}()`;
     try {
       // semVer?
-      const semVer = new SemVer(versionString);
+      new SemVer(versionString);
       return  versionString;
     } catch (e) {
       // number string?

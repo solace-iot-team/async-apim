@@ -1,5 +1,3 @@
-import { TSessionContextAction } from '../../components/APContextProviders/APSessionContextProvider';
-import { APFetch, APFetchResult } from '../../utils/APFetch';
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
 import { 
   ApiError,
@@ -27,6 +25,7 @@ export type TAPLoginUserDisplay = IAPUserDisplay & {
 export type TAPSecLoginUserResponse = {
   apLoginUserDisplay: TAPLoginUserDisplay;
   apsApitoken: string;
+  lastOrganizationId?: string;
 };
 
 class APLoginUsersDisplayService extends APUsersDisplayService {
@@ -78,7 +77,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       organizationSessionInfoList: []
     }
     return this.create_ApLoginUserDisplay_From_ApiEntities({ 
-      apsUserResponse: apsUserResponse
+      apsUserResponse: _apsUserResponse
     });
   }
 
@@ -110,33 +109,32 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     return apLoginUserDisplay;
   }
 
+  public async apsUpdate_LastOrganizationId({ userId, lastOrganizationId }:{
+    userId: string;
+    lastOrganizationId: string;
+  }): Promise<void> {
+    // const funcName = 'apsUpdate_LastOrganizationId';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
-  // public async apsSecRefreshToken({ dispatchSessionContextAction }:{
-  //   dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
-  // }): Promise<APSSessionRefreshTokenResponse> {
+    const update: APSUserUpdate = {
+      lastOrganizationId: lastOrganizationId
+    };
+    await this.apsUpdate_ApsUserUpdate({ 
+      userId: userId,
+      apsUserUpdate: update
+    });
+
+  }  
+
 
   public async apsSecRefreshToken(): Promise<APSSessionRefreshTokenResponse> {
-    const funcName = 'apsSecRefreshToken';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apsSecRefreshToken';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // // test error handling
+    // throw new Error(`${logName}: test error handling`);
 
     const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await ApsSessionService.apsRefreshToken();
     
-    // // interim solution until sec fully implemented
-    // const res: Response = await APFetch.fetchSec({
-    //   method: "GET",
-    //   resource: `${APSClientOpenApi.getOpenApiInfo().base}/apsSession/refreshToken`,
-    // });
-    // const apFetchResult: APFetchResult = await APFetch.getFetchResult(res);
-    // console.log(`${logName}: apFetchResult = ${JSON.stringify(apFetchResult, null, 2)}`);
-
-    // if(apFetchResult.status !== 200) return {
-    //   success: false,
-    //   token: ''
-    // };
-
-    // const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
-    //   ...apFetchResult.body
-    // }
     return apsSessionRefreshTokenResponse;
 
   }
@@ -169,7 +167,8 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       });  
       return {
         apLoginUserDisplay: apLoginUserDisplay,
-        apsApitoken: apsSessionLoginResponse.token
+        apsApitoken: apsSessionLoginResponse.token,
+        lastOrganizationId: apsSessionLoginResponse.lastOrganizationId
       };
     } catch(e: any) {
       if(APSClientOpenApi.isInstanceOfApiError(e)) {
@@ -184,6 +183,7 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
               apsUserResponse: apsUserResponse
             }),
             apsApitoken: apsSessionLoginResponse.token,
+            lastOrganizationId: apsSessionLoginResponse.lastOrganizationId,
           };
         }
       }

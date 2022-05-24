@@ -6,26 +6,74 @@ import { useLocation, useHistory } from 'react-router-dom';
 import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
-import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSSessionRefreshTokenResponse } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { EUICommonResourcePaths } from "../../utils/Globals";
+import { EAppState, EUICommonResourcePaths, Globals } from "../../utils/Globals";
+import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
+import { UserContext } from "../APContextProviders/APUserContextProvider";
+import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
+import { Loading } from "../Loading/Loading";
 
 export interface IUserSecVerifyProps {}
 
 export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVerifyProps) => {
   const ComponentName = 'UserSecVerify';
 
-  const VerifyUserInterval_ms: number = 300000; // every 5 minutes
+  // const VerifyUserInterval_ms: number = 300000; // every 5 minutes
   // const VerifyUserInterval_ms: number = 60000; // every minute
+  const VerifyUserInterval_ms: number = 30000; // every 30 seconds
   // const VerifyUserInterval_ms: number = 10000; // every 10 seconds
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  // const [configContext] = React.useContext(ConfigContext);
+  // const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [delay] = React.useState<number>(VerifyUserInterval_ms); 
   const location = useLocation();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   
-  
+  const apiSetupLoginContexts = async({ userId, organizationId }: {
+    userId: string;
+    organizationId?: string;
+  }): Promise<void> => {
+    const funcName = 'apiSetupLoginContexts';
+    const logName = `${ComponentName}.${funcName}()`;
+    console.log(`${logName}: starting ...`);
+    console.log(`${logName}: organizationId=${organizationId}`);
+
+    const apLoginUserDisplay: TAPLoginUserDisplay  = await APLoginUsersDisplayService.apsGet_ApLoginUserDisplay( { userId: userId });
+    // these contexts are not yet set, assuming connector is available, if not, it will be caught in next health check cycle
+    // const isConnectorAvailable: boolean = configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL;
+    const isConnectorAvailable: boolean = true;
+    const userContextCurrentAppState: EAppState = Globals.get_CurrentAppState_From_Path({ path: location.pathname });
+    const userContextOriginAppState: EAppState = EAppState.ADMIN_PORTAL;
+
+    console.log(`${logName}: TODO: do i need the origin app state?`);
+
+    await APContextsDisplayService.setup_RefreshContexts({
+      apLoginUserDisplay: apLoginUserDisplay,
+      organizationId: organizationId,
+      isConnectorAvailable: isConnectorAvailable,
+      userContextCurrentAppState: userContextCurrentAppState,
+      userContextOriginAppState: userContextOriginAppState,
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      navigateTo: navigateTo,
+      navigateToPath: location.pathname
+    });
+    dispatchUserContextAction({ type: 'SET_USER', apLoginUserDisplay: apLoginUserDisplay });
+
+  }
+
   const apiVerifyUser = async(): Promise<void> => {
     const funcName = 'apiVerifyUser';
     const logName = `${ComponentName}.${funcName}()`;
@@ -38,7 +86,12 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
         // alert(`${logName}: location.pathname=${location.pathname}`);
         dispatchSessionContextAction({ type: 'SET_SESSION_CONTEXT', apSessionContext: {
           apsApiToken: apsSessionRefreshTokenResponse.token,
-        }});  
+          organizationId: apsSessionRefreshTokenResponse.organizationId,
+        }});
+        // set up all the contexts on page refresh
+        if(!authContext.isLoggedIn) {
+          await apiSetupLoginContexts({ userId: apsSessionRefreshTokenResponse.userId, organizationId: apsSessionRefreshTokenResponse.organizationId });
+        }
       } else {
         // alert(`${logName}: location.pathname=${location.pathname}`);
         if(location.pathname !== EUICommonResourcePaths.SecLogin) {
@@ -51,12 +104,12 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
       // dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
       // callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
-    // setApiCallStatus(callState);
-    // return callState;
   }
 
   const doVerifyUser = async() => {
+    if(!authContext.isLoggedIn) setIsLoading(true);
     await apiVerifyUser();
+    setIsLoading(false);
   }
 
   React.useEffect(() => {
@@ -70,7 +123,11 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
     delay
   );
 
-  return (<></>);
+  return (
+    <div>
+      <Loading show={isLoading} />
+    </div>
+  );
 }
 
 
