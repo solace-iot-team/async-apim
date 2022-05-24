@@ -148,7 +148,9 @@ export class ApsSessionController {
 
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
         success: true,
-        token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId })
+        token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId }),
+        organizationId: response.lastOrganizationId,
+        userId: response.userId,
       };
 
       res.status(200).send(apsSessionRefreshTokenResponse);

@@ -2086,6 +2086,8 @@ components:
       properties:
         token:
           type: string
+        lastOrganizationId:
+          $ref: '#/components/schemas/APSId'
       required:
         - token
     APSSessionRefreshTokenResponse:
@@ -2094,11 +2096,16 @@ components:
       properties:
         success:
           type: boolean
+        organizationId:
+          $ref: "#/components/schemas/APSId"
+        userId:
+          $ref: "#/components/schemas/APSUserId"
         token:
           type: string
       required:
       - success
       - token
+      - userId
     APSSessionLogoutResponse:
       type: object
       properties:
@@ -2240,6 +2247,8 @@ components:
           $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
         organizationSessionInfoList:
           $ref: '#/components/schemas/APSOrganizationSessionInfoList'
+        lastOrganizationId:
+          $ref: "#/components/schemas/APSId"
     #
     # Business Groups
     #

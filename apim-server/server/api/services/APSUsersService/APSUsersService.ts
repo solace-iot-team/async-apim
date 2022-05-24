@@ -40,6 +40,7 @@ export type APSUserSessionInfo = {
   lastLoginTimestamp?: number;
 }
 export interface APSUserInternal extends APSUserCreate {
+  lastOrganizationId?: string;
   sessionInfo: APSUserSessionInfo;
 }
 export type APSUserInternalList = Array<APSUserInternal>;

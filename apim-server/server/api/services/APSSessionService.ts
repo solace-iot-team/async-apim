@@ -13,6 +13,7 @@ import APSAuthStrategyService from "../../common/authstrategies/APSAuthStrategyS
 export type TRefreshTokenInternalResponse = {
   userId: string;
   newRefreshToken: string;
+  lastOrganizationId?: string;
 }
 
 export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password"> & {
@@ -324,7 +325,8 @@ export class APSSessionService {
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHED_USER_TOKEN, message: 'isRootUser', details: undefined }));
       return {
         newRefreshToken: newRefreshToken,
-        userId: userId
+        userId: userId,
+        // root has no organization id
       };
     }
     // check DB
@@ -348,7 +350,8 @@ export class APSSessionService {
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHED_USER_TOKEN, message: 'user', details: { userId: userId }}));      
       return {
         newRefreshToken: newRefreshToken,
-        userId: userId
+        userId: userId,
+        lastOrganizationId: apsUserInternal.lastOrganizationId
       };
     } catch (e) {
       if (e instanceof ApiKeyNotFoundServerError) {
