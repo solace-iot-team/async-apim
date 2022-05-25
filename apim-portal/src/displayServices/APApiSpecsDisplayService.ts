@@ -3,6 +3,7 @@ import yaml from "js-yaml";
 import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import { Globals } from "../utils/Globals";
+import APVersioningDisplayService from "./APVersioningDisplayService";
 
 export enum EAPApiSpecFormat {
   JSON = 'application/json',
@@ -151,6 +152,17 @@ class APApiSpecsDisplayService {
     }
   }
 
+  public get_VersionString({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): string {
+    const funcName = 'get_VersionString';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
+    if(typeof(apApiSpecDisplay.spec) !== 'object') throw new Error(`${logName}: typeof(apApiSpecDisplay.spec) !== 'object'`);
+    if(apApiSpecDisplay.spec['info'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info'] === undefined`);
+    if(apApiSpecDisplay.spec['info']['version'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info']['version'] === undefined`);
+    return APVersioningDisplayService.create_SemVerString(apApiSpecDisplay.spec['info']['version']);
+  }
 
   // public static getAsyncApiSpecAsJson = (asyncApiSpec: TAPAsyncApiSpec): TAPAsyncApiSpec | string => {
   //   const funcName = 'getAsyncApiSpecAsJson';

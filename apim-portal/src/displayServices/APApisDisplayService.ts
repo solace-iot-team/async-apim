@@ -645,6 +645,23 @@ class APApisDisplayService extends APManagedAssetDisplayService {
 
   // }
 
+  // await APApisDisplayService.apiDelete_ApApiDisplay({
+  //   organizationId: props.organizationId,
+  //   apiId: props.apiEntityId.id,
+  // });
+
+  public async apiDelete_ApApiDisplay({ organizationId, apiId }:{
+    organizationId: string;
+    apiId: string;
+  }): Promise<void> {
+
+    await ApisService.deleteApi({
+      organizationName: organizationId,
+      apiName: apiId
+    });
+
+  }
+
 }
 
 export default new APApisDisplayService();

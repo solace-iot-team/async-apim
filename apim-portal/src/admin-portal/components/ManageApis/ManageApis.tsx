@@ -24,6 +24,7 @@ import { ManageEditApi } from "./EditNewApi/ManageEditApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { DeleteApi } from "./DeleteApi";
 
 export interface IManageApisProps {
   organizationEntityId: TAPEntityId;
@@ -396,15 +397,14 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
-      <p>showDeleteComponent</p>
-        // <DeleteApi
-        //   organizationId={props.organizationEntityId.id}
-        //   apiProductEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError_Notification} 
-        //   onLoadingChange={setIsLoading}
-        //   onCancel={onSubComponentCancel}
-        //   onDeleteSuccess={onDeleteManagedObjectSuccess}
-        // />
+        <DeleteApi
+          organizationId={props.organizationEntityId.id}
+          apiEntityId={managedObjectEntityId}
+          onError={onSubComponentError_Notification} 
+          onLoadingChange={setIsLoading}
+          onCancel={onSubComponentCancel}
+          onDeleteSuccess={onDeleteManagedObjectSuccess}
+        />
       }
       { showNewComponent &&
         <ManageNewApi
@@ -429,17 +429,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onNavigateToCommand={onSetManageObjectComponentState_To_View}    
           onChanged={onChangedManagedObject}
         />
-        // <EditNewApi
-        //   organizationId={props.organizationEntityId.id}
-        //   apiProductEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError_Notification}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onSaveSuccess={onEditSaveManagedObjectSuccess}
-        //   onNavigateToCommand={onSetManageObjectComponentState_To_View}    
-        //   onChanged={onChangedManagedObject}
-        // />
       }
       { showImportEventPortalComponent &&      
         <p>showImportEventPortalComponent</p>

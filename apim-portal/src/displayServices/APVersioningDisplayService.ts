@@ -1,5 +1,5 @@
 import { Meta } from "@solace-iot-team/apim-connector-openapi-browser";
-import { SemVer } from "semver";
+import { SemVer, coerce as SemVerCoerce } from "semver";
 
 export interface IAPVersionInfo {
   apLastVersion: string;
@@ -61,13 +61,19 @@ class APVersioningDisplayService {
     };
   }
 
+  /**
+   * Returns a semVer string of a version string.
+   */
   public create_SemVerString(versionString: string): string {
     const funcName = 'create_SemVerString';
     const logName = `${this.ComponentName}.${funcName}()`;
     try {
       // semVer?
-      new SemVer(versionString);
-      return  versionString;
+      const semVer: SemVer | null = SemVerCoerce(versionString, {
+        loose: true
+      });
+      if(semVer === null) throw new Error('try number string');
+      return semVer.format();
     } catch (e) {
       // number string?
       const num: number = parseInt(versionString);

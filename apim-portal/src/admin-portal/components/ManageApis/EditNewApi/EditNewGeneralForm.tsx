@@ -13,7 +13,7 @@ import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpe
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import APApisDisplayService, { TAPApiDisplay_General } from "../../../../displayServices/APApisDisplayService";
-import APApiSpecsDisplayService from "../../../../displayServices/APApiSpecsDisplayService";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../../displayServices/APApiSpecsDisplayService";
 import { APButtonLoadFileContents } from "../../../../components/APButtons/APButtonLoadFileContents";
 
 import '../../../../components/APComponents.css';
@@ -141,13 +141,20 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const logName = `${ComponentName}.${funcName}()`;
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    alert(`${logName}: extract the version from spec, add to managedObject and display here ...`);
+    // alert(`${logName}: extract the version from spec, add to managedObject and display here ...`);
+
+    const apApiSpecDisplay: TAPApiSpecDisplay = APApiSpecsDisplayService.create_ApApiSpecDisplay_From_AsyncApiString({ 
+      apApiEntityId: managedObject.apEntityId,
+      asyncApiSpecString: apiSpecStr
+    });
+    const versionString: string = APApiSpecsDisplayService.get_VersionString({
+      apApiSpecDisplay: apApiSpecDisplay
+    });
+    alert(`${logName}: extracted versionString = ${versionString}`);
+
     const newMo: TManagedObject = {
       ...managedObject,
-      apApiSpecDisplay: APApiSpecsDisplayService.create_ApApiSpecDisplay_From_AsyncApiString({ 
-        apApiEntityId: managedObject.apEntityId,
-        asyncApiSpecString: apiSpecStr
-      })
+      apApiSpecDisplay: apApiSpecDisplay
     };
     setManagedObject(newMo);
   }
