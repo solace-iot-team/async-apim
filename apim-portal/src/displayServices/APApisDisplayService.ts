@@ -21,12 +21,14 @@ import APLifecycleStageInfoDisplayService, { IAPLifecycleStageInfo } from './APL
 import { 
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay,
+  TAPManagedAssetDisplay_AccessAndState,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
 import APApiSpecsDisplayService from './APApiSpecsDisplayService';
+import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {
@@ -40,7 +42,12 @@ export type TAPApiDisplay_AllowedActions = {
   isViewAllowed: boolean;
   isImportFromEventPortalAllowed: boolean;
 }
-
+export type TAPApiDisplay_General = IAPEntityIdDisplay & {
+  apApiSpecDisplay: TAPApiSpecDisplay;
+}
+export type TAPApiDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
+  apLifecycleStageInfo: IAPLifecycleStageInfo;
+}
 export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
   apApiChannelParameterList: TAPApiChannelParameterList;
@@ -55,7 +62,7 @@ export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent 
   apLifecycleStageInfo: IAPLifecycleStageInfo;
 
   // spec
-  apApiSpecDisplay?: TAPApiSpecDisplay;
+  apApiSpecDisplay: TAPApiSpecDisplay;
 }
 export type TAPApiDisplayList = Array<IAPApiDisplay>;
 
@@ -84,7 +91,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     };
   }
 
-  protected create_Empty_ApApiDisplay(): IAPApiDisplay {
+  public create_Empty_ApApiDisplay(): IAPApiDisplay {
     const apApiDisplay: IAPApiDisplay = {
       ...this.create_Empty_ApManagedAssetDisplay(),
       apApiChannelParameterList: [],
@@ -95,6 +102,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: this.create_ConnectorMeta_From_ApiEntities({
         connectorApiInfo: this.create_Empty_ConnectorApiInfo()
       })}),
+      apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<IAPApiDisplay>(apApiDisplay);
@@ -149,7 +157,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     default_ownerId: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
-    apApiSpecDisplay?: TAPApiSpecDisplay;
+    apApiSpecDisplay: TAPApiSpecDisplay;
   }): IAPApiDisplay => {
     // const funcName = 'create_ApApiDisplay_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -287,6 +295,54 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return allowedActions;
   }
 
+  public get_ApApiDisplay_General({ apApiDisplay }:{
+    apApiDisplay: IAPApiDisplay;
+  }): TAPApiDisplay_General {
+    const apApiDisplay_General: TAPApiDisplay_General = {
+      apEntityId: apApiDisplay.apEntityId,
+      apApiSpecDisplay: apApiDisplay.apApiSpecDisplay
+    };
+    return apApiDisplay_General;
+  }
+  /**
+   * Set the general properties. 
+   * Sets the apEntity as well. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+  public set_ApApiDisplay_General({ apApiDisplay, apApiDisplay_General }:{
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_General: TAPApiDisplay_General;
+  }): IAPApiDisplay {
+    apApiDisplay.apEntityId = apApiDisplay_General.apEntityId;
+    apApiDisplay.apApiSpecDisplay = apApiDisplay_General.apApiSpecDisplay;
+    return apApiDisplay;
+  }
+
+  public get_ApApiDisplay_AccessAndState({ apApiDisplay }:{
+    apApiDisplay: IAPApiDisplay;
+  }): TAPApiDisplay_AccessAndState {
+    const apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState = {
+      ...this.get_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay }),
+      apEntityId: apApiDisplay.apEntityId,
+      apLifecycleStageInfo: apApiDisplay.apLifecycleStageInfo,
+    };
+    return apApiDisplay_AccessAndState;
+  }
+  /** 
+   * Set the access & state properties. 
+   * Does NOT set the apEntityId. 
+   * @returns the modified apApiProductDisplay (not a copy)
+  */
+   public set_ApApiDisplay_AccessAndState({ apApiDisplay, apApiDisplay_AccessAndState }:{
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
+  }): IAPApiDisplay {
+    this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay, apManagedAssetDisplay_AccessAndState: apApiDisplay_AccessAndState });
+    apApiDisplay.apLifecycleStageInfo = apApiDisplay_AccessAndState.apLifecycleStageInfo;
+    return apApiDisplay;
+  }
+
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -374,6 +430,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         default_ownerId: default_ownerId,
         complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
         complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
+        apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
       }));
     }
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
@@ -460,7 +517,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     }
 
     // get the spec
-    let apApiSpecDisplay: TAPApiSpecDisplay | undefined = undefined;
+    let apApiSpecDisplay: TAPApiSpecDisplay = APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay();
     if(fetch_async_api_spec) {
       const apiEntityId: TAPEntityId = {
         id: connectorApiInfo.name,
@@ -483,6 +540,30 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       connectorRevisions: connectorRevisions,
       apApiSpecDisplay: apApiSpecDisplay,
     });
+  }
+
+  public async apiCreate_ApApiDisplay({ organizationId, apApiDisplay }: {
+    organizationId: string;
+    apApiDisplay: IAPApiDisplay;
+    // userId: string;
+  }): Promise<void> {
+    const funcName = 'apiCreate_ApApiDisplay';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiDisplay 
+    });
+
+    console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
+    alert(`${logName}: TODO: set attributes, etc`);
+
+    await ApisService.createApi({
+      organizationName: organizationId, 
+      apiName: apApiDisplay.apEntityId.id,
+      requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay.apApiSpecDisplay })
+    });
+
   }
 
 }

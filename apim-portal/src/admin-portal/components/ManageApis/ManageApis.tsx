@@ -18,10 +18,11 @@ import { ListApis } from "./ListApis";
 import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { ViewApi } from "./ViewApi";
+import { ManageNewApi } from "./EditNewApi/ManageNewApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { ViewApi } from "./ViewApi";
 
 export interface IManageApisProps {
   organizationEntityId: TAPEntityId;
@@ -192,7 +193,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
         {showImportEventPortalButton && 
-          <Button label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
+          <Button disabled={true} label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
         }
       </React.Fragment>
     );
@@ -405,17 +406,15 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         // />
       }
       { showNewComponent &&
-      <p>showNewComponent</p>
-        // <EditNewApi
-        //   action={EAction.NEW}
-        //   organizationId={props.organizationEntityId.id}
-        //   onError={onSubComponentError_Notification}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={setIsLoading}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onEditNewSuccess={onNewManagedObjectSuccess}
-        //   onUserNotification={onSubComponentUserNotification}
-        // />
+        <ManageNewApi
+          organizationId={props.organizationEntityId.id}
+          onError={onSubComponentError_Notification}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onNewSuccess={onNewManagedObjectSuccess}
+          onUserNotification={onSubComponentUserNotification}
+        />
       }
       {showEditComponent && managedObjectEntityId &&
       <p>showEditComponent</p>
