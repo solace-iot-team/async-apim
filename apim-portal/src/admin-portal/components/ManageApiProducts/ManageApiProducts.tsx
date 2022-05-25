@@ -196,7 +196,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    if(!componentState.currentState) return undefined;
+    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
@@ -234,6 +234,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(showNewComponent) return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
+    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     if(showViewComponent) {
       return (
         <React.Fragment>

@@ -21,10 +21,10 @@ import APVersioningDisplayService from "../../../../displayServices/APVersioning
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
-import { EAction, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApisCommon";
-import { EditNewGeneral } from "./EditNewGeneral";
-import { EditNewAccessAndState } from "./EditNewAccessAndState";
-import { EditNewReviewAndCreate } from "./EditNewReviewAndCreate";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApisCommon";
+import { NewGeneral } from "./NewGeneral";
+import { NewAccessAndState } from "./NewAccessAndState";
+import { NewReviewAndCreate } from "./NewReviewAndCreate";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
@@ -268,8 +268,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='General' disabled={!showGeneral}>
             <React.Fragment>
-              <EditNewGeneral
-                action={EAction.NEW}
+              <NewGeneral
                 organizationId={props.organizationId}
                 apApiDisplay={mo}
                 onError={onError_SubComponent}
@@ -282,8 +281,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
           </TabPanel>
           <TabPanel header='Access & State' disabled={!showAccessAndState}>
             <React.Fragment>
-              <EditNewAccessAndState
-                action={EAction.NEW}
+              <NewAccessAndState
                 organizationId={props.organizationId}
                 apApiDisplay={mo}
                 onError={onError_SubComponent}
@@ -296,7 +294,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
           </TabPanel>
           <TabPanel header='Review & Create' disabled={!showReview}>
             <React.Fragment>
-              <EditNewReviewAndCreate
+              <NewReviewAndCreate
                 organizationId={props.organizationId}
                 apApiDisplay={mo}
                 onBack={onBack}

@@ -20,6 +20,7 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { ViewApi } from "./ViewApi";
 import { ManageNewApi } from "./EditNewApi/ManageNewApi";
+import { ManageEditApi } from "./EditNewApi/ManageEditApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -124,15 +125,20 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
 
   // * Changed object *
-  // const onChangedManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => {
-  //   setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
-  //     apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
-  //     authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-  //     userId: userContext.apLoginUserDisplay.apEntityId.id,
-  //     userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
-  //   }));
-  //   setRefreshCounter(refreshCounter + 1);
-  // }
+  const onChangedManagedObject = (apApiDisplay: IAPApiDisplay) => {
+    const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
+      apApiDisplay: apApiDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+        apOrganizationDisplay: organizationContext
+      }),
+      isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+    });
+    setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
+    setRefreshCounter(refreshCounter + 1);
+  }
 
   //  * View Object *
   const onViewManagedObject = (apApiDisplay: IAPApiDisplay): void => {
@@ -184,7 +190,8 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     const funcName = 'renderLeftToolbarContent';
     const logName = `${ComponentName}.${funcName}()`;
-    if(!componentState.currentState) return undefined;
+    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
     const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
       apOrganizationDisplay: organizationContext
     });
@@ -198,18 +205,10 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       </React.Fragment>
     );
     if(showViewComponent) {          
-      //TODO: check allowed actions
-      // const showButtonsEditDelete: boolean = (viewManagedObject.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
-      const showButtonsEditDelete: boolean = false;
-      const isDeleteAllowed: boolean = false;
       return (
         <React.Fragment>
           <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          { showButtonsEditDelete &&
-          <>
-            <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
-          </>
-          }
+          <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!managedObject_AllowedActions.isEditAllowed} />        
         </React.Fragment>
       );
     }
@@ -218,8 +217,10 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     if(showNewComponent) return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
-    const isDeleteAllowed: boolean = false;
-      // const isDeleteAllowed: boolean = viewManagedObject.apiUsedBy_ApiProductEntityNameList.length === 0;
+    const funcName = 'renderRightToolbarContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
     if(showViewComponent) {
       return (
         <React.Fragment>
@@ -229,7 +230,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
             onClick={onDeleteManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined" 
             // disabled={!managedObject_AllowedActions.isDeleteAllowed} 
-            disabled={!isDeleteAllowed} 
+            disabled={!managedObject_AllowedActions.isDeleteAllowed} 
             style={{ color: "red", borderColor: 'red'}} 
           />        
         </React.Fragment>
@@ -417,7 +418,17 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         />
       }
       {showEditComponent && managedObjectEntityId &&
-      <p>showEditComponent</p>
+        <ManageEditApi
+          organizationId={props.organizationEntityId.id}
+          apiEntityId={managedObjectEntityId}
+          onError={onSubComponentError_Notification}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={setIsLoading}
+          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+          onSaveSuccessNotification={onEditSaveManagedObjectSuccess}
+          onNavigateToCommand={onSetManageObjectComponentState_To_View}    
+          onChanged={onChangedManagedObject}
+        />
         // <EditNewApi
         //   organizationId={props.organizationEntityId.id}
         //   apiProductEntityId={managedObjectEntityId}

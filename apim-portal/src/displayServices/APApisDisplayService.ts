@@ -563,8 +563,87 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apiName: apApiDisplay.apEntityId.id,
       requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay.apApiSpecDisplay })
     });
+  }
+
+  // protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate, apRawAttributeList }:{
+  //   organizationId: string;
+  //   apiProductId: string;
+  //   apiProductUpdate: APIProductPatch;    
+  //   apRawAttributeList: TAPRawAttributeList;    
+  // }): Promise<void> {
+  //   // const funcName = 'apiUpdate';
+  //   // const logName = `${this.MiddleComponentName}.${funcName}()`;
+  //   // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
+  //   const update: APIProductPatch = {
+  //     ...apiProductUpdate,
+  //     attributes: apRawAttributeList
+  //   }
+  //   await ApiProductsService.updateApiProduct({
+  //     organizationName: organizationId,
+  //     apiProductName: apiProductId,
+  //     requestBody: update
+  //   });  
+  
+  // }
+
+  public async apiUpdate_ApApiDisplay_AccessAndState({ organizationId, apApiDisplay, apApiDisplay_AccessAndState }:{
+    organizationId: string;
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
+  }): Promise<void> {
+    const funcName = 'apiUpdate_ApApiDisplay_AccessAndState';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiDisplay 
+    });
+    console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
+    alert(`${logName}: TODO: save the access & state part into API Info?`);
 
   }
+
+  public async apiUpdate_ApApiDisplay_General({ organizationId, apApiDisplay, apApiDisplay_General }:{
+    organizationId: string;
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_General: TAPApiDisplay_General;
+  }): Promise<void> {
+    const funcName = 'apiUpdate_ApApiDisplay_General';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    alert(`${logName}: TODO: implement me`);
+
+    // await ApisService.updateApi({
+    //   organizationName: organizationId,
+    //   apiName: apApiDisplay.apEntityId.id,
+    //   requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay.apApiSpecDisplay })
+    // });
+
+  }
+
+  // public async apiUpdate_ApApiDisplay({ organizationId, apApiDisplay }:{
+  //   organizationId: string;
+  //   apApiDisplay: IAPApiDisplay;
+  // }): Promise<void> {
+  //   const funcName = 'apiUpdate_ApApiDisplay';
+  //   const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+  //   // apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
+
+  //   const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+  //     organizationId: organizationId,
+  //     apManagedAssetDisplay: apApiDisplay 
+  //   });
+  //   console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
+  //   alert(`${logName}: TODO: set attributes, etc`);
+
+  //   await ApisService.updateApi({
+  //     organizationName: organizationId,
+  //     apiName: apApiDisplay.apEntityId.id,
+  //     requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay.apApiSpecDisplay })
+  //   });
+
+  // }
 
 }
 

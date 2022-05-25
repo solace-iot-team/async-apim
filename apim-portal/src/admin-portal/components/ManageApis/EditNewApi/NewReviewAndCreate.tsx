@@ -14,7 +14,7 @@ import { DisplayAdminPortalApi, E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "../Disp
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
 
-export interface IEditNewReviewAndCreateProps {
+export interface INewReviewAndCreateProps {
   organizationId: string;
   apApiDisplay: IAPApiDisplay;
   onCreateSuccess: (apiCallState: TApiCallState, apiEntityId: TAPEntityId) => void;
@@ -25,8 +25,8 @@ export interface IEditNewReviewAndCreateProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditNewReviewAndCreate: React.FC<IEditNewReviewAndCreateProps> = (props: IEditNewReviewAndCreateProps) => {
-  const ComponentName = 'EditNewReviewAndCreate';
+export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: INewReviewAndCreateProps) => {
+  const ComponentName = 'NewReviewAndCreate';
 
   type  TManagedObject = IAPApiDisplay;
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
