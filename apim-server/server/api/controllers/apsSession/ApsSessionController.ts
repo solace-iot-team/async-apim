@@ -157,6 +157,8 @@ export class ApsSessionController {
 
     })
     .catch( (e) => {
+      // clear the cookie since it is no longer valid
+      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseClearCookieOptions_For_InternalAuth_RefreshToken());
       next(e);
     });
   }
