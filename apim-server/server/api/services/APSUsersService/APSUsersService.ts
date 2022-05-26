@@ -385,16 +385,20 @@ export class APSUsersService {
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'APSUserResponse', details: { userId: userId } }));
 
-    const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
-      documentId: userId
-    });
-
-    const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
-    const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
-    const apsUserResponse: APSUserResponse = this.createAPSUserResponse({
-      apsUserInternal: apsUserInternal, 
-      apsOrganizationList: apsOrganizationList
-    });
+    let apsUserResponse: APSUserResponse;
+    if(userId === APSUsersService.rootApsUser.userId) {
+      apsUserResponse = await this.getRootApsUserResponse();
+    } else {
+      const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
+        documentId: userId
+      });
+      const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
+      const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
+      apsUserResponse = this.createAPSUserResponse({
+        apsUserInternal: apsUserInternal, 
+        apsOrganizationList: apsOrganizationList
+      });  
+    }
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSUserResponse', details: apsUserResponse }));
 
