@@ -184,6 +184,17 @@ class APSAuthStrategyService {
     }
   }
 
+  public getResponseClearCookieOptions_For_InternalAuth_RefreshToken(): any {
+    const funcName = 'getResponseClearCookieOptions_For_InternalAuth_RefreshToken';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    return {
+      ...this.getResponseCookieOptions_For_InternalAuth_RefreshToken(),
+      maxAge: 0,
+      expires: new Date(0),
+    };
+  }
   /**
    * Usage: 
    * res.cookie("refreshToken", refreshToken, APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
@@ -200,10 +211,6 @@ class APSAuthStrategyService {
       // secure cookies do not work correctly (in postman)
       // secure: !dev,
 
-      // does not work for localhost
-      // secure: true,
-      // sameSite: "none",
-
       // for localhost
       secure: true,
       sameSite: "none",
@@ -212,9 +219,6 @@ class APSAuthStrategyService {
       maxAge: authConfig.refreshJwtExpiryMilliSecs,
       path: '/'
     };
-
-
-
   }
 
   public generateBearerToken_For_InternalAuth = ({ userId }:{

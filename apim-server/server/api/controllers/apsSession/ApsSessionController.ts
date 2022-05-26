@@ -190,8 +190,8 @@ export class ApsSessionController {
       userId: apsSessionUser.userId
     })
     .then( (apsSessionLogoutResponse: APSSessionLogoutResponse) => {
-
-      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
+  
+      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseClearCookieOptions_For_InternalAuth_RefreshToken());
 
       res.status(200).json(apsSessionLogoutResponse);
 
