@@ -10,6 +10,7 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import APApisDisplayService, { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { DisplayAdminPortalApi, E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "./DisplayAdminPortalApi";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -97,6 +98,8 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
   return (
     <React.Fragment>
       <div className="manage-apis">
+
+        <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
         { managedObject && 
           <DisplayAdminPortalApi

@@ -10,6 +10,7 @@ import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -96,6 +97,8 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   return (
     <React.Fragment>
       <div className="manage-api-products">
+
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { managedObject && 
         <DisplayAdminPortalApiProduct
