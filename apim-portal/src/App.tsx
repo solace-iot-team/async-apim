@@ -39,7 +39,6 @@ import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
 import { HealthCheckViewPage } from "./pages/HealthCheckViewPage";
 import { PerformSystemHealthCheck } from "./components/SystemHealth/PerformSystemHealthCheck";
-import { UserSecVerify } from "./components/ManageLoginAndSelect/UserSecVerify";
 // * Developer Tools *
 import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
@@ -159,7 +158,7 @@ const App: React.FC = () => {
       <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
-      <UserSecVerify />
+      {/* <UserSecVerify /> */}
       { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">

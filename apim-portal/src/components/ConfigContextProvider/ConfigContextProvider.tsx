@@ -34,7 +34,10 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
     case 'UPDATE_CONFIG_CONTEXT':
       const newState: TAPConfigContext = JSON.parse(JSON.stringify(state));
       if(action.configContext.rbacRoleList) newState.rbacRoleList = action.configContext.rbacRoleList;
-      if(action.configContext.connector) newState.connector = action.configContext.connector;
+      if(action.configContext.connector) {
+        APClientConnectorOpenApi.initialize(action.configContext.connector.connectorClientConfig);
+        newState.connector = action.configContext.connector;
+      }
       if(action.configContext.connectorInfo) newState.connectorInfo = action.configContext.connectorInfo;
       if(action.configContext.portalAppInfo) newState.portalAppInfo = action.configContext.portalAppInfo;
       return newState;

@@ -14,11 +14,14 @@ import APContextsDisplayService from "../../displayServices/APContextsDisplaySer
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { Loading } from "../Loading/Loading";
+import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
 
-export interface IUserSecVerifyProps {}
+export interface UserSecRefreshProps {
+  children: any;
+}
 
-export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVerifyProps) => {
-  const ComponentName = 'UserSecVerify';
+export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefreshProps) => {
+  const ComponentName = 'UserSecRefresh';
 
   // const VerifyUserInterval_ms: number = 300000; // every 5 minutes
   // const VerifyUserInterval_ms: number = 60000; // every minute
@@ -32,10 +35,11 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
-  // const [configContext] = React.useContext(ConfigContext);
-  // const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [delay] = React.useState<number>(VerifyUserInterval_ms); 
+  const [areContextsInitialized, setAreContextsInitialized] = React.useState<boolean>(false);
+  const [delay] = React.useState<number>(VerifyUserInterval_ms);
+
   const location = useLocation();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
@@ -116,6 +120,14 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
     doVerifyUser();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    // console.log(`${ComponentName}: triggering on contexts ...`);
+    // console.log(`${ComponentName}: isLoading=${isLoading}, configContext.isInitialized=${configContext.isInitialized}, healthCheckSummaryContext.connectorHealthCheckSuccess=${healthCheckSummaryContext.connectorHealthCheckSuccess}`);
+    if(isLoading) return;
+    if(!configContext.isInitialized) return;
+    setAreContextsInitialized(true);
+  }, [configContext, isLoading]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   useInterval( () => 
     {
       doVerifyUser();
@@ -123,10 +135,22 @@ export const UserSecVerify: React.FC<IUserSecVerifyProps> = (props: IUserSecVeri
     delay
   );
 
+  const renderChildren = () => {
+    return (
+      <React.Fragment>
+        { props.children }
+      </React.Fragment>
+    );
+  }
+
   return (
-    <div>
+    <React.Fragment>
+
       <Loading show={isLoading} />
-    </div>
+
+      { areContextsInitialized && renderChildren() }
+
+    </React.Fragment>
   );
 }
 
