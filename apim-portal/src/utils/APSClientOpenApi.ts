@@ -28,7 +28,7 @@ export class APSClientOpenApi {
   }
 
   public static setToken = (token: string | undefined) => {
-    APSClientOpenApi.token = token !== undefined ? token : '';
+    APSClientOpenApi.token = token !== undefined ? token : '***';
   }
 
   private static getToken = (): string => { return APSClientOpenApi.token; }

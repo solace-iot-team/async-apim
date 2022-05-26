@@ -22,6 +22,7 @@ const SessionContextReducer = (state: TAPSessionContext, action: TSessionContext
       return JSON.parse(JSON.stringify(action.apSessionContext));
     }
     case 'CLEAR_SESSION_CONTEXT': {
+      APSClientOpenApi.setToken(undefined);
       return JSON.parse(JSON.stringify(EmptySessionContext));
     }
     default: 

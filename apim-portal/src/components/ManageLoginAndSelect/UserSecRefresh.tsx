@@ -8,13 +8,14 @@ import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSSessionRefreshTokenResponse } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { EAppState, EUICommonResourcePaths, Globals } from "../../utils/Globals";
+import { EAppState, Globals } from "../../utils/Globals";
 import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { Loading } from "../Loading/Loading";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { Config } from "../../Config";
 
 export interface UserSecRefreshProps {
   children: any;
@@ -39,6 +40,7 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [areContextsInitialized, setAreContextsInitialized] = React.useState<boolean>(false);
   const [delay] = React.useState<number>(VerifyUserInterval_ms);
+  const [runInterval, setRunInterval] = React.useState<boolean>(false);
 
   const location = useLocation();
   const history = useHistory();
@@ -96,22 +98,30 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
         if(!authContext.isLoggedIn) {
           await apiSetupLoginContexts({ userId: apsSessionRefreshTokenResponse.userId, organizationId: apsSessionRefreshTokenResponse.organizationId });
         }
+        setRunInterval(true);
       } else {
-        // alert(`${logName}: location.pathname=${location.pathname}`);
-        if(location.pathname !== EUICommonResourcePaths.SecLogin) {
-          dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
-          navigateTo(EUICommonResourcePaths.GetLogin);
+        setRunInterval(false);
+        dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
+        if(Config.getUseSecMode()) {
+          dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
         }
+        // if(location.pathname !== EUICommonResourcePaths.SecLogin) {
+        //   // dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
+        //   // navigateTo(EUICommonResourcePaths.GetLogin);
+        // }
       }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
-      // dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
-      // callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
   }
 
+  const isPageRefresh = (): boolean => {
+    if(!authContext.isLoggedIn && !configContext.isInitialized) return true;
+    return false;
+  }
+
   const doVerifyUser = async() => {
-    if(!authContext.isLoggedIn) setIsLoading(true);
+    if(isPageRefresh()) setIsLoading(true);
     await apiVerifyUser();
     setIsLoading(false);
   }
@@ -119,6 +129,10 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
   React.useEffect(() => {
     doVerifyUser();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(authContext.isLoggedIn) setRunInterval(true);
+  }, [authContext.isLoggedIn]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     // console.log(`${ComponentName}: triggering on contexts ...`);
@@ -132,7 +146,7 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
     {
       doVerifyUser();
     },
-    delay
+    runInterval ? delay : null
   );
 
   const renderChildren = () => {

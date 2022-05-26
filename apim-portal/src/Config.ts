@@ -2,8 +2,9 @@
 import { TAPSClientOpenApiConfig } from './utils/APSClientOpenApi';
 
 type TConfig = {
-  useDevelTools: boolean,
-  apsClientOpenApiConfig: TAPSClientOpenApiConfig
+  useDevelTools: boolean;
+  useSecMode: boolean;
+  apsClientOpenApiConfig: TAPSClientOpenApiConfig;
 }
 
 export class Config {
@@ -52,6 +53,7 @@ export class Config {
     console.log(`${logName}: process.env = ${JSON.stringify(process.env, null, 2)}`);
     Config.config = {
       useDevelTools: Config.getOptionalEnvVarValueAsBoolean('REACT_APP_AP_USE_DEVEL_TOOLS', false),
+      useSecMode: Config.getOptionalEnvVarValueAsBoolean('REACT_APP_AP_USE_SEC_MODE', false),
       apsClientOpenApiConfig: {
         apsServerUrl: Config.getOptionalEnvVarValueAsURL("REACT_APP_AP_SERVER_URL"),
       }
@@ -71,5 +73,12 @@ export class Config {
     const logName = `${Config.commonName}.${funcName}()`;
     if(!Config.config) throw new Error(`${logName}: Config.config is undefined`);
     return Config.config.useDevelTools;
+  }
+
+  public static getUseSecMode = (): boolean => {
+    const funcName = 'getUseSecMode';
+    const logName = `${Config.commonName}.${funcName}()`;
+    if(!Config.config) throw new Error(`${logName}: Config.config is undefined`);
+    return Config.config.useSecMode;
   }
 }

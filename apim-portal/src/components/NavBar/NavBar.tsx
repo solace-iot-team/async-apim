@@ -114,6 +114,42 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     doLogout();
   }
 
+  const apiSecLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+    const funcName = 'apiSecLogout';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+    try {
+      await APLoginUsersDisplayService.apsSecLogout();
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const doSecLogout = async() => {
+    navigateTo(EUICommonResourcePaths.Home);
+    await apiSecLogout(userContext.apLoginUserDisplay.apEntityId);
+    APContextsDisplayService.clear_LoginContexts({
+      dispatchAuthContextAction: dispatchAuthContextAction,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
+    });
+  }
+  const onSecLogout = () => {
+    doSecLogout();
+  }
+  const renderSecLogout = () => {
+    if(Config.getUseSecMode()) return (
+      <React.Fragment>
+        <Divider />
+        <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Sec-Logout" onClick={() => onSecLogout()} />
+      </React.Fragment>
+    );   
+  }
+
   const onHideUserOverlayPanel = () => {
     organizationOverlayPanel.current.hide();
   }
@@ -280,6 +316,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     }
   }
 
+
   const renderUserComponents = () => {
     return (
       <React.Fragment>
@@ -309,6 +346,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           </RenderWithRbac>
           <Divider />
           <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
+          { renderSecLogout() }
         </OverlayPanel>
         
         {/* organization select */}
@@ -384,7 +422,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const getLoginButton = (): JSX.Element => {
-    if(Config.getUseDevelTools()) {
+    if(Config.getUseSecMode()) {
       return (
         <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="GET Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
       );

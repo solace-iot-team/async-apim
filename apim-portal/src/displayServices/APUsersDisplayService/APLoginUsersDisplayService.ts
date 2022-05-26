@@ -132,11 +132,23 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
     // // test error handling
     // throw new Error(`${logName}: test error handling`);
-
-    const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await ApsSessionService.apsRefreshToken();
-    
-    return apsSessionRefreshTokenResponse;
-
+    try {
+      const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await ApsSessionService.apsRefreshToken();    
+      return apsSessionRefreshTokenResponse;
+    } catch(e: any) {
+      if(APSClientOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 401) {
+          const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
+            success: false,
+            token: '',
+            userId: '',
+          };
+          return apsSessionRefreshTokenResponse;
+        };
+      }
+      throw e;
+    }
   }
 
   public async apsSecLogin({ apUserLoginCredentials }:{
@@ -189,6 +201,10 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       }
       throw e;
     }
+  }
+
+  public async apsSecLogout(): Promise<void> {
+    await ApsSessionService.apsLogout();
   }
 
   public async apsLogin({ apUserLoginCredentials }:{

@@ -21,7 +21,7 @@ export const ManageGetLogin: React.FC<IManageGetLoginProps> = (props: IManageGet
   const ComponentName = 'ManageGetLogin';
 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isLoading] = React.useState<boolean>(false);
   const [isLoginInternal, setIsLoginInternal] = React.useState<boolean>(false);
 
   // * Api Calls *
@@ -43,9 +43,9 @@ export const ManageGetLogin: React.FC<IManageGetLoginProps> = (props: IManageGet
   }
 
   const doInitialize = async () => {
-    setIsLoading(true);
+    // setIsLoading(true);
     await apiGetLogin();
-    setIsLoading(false);
+    // setIsLoading(false);
   }
 
   // * useEffect Hooks *
