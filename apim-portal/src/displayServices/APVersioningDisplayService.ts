@@ -102,6 +102,16 @@ class APVersioningDisplayService {
     return '1.0.0';
   }
 
+  public create_New_ApVersionInfo = (): IAPVersionInfo => {
+    const defaultVersion = this.create_NewVersion();
+    return {
+      apLastVersion: defaultVersion,
+      apCurrentVersion: defaultVersion,
+      apVersionList: [defaultVersion]
+    };
+  }
+  
+
   public create_NextMajorVersion(version: string): string {
     const versionSemVer = new SemVer(version);
     versionSemVer.inc("major");

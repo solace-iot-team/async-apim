@@ -102,6 +102,7 @@ export enum EUIAdminPortalResourcePaths {
 
   ManageOrganizationAssetMaintenance ='/admin-portal/manage/organization/asset_maintenance',
   ManageOrganizationAssetMaintenanceApiProducts = '/admin-portal/manage/organization/asset_maintenance/apiproducts',
+  ManageOrganizationAssetMaintenanceApis = '/admin-portal/manage/organization/asset_maintenance/apis',
 
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',

@@ -2,6 +2,7 @@ import {
   ApiError,
   APIInfo,
   APIInfoList,
+  APIInfoPatch,
   APIList,
   APIParameter,
   ApisService,
@@ -42,16 +43,23 @@ export type TAPApiDisplay_AllowedActions = {
   isViewAllowed: boolean;
   isImportFromEventPortalAllowed: boolean;
 }
-export type TAPApiDisplay_General = IAPEntityIdDisplay & {
+export type TAPApiDisplay_AsyncApiSpec = IAPEntityIdDisplay & {
   apApiSpecDisplay: TAPApiSpecDisplay;
 }
-export type TAPApiDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
-  apLifecycleStageInfo: IAPLifecycleStageInfo;
+export type TAPApiDisplay_General = IAPEntityIdDisplay & {
+  description: string;
+  summary: string;
 }
+// export type TAPApiDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
+//   apLifecycleStageInfo: IAPLifecycleStageInfo;
+// }
+export type TAPApiDisplay_Access = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {}
 export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
   apApiChannelParameterList: TAPApiChannelParameterList;
   connectorApiInfo: APIInfo;
+  description: string;
+  summary: string;
   // version(s)
   apVersionInfo: IAPVersionInfo;
 
@@ -78,6 +86,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
     return name;
   }
+  public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
+    return `${this.nameOf<IAPApiDisplay>('apLifecycleStageInfo')}.${name}`;
+  }
 
   private create_Empty_ConnectorApiInfo(): APIInfo {
     return {
@@ -87,20 +98,25 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       description: '',
       name: '',
       summary: '',
-      version: '',
+      version: APVersioningDisplayService.create_NewVersion(),
+      deprecated: false,
     };
   }
 
   public create_Empty_ApApiDisplay(): IAPApiDisplay {
+    const emptyConnectorApiInfo: APIInfo = this.create_Empty_ConnectorApiInfo();
     const apApiDisplay: IAPApiDisplay = {
       ...this.create_Empty_ApManagedAssetDisplay(),
+      apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      description: '',
+      summary: '',
       apApiChannelParameterList: [],
       apApiProductReferenceEntityIdList: [],
-      apVersionInfo: APVersioningDisplayService.create_Empty_ApVersionInfo(),
+      apVersionInfo: APVersioningDisplayService.create_New_ApVersionInfo(),
       apMetaInfo: APMetaInfoDisplayService.create_Empty_ApMetaInfo(),
-      connectorApiInfo: this.create_Empty_ConnectorApiInfo(),
+      connectorApiInfo: emptyConnectorApiInfo,
       apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: this.create_ConnectorMeta_From_ApiEntities({
-        connectorApiInfo: this.create_Empty_ConnectorApiInfo()
+        connectorApiInfo: emptyConnectorApiInfo
       })}),
       apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
       apSearchContent: '',
@@ -129,14 +145,24 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   private create_ConnectorMeta_From_ApiEntities({ connectorApiInfo }:{
     connectorApiInfo: APIInfo;
   }): Meta {
-    const connectorMeta: Meta = {
-      version: connectorApiInfo.version,
-      created: connectorApiInfo.createdTime,
-      createdBy: connectorApiInfo.createdBy,
-      lastModified: connectorApiInfo.updatedTime,
-      lastModifiedBy: 'unknown',
-      stage: MetaEntityStage.RELEASED,
-    };
+    let connectorMeta: Meta
+    if(connectorApiInfo.meta === undefined) {
+      connectorMeta = {
+        version: APVersioningDisplayService.create_SemVerString(connectorApiInfo.version),
+        created: connectorApiInfo.createdTime,
+        createdBy: connectorApiInfo.createdBy,
+        lastModified: connectorApiInfo.updatedTime,
+        lastModifiedBy: 'unknown',
+        stage: MetaEntityStage.RELEASED,
+      };
+    } else {
+      connectorMeta = connectorApiInfo.meta;
+      if(connectorApiInfo.meta.version !== undefined) {
+        connectorMeta.version = APVersioningDisplayService.create_SemVerString(connectorApiInfo.meta.version);
+      } else {
+        connectorMeta.version = APVersioningDisplayService.create_SemVerString(connectorApiInfo.version);
+      }
+    }
     return connectorMeta;
   }
 
@@ -165,7 +191,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiInfo.name,
       displayName: connectorApiInfo.name,
-      apRawAttributeList: [],
+      apRawAttributeList: connectorApiInfo.attributes ? connectorApiInfo.attributes : [],
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -175,6 +201,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const apApiDisplay: IAPApiDisplay = {
       ..._base,
       connectorApiInfo: connectorApiInfo,
+      description: connectorApiInfo.description,
+      summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
@@ -236,6 +264,13 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   //   return rawAttributeList;
   // }
 
+  public generate_Id_From_Title({ title }:{ 
+    title: string; 
+  }): string {
+    return title.replaceAll(/\s/g, '-');
+  } 
+
+
   public get_Empty_AllowedActions(): TAPApiDisplay_AllowedActions {
     return {
       isDeleteAllowed: false,
@@ -295,12 +330,31 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return allowedActions;
   }
 
+  public get_ApApiDisplay_AsyncApiSpec({ apApiDisplay }: {
+    apApiDisplay: IAPApiDisplay;
+  }): TAPApiDisplay_AsyncApiSpec {
+    const apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec = {
+      apEntityId: apApiDisplay.apEntityId,
+      apApiSpecDisplay: apApiDisplay.apApiSpecDisplay,
+    };
+    return apApiDisplay_AsyncApiSpec;
+  }
+  public set_ApApiDisplay_AsyncApiSpec({ apApiDisplay, apApiDisplay_AsyncApiSpec }:{
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec;
+  }): IAPApiDisplay {
+    apApiDisplay.apEntityId = apApiDisplay_AsyncApiSpec.apEntityId;
+    apApiDisplay.apApiSpecDisplay = apApiDisplay_AsyncApiSpec.apApiSpecDisplay;
+    return apApiDisplay;
+  }
+
   public get_ApApiDisplay_General({ apApiDisplay }:{
     apApiDisplay: IAPApiDisplay;
   }): TAPApiDisplay_General {
     const apApiDisplay_General: TAPApiDisplay_General = {
       apEntityId: apApiDisplay.apEntityId,
-      apApiSpecDisplay: apApiDisplay.apApiSpecDisplay
+      description: apApiDisplay.description,
+      summary: apApiDisplay.summary,
     };
     return apApiDisplay_General;
   }
@@ -314,33 +368,56 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiDisplay_General: TAPApiDisplay_General;
   }): IAPApiDisplay {
     apApiDisplay.apEntityId = apApiDisplay_General.apEntityId;
-    apApiDisplay.apApiSpecDisplay = apApiDisplay_General.apApiSpecDisplay;
+    apApiDisplay.description = apApiDisplay_General.description;
+    apApiDisplay.summary = apApiDisplay_General.summary;
     return apApiDisplay;
   }
 
-  public get_ApApiDisplay_AccessAndState({ apApiDisplay }:{
+  public get_ApApiDisplay_Access({ apApiDisplay }:{
     apApiDisplay: IAPApiDisplay;
-  }): TAPApiDisplay_AccessAndState {
-    const apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState = {
+  }): TAPApiDisplay_Access {
+    const apApiDisplay_Access: TAPApiDisplay_Access = {
       ...this.get_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay }),
       apEntityId: apApiDisplay.apEntityId,
-      apLifecycleStageInfo: apApiDisplay.apLifecycleStageInfo,
     };
-    return apApiDisplay_AccessAndState;
+    return apApiDisplay_Access;
   }
   /** 
-   * Set the access & state properties. 
+   * Set the access properties. 
    * Does NOT set the apEntityId. 
    * @returns the modified apApiProductDisplay (not a copy)
   */
-   public set_ApApiDisplay_AccessAndState({ apApiDisplay, apApiDisplay_AccessAndState }:{
+   public set_ApApiDisplay_Access({ apApiDisplay, apApiDisplay_Access }:{
     apApiDisplay: IAPApiDisplay;
-    apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
+    apApiDisplay_Access: TAPApiDisplay_Access;
   }): IAPApiDisplay {
-    this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay, apManagedAssetDisplay_AccessAndState: apApiDisplay_AccessAndState });
-    apApiDisplay.apLifecycleStageInfo = apApiDisplay_AccessAndState.apLifecycleStageInfo;
+    this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay, apManagedAssetDisplay_AccessAndState: apApiDisplay_Access });
     return apApiDisplay;
   }
+
+  // public get_ApApiDisplay_AccessAndState({ apApiDisplay }:{
+  //   apApiDisplay: IAPApiDisplay;
+  // }): TAPApiDisplay_AccessAndState {
+  //   const apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState = {
+  //     ...this.get_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay }),
+  //     apEntityId: apApiDisplay.apEntityId,
+  //     apLifecycleStageInfo: apApiDisplay.apLifecycleStageInfo,
+  //   };
+  //   return apApiDisplay_AccessAndState;
+  // }
+  // /** 
+  //  * Set the access & state properties. 
+  //  * Does NOT set the apEntityId. 
+  //  * @returns the modified apApiProductDisplay (not a copy)
+  // */
+  //  public set_ApApiDisplay_AccessAndState({ apApiDisplay, apApiDisplay_AccessAndState }:{
+  //   apApiDisplay: IAPApiDisplay;
+  //   apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
+  // }): IAPApiDisplay {
+  //   this.set_ApManagedAssetDisplay_AccessAndState({ apManagedAssetDisplay: apApiDisplay, apManagedAssetDisplay_AccessAndState: apApiDisplay_AccessAndState });
+  //   apApiDisplay.apLifecycleStageInfo = apApiDisplay_AccessAndState.apLifecycleStageInfo;
+  //   return apApiDisplay;
+  // }
 
 
   // ********************************************************************************************************************************
@@ -394,16 +471,94 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName<IAPApiDisplay>(list);    
   }
 
-  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId }:{
+  public apiGetMaintainanceList_ApApiDisplayList = async({ organizationId, default_ownerId }:{
     organizationId: string;
     default_ownerId: string;
-  }): Promise<TAPApiDisplayList> {
+  }): Promise<TAPApiDisplayList> => {
 
     const result: APIList | APISummaryList | APIInfoList = await ApisService.listApis({
       organizationName: organizationId,
       format: 'extended'
     });
     const apiInfoList: APIInfoList = result as APIInfoList;
+
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
+
+    const list: TAPApiDisplayList = [];
+    // TODO: PARALLELIZE
+    for(const apiInfo of apiInfoList) {
+      // TODO: when connector ready: get reference list for this version
+      const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
+        organizationId: organizationId, 
+        apiId: apiInfo.name
+      });
+      list.push(this.create_ApApiDisplay_From_ApiEntities({
+        connectorApiInfo: apiInfo,
+        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+        // apApiProductReferenceEntityIdList: [],
+        default_ownerId: default_ownerId,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
+        apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
+      }));
+    }
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
+  }
+
+  private async apiGetFilteredList_ConnectorApiInfo({ organizationId, businessGroupId }:{
+    organizationId: string;
+    businessGroupId?: string;
+  }): Promise<APIInfoList> {
+
+    const result: APIList | APISummaryList | APIInfoList = await ApisService.listApis({
+      organizationName: organizationId,
+      format: 'extended'
+    });
+    const completeApiInfoList: APIInfoList = result as APIInfoList;
+
+    // filter by business group id & sharing business group id
+    const filteredApiInfoList: APIInfoList = [];
+    if(businessGroupId !== undefined) {
+      const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
+      const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
+      for(const apiInfo of completeApiInfoList) {
+        if(apiInfo.attributes !== undefined) {
+          const owningAttribute = apiInfo.attributes.find( (x) => {
+            return x.name === owningBusinessGroup_AttributeName;
+          });
+          const sharingAttribute = apiInfo.attributes.find( (x) => {
+            return x.name === sharingBusinessGroup_AttributeName;
+          });
+          if(
+            (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
+            (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
+          ) {
+            filteredApiInfoList.push(apiInfo);
+          }
+        }
+      }
+    }
+    return filteredApiInfoList;
+  }
+
+  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId }:{
+    organizationId: string;
+    default_ownerId: string;
+    businessGroupId: string;
+  }): Promise<TAPApiDisplayList> {
+
+    const apiInfoList: APIInfoList = await this.apiGetFilteredList_ConnectorApiInfo({
+      organizationId: organizationId,
+      businessGroupId: businessGroupId
+    });
 
     // get the complete business group list for reference
     const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
@@ -542,66 +697,126 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     });
   }
 
-  public async apiCreate_ApApiDisplay({ organizationId, apApiDisplay }: {
+  public async apiCreate_ApApiDisplay({ organizationId, apApiDisplay, userId }: {
     organizationId: string;
     apApiDisplay: IAPApiDisplay;
-    // userId: string;
+    userId: string;
   }): Promise<void> {
     const funcName = 'apiCreate_ApApiDisplay';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
-      organizationId: organizationId,
-      apManagedAssetDisplay: apApiDisplay 
-    });
-
-    console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
-    alert(`${logName}: TODO: set attributes, etc`);
-
+    // create the api in connector
     await ApisService.createApi({
       organizationName: organizationId, 
       apiName: apApiDisplay.apEntityId.id,
       requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay.apApiSpecDisplay })
     });
-  }
 
-  // protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate, apRawAttributeList }:{
-  //   organizationId: string;
-  //   apiProductId: string;
-  //   apiProductUpdate: APIProductPatch;    
-  //   apRawAttributeList: TAPRawAttributeList;    
-  // }): Promise<void> {
-  //   // const funcName = 'apiUpdate';
-  //   // const logName = `${this.MiddleComponentName}.${funcName}()`;
-  //   // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
-  //   const update: APIProductPatch = {
-  //     ...apiProductUpdate,
-  //     attributes: apRawAttributeList
-  //   }
-  //   await ApiProductsService.updateApiProduct({
-  //     organizationName: organizationId,
-  //     apiProductName: apiProductId,
-  //     requestBody: update
-  //   });  
-  
-  // }
-
-  public async apiUpdate_ApApiDisplay_AccessAndState({ organizationId, apApiDisplay, apApiDisplay_AccessAndState }:{
-    organizationId: string;
-    apApiDisplay: IAPApiDisplay;
-    apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
-  }): Promise<void> {
-    const funcName = 'apiUpdate_ApApiDisplay_AccessAndState';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
-
+    // // get API Info
+    // const connectorApiInfo: APIInfo = await ApisService.getApiInfo({
+    //   organizationName: organizationId,
+    //   apiName: apApiDisplay.apEntityId.id
+    // });  
+    // patch attributes & meta on api info
     const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
       organizationId: organizationId,
       apManagedAssetDisplay: apApiDisplay 
     });
-    console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
-    alert(`${logName}: TODO: save the access & state part into API Info?`);
+
+    const update: APIInfoPatch = {
+      meta: {
+        createdBy: userId,
+        lastModifiedBy: userId
+      },
+    };
+
+    // alert(`${logName}: check console log`);
+    // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
+    // console.log(`${logName}: update=${JSON.stringify(update, null, 2)}`);
+
+
+    await this.apiUpdate({
+      organizationId: organizationId, 
+      apiId: apApiDisplay.apEntityId.id,
+      apRawAttributeList: apRawAttributeList,
+      apiInfoUpdate: update,
+    });
 
   }
+
+  private async apiUpdate({ organizationId, apiId, apiInfoUpdate, apRawAttributeList }: {
+    organizationId: string;
+    apiId: string;
+    apiInfoUpdate: APIInfoPatch;
+    apRawAttributeList: TAPRawAttributeList;
+  }): Promise<void> {
+    // const funcName = 'apiUpdate';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    // always add attributes
+    const update: APIInfoPatch = {
+      ...apiInfoUpdate,
+      attributes: apRawAttributeList,
+    };
+    await ApisService.updateApiInfo({
+      organizationName: organizationId,
+      apiName: apiId,
+      requestBody: update,
+    });
+  }
+
+  public async apiUpdate_ApApiDisplay_Access({ organizationId, apApiDisplay, apApiDisplay_Access, userId }:{
+    organizationId: string;
+    userId: string;
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_Access: TAPApiDisplay_Access;
+  }): Promise<void> {
+    // const funcName = 'apiUpdate_ApApiDisplay_Access';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    apApiDisplay = this.set_ApApiDisplay_Access({ 
+      apApiDisplay: apApiDisplay,
+      apApiDisplay_Access: apApiDisplay_Access
+    });
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiDisplay 
+    });
+    await this.apiUpdate ({
+      organizationId: organizationId,
+      apiId: apApiDisplay.apEntityId.id,
+      apRawAttributeList: apRawAttributeList,
+      apiInfoUpdate: {
+        meta: {
+          lastModifiedBy: userId
+        }
+      }
+    })
+  }
+
+  // public async apiUpdate_ApApiDisplay_AccessAndState({ organizationId, apApiDisplay, apApiDisplay_AccessAndState }:{
+  //   organizationId: string;
+  //   apApiDisplay: IAPApiDisplay;
+  //   apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState;
+  // }): Promise<void> {
+  //   // const funcName = 'apiUpdate_ApApiDisplay_AccessAndState';
+  //   // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+  //   apApiDisplay = this.set_ApApiDisplay_AccessAndState({ 
+  //     apApiDisplay: apApiDisplay,
+  //     apApiDisplay_AccessAndState: apApiDisplay_AccessAndState
+  //   });
+  //   const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+  //     organizationId: organizationId,
+  //     apManagedAssetDisplay: apApiDisplay 
+  //   });
+  //   await this.apiUpdate ({
+  //     organizationId: organizationId,
+  //     apiId: apApiDisplay.apEntityId.id,
+  //     apRawAttributeList: apRawAttributeList,
+  //     apiInfoUpdate: {}
+  //   })
+  // }
 
   public async apiUpdate_ApApiDisplay_General({ organizationId, apApiDisplay, apApiDisplay_General }:{
     organizationId: string;

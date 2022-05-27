@@ -6,14 +6,15 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AccessAndState } from "../../../../displayServices/APApisDisplayService";
+import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_Access } from "../../../../displayServices/APApisDisplayService";
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
-import { EditNewAccessAndStateForm } from "./EditNewAccessAndStateForm";
+import { EditNewAccessForm } from "./EditNewAccessForm";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
 
-export interface IEditAccessAndStateProps {
+export interface IEditAccessProps {
   organizationId: string;
   apApiDisplay: IAPApiDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -22,15 +23,16 @@ export interface IEditAccessAndStateProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditAccessAndState: React.FC<IEditAccessAndStateProps> = (props: IEditAccessAndStateProps) => {
-  const ComponentName = 'EditAccessAndState';
+export const EditAccess: React.FC<IEditAccessProps> = (props: IEditAccessProps) => {
+  const ComponentName = 'EditAccess';
 
-  type TManagedObject = TAPApiDisplay_AccessAndState;
+  type TManagedObject = TAPApiDisplay_Access;
 
   const FormId = `ManageApis_EditNewApi_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -39,10 +41,11 @@ export const EditAccessAndState: React.FC<IEditAccessAndStateProps> = (props: IE
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${mo.apEntityId.displayName}`);
     try {
-      await APApisDisplayService.apiUpdate_ApApiDisplay_AccessAndState({
+      await APApisDisplayService.apiUpdate_ApApiDisplay_Access({
         organizationId: props.organizationId,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
         apApiDisplay: props.apApiDisplay,
-        apApiDisplay_AccessAndState: mo,
+        apApiDisplay_Access: mo,
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -53,7 +56,7 @@ export const EditAccessAndState: React.FC<IEditAccessAndStateProps> = (props: IE
   }
 
   const doInitialize = async () => {
-    setManagedObject(APApisDisplayService.get_ApApiDisplay_AccessAndState({ apApiDisplay: props.apApiDisplay }));
+    setManagedObject(APApisDisplayService.get_ApApiDisplay_Access({ apApiDisplay: props.apApiDisplay }));
   }
 
   // * useEffect Hooks *
@@ -105,10 +108,10 @@ export const EditAccessAndState: React.FC<IEditAccessAndStateProps> = (props: IE
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewAccessAndStateForm
+          <EditNewAccessForm
             formId={FormId}
             action={EAction.EDIT}
-            apApiDisplay_AccessAndState={mo}
+            apApiDisplay_Access={mo}
             onError={props.onError}
             onSubmit={onSubmit}
           />

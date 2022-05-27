@@ -7,26 +7,26 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApisCommon";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AccessAndState } from "../../../../displayServices/APApisDisplayService";
-import { EditNewAccessAndStateForm } from "./EditNewAccessAndStateForm";
+import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_Access } from "../../../../displayServices/APApisDisplayService";
+import { EditNewAccessForm } from "./EditNewAccessForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
 
-export interface INewAccessAndStateProps {
+export interface INewAccessProps {
   organizationId: string;
   apApiDisplay: IAPApiDisplay;
-  onSaveChanges: (apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState) => void;
+  onSaveChanges: (apApiDisplay_Access: TAPApiDisplay_Access) => void;
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const NewAccessAndState: React.FC<INewAccessAndStateProps> = (props: INewAccessAndStateProps) => {
-  const ComponentName = 'NewAccessAndState';
+export const NewAccess: React.FC<INewAccessProps> = (props: INewAccessProps) => {
+  const ComponentName = 'NewAccess';
 
-  type TManagedObject = TAPApiDisplay_AccessAndState;
+  type TManagedObject = TAPApiDisplay_Access;
   
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
 
@@ -35,7 +35,7 @@ export const NewAccessAndState: React.FC<INewAccessAndStateProps> = (props: INew
   // * Api Calls * 
 
   const doInitialize = async () => {
-    setManagedObject(APApisDisplayService.get_ApApiDisplay_AccessAndState({
+    setManagedObject(APApisDisplayService.get_ApApiDisplay_Access({
       apApiDisplay: props.apApiDisplay
     }));
   }
@@ -50,8 +50,8 @@ export const NewAccessAndState: React.FC<INewAccessAndStateProps> = (props: INew
     props.onSaveChanges(mo);
   }
 
-  const onSubmit = (apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState) => {
-    doSubmitManagedObject(apApiDisplay_AccessAndState);
+  const onSubmit = (apApiDisplay_Access: TAPApiDisplay_Access) => {
+    doSubmitManagedObject(apApiDisplay_Access);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -83,10 +83,10 @@ export const NewAccessAndState: React.FC<INewAccessAndStateProps> = (props: INew
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewAccessAndStateForm
+          <EditNewAccessForm
             formId={FormId}
             action={EAction.NEW}
-            apApiDisplay_AccessAndState={managedObject}
+            apApiDisplay_Access={managedObject}
             onError={props.onError}
             // onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

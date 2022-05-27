@@ -15,11 +15,10 @@ import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APD
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 import APApisDisplayService, { IAPApiDisplay } from "../../../../displayServices/APApisDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
-import { EditGeneral } from "./EditGeneral";
+import { EditAccess } from "./EditAccess";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import { EditAccessAndState } from "./EditAccessAndState";
 
 export interface IManageEditApiProps {
   organizationId: string;
@@ -154,10 +153,10 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
     const tabPanels: Array<JSX.Element> = [];
 
     tabPanels.push(
-      <TabPanel header='General'>
+      <TabPanel header='Access'>
         <React.Fragment>
-          <EditGeneral
-            key={`${ComponentName}_EditGeneral_${refreshCounter}`}
+          <EditAccess
+            key={`${ComponentName}_EditAccess_${refreshCounter}`}
             organizationId={props.organizationId}
             apApiDisplay={managedObject}
             onError={onError_SubComponent}
@@ -184,9 +183,9 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
     //   </TabPanel>
     // );
     tabPanels.push(
-      <TabPanel header='Access & State'>
-        <React.Fragment>
-          <EditAccessAndState
+      <TabPanel header='State'>
+        <p>State: select version, state, notes</p>
+          {/* <EditAccessAndState
             key={`${ComponentName}_EditAccessAndState_${refreshCounter}`}
             organizationId={props.organizationId}
             apApiDisplay={managedObject}
@@ -194,8 +193,7 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
             onCancel={props.onCancel}
             onLoadingChange={props.onLoadingChange}
             onSaveSuccess={onEdit_SaveSuccess}
-          />
-        </React.Fragment>
+          /> */}
       </TabPanel>
     );
     return tabPanels;

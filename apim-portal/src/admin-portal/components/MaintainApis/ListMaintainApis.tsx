@@ -8,45 +8,41 @@ import { MenuItem } from "primereact/api";
 import { Divider } from "primereact/divider";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
-import APApisDisplayService, { 
-  IAPApiDisplay, 
-  TAPApiDisplayList 
-} from "../../../displayServices/APApisDisplayService";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
-import { Loading } from "../../../components/Loading/Loading";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import APApisDisplayService, { IAPApiDisplay, TAPApiDisplayList } from "../../../displayServices/APApisDisplayService";
+import { E_CALL_STATE_ACTIONS } from "./MaintainApisCommon";
 
 import '../../../components/APComponents.css';
-import "./ManageApis.css";
+import "./MaintainApis.css";
 
-export interface IListApisProps {
+export interface IListMaintainApisProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
+  onLoadingChange: (isLoading: boolean) => void;
   onManagedObjectView: (apApiDisplay: IAPApiDisplay) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
-  const ComponentName = 'ListApis';
+export const ListMaintainApis: React.FC<IListMaintainApisProps> = (props: IListMaintainApisProps) => {
+  const ComponentName = 'ListMaintainApis';
 
-  const MessageNoManagedObjectsFound = 'No APIs defined.';
-  const GlobalSearchPlaceholder = 'search ...';
+  const MessageNoManagedObjectsFound = 'No APIs found.';
+  const GlobalSearchPlaceholder = 'search...';
 
   type TManagedObject = IAPApiDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
-  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
+  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
@@ -54,13 +50,12 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
-    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
-    try { 
-      const list: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplayList({
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_LIST, 'retrieve list of apis');
+    // if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
+    try {
+      const list: TAPApiDisplayList = await APApisDisplayService.apiGetMaintainanceList_ApApiDisplayList({
         organizationId: props.organizationEntityId.id,
-        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
-        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -72,12 +67,15 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }
 
   const doInitialize = async () => {
-    setIsLoading(true);
+    props.onLoadingChange(true);
     await apiGetManagedObjectList();
-    setIsLoading(false);
+    props.onLoadingChange(false);
   }
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: mounting ...`);
     props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -88,9 +86,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(apiCallStatus === null) return;
-    if(apiCallStatus.success) props.onSuccess(apiCallStatus);
-    else props.onError(apiCallStatus);
+    if (apiCallStatus !== null) {
+      if(apiCallStatus.success) props.onSuccess(apiCallStatus);
+      else props.onError(apiCallStatus);
+    }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
@@ -118,7 +117,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
       </div>
     );
   }
-
   const nameBodyTemplate = (mo: TManagedObject): string => {
     return mo.apEntityId.displayName;
   }
@@ -162,11 +160,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         <DataTable
           ref={dt}
           className="p-datatable-sm"
-          autoLayout={true}
+          // autoLayout={true}
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
-
           header={renderDataTableHeader()}
           value={managedObjectList}
           globalFilter={globalFilter}
@@ -190,7 +187,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
           <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
           <Column header="API Products" headerStyle={{width: '8em'}} body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} />
         </DataTable>
-      </div>
+     </div>
     );
   }
 
@@ -213,29 +210,17 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     } 
   }
 
-  const renderBusinessGroupInfo = (): JSX.Element => {
-    return(
-      <div>
-        <span><b>Business Group:</b> {userContext.runtimeSettings.currentBusinessGroupEntityId?.displayName}</span>
-      </div>
-    );
-  }
-
   return (
-    <div className="manage-apis">
-
-      <Loading key={ComponentName} show={isLoading} />      
+    <div className="ap-maintain-apis">
 
       <APComponentHeader header='APIs:' />
-
-      <div className="p-mt-2">{renderBusinessGroupInfo()}</div>
-
+      
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       <div className="p-mt-2">
         {isInitialized && renderContent()}
       </div>
-
+      
     </div>
   );
 }

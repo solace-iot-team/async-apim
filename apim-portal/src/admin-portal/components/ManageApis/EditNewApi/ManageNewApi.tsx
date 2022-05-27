@@ -10,7 +10,8 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import APApisDisplayService, { 
   IAPApiDisplay, 
-  TAPApiDisplay_AccessAndState, 
+  TAPApiDisplay_Access, 
+  TAPApiDisplay_AsyncApiSpec, 
   TAPApiDisplay_General 
 } from "../../../../displayServices/APApisDisplayService";
 import { 
@@ -23,8 +24,9 @@ import { APDisplayBusinessGroupInfo } from "../../../../components/APDisplay/APD
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE_NEW } from "../ManageApisCommon";
 import { NewGeneral } from "./NewGeneral";
-import { NewAccessAndState } from "./NewAccessAndState";
 import { NewReviewAndCreate } from "./NewReviewAndCreate";
+import { NewAsyncApiSpec } from "./NewAsyncApiSpec";
+import { NewAccess } from "./NewAccess";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
@@ -63,10 +65,12 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     const logName = `${ComponentName}.${funcName}()`;
     switch(componentState.currentState) {
       case E_COMPONENT_STATE_NEW.UNDEFINED:
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ASYNC_API_SPEC);
+      case E_COMPONENT_STATE_NEW.ASYNC_API_SPEC:
         return setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);
       case E_COMPONENT_STATE_NEW.GENERAL:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS_AND_STATE);
-      case E_COMPONENT_STATE_NEW.ACCESS_AND_STATE:
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS);
+      case E_COMPONENT_STATE_NEW.ACCESS:
         return setNewComponentState(E_COMPONENT_STATE_NEW.REVIEW);  
       case E_COMPONENT_STATE_NEW.REVIEW:
         return;
@@ -79,20 +83,23 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     const logName = `${ComponentName}.${funcName}()`;
     switch(componentState.currentState) {
       case E_COMPONENT_STATE_NEW.UNDEFINED:
-      case E_COMPONENT_STATE_NEW.GENERAL:
+      case E_COMPONENT_STATE_NEW.ASYNC_API_SPEC:
         return;
-      case E_COMPONENT_STATE_NEW.ACCESS_AND_STATE:
+      case E_COMPONENT_STATE_NEW.GENERAL:
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ASYNC_API_SPEC);
+      case E_COMPONENT_STATE_NEW.ACCESS:
         return setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);
       case E_COMPONENT_STATE_NEW.REVIEW:
-        return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS_AND_STATE);
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS);
       default:
         Globals.assertNever(logName, componentState.currentState);
     }
   }
   const ComponentState2TabIndexMap = new Map<E_COMPONENT_STATE_NEW, number>([
-    [E_COMPONENT_STATE_NEW.GENERAL, 0],
-    [E_COMPONENT_STATE_NEW.ACCESS_AND_STATE, 1],
-    [E_COMPONENT_STATE_NEW.REVIEW, 2]
+    [E_COMPONENT_STATE_NEW.ASYNC_API_SPEC, 0],
+    [E_COMPONENT_STATE_NEW.GENERAL, 1],
+    [E_COMPONENT_STATE_NEW.ACCESS, 2],
+    [E_COMPONENT_STATE_NEW.REVIEW, 3]
   ]);
   const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_NEW) => {
     const funcName = 'setActiveTabIndexByComponentState';
@@ -106,8 +113,9 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
 
+  const [showAsyncApiSpec, setShowAsyncApiSpec] = React.useState<boolean>(false);
   const [showGeneral, setShowGeneral] = React.useState<boolean>(false);
-  const [showAccessAndState, setShowAccessAndState] = React.useState<boolean>(false);
+  const [showAccess, setShowAccess] = React.useState<boolean>(false);
   const [showReview, setShowReview] = React.useState<boolean>(false);
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -154,7 +162,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     // props.onLoadingChange(true);
     await apiGetManagedObject();
     // props.onLoadingChange(false);
-    setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);  
+    setNewComponentState(E_COMPONENT_STATE_NEW.ASYNC_API_SPEC);  
   }
 
   const setBreadCrumbItemList = () => {
@@ -182,24 +190,34 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
 
   const calculateShowStates = (componentState: TComponentState) => {
     if(componentState.currentState === E_COMPONENT_STATE_NEW.UNDEFINED) {
+      setShowAsyncApiSpec(false);
       setShowGeneral(false);
-      setShowAccessAndState(false);
+      setShowAccess(false);
       setShowReview(false);
       return;
     }
-    if(componentState.currentState === E_COMPONENT_STATE_NEW.GENERAL) {
-      setShowGeneral(true);
-      setShowAccessAndState(false);
+    if(componentState.currentState === E_COMPONENT_STATE_NEW.ASYNC_API_SPEC) {
+      setShowAsyncApiSpec(true);
+      setShowGeneral(false);
+      setShowAccess(false);
       setShowReview(false);
     }
-    else if(componentState.currentState === E_COMPONENT_STATE_NEW.ACCESS_AND_STATE) {
+    if(componentState.currentState === E_COMPONENT_STATE_NEW.GENERAL) {
+      setShowAsyncApiSpec(false);
+      setShowGeneral(true);
+      setShowAccess(false);
+      setShowReview(false);
+    }
+    else if(componentState.currentState === E_COMPONENT_STATE_NEW.ACCESS) {
+      setShowAsyncApiSpec(false);
       setShowGeneral(false);
-      setShowAccessAndState(true);
+      setShowAccess(true);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW.REVIEW) {
+      setShowAsyncApiSpec(false);
       setShowGeneral(false);
-      setShowAccessAndState(false);
+      setShowAccess(false);
       setShowReview(true);
     }
     // set the tabIndex
@@ -208,6 +226,18 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
 
   const onError_SubComponent = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
+  }
+
+  const onNext_From_AsyncApiSpec = (apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec) => {
+    const funcName = 'onNext_From_AsyncApiSpec';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    const newMo: TManagedObject = APApisDisplayService.set_ApApiDisplay_AsyncApiSpec({ 
+      apApiDisplay: managedObject,
+      apApiDisplay_AsyncApiSpec: apApiDisplay_AsyncApiSpec
+    });
+    setManagedObject(newMo);
+    setNextComponentState();
   }
 
   const onNext_From_General = (apApiDisplay_General: TAPApiDisplay_General) => {
@@ -222,13 +252,13 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     setNextComponentState();
   }
 
-  const onNext_From_AccessAndState = (apApiDisplay_AccessAndState: TAPApiDisplay_AccessAndState) => {
-    const funcName = 'onNext_From_AccessAndState';
+  const onNext_From_Access = (apApiDisplay_Access: TAPApiDisplay_Access) => {
+    const funcName = 'onNext_From_Access';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const newMo: TManagedObject = APApisDisplayService.set_ApApiDisplay_AccessAndState({ 
+    const newMo: TManagedObject = APApisDisplayService.set_ApApiDisplay_Access({ 
       apApiDisplay: managedObject,
-      apApiDisplay_AccessAndState: apApiDisplay_AccessAndState
+      apApiDisplay_Access: apApiDisplay_Access
     });
     setManagedObject(newMo);
     setNextComponentState();
@@ -266,6 +296,19 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
           {renderState(original_ManagedObject.apLifecycleStageInfo)}
         </div>
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+          <TabPanel header='Async Api Spec' disabled={!showAsyncApiSpec}>
+            <React.Fragment>
+              <NewAsyncApiSpec
+                organizationId={props.organizationId}
+                apApiDisplay={mo}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onLoadingChange={props.onLoadingChange}
+                onSaveChanges={onNext_From_AsyncApiSpec}
+                onBack={() => {}}
+              />
+            </React.Fragment>
+          </TabPanel>
           <TabPanel header='General' disabled={!showGeneral}>
             <React.Fragment>
               <NewGeneral
@@ -275,19 +318,19 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
                 onSaveChanges={onNext_From_General}
-                onBack={() => {}}
+                onBack={onBack} 
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Access & State' disabled={!showAccessAndState}>
+          <TabPanel header='Access' disabled={!showAccess}>
             <React.Fragment>
-              <NewAccessAndState
+              <NewAccess
                 organizationId={props.organizationId}
                 apApiDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
-                onSaveChanges={onNext_From_AccessAndState}
+                onSaveChanges={onNext_From_Access}
                 onBack={onBack} 
               />
             </React.Fragment>

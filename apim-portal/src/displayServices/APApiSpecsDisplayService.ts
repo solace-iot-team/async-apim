@@ -164,6 +164,18 @@ class APApiSpecsDisplayService {
     return APVersioningDisplayService.create_SemVerString(apApiSpecDisplay.spec['info']['version']);
   }
 
+  public get_Title({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): string {
+    const funcName = 'get_Title';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
+    if(typeof(apApiSpecDisplay.spec) !== 'object') throw new Error(`${logName}: typeof(apApiSpecDisplay.spec) !== 'object'`);
+    if(apApiSpecDisplay.spec['info'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info'] === undefined`);
+    if(apApiSpecDisplay.spec['info']['title'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info']['title'] === undefined`);
+    return apApiSpecDisplay.spec['info']['title'];
+  }
+
   // public static getAsyncApiSpecAsJson = (asyncApiSpec: TAPAsyncApiSpec): TAPAsyncApiSpec | string => {
   //   const funcName = 'getAsyncApiSpecAsJson';
   //   const logName = `${APConnectorApiHelper.name}.${funcName}(${asyncApiSpec.format})`;

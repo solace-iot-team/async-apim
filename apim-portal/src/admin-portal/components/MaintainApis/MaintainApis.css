@@ -1,0 +1,57 @@
+.ap-maintain-apis .table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ap-maintain-apis .sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 1rem;
+}
+.ap-maintain-apis .sub-sub-table {
+  padding-left: 2rem;
+  padding-top: 0rem;
+  padding-bottom: 0rem;
+}
+.ap-maintain-apis .confirmation-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ap-maintain-apis .error {
+  border-color: #df2121;
+}
+.ap-maintain-apis .card form {
+  margin-top: 2rem;
+}
+.ap-maintain-apis .card .p-field {
+  margin-bottom: 2.5rem;
+}
+@media screen and (max-width: 100px) {
+  .ap-maintain-apis .card {
+    width: 80%;
+  }
+}
+.ap-maintain-apis .view {
+  display: flex;
+  padding: 1rem;
+  width: 100%;
+}
+.ap-maintain-apis .view .view-detail-left {
+  flex: 1 1 0;
+  align-items: center;
+}
+.ap-maintain-apis .view .view-detail-right {
+  display: flex;
+  flex-direction: column;
+  font-style: italic;
+  margin-left: 2.5rem;
+}
+
+.button-set-footer {
+  display: flex;
+  flex-wrap: nowrap;
+}
+.button-set-footer .p-button-label {
+  display: flex;
+}

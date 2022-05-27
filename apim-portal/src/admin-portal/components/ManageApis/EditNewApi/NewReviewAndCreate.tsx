@@ -10,6 +10,7 @@ import { TAPEntityId, } from "../../../../utils/APEntityIdsService";
 import APApisDisplayService, { IAPApiDisplay } from "../../../../displayServices/APApisDisplayService";
 import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Create, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import { DisplayAdminPortalApi, E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "../DisplayAdminPortalApi";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
@@ -31,18 +32,19 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
   type  TManagedObject = IAPApiDisplay;
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
   const apiCreateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API, `create api: ${mo.apEntityId.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE_API, `create api: ${mo.apEntityId.id}`);
     try { 
       await APApisDisplayService.apiCreate_ApApiDisplay({
         organizationId: props.organizationId,
         apApiDisplay: props.apApiDisplay,
-        // userId: userContext.apLoginUserDisplay.apEntityId.id,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);

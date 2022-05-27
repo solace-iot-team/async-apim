@@ -5,36 +5,34 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
 
-import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
-import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
-import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageApisCommon";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { ListApis } from "./ListApis";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { ViewApi } from "./ViewApi";
-import { ManageNewApi } from "./EditNewApi/ManageNewApi";
-import { ManageEditApi } from "./EditNewApi/ManageEditApi";
-import { DeleteApi } from "./DeleteApi";
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
+import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./MaintainApisCommon";
+import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
+import { ListMaintainApis } from "./ListMaintainApis";
+import { ViewApi } from "../ManageApis/ViewApi";
+import { ManageEditApi } from "../ManageApis/EditNewApi/ManageEditApi";
+import { DeleteApi } from "../ManageApis/DeleteApi";
 
 import '../../../components/APComponents.css';
-import "./ManageApis.css";
+import "./MaintainApis.css";
 
-export interface IManageApisProps {
+export interface IMaintainApisProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
-export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) => {
-  const ComponentName = 'ManageApis';
+export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisProps) => {
+  const ComponentName = 'MaintainApis';
 
   type TComponentState = {
     previousState: E_COMPONENT_STATE,
@@ -57,33 +55,26 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     });
   }
   
-  const ToolbarNewManagedObjectButtonLabel = 'New';
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
-  const ToolbarButtonLabelImportEventPortal = 'Import from Event Portal';
 
-  const [configContext] = React.useContext(ConfigContext);
   const [userContext] = React.useContext(UserContext);
   const [authContext] = React.useContext(AuthContext);
+  const [configContext] = React.useContext(ConfigContext);
   const [organizationContext] = React.useContext(OrganizationContext);
+
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPApiDisplay_AllowedActions>(APApisDisplayService.get_Empty_AllowedActions());
-
-  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
-  const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
-  const [showImportEventPortalComponent, setShowImportEventPortalComponent] = React.useState<boolean>(false);
-
-
+  const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  
   // * useEffect Hooks *
   React.useEffect(() => {
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -94,36 +85,18 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    props.setBreadCrumbItemList(breadCrumbItemList);
-  }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  React.useEffect(() => {
-    if(apiCallStatus === null) return;
-    if(apiCallStatus.success) {
-      switch (apiCallStatus.context.action) {
-        case E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST:
-        case E_CALL_STATE_ACTIONS.API_GET_API:
-          break;
-        default:
-          props.onSuccess(apiCallStatus);
-        }
-    } else props.onError(apiCallStatus);
+    if (apiCallStatus !== null) {
+      if(apiCallStatus.success) {
+        switch (apiCallStatus.context.action) {
+          case E_CALL_STATE_ACTIONS.API_UPDATE_API:
+          case E_CALL_STATE_ACTIONS.API_DELETE_API:
+            props.onSuccess(apiCallStatus);
+            break;
+          default:
+          }
+      } else props.onError(apiCallStatus);
+    }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // * initialized object *
-  const onInitializedManagedObject = (apApiDisplay: IAPApiDisplay) => {
-    const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
-      apApiDisplay: apApiDisplay,
-      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
-      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-        apOrganizationDisplay: organizationContext
-      }),
-      isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
-    });
-    setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
-  }
 
   // * Changed object *
   const onChangedManagedObject = (apApiDisplay: IAPApiDisplay) => {
@@ -141,11 +114,9 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     setRefreshCounter(refreshCounter + 1);
   }
 
-  //  * View Object *
-  const onViewManagedObject = (apApiDisplay: IAPApiDisplay): void => {
-    setApiCallStatus(null);
-    setManagedObjectEntityId(apApiDisplay.apEntityId);
-    const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
+  // * initialized object *
+  const onInitializedManagedObject = (apApiDisplay: IAPApiDisplay) => {
+    setManagedObject_AllowedActions(APApisDisplayService.get_AllowedActions({
       apApiDisplay: apApiDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
@@ -154,21 +125,24 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
         apOrganizationDisplay: organizationContext
       }),
       isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
-    });
-    setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
+    }));
+  }
+  //  * View Object *
+  const onViewManagedObject = (apApiDisplay: IAPApiDisplay): void => {
+    setApiCallStatus(null);
+    setManagedObjectEntityId(apApiDisplay.apEntityId);
+    setManagedObject_AllowedActions(APApisDisplayService.get_AllowedActions({
+      apApiDisplay: apApiDisplay,
+      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      userId: userContext.apLoginUserDisplay.apEntityId.id,
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+        apOrganizationDisplay: organizationContext
+      }),
+      isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+    }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-
-  // * New Object *
-  const onNewManagedObject = () => {
-    setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_NEW);
-  }
-  // * Import from Event Portal *
-  const onImportManagedObjectEventPortal = () => {
-    setApiCallStatus(null);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EVENT_PORTAL);
-  }
   // * Edit Object *
   const onEditManagedObjectFromToolbar = () => {
     const funcName = 'onEditManagedObjectFromToolbar';
@@ -189,39 +163,24 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderLeftToolbarContent';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
-    if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
-    const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-      apOrganizationDisplay: organizationContext
-    });
-    const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
-    if(showListComponent) return (
-      <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-        {showImportEventPortalButton && 
-          <Button disabled={true} label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
-        }
-      </React.Fragment>
-    );
+    if(!componentState.currentState) return undefined;
     if(showViewComponent) {          
       return (
         <React.Fragment>
-          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!managedObject_AllowedActions.isEditAllowed} />        
+          <Button 
+            label={ToolbarEditManagedObjectButtonLabel} 
+            icon="pi pi-pencil" 
+            onClick={onEditManagedObjectFromToolbar} 
+            className="p-button-text p-button-plain p-button-outlined"
+            disabled={!managedObject_AllowedActions.isEditAllowed}
+          />        
         </React.Fragment>
       );
     }
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
-    if(showNewComponent) return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
-    const funcName = 'renderRightToolbarContent';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
-    if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
     if(showViewComponent) {
       return (
         <React.Fragment>
@@ -230,7 +189,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
             icon="pi pi-trash" 
             onClick={onDeleteManagedObjectFromToolbar} 
             className="p-button-text p-button-plain p-button-outlined" 
-            // disabled={!managedObject_AllowedActions.isDeleteAllowed} 
             disabled={!managedObject_AllowedActions.isDeleteAllowed} 
             style={{ color: "red", borderColor: 'red'}} 
           />        
@@ -247,11 +205,10 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   
   // * prop callbacks *
   const onSubComponentSetBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-    setBreadCrumbItemList(itemList);
+    props.setBreadCrumbItemList(itemList);
   }
-  const onSetManageObjectComponentState_To_View = (apiEntityId: TAPEntityId) => {
-    setApiCallStatus(null);
-    setManagedObjectEntityId(apiEntityId);
+  const onSetManageObjectComponentState_To_View = (apiProductEntityId: TAPEntityId) => {
+    setManagedObjectEntityId(apiProductEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
@@ -264,25 +221,15 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
-    setApiCallStatus(apiCallState);
-    // always go to view the new api product
-    setManagedObjectEntityId(newMoEntityId);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setRefreshCounter(refreshCounter + 1);
-  }
-  const onEventPortalImportEventApiProductSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentError_Notification = (apiCallState: TApiCallState) => {
-    props.onError(apiCallState);
+  const onSubComponentError = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
   }
   const onSubComponentCancel = () => {
     setPreviousComponentState();
@@ -296,16 +243,12 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -313,16 +256,12 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowViewComponent(false);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(false)
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -330,55 +269,34 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       setShowViewComponent(true);
       setShowEditComponent(false);
       setShowDeleteComponent(true);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
       setShowViewComponent(false);
       setShowEditComponent(true);
       setShowDeleteComponent(false);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(false);
     }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
-      setShowListComponent(false);
-      setShowViewComponent(false);
-      setShowEditComponent(false);
-      setShowDeleteComponent(false);
-      setShowNewComponent(true);
-      setShowImportEventPortalComponent(false);
-    }
-    else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_IMPORT_EVENT_PORTAL) {
-      setShowListComponent(false);
-      setShowViewComponent(false);
-      setShowEditComponent(false);
-      setShowDeleteComponent(false);
-      setShowNewComponent(false);
-      setShowImportEventPortalComponent(true);
-    } 
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
     }
   }
 
   return (
-    <div className="manage-apis">
+    <div className="ap-maintain-apis">
 
       <CheckConnectorHealth />
-
-      <Loading key={ComponentName} show={isLoading} />      
+      
+      <Loading show={isLoading} />      
       
       { !isLoading && renderToolbar() }
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
-
       {showListComponent && 
-        <ListApis
-          key={`${ComponentName}_ListApiProducts_${refreshCounter}`}
+        <ListMaintainApis
+          key={`${ComponentName}_ListMaintainApis_${refreshCounter}`}
           organizationEntityId={props.organizationEntityId}
           onSuccess={onListManagedObjectsSuccess} 
-          onError={onSubComponentError_Notification} 
+          onError={onSubComponentError} 
+          onLoadingChange={setIsLoading} 
           onManagedObjectView={onViewManagedObject}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
@@ -390,38 +308,27 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           apiEntityId={managedObjectEntityId}
           onInitialized={onInitializedManagedObject}
           onSuccess={onSubComponentUserNotification} 
-          onError={onSubComponentError_Notification} 
+          onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
-        />      
+        />
       }
       {showDeleteComponent && managedObjectEntityId &&
         <DeleteApi
           organizationId={props.organizationEntityId.id}
           apiEntityId={managedObjectEntityId}
-          onError={onSubComponentError_Notification} 
+          onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
           onCancel={onSubComponentCancel}
           onDeleteSuccess={onDeleteManagedObjectSuccess}
-        />
-      }
-      { showNewComponent &&
-        <ManageNewApi
-          organizationId={props.organizationEntityId.id}
-          onError={onSubComponentError_Notification}
-          onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
-          setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-          onNewSuccess={onNewManagedObjectSuccess}
-          onUserNotification={onSubComponentUserNotification}
         />
       }
       {showEditComponent && managedObjectEntityId &&
         <ManageEditApi
           organizationId={props.organizationEntityId.id}
           apiEntityId={managedObjectEntityId}
-          onError={onSubComponentError_Notification}
+          onError={onSubComponentError}
           onCancel={onSubComponentCancel}
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
@@ -429,26 +336,6 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onNavigateToCommand={onSetManageObjectComponentState_To_View}    
           onChanged={onChangedManagedObject}
         />
-      }
-      { showImportEventPortalComponent &&      
-        <p>showImportEventPortalComponent</p>
-        // <EventPortalImportApi
-        // organizationId={props.organizationEntityId.id}
-        // apiProductEntityId={managedObjectEntityId}
-        // onError={onSubComponentError_Notification}
-        // onCancel={onSubComponentCancel}
-        // onLoadingChange={setIsLoading}
-        // setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        // onSaveSuccess={onCloneManagedObjectSuccess}
-        // onNavigateToCommand={onSetManageObjectComponentState_To_View}
-
-        // // organizationId={props.organizationId}
-        // //   onBreadCrumbLabelList={props.onBreadCrumbLabelList}
-        // //   onSuccess={onEventPortalImportEventApiProductSuccess}
-        // //   onError={onSubComponentError}
-        // //   onCancel={onSubComponentCancel}
-        // //   onLoadingChange={setIsLoading} 
-        // />
       }
     </div>
   );

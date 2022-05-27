@@ -105,11 +105,16 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganization) ||
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance) 
       ) return [];
-    let _items: Array<MenuItem> = [
+    const _items: Array<MenuItem> = [
       {
         label: 'API Products',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts),         
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts); }
+      },
+      {
+        label: 'APIs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis),         
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis); }
       },
     ];
     return _items;
