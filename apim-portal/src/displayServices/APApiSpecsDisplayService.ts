@@ -152,7 +152,17 @@ class APApiSpecsDisplayService {
     }
   }
 
-  public get_VersionString({ apApiSpecDisplay }:{
+  public has_VersionString({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): boolean {
+    try {
+      this.get_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
+      return true;
+    } catch(e: any) {
+      return false;
+    }
+  }
+  public get_RawVersionString({ apApiSpecDisplay }:{
     apApiSpecDisplay: TAPApiSpecDisplay
   }): string {
     const funcName = 'get_VersionString';
@@ -161,7 +171,12 @@ class APApiSpecsDisplayService {
     if(typeof(apApiSpecDisplay.spec) !== 'object') throw new Error(`${logName}: typeof(apApiSpecDisplay.spec) !== 'object'`);
     if(apApiSpecDisplay.spec['info'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info'] === undefined`);
     if(apApiSpecDisplay.spec['info']['version'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info']['version'] === undefined`);
-    return APVersioningDisplayService.create_SemVerString(apApiSpecDisplay.spec['info']['version']);
+    return apApiSpecDisplay.spec['info']['version'];
+  }
+  public get_VersionString({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): string {
+    return APVersioningDisplayService.create_SemVerString(this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay }));
   }
 
   public get_Title({ apApiSpecDisplay }:{

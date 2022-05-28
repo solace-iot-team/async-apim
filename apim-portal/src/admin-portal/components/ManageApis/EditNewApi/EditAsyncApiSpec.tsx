@@ -6,14 +6,19 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_General } from "../../../../displayServices/APApisDisplayService";
+import APApisDisplayService, { 
+  IAPApiDisplay, 
+  TAPApiDisplay_AsyncApiSpec 
+} from "../../../../displayServices/APApisDisplayService";
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import { EditNewAsyncApiSpecForm } from "./EditNewAsyncApiForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
+import APApiSpecsDisplayService from "../../../../displayServices/APApiSpecsDisplayService";
 
-export interface IEditGeneralProps {
+export interface IEditAsyncApiSpecProps {
   organizationId: string;
   apApiDisplay: IAPApiDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -22,15 +27,16 @@ export interface IEditGeneralProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProps) => {
-  const ComponentName = 'EditGeneral';
+export const EditAsyncApiSpec: React.FC<IEditAsyncApiSpecProps> = (props: IEditAsyncApiSpecProps) => {
+  const ComponentName = 'EditAsyncApiSpec';
 
-  type TManagedObject = TAPApiDisplay_General;
+  type TManagedObject = TAPApiDisplay_AsyncApiSpec;
 
   const FormId = `ManageApis_EditNewApi_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -39,10 +45,11 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${mo.apEntityId.id}`);
     try {
-      await APApisDisplayService.apiUpdate_ApApiDisplay_General({
+      await APApisDisplayService.apiCreate_ApApiDisplay_AsyncApiSpec({
         organizationId: props.organizationId,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
         apApiDisplay: props.apApiDisplay,
-        apApiDisplay_General: mo
+        apApiDisplay_AsyncApiSpec: mo
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -53,7 +60,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }
 
   const doInitialize = async () => {
-    setManagedObject(APApisDisplayService.get_ApApiDisplay_General({ apApiDisplay: props.apApiDisplay }));
+    setManagedObject(APApisDisplayService.get_Empty_ApApiDisplay_AsyncApiSpec({ apApiDisplay: props.apApiDisplay }));
   }
 
   // * useEffect Hooks *
@@ -101,15 +108,25 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     )
   }
 
+  const renderInfo = () => {
+    return(
+      <div className="p-mb-6">
+        <p><b>Upload a new Version of the Spec:</b></p>
+        <p>Latest Versions: {props.apApiDisplay.apVersionInfo.apLastMajorVersionList.join(', ')}</p>
+      </div>
+    );
+  }
+
   const renderManagedObjectForm = (mo: TManagedObject) => {
     return (
       <div className="card p-mt-4">
+        {renderInfo()}
         <div className="p-fluid">
-          <EditNewGeneralForm
+          <EditNewAsyncApiSpecForm
             formId={FormId}
             organizationId={props.organizationId}
             action={EAction.EDIT}
-            apApiDisplay_General={mo}
+            apApiDisplay_AsyncApiSpec={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

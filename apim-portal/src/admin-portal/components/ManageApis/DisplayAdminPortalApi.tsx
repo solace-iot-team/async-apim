@@ -3,7 +3,7 @@ import React from "react";
 
 import { TabPanel, TabView } from "primereact/tabview";
 import { Divider } from "primereact/divider";
-import { Dropdown, DropdownChangeParams } from "primereact/dropdown";
+import { TreeSelect, TreeSelectChangeParams } from "primereact/treeselect";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
@@ -18,7 +18,7 @@ import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APMan
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { Config } from "../../../Config";
 import { Globals } from "../../../utils/Globals";
-import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
+import APVersioningDisplayService, { TAPVersionTreeTableNodeList } from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService, { TAPMetaInfo } from "../../../displayServices/APMetaInfoDisplayService";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
@@ -53,23 +53,29 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
-  const [selectedVersion, setSelectedVersion] = React.useState<string>();
+  // const [selectedVersion, setSelectedVersion] = React.useState<string>();
+  const [selectedTreeVersion, setSelectedTreeVersion] = React.useState<string>();
   const [userContext] = React.useContext(UserContext);
 
 
   // * Api Calls *
-  const apiGetManagedObject = async(version: string): Promise<TApiCallState> => {
+  const apiGetManagedObject = async(apVersion: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apApiDisplay.apEntityId.displayName}, version: ${version}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apApiDisplay.apEntityId.displayName}, version: ${apVersion}`);
     try { 
+      const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+        apVersion_ConnectorRevision_Map: props.apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+        apVersion: apVersion
+      });
+      alert(`${logName}: fetching connectorRevision = ${connectorRevision}`);  
       const apApiDisplay: IAPApiDisplay = await APApisDisplayService.apiGet_ApApiDisplay({
         organizationId: props.organizationId,
         apiId: props.apApiDisplay.apEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         fetch_async_api_spec: true,
         fetch_revision_list: true,
-        version: version,
+        version: connectorRevision
       });
       setManagedObject(apApiDisplay);
     } catch(e) {
@@ -98,14 +104,21 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setSelectedVersion(managedObject.apVersionInfo.apCurrentVersion);
+    // setSelectedVersion(managedObject.apVersionInfo.apCurrentVersion);
+    setSelectedTreeVersion(managedObject.apVersionInfo.apCurrentVersion);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  // React.useEffect(() => {
+  //   if(selectedVersion === undefined) return;
+  //   if(managedObject === undefined) return;
+  //   if(selectedVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedVersion);
+  // }, [selectedVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   React.useEffect(() => {
-    if(selectedVersion === undefined) return;
+    if(selectedTreeVersion === undefined) return;
     if(managedObject === undefined) return;
-    if(selectedVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedVersion);
-  }, [selectedVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(selectedTreeVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedTreeVersion);
+  }, [selectedTreeVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -163,16 +176,31 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
     if(managedObject.apVersionInfo.apVersionList === undefined) throw new Error(`${logName}: managedObject.apVersionInfo.apVersionList is undefined`);
 
-    const onVersionSelect = (e: DropdownChangeParams) => {
-      setSelectedVersion(e.value);
+    // const onVersionSelect = (e: DropdownChangeParams) => {
+    //   setSelectedVersion(e.value);
+    // }
+    const onVersionSelectTree = (e: TreeSelectChangeParams) => {
+      setSelectedTreeVersion(e.value as string);
     }
 
+    const apVersionTreeTableNodeList: TAPVersionTreeTableNodeList = APVersioningDisplayService.create_VersionTreeTableNodeList({ apVersionList: managedObject.apVersionInfo.apVersionList });
     return(
-      <Dropdown
-        value={selectedVersion}
-        options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
-        onChange={onVersionSelect}
-      />                          
+      <React.Fragment>
+        {/* <pre>{JSON.stringify(apVersionTreeTableNodeList, null, 2)}</pre> */}
+        <TreeSelect
+          value={selectedTreeVersion}
+          options={apVersionTreeTableNodeList}
+          onChange={onVersionSelectTree}
+          filter={true}
+          selectionMode="single"
+        />
+  
+        {/* <Dropdown
+          value={selectedVersion}
+          options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
+          onChange={onVersionSelect}
+        />               */}
+      </React.Fragment>            
     );
   }
   const renderVersion = (mo: TManagedObject): JSX.Element => {
@@ -181,7 +209,10 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
         return (
-          <div><b>Version: </b>{renderVersionSelect()}</div>
+          <React.Fragment>
+            {/* <pre>{JSON.stringify(mo.apVersionInfo, null, 2)}</pre> */}
+            <div><b>Version: </b>{renderVersionSelect()}</div>
+          </React.Fragment>
         );
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
         return (
@@ -220,6 +251,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
+
+            <pre>map={JSON.stringify(mo.apVersionInfo.apVersion_ConnectorRevision_Map, null, 2)}</pre>
 
           </div>
           <div className="api-view-detail-right">
@@ -411,7 +444,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-        {managedObject && selectedVersion !== undefined && renderManagedObject() }
+        {managedObject && selectedTreeVersion !== undefined && renderManagedObject() }
 
       </div>
     </React.Fragment>

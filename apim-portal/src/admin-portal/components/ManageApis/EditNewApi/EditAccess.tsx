@@ -39,7 +39,7 @@ export const EditAccess: React.FC<IEditAccessProps> = (props: IEditAccessProps) 
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${mo.apEntityId.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${mo.apEntityId.id}`);
     try {
       await APApisDisplayService.apiUpdate_ApApiDisplay_Access({
         organizationId: props.organizationId,

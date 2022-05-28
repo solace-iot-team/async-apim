@@ -3,12 +3,10 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { classNames } from 'primereact/utils';
-import { Dropdown } from "primereact/dropdown";
 import { TreeSelect } from "primereact/treeselect";
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
-import { MetaEntityStage } from "@solace-iot-team/apim-connector-openapi-browser";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupDisplayTreeNodeList, 
@@ -20,13 +18,12 @@ import { AuthHelper } from "../../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../displayServices/APManagedAssetDisplayService";
 import APBusinessGroupsDisplayService from "../../../../displayServices/APBusinessGroupsDisplayService";
-import APLifecycleStageInfoDisplayService, { TAPLifecycleStageList } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 import { EAction } from "../ManageApisCommon";
 import { EditNewBusinessGroupSharingListForm } from "../../ManageApiProducts/EditNewApiProduct/EditNewBusinessGroupSharingListForm";
+import { TAPApiDisplay_Access } from "../../../../displayServices/APApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import { TAPApiDisplay_Access } from "../../../../displayServices/APApisDisplayService";
 
 export interface IEditNewAccessFormProps {
   action: EAction;

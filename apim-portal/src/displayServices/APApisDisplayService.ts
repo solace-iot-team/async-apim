@@ -7,6 +7,7 @@ import {
   APIParameter,
   ApisService,
   APISummaryList,
+  APIVersionInfoPatch,
   CommonEntityNameList,
   Meta,
   MetaEntityStage,
@@ -25,7 +26,7 @@ import {
   TAPManagedAssetDisplay_AccessAndState,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
-import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
+import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
 import APApiSpecsDisplayService from './APApiSpecsDisplayService';
@@ -50,10 +51,12 @@ export type TAPApiDisplay_General = IAPEntityIdDisplay & {
   description: string;
   summary: string;
 }
-// export type TAPApiDisplay_AccessAndState = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {
-//   apLifecycleStageInfo: IAPLifecycleStageInfo;
-// }
 export type TAPApiDisplay_Access = IAPEntityIdDisplay & TAPManagedAssetDisplay_AccessAndState & {}
+export type TAPApiDisplay_State = IAPEntityIdDisplay & {
+  version: string;
+  readonly apVersionList: TAPVersionList;
+  apLifecycleStageInfo: IAPLifecycleStageInfo;
+}
 export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
   apApiChannelParameterList: TAPApiChannelParameterList;
@@ -116,8 +119,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apMetaInfo: APMetaInfoDisplayService.create_Empty_ApMetaInfo(),
       connectorApiInfo: emptyConnectorApiInfo,
       apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: this.create_ConnectorMeta_From_ApiEntities({
-        connectorApiInfo: emptyConnectorApiInfo
-      })}),
+        connectorApiInfo: emptyConnectorApiInfo,
+      }),
+      }),
       apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
       apSearchContent: '',
     };
@@ -168,7 +172,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
 
   private create_ApApiDisplay_From_ApiEntities = ({ 
     connectorApiInfo, 
-    connectorRevisions,
+    apVersionList,
+    connectorRevisionList,
     currentVersion,
     apApiProductReferenceEntityIdList, 
     default_ownerId, 
@@ -177,7 +182,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiSpecDisplay,
   }:{
     connectorApiInfo: APIInfo;
-    connectorRevisions?: Array<string>;
+    apVersionList?: TAPVersionList;
+    connectorRevisionList?: Array<string>;
     currentVersion?: string;
     apApiProductReferenceEntityIdList: TAPEntityIdList;
     default_ownerId: string;
@@ -206,12 +212,18 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
+      
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 
-        connectorRevisions: connectorRevisions,
+        apVersionList: apVersionList,
+        connectorRevisionList: connectorRevisionList,
         currentVersion: currentVersion,
       }),
-      apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
+
+      apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ 
+        connectorMeta: connectorMeta,
+        notes: connectorApiInfo.deprecatedDescription
+      }),
       apApiSpecDisplay: apApiSpecDisplay,
       apSearchContent: '',
     };
@@ -330,6 +342,15 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return allowedActions;
   }
 
+  public get_Empty_ApApiDisplay_AsyncApiSpec({ apApiDisplay }: {
+    apApiDisplay: IAPApiDisplay;
+  }): TAPApiDisplay_AsyncApiSpec {
+    const apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec = {
+      apEntityId: apApiDisplay.apEntityId,
+      apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay()
+    };
+    return apApiDisplay_AsyncApiSpec;
+  }
   public get_ApApiDisplay_AsyncApiSpec({ apApiDisplay }: {
     apApiDisplay: IAPApiDisplay;
   }): TAPApiDisplay_AsyncApiSpec {
@@ -370,6 +391,27 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiDisplay.apEntityId = apApiDisplay_General.apEntityId;
     apApiDisplay.description = apApiDisplay_General.description;
     apApiDisplay.summary = apApiDisplay_General.summary;
+    return apApiDisplay;
+  }
+
+  public get_ApApiDisplay_State({ apApiDisplay }:{
+    apApiDisplay: IAPApiDisplay;
+  }): TAPApiDisplay_State {
+    const apApiDisplay_State: TAPApiDisplay_State = {
+      apEntityId: apApiDisplay.apEntityId,
+      apLifecycleStageInfo: apApiDisplay.apLifecycleStageInfo,
+      version: apApiDisplay.apVersionInfo.apCurrentVersion,
+      apVersionList: apApiDisplay.apVersionInfo.apVersionList,
+    };
+    return apApiDisplay_State;
+  }
+
+  public set_ApApiDisplay_State({ apApiDisplay, apApiDisplay_State }:{
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_State: TAPApiDisplay_State;
+  }): IAPApiDisplay {
+    apApiDisplay.apLifecycleStageInfo = apApiDisplay_State.apLifecycleStageInfo;
+    apApiDisplay.apVersionInfo.apCurrentVersion = apApiDisplay_State.version;
     return apApiDisplay;
   }
 
@@ -432,6 +474,27 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       await ApisService.getApiInfo({
         organizationName: organizationId,
         apiName: apiId,
+      });
+      return true;
+     } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) return false;
+      }
+      throw e;
+    }
+  }
+
+  public async apiCheck_ApApiDisplay_Version_Exists({ organizationId, apiId, version }: {
+    organizationId: string;
+    apiId: string;
+    version: string;
+  }): Promise<boolean> {
+    try {
+      await ApisService.getApiVersionInfo({
+        organizationName: organizationId,
+        apiName: apiId,
+        version: version
       });
       return true;
      } catch(e: any) {
@@ -594,19 +657,22 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   private async apiGetList_ApiVersions({ organizationId, apiId }:{
     organizationId: string;
     apiId: string;
-  }): Promise<Array<string>> {
-    // list may consit of number strings or semVer strings
+  }): Promise<{ connectorRevisionList: Array<string>; apVersionList: TAPVersionList }> {
+    // list may consist of number strings or semVer strings
     // convert all number strings to semVer strings
-    const connectorRevisions: Array<string> = await ApisService.listApiRevisions({
+    const connectorRevisionList: Array<string> = await ApisService.listApiRevisions({
       organizationName: organizationId,
       apiName: apiId
     });
-    const semVerStringList: Array<string> = [];
-    connectorRevisions.forEach( (x: string) => {
+    const apVersionList: TAPVersionList = [];
+    connectorRevisionList.forEach( (x: string) => {
       // is semVer?
-      semVerStringList.push(APVersioningDisplayService.create_SemVerString(x));
+      apVersionList.push(APVersioningDisplayService.create_SemVerString(x));
     });  
-    return semVerStringList;
+    return {
+      apVersionList: apVersionList,
+      connectorRevisionList: connectorRevisionList
+    };
   }
 
   public async apiGet_ApApiDisplay({ 
@@ -632,7 +698,6 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
-    // TODO: rework the versions, not implemented in Connector yet
     let connectorApiInfo: APIInfo;
     if(version  === undefined) {
       connectorApiInfo = await ApisService.getApiInfo({
@@ -640,8 +705,11 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         apiName: apiId
       });  
     } else {
-      // const _apiId: string = version !== undefined ? `${apiId}@${version}` : apiId; 
-      throw new Error(`${logName}: getting a specific version of APIInfo not implemented yet.`);
+      connectorApiInfo = await ApisService.getApiVersionInfo({
+        organizationName: organizationId,
+        apiName: apiId,
+        version: version
+      });  
     }
 
     // get the complete business group list for reference
@@ -662,13 +730,15 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apiId: apiId
     });
     // get the revision list
-    let connectorRevisions: Array<string> | undefined = undefined;
+    let _apVersionList: TAPVersionList | undefined = undefined;
+    let _connectorRevisionList: Array<string> | undefined = undefined;
     if(fetch_revision_list) {
-      // for old apis, list could be empty
-      connectorRevisions = await this.apiGetList_ApiVersions({ 
+      const { connectorRevisionList, apVersionList } = await this.apiGetList_ApiVersions({ 
         organizationId: organizationId,
         apiId: apiId,
       });
+      _apVersionList = apVersionList;
+      _connectorRevisionList = connectorRevisionList;
     }
 
     // get the spec
@@ -685,6 +755,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       });  
     }
 
+    // alert(`${logName}: _apVersionList=${JSON.stringify(_apVersionList, null, 2)} `);
+    // alert(`${logName}: _connectorRevisionList=${JSON.stringify(_connectorRevisionList, null, 2)} `);
+
     return this.create_ApApiDisplay_From_ApiEntities({
       connectorApiInfo: connectorApiInfo, 
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
@@ -692,7 +765,10 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       currentVersion: version,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
-      connectorRevisions: connectorRevisions,
+
+      apVersionList: _apVersionList,
+      connectorRevisionList: _connectorRevisionList,
+
       apApiSpecDisplay: apApiSpecDisplay,
     });
   }
@@ -765,6 +841,87 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     });
   }
 
+  public async apiCreate_ApApiDisplay_AsyncApiSpec({ organizationId, userId, apApiDisplay, apApiDisplay_AsyncApiSpec }:{
+    organizationId: string;
+    userId: string;
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec;
+  }): Promise<void> {
+    // const funcName = 'apiUpdate_ApApiDisplay_AsyncApiSpec';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    const yaml: string = APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
+    const version: string = APApiSpecsDisplayService.get_RawVersionString({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
+    await ApisService.updateApi({
+      organizationName: organizationId,
+      apiName: apApiDisplay.apEntityId.id,
+      requestBody: yaml
+    });
+    // update last modified on latest
+    await ApisService.updateApiInfo({
+      organizationName: organizationId,
+      apiName: apApiDisplay.apEntityId.id,
+      requestBody: {
+        meta: {
+          lastModifiedBy: userId
+        }
+      }
+    });
+    // update meta on version
+    const apiVersionInfoPatch: APIVersionInfoPatch = {
+      deprecated: false,
+      meta: {
+        createdBy: userId,
+        lastModifiedBy: userId
+      }
+    };
+    const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+      apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+      apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
+    });
+    await ApisService.updateApiVersionInfo({
+      organizationName: organizationId,
+      apiName: apApiDisplay.apEntityId.id,
+      requestBody: apiVersionInfoPatch,
+      version: connectorRevision
+    });
+
+  }
+
+  public async apiUpdate_ApApiDisplay_State({ organizationId, userId, apApiDisplay, apApiDisplay_State }:{
+    organizationId: string;
+    userId: string;
+    apApiDisplay: IAPApiDisplay;
+    apApiDisplay_State: TAPApiDisplay_State;
+  }): Promise<void> {
+    const funcName = 'apiUpdate_ApApiDisplay_State';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    apApiDisplay = this.set_ApApiDisplay_State({ apApiDisplay: apApiDisplay, apApiDisplay_State: apApiDisplay_State });
+
+    if(apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DEPRECATED && apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
+      throw new Error(`${logName}: invalid apApiDisplay.apLifecycleStageInfo.stage=${apApiDisplay.apLifecycleStageInfo.stage}`);
+    }
+    const apiVersionInfoPatch: APIVersionInfoPatch = {
+      deprecated: apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED,
+      deprecatedDescription: apApiDisplay.apLifecycleStageInfo.notes,
+      meta: {
+        lastModifiedBy: userId
+      }
+    };
+    // map current version to connector revision
+    const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+      apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+      apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
+    });
+    await ApisService.updateApiVersionInfo({
+      organizationName: organizationId,
+      apiName: apApiDisplay.apEntityId.id,
+      requestBody: apiVersionInfoPatch,
+      version: connectorRevision
+    });
+
+  }
+
   public async apiUpdate_ApApiDisplay_Access({ organizationId, apApiDisplay, apApiDisplay_Access, userId }:{
     organizationId: string;
     userId: string;
@@ -782,7 +939,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       organizationId: organizationId,
       apManagedAssetDisplay: apApiDisplay 
     });
-    await this.apiUpdate ({
+    await this.apiUpdate({
       organizationId: organizationId,
       apiId: apApiDisplay.apEntityId.id,
       apRawAttributeList: apRawAttributeList,
@@ -791,7 +948,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
           lastModifiedBy: userId
         }
       }
-    })
+    });
   }
 
   // public async apiUpdate_ApApiDisplay_AccessAndState({ organizationId, apApiDisplay, apApiDisplay_AccessAndState }:{

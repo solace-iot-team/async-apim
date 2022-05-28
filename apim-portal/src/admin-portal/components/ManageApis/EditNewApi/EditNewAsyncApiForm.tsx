@@ -17,6 +17,7 @@ import APEntityIdsService from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 export interface IEditNewAsyncApiSpecFormProps {
   action: EAction;
@@ -85,12 +86,12 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_API_VERSION_EXISTS, `check api version exists: ${props.apApiDisplay_AsyncApiSpec.apEntityId.displayName}@${version}`);
     let checkResult: boolean | undefined = undefined;
     try { 
-      alert(`${logName}: check if version exists: ${props.apApiDisplay_AsyncApiSpec.apEntityId.id}@${version}`);
-
-      // checkResult = await APApisDisplayService.apiCheck_ApApiDisplay_Exists({
-      //   organizationId: props.organizationId,
-      //   apiId: apiId
-      // });
+      // alert(`${logName}: checking if version=${version} exists`);
+      checkResult = await APApisDisplayService.apiCheck_ApApiDisplay_Version_Exists({
+        organizationId: props.organizationId,
+        apiId: props.apApiDisplay_AsyncApiSpec.apEntityId.id,
+        version: version,
+      });
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -172,34 +173,29 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   // }
 
   const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
-    const validateFormat = (specStr: string): string | boolean => {
-      const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
-        apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
-        asyncApiSpecString: specStr,
-        currentFormat: EAPApiSpecFormat.UNKNOWN
-      });
-      // if(typeof(result) === 'string') alert(`result is string = ${result}`);
-      // else alert(`result is not string = ${JSON.stringify(result, null, 2)}`);
-      // return 'never validates until problem fixed';
-      if(typeof(result) === 'string') return result;
-      return true;
-    }
-    const formatValidationResult: string | boolean = validateFormat(specStr);
-    if(typeof(formatValidationResult) === 'string') return formatValidationResult;
-    if(props.action === EAction.NEW) return true;
-
-    // creating a new version
-    const apApiSpecDisplay: TAPApiSpecDisplay = APApiSpecsDisplayService.create_ApApiSpecDisplay_From_AsyncApiString({ 
-      apApiEntityId: props.apApiDisplay_AsyncApiSpec.apEntityId,
-      asyncApiSpecString: specStr
+    const funcName = 'validate_AsyncApiSpec';
+    const logName = `${ComponentName}.${funcName}()`;
+    // try parsing it
+    const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
+      apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      asyncApiSpecString: specStr,
+      currentFormat: EAPApiSpecFormat.UNKNOWN
     });
-    const versionString: string = APApiSpecsDisplayService.get_VersionString({
+    if(typeof(result) === 'string') return result as string;
+    const apApiSpecDisplay: TAPApiSpecDisplay = result as TAPApiSpecDisplay;
+    // validate spec has version in it
+    const hasVersionString: boolean = APApiSpecsDisplayService.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
+    if(!hasVersionString) return `Async Api Spec is missing version element.`;
+    if(props.action === EAction.NEW) return true;
+    // must be a new version
+    const versionString: string = APApiSpecsDisplayService.get_RawVersionString({
       apApiSpecDisplay: apApiSpecDisplay
     });
-
+    // must be in SemVer format
+    if(!APVersioningDisplayService.isSemVerFormat(versionString)) return `Please use semantic versioning format for API version instead of '${versionString}'.`;
     const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
-    if(checkVersionResult === undefined) return false;
-    if(checkVersionResult) return 'API version already exists, please specify a new version in the Async API Spec.';
+    if(checkVersionResult === undefined) return 'Could not validate version';
+    if(checkVersionResult) return `API version '${versionString}' already exists, please specify a new version in the Async API Spec.`;
     return true;
   }
 

@@ -351,7 +351,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       // apApiProductImageUrl: this.CDefaultApiProductImageUrl,
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorApiProduct.meta, 
-        connectorRevisions: connectorRevisions,
+        apVersionList: connectorRevisions,
+        connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
        apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),

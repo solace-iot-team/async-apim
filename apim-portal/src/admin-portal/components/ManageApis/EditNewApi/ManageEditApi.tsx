@@ -16,9 +16,11 @@ import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleSt
 import APApisDisplayService, { IAPApiDisplay } from "../../../../displayServices/APApisDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import { EditAccess } from "./EditAccess";
+import { EditAsyncApiSpec } from "./EditAsyncApiSpec";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
+import { EditState } from "./EditState";
 
 export interface IManageEditApiProps {
   organizationId: string;
@@ -153,6 +155,21 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
     const tabPanels: Array<JSX.Element> = [];
 
     tabPanels.push(
+      <TabPanel header='Async Api Spec'>
+        <React.Fragment>
+          <EditAsyncApiSpec
+            key={`${ComponentName}_EditAccess_${refreshCounter}`}
+            organizationId={props.organizationId}
+            apApiDisplay={managedObject}
+            onError={onError_SubComponent}
+            onCancel={props.onCancel}
+            onLoadingChange={props.onLoadingChange}
+            onSaveSuccess={onEdit_SaveSuccess}
+          />
+        </React.Fragment>
+      </TabPanel>
+    );
+    tabPanels.push(
       <TabPanel header='Access'>
         <React.Fragment>
           <EditAccess
@@ -184,16 +201,15 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
     // );
     tabPanels.push(
       <TabPanel header='State'>
-        <p>State: select version, state, notes</p>
-          {/* <EditAccessAndState
-            key={`${ComponentName}_EditAccessAndState_${refreshCounter}`}
-            organizationId={props.organizationId}
-            apApiDisplay={managedObject}
-            onError={onError_SubComponent}
-            onCancel={props.onCancel}
-            onLoadingChange={props.onLoadingChange}
-            onSaveSuccess={onEdit_SaveSuccess}
-          /> */}
+        <EditState
+          key={`${ComponentName}_EditState_${refreshCounter}`}
+          organizationId={props.organizationId}
+          apApiDisplay={managedObject}
+          onError={onError_SubComponent}
+          onCancel={props.onCancel}
+          onLoadingChange={props.onLoadingChange}
+          onSaveSuccess={onEdit_SaveSuccess}
+        />
       </TabPanel>
     );
     return tabPanels;

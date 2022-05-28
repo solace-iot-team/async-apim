@@ -6,14 +6,15 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_General } from "../../../../displayServices/APApisDisplayService";
-import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
+import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_State } from "../../../../displayServices/APApisDisplayService";
+import { ButtonLabel_Cancel, ButtonLabel_Save, E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
+import { EditStateForm } from "./EditStateForm";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
 
-export interface IEditGeneralProps {
+export interface IEditStateProps {
   organizationId: string;
   apApiDisplay: IAPApiDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -22,15 +23,16 @@ export interface IEditGeneralProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProps) => {
-  const ComponentName = 'EditGeneral';
+export const EditState: React.FC<IEditStateProps> = (props: IEditStateProps) => {
+  const ComponentName = 'EditState';
 
-  type TManagedObject = TAPApiDisplay_General;
+  type TManagedObject = TAPApiDisplay_State;
 
   const FormId = `ManageApis_EditNewApi_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -39,10 +41,11 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API, `update api: ${mo.apEntityId.id}`);
     try {
-      await APApisDisplayService.apiUpdate_ApApiDisplay_General({
+      await APApisDisplayService.apiUpdate_ApApiDisplay_State({
         organizationId: props.organizationId,
+        userId: userContext.apLoginUserDisplay.apEntityId.id,
         apApiDisplay: props.apApiDisplay,
-        apApiDisplay_General: mo
+        apApiDisplay_State: mo,
       });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
@@ -53,7 +56,7 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
   }
 
   const doInitialize = async () => {
-    setManagedObject(APApisDisplayService.get_ApApiDisplay_General({ apApiDisplay: props.apApiDisplay }));
+    setManagedObject(APApisDisplayService.get_ApApiDisplay_State({ apApiDisplay: props.apApiDisplay }));
   }
 
   // * useEffect Hooks *
@@ -105,13 +108,10 @@ export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProp
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewGeneralForm
+          <EditStateForm
             formId={FormId}
-            organizationId={props.organizationId}
-            action={EAction.EDIT}
-            apApiDisplay_General={mo}
+            apApiDisplay_State={mo}
             onError={props.onError}
-            onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
           />
           {/* footer */}
