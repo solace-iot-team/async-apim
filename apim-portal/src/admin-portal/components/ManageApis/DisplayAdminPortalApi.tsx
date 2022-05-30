@@ -53,7 +53,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
-  // const [selectedVersion, setSelectedVersion] = React.useState<string>();
   const [selectedTreeVersion, setSelectedTreeVersion] = React.useState<string>();
   const [userContext] = React.useContext(UserContext);
 
@@ -104,15 +103,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    // setSelectedVersion(managedObject.apVersionInfo.apCurrentVersion);
     setSelectedTreeVersion(managedObject.apVersionInfo.apCurrentVersion);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   if(selectedVersion === undefined) return;
-  //   if(managedObject === undefined) return;
-  //   if(selectedVersion !== managedObject.apVersionInfo.apCurrentVersion) doFetchVersion(selectedVersion);
-  // }, [selectedVersion]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(selectedTreeVersion === undefined) return;
@@ -176,9 +168,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
     if(managedObject.apVersionInfo.apVersionList === undefined) throw new Error(`${logName}: managedObject.apVersionInfo.apVersionList is undefined`);
 
-    // const onVersionSelect = (e: DropdownChangeParams) => {
-    //   setSelectedVersion(e.value);
-    // }
     const onVersionSelectTree = (e: TreeSelectChangeParams) => {
       setSelectedTreeVersion(e.value as string);
     }
@@ -194,12 +183,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
           filter={true}
           selectionMode="single"
         />
-  
-        {/* <Dropdown
-          value={selectedVersion}
-          options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
-          onChange={onVersionSelect}
-        />               */}
       </React.Fragment>            
     );
   }

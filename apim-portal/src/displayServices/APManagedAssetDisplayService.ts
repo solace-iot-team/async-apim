@@ -111,12 +111,16 @@ export abstract class APManagedAssetDisplayService {
   private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
     return `${this.nameOf('apBusinessGroupInfo')}.${name}`;
   }
-  private _nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference(name: keyof TAPBusinessGroupDisplayReference) {
+  public nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId(name: keyof TAPEntityId) {
     return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
   }
-  public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId(name: keyof TAPEntityId) {
-    return `${this._nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference('apEntityId')}.${name}`;
-  }
+  
+  // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference(name: keyof TAPBusinessGroupDisplayReference) {
+  //   return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
+  // }
+  // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId(name: keyof TAPEntityId) {
+  //   return `${this._nameOf_ApBusinessGroupInfo('apEntityId')}.${name}`;
+  // }
   public nameOf_BusinessGroupSharing(name: keyof TAPManagedAssetDisplay_BusinessGroupSharing) {
     return name;
   }

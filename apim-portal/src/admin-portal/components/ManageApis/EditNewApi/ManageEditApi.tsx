@@ -17,12 +17,17 @@ import APApisDisplayService, { IAPApiDisplay } from "../../../../displayServices
 import { E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import { EditAccess } from "./EditAccess";
 import { EditAsyncApiSpec } from "./EditAsyncApiSpec";
+import { EditState } from "./EditState";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import { EditState } from "./EditState";
 
+export enum E_Edit_Scope {
+  MAINTAIN = "MAINTAiN",
+  MANAGE = "MANAGE"
+}
 export interface IManageEditApiProps {
+  scope: E_Edit_Scope;
   organizationId: string;
   apiEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
@@ -154,21 +159,23 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
 
     const tabPanels: Array<JSX.Element> = [];
 
-    tabPanels.push(
-      <TabPanel header='Async Api Spec'>
-        <React.Fragment>
-          <EditAsyncApiSpec
-            key={`${ComponentName}_EditAccess_${refreshCounter}`}
-            organizationId={props.organizationId}
-            apApiDisplay={managedObject}
-            onError={onError_SubComponent}
-            onCancel={props.onCancel}
-            onLoadingChange={props.onLoadingChange}
-            onSaveSuccess={onEdit_SaveSuccess}
-          />
-        </React.Fragment>
-      </TabPanel>
-    );
+    if(props.scope === E_Edit_Scope.MANAGE) {
+      tabPanels.push(
+        <TabPanel header='Async Api Spec'>
+          <React.Fragment>
+            <EditAsyncApiSpec
+              key={`${ComponentName}_EditAccess_${refreshCounter}`}
+              organizationId={props.organizationId}
+              apApiDisplay={managedObject}
+              onError={onError_SubComponent}
+              onCancel={props.onCancel}
+              onLoadingChange={props.onLoadingChange}
+              onSaveSuccess={onEdit_SaveSuccess}
+            />
+          </React.Fragment>
+        </TabPanel>
+      );
+    }
     tabPanels.push(
       <TabPanel header='Access'>
         <React.Fragment>
@@ -199,19 +206,21 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
     //     </React.Fragment>
     //   </TabPanel>
     // );
-    tabPanels.push(
-      <TabPanel header='State'>
-        <EditState
-          key={`${ComponentName}_EditState_${refreshCounter}`}
-          organizationId={props.organizationId}
-          apApiDisplay={managedObject}
-          onError={onError_SubComponent}
-          onCancel={props.onCancel}
-          onLoadingChange={props.onLoadingChange}
-          onSaveSuccess={onEdit_SaveSuccess}
-        />
-      </TabPanel>
-    );
+    if(props.scope === E_Edit_Scope.MANAGE) {
+      tabPanels.push(
+        <TabPanel header='State'>
+          <EditState
+            key={`${ComponentName}_EditState_${refreshCounter}`}
+            organizationId={props.organizationId}
+            apApiDisplay={managedObject}
+            onError={onError_SubComponent}
+            onCancel={props.onCancel}
+            onLoadingChange={props.onLoadingChange}
+            onSaveSuccess={onEdit_SaveSuccess}
+          />
+        </TabPanel>
+      );
+    }
     return tabPanels;
   }
 

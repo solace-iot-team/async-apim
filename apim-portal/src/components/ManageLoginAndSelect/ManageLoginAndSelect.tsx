@@ -123,11 +123,14 @@ export const ManageLoginAndSelect: React.FC<IManageLoginAndSelectProps> = (props
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    const funcName = 'useEffect[managedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+
     if(managedObject !== undefined) {
       const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
         apMemberOfOrganizationDisplayList: managedObject.apMemberOfOrganizationDisplayList,
       });
-      // alert(`${logName}: memberOfOrganizationEntityIdList = ${JSON.stringify(memberOfOrganizationEntityIdList, null, 2)}`);
+      alert(`${logName}: memberOfOrganizationEntityIdList = ${JSON.stringify(memberOfOrganizationEntityIdList, null, 2)}`);
 
       if(memberOfOrganizationEntityIdList.length === 0) {
         doSetupLoggedInUser(managedObject, undefined);

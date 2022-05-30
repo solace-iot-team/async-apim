@@ -18,7 +18,7 @@ import APSystemOrganizationsDisplayService from "../../../displayServices/APOrga
 import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
 import { ListMaintainApis } from "./ListMaintainApis";
 import { ViewApi } from "../ManageApis/ViewApi";
-import { ManageEditApi } from "../ManageApis/EditNewApi/ManageEditApi";
+import { E_Edit_Scope, ManageEditApi } from "../ManageApis/EditNewApi/ManageEditApi";
 import { DeleteApi } from "../ManageApis/DeleteApi";
 
 import '../../../components/APComponents.css';
@@ -326,6 +326,7 @@ export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisP
       }
       {showEditComponent && managedObjectEntityId &&
         <ManageEditApi
+          scope={E_Edit_Scope.MAINTAIN}
           organizationId={props.organizationEntityId.id}
           apiEntityId={managedObjectEntityId}
           onError={onSubComponentError}

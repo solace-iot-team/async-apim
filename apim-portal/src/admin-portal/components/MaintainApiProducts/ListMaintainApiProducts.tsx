@@ -181,7 +181,7 @@ export const ListMaintainApiProducts: React.FC<IListMaintainApiProductsProps> = 
     // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
     const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');    
     const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
+    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
     return (
       <div className="card">
         <DataTable

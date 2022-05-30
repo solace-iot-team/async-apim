@@ -74,8 +74,6 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
   const apiSetupLoginContexts = async(mo: TManagedObject, organizationEntityId: TAPEntityId | undefined): Promise<TApiCallState> => {
     const funcName = 'apiSetupLoginContexts';
     const logName = `${ComponentName}.${funcName}()`;
-    // alert(`${logName}: organizationEntityId = ${JSON.stringify(organizationEntityId)}`);
-
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_SETUP_LOGIN_CONTEXTS, `setup user: ${mo.apLoginUserDisplay.apEntityId.id}`);
     try { 
       await APContextsDisplayService.setup_LoginContexts({
@@ -122,12 +120,13 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
+    // const funcName = 'useEffect[managedObject';
+    // const logName = `${ComponentName}.${funcName}()`;
+
     if(managedObject === undefined) return;
     const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
       apMemberOfOrganizationDisplayList: managedObject.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
     });
-    // alert(`${logName}: memberOfOrganizationEntityIdList = ${JSON.stringify(memberOfOrganizationEntityIdList, null, 2)}`);
-
     if(memberOfOrganizationEntityIdList.length === 0) {
       doSetupLoggedInUser(managedObject, undefined);
     } else if(memberOfOrganizationEntityIdList.length === 1) {
@@ -180,6 +179,7 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
     const funcName = 'onSelectOrganizationSuccess';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    // alert(`${logName}: organizationEntityId = ${JSON.stringify(organizationEntityId, null, 2)}`);
     doSetupLoggedInUser(managedObject, organizationEntityId);
   }
 

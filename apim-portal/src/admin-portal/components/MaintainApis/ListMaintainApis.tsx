@@ -154,7 +154,7 @@ export const ListMaintainApis: React.FC<IListMaintainApisProps> = (props: IListM
     const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
     const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
     const sourceSortField = APApisDisplayService.nameOf_ConnectorApiInfo('source');
-    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId('displayName');
+    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
     return (
       <div className="card">
         <DataTable

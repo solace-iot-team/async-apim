@@ -20,7 +20,7 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { ViewApi } from "./ViewApi";
 import { ManageNewApi } from "./EditNewApi/ManageNewApi";
-import { ManageEditApi } from "./EditNewApi/ManageEditApi";
+import { E_Edit_Scope, ManageEditApi } from "./EditNewApi/ManageEditApi";
 import { DeleteApi } from "./DeleteApi";
 
 import '../../../components/APComponents.css';
@@ -419,6 +419,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
       }
       {showEditComponent && managedObjectEntityId &&
         <ManageEditApi
+          scope={E_Edit_Scope.MANAGE}
           organizationId={props.organizationEntityId.id}
           apiEntityId={managedObjectEntityId}
           onError={onSubComponentError_Notification}

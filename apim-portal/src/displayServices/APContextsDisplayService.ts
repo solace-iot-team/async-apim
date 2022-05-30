@@ -10,6 +10,7 @@ import {
   TAPRbacRole, 
 } from '../utils/APRbac';
 import { EAppState, EUICommonResourcePaths, Globals } from '../utils/Globals';
+import { ApsAdministrationService, APSOrganization } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APSystemOrganizationsDisplayService from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APRbacDisplayService from './APRbacDisplayService';
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
@@ -208,7 +209,9 @@ class APContextsDisplayService {
 
     let organizationEntityId: TAPEntityId | undefined = undefined;
     if(organizationId !== undefined) {
-      organizationEntityId = { id: organizationId, displayName: organizationId };
+      // get the displayName
+      const apsOrganization: APSOrganization = await ApsAdministrationService.getApsOrganization({ organizationId: organizationId });
+      organizationEntityId = { id: organizationId, displayName: apsOrganization.displayName };
     }
     const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
       apLoginUserDisplay: apLoginUserDisplay,
