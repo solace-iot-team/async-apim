@@ -287,12 +287,21 @@ class APApiSpecsDisplayService {
     apiEntityId: TAPEntityId;
     version?: string;
   }): Promise<TAPApiSpecDisplay> {
-    const apiId: string = version !== undefined ? `${apiEntityId.id}@${version}` : apiEntityId.id;
-    const spec: any = await ApisService.getApi({
-      organizationName: organizationId,
-      apiName: apiId,
-      format: EAPApiSpecFormat.JSON
-    });
+    let spec: any = undefined;
+    if(version === undefined) {
+      spec = await ApisService.getApi({
+        organizationName: organizationId,
+        apiName: apiEntityId.id,
+        format: EAPApiSpecFormat.JSON
+      });  
+    } else {
+      spec = await ApisService.getApiRevision({
+        organizationName: organizationId,
+        apiName: apiEntityId.id,
+        format: EAPApiSpecFormat.JSON,
+        version: version,
+      });
+    }
     return {
       apEntityId: apiEntityId,
       format: EAPApiSpecFormat.JSON,

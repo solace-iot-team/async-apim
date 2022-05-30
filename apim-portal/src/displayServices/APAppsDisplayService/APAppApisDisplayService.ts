@@ -6,7 +6,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, 
   TAPEntityId 
 } from '../../utils/APEntityIdsService';
-import { TAPApiDisplay } from '../deleteme.APApisDisplayService';
+import { IAPApiDisplay } from '../APApisDisplayService';
 
 export type TAPAppApiDisplay = IAPEntityIdDisplay & {
   apVersion: string;
@@ -27,10 +27,10 @@ export class APAppApisDisplayService {
   }): TAPAppApiDisplayList => {
 
     const list: TAPAppApiDisplayList = [];
-    apApp_ApiProductDisplay.apApiDisplayList.forEach( (apApiDisplay: TAPApiDisplay) => {
+    apApp_ApiProductDisplay.apApiDisplayList.forEach( (apApiDisplay: IAPApiDisplay) => {
       const apAppApiDisplay: TAPAppApiDisplay = {
         apEntityId: apApiDisplay.apEntityId,
-        apVersion: apApiDisplay.apVersion,
+        apVersion: apApiDisplay.apVersionInfo.apCurrentVersion,
         apApiProductEntityId: apApp_ApiProductDisplay.apEntityId,
       };
       list.push(apAppApiDisplay);

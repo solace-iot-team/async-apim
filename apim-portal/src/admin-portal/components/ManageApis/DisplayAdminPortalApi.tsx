@@ -67,7 +67,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         apVersion_ConnectorRevision_Map: props.apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
         apVersion: apVersion
       });
-      alert(`${logName}: fetching connectorRevision = ${connectorRevision}`);  
       const apApiDisplay: IAPApiDisplay = await APApisDisplayService.apiGet_ApApiDisplay({
         organizationId: props.organizationId,
         apiId: props.apApiDisplay.apEntityId.id,

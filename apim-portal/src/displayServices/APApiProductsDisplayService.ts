@@ -17,7 +17,7 @@ import APApisDisplayService, {
   TAPApiChannelParameter, 
   TAPApiChannelParameterList, 
   TAPApiDisplayList 
-} from './deleteme.APApisDisplayService';
+} from './APApisDisplayService';
 import APAttributesDisplayService, {
   IAPAttributeDisplay,
   TAPAttributeDisplayList,
@@ -308,7 +308,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     if(create_skinny === undefined || create_skinny === false) {
       // include all apis, parameter lists
       // get the used Apis
-      apApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ organizationId: organizationId, apiIdList: connectorApiProduct.apis });
+      apApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplay_For_ApiIdList({ 
+        organizationId: organizationId, 
+        apiIdList: connectorApiProduct.apis,
+        default_ownerId: default_ownerId,
+      });
       // create the combined channel parameter list across all apis
       apCombinedApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
         apApiDisplayList: apApiDisplayList

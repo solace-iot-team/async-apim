@@ -16,8 +16,8 @@ import APDeveloperPortalApiProductsDisplayService, {
   TAPDeveloperPortalApiProductDisplay, 
   TAPDeveloperPortalApiProductDisplayList 
 } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
-import { TAPApiDisplayList } from "../../../displayServices/deleteme.APApisDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import { TAPApiDisplayList } from "../../../displayServices/APApisDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";

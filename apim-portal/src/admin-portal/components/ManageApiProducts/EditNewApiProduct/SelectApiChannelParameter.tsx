@@ -5,12 +5,11 @@ import { InputText } from "primereact/inputtext";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { 
-  TAPApiChannelParameter,
-  TAPApiChannelParameterList,
+import APApisDisplayService, { 
+  TAPApiChannelParameter, 
+  TAPApiChannelParameterList, 
   TAPApiDisplayList 
-} from "../../../../displayServices/deleteme.APApisDisplayService";
-import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
+} from "../../../../displayServices/APApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -40,7 +39,7 @@ export const SelectApiChannelParameter: React.FC<ISelectApiChannelParameterProps
   const dt = React.useRef<any>(null);
 
   const doInitialize = async () => {
-    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
       apApiDisplayList: props.apApiDisplayList,
     });
     setManagedObjectList(combined_ApApiChannelParameterList);    
@@ -97,9 +96,9 @@ export const SelectApiChannelParameter: React.FC<ISelectApiChannelParameterProps
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-    const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
-    const valueField = APAdminPortalApisDisplayService.nameOf_ApiChannelParameter('valueList');
+    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
+    const valueField = APApisDisplayService.nameOf_ApiChannelParameter('valueList');
     return (
       <div className="card">
           <DataTable

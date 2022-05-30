@@ -327,9 +327,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     businessGroupId: string;
     default_ownerId: string;
   }): Promise<TAPAdminPortalApiProductDisplayList> => {
-    // const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
+    const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
+    const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
+
+    alert(`${logName}: fixme - I'm too slow...`);
 
     const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
       organizationId: organizationId,

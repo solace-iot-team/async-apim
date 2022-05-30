@@ -1,12 +1,15 @@
 
 import React from "react";
 
-import { TAPApiChannelParameter, TAPApiChannelParameterList, TAPApiDisplayList } from "../../../../displayServices/deleteme.APApisDisplayService";
 import { TAPControlledChannelParameter, TAPControlledChannelParameterList } from "../../../../displayServices/APApiProductsDisplayService";
 import { SelectApiChannelParameter } from "./SelectApiChannelParameter";
 import { EditNewApAttributeListForm } from "../../../../components/APManageAttributes/EditNewApAttributeListForm";
-import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import APApisDisplayService, { 
+  TAPApiChannelParameter,
+  TAPApiChannelParameterList, 
+  TAPApiDisplayList 
+} from "../../../../displayServices/APApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -28,7 +31,7 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   React.useEffect(() => {
-    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
       apApiDisplayList: props.apApiDisplayList,
     });
     const availableEntityIdList: TAPEntityIdList = APEntityIdsService.sort_byDisplayName(APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(combined_ApApiChannelParameterList));

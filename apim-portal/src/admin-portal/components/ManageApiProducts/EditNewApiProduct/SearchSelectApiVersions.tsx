@@ -12,32 +12,38 @@ import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import { 
+  TAPApiDisplay, 
+  TAPApiDisplayList as deletemeTAPApiDisplayList
+} from "../../../../displayServices/deleteme.APApisDisplayService";
+import APAdminPortalApisDisplayService from "../../../displayServices/deleteme.APAdminPortalApisDisplayService";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+
+
+import APApisDisplayService, { TAPApiVersionDisplayList } from "../../../../displayServices/APApisDisplayService";
+import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 
 export interface ISearchSelectApisProps {
   organizationId: string;
   selectedApiEntityIdList: TAPEntityIdList;
   onError: (apiCallState: TApiCallState) => void;
-  onSave: (apApiDisplayList: TAPApiDisplayList) => void;
+  onSave: (apApiDisplayList: deletemeTAPApiDisplayList) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearchSelectApisProps) => {
-  const ComponentName = 'SearchSelectApis';
+export const SearchSelectApiVersions: React.FC<ISearchSelectApisProps> = (props: ISearchSelectApisProps) => {
+  const ComponentName = 'SearchSelectApiVersions';
 
-  type TManagedObject = IAPApiDisplay;
+  type TManagedObject = TAPApiDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const DialogHeaderPlural = 'Search & Select API(s):';
-  const DialogHeaderSingular = 'Search & Select one API:';
+  const DialogHeaderPlural = 'Search & Select API Version(s):';
+  const DialogHeaderSingular = 'Search & Select one API Version:';
   const MessageNoManagedObjectsFound = "No APIs found."
   const MessageNoManagedObjectsFoundWithFilter = 'No APIs found for filter';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
@@ -64,12 +70,17 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_INFO_LIST, 'retrieve list of apis');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const apApiDisplayList: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplayList({
+      const apApiVersionDisplayList: TAPApiVersionDisplayList = await APApisDisplayService.apiGetList_ApApiVersionDisplayList({ 
         organizationId: props.organizationId,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
       });
-      setManagedObjectList(apApiDisplayList);
+      console.log(`${logName}: apApiVersionDisplayList = ${JSON.stringify(apApiVersionDisplayList, null, 2)}`);
+
+      const list = await APAdminPortalApisDisplayService.apiGetList_ApApiDisplayList({
+        organizationId: props.organizationId
+      })
+      setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -90,7 +101,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
 
   React.useEffect(() => {
     if(managedObjectList === undefined) return;
-    const selectedList: TAPApiDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList({
+    const selectedList: deletemeTAPApiDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList({
       apDisplayObjectList: managedObjectList,
       filterByEntityIdList: props.selectedApiEntityIdList
     });
@@ -179,37 +190,9 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     else return MessageNoManagedObjectsFound;
   }
 
-  const nameBodyTemplate = (mo: TManagedObject): string => {
-    return mo.apEntityId.displayName;
-  }
-  // const versionBodyTemplate = (mo: TManagedObject): JSX.Element => {
-  //   return (<div>{mo.apVersionInfo.apLastVersion}</div>);
-  // }
-  const stateTemplate = (mo: TManagedObject): string => {
-    return mo.apLifecycleStageInfo.stage;
-  }
-  const businessGroupBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    return (<div>{mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
-  }
-  const sharedBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    const sharingEntityIdList: TAPEntityIdList = mo.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
-      return {
-        id: x.apEntityId.id,
-        displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
-      }
-    });
-    if(sharingEntityIdList.length === 0) return (<div>None.</div>);
-    return(
-      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
-    );
-  }
-
   const renderManagedObjectDataTableMultiple = (): JSX.Element => {
-    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
-    const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
+    const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
     return (
       <div className="card p-mt-2">
         <DataTable
@@ -219,7 +202,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
-
           header={renderDataTableHeader()}
           value={managedObjectList}
           globalFilter={globalFilter}
@@ -236,23 +218,15 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
           sortOrder={1}
         >
           <Column selectionMode="multiple" style={{width:'3em'}}/>
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          {/* <Column header="Current Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} /> */}
-          {/* <Column header="Source" headerStyle={{width: '9em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable /> */}
-          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+          <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
         </DataTable>
       </div>
     );
   }
 
   const renderManagedObjectDataTableSingle = (): JSX.Element => {
-    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
-    const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
+    const dataKey = APAdminPortalApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APAdminPortalApisDisplayService.nameOf_ApEntityId('displayName');
     return (
       <div className="card p-mt-2">
         <DataTable
@@ -278,10 +252,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
           sortField={sortField}
           sortOrder={1}
         >
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+          <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
         </DataTable>
       </div>
     );

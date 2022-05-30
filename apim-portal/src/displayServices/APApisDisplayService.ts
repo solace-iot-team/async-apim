@@ -77,6 +77,14 @@ export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent 
 }
 export type TAPApiDisplayList = Array<IAPApiDisplay>;
 
+export interface IAPApiVersionDisplay extends IAPEntityIdDisplay, IAPSearchContent {
+  apVersion: string;
+  connectorVersion: string;
+  apMetaInfo: TAPMetaInfo;
+  stage: MetaEntityStage;
+}
+export type TAPApiVersionDisplayList = Array<IAPApiVersionDisplay>
+
 class APApisDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApisDisplayService";
 
@@ -506,14 +514,28 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     }
   }
 
-  public apiGetList_ApiProductReferenceEntityIdList = async({ organizationId, apiId }: {
+  public apiGetList_ApiProductReferenceEntityIdList = async({ organizationId, apiId, version }: {
     organizationId: string;
     apiId: string;
+    version?: string;
   }): Promise<TAPEntityIdList> => {
-    const list: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
-      organizationName: organizationId,
-      apiName: apiId
-    });
+    const funcName = 'apiGetList_ApiProductReferenceEntityIdList';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    // must get the reference list for that version
+    let list: CommonEntityNameList = [];
+    if(version === undefined) {
+      list = await ApisService.getApiReferencedByApiProducts({
+        organizationName: organizationId,
+        apiName: apiId
+      });  
+    } else {
+      list = await ApisService.getApiRevisionApiProductReferences({
+        organizationName: organizationId,
+        apiName: apiId,
+        version: version,
+      });  
+    }
     return APEntityIdsService.create_SortedApEntityIdList_From_CommonEntityNamesList(list);
   }
 
@@ -612,6 +634,61 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return filteredApiInfoList;
   }
 
+  public async apiGetList_ApApiVersionDisplayList({ organizationId, default_ownerId, businessGroupId }:{
+    organizationId: string;
+    default_ownerId: string;
+    businessGroupId: string;
+  }): Promise<TAPApiVersionDisplayList> {
+
+    const apApiVersionDisplayList: TAPApiVersionDisplayList = [];
+
+    // get each version
+    const masterApiInfoList: APIInfoList = await this.apiGetFilteredList_ConnectorApiInfo({
+      organizationId: organizationId,
+      businessGroupId: businessGroupId
+    });
+    if(masterApiInfoList.length === 0) return apApiVersionDisplayList;
+
+    // get the complete business group list for reference
+    // const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+    //   organizationId: organizationId,
+    //   fetchAssetReferences: false
+    // });
+    // // get the complete external system list for reference
+    // const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+    //   organizationId: organizationId,
+    // });
+    
+    for(const masterApiInfo of masterApiInfoList) {
+      const connectorRevisionList: Array<string> = await ApisService.listApiRevisions({
+        organizationName: organizationId,
+        apiName: masterApiInfo.name
+      });
+      for(const connectorRevision of connectorRevisionList) {
+        const apApiDisplay: IAPApiDisplay = await this.apiGet_ApApiDisplay({
+          organizationId: organizationId,
+          apiId: masterApiInfo.name,
+          default_ownerId: default_ownerId,
+          version: connectorRevision
+        });
+        // map
+        const apApiVersionDisplay: IAPApiVersionDisplay = {
+          apEntityId: {
+            id: `${apApiDisplay.apEntityId.id}@${connectorRevision}`,
+            displayName: `${apApiDisplay.apEntityId.displayName}@${connectorRevision}`
+          },
+          apMetaInfo: apApiDisplay.apMetaInfo,
+          apVersion: apApiDisplay.apVersionInfo.apCurrentVersion,
+          connectorVersion: connectorRevision,
+          stage: apApiDisplay.apLifecycleStageInfo.stage,
+          apSearchContent: ''
+        };
+        apApiVersionDisplayList.push(APSearchContentService.add_SearchContent<IAPApiVersionDisplay>(apApiVersionDisplay));
+      }
+    }
+    return apApiVersionDisplayList;
+  }
+
   public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId }:{
     organizationId: string;
     default_ownerId: string;
@@ -636,7 +713,6 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const list: TAPApiDisplayList = [];
     // TODO: PARALLELIZE
     for(const apiInfo of apiInfoList) {
-      // TODO: when connector ready: get reference list for this version
       const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
         organizationId: organizationId, 
         apiId: apiInfo.name
@@ -694,8 +770,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     complete_ApBusinessGroupDisplayList?: TAPBusinessGroupDisplayList;
     complete_ApExternalSystemDisplayList?: TAPExternalSystemDisplayList;    
   }): Promise<IAPApiDisplay> {
-    const funcName = 'apiGet_ApApiDisplay';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'apiGet_ApApiDisplay';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     let connectorApiInfo: APIInfo;
@@ -727,7 +803,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     }
     const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
       organizationId: organizationId, 
-      apiId: apiId
+      apiId: apiId,
+      version: version,
     });
     // get the revision list
     let _apVersionList: TAPVersionList | undefined = undefined;
