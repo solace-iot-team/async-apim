@@ -9,7 +9,7 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, 
+  IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
@@ -120,6 +120,12 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   apLifecycleStageInfo: IAPLifecycleStageInfo;
 }
 export type TAPApiProductDisplayList = Array<IAPApiProductDisplay>;
+
+export type IAPApiProductDisplay4List = Omit<IAPApiProductDisplay, "apApiDisplayList" | "apControlledChannelParameterList" | "apEnvironmentDisplayList" | "apProtocolDisplayList"> & {
+  apApiEntityIdList: TAPEntityIdList;
+};
+
+
 
 export abstract class APApiProductsDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApiProductsDisplayService";
@@ -266,6 +272,57 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       idList_To_extract: APEntityIdsService.create_IdList_From_ApDisplayObjectList<TAPApiChannelParameter>(apCombinedApiChannelParameterList)
     });
     return apControlledChannelParameterList;
+  }
+
+  protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
+    connectorApiProduct, 
+    connectorRevisions,
+    default_ownerId, 
+    currentVersion,
+    complete_ApBusinessGroupDisplayList,
+    complete_ApExternalSystemDisplayList,
+   }:{
+    organizationId: string;
+    connectorApiProduct: APIProduct;
+    connectorRevisions?: Array<string>;
+    completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
+    default_ownerId: string;
+    currentVersion?: string;
+    complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
+  }): Promise<IAPApiProductDisplay4List> {
+    // const funcName = 'create_ApApiProductDisplay4List_From_ApiEntities';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
+      id: connectorApiProduct.name,
+      displayName: connectorApiProduct.displayName,
+      apRawAttributeList: connectorApiProduct.attributes,
+      default_ownerId: default_ownerId,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
+    });
+
+    const apApiProductDisplay4List: IAPApiProductDisplay4List = {
+      ..._base,
+
+      devel_connectorApiProduct: connectorApiProduct,
+
+      apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
+      apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
+      apDescription: connectorApiProduct.description ? connectorApiProduct.description : '',
+      apApiProductCategoryDisplayName: this.CDefaultApiProductCategory,
+      apApiEntityIdList: APEntityIdsService.create_EntityIdList_From_IdList(connectorApiProduct.apis),
+      apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
+        connectorMeta: connectorApiProduct.meta, 
+        apVersionList: connectorRevisions,
+        connectorRevisionList: connectorRevisions,
+        currentVersion: currentVersion,
+       }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
+       apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+    };
+    return apApiProductDisplay4List;
   }
 
   protected async create_ApApiProductDisplay_From_ApiEntities({ 
@@ -420,7 +477,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }  
 
   protected get_IsDeleteAllowed({ apApiProductDisplay }:{
-    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay: IAPApiProductDisplay | IAPApiProductDisplay4List;
   }): boolean {
     return true;
   }
@@ -652,18 +709,70 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return connectorApiProductList;
   }
   
+  protected apiGetFilteredList_ConnectorApiProduct = async({ organizationId, businessGroupId, includeAccessLevelList, exclude_ApiProductIdList }: {
+    organizationId: string;
+    businessGroupId?: string;
+    includeAccessLevelList?: Array<APIProductAccessLevel>;
+    exclude_ApiProductIdList?: Array<string>;
+  }): Promise<Array<APIProduct>> => {
+    // const funcName = 'apiGetFilteredList_ConnectorApiProduct';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    const completeConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+      organizationName: organizationId,
+    });
+
+    const filteredConnectorApiProductList: Array<APIProduct> = [];
+    if(businessGroupId !== undefined) {
+      const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
+      const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
+      for(const connectorApiProduct of completeConnectorApiProductList) {
+        let exclude: boolean = false;
+        let add2List: boolean = false;
+        if(exclude_ApiProductIdList && exclude_ApiProductIdList.length > 0) {
+          const foundExclude = exclude_ApiProductIdList.find( (id: string) => {
+            return id === connectorApiProduct.name;
+          });
+          if(foundExclude !== undefined) exclude = true;
+        }
+        if(!exclude) {
+          if(includeAccessLevelList !== undefined && connectorApiProduct.accessLevel !== undefined) {
+            add2List = includeAccessLevelList.includes(connectorApiProduct.accessLevel);
+          }
+          if(connectorApiProduct.attributes !== undefined) {
+            const owningAttribute = connectorApiProduct.attributes.find( (x) => {
+              return x.name === owningBusinessGroup_AttributeName;
+            });
+            const sharingAttribute = connectorApiProduct.attributes.find( (x) => {
+              return x.name === sharingBusinessGroup_AttributeName;
+            });
+            if(
+              (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
+              (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
+            ) add2List = true;
+          }
+          if(add2List) filteredConnectorApiProductList.push(connectorApiProduct);  
+        }
+      }
+    }
+    return filteredConnectorApiProductList;
+  }
+
+  
   /**
    * Retrieves a list of APIProducts filtered by:
    * - owningBusinessGroupId = businessGroupId 
    * - sharingBusinessGroupIdList contains businessGroupId
    */
-  protected apiGetList_ConnectorApiProductList = async({ organizationId, businessGroupId, includeAccessLevelList }: {
+  protected deleteme_apiGetList_ConnectorApiProductList = async({ organizationId, businessGroupId, includeAccessLevelList }: {
     organizationId: string;
     businessGroupId?: string;
     includeAccessLevelList?: Array<APIProductAccessLevel>;
   }): Promise<Array<APIProduct>> => {
-    // const funcName = 'apiGetList_ConnectorApiProductList';
-    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    const funcName = 'deleteme_apiGetList_ConnectorApiProductList';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    alert(`${logName}: optimize me ...`)
 
     const connectorApiProductList: Array<APIProduct> = [];
     // get the business group Id first

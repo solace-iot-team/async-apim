@@ -70,6 +70,12 @@ class APEntityIdsService {
     });
   }
 
+  public create_EntityIdList_From_IdList(idList: Array<string>): TAPEntityIdList {
+    return idList.map( (x: string) => {
+      return { id: x, displayName: x };
+    });
+  }
+
   public create_DisplayNameList(list: TAPEntityIdList): Array<string> {
     return list.map( (x) => {
       return x.displayName;

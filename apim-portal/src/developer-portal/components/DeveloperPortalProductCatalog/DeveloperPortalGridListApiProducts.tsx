@@ -11,10 +11,10 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, E_Mode } from "././DeveloperPortalProductCatalogCommon";
-import APEntityIdsService from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APDeveloperPortalApiProductsDisplayService, { 
-  TAPDeveloperPortalApiProductDisplay, 
-  TAPDeveloperPortalApiProductDisplayList 
+  TAPDeveloperPortalApiProductDisplay4List, 
+  TAPDeveloperPortalApiProductDisplay4ListList 
 } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { TAPApiDisplayList } from "../../../displayServices/APApisDisplayService";
@@ -31,7 +31,7 @@ export interface IDeveloperPortalGridListApiProductsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectView: (apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay) => void;
+  onManagedObjectView: (apDeveloperPortalApiProductDisplay4List: TAPDeveloperPortalApiProductDisplay4List) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -42,7 +42,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   const MessageNoManagedProductsFoundWithFilter = 'No API Products found for search.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TAPDeveloperPortalApiProductDisplay;
+  type TManagedObject = TAPDeveloperPortalApiProductDisplay4List;
   type TManagedObjectList = Array<TManagedObject>;
 
   const createCustomSearchContent = (moList: TManagedObjectList) => {
@@ -57,7 +57,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
         + mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName.toLowerCase() + ','
         + mo.apEntityId.displayName.toLowerCase() + ',' 
         + mo.apDescription.toLowerCase() + ','
-        + APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apApiDisplayList).join(', ').toLowerCase()
+        + APEntityIdsService.create_SortedDisplayNameList(mo.apApiEntityIdList).join(', ').toLowerCase()
       ;
     });
   }
@@ -107,7 +107,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PRODUCT_LIST, 'retrieve list of api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const list: TAPDeveloperPortalApiProductDisplayList = await APDeveloperPortalApiProductsDisplayService.apiGetList_ApDeveloperPortalApiProductDisplayList({
+      const list: TAPDeveloperPortalApiProductDisplay4ListList = await APDeveloperPortalApiProductsDisplayService.apiGetList_ApDeveloperPortalApiProductDisplay4ListList({
         organizationId: props.organizationId,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         userId: userContext.apLoginUserDisplay.apEntityId.id,
@@ -214,8 +214,8 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
   //   }
   //   return 'should never get here';
   // }
-  const getApisText = (apApiDisplayList: TAPApiDisplayList, maxLen: number): string => {
-    const t = APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(apApiDisplayList).join(', ');
+  const getApisText = (apApiEntityIdList: TAPEntityIdList, maxLen: number): string => {
+    const t = APEntityIdsService.create_SortedDisplayNameList(apApiEntityIdList).join(', ');
     if(t.length > maxLen) return t.substring(0, maxLen-3) + '...';
     return t;
   }
@@ -243,7 +243,7 @@ export const DeveloperPortalGridListApiProducts: React.FC<IDeveloperPortalGridLi
           <div className="product-list-detail">
             <div className="product-name">{mo.apEntityId.displayName}</div>
             <div className="product-description">{mo.apDescription}</div>
-            <div className="product-name-list">APIs: {getApisText(mo.apApiDisplayList, 100)}</div>
+            <div className="product-name-list">APIs: {getApisText(mo.apApiEntityIdList, 100)}</div>
 
             {/* <div className="product-name-list">Attributes: {dataRow.apAttributeDisplayNameList.join(', ')}</div>
             <div className="product-name-list">Environments: {dataRow.apEnvironmentDisplayNameList.join(', ')}</div>
@@ -299,7 +299,7 @@ const renderApiProductAsGridItem = (mo: TManagedObject) => {
             {/* <img src={dataRow.apApiProductImageUrl} onError={(e) => e.currentTarget.src=PlaceholderImageUrl} alt={dataRow.apApiProductDisplayName} /> */}
             <div className="product-name">{mo.apEntityId.displayName}</div>
             <div className="product-description">{mo.apDescription}</div>
-            <div className="product-api-name-list">APIs: {getApisText(mo.apApiDisplayList, 45)}</div>
+            <div className="product-api-name-list">APIs: {getApisText(mo.apApiEntityIdList, 45)}</div>
           </div>
           <div className="product-grid-item-bottom">
             {/* <span className="product-price">${'65'}</span> */}

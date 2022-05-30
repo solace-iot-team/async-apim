@@ -15,7 +15,8 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
-  TAPAdminPortalApiProductDisplayList 
+  TAPAdminPortalApiProductDisplay4List, 
+  TAPAdminPortalApiProductDisplay4ListList, 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -28,7 +29,7 @@ export interface IListApiProductsProps {
   organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onManagedObjectView: (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay) => void;
+  onManagedObjectView: (apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -39,7 +40,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
-  type TManagedObject = TAPAdminPortalApiProductDisplay;
+  type TManagedObject = TAPAdminPortalApiProductDisplay4List;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
@@ -58,7 +59,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplayList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplayList({
+      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
@@ -137,7 +138,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
   // }
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apApiDisplayList));
+    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apApiEntityIdList));
   }
   const usedByBodyTemplate = (row: TManagedObject): JSX.Element => {
     if(row.apAppReferenceEntityIdList.length === 0) return (<>-</>);

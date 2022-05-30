@@ -14,6 +14,7 @@ import { ListApiProducts } from "./ListApiProducts";
 import { ViewApiProduct } from "./ViewApiProduct";
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
+  TAPAdminPortalApiProductDisplay4List, 
   TAPAdminPortalApiProductDisplay_AllowedActions 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { DeleteApiProduct } from "./DeleteApiProduct";
@@ -131,13 +132,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setRefreshCounter(refreshCounter + 1);
   }
   //  * View Object *
-  const onViewManagedObject = (apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay): void => {
+  const onViewManagedObject = (apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(apAdminPortalApiProductDisplay.apEntityId);
+    setManagedObjectEntityId(apAdminPortalApiProductDisplay4List.apEntityId);
     // // DEBUG: is the version set?
     // alert(`${ComponentName}.onViewManagedObject():  apAdminPortalApiProductDisplay.apEntityId = ${JSON.stringify(apAdminPortalApiProductDisplay.apEntityId)}`);
     setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
-      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
+      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay4List,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
       userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id

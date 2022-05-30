@@ -10,7 +10,9 @@ import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { E_COMPONENT_STATE, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProductDisplay } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
+import APDeveloperPortalApiProductsDisplayService, { 
+  TAPDeveloperPortalApiProductDisplay4List
+} from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { DeveloperPortalGridListApiProducts } from "./DeveloperPortalGridListApiProducts";
 import { DeveloperPortalViewApiProduct } from "./DeveloperPortalViewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -104,16 +106,18 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay): void => {
-    
+  const onViewManagedObject = (apDeveloperPortalApiProductDisplay4List: TAPDeveloperPortalApiProductDisplay4List): void => {
+    // const funcName = 'onViewManagedObject';
+    // const logName = `${componentName}.${funcName}()`;
+    // alert(`${logName}: starting ...`);
     setIsAllowedToCreateApp(APDeveloperPortalApiProductsDisplayService.isAllowed_To_CreateApp({
-      apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
+      apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay4List,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
       userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
     }));
 
     setApiCallStatus(null);
-    setManagedObjectEntityId(apDeveloperPortalApiProductDisplay.apEntityId);    
+    setManagedObjectEntityId(apDeveloperPortalApiProductDisplay4List.apEntityId);    
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 
@@ -225,7 +229,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       
       {showListComponent && 
         <DeveloperPortalGridListApiProducts
-          key={componentState.previousState}
+          // key={`${ComponentName}_ListApiProducts_${refreshCounter}`}
           mode={props.mode}
           title={getTitle()}
           exclude_ApiProductIdList={props.exclude_ApiProductIdList}
