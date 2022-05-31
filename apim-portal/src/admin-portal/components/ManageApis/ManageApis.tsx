@@ -193,9 +193,9 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     const logName = `${ComponentName}.${funcName}()`;
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
-    const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-      apOrganizationDisplay: organizationContext
-    });
+    // const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+    //   apOrganizationDisplay: organizationContext
+    // });
     // const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
     const showImportEventPortalButton: boolean = false;
     if(showListComponent) return (
@@ -275,10 +275,10 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     setApiCallStatus(apiCallState);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onEventPortalImportEventApiProductSuccess = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-    setPreviousComponentState();
-  }
+  // const onEventPortalImportEventApiProductSuccess = (apiCallState: TApiCallState) => {
+  //   setApiCallStatus(apiCallState);
+  //   setPreviousComponentState();
+  // }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }

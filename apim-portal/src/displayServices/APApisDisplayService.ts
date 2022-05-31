@@ -7,7 +7,6 @@ import {
   APIParameter,
   ApisService,
   APISummaryList,
-  APIVersionInfoPatch,
   CommonEntityNameList,
   Meta,
   MetaEntityStage,
@@ -522,8 +521,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apiId: string;
     version?: string;
   }): Promise<TAPEntityIdList> => {
-    const funcName = 'apiGetList_ApiProductReferenceEntityIdList';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'apiGetList_ApiProductReferenceEntityIdList';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     // must get the reference list for that version
     let list: CommonEntityNameList = [];
@@ -950,8 +949,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiDisplay: IAPApiDisplay;
     apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec;
   }): Promise<void> {
-    const funcName = 'apiUpdate_ApApiDisplay_AsyncApiSpec';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'apiUpdate_ApApiDisplay_AsyncApiSpec';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const yaml: string = APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
     // const version: string = APApiSpecsDisplayService.get_RawVersionString({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });

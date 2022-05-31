@@ -11,7 +11,6 @@ import APAttributesDisplayService, {
 import APBusinessGroupsDisplayService, { 
   TAPBusinessGroupDisplay,
   TAPBusinessGroupDisplayList,
-  TAPBusinessGroupDisplayReference, 
   TAPBusinessGroupDisplay_ExternalReference
 } from './APBusinessGroupsDisplayService';
 import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';

@@ -45,9 +45,9 @@ export const EditNewAccessForm: React.FC<IEditNewAccessFormProps> = (props: IEdi
     formData: TManagedObjectFormData;
   }
   
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
+  // const isNewManagedObject = (): boolean => {
+  //   return props.action === EAction.NEW;
+  // }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
@@ -206,7 +206,6 @@ export const EditNewAccessForm: React.FC<IEditNewAccessFormProps> = (props: IEdi
     if(apMemberOfBusinessGroupTreeTableNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList === undefined`);
     if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     const uniqueKey_EditNewBusinessGroupSharingListForm = ComponentName+'_EditNewBusinessGroupSharingListForm';
-    const isNewObject: boolean = isNewManagedObject();
 
     const _owningBusinessGroupId: string | undefined = managedObjectUseForm.watch('formData.owningBusinessGroupId');
     // catch the first render

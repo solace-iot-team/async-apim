@@ -3,7 +3,6 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from "primereact/inputtextarea";
 import { classNames } from 'primereact/utils';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";

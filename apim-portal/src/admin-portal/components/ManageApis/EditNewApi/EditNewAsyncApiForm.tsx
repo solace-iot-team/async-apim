@@ -43,9 +43,9 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     formData: TManagedObjectFormData;
   }
 
-  const isNewManagedObject = (): boolean => {
-    return props.action === EAction.NEW;
-  }
+  // const isNewManagedObject = (): boolean => {
+  //   return props.action === EAction.NEW;
+  // }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
@@ -225,7 +225,6 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   }
 
   const renderManagedObjectForm = () => {
-    const isNewObject: boolean = isNewManagedObject();
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
