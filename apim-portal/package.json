@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@asyncapi/react-component": "1.0.0-next.33",
-    "@solace-iot-team/apim-connector-openapi-browser": "^0.7.16",
+    "@solace-iot-team/apim-connector-openapi-browser": "^0.7.17",
     "async-mutex": "^0.3.2",
     "base-64": "^1.0.0",
     "js-yaml": "^4.1.0",

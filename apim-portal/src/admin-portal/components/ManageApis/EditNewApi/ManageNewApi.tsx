@@ -282,7 +282,8 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     );
   }
   const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
-    return(<div><b>State: </b>{apLifecycleStageInfo.stage}</div>);
+    // return(<div><b>State: </b>{apLifecycleStageInfo.stage}</div>);
+    return (<></>);
   }
 
   const renderComponent = (mo: TManagedObject) => {

@@ -54,6 +54,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [selectedTreeVersion, setSelectedTreeVersion] = React.useState<string>();
+  const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
   const [userContext] = React.useContext(UserContext);
 
 
@@ -92,6 +93,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     props.onLoadingChange(true);
     await apiGetManagedObject(version);
     props.onLoadingChange(false);
+    setShowApiSpecRefreshCounter(showApiSpecRefreshCounter + 1);
   }
 
   // * useEffect Hooks *
@@ -212,7 +214,15 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
         return (
-          <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
+          <React.Fragment>
+            <div><b>State: </b>{apLifecycleStageInfo.stage}</div>
+            {apLifecycleStageInfo.notes !== undefined &&
+              <React.Fragment>
+                <div><b>Notes: </b></div>
+                <div className="p-ml-2">{apLifecycleStageInfo.notes}</div>
+              </React.Fragment>
+            } 
+          </React.Fragment>
         );
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
         return (
@@ -234,7 +244,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
 
-            <pre>map={JSON.stringify(mo.apVersionInfo.apVersion_ConnectorRevision_Map, null, 2)}</pre>
+            {/* DEBUG */}
+            {/* <pre>map={JSON.stringify(mo.apVersionInfo.apVersion_ConnectorRevision_Map, null, 2)}</pre> */}
 
           </div>
           <div className="api-view-detail-right">
@@ -341,6 +352,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       <TabPanel header='Async API Spec'>
         { renderChannelParameters() }
         <APDisplayAsyncApiSpec 
+          key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
           schema={managedObject.apApiSpecDisplay.spec} 
           schemaId={managedObject.apEntityId.id}
           renderDownloadButtons={props.scope !== E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE}

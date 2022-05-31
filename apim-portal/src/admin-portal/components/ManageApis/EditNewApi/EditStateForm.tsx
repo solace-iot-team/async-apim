@@ -4,15 +4,14 @@ import { useForm, Controller } from 'react-hook-form';
 
 import { classNames } from 'primereact/utils';
 import { Dropdown } from "primereact/dropdown";
-import { TreeSelect } from "primereact/treeselect";
 import { InputTextarea } from "primereact/inputtextarea";
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { MetaEntityStage } from "@solace-iot-team/apim-connector-openapi-browser";
-import APLifecycleStageInfoDisplayService, { TAPLifecycleStageList } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
+import { TAPLifecycleStageList } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
+import APApiLifecycleStageInfoDisplayService from "../../../../displayServices/APApiLifecycleStageInfoDisplayService";
 import { TAPApiDisplay_State } from "../../../../displayServices/APApisDisplayService";
-import APVersioningDisplayService, { TAPVersionTreeTableNodeList } from "../../../../displayServices/APVersioningDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
@@ -31,7 +30,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
   type TManagedObjectFormData = {
     lifecycleState: MetaEntityStage;
     notes: string;
-    version: string;
+    // version: string;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -42,7 +41,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
       lifecycleState: mo.apLifecycleStageInfo.stage,
       notes: mo.apLifecycleStageInfo.notes === undefined ? '' : mo.apLifecycleStageInfo.notes,
       // version: mo.version,
-      version: '',
+      // version: '',
     };
     return {
       formData: fd
@@ -60,7 +59,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
 
     mo.apLifecycleStageInfo.stage = fd.lifecycleState;
     mo.apLifecycleStageInfo.notes = fd.notes;
-    mo.version = fd.version;
+    // mo.version = fd.version;
 
     return mo;
   }
@@ -68,7 +67,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
-  const NextApLifecycleStageList: TAPLifecycleStageList = APLifecycleStageInfoDisplayService.getList_NextStages({ currentStage: props.apApiDisplay_State.apLifecycleStageInfo.stage });
+  const NextApLifecycleStageList: TAPLifecycleStageList = APApiLifecycleStageInfoDisplayService.getList_NextStages({ currentStage: props.apApiDisplay_State.apLifecycleStageInfo.stage });
 
   const doInitialize = async () => {
     setManagedObject(props.apApiDisplay_State);
@@ -104,13 +103,13 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const apVersionTreeTableNodeList: TAPVersionTreeTableNodeList = APVersioningDisplayService.create_VersionTreeTableNodeList({ apVersionList: managedObject.apVersionList });
+    // const apVersionTreeTableNodeList: TAPVersionTreeTableNodeList = APVersioningDisplayService.create_VersionTreeTableNodeList({ apVersionList: managedObject.apVersionList });
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">    
             {/* Version */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
@@ -134,7 +133,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.version })}>Version*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.version)} 
-            </div>
+            </div> */}
             {/* State */}
             <div className="p-field">
               <span className="p-float-label">

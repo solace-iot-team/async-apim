@@ -7,8 +7,8 @@ export interface IAPLifecycleStageInfo {
 }
 export type TAPLifecycleStageList = Array<MetaEntityStage>;
 
-class APLifecycleStageInfoDisplayService {
-  private readonly ComponentName = "APLifecycleStageInfoDisplayService";
+export class APLifecycleStageInfoDisplayService {
+  private readonly BaseComponentName = "APLifecycleStageInfoDisplayService";
 
   public nameOf(name: keyof IAPLifecycleStageInfo) {
     return `${name}`;
@@ -49,7 +49,7 @@ class APLifecycleStageInfoDisplayService {
     currentStage: MetaEntityStage;
   }): TAPLifecycleStageList {
     const funcName = 'getList_NextStages';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     switch(currentStage) {
       case MetaEntityStage.DRAFT:

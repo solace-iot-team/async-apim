@@ -14,15 +14,16 @@ import APApisDisplayService, { TAPApiDisplay_AsyncApiSpec } from "../../../../di
 import APApiSpecsDisplayService, { EAPApiSpecFormat, TAPApiSpecDisplay } from "../../../../displayServices/APApiSpecsDisplayService";
 import { APButtonLoadFileContents } from "../../../../components/APButtons/APButtonLoadFileContents";
 import APEntityIdsService from "../../../../utils/APEntityIdsService";
+import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
 
 export interface IEditNewAsyncApiSpecFormProps {
   action: EAction;
   organizationId: string;
   apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec;
+  apLastVersion?: string;
   formId: string;
   onSubmit: (apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec) => void;
   onError: (apiCallState: TApiCallState) => void;
@@ -175,6 +176,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
     const funcName = 'validate_AsyncApiSpec';
     const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     // try parsing it
     const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
       apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
@@ -193,6 +195,11 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     });
     // must be in SemVer format
     if(!APVersioningDisplayService.isSemVerFormat(versionString)) return `Please use semantic versioning format for API version instead of '${versionString}'.`;
+    // check new version is greater than latest 
+    if(props.apLastVersion === undefined) throw new Error(`${logName}: props.apLastVersion === undefined`);
+    if(!APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({ newVersion: versionString, lastVersion: props.apLastVersion })) {
+      return `API version '${versionString}' must be greater than last version '${props.apLastVersion}'.`;;
+    }
     const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
     if(checkVersionResult === undefined) return 'Could not validate version';
     if(checkVersionResult) return `API version '${versionString}' already exists, please specify a new version in the Async API Spec.`;

@@ -157,7 +157,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   private create_ConnectorMeta_From_ApiEntities({ connectorApiInfo }:{
     connectorApiInfo: APIInfo;
   }): Meta {
-    let connectorMeta: Meta
+    let connectorMeta: Meta;
     if(connectorApiInfo.meta === undefined) {
       connectorMeta = {
         version: APVersioningDisplayService.create_SemVerString(connectorApiInfo.version),
@@ -174,6 +174,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       } else {
         connectorMeta.version = APVersioningDisplayService.create_SemVerString(connectorApiInfo.version);
       }
+      // stage info not in meta, only deprecated or released
+      if(connectorApiInfo.deprecated) connectorMeta.stage = MetaEntityStage.DEPRECATED;
+      else connectorMeta.stage = MetaEntityStage.RELEASED;
     }
     return connectorMeta;
   }
@@ -875,8 +878,12 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       organizationId: organizationId,
       apManagedAssetDisplay: apApiDisplay 
     });
-
+    if(apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DEPRECATED && apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
+      throw new Error(`${logName}: invalid apApiDisplay.apLifecycleStageInfo.stage=${apApiDisplay.apLifecycleStageInfo.stage}`);
+    }
+    const deprecated: boolean = apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED;
     const update: APIInfoPatch = {
+      deprecated: deprecated, 
       meta: {
         createdBy: userId,
         lastModifiedBy: userId
@@ -887,14 +894,32 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
     // console.log(`${logName}: update=${JSON.stringify(update, null, 2)}`);
 
-
     await this.apiUpdate({
       organizationId: organizationId, 
       apiId: apApiDisplay.apEntityId.id,
       apRawAttributeList: apRawAttributeList,
       apiInfoUpdate: update,
     });
-
+    // // update meta on version
+    // const apiVersionInfoPatch: APIVersionInfoPatch = {
+    //   deprecated: deprecated,
+    //   meta: {
+    //     createdBy: userId,
+    //     lastModifiedBy: userId
+    //   }
+    // };
+    // const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+    //   apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+    //   apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
+    // });
+    // alert(`${logName}: updating connectorRevision=${connectorRevision}`);
+    // await ApisService.updateApiVersionInfo({
+    //   organizationName: organizationId,
+    //   apiName: apApiDisplay.apEntityId.id,
+    //   requestBody: apiVersionInfoPatch,
+    //   version: connectorRevision
+    // });
+    
   }
 
   private async apiUpdate({ organizationId, apiId, apiInfoUpdate, apRawAttributeList }: {
@@ -916,6 +941,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       apiName: apiId,
       requestBody: update,
     });
+    
   }
 
   public async apiCreate_ApApiDisplay_AsyncApiSpec({ organizationId, userId, apApiDisplay, apApiDisplay_AsyncApiSpec }:{
@@ -924,44 +950,47 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiDisplay: IAPApiDisplay;
     apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec;
   }): Promise<void> {
-    // const funcName = 'apiUpdate_ApApiDisplay_AsyncApiSpec';
-    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    const funcName = 'apiUpdate_ApApiDisplay_AsyncApiSpec';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const yaml: string = APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
-    const version: string = APApiSpecsDisplayService.get_RawVersionString({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
+    // const version: string = APApiSpecsDisplayService.get_RawVersionString({ apApiSpecDisplay: apApiDisplay_AsyncApiSpec.apApiSpecDisplay });
     await ApisService.updateApi({
       organizationName: organizationId,
       apiName: apApiDisplay.apEntityId.id,
       requestBody: yaml
     });
-    // update last modified on latest
+    // update meta on latest
     await ApisService.updateApiInfo({
       organizationName: organizationId,
       apiName: apApiDisplay.apEntityId.id,
       requestBody: {
+        deprecated: false,
         meta: {
-          lastModifiedBy: userId
+          lastModifiedBy: userId,
+          createdBy: userId,
         }
       }
     });
-    // update meta on version
-    const apiVersionInfoPatch: APIVersionInfoPatch = {
-      deprecated: false,
-      meta: {
-        createdBy: userId,
-        lastModifiedBy: userId
-      }
-    };
-    const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
-      apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
-      apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
-    });
-    await ApisService.updateApiVersionInfo({
-      organizationName: organizationId,
-      apiName: apApiDisplay.apEntityId.id,
-      requestBody: apiVersionInfoPatch,
-      version: connectorRevision
-    });
+    // // update meta on version
+    // const apiVersionInfoPatch: APIVersionInfoPatch = {
+    //   deprecated: false,
+    //   meta: {
+    //     createdBy: userId,
+    //     lastModifiedBy: userId
+    //   }
+    // };
+    // const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+    //   apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+    //   apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
+    // });
+    // alert(`${logName}: updating connectorRevision=${connectorRevision}`);
+    // await ApisService.updateApiVersionInfo({
+    //   organizationName: organizationId,
+    //   apiName: apApiDisplay.apEntityId.id,
+    //   requestBody: apiVersionInfoPatch,
+    //   version: connectorRevision
+    // });
 
   }
 
@@ -974,28 +1003,42 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const funcName = 'apiUpdate_ApApiDisplay_State';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
     apApiDisplay = this.set_ApApiDisplay_State({ apApiDisplay: apApiDisplay, apApiDisplay_State: apApiDisplay_State });
-
     if(apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DEPRECATED && apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
       throw new Error(`${logName}: invalid apApiDisplay.apLifecycleStageInfo.stage=${apApiDisplay.apLifecycleStageInfo.stage}`);
     }
-    const apiVersionInfoPatch: APIVersionInfoPatch = {
-      deprecated: apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED,
-      deprecatedDescription: apApiDisplay.apLifecycleStageInfo.notes,
-      meta: {
-        lastModifiedBy: userId
-      }
-    };
-    // map current version to connector revision
-    const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
-      apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
-      apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
-    });
-    await ApisService.updateApiVersionInfo({
+    const deprecated: boolean = (apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED);
+    // update on latest
+    alert(`${logName}: deprecated = ${deprecated}`);
+    await ApisService.updateApiInfo({
       organizationName: organizationId,
       apiName: apApiDisplay.apEntityId.id,
-      requestBody: apiVersionInfoPatch,
-      version: connectorRevision
+      requestBody: {
+        deprecated: deprecated,
+        deprecatedDescription: apApiDisplay.apLifecycleStageInfo.notes,
+        meta: {
+          lastModifiedBy: userId,
+        }
+      }
     });
+    // // update on version
+    // const apiVersionInfoPatch: APIVersionInfoPatch = {
+    //   deprecated: deprecated,
+    //   deprecatedDescription: apApiDisplay.apLifecycleStageInfo.notes,
+    //   meta: {
+    //     lastModifiedBy: userId
+    //   }
+    // };
+    // // map current version to connector revision
+    // const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+    //   apVersion_ConnectorRevision_Map: apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+    //   apVersion: apApiDisplay.apVersionInfo.apCurrentVersion
+    // });
+    // await ApisService.updateApiVersionInfo({
+    //   organizationName: organizationId,
+    //   apiName: apApiDisplay.apEntityId.id,
+    //   requestBody: apiVersionInfoPatch,
+    //   version: connectorRevision
+    // });
 
   }
 
@@ -1005,8 +1048,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apApiDisplay: IAPApiDisplay;
     apApiDisplay_Access: TAPApiDisplay_Access;
   }): Promise<void> {
-    // const funcName = 'apiUpdate_ApApiDisplay_Access';
-    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    const funcName = 'apiUpdate_ApApiDisplay_Access';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     apApiDisplay = this.set_ApApiDisplay_Access({ 
       apApiDisplay: apApiDisplay,
@@ -1016,11 +1059,15 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       organizationId: organizationId,
       apManagedAssetDisplay: apApiDisplay 
     });
+    if(apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DEPRECATED && apApiDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) {
+      throw new Error(`${logName}: invalid apApiDisplay.apLifecycleStageInfo.stage=${apApiDisplay.apLifecycleStageInfo.stage}`);
+    }
     await this.apiUpdate({
       organizationId: organizationId,
       apiId: apApiDisplay.apEntityId.id,
       apRawAttributeList: apRawAttributeList,
       apiInfoUpdate: {
+        deprecated: apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED,
         meta: {
           lastModifiedBy: userId
         }

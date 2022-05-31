@@ -16,7 +16,6 @@ import { EditNewAsyncApiSpecForm } from "./EditNewAsyncApiForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import APApiSpecsDisplayService from "../../../../displayServices/APApiSpecsDisplayService";
 
 export interface IEditAsyncApiSpecProps {
   organizationId: string;
@@ -112,7 +111,7 @@ export const EditAsyncApiSpec: React.FC<IEditAsyncApiSpecProps> = (props: IEditA
     return(
       <div className="p-mb-6">
         <p><b>Upload a new Version of the Spec:</b></p>
-        <p>Latest Versions: {props.apApiDisplay.apVersionInfo.apLastMajorVersionList.join(', ')}</p>
+        {/* <p>Latest Versions: {props.apApiDisplay.apVersionInfo.apLastMajorVersionList.join(', ')}</p> */}
       </div>
     );
   }
@@ -127,6 +126,7 @@ export const EditAsyncApiSpec: React.FC<IEditAsyncApiSpecProps> = (props: IEditA
             organizationId={props.organizationId}
             action={EAction.EDIT}
             apApiDisplay_AsyncApiSpec={mo}
+            apLastVersion={props.apApiDisplay.apVersionInfo.apLastVersion}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
