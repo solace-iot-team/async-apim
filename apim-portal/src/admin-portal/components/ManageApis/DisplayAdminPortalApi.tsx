@@ -140,6 +140,25 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       );
     } else return (<></>);
   }
+  // const renderReferencedBy = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
+  //   // const funcName = 'renderReferencedBy';
+  //   // const logName = `${ComponentName}.${funcName}()`;
+
+  //   // in APApisDisplayService: new type: apApiProductReferenceList - with type = apiGetList_ApAdminPortalApiProductDisplay4List
+  //   // or even less info
+  //   // we need: TAPEntityId, last revision, state, published to info
+  //   // similar to:
+  //   // APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList
+
+  //   return (
+  //     <React.Fragment>
+  //       <pre>{JSON.stringify(apApiProductReferenceEntityIdList, null, 2)}</pre>
+  //       {/* <div className="p-text-bold">Used by Api Products:</div>
+  //       <div className="p-ml-2">{_renderUsedByApiProducts(apApiProductReferenceEntityIdList)}</div> */}
+  //     </React.Fragment>
+  //   );
+  // }
+
   const renderUsedByApiProducts = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
     const funcName = 'renderUsedByApiProducts';
     const logName = `${ComponentName}.${funcName}()`;
@@ -389,6 +408,15 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         </div>  
       </TabPanel>
     );
+    // if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
+    //   tabPanels.push(
+    //     <TabPanel header='Referenced By'>
+    //       <div className="p-ml-2">
+    //         {renderReferencedBy(managedObject.apApiProductReferenceEntityIdList)}
+    //       </div>
+    //     </TabPanel>
+    //   );  
+    // } 
     if(Config.getUseDevelTools()) {
       tabPanels.push(
         <TabPanel header='Attributes'>
