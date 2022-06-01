@@ -41,12 +41,16 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
 
 
   const onSelect_ApiChannelParameter = (apApiChannelParameter: TAPApiChannelParameter) => {
-    // alert(`onSelect_ApiChannelParameter(): apApiChannelParameter=${JSON.stringify(apApiChannelParameter, null, 2)}`);
+    // const funcName = 'onSelect_ApiChannelParameter';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: apApiChannelParameter=${JSON.stringify(apApiChannelParameter, null, 2)}`);
     // transform to channel parameter
     const apControlledChannelParameter: TAPControlledChannelParameter = {
       apEntityId: apApiChannelParameter.apEntityId,
       value: apApiChannelParameter.valueList.join(','),
     };
+    // alert(`${logName}: apControlledChannelParameter=${JSON.stringify(apControlledChannelParameter, null, 2)}`);
+    // return;
     setPresetApControlledChannelParameter(apControlledChannelParameter);
     setRefreshCounter(refreshCounter + 1);
   }

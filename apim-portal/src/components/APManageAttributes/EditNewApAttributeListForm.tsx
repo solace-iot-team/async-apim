@@ -46,8 +46,19 @@ export const EditNewApAttributeListForm: React.FC<IEditNewApAttributeListFormPro
   }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
+    // attribute value could be empty
+    // const x: TAPRawAttribute = {
+    //   name: mo.apEntityId.id,
+    //   value: mo.value
+    // }
+    // const fd: TManagedObjectFormData = {
+    //   attribute: APAttributesDisplayService.create_ApRawAttribute(mo)
+    // };
     const fd: TManagedObjectFormData = {
-      attribute: APAttributesDisplayService.create_ApRawAttribute(mo)
+      attribute: {
+        name: mo.apEntityId.id,
+        value: mo.value  
+      }
     };
     return {
       formData: fd

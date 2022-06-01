@@ -89,7 +89,7 @@ class APAttributesDisplayService {
   public create_ApRawAttribute(apAttributeDisplay: IAPAttributeDisplay): TAPRawAttribute {
     const funcName = 'create_ApRawAttribute';
     const logName = `${this.BaseComponentName}.${funcName}()`;
-    // validate value if not empty
+    // validate value is not empty
     if(
       apAttributeDisplay.apEntityId.id !== '' &&
       !this.validateAttributeValue(apAttributeDisplay.value)
