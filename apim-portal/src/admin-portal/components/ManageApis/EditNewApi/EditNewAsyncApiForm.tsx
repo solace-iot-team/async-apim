@@ -119,6 +119,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
     managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(!APApiSpecsDisplayService.is_Empty_AsyncApiSpecString(managedObjectFormDataEnvelope.formData.asyncApiSpecString)) managedObjectUseForm.trigger();
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -185,7 +186,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     });
     if(typeof(result) === 'string') return result as string;
     const apApiSpecDisplay: TAPApiSpecDisplay = result as TAPApiSpecDisplay;
-    const isSpecValid: boolean | string = APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
+    const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
     if(typeof isSpecValid === 'string' || !isSpecValid) return isSpecValid;
     if(props.action === EAction.NEW) return true;
     // must be a new version

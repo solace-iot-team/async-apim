@@ -1,4 +1,5 @@
 import yaml from "js-yaml";
+import * as AsyncApiSpecParser from '@asyncapi/parser';
 
 import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
@@ -19,13 +20,18 @@ export type TAPApiSpecDisplay = IAPEntityIdDisplay & {
 
 class APApiSpecsDisplayService {
   private readonly ComponentName = "APApiSpecsDisplayService";
+  private readonly EmptySpec = {};
 
   public create_Empty_ApApiSpecDisplay(): TAPApiSpecDisplay {
     return {
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       format: EAPApiSpecFormat.UNKNOWN,
-      spec: {},
+      spec: this.EmptySpec,
     };
+  }
+
+  public is_Empty_AsyncApiSpecString(spec: any): boolean {
+    return spec === this.EmptySpec;
   }
 
   // public static getAsyncApiSpecJsonAsDisplayString = (asyncApiSpec: TAPAsyncApiSpec): string => {
@@ -172,9 +178,17 @@ class APApiSpecsDisplayService {
       return false;
     }
   }
-  public validateSpec({ apApiSpecDisplay }:{
+  public async validateSpec({ apApiSpecDisplay }:{
     apApiSpecDisplay: TAPApiSpecDisplay
-  }): boolean | string {
+  }): Promise<boolean | string> {
+    const funcName = 'validateSpec';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
+    try {
+      await AsyncApiSpecParser.parse(apApiSpecDisplay.spec);
+    } catch(e: any) {
+      return `${e.title} Errors: ${JSON.stringify(e.validationErrors)}`;
+    }
     const hasVersionString: boolean = this.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
     if(!hasVersionString) return `Cannot read version from Async Api Spec. Missing object info/version.`;
     const hasTitle: boolean = this.has_Title({ apApiSpecDisplay: apApiSpecDisplay });
