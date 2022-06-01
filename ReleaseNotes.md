@@ -2,6 +2,29 @@
 
 Solace Async API Management.
 
+## Version 0.2.3
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.3
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.2
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.2.1
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.18
+
+**Enhancements:**
+- **Admin Portal: APIs**
+  - refactored APIs to be a managed asset
+  - Async api spec validation in New/Edit API
+- **Admin Portal: Organization: Asset Maintenance: APIs**
+  - manage apis that are not managed assets and assign asset properties
+
+**Fixes:**
+* **Developer Portal:MyApps**
+  - list apps: catch error when developer has not be registered yet with connector
+* **Admin Portal:Api Products:Search Select Apis**
+  - fixed bug in displaying search & select apis
+* **Admin Portal:Api Products:Api Channel Parameters**
+  - fixed bug when selecting empty value channel parameter
+* **Admin Portal:Manage Apps:View App**
+  - fixed bug in displaying owner Id - using display name instead of id
+
 ## Version 0.2.2
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.2
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.1
