@@ -131,8 +131,8 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
       EUIAdminPortalResourcePaths.ManageOrganizationApps,
       // DELETEME
-      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis,
-      EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
+      // EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis,
+      // EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
 
     ]
   },

@@ -48,10 +48,10 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
-      // isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis) &&
+      isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
       
-      isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) &&       
-      isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis)
+      // isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) &&       
+      // isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis)
 
       ) return [];
 
@@ -72,15 +72,15 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
       {
-        label: 'NEW APIs',
+        label: 'APIs',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
       },
-      {
-        label: 'APIs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
-      },
+      // {
+      //   label: 'APIs',
+      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
+      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
+      // },
     ];
     return _items;
   }

@@ -73,7 +73,7 @@ export enum EUIAdminPortalResourcePaths {
   UserHome = '/admin-portal/user/home',
   LoginAs = '/admin-portal/loginas',
   
-  DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
+  // DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
 
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
   ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
@@ -87,7 +87,7 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
   ManageOrganizationApis_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apis/edit_owningBusinessGroup',
   
-  deleteme_ManageOrganizationApis = '/admin-portal/manage/apim/organization/deleteme_apis',
+  // deleteme_ManageOrganizationApis = '/admin-portal/manage/apim/organization/deleteme_apis',
 
   ManageBusinessGroup = '/admin-porta/manage/business-group',
 
