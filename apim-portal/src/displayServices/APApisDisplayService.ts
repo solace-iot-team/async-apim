@@ -158,13 +158,15 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   }): Meta {
     let connectorMeta: Meta;
     if(connectorApiInfo.meta === undefined) {
+      let stage: MetaEntityStage = MetaEntityStage.RELEASED;
+      if(connectorApiInfo.deprecated !== undefined && connectorApiInfo.deprecated) stage = MetaEntityStage.DEPRECATED;
       connectorMeta = {
         version: APVersioningDisplayService.create_SemVerString(connectorApiInfo.version),
         created: connectorApiInfo.createdTime,
         createdBy: connectorApiInfo.createdBy,
         lastModified: connectorApiInfo.updatedTime,
         lastModifiedBy: 'unknown',
-        stage: MetaEntityStage.RELEASED,
+        stage: stage,
       };
     } else {
       connectorMeta = connectorApiInfo.meta;
@@ -213,7 +215,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
 
-    const connectorMeta: Meta = this.create_ConnectorMeta_From_ApiEntities({ connectorApiInfo: connectorApiInfo });
+    const connectorMeta: Meta = this.create_ConnectorMeta_From_ApiEntities({ connectorApiInfo: connectorApiInfo });    
+    // alert(`${logName}: connectorApiInfo.deprecated = ${connectorApiInfo.deprecated}, connectorMeta=${JSON.stringify(connectorMeta, null, 2)}`);
+
     const apApiDisplay: IAPApiDisplay = {
       ..._base,
       connectorApiInfo: connectorApiInfo,
@@ -696,8 +700,8 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     default_ownerId: string;
     businessGroupId: string;
   }): Promise<TAPApiDisplayList> {
-    const funcName = 'apiGetList_ApApiDisplayList';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'apiGetList_ApApiDisplayList';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const apiInfoList: APIInfoList = await this.apiGetFilteredList_ConnectorApiInfo({
@@ -718,7 +722,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     const list: TAPApiDisplayList = [];
     // TODO: PARALLELIZE
     for(const apiInfo of apiInfoList) {
-      if(apiInfo.deprecated === undefined) alert(`${logName}: apiInfo.deprecated=${apiInfo.deprecated} for ${apiInfo.name}`);
+      // alert(`${logName}: apiInfo.deprecated=${apiInfo.deprecated} for ${apiInfo.name}`);
       const apApiProductReferenceEntityIdList: TAPEntityIdList = await this.apiGetList_ApiProductReferenceEntityIdList({
         organizationId: organizationId, 
         apiId: apiInfo.name
