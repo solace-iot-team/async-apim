@@ -152,7 +152,7 @@ class APApiSpecsDisplayService {
     }
   }
 
-  public has_VersionString({ apApiSpecDisplay }:{
+  private has_VersionString({ apApiSpecDisplay }:{
     apApiSpecDisplay: TAPApiSpecDisplay
   }): boolean {
     try {
@@ -162,6 +162,26 @@ class APApiSpecsDisplayService {
       return false;
     }
   }
+  private has_Title({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): boolean {
+    try {
+      this.get_Title({ apApiSpecDisplay: apApiSpecDisplay });
+      return true;
+    } catch(e: any) {
+      return false;
+    }
+  }
+  public validateSpec({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): boolean | string {
+    const hasVersionString: boolean = this.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
+    if(!hasVersionString) return `Cannot read version from Async Api Spec. Missing object info/version.`;
+    const hasTitle: boolean = this.has_Title({ apApiSpecDisplay: apApiSpecDisplay });
+    if(!hasTitle) return `Cannot read title from Async Api Spec. Missing object info/title.`;
+    return true;
+  }
+
   public get_RawVersionString({ apApiSpecDisplay }:{
     apApiSpecDisplay: TAPApiSpecDisplay
   }): string {

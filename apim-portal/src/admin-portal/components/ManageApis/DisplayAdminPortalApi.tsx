@@ -64,6 +64,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve details for api: ${props.apApiDisplay.apEntityId.displayName}, version: ${apVersion}`);
     try { 
+      // test version fetch error handling 
+      // if(apVersion === '1.0.0') throw new Error(`${logName}: error for apVersion=${apVersion}`);
       const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
         apVersion_ConnectorRevision_Map: props.apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
         apVersion: apVersion
@@ -91,6 +93,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   const doFetchVersion = async (version: string) => {
     props.onLoadingChange(true);
+    setApiCallStatus(null);
     await apiGetManagedObject(version);
     props.onLoadingChange(false);
     setShowApiSpecRefreshCounter(showApiSpecRefreshCounter + 1);
@@ -115,7 +118,10 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
+      if(!apiCallStatus.success) {
+        if(managedObject !== undefined) setSelectedTreeVersion(managedObject.apVersionInfo.apCurrentVersion);
+        props.onError(apiCallStatus);
+      }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -303,8 +309,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
           <React.Fragment>
             <div className="p-text-bold">Channel Parameters:</div>
             <APDisplayApApiChannelParameterList
+              key={`${ComponentName}_APDisplayApApiChannelParameterList_${showApiSpecRefreshCounter}`}
               apApiChannelParameterList={managedObject.apApiChannelParameterList}
-              // apApiChannelParameterList={[]}
               emptyChannelParameterListMessage="No Channel Parameters defined in Async API Spec."
               className="p-mt-2"
             />  

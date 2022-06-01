@@ -66,7 +66,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
       asyncApiSpecString: fd.asyncApiSpecString 
     });
     // create a suggested id from title
-    const title = APApiSpecsDisplayService.get_Title({ apApiSpecDisplay: mo.apApiSpecDisplay });
+    const title: string | undefined = APApiSpecsDisplayService.get_Title({ apApiSpecDisplay: mo.apApiSpecDisplay });
     const generatedId = APApisDisplayService.generate_Id_From_Title({ title: title }); 
     mo.apEntityId = {
       id: generatedId,
@@ -185,9 +185,8 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     });
     if(typeof(result) === 'string') return result as string;
     const apApiSpecDisplay: TAPApiSpecDisplay = result as TAPApiSpecDisplay;
-    // validate spec has version in it
-    const hasVersionString: boolean = APApiSpecsDisplayService.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
-    if(!hasVersionString) return `Async Api Spec is missing version element.`;
+    const isSpecValid: boolean | string = APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
+    if(typeof isSpecValid === 'string' || !isSpecValid) return isSpecValid;
     if(props.action === EAction.NEW) return true;
     // must be a new version
     const versionString: string = APApiSpecsDisplayService.get_RawVersionString({
@@ -201,7 +200,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
       return `API version '${versionString}' must be greater than last version '${props.apLastVersion}'.`;;
     }
     const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
-    if(checkVersionResult === undefined) return 'Could not validate version';
+    if(checkVersionResult === undefined) return 'Could not validate version.';
     if(checkVersionResult) return `API version '${versionString}' already exists, please specify a new version in the Async API Spec.`;
     return true;
   }
