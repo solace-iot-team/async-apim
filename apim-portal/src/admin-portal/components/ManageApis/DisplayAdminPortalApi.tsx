@@ -30,6 +30,7 @@ import { APDisplayApApiChannelParameterList } from "../../../components/APDispla
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -50,7 +51,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   type TManagedObject = IAPApiDisplay;
 
-  const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [selectedTreeVersion, setSelectedTreeVersion] = React.useState<string>();
@@ -88,7 +89,10 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   }
 
   const doInitialize = async () => {
+    props.onLoadingChange(true);
+    setApiCallStatus(null);
     setManagedObject(props.apApiDisplay);
+    props.onLoadingChange(false);
   }
 
   const doFetchVersion = async (version: string) => {
@@ -140,24 +144,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       );
     } else return (<></>);
   }
-  // const renderReferencedBy = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-  //   // const funcName = 'renderReferencedBy';
-  //   // const logName = `${ComponentName}.${funcName}()`;
-
-  //   // in APApisDisplayService: new type: apApiProductReferenceList - with type = apiGetList_ApAdminPortalApiProductDisplay4List
-  //   // or even less info
-  //   // we need: TAPEntityId, last revision, state, published to info
-  //   // similar to:
-  //   // APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList
-
-  //   return (
-  //     <React.Fragment>
-  //       <pre>{JSON.stringify(apApiProductReferenceEntityIdList, null, 2)}</pre>
-  //       {/* <div className="p-text-bold">Used by Api Products:</div>
-  //       <div className="p-ml-2">{_renderUsedByApiProducts(apApiProductReferenceEntityIdList)}</div> */}
-  //     </React.Fragment>
-  //   );
-  // }
 
   const renderUsedByApiProducts = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
     const funcName = 'renderUsedByApiProducts';
@@ -408,15 +394,20 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         </div>  
       </TabPanel>
     );
-    // if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
-    //   tabPanels.push(
-    //     <TabPanel header='Referenced By'>
-    //       <div className="p-ml-2">
-    //         {renderReferencedBy(managedObject.apApiProductReferenceEntityIdList)}
-    //       </div>
-    //     </TabPanel>
-    //   );  
-    // } 
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
+      tabPanels.push(
+        <TabPanel header='Referenced By'>
+          <div className="p-ml-2">
+            <DisplayAdminPortalApiProductReferenceList
+              organizationId={props.organizationId}
+              apApiDisplay={managedObject}
+              onSuccess={props.onSuccess}
+              onError={props.onError}
+            />
+          </div>
+        </TabPanel>
+      );  
+    } 
     if(Config.getUseDevelTools()) {
       tabPanels.push(
         <TabPanel header='Attributes'>

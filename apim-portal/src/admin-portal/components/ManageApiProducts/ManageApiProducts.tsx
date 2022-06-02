@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -25,6 +26,7 @@ import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
 import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -34,6 +36,7 @@ export interface IManageApiProductsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IManageApiProductsProps) => {
@@ -68,6 +71,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
   const [userContext] = React.useContext(UserContext);
   const [authContext] = React.useContext(AuthContext);
+  const backToApiHistory = useHistory<TAPPageNavigationInfo>();
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -87,7 +91,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    else {
+      // alert(`${ComponentName}: view ${JSON.stringify(props.apiProductEntityId)}`);
+      setManagedObjectEntityId(props.apPageNavigationInfo.apNavigationTarget.apEntityId);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -137,12 +146,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(apAdminPortalApiProductDisplay4List.apEntityId);
     // // DEBUG: is the version set?
     // alert(`${ComponentName}.onViewManagedObject():  apAdminPortalApiProductDisplay.apEntityId = ${JSON.stringify(apAdminPortalApiProductDisplay.apEntityId)}`);
-    setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
-      apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay4List,
-      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
-    }));
+    // setManagedObject_AllowedActions(APAdminPortalApiProductsDisplayService.get_AllowedActions({
+    //   apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay4List,
+    //   authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+    //   userId: userContext.apLoginUserDisplay.apEntityId.id,
+    //   userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+    // }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
   // * New Object *
@@ -194,7 +203,23 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   // const onRecoverManagedObjectListFromToolbar = () => {
   //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_RECOVER);
   // }
-
+  const onBackToApi = () => {
+    const funcName = 'onBackToApi';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.apPageNavigationInfo === undefined) throw new Error(`${logName}: props.apPageNavigationInfo === undefined`);
+    backToApiHistory.push({
+      pathname: props.apPageNavigationInfo.apNavigationOrigin.apOriginPath,
+      state: {
+        apNavigationTarget: {
+          apEntityId: props.apPageNavigationInfo.apNavigationOrigin.apEntityId,
+        },
+        apNavigationOrigin: {
+          apEntityId: props.apPageNavigationInfo.apNavigationTarget.apEntityId,
+          apOriginPath: '/'
+        }
+      }
+    });
+  }
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
@@ -203,33 +228,41 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
       </React.Fragment>
     );
-    if(showViewComponent) {          
-      return (
-        <React.Fragment>
-          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-          <Button 
-            label={ToolbarCloneManagedObjectButtonLabel} 
-            icon="pi pi-plus" 
-            onClick={onCloneManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-          />   
-          <Button 
-            label={ToolbarEditManagedObjectButtonLabel} 
-            icon="pi pi-pencil" 
-            onClick={onEditManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-            disabled={!managedObject_AllowedActions.isEditAllowed}
-          />   
-          {/* <Button 
-            label={ToolbarPublishManagedObjectButtonLabel} 
-            icon="pi pi-pencil" 
-            onClick={onPublishManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-            disabled={!managedObject_AllowedActions.isManagePublishAllowed}
-          />    */}
-        </React.Fragment>
-      );
-    }
+    if(showViewComponent) {
+      if(props.apPageNavigationInfo !== undefined) {
+        return(
+          <React.Fragment>
+            <Button label={`Back to API: ${props.apPageNavigationInfo.apNavigationOrigin.apEntityId.displayName}`} icon="pi pi-arrow-left" onClick={onBackToApi} className="p-button-text p-button-plain p-button-outlined"/>
+          </React.Fragment>
+        );
+      } else {
+        return (
+          <React.Fragment>
+            <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+            <Button 
+              label={ToolbarCloneManagedObjectButtonLabel} 
+              icon="pi pi-plus" 
+              onClick={onCloneManagedObjectFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+            />   
+            <Button 
+              label={ToolbarEditManagedObjectButtonLabel} 
+              icon="pi pi-pencil" 
+              onClick={onEditManagedObjectFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+              disabled={!managedObject_AllowedActions.isEditAllowed}
+            />   
+            {/* <Button 
+              label={ToolbarPublishManagedObjectButtonLabel} 
+              icon="pi pi-pencil" 
+              onClick={onPublishManagedObjectFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+              disabled={!managedObject_AllowedActions.isManagePublishAllowed}
+            />    */}
+          </React.Fragment>
+        );
+      }
+    }  
     if(showEditComponent) return undefined;
     if(showDeleteComponent) return undefined;
     if(showNewComponent) return undefined;

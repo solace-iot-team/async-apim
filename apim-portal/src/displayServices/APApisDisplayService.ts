@@ -30,6 +30,7 @@ import APSearchContentService, { IAPSearchContent } from '../utils/APSearchConte
 import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
 import APApiSpecsDisplayService from './APApiSpecsDisplayService';
 import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
+import { TAPAdminPortalApiProductDisplay4ListList } from '../admin-portal/displayServices/APAdminPortalApiProductsDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {
@@ -56,6 +57,7 @@ export type TAPApiDisplay_State = IAPEntityIdDisplay & {
   readonly apVersionList: TAPVersionList;
   apLifecycleStageInfo: IAPLifecycleStageInfo;
 }
+
 export interface IAPApiDisplay extends IAPManagedAssetDisplay, IAPSearchContent {
   apApiProductReferenceEntityIdList: TAPEntityIdList;
   apApiChannelParameterList: TAPApiChannelParameterList;
@@ -187,7 +189,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     apVersionList,
     connectorRevisionList,
     currentVersion,
-    apApiProductReferenceEntityIdList, 
+    apApiProductReferenceEntityIdList,
     default_ownerId, 
     complete_ApBusinessGroupDisplayList,
     complete_ApExternalSystemDisplayList,
@@ -594,7 +596,6 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       list.push(this.create_ApApiDisplay_From_ApiEntities({
         connectorApiInfo: apiInfo,
         apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
-        // apApiProductReferenceEntityIdList: [],
         default_ownerId: default_ownerId,
         complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
         complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,

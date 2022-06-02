@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -10,6 +10,7 @@ import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Gl
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApis } from '../components/ManageApis/ManageApis';
+import { TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
@@ -22,6 +23,7 @@ export const ManageApisPage: React.FC = () => {
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
+  const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -35,28 +37,6 @@ export const ManageApisPage: React.FC = () => {
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
   }
-
-  // const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-  //   setBreadCrumbLabelList(newBreadCrumbLableList);
-  // }
-
-  // const renderBreadcrumbs = () => {
-  //   const breadcrumbItems: Array<MenuItem> = [
-  //     { 
-  //       label: 'APIs',
-  //       style: GlobalElementStyles.breadcrumbLink(),
-  //       command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis) }
-  //     }
-  //   ];
-  //   breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-  //     breadcrumbItems.push({ label: breadCrumbLabel });
-  //   })
-  //   return (
-  //     <React.Fragment>
-  //       <BreadCrumb model={breadcrumbItems} />
-  //     </React.Fragment>
-  //   )
-  // }
 
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [
@@ -97,6 +77,7 @@ export const ManageApisPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
+          apPageNavigationInfo={location.state}
         />
       }
     </React.Fragment>

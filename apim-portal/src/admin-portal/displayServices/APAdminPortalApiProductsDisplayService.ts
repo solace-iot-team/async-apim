@@ -362,6 +362,51 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     return apAdminPortalApiProductDisplayList;
 
   }
+
+  public apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList = async({ organizationId, default_ownerId, apiProductEntityIdList }:{ 
+    organizationId: string;
+    default_ownerId: string;
+    apiProductEntityIdList: TAPEntityIdList;
+  }): Promise<TAPAdminPortalApiProductDisplay4ListList> => {
+    const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    // alert(`${logName}: apiProductEntityIdList=${JSON.stringify(apiProductEntityIdList)}`);
+
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    // get the complete business group list for reference
+    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,
+      fetchAssetReferences: false
+    });
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });
+    const apAdminPortalApiProductDisplay4ListList: TAPAdminPortalApiProductDisplay4ListList = [];
+    for(const apiProductEntityId of apiProductEntityIdList) {
+      const connectorApiProduct = await ApiProductsService.getApiProduct({
+        organizationName: organizationId,
+        apiProductName: apiProductEntityId.id,
+      });
+      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
+      const apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List = await this.create_ApAdminPortalApiProductDisplay4List_From_ApiEntities({
+        organizationId: organizationId,
+        connectorApiProduct: connectorApiProduct,
+        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+        default_ownerId: default_ownerId,
+        currentVersion: apVersionInfo.apCurrentVersion,
+        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
+      });
+      apAdminPortalApiProductDisplay4ListList.push(apAdminPortalApiProductDisplay4List);
+    }
+    return apAdminPortalApiProductDisplay4ListList;
+  }
+
+
   public apiGetList_ApAdminPortalApiProductDisplay4ListList = async({ organizationId, businessGroupId, default_ownerId }:{
     organizationId: string;
     businessGroupId: string;

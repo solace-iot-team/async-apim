@@ -22,6 +22,7 @@ import { ViewApi } from "./ViewApi";
 import { ManageNewApi } from "./EditNewApi/ManageNewApi";
 import { E_Edit_Scope, ManageEditApi } from "./EditNewApi/ManageEditApi";
 import { DeleteApi } from "./DeleteApi";
+import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -31,6 +32,7 @@ export interface IManageApisProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) => {
@@ -86,7 +88,11 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    else {
+      setManagedObjectEntityId(props.apPageNavigationInfo.apNavigationTarget.apEntityId);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -145,17 +151,17 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onViewManagedObject = (apApiDisplay: IAPApiDisplay): void => {
     setApiCallStatus(null);
     setManagedObjectEntityId(apApiDisplay.apEntityId);
-    const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
-      apApiDisplay: apApiDisplay,
-      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
-      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-        apOrganizationDisplay: organizationContext
-      }),
-      isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
-    });
-    setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
+    // const apApiDisplay_AllowedActions: TAPApiDisplay_AllowedActions = APApisDisplayService.get_AllowedActions({
+    //   apApiDisplay: apApiDisplay,
+    //   authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+    //   userId: userContext.apLoginUserDisplay.apEntityId.id,
+    //   userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+    //   hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
+    //     apOrganizationDisplay: organizationContext
+    //   }),
+    //   isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+    // });
+    // setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
 

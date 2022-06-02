@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -8,14 +8,14 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
-// import { ManageApiProducts } from '../components/ManageApiProducts/deleteme.ManageApiProducts';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
+import { TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
 export const ManageApiProductsPage: React.FC = () => {
-  const componentName = 'ManageApiProductsPage';
+  const ComponentName = 'ManageApiProductsPage';
 
   const [userContext] = React.useContext(UserContext);  
 
@@ -23,6 +23,7 @@ export const ManageApiProductsPage: React.FC = () => {
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
+  const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
@@ -38,6 +39,9 @@ export const ManageApiProductsPage: React.FC = () => {
   }
 
   const renderBreadcrumbs = () => {
+
+    alert(`${ComponentName} do the breadcrumbs for page navigation here`)
+
     const breadcrumbItems: Array<MenuItem> = [
       { 
         label: 'API Products',
@@ -60,7 +64,7 @@ export const ManageApiProductsPage: React.FC = () => {
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
     setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -75,7 +79,8 @@ export const ManageApiProductsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
-        />
+
+          />
       }
     </div>
   );
