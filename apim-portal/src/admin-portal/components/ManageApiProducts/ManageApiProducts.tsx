@@ -212,8 +212,10 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       state: {
         apNavigationTarget: {
           apEntityId: props.apPageNavigationInfo.apNavigationOrigin.apEntityId,
+          tabIndex: props.apPageNavigationInfo.apNavigationOrigin.tabIndex
         },
         apNavigationOrigin: {
+          breadcrumbLabel: 'API Product',
           apEntityId: props.apPageNavigationInfo.apNavigationTarget.apEntityId,
           apOriginPath: '/'
         }
@@ -270,18 +272,20 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     if(showViewComponent) {
-      return (
-        <React.Fragment>
-          <Button 
-            label={ToolbarDeleteManagedObjectButtonLabel} 
-            icon="pi pi-trash" 
-            onClick={onDeleteManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined" 
-            disabled={!managedObject_AllowedActions.isDeleteAllowed} 
-            style={{ color: "red", borderColor: 'red'}} 
-          />        
-        </React.Fragment>
-      );
+      if(props.apPageNavigationInfo === undefined) {
+        return (
+          <React.Fragment>
+            <Button 
+              label={ToolbarDeleteManagedObjectButtonLabel} 
+              icon="pi pi-trash" 
+              onClick={onDeleteManagedObjectFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined" 
+              disabled={!managedObject_AllowedActions.isDeleteAllowed} 
+              style={{ color: "red", borderColor: 'red'}} 
+            />        
+          </React.Fragment>
+        );
+      }
     }
     // if(showListComponent && APRbacDisplayService.isAuthorized_To_ManageRecoveredAssets(authContext.authorizedResourcePathsAsString)) {
     //   return (
@@ -477,6 +481,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
+          selectRevisionEnabled={props.apPageNavigationInfo === undefined}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&

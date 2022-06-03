@@ -78,6 +78,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
+  const [pageNavigationInfo, setPageNavigationInfo] = React.useState<TAPPageNavigationInfo | undefined>(props.apPageNavigationInfo);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -261,6 +262,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     setManagedObjectEntityId(apiEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
+    setPageNavigationInfo(undefined);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -401,6 +403,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
+          apPageNavigationInfo={pageNavigationInfo}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&

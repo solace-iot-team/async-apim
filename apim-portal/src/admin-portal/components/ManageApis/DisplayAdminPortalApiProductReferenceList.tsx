@@ -1,25 +1,20 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { Divider } from "primereact/divider";
-import { InputText } from "primereact/inputtext";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APEntityIdsService, { 
-} from "../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay4List, TAPAdminPortalApiProductDisplay4ListList } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { Loading } from "../../../components/Loading/Loading";
-import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
-import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -34,6 +29,7 @@ export interface IDisplayAdminPortalApiProductReferenceListProps {
   apApiDisplay: IAPApiDisplay;
   onSuccess: (apiCallState: TApiCallState) => void;
   onError: (apiCallState: TApiCallState) => void;
+  onViewApiProductReference: (apiProductEntityId: TAPEntityId) => void;
 }
 
 export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPortalApiProductReferenceListProps> = (props: IDisplayAdminPortalApiProductReferenceListProps) => {
@@ -45,7 +41,6 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
-  const viewApiProductHistory = useHistory<TAPPageNavigationInfo>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -93,8 +88,7 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
 
   React.useEffect(() => {
     if(apiCallStatus === null) return;
-    if(apiCallStatus.success) props.onSuccess(apiCallStatus);
-    else props.onError(apiCallStatus);
+    if(!apiCallStatus.success) props.onError(apiCallStatus);
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
@@ -103,19 +97,7 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
   }  
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    // alert(`${ComponentName}: open mo.apEntityId=${JSON.stringify(mo.apEntityId)}`);
-    viewApiProductHistory.push({       
-      pathname: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
-      state: {
-        apNavigationTarget: {
-          apEntityId: mo.apEntityId,
-        },
-        apNavigationOrigin: {
-          apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApis,
-          apEntityId: props.apApiDisplay.apEntityId,
-        }
-      }
-    });
+    props.onViewApiProductReference(mo.apEntityId);
   }
   const nameBodyTemplate = (row: TManagedObject): string => {
     return row.apEntityId.displayName;

@@ -39,7 +39,8 @@ import "./ManageApiProducts.css";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
-  VIEW_EXISTING = "VIEW_EXISTING"
+  VIEW_EXISTING = "VIEW_EXISTING",
+  VIEW_REFEREMCED_BY = "VIEW_REFEREMCED_BY"
 }
 
 export interface IDisplayAdminPortalApiProductProps {
@@ -99,6 +100,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     try {
       switch(props.scope) {
         case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
           const apiProductApiSpec: TAPApiSpecDisplay = await APApiSpecsDisplayService.apiGet_ApiProduct_ApiSpec({
             organizationId: props.organizationId, 
             apiProductId: managedObject.apEntityId.id,
@@ -247,6 +249,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
         return (
           <React.Fragment>
             <div className="p-text-bold">Used by Apps:</div>
@@ -270,12 +273,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const onRevisionSelect = (e: DropdownChangeParams) => {
       setSelectedRevision(e.value);
     }
-
+    const isSelectRevisionDisabled: boolean = props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY;
     return(
       <Dropdown
         value={selectedRevision}
         options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
         onChange={onRevisionSelect}
+        disabled={isSelectRevisionDisabled}
       />                          
     );
   }
@@ -285,6 +289,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
         return (
           <div><b>Revision: </b>{renderRevisionSelect()}</div>
         );
@@ -369,6 +374,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     let apAttributeDisplayList: TAPAttributeDisplayList = [];
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
         apAttributeDisplayList = mo.devel_display_complete_ApAttributeList;
         break;
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:

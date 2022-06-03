@@ -30,7 +30,6 @@ import APSearchContentService, { IAPSearchContent } from '../utils/APSearchConte
 import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
 import APApiSpecsDisplayService from './APApiSpecsDisplayService';
 import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
-import { TAPAdminPortalApiProductDisplay4ListList } from '../admin-portal/displayServices/APAdminPortalApiProductsDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {

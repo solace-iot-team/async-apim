@@ -24,6 +24,7 @@ export interface IViewApiProductProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateHere: (apiProductEntityId: TAPEntityId) => void;
+  selectRevisionEnabled: boolean;
 }
 
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
@@ -102,7 +103,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
       { managedObject && 
         <DisplayAdminPortalApiProduct
-          scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING}
+          scope={props.selectRevisionEnabled ? E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING : E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY}
           organizationId={props.organizationId}
           apAdminPortalApiProductDisplay={managedObject}
           onError={props.onError}

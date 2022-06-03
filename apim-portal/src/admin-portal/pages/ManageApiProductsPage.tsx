@@ -39,16 +39,37 @@ export const ManageApiProductsPage: React.FC = () => {
   }
 
   const renderBreadcrumbs = () => {
+    const breadcrumbItems: Array<MenuItem> = [];
+    const isLocationSet: boolean = location.state !== undefined;
+    const apiProductsLabel = 'API Products';    
 
-    alert(`${ComponentName} do the breadcrumbs for page navigation here`)
-
-    const breadcrumbItems: Array<MenuItem> = [
-      { 
-        label: 'API Products',
+    if(isLocationSet) {
+      const locationItems: Array<MenuItem> = [
+        {
+          label: location.state.apNavigationOrigin.breadcrumbLabel
+        },
+        {
+          label: location.state.apNavigationOrigin.apEntityId.displayName,
+        },
+        {
+          label: apiProductsLabel
+        }
+      ];
+      breadcrumbItems.push(...locationItems);
+    } else {
+      breadcrumbItems.push({
+        label: apiProductsLabel,
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
-      }
-    ];
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }  
+      });
+    }
+    // const breadcrumbItems: Array<MenuItem> = [
+    //   { 
+    //     label: 'API Products',
+    //     style: GlobalElementStyles.breadcrumbLink(),
+    //     command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
+    //   }
+    // ];
     breadCrumbItemList.forEach( (item: MenuItem) => {
       breadcrumbItems.push({
         ...item,
@@ -79,8 +100,8 @@ export const ManageApiProductsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
-
-          />
+          apPageNavigationInfo={location.state}
+        />
       }
     </div>
   );

@@ -368,8 +368,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     default_ownerId: string;
     apiProductEntityIdList: TAPEntityIdList;
   }): Promise<TAPAdminPortalApiProductDisplay4ListList> => {
-    const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // alert(`${logName}: apiProductEntityIdList=${JSON.stringify(apiProductEntityIdList)}`);
 
     // get the complete env list for reference

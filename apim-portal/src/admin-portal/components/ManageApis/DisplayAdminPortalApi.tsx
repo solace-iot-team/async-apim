@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { TabPanel, TabView } from "primereact/tabview";
 import { Divider } from "primereact/divider";
@@ -27,10 +28,12 @@ import APApisDisplayService, { IAPApiDisplay } from "../../../displayServices/AP
 import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APDisplayApApiChannelParameterList } from "../../../components/APDisplay/APDisplayApApiChannelParameterList";
+import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
+import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -44,6 +47,7 @@ export interface IDisplayAdminPortalApiProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (props: IDisplayAdminPortalApiProps) => {
@@ -57,7 +61,9 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   const [selectedTreeVersion, setSelectedTreeVersion] = React.useState<string>();
   const [showApiSpecRefreshCounter, setShowApiSpecRefreshCounter] = React.useState<number>(0);
   const [userContext] = React.useContext(UserContext);
+  const viewApiProductReferenceHistory = useHistory<TAPPageNavigationInfo>();
 
+  const ReferencedByTabIndex: number = 2;
 
   // * Api Calls *
   const apiGetManagedObject = async(apVersion: string): Promise<TApiCallState> => {
@@ -112,6 +118,10 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedTreeVersion(managedObject.apVersionInfo.apCurrentVersion);
+    if(props.apPageNavigationInfo !== undefined) {
+      // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
+      if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
+    }
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -128,6 +138,25 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+
+  const onViewApiProductReference = (apiProductEntityId: TAPEntityId) => {
+    // alert(`${ComponentName}: open mo.apEntityId=${JSON.stringify(mo.apEntityId)}`);
+    viewApiProductReferenceHistory.push({       
+      pathname: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
+      state: {
+        apNavigationTarget: {
+          apEntityId: apiProductEntityId,
+        },
+        apNavigationOrigin: {
+          breadcrumbLabel: 'APIs',
+          apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApis,
+          apEntityId: props.apApiDisplay.apEntityId,
+          tabIndex: ReferencedByTabIndex
+        }
+      }
+    });
+  }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
     return (
@@ -403,6 +432,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
               apApiDisplay={managedObject}
               onSuccess={props.onSuccess}
               onError={props.onError}
+              onViewApiProductReference={onViewApiProductReference}
             />
           </div>
         </TabPanel>

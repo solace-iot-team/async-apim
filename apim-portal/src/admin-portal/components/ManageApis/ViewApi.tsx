@@ -11,6 +11,7 @@ import APApisDisplayService, { IAPApiDisplay } from "../../../displayServices/AP
 import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { DisplayAdminPortalApi, E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "./DisplayAdminPortalApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -24,6 +25,7 @@ export interface IViewApiProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateHere: (apiEntityId: TAPEntityId) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
@@ -109,6 +111,7 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
             onError={props.onError}
             onSuccess={props.onSuccess}
             onLoadingChange={props.onLoadingChange}
+            apPageNavigationInfo={props.apPageNavigationInfo}
           />
         }
 

@@ -26,7 +26,7 @@ export const ManageApisPage: React.FC = () => {
   const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-
+  
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
 
@@ -63,6 +63,7 @@ export const ManageApisPage: React.FC = () => {
     const funcName = 'useEffect([])';
     const logName = `${ComponentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
+    // alert(`${logName}: location.state=${JSON.stringify(location.state, null, 2)}`);
     setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
