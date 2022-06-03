@@ -1,7 +1,7 @@
 import yaml from "js-yaml";
 import * as AsyncApiSpecParser from '@asyncapi/parser';
 
-import { ApisService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import { Globals } from "../utils/Globals";
 import APVersioningDisplayService from "./APVersioningDisplayService";
@@ -280,41 +280,41 @@ class APApiSpecsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
-  // public async apiGet_App_ApiSpec({ organizationId, appId, apiEntityId }: {
-  //   organizationId: string;
-  //   appId: string;
-  //   apiEntityId: TAPEntityId;
-  // }): Promise<TAPApiSpecDisplay> {
-  //   const spec: Record<string, unknown> = await AppsService.getAppApiSpecification({
-  //     organizationName: organizationId,
-  //     appName: appId,
-  //     apiName: apiEntityId.id,
-  //     format: EAPApiSpecFormat.JSON      
-  //   });
-  //   return {
-  //     apEntityId: apiEntityId,
-  //     format: EAPApiSpecFormat.JSON,
-  //     spec: spec
-  //   };
-  // }
+  public async apiGet_App_ApiSpec({ organizationId, appId, apiEntityId }: {
+    organizationId: string;
+    appId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<TAPApiSpecDisplay> {
+    const spec: Record<string, unknown> = await AppsService.getAppApiSpecification({
+      organizationName: organizationId,
+      appName: appId,
+      apiName: apiEntityId.id,
+      format: EAPApiSpecFormat.JSON      
+    });
+    return {
+      apEntityId: apiEntityId,
+      format: EAPApiSpecFormat.JSON,
+      spec: spec
+    };
+  }
 
-  // public async apiGet_ApiProduct_ApiSpec({ organizationId, apiProductId, apiEntityId }: {
-  //   organizationId: string;
-  //   apiProductId: string;
-  //   apiEntityId: TAPEntityId;
-  // }): Promise<TAPApiSpecDisplay> {
-  //   const spec: any = await ApiProductsService.getApiProductApiSpecification({
-  //     organizationName: organizationId, 
-  //     apiProductName: apiProductId,
-  //     apiName: apiEntityId.id,
-  //     format: EAPApiSpecFormat.JSON
-  //   });
-  //   return {
-  //     apEntityId: apiEntityId,
-  //     format: EAPApiSpecFormat.JSON,
-  //     spec: spec
-  //   };
-  // }
+  public async apiGet_ApiProduct_ApiSpec({ organizationId, apiProductId, apiEntityId }: {
+    organizationId: string;
+    apiProductId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<TAPApiSpecDisplay> {
+    const spec: any = await ApiProductsService.getApiProductApiSpecification({
+      organizationName: organizationId, 
+      apiProductName: apiProductId,
+      apiName: apiEntityId.id,
+      format: EAPApiSpecFormat.JSON
+    });
+    return {
+      apEntityId: apiEntityId,
+      format: EAPApiSpecFormat.JSON,
+      spec: spec
+    };
+  }
 
   public async apiGet_Api_ApiSpec({ organizationId, apiEntityId, version }: {
     organizationId: string;

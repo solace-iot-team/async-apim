@@ -20,7 +20,6 @@ import APEntityIdsService, {
 } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/deleteme.APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
@@ -36,6 +35,7 @@ import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStage
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { DisplayAppReferenceList } from "./DisplayAppReferenceList";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";

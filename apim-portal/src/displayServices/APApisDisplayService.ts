@@ -27,8 +27,7 @@ import {
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
-import { TAPApiSpecDisplay } from './deleteme.APApiSpecsDisplayService';
-import APApiSpecsDisplayService from './APApiSpecsDisplayService';
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from './APApiSpecsDisplayService';
 import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */

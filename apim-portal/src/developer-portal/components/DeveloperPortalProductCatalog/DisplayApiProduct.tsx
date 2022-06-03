@@ -14,7 +14,6 @@ import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenAp
 import { APDisplayClientOptions } from "../../../components/APDisplay/APDisplayClientOptions";
 import APEntityIdsService, { 
 } from "../../../utils/APEntityIdsService";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/deleteme.APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
@@ -23,6 +22,7 @@ import APDeveloperPortalApiProductsDisplayService, { TAPDeveloperPortalApiProduc
 import { E_CALL_STATE_ACTIONS, E_Mode } from "./DeveloperPortalProductCatalogCommon";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
