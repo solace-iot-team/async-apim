@@ -20,6 +20,7 @@ import { ListMaintainApis } from "./ListMaintainApis";
 import { ViewApi } from "../ManageApis/ViewApi";
 import { E_Edit_Scope, ManageEditApi } from "../ManageApis/EditNewApi/ManageEditApi";
 import { DeleteApi } from "../ManageApis/DeleteApi";
+import { E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "../ManageApis/DisplayAdminPortalApi";
 
 import '../../../components/APComponents.css';
 import "./MaintainApis.css";
@@ -312,6 +313,7 @@ export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisP
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
+          scope={E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN}
         />
       }
       {showDeleteComponent && managedObjectEntityId &&

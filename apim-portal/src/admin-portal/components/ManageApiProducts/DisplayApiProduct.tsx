@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from "primereact/button";
 import { Toolbar } from "primereact/toolbar";
@@ -25,7 +26,7 @@ import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/A
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
 import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
-import { Globals } from "../../../utils/Globals";
+import { EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -34,6 +35,7 @@ import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisp
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { DisplayAppReferenceList } from "./DisplayAppReferenceList";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -41,7 +43,8 @@ import "./ManageApiProducts.css";
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
   VIEW_EXISTING = "VIEW_EXISTING",
-  VIEW_REFEREMCED_BY = "VIEW_REFEREMCED_BY"
+  VIEW_REFEREMCED_BY = "VIEW_REFEREMCED_BY",
+  VIEW_EXISTING_MAINTAIN = "VIEW_EXISTING_MAINTAIN"
 }
 
 export interface IDisplayAdminPortalApiProductProps {
@@ -51,6 +54,7 @@ export interface IDisplayAdminPortalApiProductProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProductProps> = (props: IDisplayAdminPortalApiProductProps) => {
@@ -70,6 +74,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
+  const viewAppReferenceHistory = useHistory<TAPPageNavigationInfo>();
+  const ReferencedByTabIndex: number = 5;
 
   // * Api Calls *
   const apiGetManagedObject = async(revision: string): Promise<TApiCallState> => {
@@ -102,6 +108,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       switch(props.scope) {
         case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
         case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
           const apiProductApiSpec: TAPApiSpecDisplay = await APApiSpecsDisplayService.apiGet_ApiProduct_ApiSpec({
             organizationId: props.organizationId, 
             apiProductId: managedObject.apEntityId.id,
@@ -146,6 +153,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
+    if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN) {
+      // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
+      if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
+    }
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -177,21 +188,24 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onViewAppReference = (appEntityId: TAPEntityId) => {
-    alert(`${ComponentName}.onViewAppReference(): open appEntityId=${JSON.stringify(appEntityId)}`);
-    // viewApiProductReferenceHistory.push({       
-    //   pathname: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
-    //   state: {
-    //     apNavigationTarget: {
-    //       apEntityId: apiProductEntityId,
-    //     },
-    //     apNavigationOrigin: {
-    //       breadcrumbLabel: 'APIs',
-    //       apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApis,
-    //       apEntityId: props.apApiDisplay.apEntityId,
-    //       tabIndex: ReferencedByTabIndex
-    //     }
-    //   }
-    // });
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      viewAppReferenceHistory.push({       
+        pathname: EUIAdminPortalResourcePaths.ManageOrganizationApps,
+        state: {
+          apNavigationTarget: {
+            apEntityId: appEntityId,
+            scope: E_AP_Navigation_Scope.LINKED,
+          },
+          apNavigationOrigin: {
+            breadcrumbLabel: 'API Products',
+            apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
+            apEntityId: props.apAdminPortalApiProductDisplay.apEntityId,
+            tabIndex: ReferencedByTabIndex,
+            scope: E_AP_Navigation_Scope.ORIGIN,
+          }
+        }
+      });
+    }
   }
 
   const renderShowApiButtons = () => {
@@ -253,36 +267,6 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     } else return (<></>);
   }
 
-  const render_UsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-    const funcName = 'render_UsedByApps';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    const renderUsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-      if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
-      return (
-        <div>
-          {APEntityIdsService.create_SortedDisplayNameList(apAppReferenceEntityIdList).join(', ')}
-        </div>
-      );
-    }
-  
-    switch(props.scope) {
-      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
-      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
-        return (
-          <React.Fragment>
-            <div className="p-text-bold">Used by Apps:</div>
-            <div className="p-ml-2">{renderUsedByApps(apAppReferenceEntityIdList)}</div>
-          </React.Fragment>
-        );
-      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
-        return (<></>);
-      default:
-        Globals.assertNever(logName, props.scope);
-    }
-    return (<></>);
-  }
-
   const renderRevisionSelect = (): JSX.Element => {
     const funcName = 'renderRevisionSelect';
     const logName = `${ComponentName}.${funcName}()`;
@@ -309,6 +293,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
         return (
           <div><b>Revision: </b>{renderRevisionSelect()}</div>
         );
@@ -394,6 +379,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
         apAttributeDisplayList = mo.devel_display_complete_ApAttributeList;
         break;
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:

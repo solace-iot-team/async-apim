@@ -18,11 +18,12 @@ import { ListApis } from "./ListApis";
 import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { ViewApi } from "./ViewApi";
 import { ManageNewApi } from "./EditNewApi/ManageNewApi";
 import { E_Edit_Scope, ManageEditApi } from "./EditNewApi/ManageEditApi";
 import { DeleteApi } from "./DeleteApi";
 import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import { E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "./DisplayAdminPortalApi";
+import { ViewApi } from "./ViewApi";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -404,6 +405,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
           apPageNavigationInfo={pageNavigationInfo}
+          scope={E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&

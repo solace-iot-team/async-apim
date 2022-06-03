@@ -9,11 +9,9 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { Loading } from "../../../components/Loading/Loading";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APAdminPortalAppsDisplayService from "../../displayServices/APAdminPortalAppsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -34,7 +32,7 @@ export const DisplayAppReferenceList: React.FC<IDisplayAppReferenceListProps> = 
   type TManagedObject = TAPEntityId;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const [userContext] = React.useContext(UserContext);
+  // const [userContext] = React.useContext(UserContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();

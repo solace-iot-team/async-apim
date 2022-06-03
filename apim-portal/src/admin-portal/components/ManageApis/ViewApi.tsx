@@ -26,6 +26,7 @@ export interface IViewApiProps {
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateHere: (apiEntityId: TAPEntityId) => void;
   apPageNavigationInfo?: TAPPageNavigationInfo;
+  scope: E_DISPLAY_ADMIN_PORTAL_API_SCOPE;
 }
 
 export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
@@ -105,7 +106,7 @@ export const ViewApi: React.FC<IViewApiProps> = (props: IViewApiProps) => {
 
         { managedObject && 
           <DisplayAdminPortalApi
-            scope={E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING}
+            scope={props.scope}
             organizationId={props.organizationId}
             apApiDisplay={managedObject}
             onError={props.onError}

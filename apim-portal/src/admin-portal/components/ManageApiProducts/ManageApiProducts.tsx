@@ -26,7 +26,7 @@ import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
 import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -79,6 +79,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPAdminPortalApiProductDisplay_AllowedActions>(APAdminPortalApiProductsDisplayService.get_Empty_AllowedActions());
 
+  const [pageNavigationInfo, setPageNavigationInfo] = React.useState<TAPPageNavigationInfo | undefined>(props.apPageNavigationInfo);
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
@@ -153,6 +154,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     //   userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
     // }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setPageNavigationInfo(undefined);
   }  
   // * New Object *
   const onNewManagedObject = () => {
@@ -212,12 +214,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       state: {
         apNavigationTarget: {
           apEntityId: props.apPageNavigationInfo.apNavigationOrigin.apEntityId,
-          tabIndex: props.apPageNavigationInfo.apNavigationOrigin.tabIndex
+          tabIndex: props.apPageNavigationInfo.apNavigationOrigin.tabIndex,
+          scope: E_AP_Navigation_Scope.ORIGIN,
         },
         apNavigationOrigin: {
           breadcrumbLabel: 'API Product',
           apEntityId: props.apPageNavigationInfo.apNavigationTarget.apEntityId,
-          apOriginPath: '/'
+          apOriginPath: '/',
+          scope: E_AP_Navigation_Scope.LINKED
         }
       }
     });
@@ -231,7 +235,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       </React.Fragment>
     );
     if(showViewComponent) {
-      if(props.apPageNavigationInfo !== undefined) {
+      if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.LINKED) {
         return(
           <React.Fragment>
             <Button label={`Back to API: ${props.apPageNavigationInfo.apNavigationOrigin.apEntityId.displayName}`} icon="pi pi-arrow-left" onClick={onBackToApi} className="p-button-text p-button-plain p-button-outlined"/>
@@ -481,7 +485,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
-          selectRevisionEnabled={props.apPageNavigationInfo === undefined}
+          apPageNavigationInfo={pageNavigationInfo}
+          // selectRevisionEnabled={props.apPageNavigationInfo === undefined}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&

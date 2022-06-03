@@ -11,6 +11,7 @@ import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
 import { DisplayAdminPortalApiProduct, E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -24,7 +25,7 @@ export interface IViewApiProductProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateHere: (apiProductEntityId: TAPEntityId) => void;
-  selectRevisionEnabled: boolean;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiProductProps) => {
@@ -35,6 +36,7 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [userContext] = React.useContext(UserContext);
+  const selectRevisionEnabled: boolean = props.apPageNavigationInfo === undefined ? true : props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN;
 
   // * Api Calls *
   const apiGetManagedObject = async(): Promise<TApiCallState> => {
@@ -103,12 +105,13 @@ export const ViewApiProduct: React.FC<IViewApiProductProps> = (props: IViewApiPr
 
       { managedObject && 
         <DisplayAdminPortalApiProduct
-          scope={props.selectRevisionEnabled ? E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING : E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY}
+          scope={selectRevisionEnabled ? E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING : E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY}
           organizationId={props.organizationId}
           apAdminPortalApiProductDisplay={managedObject}
           onError={props.onError}
           onSuccess={props.onSuccess}
           onLoadingChange={props.onLoadingChange}
+          apPageNavigationInfo={props.apPageNavigationInfo}
         />
       }
 

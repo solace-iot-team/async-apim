@@ -10,7 +10,7 @@ import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Gl
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
-import { TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
@@ -41,9 +41,8 @@ export const ManageApiProductsPage: React.FC = () => {
   const renderBreadcrumbs = () => {
     const breadcrumbItems: Array<MenuItem> = [];
     const isLocationSet: boolean = location.state !== undefined;
-    const apiProductsLabel = 'API Products';    
 
-    if(isLocationSet) {
+    if(isLocationSet && location.state.apNavigationTarget.scope === E_AP_Navigation_Scope.LINKED) {
       const locationItems: Array<MenuItem> = [
         {
           label: location.state.apNavigationOrigin.breadcrumbLabel
@@ -52,24 +51,17 @@ export const ManageApiProductsPage: React.FC = () => {
           label: location.state.apNavigationOrigin.apEntityId.displayName,
         },
         {
-          label: apiProductsLabel
+          label: 'Referenced by API Product'
         }
       ];
       breadcrumbItems.push(...locationItems);
     } else {
       breadcrumbItems.push({
-        label: apiProductsLabel,
+        label: 'API Products',
         style: GlobalElementStyles.breadcrumbLink(),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }  
       });
     }
-    // const breadcrumbItems: Array<MenuItem> = [
-    //   { 
-    //     label: 'API Products',
-    //     style: GlobalElementStyles.breadcrumbLink(),
-    //     command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
-    //   }
-    // ];
     breadCrumbItemList.forEach( (item: MenuItem) => {
       breadcrumbItems.push({
         ...item,

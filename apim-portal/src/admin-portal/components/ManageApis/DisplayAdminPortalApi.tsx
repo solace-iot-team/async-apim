@@ -11,10 +11,7 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APDisplayAsyncApiSpec } from "../../../components/APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import APEntityIdsService, { 
-  TAPEntityId,
-  TAPEntityIdList 
-} from "../../../utils/APEntityIdsService";
+import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { Config } from "../../../Config";
@@ -29,7 +26,7 @@ import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APDisplayApApiChannelParameterList } from "../../../components/APDisplay/APDisplayApApiChannelParameterList";
 import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
-import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
@@ -37,7 +34,8 @@ import "./ManageApis.css";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
-  VIEW_EXISTING = "VIEW_EXISTING"
+  VIEW_EXISTING = "VIEW_EXISTING",
+  VIEW_EXISTING_MAINTAIN = "VIEW_EXISTING_MAINTAIN"
 }
 
 export interface IDisplayAdminPortalApiProps {
@@ -118,7 +116,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedTreeVersion(managedObject.apVersionInfo.apCurrentVersion);
-    if(props.apPageNavigationInfo !== undefined) {
+    if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN) {
       // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
       if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
     }
@@ -142,20 +140,24 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
   const onViewApiProductReference = (apiProductEntityId: TAPEntityId) => {
     // alert(`${ComponentName}: open mo.apEntityId=${JSON.stringify(mo.apEntityId)}`);
-    viewApiProductReferenceHistory.push({       
-      pathname: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
-      state: {
-        apNavigationTarget: {
-          apEntityId: apiProductEntityId,
-        },
-        apNavigationOrigin: {
-          breadcrumbLabel: 'APIs',
-          apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApis,
-          apEntityId: props.apApiDisplay.apEntityId,
-          tabIndex: ReferencedByTabIndex
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
+      viewApiProductReferenceHistory.push({       
+        pathname: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
+        state: {
+          apNavigationTarget: {
+            apEntityId: apiProductEntityId,
+            scope: E_AP_Navigation_Scope.LINKED,
+          },
+          apNavigationOrigin: {
+            breadcrumbLabel: 'APIs',
+            apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApis,
+            apEntityId: props.apApiDisplay.apEntityId,
+            tabIndex: ReferencedByTabIndex,
+            scope: E_AP_Navigation_Scope.ORIGIN
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
@@ -174,35 +176,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     } else return (<></>);
   }
 
-  const renderUsedByApiProducts = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-    const funcName = 'renderUsedByApiProducts';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    const _renderUsedByApiProducts = (apApiProductReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-      if(apApiProductReferenceEntityIdList.length === 0) return (<div>None.</div>);
-      return (
-        <div>
-            {/* {APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apApiProductReferenceEntityIdList))} */}
-            {APEntityIdsService.create_SortedDisplayNameList(apApiProductReferenceEntityIdList).join(', ')}
-        </div>
-      );
-    }
-  
-    switch(props.scope) {
-      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
-        return (
-          <React.Fragment>
-            <div className="p-text-bold">Used by Api Products:</div>
-            <div className="p-ml-2">{_renderUsedByApiProducts(apApiProductReferenceEntityIdList)}</div>
-          </React.Fragment>
-        );
-      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
-        return (<></>);
-      default:
-        Globals.assertNever(logName, props.scope);
-    }
-    return (<></>);
-  }
   const renderVersionSelect = (): JSX.Element => {
     const funcName = 'renderVersionSelect';
     const logName = `${ComponentName}.${funcName}()`;
@@ -232,6 +205,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
         return (
           <React.Fragment>
             {/* <pre>{JSON.stringify(mo.apVersionInfo, null, 2)}</pre> */}
@@ -253,6 +227,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
         return (
           <React.Fragment>
             <div><b>State: </b>{apLifecycleStageInfo.stage}</div>
@@ -314,6 +289,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     let apAttributeDisplayList: TAPAttributeDisplayList = [];
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
         apAttributeDisplayList = mo.devel_display_complete_ApAttributeList;
         break;
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
@@ -339,6 +315,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
         return(
           <React.Fragment>
             <div className="p-text-bold">Channel Parameters:</div>
@@ -364,6 +341,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
         return(
           <React.Fragment>
             <div><b>Summary:</b> {managedObject.summary}</div>
@@ -410,8 +388,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
               <div><b>Name:</b> {managedObject.apEntityId.id}</div>
 
               {renderSummaryAndDescription()}
-
-              <div className="p-ml-2">{renderUsedByApiProducts(managedObject.apApiProductReferenceEntityIdList)}</div>
 
             </div>
             <div className="api-view-detail-right">

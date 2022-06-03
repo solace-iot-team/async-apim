@@ -287,7 +287,6 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
-          selectRevisionEnabled={false}
         />
       }
       {showDeleteComponent && managedObjectEntityId &&
