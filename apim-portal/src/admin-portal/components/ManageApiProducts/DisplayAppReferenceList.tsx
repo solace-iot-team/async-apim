@@ -9,30 +9,29 @@ import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
-import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay4List, TAPAdminPortalApiProductDisplay4ListList } from "../../displayServices/APAdminPortalApiProductsDisplayService";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { Loading } from "../../../components/Loading/Loading";
+import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
+import APAdminPortalAppsDisplayService from "../../displayServices/APAdminPortalAppsDisplayService";
 
 import '../../../components/APComponents.css';
-import "./ManageApis.css";
+import "./ManageApiProducts.css";
 
-export interface IDisplayAdminPortalApiProductReferenceListProps {
+export interface IDisplayAppReferenceListProps {
   organizationId: string;
-  apApiDisplay: IAPApiDisplay;
+  apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onSuccess: (apiCallState: TApiCallState) => void;
   onError: (apiCallState: TApiCallState) => void;
-  onViewApiProductReference: (apiProductEntityId: TAPEntityId) => void;
+  onViewAppReference: (appEntityId: TAPEntityId) => void;
 }
 
-export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPortalApiProductReferenceListProps> = (props: IDisplayAdminPortalApiProductReferenceListProps) => {
-  const ComponentName = 'DisplayAdminPortalApiProductReferenceList';
+export const DisplayAppReferenceList: React.FC<IDisplayAppReferenceListProps> = (props: IDisplayAppReferenceListProps) => {
+  const ComponentName = 'DisplayAppReferenceList';
 
-  const MessageNoManagedObjectsFound = 'No API Products defined.';
+  const MessageNoManagedObjectsFound = 'No Apps defined.';
 
-  type TManagedObject = TAPAdminPortalApiProductDisplay4List;
+  type TManagedObject = TAPEntityId;
   type TManagedObjectList = Array<TManagedObject>;
 
   const [userContext] = React.useContext(UserContext);
@@ -48,14 +47,15 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_REFERENCE_LIST, `retrieve api product reference list for api: ${props.apApiDisplay.apEntityId.displayName}, version: ${props.apApiDisplay.apVersionInfo.apCurrentVersion}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_REFERENCE_LIST, `retrieve app reference list for api product: ${props.apAdminPortalApiProductDisplay.apEntityId.displayName}, version: ${props.apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion}`);
     try { 
-      const apApiProductReferenceList: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList({ 
-        organizationId: props.organizationId,
-        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
-        apiProductEntityIdList: props.apApiDisplay.apApiProductReferenceEntityIdList,
-      });
-      setManagedObjectList(apApiProductReferenceList);
+      // const x = APAdminPortalAppsDisplayService.apiGetList_ApAppDisplay4ListList_For_AppEntityIdList({
+      //   organizationId: props.organizationId,
+      //   // default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+      //   appEntityIdList: props.apAdminPortalApiProductDisplay.apAppReferenceEntityIdList,
+
+      // });
+      setManagedObjectList(props.apAdminPortalApiProductDisplay.apAppReferenceEntityIdList);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -92,25 +92,27 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
   }  
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onViewApiProductReference(mo.apEntityId);
+    props.onViewAppReference(mo);
   }
-  const nameBodyTemplate = (row: TManagedObject): string => {
-    return row.apEntityId.displayName;
+  const nameBodyTemplate = (mo: TManagedObject): string => {
+    return mo.displayName;
   }
-  const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
-    return (<div>{row.apVersionInfo.apLastVersion}</div>);
-  }
-  const stateTemplate = (row: TManagedObject): string => {
-    return row.apLifecycleStageInfo.stage;
-  }
-  const publishedTemplate = (row: TManagedObject): JSX.Element => {
-    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>False</div>);
-    return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
-  }
+  // const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
+  //   return (<div>{row.apVersionInfo.apLastVersion}</div>);
+  // }
+  // const stateTemplate = (row: TManagedObject): string => {
+  //   return row.apLifecycleStageInfo.stage;
+  // }
+  // const publishedTemplate = (row: TManagedObject): JSX.Element => {
+  //   if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>False</div>);
+  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
+  // }
   const renderManagedObjectDataTable = () => {
-    const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay4List>('apSearchContent');
+    const dataKey = APEntityIdsService.nameOf('id');
+    const sortField = APEntityIdsService.nameOf('displayName');
+    // const dataKey = APAdminPortalAppsDisplayService.nameOf_ApEntityId('id');
+    // const sortField = APAdminPortalAppsDisplayService.nameOf_ApEntityId('displayName');
+    // const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay4List>('apSearchContent');
     // const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
     return (
       <div className="card">
@@ -121,7 +123,7 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
-          header='API Product(s)'
+          header='App(s)'
           value={managedObjectList}
           selectionMode="single"
           selection={selectedManagedObject}
@@ -135,10 +137,10 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
           sortField={sortField}
           sortOrder={1}
         >
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={sortField} sortable />
+          {/* <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} />
-          <Column header="Published" headerStyle={{width: '7em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
+          <Column header="Published" headerStyle={{width: '7em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} /> */}
         </DataTable>
      </div>
     );
