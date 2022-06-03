@@ -12,6 +12,8 @@ Solace Async API Management.
 - **Admin Portal: APIs**
   - refactored APIs to be a managed asset
   - Async api spec validation in New/Edit API
+  - new list of ReferencedBy Api Products in separate tab:
+    - open & view API Product and navigate back to API
 - **Admin Portal: Organization: Asset Maintenance: APIs**
   - manage apis that are not managed assets and assign asset properties
 
