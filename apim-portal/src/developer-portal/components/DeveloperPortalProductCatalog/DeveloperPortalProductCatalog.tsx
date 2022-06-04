@@ -152,7 +152,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
     if(!componentState.currentState) return undefined;
     if(showListComponent) return undefined;
     if(showViewComponent) {
-      if(props.mode === E_Mode.ADD_TO_APP || props.mode === E_Mode.EXPLORE) {
+      if(props.mode === E_Mode.ADD_TO_APP) {
         return(<Button icon="pi pi-arrow-left" label={ToolbarBackToSearchButtonLabel} className="p-button-text p-button-plain p-button-outlined" onClick={onBackToSearchFromToolbar}/>);
       }
     }

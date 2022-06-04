@@ -24,13 +24,13 @@ import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStage
 import APApisDisplayService, { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { APDisplayApApiChannelParameterList } from "../../../components/APDisplay/APDisplayApApiChannelParameterList";
 import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APDisplayApiChannelParameterList } from "../../../components/APDisplay/APDisplayApiChannelParameterList";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -319,8 +319,8 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         return(
           <React.Fragment>
             <div className="p-text-bold">Channel Parameters:</div>
-            <APDisplayApApiChannelParameterList
-              key={`${ComponentName}_APDisplayApApiChannelParameterList_${showApiSpecRefreshCounter}`}
+            <APDisplayApiChannelParameterList
+              key={`${ComponentName}_APDisplayApiChannelParameterList_${showApiSpecRefreshCounter}`}
               apApiChannelParameterList={managedObject.apApiChannelParameterList}
               emptyChannelParameterListMessage="No Channel Parameters defined in Async API Spec."
               className="p-mt-2"

@@ -1,8 +1,6 @@
 
 import React from "react";
 
-import { Button } from "primereact/button";
-import { Toolbar } from "primereact/toolbar";
 import { TabPanel, TabView } from "primereact/tabview";
 import { Dropdown, DropdownChangeParams } from "primereact/dropdown";
 
@@ -23,6 +21,8 @@ import { E_CALL_STATE_ACTIONS, E_Mode } from "./DeveloperPortalProductCatalogCom
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
+import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -143,46 +143,8 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     doFetchApiSpec(showApiId);
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderShowApiButtons = () => {
-    const funcName = 'renderShowApiButtons';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
-
-    const onShowApi = (event: any): void => {
-      setShowApiId(event.currentTarget.dataset.id);
-    }
-  
-    const jsxButtonList: Array<JSX.Element> = [];
-    for (const apApiDisplay of managedObject.apApiDisplayList) {
-      jsxButtonList.push(
-        <Button 
-          label={apApiDisplay.apEntityId.displayName} 
-          key={apApiDisplay.apEntityId.id} 
-          data-id={apApiDisplay.apEntityId.id} 
-          // icon="pi pi-folder-open" 
-          // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-          className="p-button-text p-button-plain p-button-outlined" 
-          style={{ whiteSpace: 'nowrap' }}          
-          onClick={onShowApi}
-        />        
-      );
-    }
-    const renderButtons = () => {
-      return (
-        <div className="p-grid">
-          {jsxButtonList}
-        </div>
-      );
-    }
-    return (
-      <Toolbar         
-        style={{ 
-          background: 'none',
-          border: 'none'
-        }} 
-        left={renderButtons()}
-      />
-    );
+  const onShowApiSpec = (apApiDisplay: IAPApiDisplay) => {
+    setShowApiId(apApiDisplay.apEntityId.id);
   }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
@@ -304,10 +266,14 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
             </div>  
           </React.Fragment>
           </TabPanel>
-          <TabPanel header='APIs'>
+          <TabPanel header='API(s)'>
             <React.Fragment>
               <div>
-                {renderShowApiButtons()}
+                <APDisplayApiProductApis 
+                  apApiDisplayList={managedObject.apApiDisplayList}
+                  onDisplayApiSpec={onShowApiSpec}
+                  className="p-ml-4"
+                />
                 <APDisplayApControlledChannelParameters
                   apControlledChannelParameterList={managedObject.apControlledChannelParameterList}
                   emptyMessage="No controlled channel parameters defined"

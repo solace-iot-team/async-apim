@@ -4,46 +4,25 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { TAPEntityId } from "../../utils/APEntityIdsService";
+import APEntityIdsService from "../../utils/APEntityIdsService";
 import { TAPApiChannelParameter, TAPApiChannelParameterList } from "../../displayServices/APApisDisplayService";
 
 import "../APComponents.css";
 
-export interface IAPDisplayApApiChannelParameterListProps {
+export interface IAPDisplayApiChannelParameterListProps {
   apApiChannelParameterList: TAPApiChannelParameterList;
   emptyChannelParameterListMessage: string;
   className?: string;
 }
 
-export const APDisplayApApiChannelParameterList: React.FC<IAPDisplayApApiChannelParameterListProps> = (props: IAPDisplayApApiChannelParameterListProps) => {
-  const ComponentName='APDisplayApApiChannelParameterList';
-
+export const APDisplayApiChannelParameterList: React.FC<IAPDisplayApiChannelParameterListProps> = (props: IAPDisplayApiChannelParameterListProps) => {
+  const ComponentName='APDisplayApiChannelParameterList';
 
   type TManagedObject = TAPApiChannelParameter;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const nameOf_ManagedObject = (name: keyof TManagedObject) => {
-    return name;
-  }
-  const nameOf_ManagedObject_ApEntityId = (name: keyof TAPEntityId) => {
-    return `${nameOf_ManagedObject('apEntityId')}.${name}`;
-  }
-  // const nameOf_ApiChannelParameter_ApEntityId = (name: keyof TAPEntityId) => {
-  //   return `${nameOf_ManagedObject('apApiChannelParameter')}.${nameOf_ManagedObject('apEntityId')}.${name}`;
-  // }
-  // const nameOf_ApiChannelParameter = (name: keyof TAPApiChannelParameter) => {
-  //   return `${nameOf_ManagedObject('apApiChannelParameter')}.${name}`;
-  // }
-  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
+  const [managedObjectList] = React.useState<TManagedObjectList>(props.apApiChannelParameterList);
   const dataTableRef = React.useRef<any>(null);
-
-  const doInitialize = () => {
-    setManagedObjectList(props.apApiChannelParameterList);
-  }
-
-  React.useEffect(() => {
-    doInitialize();
-  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const apiParameterValueBodyTemplate = (mo: TManagedObject): JSX.Element => {
     return (
@@ -57,11 +36,9 @@ export const APDisplayApApiChannelParameterList: React.FC<IAPDisplayApApiChannel
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
-
-    
-    const dataKey = nameOf_ManagedObject_ApEntityId('id');
-    const sortField = nameOf_ManagedObject_ApEntityId('displayName');
-    const parameterNameField = dataKey;
+    const dataKey = APEntityIdsService.nameOf_ApEntityIdDisplay('id');
+    const sortField = APEntityIdsService.nameOf_ApEntityIdDisplay('displayName');
+    const parameterNameField = sortField;
 
     return (
       <React.Fragment>
@@ -79,15 +56,14 @@ export const APDisplayApApiChannelParameterList: React.FC<IAPDisplayApApiChannel
           columnResizeMode="fit"
         >
           <Column 
-            header="Parameter"
+            header="Channel Parameter"
             field={parameterNameField} 
             style={{width: '20em'}} 
             // bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
           <Column 
-            header="Value(s)"
+            header="Values"
             body={apiParameterValueBodyTemplate}
-            // field={parameterValueField} 
             // bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} 
           />
         </DataTable>
@@ -97,14 +73,14 @@ export const APDisplayApApiChannelParameterList: React.FC<IAPDisplayApApiChannel
 
   return (
     <div className={props.className ? props.className : 'card'}>
-
-      {managedObjectList && managedObjectList.length > 0 &&
-        renderComponent()
-      }
-
-      {managedObjectList && managedObjectList.length === 0 && 
-        <span>{props.emptyChannelParameterListMessage}</span>
-      }
+    
+    {managedObjectList && managedObjectList.length > 0 &&
+      renderComponent()
+    }
+    
+    {(managedObjectList && managedObjectList.length === 0) && 
+      <span>{props.emptyChannelParameterListMessage}</span>
+    }
 
   </div>
 

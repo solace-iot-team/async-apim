@@ -2,8 +2,6 @@
 import React from "react";
 import { useHistory } from 'react-router-dom';
 
-import { Button } from "primereact/button";
-import { Toolbar } from "primereact/toolbar";
 import { TabPanel, TabView } from "primereact/tabview";
 import { Divider } from "primereact/divider";
 import { Dropdown, DropdownChangeParams } from "primereact/dropdown";
@@ -24,7 +22,6 @@ import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
-import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
 import { EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
@@ -36,6 +33,8 @@ import { OrganizationContext } from "../../../components/APContextProviders/APOr
 import { DisplayAppReferenceList } from "./DisplayAppReferenceList";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
+import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -208,46 +207,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     }
   }
 
-  const renderShowApiButtons = () => {
-    const funcName = 'renderShowApiButtons';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
-
-    const onShowApi = (event: any): void => {
-      setShowApiId(event.currentTarget.dataset.id);
-    }
-  
-    const jsxButtonList: Array<JSX.Element> = [];
-    for (const apApiDisplay of managedObject.apApiDisplayList) {
-      jsxButtonList.push(
-        <Button 
-          label={apApiDisplay.apEntityId.displayName} 
-          key={apApiDisplay.apEntityId.id} 
-          data-id={apApiDisplay.apEntityId.id} 
-          // icon="pi pi-folder-open" 
-          // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-          className="p-button-text p-button-plain p-button-outlined" 
-          style={{ whiteSpace: 'nowrap' }}          
-          onClick={onShowApi}
-        />        
-      );
-    }
-    const renderButtons = () => {
-      return (
-        <div className="p-grid">
-          {jsxButtonList}
-        </div>
-      );
-    }
-    return (
-      <Toolbar         
-        style={{ 
-          background: 'none',
-          border: 'none'
-        }} 
-        left={renderButtons()}
-      />
-    );
+  const onShowApiSpec = (apApiDisplay: IAPApiDisplay) => {
+    setShowApiId(apApiDisplay.apEntityId.id);
   }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
@@ -428,9 +389,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       <TabPanel header={ApiTabHeader}>
         <React.Fragment>
           <div>
-            {renderShowApiButtons()}
-            <APDisplayApisDetails 
+            <APDisplayApiProductApis 
               apApiDisplayList={managedObject.apApiDisplayList}
+              onDisplayApiSpec={onShowApiSpec}
               className="p-ml-4"
             />
             <APDisplayApControlledChannelParameters
@@ -551,8 +512,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         {/* <div>DEBUG: selectedVersion = '{selectedVersion}'</div>
         <div>DEBUG: managedObject.apVersionInfo={JSON.stringify(managedObject?.apVersionInfo)}</div> */}
 
-        <pre>props.scope={JSON.stringify(props.scope)}</pre>
-        <pre>props.apPageNavigationInfo={JSON.stringify(props.apPageNavigationInfo)}</pre>
+        {/* DEBUG */}
+        {/* <pre>props.scope={JSON.stringify(props.scope)}</pre> */}
+        {/* <pre>props.apPageNavigationInfo={JSON.stringify(props.apPageNavigationInfo)}</pre> */}
 
         {managedObject && selectedRevision !== undefined && renderManagedObject() }
 
