@@ -551,6 +551,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         {/* <div>DEBUG: selectedVersion = '{selectedVersion}'</div>
         <div>DEBUG: managedObject.apVersionInfo={JSON.stringify(managedObject?.apVersionInfo)}</div> */}
 
+        <pre>props.scope={JSON.stringify(props.scope)}</pre>
+        <pre>props.apPageNavigationInfo={JSON.stringify(props.apPageNavigationInfo)}</pre>
+
         {managedObject && selectedRevision !== undefined && renderManagedObject() }
 
       </div>

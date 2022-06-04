@@ -27,6 +27,7 @@ import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct
 import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -318,6 +319,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     setManagedObjectEntityId(apiProductEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
     setRefreshCounter(refreshCounter + 1);
+    setPageNavigationInfo(undefined);
   }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -486,7 +488,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
           apPageNavigationInfo={pageNavigationInfo}
-          // selectRevisionEnabled={props.apPageNavigationInfo === undefined}
+          scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&

@@ -399,7 +399,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         </div>  
       </TabPanel>
     );
-    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING || props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN) {
       tabPanels.push(
         <TabPanel header='Referenced By'>
           <div className="p-ml-2">
