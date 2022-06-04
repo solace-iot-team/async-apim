@@ -802,7 +802,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       });
       connectorApiInfo = {
         ...versionConnectorApiInfo,
-        attributes: latestConnectorApiInfo.attributes
+        attributes: latestConnectorApiInfo.attributes,
+        deprecated: latestConnectorApiInfo.deprecated,
+        deprecatedDescription: latestConnectorApiInfo.deprecatedDescription
       };
     }
 

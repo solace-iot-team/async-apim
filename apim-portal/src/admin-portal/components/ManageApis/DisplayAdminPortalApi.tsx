@@ -27,10 +27,10 @@ import { UserContext } from "../../../components/APContextProviders/APUserContex
 import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalApiProductReferenceList";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
+import { APDisplayApiChannelParameterList } from "../../../components/APDisplay/APDisplayApiChannelParameterList";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
-import { APDisplayApiChannelParameterList } from "../../../components/APDisplay/APDisplayApiChannelParameterList";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
