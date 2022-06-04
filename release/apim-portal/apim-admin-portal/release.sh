@@ -9,7 +9,12 @@ SKIPPING="+++ SKIPPING +++";
 ############################################################################################################################
 # Run
 
-echo " >>> Starting $scriptName ..."
+echo " >>> Starting $scriptDir/$scriptName ..."
+
+# if [ -n "$APIM_RELEASE_APLPHA_BUILD_NUM" ]; then
+#   echo ">>> TODO: Implement me: - $scriptDir/$scriptName - APIM_RELEASE_APLPHA_BUILD_NUM=$APIM_RELEASE_APLPHA_BUILD_NUM";
+#   exit 0;
+# fi
 
 releaseDirs=(
   "targz-package"
@@ -21,8 +26,11 @@ echo " >>> Build ..."
   runScript="$scriptDir/build.sh"
   $runScript
   code=$?;
-  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
+  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1; fi
 echo " >>> Success."
+
+echo "xxxxxxxxxxxxx: continue here, check build output ok"; exit 1;
+
 
 # run each releaseDir
 for releaseDir in ${releaseDirs[@]}; do
@@ -35,12 +43,14 @@ for releaseDir in ${releaseDirs[@]}; do
 
   code=$?;
   if [[ $code == 2 ]]; then
-    echo ">>> [$releaseDir] [$SKIPPING]: version already exists - code=$code - $releaseScript' - $scriptName"; exit 0;
+    echo ">>> [$releaseDir] [$SKIPPING]: version already exists - code=$code - $releaseScript' - $scriptDir/$scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
-    echo ">>> [$releaseDir] ERROR - code=$code - $releaseScript' - $scriptName"; exit 1;
+    echo ">>> [$releaseDir] ERROR - code=$code - $releaseScript' - $scriptDir/$scriptName"; exit 1;
   fi
 
 done
+
+echo " >>> Success: $scriptDir/$scriptName"
 
 ###
 # The End.

@@ -6,6 +6,12 @@ import { HttpClient } from 'openapi-typescript-codegen';
 import path from 'path';
 import APSAbout = Components.Schemas.APSAbout;
 
+const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
+const AlphaVersion: string | undefined = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
+const createVersion = (version: string): string => {
+  if(AlphaVersion) return `${version}-${AlphaVersion}`;
+  return version;
+}
 const OpenAPI = require('openapi-typescript-codegen');
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
@@ -43,8 +49,8 @@ const buildAbout = (): APSAbout => {
     author: packageJson.author,
     license: packageJson.license,
     versions: {
-      "apim-server-openapi": apiSpec.info.version,
-      "apim-server": packageJson.version
+      "apim-server-openapi": createVersion(apiSpec.info.version),
+      "apim-server": createVersion(packageJson.version)
     },
     repository: {
       type: packageJson.repository.type,

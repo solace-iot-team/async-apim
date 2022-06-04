@@ -108,7 +108,8 @@ const removeLocalDockerArtefacts = () => {
     }
   }
   console.log(`${logName}: removing any existing images, tags=${CONSTANTS.DockerImageTag}, ${CONSTANTS.DockerImageTagLatest}`);
-  if(s.exec(`docker rmi -f ${CONSTANTS.DockerImageTag} ${CONSTANTS.DockerImageTagLatest}`, { silent: true }).code !== 0) process.exit(1);
+  s.exec(`docker rmi -f ${CONSTANTS.DockerImageTag} ${CONSTANTS.DockerImageTagLatest}`, { silent: true });
+  // if(s.exec(`docker rmi -f ${CONSTANTS.DockerImageTag} ${CONSTANTS.DockerImageTagLatest}`, { silent: true }).code !== 0) process.exit(1);
   console.log(`${logName}: success.`);
 }
 

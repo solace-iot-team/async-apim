@@ -1,4 +1,6 @@
 
+const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
+
 export class Constants {
   private readonly _scriptDir: string;
   private readonly _gitRoot: string;
@@ -12,6 +14,7 @@ export class Constants {
   private _dockerImageName: string | undefined;
   private _dockerImageTag: string | undefined;
   private _dockerImageTagLatest: string | undefined;
+  private _alphaVersion: string | undefined; 
 
   constructor(scriptDir: string) {
     this._scriptDir = scriptDir;
@@ -22,14 +25,25 @@ export class Constants {
     this._skipping = '+++ SKIPPING +++';
     this._dockerContextDir = `${this._workingDir}/docker-context`;
     this._dockerFile = `${scriptDir}/Dockerfile`;
-    this._dockerHubUser = "solaceiotteam"; 
+    this._dockerHubUser = "solaceiotteam";
+    this._alphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
   }
+  private createDockerImageTag = (version: string): string => {
+    if(this._alphaVersion) {
+      return `${version}-${this._alphaVersion.replaceAll('+', '-')}`;
+    }
+    return version;
+  }  
+  private createLatestTag = (): string => {
+    if(this._alphaVersion) return 'alpha-latest';
+    return 'latest';
+  }  
   public initAfterCopy() {
     const apimServerPackageJson = require(`${this._workingApimServerDir}/package.json`);
     const releasePackageJson = require(`${this._scriptDir}/package.json`);
     this._dockerImageName = releasePackageJson.name;
-    this._dockerImageTag = `${this._dockerImageName}:${apimServerPackageJson.version}`; 
-    this._dockerImageTagLatest = `${this._dockerImageName}:latest`;   
+    this._dockerImageTag = `${this._dockerImageName}:${this.createDockerImageTag(apimServerPackageJson.version)}`; 
+    this._dockerImageTagLatest = `${this._dockerImageName}:${this.createLatestTag()}`;   
   }
   public log() {
     console.log(`${Constants.name} = ${JSON.stringify(this, null, 2)}`);
@@ -55,5 +69,6 @@ export class Constants {
     if(!this._dockerImageTagLatest) throw new Error(`${Constants.name}: this._dockerImageTagLatest is undefined`);
     return this._dockerImageTagLatest;
   }
+  public get AlphaVersion() { return this._alphaVersion; }
 
 }
