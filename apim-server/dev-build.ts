@@ -49,7 +49,8 @@ const buildAbout = (): APSAbout => {
     author: packageJson.author,
     license: packageJson.license,
     versions: {
-      "apim-server-openapi": createVersion(apiSpec.info.version),
+      // openapi version must stay as is
+      "apim-server-openapi": apiSpec.info.version,
       "apim-server": createVersion(packageJson.version)
     },
     repository: {
