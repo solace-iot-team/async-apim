@@ -3,12 +3,14 @@ import path from 'path';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
+const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
 
 const GitRoot = `${scriptDir}/../../..`;
 const WorkingDir = `${scriptDir}/working_dir`;
 const ApimPortalDir = `${GitRoot}/apim-portal`;
 const ApimServerDir =`${GitRoot}/apim-server`;
 const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
+const AlphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
 
 const AssetDir = `${scriptDir}/assets`;
 
@@ -48,7 +50,11 @@ const buildApimAdminPortal = () => {
   console.log(`${logName}: starting ...`);
 
   if(s.cd(`${WorkingApimPortalDir}`).code !== 0) process.exit(1);
-  if(s.exec('npm install').code !== 0) process.exit(1);
+  if(s.exec('npm install').code !== 0) {
+    // if it is an alpha version, try linking instead
+    console.log(`${logName}: npm install failed, trying npm link instead ....`);
+    if(s.exec('npm link @solace-iot-team/apim-connector-openapi-browser').code !== 0) process.exit(1);
+  }
   if(s.exec('npm run dev:build').code !== 0) process.exit(1);
   if(s.exec('npm run build').code !== 0) process.exit(1);
 

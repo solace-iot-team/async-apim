@@ -1,4 +1,6 @@
 
+const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
+
 export class Constants {
   private readonly _scriptDir: string;
   private readonly _apimPortalDir: string;
@@ -9,6 +11,7 @@ export class Constants {
   private readonly _workingApimServerDir: string;
   private readonly _generatedApimServerOpenApiSrcDir: string;
   private readonly _outputGeneratedApimServerOpenApiSrcDir: string;
+  private _alphaVersion: string | undefined; 
 
   constructor(scriptDir: string) {
     this._scriptDir = scriptDir;
@@ -20,6 +23,7 @@ export class Constants {
     this._workingApimServerDir = `${this._workingDir}/apim-server`;
     this._generatedApimServerOpenApiSrcDir = `${this._workingApimServerDir}/src/@solace-iot-team/apim-server-openapi-browser`;
     this._outputGeneratedApimServerOpenApiSrcDir = `${this._apimPortalDir}/src/_generated/@solace-iot-team/apim-server-openapi-browser`;
+    this._alphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
   }
   public log() {
     console.log(`${Constants.name} = ${JSON.stringify(this, null, 2)}`);
@@ -34,4 +38,7 @@ export class Constants {
   public get WorkingApimServerDir() { return this._workingApimServerDir; }
   public get GeneratedApimServerOpenApiSrcDir() { return this._generatedApimServerOpenApiSrcDir; }
   public get OutputGeneratedApimServerOpenApiSrcDir() { return this._outputGeneratedApimServerOpenApiSrcDir; }
+
+  public get AlphaVersion() { return this._alphaVersion; }
+  
 }

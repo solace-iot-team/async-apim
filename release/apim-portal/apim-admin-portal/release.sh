@@ -29,9 +29,6 @@ echo " >>> Build ..."
   if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1; fi
 echo " >>> Success."
 
-echo "xxxxxxxxxxxxx: continue here, check build output ok"; exit 1;
-
-
 # run each releaseDir
 for releaseDir in ${releaseDirs[@]}; do
 
