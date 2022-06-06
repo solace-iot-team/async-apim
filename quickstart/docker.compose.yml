@@ -57,15 +57,15 @@ services:
       - APIM_SERVER_DATA_PATH=/data
         # Auth
         # APIM_SERVER_AUTH_TYPE = oidc | internal | none
-      - APIM_SERVER_AUTH_TYPE = internal
+      - APIM_SERVER_AUTH_TYPE=internal
         # internal auth
-      - APIM_SERVER_AUTH_INTERNAL_JWT_SECRET = myAuthJwtSecret
+      - APIM_SERVER_AUTH_INTERNAL_JWT_SECRET=myAuthJwtSecret
         # 15 minutes: 60 * 15 = 900 seconds
-      - APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS = 900
-      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET = myRefreshJwtSecret
+      - APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS=900
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET=myRefreshJwtSecret
         # 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
         # 5 days = 60 * 60 * 24 * 5 = 432000 seconds
-      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS = 432000
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS=432000
     logging:
       options:
         max-size: "10m"
