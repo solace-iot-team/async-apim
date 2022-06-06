@@ -117,7 +117,8 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
         dispatchSessionContextAction: dispatchSessionContextAction,
       });
-      navigateTo(EUICommonResourcePaths.Login);
+      // navigateTo(EUICommonResourcePaths.deleteme_Login);
+      navigateTo(EUICommonResourcePaths.SecLogin);
     }
     await apiLogout(props.apSystemUserDisplay.apEntityId);
   }

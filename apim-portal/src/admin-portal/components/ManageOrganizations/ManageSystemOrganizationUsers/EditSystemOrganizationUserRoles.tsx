@@ -97,7 +97,8 @@ export const EditSystemOrganizationUserRoles: React.FC<IEditSystemOrganizationUs
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
         dispatchSessionContextAction: dispatchSessionContextAction,
       });
-      navigateTo(EUICommonResourcePaths.Login);
+      // navigateTo(EUICommonResourcePaths.deleteme_Login);
+      navigateTo(EUICommonResourcePaths.SecLogin);
     }
     await apiLogout(props.userEntityId);
   }

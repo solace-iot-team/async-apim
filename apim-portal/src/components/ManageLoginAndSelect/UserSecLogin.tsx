@@ -41,7 +41,7 @@ export const UserSecLogin: React.FC<IUserSecLoginProps> = (props: IUserSecLoginP
     formData: TManagedObjectFormData;
   }
 
-  const PageTitle = "Sec Login";
+  const PageTitle = "Login";
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {

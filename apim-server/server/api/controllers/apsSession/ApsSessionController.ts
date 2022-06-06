@@ -77,13 +77,13 @@ export class ApsSessionController {
 
     const anyReq: any = req as any;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'internal info', details: {
       _passport: anyReq._passport,
       session: anyReq.session
     } }));
     // throw new ServerError(logName, `${logName}: continue here`);
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'internal info', details: {
       user: anyReq.user,
     } }));
     // throw new ServerError(logName, `${logName}: continue with userId=${JSON.stringify(anyReq.user, null, 2)}`);

@@ -28,7 +28,7 @@ import {
 } from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { HomePage } from './pages/HomePage';
-import { UserLoginPage } from './pages/UserLoginPage';
+import { UserLoginPage } from './pages/deleteme.UserLoginPage';
 import { UserSecLoginPage } from "./pages/UserSecLoginPage";
 import { UserGetLoginPage } from "./pages/UserGetLoginPage";
 import { ManageUserAccountPage } from "./pages/ManageUserAccountPage";
@@ -188,7 +188,7 @@ const App: React.FC = () => {
               <Route path={EUICommonResourcePaths.GetLogin} component={UserGetLoginPage} exact />
               <Route path={EUICommonResourcePaths.SecLogin} component={UserSecLoginPage} exact />
 
-              <Route path={EUICommonResourcePaths.Login} component={UserLoginPage} exact />
+              <Route path={EUICommonResourcePaths.deleteme_Login} component={UserLoginPage} exact />
               <ProtectedRouteWithRbac path={EUICommonResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
 
               {/* Admin Portal */}

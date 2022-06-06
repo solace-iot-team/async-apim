@@ -425,8 +425,8 @@ export class ApiCorsServerError extends ApiServerError {
   private static apiErrorId: APSErrorIds = APSErrorIds.CORS_NOT_ALLOWED;
   private static apiDefaultDescription = 'not allowed by CORS';
 
-  constructor(internalLogName: string, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
-    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription);
+  constructor(internalLogName: string, requestOrigin: string | undefined, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
+    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription, { requestOrigin: requestOrigin });
   }
 }
 

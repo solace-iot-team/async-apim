@@ -174,7 +174,8 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
         dispatchOrganizationContextAction: dispatchOrganizationContextAction,
         dispatchSessionContextAction: dispatchSessionContextAction,
       });
-      navigateTo(EUICommonResourcePaths.Login);
+      // navigateTo(EUICommonResourcePaths.deleteme_Login);
+      navigateTo(EUICommonResourcePaths.SecLogin);
     }
     await apiLogout(props.userEntityId);
   }

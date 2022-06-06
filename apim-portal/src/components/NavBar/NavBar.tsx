@@ -83,36 +83,36 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     API_USER_LOGOUT = "API_USER_LOGOUT"
   }
   
-  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
-    const funcName = 'apiLogout';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
-    try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogout';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogout({
+  //       userId: userEntityId.id
+  //     });
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
-  const doLogout = async() => {
-    APContextsDisplayService.clear_LoginContexts({
-      dispatchAuthContextAction: dispatchAuthContextAction,
-      dispatchUserContextAction: dispatchUserContextAction,
-      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
-      dispatchSessionContextAction: dispatchSessionContextAction,
-    });
-    navigateTo(EUICommonResourcePaths.Home);
-    await apiLogout(userContext.apLoginUserDisplay.apEntityId);
-  }
+  // const doLogout = async() => {
+  //   APContextsDisplayService.clear_LoginContexts({
+  //     dispatchAuthContextAction: dispatchAuthContextAction,
+  //     dispatchUserContextAction: dispatchUserContextAction,
+  //     dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+  //     dispatchSessionContextAction: dispatchSessionContextAction,
+  //   });
+  //   navigateTo(EUICommonResourcePaths.Home);
+  //   await apiLogout(userContext.apLoginUserDisplay.apEntityId);
+  // }
 
-  const onLogout = () => {
-    doLogout();
-  }
+  // const onLogout = () => {
+  //   doLogout();
+  // }
 
   const apiSecLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
     const funcName = 'apiSecLogout';
@@ -144,8 +144,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const renderSecLogout = () => {
     if(Config.getUseSecMode()) return (
       <React.Fragment>
-        <Divider />
-        <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Sec-Logout" onClick={() => onSecLogout()} />
+        <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onSecLogout()} />
       </React.Fragment>
     );   
   }
@@ -345,7 +344,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
             <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUICommonResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
           </RenderWithRbac>
           <Divider />
-          <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
+          {/* <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} /> */}
           { renderSecLogout() }
         </OverlayPanel>
         
@@ -424,10 +423,12 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const getLoginButton = (): JSX.Element => {
     if(Config.getUseSecMode()) {
       return (
-        <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="GET Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
+        <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
       );
     }
-    return (<></>);
+    return(
+      <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="old-Login" onClick={() => navigateTo(EUICommonResourcePaths.deleteme_Login)} />
+    );
   }
 
   const menubarEndTemplate = () => {
@@ -439,10 +440,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     return (
       <React.Fragment>
         {!authContext.isLoggedIn && 
-          <React.Fragment>
-            {getLoginButton()}  
-            <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.Login)} />
-          </React.Fragment>
+          getLoginButton()
         }
         {authContext.isLoggedIn &&
           <React.Fragment>

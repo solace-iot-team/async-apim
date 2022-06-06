@@ -110,7 +110,8 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
       dispatchSessionContextAction: dispatchSessionContextAction,
     });
-    navigateTo(EUICommonResourcePaths.Login);
+    // navigateTo(EUICommonResourcePaths.deleteme_Login);
+    navigateTo(EUICommonResourcePaths.SecLogin);
     await apiLogout(userContext.apLoginUserDisplay.apEntityId);
   }
 

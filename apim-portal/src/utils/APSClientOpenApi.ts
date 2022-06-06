@@ -40,10 +40,10 @@ export class APSClientOpenApi {
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
-      APSOpenAPI.WITH_CREDENTIALS = true;
-      APSOpenAPI.CREDENTIALS = "include";
-      APSOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
     }
+    APSOpenAPI.WITH_CREDENTIALS = true;
+    APSOpenAPI.CREDENTIALS = "include";
+    APSOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
   }
 

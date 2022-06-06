@@ -7,6 +7,7 @@ import { ApiCorsServerError, ServerError, ServerFatalError } from "../ServerErro
 import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
+import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
@@ -31,6 +32,7 @@ class APSAuthStrategyService {
   // private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
   private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
+  private static isRequestOriginLocalhost: boolean = false;
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
 
 
@@ -85,20 +87,43 @@ class APSAuthStrategyService {
   private static checkCorsOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => {
     const funcName = 'checkCorsOrigin';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
-    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'continue here', details: {
-    //   requestOrigin: requestOrigin,
-    // } }));
-    // throw new ServerError(logName, `continue with ${logName}`);
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'checking cors policy', details: {
+      requestOrigin: requestOrigin ? requestOrigin : 'undefined',
+      corsWhitelistedDomainList: APSAuthStrategyService.corsWhitelistedDomainList
+    } }));
+    // return callback(new ServerError(logName, `continue with ${logName}`));  
 
     if(requestOrigin !== undefined) {
       // localhost always allowed
-      if(APSAuthStrategyService.localhostRegExp.test(requestOrigin)) return callback(null, true);
-      // check whitelist
-      if(APSAuthStrategyService.corsWhitelistedDomainList.indexOf(requestOrigin) !== -1) return callback(null, true);
+      if(APSAuthStrategyService.localhostRegExp.test(requestOrigin)) {
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'localhost pass', details: {
+          requestOrigin: requestOrigin,
+        } }));    
+        APSAuthStrategyService.isRequestOriginLocalhost = true;
+        return callback(null, true);
+      }
+      ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'checking whitelisted IPs', details: {
+        requestOrigin: requestOrigin,
+        corsWhitelistedDomainList: APSAuthStrategyService.corsWhitelistedDomainList
+      } }));    
+      // check whitelist, if empty, allow all
+      if(APSAuthStrategyService.corsWhitelistedDomainList.length > 0) {
+        if(APSAuthStrategyService.corsWhitelistedDomainList.indexOf(requestOrigin) !== -1) return callback(null, true);
+      } else {
+        // no whitelisted IPs found, allowing all through
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'no whitelisted IPs found, allowing all through', details: {
+          requestOrigin: requestOrigin,
+        } }));    
+        return callback(null, true);
+      }
+    } else {
+      ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'requestOrigin is undefined, allowing through', details: {
+        requestOrigin: 'undefined',
+      } }));    
+      return callback(null, true);  
     }
     // error
-    // return callback(new Error(`CORS check failure: ${requestOrigin}`));
-    return callback(new ApiCorsServerError(logName));
+    return callback(new ApiCorsServerError(logName, requestOrigin));
   }
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {
@@ -205,16 +230,21 @@ class APSAuthStrategyService {
 
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    let _secure: boolean = true;
+    let _sameSite: string | undefined = "none";
+    // for localhost, secure must be true
+    // secure: true, sameSite: "none"
+    // for others:
+    // secure: true (requires https) + sameSite: "none"
+    // secure: false (over http) + sameSite: "lax" (this is the default)
+    if(!APSAuthStrategyService.isRequestOriginLocalhost) {
+      _secure = false;
+      _sameSite = undefined;
+    }
     return {
       httpOnly: true,
-      // Since localhost is not having https protocol,
-      // secure cookies do not work correctly (in postman)
-      // secure: !dev,
-
-      // for localhost
-      secure: true,
-      sameSite: "none",
-
+      secure: _secure,
+      sameSite: _sameSite,
       signed: true,
       maxAge: authConfig.refreshJwtExpiryMilliSecs,
       path: '/'
