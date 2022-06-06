@@ -65,7 +65,6 @@ const buildDockerContext = () => {
       if(s.cp('-rf', include.sources, include.targetDir).code !== 0) process.exit(1);
     }
   }
-
   console.log(`${logName}: success.`);
 }
 

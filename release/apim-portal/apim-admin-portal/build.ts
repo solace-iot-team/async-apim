@@ -3,14 +3,12 @@ import path from 'path';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
-const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
 
 const GitRoot = `${scriptDir}/../../..`;
 const WorkingDir = `${scriptDir}/working_dir`;
 const ApimPortalDir = `${GitRoot}/apim-portal`;
 const ApimServerDir =`${GitRoot}/apim-server`;
 const WorkingApimPortalDir = `${WorkingDir}/apim-portal`;
-const AlphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
 
 const AssetDir = `${scriptDir}/assets`;
 

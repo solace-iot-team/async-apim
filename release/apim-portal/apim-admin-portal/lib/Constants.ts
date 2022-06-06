@@ -21,6 +21,7 @@ export class Constants {
   private _alphaVersion: string | undefined; 
 
   private _assetsIncludeList: TAssetsIncludeList = [];
+  private readonly _assetDir: string;
   
   private initAssetIncludeList() {
     this._assetsIncludeList = [
@@ -28,6 +29,10 @@ export class Constants {
         sources: `${this._workingApimPortalDir}/build/*`,
         targetDir: `${this._contextDir}/apim-portal`
       },
+      {
+        sources: `${this._assetDir}/nginx.conf`,
+        targetDir: `${this._contextDir}`
+      }
     ];  
 
     // this._assetsIncludeList = [
@@ -72,6 +77,7 @@ export class Constants {
     this._tarFileReleaseDir = `${this._workingDir}/tar-release`;
     this._dockerFile = `${scriptDir}/Dockerfile`;
     this._alphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
+    this._assetDir = `${scriptDir}/assets`;
     this.initAssetIncludeList();
   }
   public log() {
@@ -88,6 +94,7 @@ export class Constants {
   public get ContextDir() { return this._contextDir; }
   public get DockerFile() { return this._dockerFile; }
   public get AlphaVersion() { return this._alphaVersion; }
+  public get AssetDir() { return this._assetDir; }
 
   public createDockerImageTag = (version: string): string => {
     if(this._alphaVersion) {
