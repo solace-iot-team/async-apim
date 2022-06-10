@@ -105,13 +105,14 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
         if(Config.getUseSecMode()) {
           dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
         }
-        // if(location.pathname !== EUICommonResourcePaths.SecLogin) {
-        //   // dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
-        //   // navigateTo(EUICommonResourcePaths.GetLogin);
-        // }
       }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
+      setRunInterval(false);
+      dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
+      if(Config.getUseSecMode()) {
+        dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
+      }
     }
   }
 
