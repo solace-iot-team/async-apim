@@ -143,9 +143,7 @@ export class ApsSessionController {
       existingRefreshToken: refreshToken,
     })
     .then(( response: TRefreshTokenInternalResponse ) => {
-
-      res.cookie("refreshToken", response.newRefreshToken, APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
-
+      // refresh the bearer token(s)
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
         success: true,
         token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId }),

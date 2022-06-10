@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import cors from "cors";
 
 import ServerConfig, { EAuthConfigType, TAuthConfig, TAuthConfigInternal, TExpressServerConfig } from "../ServerConfig";
-import { ApiCorsServerError, ServerError, ServerFatalError } from "../ServerError";
+import { ApiCorsServerError, ApiNotAuthorizedServerError, ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
@@ -282,8 +282,10 @@ class APSAuthStrategyService {
     };
 
     return jwt.sign(payload, authConfig.refreshJwtSecret, {
-      expiresIn: authConfig.refreshJwtExpiryMilliSecs
+      // seconds, not milli seconds
+      expiresIn: authConfig.refreshJwtExpiryMilliSecs * 1000
     });
+
   }
 
   public getUserId_From_RefreshToken = ({ refreshToken }:{
@@ -294,11 +296,13 @@ class APSAuthStrategyService {
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
     
-    const payload = jwt.verify(refreshToken, authConfig.refreshJwtSecret) as TTokenPayload;
-    return payload._id;
+    try {
+      const payload = jwt.verify(refreshToken, authConfig.refreshJwtSecret) as TTokenPayload;
+      return payload._id;
+    } catch(e: any) {
+      throw new ApiNotAuthorizedServerError(logName, undefined, { error: e });
+    }
   }
-
-
 }
 
 export default new APSAuthStrategyService();
