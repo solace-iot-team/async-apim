@@ -36,8 +36,13 @@ export default function routes(app: Application, apiBase: string): void {
 
   // secure routes
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
-    router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
     router.use('/apsSecureTests', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], ApsSecureTestsRouter);
+    router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
+    router.use('/apsAdministration/apsOrganizations', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsOrganiztionsRouter);
+    router.use('/apsBusinessGroups', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsBusinessGroupRouter);
+    router.use('/apsConfig/apsConnectors', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsConnectorRouter);
+    router.use('/apsExternalSystems', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsExternalSystemsRouter);
+    // router.use('/apsUsers', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsUsersRouter);
   }
   // System Admin routes
   router.use('/apsUsers', apsUsersRouter);
@@ -45,12 +50,12 @@ export default function routes(app: Application, apiBase: string): void {
   // TODO: remove when finished with session
   router.use('/apsLogin', apsLoginRouter);
 
-  router.use('/apsConfig/apsConnectors', apsConnectorRouter);
+  // router.use('/apsConfig/apsConnectors', apsConnectorRouter);
   router.use('/apsConfig/apsAbout', apsAboutRouter);
-  router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
   // Organization Admin routes
-  router.use('/apsBusinessGroups', apsBusinessGroupRouter);
-  router.use('/apsExternalSystems', apsExternalSystemsRouter);
+  // router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
+  // router.use('/apsBusinessGroups', apsBusinessGroupRouter);
+  // router.use('/apsExternalSystems', apsExternalSystemsRouter);
 
   app.use(apiBase, router);
 }
