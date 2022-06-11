@@ -34,7 +34,7 @@ import { UserGetLoginPage } from "./pages/UserGetLoginPage";
 import { ManageUserAccountPage } from "./pages/ManageUserAccountPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { NoOrganizationPage } from "./pages/NoOrganizationPage";
-import { NotFoundPage } from './pages/NotFoundPage';
+// import { NotFoundPage } from './pages/NotFoundPage';
 import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
 import { HealthCheckViewPage } from "./pages/HealthCheckViewPage";
@@ -212,7 +212,7 @@ const App: React.FC = () => {
               }
 
               {/* Catch all */}
-              <Route component={NotFoundPage} />
+              <Route component={HomePage} />
             </Switch>
           </div>
         </div>
