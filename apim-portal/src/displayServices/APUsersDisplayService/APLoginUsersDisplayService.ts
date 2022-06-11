@@ -171,6 +171,8 @@ class APLoginUsersDisplayService extends APUsersDisplayService {
       }
       throw e;
     }
+    // setup the bearer token on the open api
+    APSClientOpenApi.setToken(apsSessionLoginResponse.token);
     // now get the full APSUserResponse
     // Note: it might be the root user, in which case, this will throw an error 404
     try {

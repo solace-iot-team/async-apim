@@ -80,7 +80,6 @@ export const UserSecLogin: React.FC<IUserSecLoginProps> = (props: IUserSecLoginP
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_LOGIN, `login ${mo.username}`);
     try { 
-
       const apSecLoginUserResponse: TAPSecLoginUserResponse | undefined =  await APLoginUsersDisplayService.apsSecLogin({
         apUserLoginCredentials: mo
       });

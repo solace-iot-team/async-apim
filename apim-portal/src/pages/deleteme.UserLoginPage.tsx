@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Toast } from 'primereact/toast';
 
 import { TApiCallState } from '../utils/ApiCallState';
-import { ManageLoginAndSelect } from '../components/ManageLoginAndSelect/ManageLoginAndSelect';
+import { ManageLoginAndSelect } from '../components/ManageLoginAndSelect/deleteme.ManageLoginAndSelect';
 import { TAPUserLoginCredentials } from '../displayServices/APUsersDisplayService/APLoginUsersDisplayService';
 
 import "./Pages.css";

@@ -120,9 +120,8 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    // const funcName = 'useEffect[managedObject';
+    // const funcName = 'useEffect[managedObject]';
     // const logName = `${ComponentName}.${funcName}()`;
-
     if(managedObject === undefined) return;
     const memberOfOrganizationEntityIdList: TAPEntityIdList = APMemberOfService.get_ApMemberOfOrganizationEntityIdList({
       apMemberOfOrganizationDisplayList: managedObject.apLoginUserDisplay.apMemberOfOrganizationDisplayList,
@@ -171,6 +170,7 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
   }
 
   const onLoginError = (apiCallStatus: TApiCallState) => {
+    alert(`${ComponentName}.onLoginError(): errorororororor`)
     setManagedObject(undefined);
     props.onError(apiCallStatus);
   }
