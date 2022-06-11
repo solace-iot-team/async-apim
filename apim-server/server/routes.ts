@@ -42,10 +42,10 @@ export default function routes(app: Application, apiBase: string): void {
     router.use('/apsBusinessGroups', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsBusinessGroupRouter);
     router.use('/apsConfig/apsConnectors', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsConnectorRouter);
     router.use('/apsExternalSystems', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsExternalSystemsRouter);
-    // router.use('/apsUsers', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsUsersRouter);
+    router.use('/apsUsers', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsUsersRouter);
   }
   // System Admin routes
-  router.use('/apsUsers', apsUsersRouter);
+  // router.use('/apsUsers', apsUsersRouter);
 
   // TODO: remove when finished with session
   router.use('/apsLogin', apsLoginRouter);
