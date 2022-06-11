@@ -33,6 +33,7 @@ export const SecTestPage: React.FC = () => {
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
+      setApsSecureTestResponse(undefined);
     }
     setApiCallStatus(callState);
     return callState;

@@ -4,6 +4,7 @@
 import { APClientConnectorOpenApi } from "./APClientConnectorOpenApi";
 import { APSClientOpenApi } from "./APSClientOpenApi";
 import { 
+  ApiError,
   APSError, 
   APSErrorIds 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
@@ -15,6 +16,7 @@ export type TApiCallState = {
   isConnectorApiError?: boolean;
   isAPError?: boolean;
   error?: any;
+  isUnauthorizedError: boolean;
   context: {
     action: string;
     userDetail?: string;
@@ -26,6 +28,7 @@ export class ApiCallState {
   public static getInitialCallState = (action: string, userDetail: any): TApiCallState => {
     return {
       success: true,
+      isUnauthorizedError: false,
       context: {
         action: action,
         userDetail: userDetail
@@ -38,7 +41,11 @@ export class ApiCallState {
     apiCallState.isAPSApiError = APSClientOpenApi.isInstanceOfApiError(err);
     apiCallState.isConnectorApiError = APClientConnectorOpenApi.isInstanceOfApiError(err);
     apiCallState.isAPError = (err instanceof APError);
-    if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) apiCallState.error = err;
+    if(apiCallState.isAPSApiError || apiCallState.isConnectorApiError) {
+      const apiError: ApiError = err;
+      apiCallState.isUnauthorizedError = (apiError.status === 401);
+      apiCallState.error = err;
+    }
     else if(err instanceof APError) apiCallState.error = err.toObject();
     else if(err instanceof Error) apiCallState.error = { name: err.name, message: err.message };
     else apiCallState.error = err.toString();

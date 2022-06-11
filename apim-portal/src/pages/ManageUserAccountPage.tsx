@@ -9,10 +9,9 @@ import { GlobalElementStyles, Globals } from '../utils/Globals';
 import { TApiCallState } from "../utils/ApiCallState";
 import { UserContext } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
-
+import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
 
 import "./Pages.css";
-import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
 
 export const ManageUserAccountPage: React.FC = (props: any) => {
   // const componentName = 'ManageUserAccountPage';
