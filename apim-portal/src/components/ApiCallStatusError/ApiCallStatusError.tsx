@@ -1,9 +1,11 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { InputTextarea } from "primereact/inputtextarea";
 
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
+import { EUICommonResourcePaths } from "../../utils/Globals";
 
 import "../APComponents.css";
 
@@ -12,7 +14,18 @@ export interface IApiCallStatusErrorProps {
 }
 
 export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IApiCallStatusErrorProps) => {
-  // const componentName = 'ApiCallStatusError';
+  // const ComponentName = 'ApiCallStatusError';
+
+  const history = useHistory();
+  const navigateHome = (): void => { history.push(EUICommonResourcePaths.Home); }
+
+  React.useEffect(() => {
+    // console.log(`${ComponentName}: props.apiCallStatus=${JSON.stringify(props.apiCallStatus, null, 2)}`);
+    if(props.apiCallStatus !== null && !props.apiCallStatus.success && props.apiCallStatus.isUnauthorizedError) {
+      navigateHome();
+    }
+  }, [props.apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
 
   return (
     <React.Fragment>
