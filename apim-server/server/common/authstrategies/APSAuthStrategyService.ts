@@ -14,8 +14,14 @@ export enum ERegisteredStrategyName {
   INTERNAL_JWT = "internal_jwt",
   OIDC = "oidc"
 }
+export enum TTokenPayload_AccountType {
+  USER_ACCOUNT = "USER_ACCOUNT",
+  SERVICE_ACCOUNT = "SERVICE_ACCOUNT"
+}
 export type TTokenPayload = {
   _id: string;
+  iat: number;
+  accountType: TTokenPayload_AccountType;
 }
 type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
 
@@ -34,6 +40,10 @@ class APSAuthStrategyService {
   private static corsWhitelistedDomainList: Array<string> = [];
   private static isRequestOriginLocalhost: boolean = false;
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
+  private static jwtHeader: jwt.JwtHeader = {
+    typ: 'JWT',
+    alg: 'HS256'
+  };
 
 
   // public getApsPassport = (): passport.PassportStatic => {
@@ -246,7 +256,8 @@ class APSAuthStrategyService {
       secure: _secure,
       sameSite: _sameSite,
       signed: true,
-      maxAge: authConfig.refreshJwtExpiryMilliSecs,
+      // milli seconds
+      maxAge: authConfig.refreshJwtExpirySecs * 1000,
       path: '/'
     };
   }
@@ -261,30 +272,48 @@ class APSAuthStrategyService {
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
     const payload: TTokenPayload = {
-      _id: userId
+      _id: userId,
+      iat: Date.now(),
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT
     };
-
-    return jwt.sign(payload, authConfig.authJwtSecret, {
-      expiresIn: authConfig.authJwtExpiryMilliSecs
-    });
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: authConfig.authJwtExpirySecs,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: userId,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    }
+    return jwt.sign(payload, authConfig.authJwtSecret, signOptions);
   }
 
   public generateRefreshToken_For_InternalAuth = ({ userId }:{
     userId: string;
   }): string => {
     const funcName = 'generateRefreshToken_For_InternalAuth';
-    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
     const payload: TTokenPayload = {
-      _id: userId
+      _id: userId,
+      iat: Date.now(),
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT
     };
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: authConfig.refreshJwtExpirySecs,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: userId,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    };
+    return jwt.sign(payload, authConfig.refreshJwtSecret, signOptions);
 
-    return jwt.sign(payload, authConfig.refreshJwtSecret, {
-      // seconds, not milli seconds
-      expiresIn: authConfig.refreshJwtExpiryMilliSecs * 1000
-    });
+    // return jwt.sign(payload, authConfig.refreshJwtSecret, {
+    //   // seconds
+    //   expiresIn: authConfig.refreshJwtExpirySecs
+    // });
 
   }
 

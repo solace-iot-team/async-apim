@@ -33,6 +33,7 @@ import APSOrganizationsService from '../apsAdministration/APSOrganizationsServic
 import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
 import APSSecretsService from '../../../common/authstrategies/APSSecretsService';
+import APSSessionService from '../APSSessionService';
 
 export type APSUserSessionInfo = {
   /** using array for convenient deletion, possible values: 1 element or none */
@@ -170,6 +171,7 @@ export class APSUsersService {
     // await this.persistenceService.dropCollection();
     
     await this.persistenceService.initialize();
+    
     APSUsersService.rootApsUser = {
       isActivated: true,
       userId: rootUserConfig.userId,
@@ -185,6 +187,7 @@ export class APSUsersService {
       }
     }
 
+    await APSSessionService.logoutAll_internal({});
     // custom, one time maintenance
     // await this.persistenceService.delete({
     //   documentId: "master.user@async-apim-devel.com"

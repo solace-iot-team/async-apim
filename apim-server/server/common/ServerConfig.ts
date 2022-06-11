@@ -25,9 +25,9 @@ export type TAuthConfigOidc = {
 export type TAuthConfigInternal = {
   type: EAuthConfigType.INTERNAL;
   authJwtSecret: string;
-  authJwtExpiryMilliSecs: number;
+  authJwtExpirySecs: number;
   refreshJwtSecret: string;
-  refreshJwtExpiryMilliSecs: number;
+  refreshJwtExpirySecs: number;
 }
 export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc | TAuthConfigNone;
 
@@ -150,16 +150,16 @@ export class ServerConfig {
         const internalAuthConfig: TAuthConfigInternal = {
           type: EAuthConfigType.INTERNAL,
           authJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_SECRET),
-          authJwtExpiryMilliSecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS) * 1000,
+          authJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS),
           refreshJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET),
-          refreshJwtExpiryMilliSecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS) * 1000,      
+          refreshJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS),      
         };
         // validate values
-        if(internalAuthConfig.refreshJwtExpiryMilliSecs < internalAuthConfig.authJwtExpiryMilliSecs) {
+        if(internalAuthConfig.refreshJwtExpirySecs < internalAuthConfig.authJwtExpirySecs) {
           throw new ConfigEnvVarValueServerError(
             logName, 
-            `${EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS}=${internalAuthConfig.refreshJwtExpiryMilliSecs/1000} must not be less than ${EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS}=${internalAuthConfig.authJwtExpiryMilliSecs/1000}`, 
-            EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS, String(internalAuthConfig.authJwtExpiryMilliSecs/1000)
+            `${EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS}=${internalAuthConfig.refreshJwtExpirySecs} must not be less than ${EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS}=${internalAuthConfig.authJwtExpirySecs}`, 
+            EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS, String(internalAuthConfig.authJwtExpirySecs)
           );
         }
         return internalAuthConfig;

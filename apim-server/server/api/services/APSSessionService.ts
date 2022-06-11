@@ -40,7 +40,7 @@ export class APSSessionService {
   /**
    * Invalidates all user sessions.
    */
-  private logoutAll_internal = async({ organizationId }:{
+  public logoutAll_internal = async({ organizationId }:{
     organizationId?: string;
   }): Promise<void> => {
     const funcName = 'logoutAll_internal';
@@ -50,14 +50,17 @@ export class APSSessionService {
       organizationId: organizationId
     }}));
 
+    // TODO: implement logging out of 1 organization only if logged into this organization
+
     // delete refreshToken from all users
-    // TODO: implement logging out of just if logged into this organization
+    // root user
+    APSUsersService.deleteRefreshTokenRootApsUserInternal();
+    // all other users
     const updateInternal: Partial<APSUserInternal> = {
       sessionInfo: {
         refreshToken: []
       }
     };
-
     await this.persistenceService.updateAll({ update: updateInternal });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGED_OUT_ALL, message: 'logout all users', details: {
@@ -317,10 +320,18 @@ export class APSSessionService {
     }}));
 
     const newRefreshToken: string = APSAuthStrategyService.generateRefreshToken_For_InternalAuth({ userId: userId });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'token', details: {
+      newRefreshToken: newRefreshToken
+    }}));
 
     // get the user details
     // check if root
     if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
+      // check refreshToken
+      const rootUser: APSUserInternal = APSUsersService.getRootApsUserInternal();
+      if(!rootUser.sessionInfo.refreshToken || rootUser.sessionInfo.refreshToken.length !== 1 || rootUser.sessionInfo.refreshToken[0].length === 0) {
+        if(rootUser.sessionInfo.refreshToken[0] !== existingRefreshToken) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
       APSUsersService.updateRootApsUserInternal({ refreshToken: newRefreshToken });
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHED_USER_TOKEN, message: 'isRootUser', details: undefined }));
       return {
@@ -335,6 +346,10 @@ export class APSSessionService {
       const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
         documentId: userId
       }) as APSUserInternal;
+
+      if(!apsUserInternal.sessionInfo.refreshToken || apsUserInternal.sessionInfo.refreshToken.length !== 1 || apsUserInternal.sessionInfo.refreshToken[0].length === 0) {
+        if(apsUserInternal.sessionInfo.refreshToken[0] !== existingRefreshToken) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
 
       if (!apsUserInternal.isActivated) {
         throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
