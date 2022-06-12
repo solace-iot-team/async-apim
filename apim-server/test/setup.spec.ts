@@ -119,6 +119,7 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should initialize open api`, async() => {
       const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
       if(isInternalIdp) {
+        throw new Error(`${scriptName}: must set a bearer token for open api - how to generate it - using server call`);
         ApimServerAPIClient.initializeAuthConfigInternal({ 
           host: TestEnv.host, 
           port: TestEnv.port,
