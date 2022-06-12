@@ -61,7 +61,7 @@ export enum EUICommonResourcePaths {
   Home = '/',
   Unauthorized = '/unauthorized',
   NoOrganization = '/noorganization',
-  deleteme_Login = '/login',
+  // deleteme_Login = '/login',
   GetLogin = '/get-login',
   SecLogin = '/sec-login',
   ManageUserAccount = '/manage/user/account',
@@ -71,7 +71,7 @@ export enum EUICommonResourcePaths {
 export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
-  deleteme_LoginAs = '/admin-portal/loginas',
+  // deleteme_LoginAs = '/admin-portal/loginas',
   
   // DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
 

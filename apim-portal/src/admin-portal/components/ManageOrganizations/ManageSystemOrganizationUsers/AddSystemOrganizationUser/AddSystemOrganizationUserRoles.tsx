@@ -16,7 +16,6 @@ import { OrganizationContext } from "../../../../../components/APContextProvider
 import { APSClientOpenApi } from "../../../../../utils/APSClientOpenApi";
 import APMemberOfService, { TAPMemberOfOrganizationDisplay } from "../../../../../displayServices/APUsersDisplayService/APMemberOfService";
 import { EUICommonResourcePaths } from "../../../../../utils/Globals";
-import APLoginUsersDisplayService from "../../../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import APContextsDisplayService from "../../../../../displayServices/APContextsDisplayService";
 import { E_CALL_STATE_ACTIONS_USERS } from "../../ManageOrganizationsCommon";
 import { SessionContext } from "../../../../../components/APContextProviders/APSessionContextProvider";
@@ -93,21 +92,21 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
     return callState;
   }
 
-  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
-    const funcName = 'apiLogout';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS_USERS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
-    try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogout';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS_USERS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogout({
+  //       userId: userEntityId.id
+  //     });
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const doLogoutEditedUser = async() => {
     if(editingYourself) {
@@ -120,7 +119,7 @@ export const AddSystemOrganizationUserRoles: React.FC<IAddSystemOrganizationUser
       // navigateTo(EUICommonResourcePaths.deleteme_Login);
       navigateTo(EUICommonResourcePaths.SecLogin);
     }
-    await apiLogout(props.apSystemUserDisplay.apEntityId);
+    // await apiLogout(props.apSystemUserDisplay.apEntityId);
   }
 
   const doInitialize = async () => {

@@ -38,7 +38,6 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.ManageSystemUsers, 
-      EUIAdminPortalResourcePaths.deleteme_LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
@@ -78,7 +77,6 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
-      EUIAdminPortalResourcePaths.deleteme_LoginAs,
     ]
   },
   {

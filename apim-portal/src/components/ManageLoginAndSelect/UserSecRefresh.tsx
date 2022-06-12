@@ -15,7 +15,6 @@ import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { Loading } from "../Loading/Loading";
 import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
-import { Config } from "../../Config";
 
 export interface UserSecRefreshProps {
   children: any;
@@ -102,17 +101,13 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
       } else {
         setRunInterval(false);
         dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
-        if(Config.getUseSecMode()) {
-          dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
-        }
+        dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
       }
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       setRunInterval(false);
       dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
-      if(Config.getUseSecMode()) {
-        dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
-      }
+      dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
     }
   }
 

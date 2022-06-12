@@ -170,7 +170,7 @@ export const ManageSecLoginAndSelect: React.FC<IManageSecLoginAndSelectProps> = 
   }
 
   const onLoginError = (apiCallStatus: TApiCallState) => {
-    alert(`${ComponentName}.onLoginError(): errorororororor`)
+    // alert(`${ComponentName}.onLoginError(): errorororororor`)
     setManagedObject(undefined);
     props.onError(apiCallStatus);
   }

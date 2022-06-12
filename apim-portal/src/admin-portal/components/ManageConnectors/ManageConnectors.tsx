@@ -6,7 +6,7 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { EUICommonResourcePaths } from "../../../utils/Globals";
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
+import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
@@ -24,8 +24,6 @@ import { EAction, EditNewConnector } from "./EditNewConnector";
 import { 
   APSId 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 
 import '../../../components/APComponents.css';
@@ -109,19 +107,19 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const navigateTo = (path: string): void => { history.push(path); }
   
   // * Api Calls *
-  const apiLogoutAll = async(): Promise<TApiCallState> => {
-    const funcName = 'apiLogoutAll';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout all users`);
-    try { 
-      await APLoginUsersDisplayService.apsLogoutAll();
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogoutAll = async(): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogoutAll';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout all users`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogoutAll();
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const doLogoutAllUsers = async() => {
     APContextsDisplayService.clear_LoginContexts({
@@ -131,7 +129,7 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
       dispatchSessionContextAction: dispatchSessionContextAction,
     });
     navigateTo(EUICommonResourcePaths.Home);
-    await apiLogoutAll();
+    // await apiLogoutAll();
   }
 
   // * Config Context *

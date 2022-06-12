@@ -142,7 +142,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     doSecLogout();
   }
   const renderSecLogout = () => {
-    if(Config.getUseSecMode()) return (
+    return (
       <React.Fragment>
         <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onSecLogout()} />
       </React.Fragment>
@@ -421,13 +421,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   }
 
   const getLoginButton = (): JSX.Element => {
-    if(Config.getUseSecMode()) {
-      return (
-        <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
-      );
-    }
-    return(
-      <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="old-Login" onClick={() => navigateTo(EUICommonResourcePaths.deleteme_Login)} />
+    return (
+      <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
     );
   }
 

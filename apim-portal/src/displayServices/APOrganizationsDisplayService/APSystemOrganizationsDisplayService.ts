@@ -3,7 +3,6 @@ import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import APSearchContentService, { IAPSearchContent } from "../../utils/APSearchContentService";
 import { 
   ApsAdministrationService, 
-  ApsLoginService, 
   APSOrganization, 
   ListAPSOrganizationResponse 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
@@ -225,10 +224,6 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   }): Promise<void> {
     // const funcName = 'apiDelete_ApSystemOrganizationDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
-
-    await ApsLoginService.logoutOrganizationAll({
-      organizationId: organizationId
-    });
 
     try {
       await AdministrationService.deleteOrganization({

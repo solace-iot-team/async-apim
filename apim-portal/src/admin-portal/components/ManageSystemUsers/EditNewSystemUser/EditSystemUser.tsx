@@ -29,7 +29,6 @@ import { EditNewSystemUserProfile } from "./EditNewSystemUserProfile";
 import { EditNewSystemUserAuthentication } from "./EditNewSystemUserAuthentication";
 import { EditNewSystemUserActivationStatus } from "./EditNewSystemUserActivationStatus";
 import { EditNewSystemUserSystemRoles } from "./EditNewSystemUserSystemRoles";
-import APLoginUsersDisplayService from "../../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageSystemUsers.css";
@@ -150,21 +149,21 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
     return callState;
   }
 
-  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
-    const funcName = 'apiLogout';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
-    try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogout';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogout({
+  //       userId: userEntityId.id
+  //     });
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const doLogoutEditedUser = async() => {
     if(editingYourself) {
@@ -177,7 +176,7 @@ export const EditSystemUser: React.FC<IEditSystemUserProps> = (props: IEditSyste
       // navigateTo(EUICommonResourcePaths.deleteme_Login);
       navigateTo(EUICommonResourcePaths.SecLogin);
     }
-    await apiLogout(props.userEntityId);
+    // await apiLogout(props.userEntityId);
   }
 
 
