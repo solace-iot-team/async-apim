@@ -1,7 +1,6 @@
 import { Application } from 'express';
 import Router from 'express';
 import apsUsersRouter from './api/controllers/apsUsers/ApsUsersRouter';
-import apsLoginRouter from './api/controllers/apsLogin/ApsLoginRouter';
 import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsConnectorsRouter';
 import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter';
 import apsMonitorRouter from './api/controllers/apsMonitor/ApsMonitorRouter';
@@ -16,6 +15,7 @@ import APSAuthStrategyService from './common/authstrategies/APSAuthStrategyServi
 import { APSAuthorizationService } from './common/authstrategies/APSAuthorizationService';
 import ServerConfig, { EAuthConfigType } from './common/ServerConfig';
 import ApsSecureTestsRouter from './api/controllers/apsSecureTests/ApsSecureTestsRouter';
+import { ApsConnectorsController } from './api/controllers/apsConfig/apsConnectors/ApsConnectorsController';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
@@ -26,13 +26,15 @@ export default function routes(app: Application, apiBase: string): void {
     app.get(`${apiBase}/apsSession/login`, ApsSessionController.getLogin);
     app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
     app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
-    // app.get(`${apiBase}/apsSession/refreshToken`, passport.session, ApsSessionController.refreshToken);
   }
 
   // available even if server not operational
   router.use('/apsMonitor', apsMonitorRouter);
   // check that server is ready
   router.use(verifyServerStatus);
+  // public routes
+  app.get(`${apiBase}/apsConfig/apsConnectors/active`, ApsConnectorsController.byActive);
+  router.use('/apsConfig/apsAbout', apsAboutRouter);
 
   // secure routes
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
@@ -44,18 +46,6 @@ export default function routes(app: Application, apiBase: string): void {
     router.use('/apsExternalSystems', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsExternalSystemsRouter);
     router.use('/apsUsers', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsUsersRouter);
   }
-  // System Admin routes
-  // router.use('/apsUsers', apsUsersRouter);
-
-  // TODO: remove when finished with session
-  router.use('/apsLogin', apsLoginRouter);
-
-  // router.use('/apsConfig/apsConnectors', apsConnectorRouter);
-  router.use('/apsConfig/apsAbout', apsAboutRouter);
-  // Organization Admin routes
-  // router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
-  // router.use('/apsBusinessGroups', apsBusinessGroupRouter);
-  // router.use('/apsExternalSystems', apsExternalSystemsRouter);
-
+  
   app.use(apiBase, router);
 }

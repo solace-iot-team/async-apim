@@ -21,6 +21,7 @@ import {
   ApsConfigService, 
   ApiError,
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import APSConnectorsServiceEventEmitter from './APSConnetorsServiceEvent';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
 
@@ -235,7 +236,14 @@ export class APSConnectorsService {
       collectionDocument: replace,
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
-
+    if(replaced.isActive) {
+      // emit changed event
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
+        connectorId: replaced.connectorId,
+      }}));
+      APSConnectorsServiceEventEmitter.emit('activeChanged', replaced.connectorId );
+    }
+    
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replaced', details: replaced}));
 
     return replaced;
@@ -268,6 +276,11 @@ export class APSConnectorsService {
       collectionDocument: newActive,
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
+    // emit changed event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
+      connectorId: replacedNewActive.connectorId,
+    }}));
+    APSConnectorsServiceEventEmitter.emit('activeChanged', replacedNewActive.connectorId );
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedNewActive', details: replacedNewActive }));
 
@@ -283,6 +296,14 @@ export class APSConnectorsService {
     const deletedConnector: APSConnector = (await this.persistenceService.delete({
       documentId: apsConnectorId
     }) as unknown) as APSConnector;
+
+    if(deletedConnector.isActive) {
+      // emit changed event
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
+        connectorId: deletedConnector.connectorId,
+      }}));
+      APSConnectorsServiceEventEmitter.emit('activeChanged', deletedConnector.connectorId );
+    }
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedConnector', details: deletedConnector }));
 

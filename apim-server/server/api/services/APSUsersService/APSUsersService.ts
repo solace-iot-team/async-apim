@@ -34,6 +34,7 @@ import APSBusinessGroupsService from '../apsOrganization/apsBusinessGroups/APSBu
 import { APSOrganizationSessionInfoList } from '../../../../src/@solace-iot-team/apim-server-openapi-node/models/APSOrganizationSessionInfoList';
 import APSSecretsService from '../../../common/authstrategies/APSSecretsService';
 import APSSessionService from '../APSSessionService';
+import APSUsersServiceEventEmitter from './APSUsersServiceEvent';
 
 export type APSUserSessionInfo = {
   /** using array for convenient deletion, possible values: 1 element or none */
@@ -74,12 +75,9 @@ export class APSUsersService {
   public wait4CollectionUnlock = async() => {
     const funcName = 'wait4CollectionUnlock';
     const logName = `${APSUsersService.name}.${funcName}()`;
-    
-    await this.collectionMutex.waitForUnlock();
-    // const releaser = await this.collectionMutex.acquire();
-    // releaser();
+    const releaser = await this.collectionMutex.acquire();
+    releaser();
     if(this.collectionMutex.isLocked()) throw new Error(`${logName}: mutex is locked`);
-
   }
   private onOrganizationDeleted = async(apsOrganizationId: APSId): Promise<void> => {
     // await this.collectionMutex.runExclusive(async () => {
@@ -428,6 +426,13 @@ export class APSUsersService {
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
     });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CREATING, message: 'APSUserCreate', details: created }));
+
+    // emit created event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'created', details: {
+      userId: created.userId,
+    }}));
+    APSUsersServiceEventEmitter.emit('created', created.userId );
+
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({ 
@@ -444,6 +449,9 @@ export class APSUsersService {
     userId: string;
     apsUserUpdate: APSUserUpdate;
   }): Promise<APSUserResponse> => {
+    const funcName = 'update_internal';
+    const logName = `${APSUsersService.name}.${funcName}()`;
+
     const validationDoc: Partial<APSUserInternal> = {
       ...apsUserUpdate,
       profile: undefined,
@@ -459,7 +467,7 @@ export class APSUsersService {
       collectionDocumentId: userId,
       collectionDocument: apsUserUpdate,
       collectionSchemaVersion: APSUsersService.collectionSchemaVersion
-    });
+    });    
     const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
     const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
     const apsUserResponse: APSUserResponse = this.createAPSUserResponse({ 
@@ -484,6 +492,11 @@ export class APSUsersService {
     }}));
 
     const apsUserResponse: APSUserResponse = await this.update_internal({ userId: userId, apsUserUpdate: apsUserUpdate });
+    // emit updated event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'updated', details: {
+      userId: apsUserResponse.userId,
+    }}));
+    APSUsersServiceEventEmitter.emit('updated', apsUserUpdate, apsUserResponse );
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.UPDATED, message: 'APSUserResponse', details: apsUserResponse }));
 
@@ -505,6 +518,12 @@ export class APSUsersService {
     const deletedInternal: APSUserInternal = (await this.persistenceService.delete({
       documentId: userId
     }) as unknown) as APSUserInternal;
+
+    // emit deleted event
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'deleted', details: {
+      userId: deletedInternal.userId,
+    }}));
+    APSUsersServiceEventEmitter.emit('deleted', deletedInternal.userId );
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.DELETED, message: 'APSUserInternal', details: deletedInternal }));
 

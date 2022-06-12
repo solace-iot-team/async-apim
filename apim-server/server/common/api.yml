@@ -412,8 +412,8 @@ paths:
                 $ref: "#/components/schemas/APSError"
   /apsConfig/apsConnectors/active:
     get:
-      security:
-      - InternalAuthBearerToken: []
+      # security:
+      # - InternalAuthBearerToken: []
       operationId: getActiveApsConnector
       description: Get the currently active APSConnector object.
       tags:
@@ -1225,7 +1225,29 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
+  /apsSession/{organization_id}/logoutAll:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    post:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: logoutOrganizationAll
+      description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
+      tags:
+      - APSSession
+      responses:
+        '204':
+          description: Successful logout.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsSecureTests/test:
     get:
       security:
@@ -1249,138 +1271,138 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /apsLogin/login:
-    post:
-      operationId: login
-      description: Login.
-      tags:
-      - APSLogin
-      requestBody:
-        description: The login credentials.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/APSUserLoginCredentials'
-      responses:
-        '200':
-          description: Successful login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APSUserResponse'
-        '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-  /apsLogin/loginAs:
-    post:
-      operationId: loginAs
-      description: Login on behalf of another user. Checks if user has given consent. Applicable also for non-active users. Not applicable for root user.
-      tags:
-      - APSLogin
-      requestBody:
-        description: The login as request.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/APSUserLoginAsRequest'
-      responses:
-        '200':
-          description: Successful login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APSUserResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/logoutAll:
-    post:
-      operationId: logoutAll
-      description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/{organization_id}/logoutAll:
-    parameters:
-    - $ref: '#/components/parameters/organization_id'
-    post:
-      operationId: logoutOrganizationAll
-      description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/{user_id}/logout:
-    parameters:
-    - $ref: '#/components/parameters/user_id'
-    post:
-      operationId: logout
-      description: Invalidate user session forcing them  to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/login:
+  #   post:
+  #     operationId: login
+  #     description: Login.
+  #     tags:
+  #     - APSLogin
+  #     requestBody:
+  #       description: The login credentials.
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/APSUserLoginCredentials'
+  #     responses:
+  #       '200':
+  #         description: Successful login.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/APSUserResponse'
+  #       '400':
+  #         description: "Bad Request."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #           "*/*":
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #       '401':
+  #         description: "Unauthorized."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #       '500':
+  #         description: "Internal Server Error."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  # /apsLogin/loginAs:
+  #   post:
+  #     operationId: loginAs
+  #     description: Login on behalf of another user. Checks if user has given consent. Applicable also for non-active users. Not applicable for root user.
+  #     tags:
+  #     - APSLogin
+  #     requestBody:
+  #       description: The login as request.
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/APSUserLoginAsRequest'
+  #     responses:
+  #       '200':
+  #         description: Successful login.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/APSUserResponse'
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/logoutAll:
+  #   post:
+  #     operationId: logoutAll
+  #     description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/{organization_id}/logoutAll:
+  #   parameters:
+  #   - $ref: '#/components/parameters/organization_id'
+  #   post:
+  #     operationId: logoutOrganizationAll
+  #     description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/{user_id}/logout:
+  #   parameters:
+  #   - $ref: '#/components/parameters/user_id'
+  #   post:
+  #     operationId: logout
+  #     description: Invalidate user session forcing them  to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
   /spec:
     get:
       tags:
