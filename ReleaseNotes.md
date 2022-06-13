@@ -17,6 +17,19 @@ Solace Async API Management.
 - **Admin Portal: Organization: Asset Maintenance: APIs**
   - manage apis that are not managed assets and assign asset properties
 
+**Framework:**
+- **APIM-Portal**
+  - added refreshToken & page refresh support avoiding logging in again on page refresh
+- **APIM-Server**
+  - logout all users on
+    - server restart
+    - updates to business groups
+    - updates to organization
+  - logout user on update to user record
+- **Release:**
+  - **APIM-Portal**
+    - added nginx conf to Docker image for seamless page refresh support
+
 **Fixes:**
 * **Developer Portal:MyApps**
   - list apps: catch error when developer has not be registered yet with connector
