@@ -24,6 +24,7 @@ import { DeleteApiProduct } from "../ManageApiProducts/DeleteApiProduct";
 
 import '../../../components/APComponents.css';
 import "./MaintainApiProducts.css";
+import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../ManageApiProducts/DisplayApiProduct";
 
 export interface IMaintainApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -287,6 +288,7 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
+          scope={E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN}
         />
       }
       {showDeleteComponent && managedObjectEntityId &&

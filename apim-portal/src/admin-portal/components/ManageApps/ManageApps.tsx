@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -19,6 +20,7 @@ import { ViewApp } from "./ViewApp";
 import { DeleteApp } from "./DeleteApp";
 import { ManageAccess } from "./ManageAccess/ManageAccess";
 import { MonitorApp } from "./MonitorApp";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApps.css";
@@ -28,6 +30,7 @@ export interface IManageAppsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) => {
@@ -58,6 +61,7 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
   const ToolbarDeleteButtonLabel = 'Delete';
   const ToolbarMonitorButtonLabel = 'Monitor Stats';
 
+  const backToApiProductHistory = useHistory<TAPPageNavigationInfo>();
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -75,7 +79,11 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
 
   // * useEffect Hooks *
   React.useEffect(() => {
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    else {
+      setManagedObjectEntityId(props.apPageNavigationInfo.apNavigationTarget.apEntityId);
+      setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    }
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -135,46 +143,78 @@ export const ManageApps: React.FC<IManageAppsProps> = (props: IManageAppsProps) 
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_MONITOR);
   }
   
+  const onBackToApiProduct = () => {
+    const funcName = 'onBackToApiProduct';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.apPageNavigationInfo === undefined) throw new Error(`${logName}: props.apPageNavigationInfo === undefined`);
+    backToApiProductHistory.push({
+      pathname: props.apPageNavigationInfo.apNavigationOrigin.apOriginPath,
+      state: {
+        apNavigationTarget: {
+          apEntityId: props.apPageNavigationInfo.apNavigationOrigin.apEntityId,
+          tabIndex: props.apPageNavigationInfo.apNavigationOrigin.tabIndex,
+          scope: E_AP_Navigation_Scope.ORIGIN
+        },
+        apNavigationOrigin: {
+          breadcrumbLabel: 'App',
+          apEntityId: props.apPageNavigationInfo.apNavigationTarget.apEntityId,
+          apOriginPath: '/',
+          scope: E_AP_Navigation_Scope.LINKED,
+        }
+      }
+    });
+  }
+
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
-    if(showViewComponent) {          
-      return (
-        <React.Fragment>
-          <Button 
-            key={ComponentName+ToolbarManagedAccessButtonLabel} 
-            label={ToolbarManagedAccessButtonLabel} 
-            // icon="pi pi-pencil" 
-            onClick={onManageAccessFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-          />
-          <Button 
-            key={ComponentName+ToolbarMonitorButtonLabel}
-            label={ToolbarMonitorButtonLabel} 
-            onClick={onMonitorFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-            disabled={!managedObject_AllowedActions.isMonitorStatsAllowed}
-          />
-        </React.Fragment>
-      );
+    if(showViewComponent) {       
+      if(props.apPageNavigationInfo !== undefined) {
+        return(
+          <React.Fragment>
+            <Button label={`Back to API Product: ${props.apPageNavigationInfo.apNavigationOrigin.apEntityId.displayName}`} icon="pi pi-arrow-left" onClick={onBackToApiProduct} className="p-button-text p-button-plain p-button-outlined"/>
+          </React.Fragment>
+        );
+      } else {
+        return (
+          <React.Fragment>
+            <Button 
+              key={ComponentName+ToolbarManagedAccessButtonLabel} 
+              label={ToolbarManagedAccessButtonLabel} 
+              // icon="pi pi-pencil" 
+              onClick={onManageAccessFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+            />
+            <Button 
+              key={ComponentName+ToolbarMonitorButtonLabel}
+              label={ToolbarMonitorButtonLabel} 
+              onClick={onMonitorFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+              disabled={!managedObject_AllowedActions.isMonitorStatsAllowed}
+            />
+          </React.Fragment>
+        );
+      }
     }
     return undefined;
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(!componentState.currentState) return undefined;
     if(showViewComponent) {
-      return (
-        <React.Fragment>
-          <Button 
-            key={ComponentName+ToolbarDeleteButtonLabel}
-            label={ToolbarDeleteButtonLabel} 
-            icon="pi pi-trash" 
-            onClick={onDeleteManagedObjectFromToolbar} 
-            className="p-button-text p-button-plain p-button-outlined"
-            style={{ color: "red", borderColor: 'red'}}
-          />
-        </React.Fragment>
-      );
+      if(props.apPageNavigationInfo === undefined) {
+        return (
+          <React.Fragment>
+            <Button 
+              key={ComponentName+ToolbarDeleteButtonLabel}
+              label={ToolbarDeleteButtonLabel} 
+              icon="pi pi-trash" 
+              onClick={onDeleteManagedObjectFromToolbar} 
+              className="p-button-text p-button-plain p-button-outlined"
+              style={{ color: "red", borderColor: 'red'}}
+            />
+          </React.Fragment>
+        );
+      }
     }
     return undefined;
   }

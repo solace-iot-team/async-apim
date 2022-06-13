@@ -50,6 +50,7 @@ export class APClientConnectorOpenApi {
     // console.log(`${logName}: base = ${JSON.stringify(base, null, 2)}`);
     return base;
   }
+  
   public static initialize = (config: APSConnectorClientConfig) => {
     // const funcName: string = `initialize`;
     // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  

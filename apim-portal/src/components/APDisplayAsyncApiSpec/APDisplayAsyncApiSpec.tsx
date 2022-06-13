@@ -17,8 +17,9 @@ import "@asyncapi/react-component/styles/default.min.css";
 import "../APComponents.css";
 
 export interface IAPDisplayAsyncApiSpecProps {
-  schemaId: string,
-  schema: any,
+  schemaId: string;
+  schema: any;
+  renderDownloadButtons?: boolean;
   onDownloadError: (apiCallState: TApiCallState) => void;
   onDownloadSuccess: (apiCallState: TApiCallState) => void;
 }
@@ -28,6 +29,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
 
   const ToolbarButtonLabel_DownloadJson = 'Download JSON';
   const ToolbarButtonLabel_DownloadYaml = 'Download YAML';
+  const renderDownloadButtons: boolean = props.renderDownloadButtons !== undefined ? props.renderDownloadButtons : true;
   
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   // create a copy of the schema to pass to the react render component, it modifies it
@@ -63,6 +65,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
   }
 
   const renderToolbar = () => {
+    if(!renderDownloadButtons) return (<></>);
     const jsonFileName: string = getFileName(props.schemaId, EFileExtension.JSON);
     const yamlFileName: string = getFileName(props.schemaId, EFileExtension.YAML);
     const buttonClassName: string = "p-button-text p-button-plain p-button-outlined";

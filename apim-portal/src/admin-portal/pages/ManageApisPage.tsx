@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -7,24 +7,28 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
-import { ManageApis } from '../components/ManageApis/ManageApis';
-import { TAPOrganizationId } from '../../components/deleteme.APComponentsCommon';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
+import { TAPEntityId } from '../../utils/APEntityIdsService';
+import { ManageApis } from '../components/ManageApis/ManageApis';
+import { TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
 export const ManageApisPage: React.FC = () => {
-  const componentName = 'ManageApisPage';
+  const ComponentName = 'ManageApisPage';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
+
+  const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
-  const [breadCrumbLabelList, setBreadCrumbLabelList] = React.useState<Array<string>>([]);
+  
+  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [organizationEntityId, setOrganizationEntityId] = React.useState<TAPEntityId>();
 
   const onSuccess = (apiCallStatus: TApiCallState) => {
     if(apiCallStatus.context.userDetail) toast.current.show({ severity: 'success', summary: 'Success', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeSuccess });
@@ -32,10 +36,6 @@ export const ManageApisPage: React.FC = () => {
 
   const onError = (apiCallStatus: TApiCallState) => {
     toast.current.show({ severity: 'error', summary: 'Error', detail: `${apiCallStatus.context.userDetail}`, life: toastLifeError });
-  }
-
-  const onBreadcrumbLabelList = (newBreadCrumbLableList: Array<string>) => {
-    setBreadCrumbLabelList(newBreadCrumbLableList);
   }
 
   const renderBreadcrumbs = () => {
@@ -46,9 +46,12 @@ export const ManageApisPage: React.FC = () => {
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis) }
       }
     ];
-    breadCrumbLabelList.forEach( (breadCrumbLabel: string) => {
-      breadcrumbItems.push({ label: breadCrumbLabel });
-    })
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
     return (
       <React.Fragment>
         <BreadCrumb model={breadcrumbItems} />
@@ -56,25 +59,26 @@ export const ManageApisPage: React.FC = () => {
     )
   }
 
-  const [organizationId, setOrganizationId] = React.useState<TAPOrganizationId>();
-
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
-    setOrganizationId(userContext.runtimeSettings.currentOrganizationEntityId.id);
-  }, [userContext]);
+    // alert(`${logName}: location.state=${JSON.stringify(location.state, null, 2)}`);
+    setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
+  }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
+
 
   return (
     <React.Fragment>
       <Toast ref={toast} />
-      {renderBreadcrumbs()}
-      {organizationId && 
+      {organizationEntityId && renderBreadcrumbs()}
+      {organizationEntityId && 
         <ManageApis
-          organizationId={organizationId}
+          organizationEntityId={organizationEntityId}
           onSuccess={onSuccess} 
           onError={onError} 
-          onBreadCrumbLabelList={onBreadcrumbLabelList}
+          setBreadCrumbItemList={setBreadCrumbItemList}
+          apPageNavigationInfo={location.state}
         />
       }
     </React.Fragment>

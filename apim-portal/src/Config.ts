@@ -2,8 +2,8 @@
 import { TAPSClientOpenApiConfig } from './utils/APSClientOpenApi';
 
 type TConfig = {
-  useDevelTools: boolean,
-  apsClientOpenApiConfig: TAPSClientOpenApiConfig
+  useDevelTools: boolean;
+  apsClientOpenApiConfig: TAPSClientOpenApiConfig;
 }
 
 export class Config {
@@ -72,4 +72,5 @@ export class Config {
     if(!Config.config) throw new Error(`${logName}: Config.config is undefined`);
     return Config.config.useDevelTools;
   }
+
 }

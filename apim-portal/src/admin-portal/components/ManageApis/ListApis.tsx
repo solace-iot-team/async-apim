@@ -4,131 +4,93 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
+import { MenuItem } from "primereact/api";
+import { Divider } from "primereact/divider";
 
-import { 
-  APIInfo,
-  APIInfoList,
-  ApisService,
-  CommonEntityNameList,
-} from '@solace-iot-team/apim-connector-openapi-browser';
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { Globals } from "../../../utils/Globals";
-import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { E_CALL_STATE_ACTIONS, TManagedObjectId, TViewApiObject, TViewManagedObject } from "./ManageApisCommon";
-import { APRenderUtils } from "../../../utils/APRenderUtils";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils/APEntityIdsService";
+import APApisDisplayService, { 
+  IAPApiDisplay, 
+  TAPApiDisplayList 
+} from "../../../displayServices/APApisDisplayService";
+import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+import { E_CALL_STATE_ACTIONS } from "./ManageApisCommon";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
 
 export interface IListApisProps {
-  organizationId: TAPOrganizationId,
+  organizationEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectEdit: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectDelete: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string) => void;
-  onManagedObjectView: (managedObjectId: TManagedObjectId, managedObjectDisplayName: string, viewManagedObject: TViewManagedObject) => void;
+  onManagedObjectView: (apApiDisplay: IAPApiDisplay) => void;
+  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
-  const componentName = 'ListApis';
+  const ComponentName = 'ListApis';
 
-  const MessageNoManagedObjectsFoundCreateNew = 'No APIs found - create a new API.';
+  const MessageNoManagedObjectsFound = 'No APIs defined.';
   const GlobalSearchPlaceholder = 'search ...';
 
-  type TManagedObject = TViewManagedObject;
+  type TManagedObject = IAPApiDisplay;
   type TManagedObjectList = Array<TManagedObject>;
-  type TManagedObjectTableDataRow = TManagedObject;
-  type TManagedObjectTableDataList = Array<TManagedObjectTableDataRow>;
 
-  const transformViewApiObjectToViewManagedObject = (viewApiObject: TViewApiObject, apiInfo: APIInfo, usedByApiProductEntityNameList: CommonEntityNameList): TViewManagedObject => {
-    const globalSearch = {
-      apiObject: viewApiObject,
-      apiInfo: apiInfo,
-      usedByApiProductEntityNameList: usedByApiProductEntityNameList
-    }
-    return {
-      id: viewApiObject,
-      displayName: viewApiObject,
-      apiObject: viewApiObject,
-      apiInfo: apiInfo,
-      apiUsedBy_ApiProductEntityNameList: usedByApiProductEntityNameList,
-      globalSearch: Globals.generateDeepObjectValuesString(globalSearch)
-    }
-  }
-
-  const transformManagedObjectListToTableDataList = (managedObjectList: TManagedObjectList): TManagedObjectTableDataList => {
-    const _transformManagedObjectToTableDataRow = (managedObject: TManagedObject): TManagedObjectTableDataRow => {
-      return {
-        ...managedObject
-      }
-    }
-    return managedObjectList.map( (managedObject: TManagedObject) => {
-      return _transformManagedObjectToTableDataRow(managedObject);
-    });
-  }
-
-  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
+  const [userContext] = React.useContext(UserContext);
+  const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
+  const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [isGetManagedObjectListInProgress, setIsGetManagedObjectListInProgress] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
   // * Api Calls *
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList';
-    const logName = `${componentName}.${funcName}()`;
-    setIsGetManagedObjectListInProgress(true);
+    const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try { 
-      const apiResult = await ApisService.listApis({
-        organizationName: props.organizationId,
-        format: "extended"
+      const list: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplayList({
+        organizationId: props.organizationEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
       });
-      const apiAPIInfoList: APIInfoList = apiResult as APIInfoList;      
-      let _managedObjectList: TManagedObjectList = [];
-      for(const apiInfo of apiAPIInfoList) {
-        // console.log(`${logName}: apiInfo=${JSON.stringify(apiInfo, null, 2)}`);
-        if(!apiInfo.name) throw new Error(`${logName}: apiInfo.name is undefined`);
-        // get the api Products using the api
-        const apiApiProductEntityNameList: CommonEntityNameList = await ApisService.getApiReferencedByApiProducts({
-          organizationName: props.organizationId,
-          apiName: apiInfo.name
-        });
-        _managedObjectList.push(transformViewApiObjectToViewManagedObject(apiInfo.name, apiInfo, apiApiProductEntityNameList));
-      }
-      setManagedObjectList(_managedObjectList);
+      setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
     setApiCallStatus(callState);
-    setIsGetManagedObjectListInProgress(false);
     return callState;
   }
 
   const doInitialize = async () => {
-    props.onLoadingChange(true);
+    setIsLoading(true);
     await apiGetManagedObjectList();
-    props.onLoadingChange(false);
+    setIsLoading(false);
   }
 
   React.useEffect(() => {
-    // const funcName = 'useEffect([])';
-    // const logName = `${componentName}.${funcName}()`;
-    // console.log(`${logName}: mounting ...`);
+    props.setBreadCrumbItemList([]);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if (apiCallStatus !== null) {
-      if(apiCallStatus.success) props.onSuccess(apiCallStatus);
-      else props.onError(apiCallStatus);
-    }
+    if(managedObjectList === undefined) return;
+    setIsInitialized(true);
+  }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(apiCallStatus === null) return;
+    if(apiCallStatus.success) props.onSuccess(apiCallStatus);
+    else props.onError(apiCallStatus);
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
@@ -138,7 +100,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
 
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
-    props.onManagedObjectView(mo.id, mo.displayName, mo);
+    props.onManagedObjectView(mo);
   }
 
   const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
@@ -157,94 +119,122 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     );
   }
 
-  const usedByApiProductsBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    if(mo.apiUsedBy_ApiProductEntityNameList.length === 0) return (<>None</>);
-    return APRenderUtils.renderStringListAsDivList(APRenderUtils.getCommonEntityNameListAsStringList(mo.apiUsedBy_ApiProductEntityNameList));
+  const nameBodyTemplate = (mo: TManagedObject): string => {
+    return mo.apEntityId.displayName;
   }
-
-  // const actionBodyTemplate = (mo: TManagedObject) => {
-  //   const showButtonsEditDelete: boolean = (mo.apiInfo.source !== APIInfo.source.EVENT_PORTAL_LINK);
-  //   const isDeleteAllowed: boolean = mo.apiUsedBy_ApiProductEntityNameList.length === 0;
-  //   return (
-  //       <React.Fragment>
-  //         { showButtonsEditDelete &&
-  //           <>
-  //             <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(mo.id, mo.displayName)}  />
-  //             <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(mo.id, mo.displayName)} disabled={!isDeleteAllowed}/>
-  //           </>
-  //         }
-  //       </React.Fragment>
-  //   );
-  // }
-
+  const businessGroupBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    return (<div>{mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
+  }
+  const versionBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    return (<div>{mo.apVersionInfo.apLastVersion}</div>);
+  }
+  const sourceBodyTemplate = (mo: TManagedObject): string => {
+    return mo.connectorApiInfo.source;
+  }
+  const sharedBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    const sharingEntityIdList: TAPEntityIdList = mo.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
+      return {
+        id: x.apEntityId.id,
+        displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
+      }
+    });
+    if(sharingEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
+    );
+  }
+  const stateTemplate = (mo: TManagedObject): string => {
+    return mo.apLifecycleStageInfo.stage;
+  }
+  const usedByApiProductsBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apApiProductReferenceEntityIdList.length === 0) return (<>None</>);
+    return(<>{mo.apApiProductReferenceEntityIdList.length}</>);
+  }
   const renderManagedObjectDataTable = () => {
-    let managedObjectTableDataList: TManagedObjectTableDataList = transformManagedObjectListToTableDataList(managedObjectList);    
+    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
+    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
+    const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
+    const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
+    const sourceSortField = APApisDisplayService.nameOf_ConnectorApiInfo('source');
+    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
     return (
       <div className="card">
-          <DataTable
-            ref={dt}
-            className="p-datatable-sm"
-            autoLayout={true}
-            header={renderDataTableHeader()}
-            value={managedObjectTableDataList}
-            globalFilter={globalFilter}
-            selectionMode="single"
-            selection={selectedManagedObject}
-            onRowClick={onManagedObjectSelect}
-            onRowDoubleClick={(e) => onManagedObjectOpen(e)}
-            scrollable 
-            // scrollHeight="800px" 
-            dataKey="id"  
-            // sorting
-            sortMode='single'
-            sortField="displayName"
-            sortOrder={1}
-          >
-            {/* <Column field="id" header="Id" sortable /> */}
-            <Column header="Name" field="displayName" bodyStyle={{verticalAlign: 'top'}} sortable filterField="globalSearch" />
-            <Column header="Source" field="apiInfo.source" bodyStyle={{verticalAlign: 'top'}} sortable />
-            <Column header="Used By API Products" body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-            {/* <Column headerStyle={{width: '7em' }} body={actionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'right' }} /> */}
+        <DataTable
+          ref={dt}
+          className="p-datatable-sm"
+          autoLayout={true}
+          resizableColumns 
+          columnResizeMode="fit"
+          showGridlines={false}
+
+          header={renderDataTableHeader()}
+          value={managedObjectList}
+          globalFilter={globalFilter}
+          selectionMode="single"
+          selection={selectedManagedObject}
+          onRowClick={onManagedObjectSelect}
+          onRowDoubleClick={(e) => onManagedObjectOpen(e)}
+          scrollable 
+          // scrollHeight="800px" 
+          dataKey={dataKey}
+          // sorting
+          sortMode='single'
+          sortField={sortField}
+          sortOrder={1}
+        >
+          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
+          <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} />
+          <Column header="Source" headerStyle={{width: '9em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable />
+          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
+          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
+          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+          <Column header="API Products" headerStyle={{width: '8em'}} body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} />
         </DataTable>
       </div>
     );
   }
 
   const renderContent = () => {
+    const funcName = 'renderContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
 
-    if(managedObjectList.length === 0 && !isGetManagedObjectListInProgress && apiCallStatus && apiCallStatus.success) {
-      return (<h3>{MessageNoManagedObjectsFoundCreateNew}</h3>);
+    if(managedObjectList.length === 0) {
+      return (
+        <React.Fragment>
+          <Divider />
+          {MessageNoManagedObjectsFound}
+          <Divider />
+        </React.Fragment>
+      );
     }
-    if(managedObjectList.length > 0 && !isGetManagedObjectListInProgress) {
+    if(managedObjectList.length > 0) {
       return renderManagedObjectDataTable();
     } 
   }
 
-  // const renderDebugSelectedManagedObject = (): JSX.Element => {
-  //   if(managedObjectList.length > 0 && selectedManagedObject) {
-  //     const _d = {
-  //       ...selectedManagedObject,
-  //       globalSearch: 'not shown...'
-  //     }
-  //     return (
-  //       <pre style={ { fontSize: '10px' }} >
-  //         {JSON.stringify(_d, null, 2)}
-  //       </pre>
-  //     );
-  //   } else return (<></>);
-  // }
+  const renderBusinessGroupInfo = (): JSX.Element => {
+    return(
+      <div>
+        <span><b>Business Group:</b> {userContext.runtimeSettings.currentBusinessGroupEntityId?.displayName}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="manage-apis">
 
+      <Loading key={ComponentName} show={isLoading} />      
+
       <APComponentHeader header='APIs:' />
+
+      <div className="p-mt-2">{renderBusinessGroupInfo()}</div>
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      {renderContent()}
-      
-      {/* DEBUG OUTPUT         */}
-      {/* {Config.getUseDevelTools() && renderDebugSelectedManagedObject()} */}
+      <div className="p-mt-2">
+        {isInitialized && renderContent()}
+      </div>
 
     </div>
   );

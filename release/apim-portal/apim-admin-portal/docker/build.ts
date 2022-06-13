@@ -42,8 +42,10 @@ const setGlobals = () => {
   const releasePackageJson = require(`${scriptDir}/package.json`);
 
   DockerImageName = releasePackageJson.name;
-  DockerImageTag = `${DockerImageName}:${apimPortalPackageJson.version}`;
-  DockerImageTagLatest = `${DockerImageName}:latest`;
+  DockerImageTag = `${DockerImageName}:${CONSTANTS.createDockerImageTag(apimPortalPackageJson.version)}`;
+  DockerImageTagLatest = `${DockerImageName}:${CONSTANTS.createLatestTag()}`;;
+  // DockerImageTag = `${DockerImageName}:${apimPortalPackageJson.version}`;
+  // DockerImageTagLatest = `${DockerImageName}:latest`;
   // console.log(`${logName}: Globals = ${JSON.stringify(Globals, null, 2)}`);
   console.log(`${logName}: success.`);
 }
@@ -63,7 +65,6 @@ const buildDockerContext = () => {
       if(s.cp('-rf', include.sources, include.targetDir).code !== 0) process.exit(1);
     }
   }
-
   console.log(`${logName}: success.`);
 }
 

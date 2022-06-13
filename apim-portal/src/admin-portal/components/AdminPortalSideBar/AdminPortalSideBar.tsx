@@ -48,10 +48,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
-      
-      isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) && 
-      
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
+      
+      // isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) &&       
+      // isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis)
+
       ) return [];
 
     let _items: Array<MenuItem> = [
@@ -75,6 +76,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
       },
+      // {
+      //   label: 'APIs',
+      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
+      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
+      // },
     ];
     return _items;
   }
@@ -99,11 +105,16 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganization) ||
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance) 
       ) return [];
-    let _items: Array<MenuItem> = [
+    const _items: Array<MenuItem> = [
       {
         label: 'API Products',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts),         
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts); }
+      },
+      {
+        label: 'APIs',
+        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis),         
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis); }
       },
     ];
     return _items;

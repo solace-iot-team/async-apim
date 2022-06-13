@@ -349,8 +349,9 @@ export type TApiObjectNotFoundServerErrorMeta = {
   collectionName: string
 }
 export type TApiNotAuthorizedServerErrorMeta = {
-  userId: string;
+  userId?: string;
   resource?: string;
+  error?: any;
 }
 
 export class ApiDuplicateKeyServerError extends ApiServerError {
@@ -425,8 +426,8 @@ export class ApiCorsServerError extends ApiServerError {
   private static apiErrorId: APSErrorIds = APSErrorIds.CORS_NOT_ALLOWED;
   private static apiDefaultDescription = 'not allowed by CORS';
 
-  constructor(internalLogName: string, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
-    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription);
+  constructor(internalLogName: string, requestOrigin: string | undefined, apiDescription: string = ApiCorsServerError.apiDefaultDescription) {
+    super(internalLogName, ApiCorsServerError.name, ApiCorsServerError.apiStatusCode, ApiCorsServerError.apiErrorId, apiDescription, { requestOrigin: requestOrigin });
   }
 }
 

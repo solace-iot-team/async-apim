@@ -1,8 +1,10 @@
 import s from 'shelljs';
 import path from 'path';
+import { Constants } from '../lib/Constants';
 
 const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
+const CONSTANTS = new Constants(scriptDir);
 
 const Skipping = '+++ SKIPPING +++';
 
@@ -30,8 +32,10 @@ const setGlobals = () => {
   const releasePackageJson = require(`${scriptDir}/package.json`);
 
   DockerGlobals.dockerImageName = releasePackageJson.name;
-  DockerGlobals.dockerImageTag = `${DockerGlobals.dockerImageName}:${apimPortalPackageJson.version}`;
-  DockerGlobals.dockerImageTagLatest = `${DockerGlobals.dockerImageName}:latest`;
+  DockerGlobals.dockerImageTag = `${DockerGlobals.dockerImageName}:${CONSTANTS.createDockerImageTag(apimPortalPackageJson.version)}`;
+  DockerGlobals.dockerImageTagLatest = `${DockerGlobals.dockerImageName}:${CONSTANTS.createLatestTag()}`;
+  // DockerGlobals.dockerImageTag = `${DockerGlobals.dockerImageName}:${apimPortalPackageJson.version}`;
+  // DockerGlobals.dockerImageTagLatest = `${DockerGlobals.dockerImageName}:latest`;
   console.log(`${logName}: DockerGlobals = ${JSON.stringify(DockerGlobals, null, 2)}`);
   console.log(`${logName}: success.`);
 }

@@ -10,6 +10,10 @@ const scriptName: string = path.basename(__filename);
 const scriptDir: string = path.dirname(__filename);
 
 const CONSTANTS = new Constants(scriptDir);
+const createVersion = (version: string): string => {
+  if(CONSTANTS.AlphaVersion) return `${version}-${CONSTANTS.AlphaVersion}`;
+  return version;
+}
 
 // names
 const AdminPortalName = 'async-apim-admin-portal';
@@ -110,7 +114,7 @@ const buildAbouts = () => {
       description: description,
       author: packageJson.author,
       license: packageJson.license,
-      version: packageJson.version,
+      version: createVersion(packageJson.version),
       build_date: tsDate.toUTCString(),
       "apim-connector-openapi-version": getApimConnectorOpenApiVersion(),
       "apim-server-openapi-version": getApimServerOpenApiVersion(),

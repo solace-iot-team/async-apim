@@ -8,7 +8,6 @@ import { MongoDatabaseAccess } from './common/MongoDatabaseAccess';
 import { BootstrapErrorFromApiError, BootstrapErrorFromError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
 import APSConnectorsService from './api/services/apsConfig/APSConnectorsService';
 import APSUsersService from './api/services/APSUsersService/APSUsersService';
-import APSLoginService from './api/services/APSLoginService';
 import { ServerClient } from './common/ServerClient';
 import APSAboutService from './api/services/apsConfig/APSAboutService';
 import APSMonitorService from './api/services/APSMonitorService';
@@ -73,7 +72,6 @@ export const initializeComponents = async(): Promise<void> => {
     await APSUsersService.initialize(ServerConfig.getRootUserConfig());
     await APSMonitorService.initialize();
     await APSConnectorsService.initialize();
-    await APSLoginService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
     await APSOrganizationsService.initialize();
     await APSBusinessGroupsService.initialize();

@@ -28,6 +28,7 @@ import { ManageBusinessGroupSelect } from "../ManageBusinessGroupSelect/ManageBu
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import APLoginUsersDisplayService from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
+import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 
 import '../APComponents.css';
 import './NavBar.css';
@@ -47,6 +48,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const history = useHistory();
   const userOverlayPanel = React.useRef<any>(null);
   const organizationOverlayPanel = React.useRef<any>(null);
@@ -80,14 +83,43 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     API_USER_LOGOUT = "API_USER_LOGOUT"
   }
   
-  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
-    const funcName = 'apiLogout';
+  // const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogout';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogout({
+  //       userId: userEntityId.id
+  //     });
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
+
+  // const doLogout = async() => {
+  //   APContextsDisplayService.clear_LoginContexts({
+  //     dispatchAuthContextAction: dispatchAuthContextAction,
+  //     dispatchUserContextAction: dispatchUserContextAction,
+  //     dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+  //     dispatchSessionContextAction: dispatchSessionContextAction,
+  //   });
+  //   navigateTo(EUICommonResourcePaths.Home);
+  //   await apiLogout(userContext.apLoginUserDisplay.apEntityId);
+  // }
+
+  // const onLogout = () => {
+  //   doLogout();
+  // }
+
+  const apiSecLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+    const funcName = 'apiSecLogout';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
-    try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
+    try {
+      await APLoginUsersDisplayService.apsSecLogout();
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -96,18 +128,25 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     return callState;
   }
 
-  const doLogout = async() => {
+  const doSecLogout = async() => {
+    navigateTo(EUICommonResourcePaths.Home);
+    await apiSecLogout(userContext.apLoginUserDisplay.apEntityId);
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
-    navigateTo(EUICommonResourcePaths.Home);
-    await apiLogout(userContext.apLoginUserDisplay.apEntityId);
   }
-
-  const onLogout = () => {
-    doLogout();
+  const onSecLogout = () => {
+    doSecLogout();
+  }
+  const renderSecLogout = () => {
+    return (
+      <React.Fragment>
+        <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onSecLogout()} />
+      </React.Fragment>
+    );   
   }
 
   const onHideUserOverlayPanel = () => {
@@ -120,6 +159,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     setIsLoading(true);
     await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: userContext.apLoginUserDisplay,
+      apSessionContext: sessionContext,
       organizationEntityId: organizationEntityId,
       isConnectorAvailable: configContext.connector !== undefined && healthCheckSummaryContext.connectorHealthCheckSuccess !== EAPHealthCheckSuccess.FAIL,
       dispatchAuthContextAction: dispatchAuthContextAction,
@@ -127,6 +167,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       userContextOriginAppState: userContext.originAppState,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
       navigateTo: navigateToCurrentHome,
       // onLoadingChange: setIsLoading
     });
@@ -162,6 +203,11 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
           label: 'Test Business Groups',
           disabled: false,
           command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestBusinessGroups); }
+        },
+        {
+          label: 'Test Sec Response',
+          disabled: false,
+          command: () => { navigateTo(EUIDeveloperToolsResourcePaths.TestSec); }
         }
       ]
     };
@@ -269,6 +315,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     }
   }
 
+
   const renderUserComponents = () => {
     return (
       <React.Fragment>
@@ -297,7 +344,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
             <Button className="p-button-text p-button-plain" icon="pi pi-fw pi-user" label="Account" onClick={() => { navigateTo(EUICommonResourcePaths.ManageUserAccount); userOverlayPanel.current.hide(); }} />
           </RenderWithRbac>
           <Divider />
-          <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} />
+          {/* <Button className="p-button-text p-button-plain" icon="pi pi-sign-out" label="Logout" onClick={() => onLogout()} /> */}
+          { renderSecLogout() }
         </OverlayPanel>
         
         {/* organization select */}
@@ -371,6 +419,13 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
       </React.Fragment>
     );
   }
+
+  const getLoginButton = (): JSX.Element => {
+    return (
+      <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo(EUICommonResourcePaths.GetLogin)} />
+    );
+  }
+
   const menubarEndTemplate = () => {
     if(!isSystemAvailable()) return (
       <React.Fragment>
@@ -380,7 +435,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     return (
       <React.Fragment>
         {!authContext.isLoggedIn && 
-          <Button className="p-button-text p-button-plain" icon="pi pi-sign-in" label="Login" onClick={() => navigateTo('/login')} />
+          getLoginButton()
         }
         {authContext.isLoggedIn &&
           <React.Fragment>

@@ -6,12 +6,13 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { EUICommonResourcePaths } from "../../../utils/Globals";
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
+import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
+import { SessionContext } from "../../../components/APContextProviders/APSessionContextProvider";
 import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
 import { E_CALL_STATE_ACTIONS } from "./ManageConnectorsCommon";
 import { ListConnectors } from "./ListConnectors";
@@ -23,8 +24,6 @@ import { EAction, EditNewConnector } from "./EditNewConnector";
 import { 
   APSId 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import APLoginUsersDisplayService from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
-import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import APContextsDisplayService from "../../../displayServices/APContextsDisplayService";
 
 import '../../../components/APComponents.css';
@@ -100,34 +99,37 @@ export const ManageConnectors: React.FC<IManageConnectorsProps> = (props: IManag
   const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
 
   const history = useHistory();
 
   const navigateTo = (path: string): void => { history.push(path); }
   
   // * Api Calls *
-  const apiLogoutAll = async(): Promise<TApiCallState> => {
-    const funcName = 'apiLogoutAll';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout all users`);
-    try { 
-      await APLoginUsersDisplayService.apsLogoutAll();
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogoutAll = async(): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogoutAll';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout all users`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogoutAll();
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const doLogoutAllUsers = async() => {
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
     navigateTo(EUICommonResourcePaths.Home);
-    await apiLogoutAll();
+    // await apiLogoutAll();
   }
 
   // * Config Context *

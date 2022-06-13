@@ -3,7 +3,8 @@ import { ApsConnectorsController } from './ApsConnectorsController';
 export default express
   .Router()
   .get('/', ApsConnectorsController.all)
-  .get('/active', ApsConnectorsController.byActive)
+  // public route
+  // .get('/active', ApsConnectorsController.byActive)
   .get('/:connector_id', ApsConnectorsController.byId)
   .post('/', ApsConnectorsController.create)
   .put('/:connector_id', ApsConnectorsController.replace)

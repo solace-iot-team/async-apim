@@ -61,7 +61,9 @@ export enum EUICommonResourcePaths {
   Home = '/',
   Unauthorized = '/unauthorized',
   NoOrganization = '/noorganization',
-  Login = '/login',
+  // deleteme_Login = '/login',
+  GetLogin = '/get-login',
+  SecLogin = '/sec-login',
   ManageUserAccount = '/manage/user/account',
   HealthCheckView = '/healthcheck/view'
 }
@@ -69,9 +71,10 @@ export enum EUICommonResourcePaths {
 export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
-  LoginAs = '/admin-portal/loginas',
+  // deleteme_LoginAs = '/admin-portal/loginas',
   
-  DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
+  // DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
+
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
   ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
   ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
@@ -82,6 +85,9 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationApiProducts_Recover = '/admin-portal/manage/apim/organization/apiproducts/recover',
 
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
+  ManageOrganizationApis_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apis/edit_owningBusinessGroup',
+  
+  // deleteme_ManageOrganizationApis = '/admin-portal/manage/apim/organization/deleteme_apis',
 
   ManageBusinessGroup = '/admin-porta/manage/business-group',
 
@@ -91,22 +97,16 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
-  
-  deleteme_ManageOrganizationSettings = '/admin-portal/manage/organization/deleteme_settings',  
-  deleteme_MonitorOrganizationStatus = '/admin-portal/monitor/organization/deleteme_status',
-
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
 
   ManageOrganizationAssetMaintenance ='/admin-portal/manage/organization/asset_maintenance',
   ManageOrganizationAssetMaintenanceApiProducts = '/admin-portal/manage/organization/asset_maintenance/apiproducts',
+  ManageOrganizationAssetMaintenanceApis = '/admin-portal/manage/organization/asset_maintenance/apis',
 
   ManageSystem = '/admin-portal/manage/system',
   ManageSystemUsers = '/admin-portal/manage/system/users',
-  
-  ManageSystemOrganizations = '/admin-portal/manage/system/organizations',
-  deleteme_ManageSystemOrganizations = '/admin-portal/manage/system/deleteme_organizations',
-  
+  ManageSystemOrganizations = '/admin-portal/manage/system/organizations',  
   ManageSystemConfigConnectors = '/admin-portal/manage/system/config/connectors',
   ManageSystemConfigSettings = '/admin-portal/manage/system/config/settings',
   MonitorSystemHealth = '/admin-portal/monitor/system/health',
@@ -136,7 +136,8 @@ export enum EUIDeveloperToolsResourcePaths {
   TestRoles = '/devel/roles',
   TestErrors = '/devel/test/errors',
   ViewContexts = '/devel/view/contexts',
-  TestBusinessGroups = '/devel/test/business-groups'  
+  TestBusinessGroups = '/devel/test/business-groups',
+  TestSec = '/devel/test/sec-response',
 }
 
 export class Globals {
@@ -162,6 +163,14 @@ export class Globals {
     const funcName = 'assertNever';
     const logName = `${Globals.name}.${funcName}()`;
     throw new Error(`${logName}:${extLogName}: unexpected object: ${JSON.stringify(x)}`);
+  }
+
+  public static get_CurrentAppState_From_Path({ path }: {
+    path: string;
+  }): EAppState {
+    if(path.includes(EUIAdminPortalResourcePaths.Home)) return EAppState.ADMIN_PORTAL;
+    if(path.includes(EUIDeveloperPortalResourcePaths.Home)) return EAppState.DEVELOPER_PORTAL;
+    return EAppState.UNDEFINED;
   }
 
   public static getCurrentHomePath = (isUserLoggedIn: boolean, currentAppState: EAppState): string => {

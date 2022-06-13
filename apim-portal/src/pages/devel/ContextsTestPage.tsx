@@ -4,20 +4,25 @@ import { APHealthCheckContext } from '../../components/APHealthCheckContextProvi
 import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
 import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
+import { SessionContext } from '../../components/APContextProviders/APSessionContextProvider';
 
 export const ContextsTestPage: React.FC = () => {
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
-  const [configContext, dispatchConfigContextAction] = React.useContext(ConfigContext);
-  const [healthCheckContext, dispatchHealthCheckContextAction] = React.useContext(APHealthCheckContext);
-  /* eslint-eanble @typescript-eslint/no-unused-vars */
+  const [authContext] = React.useContext(AuthContext);
+  const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+  const [configContext] = React.useContext(ConfigContext);
+  const [sessionContext] = React.useContext(SessionContext);
+  const [healthCheckContext] = React.useContext(APHealthCheckContext);
 
   return (
     <React.Fragment>
       <h1>Contexts Test Page</h1>
+      <hr />
+      <h5>sessionContext:</h5>
+      <pre style={ { fontSize: '12px' }} >
+        {JSON.stringify(sessionContext, null, 2)}
+      </pre>
       <hr />
       <h5>authContext:</h5>
       <pre style={ { fontSize: '12px' }} >

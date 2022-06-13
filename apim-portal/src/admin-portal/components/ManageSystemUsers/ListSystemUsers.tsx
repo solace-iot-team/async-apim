@@ -1,11 +1,11 @@
 
 import React from "react";
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 
 import { InputText } from "primereact/inputtext";
 import { DataTable, DataTableSortOrderType } from "primereact/datatable";
 import { Column } from "primereact/column";
-import { Button } from "primereact/button";
+// import { Button } from "primereact/button";
 import { MenuItem } from "primereact/api";
 
 import APEntityIdsService, { TAPEntityId } from "../../../utils/APEntityIdsService";
@@ -18,10 +18,10 @@ import { E_CALL_STATE_ACTIONS } from "./ManageSystemUsersCommon";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { RenderWithRbac } from "../../../auth/RenderWithRbac";
-import { EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "../../../utils/Globals";
-import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+// import { RenderWithRbac } from "../../../auth/RenderWithRbac";
+// import { EUIAdminPortalResourcePaths, EUICommonResourcePaths } from "../../../utils/Globals";
+// import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+// import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageSystemUsers.css";
@@ -46,11 +46,11 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
   const MessageNoManagedObjectsFoundWithFilter = 'No Users found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
 
-  const loginAsHistory = useHistory<TAPUserLoginCredentials>();
+  // const loginAsHistory = useHistory<TAPUserLoginCredentials>();
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [userContext] = React.useContext(UserContext);
+  // const [userContext] = React.useContext(UserContext);
 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPUserDisplayLazyLoadingTableParameters>({
@@ -134,16 +134,16 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
 
   // * Data Table *
 
-  const onLoginAs = (mo: TManagedObject) => {
-    const pwd: string = APSystemUsersDisplayService.get_ApUserAuthenticationDisplay({ apUserDisplay: mo }).password;
-    loginAsHistory.push( { 
-      pathname: EUICommonResourcePaths.Login,
-      state: {
-        username: mo.apEntityId.id,
-        password: pwd
-      }
-    });
-  }
+  // const onLoginAs = (mo: TManagedObject) => {
+  //   const pwd: string = APSystemUsersDisplayService.get_ApUserAuthenticationDisplay({ apUserDisplay: mo }).password;
+  //   loginAsHistory.push( { 
+  //     pathname: EUICommonResourcePaths.Login,
+  //     state: {
+  //       username: mo.apEntityId.id,
+  //       password: pwd
+  //     }
+  //   });
+  // }
 
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
@@ -203,24 +203,24 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
     return APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(mo.apMemberOfOrganizationDisplayList).join(', ');
   }
 
-  const actionBodyTemplate = (mo: TManagedObject): JSX.Element => {
-    const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
-    return (
-      <React.Fragment>
-        {APSystemUsersDisplayService.get_isActivated({ apUserDisplay: mo }) &&
-          <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
-            <Button 
-              tooltip="login as ..." 
-              icon="pi pi-sign-in" 
-              className="p-button-rounded p-button-outlined p-button-secondary" 
-              onClick={() => onLoginAs(mo)} 
-              disabled={!isLoginAsEnabled}
-            />
-          </RenderWithRbac>  
-        } 
-      </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (mo: TManagedObject): JSX.Element => {
+  //   const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
+  //   return (
+  //     <React.Fragment>
+  //       {APSystemUsersDisplayService.get_isActivated({ apUserDisplay: mo }) &&
+  //         <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
+  //           <Button 
+  //             tooltip="login as ..." 
+  //             icon="pi pi-sign-in" 
+  //             className="p-button-rounded p-button-outlined p-button-secondary" 
+  //             onClick={() => onLoginAs(mo)} 
+  //             disabled={!isLoginAsEnabled}
+  //           />
+  //         </RenderWithRbac>  
+  //       } 
+  //     </React.Fragment>
+  //   );
+  // }
 
   const renderManagedObjectDataTable = () => {
     return (
@@ -263,7 +263,7 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
           <Column header="First Name" headerStyle={{width: '12em'}} field={APSystemUsersDisplayService.nameOf_ApUserProfileDisplay('first')} sortable />
           <Column header="Last Name" headerStyle={{width: '12em'}} field={APSystemUsersDisplayService.nameOf_ApUserProfileDisplay('last')}  sortable />
 
-          <Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>
+          {/* <Column headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/> */}
 
         </DataTable>
       </div>

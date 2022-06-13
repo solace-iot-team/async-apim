@@ -11,6 +11,9 @@ import App from './App';
 import { Config } from './Config';
 import { APSClientOpenApi } from './utils/APSClientOpenApi';
 import { APCatchAll } from './components/APErrorBoundaries/APCatchAll';
+import { SessionContextProvider } from './components/APContextProviders/APSessionContextProvider';
+import { UserSecRefresh } from './components/ManageLoginAndSelect/UserSecRefresh';
+
 import './index.css';
 
 // const componentName = 'index';
@@ -28,7 +31,11 @@ ReactDOM.render(
             <AuthContextProvider>
               <UserContextProvider>
                 <OrganizationContextProvider>
-                  <App />
+                  <SessionContextProvider>
+                    <UserSecRefresh>
+                      <App />
+                    </UserSecRefresh>
+                  </SessionContextProvider>
                 </OrganizationContextProvider>
               </UserContextProvider>
             </AuthContextProvider>      

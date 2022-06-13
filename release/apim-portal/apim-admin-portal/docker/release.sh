@@ -8,14 +8,14 @@ SKIPPING="+++ SKIPPING +++";
 ############################################################################################################################
 # Run
 
-echo " >>> Starting $scriptName ..."
+echo " >>> Starting $scriptDir/$scriptName ..."
 
 echo " >>> Build ..."
   cd $scriptDir
   runScript="$scriptDir/build.sh"
   $runScript
   code=$?;
-  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
+  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1; fi
 echo " >>> Success."
 
 echo " >>> Publish ..."
@@ -24,11 +24,11 @@ echo " >>> Publish ..."
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then
-    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
+    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptDir/$scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
-    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
+    echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1;
   fi
-echo " >>> Success."
+echo " >>> Success: $scriptDir/$scriptName"
 
 
 ###

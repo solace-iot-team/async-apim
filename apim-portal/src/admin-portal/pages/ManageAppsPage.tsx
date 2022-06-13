@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -10,6 +10,7 @@ import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Gl
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApps } from '../components/ManageApps/ManageApps';
+import { TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
@@ -22,6 +23,7 @@ export const ManageAppsPage: React.FC = () => {
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
+  const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
@@ -37,13 +39,35 @@ export const ManageAppsPage: React.FC = () => {
   }
 
   const renderBreadcrumbs = () => {
-    const breadcrumbItems: Array<MenuItem> = [
-      { 
+    const breadcrumbItems: Array<MenuItem> = [];
+    const isLocationSet: boolean = location.state !== undefined;
+    if(isLocationSet) {
+      const locationItems: Array<MenuItem> = [
+        {
+          label: location.state.apNavigationOrigin.breadcrumbLabel
+        },
+        {
+          label: location.state.apNavigationOrigin.apEntityId.displayName,
+        },
+        {
+          label: 'Referenced by App'
+        }
+      ];
+      breadcrumbItems.push(...locationItems);
+    } else {
+      breadcrumbItems.push({
         label: 'Manage Apps',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
-      }
-    ];
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }  
+      });
+    }
+    // const breadcrumbItems: Array<MenuItem> = [
+    //   { 
+    //     label: 'Manage Apps',
+    //     style: GlobalElementStyles.breadcrumbLink(),
+    //     command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps) }
+    //   }
+    // ];
     breadCrumbItemList.forEach( (item: MenuItem) => {
       breadcrumbItems.push({
         ...item,
@@ -74,6 +98,7 @@ export const ManageAppsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
+          apPageNavigationInfo={location.state}
         />
       }
     </div>

@@ -10,6 +10,7 @@ General
 Managed assets are:
 
 * :ref:`API Products<managed-assets-api-products>`
+* :ref:`APIs<managed-assets-apis>`
 
 
 Revision History
@@ -36,6 +37,7 @@ Assets are tagged with the following, reserved attributes:
 
   - :ref:`integration-content-overview`
   - :ref:`managed-assets-api-products`
+  - :ref:`managed-assets-apis`
 
 .. _managed-assets-overview-business-group-sharing-list:
 

@@ -38,11 +38,6 @@ const rbacRoleList: TAPRbacRoleList = [
     uiResourcePaths: [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.ManageSystemUsers, 
-      
-      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
-
-
-      EUIAdminPortalResourcePaths.LoginAs,
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
@@ -78,15 +73,10 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
       EUIAdminPortalResourcePaths.ManageSystemUsers,
-      
       EUIAdminPortalResourcePaths.ManageSystemOrganizations,
-
-      EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations,
-
       EUIAdminPortalResourcePaths.ManageSystemConfigConnectors,
       EUIAdminPortalResourcePaths.ManageSystemConfigSettings,
       EUIAdminPortalResourcePaths.MonitorSystemHealth,
-      EUIAdminPortalResourcePaths.LoginAs,
     ]
   },
   {
@@ -102,17 +92,13 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationUsers,
       EUIAdminPortalResourcePaths.ManageOrganizationBusinessGroups,
       EUIAdminPortalResourcePaths.ManageOrganizationSettings,
-      EUIAdminPortalResourcePaths.MonitorOrganizationStatus,
-
-      // DELETEME
-      EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings,
-      EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus,
-      
-      
+      EUIAdminPortalResourcePaths.MonitorOrganizationStatus,      
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts,
+      EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit_OwningBusinessGroup,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
@@ -142,8 +128,9 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.ManageOrganizationApis,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
       EUIAdminPortalResourcePaths.ManageOrganizationApps,
-
-      EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
+      // DELETEME
+      // EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis,
+      // EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
 
     ]
   },

@@ -4,10 +4,11 @@ import {
   StrategyOptions, 
   VerifyCallback 
 }  from "passport-jwt";
-import { TTokenPayload } from "./APSAuthStrategyService";
+import { TTokenPayload, TTokenPayload_AccountType } from "./APSAuthStrategyService";
 import { TAuthConfigInternal } from "../ServerConfig";
-import { ApiNotAuthorizedServerError, ServerError } from "../ServerError";
+import { ApiInternalServerError, ApiNotAuthorizedServerError, ServerError } from "../ServerError";
 import APSSessionService, { APSSessionUser } from "../../api/services/APSSessionService";
+import { ServerUtils } from "../ServerUtils";
 
 
 interface IVerifiedCallback {
@@ -40,10 +41,25 @@ class APSJwtStrategy {
     const funcName = 'verifyCallbackFunc';
     const logName = `${APSJwtStrategy.name}.${funcName}()`;
     try {
-      // throw new Error(`${logName}: continue here: jwt_payload = ${JSON.stringify(jwt_payload, null, 2)}`);
-      const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id });
-      if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
-      return done(undefined, apsSessionUser, undefined);
+      // // DEBUG
+      // const iat: number = jwt_payload.iat;
+      // const iatStr: string = (new Date(iat)).toUTCString();
+      // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHENTICATING_USER, message: 'check if it is a userAccount, if so, compare issuedAt in token with Server lastValidIssuedAt:', details: {
+      //   jwt_payload: jwt_payload,
+      //   iatStr: iatStr
+      // }}));    
+
+      switch(jwt_payload.accountType) {
+        case TTokenPayload_AccountType.USER_ACCOUNT:
+          // check if user was logged out: no refreshToken, then not logged in
+          const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id }); 
+          if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
+          return done(undefined, apsSessionUser, undefined);
+        case TTokenPayload_AccountType.SERVICE_ACCOUNT:
+          throw new ApiInternalServerError(logName, 'service account jwt validation not implemented');
+        default:
+          ServerUtils.assertNever(logName, jwt_payload.accountType);
+      }
     } catch(e) {
       return done(e, undefined, undefined);
     }

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.2.1
+  version: 0.2.2
 servers:
 - url: /apim-server/v1
 tags:
@@ -23,6 +23,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/organization_id'
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsExternalSystem
       description: Create an APSExternalSystem object.
       tags:
@@ -59,6 +61,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsExternalSystems
       description: Get a list of APSExternalSystem objects.
       tags:
@@ -85,6 +89,8 @@ paths:
     - $ref: '#/components/parameters/organization_id'
     - $ref: '#/components/parameters/external_system_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsExternalSystem
       description: Get an APSExternalSystem object by id.
       tags:
@@ -107,6 +113,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
+      security:
+      - InternalAuthBearerToken: []
       operationId: updateApsExternalSystem
       description:
         Update an APSExternalSystem object by id.
@@ -138,6 +146,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsExternalSystem
       tags:
       - APSExternalSystems
@@ -164,6 +174,8 @@ paths:
 
   /apsAdministration/apsOrganizations:
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsOrganization
       description: Create an APSOrganization object.
       tags:
@@ -200,6 +212,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsOrganizations
       description: Get a list of APSOrganization objects.
       tags:
@@ -225,6 +239,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/organization_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsOrganization
       description: Get an APSOrganization object by id.
       tags:
@@ -247,6 +263,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
+      security:
+      - InternalAuthBearerToken: []
       operationId: updateApsOrganization
       description:
         Update an APSOrganization object by id.
@@ -278,6 +296,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsOrganization
       tags:
       - APSAdministration
@@ -296,6 +316,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
   /apsConfig/apsConnectors:
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsConnector
       description: Create an APSConnector object.
       tags:
@@ -348,6 +370,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/APSError"
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsConnectors
       description: Get a list of APSConnectors.
       tags:
@@ -388,6 +412,8 @@ paths:
                 $ref: "#/components/schemas/APSError"
   /apsConfig/apsConnectors/active:
     get:
+      # security:
+      # - InternalAuthBearerToken: []
       operationId: getActiveApsConnector
       description: Get the currently active APSConnector object.
       tags:
@@ -437,6 +463,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/connector_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsConnector
       description: Get an APSConnector object by id.
       tags:
@@ -482,6 +510,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/APSError"
     put:
+      security:
+      - InternalAuthBearerToken: []
       operationId: replaceApsConnector
       description: Replace an APSConnector object by connector id.
       tags:
@@ -533,6 +563,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/APSError"
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsConnector
       tags:
       - APSConfig
@@ -576,6 +608,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/connector_id'
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: setApsConnectorActive
       description: Sets the APSConnector object to active.
       tags:
@@ -688,6 +722,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/organization_id'
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsBusinessGroup
       description: Create an APSBusinessGroup object.
       tags:
@@ -723,6 +759,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsBusinessGroups
       description: Get a list of APSBusinessGroupResponse objects in the organization.
       tags:
@@ -749,6 +787,8 @@ paths:
     - $ref: '#/components/parameters/organization_id'
     - $ref: '#/components/parameters/external_system_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsBusinessGroupsByExternalSystem
       description: Get a list of APSBusinessGroupResponse objects by external system id.
       tags:
@@ -775,6 +815,8 @@ paths:
     - $ref: '#/components/parameters/organization_id'
     - $ref: '#/components/parameters/businessgroup_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsBusinessGroup
       description: Get a APSBusinessGroupResponse object by business group id.
       tags:
@@ -797,6 +839,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
+      security:
+      - InternalAuthBearerToken: []
       operationId: updateApsBusinessGroup
       description:
         Update an APSBusinessGroup object by business group id.
@@ -835,6 +879,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsBusinessGroup
       description: Delete an APSBusinessGroup object.
       tags:
@@ -863,6 +909,8 @@ paths:
     - $ref: '#/components/parameters/organization_id'
     - $ref: '#/components/parameters/businessgroup_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsBusinessGroupMembers
       description: Get a list of members (userIds).
       tags:
@@ -887,6 +935,8 @@ paths:
     - $ref: '#/components/parameters/organization_id'
     - $ref: '#/components/parameters/external_reference_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsBusinessGroupByExternalReference
       description: Get a APSBusinessGroupResponse object by external reference id.
       tags:
@@ -1057,6 +1107,30 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   /apsSession/login:
+    get:
+      operationId: apsGetLogin
+      description: Redirects to the login page of the configured IDP.
+      tags:
+      - APSSession
+      responses:
+        '200':
+          description: Use internal login.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSLoginInternal'
+        '302':
+          description: Redirect to external login page.
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/APSSessionRefreshTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       operationId: apsLogin
       description: Login.
@@ -1151,7 +1225,29 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
+  /apsSession/{organization_id}/logoutAll:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    post:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: logoutOrganizationAll
+      description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
+      tags:
+      - APSSession
+      responses:
+        '204':
+          description: Successful logout.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsSecureTests/test:
     get:
       security:
@@ -1175,138 +1271,138 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  /apsLogin/login:
-    post:
-      operationId: login
-      description: Login.
-      tags:
-      - APSLogin
-      requestBody:
-        description: The login credentials.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/APSUserLoginCredentials'
-      responses:
-        '200':
-          description: Successful login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APSUserResponse'
-        '400':
-          description: "Bad Request."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-            "*/*":
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '401':
-          description: "Unauthorized."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-        '500':
-          description: "Internal Server Error."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APSError"
-  /apsLogin/loginAs:
-    post:
-      operationId: loginAs
-      description: Login on behalf of another user. Checks if user has given consent. Applicable also for non-active users. Not applicable for root user.
-      tags:
-      - APSLogin
-      requestBody:
-        description: The login as request.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/APSUserLoginAsRequest'
-      responses:
-        '200':
-          description: Successful login.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/APSUserResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/logoutAll:
-    post:
-      operationId: logoutAll
-      description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/{organization_id}/logoutAll:
-    parameters:
-    - $ref: '#/components/parameters/organization_id'
-    post:
-      operationId: logoutOrganizationAll
-      description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /apsLogin/{user_id}/logout:
-    parameters:
-    - $ref: '#/components/parameters/user_id'
-    post:
-      operationId: logout
-      description: Invalidate user session forcing them  to login again.
-      tags:
-      - APSLogin
-      responses:
-        '204':
-          description: Successful logout.
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/login:
+  #   post:
+  #     operationId: login
+  #     description: Login.
+  #     tags:
+  #     - APSLogin
+  #     requestBody:
+  #       description: The login credentials.
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/APSUserLoginCredentials'
+  #     responses:
+  #       '200':
+  #         description: Successful login.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/APSUserResponse'
+  #       '400':
+  #         description: "Bad Request."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #           "*/*":
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #       '401':
+  #         description: "Unauthorized."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  #       '500':
+  #         description: "Internal Server Error."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/APSError"
+  # /apsLogin/loginAs:
+  #   post:
+  #     operationId: loginAs
+  #     description: Login on behalf of another user. Checks if user has given consent. Applicable also for non-active users. Not applicable for root user.
+  #     tags:
+  #     - APSLogin
+  #     requestBody:
+  #       description: The login as request.
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/APSUserLoginAsRequest'
+  #     responses:
+  #       '200':
+  #         description: Successful login.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/APSUserResponse'
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/logoutAll:
+  #   post:
+  #     operationId: logoutAll
+  #     description: Invalidate current sessions for all users. Use when system was re-configured to force users to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/{organization_id}/logoutAll:
+  #   parameters:
+  #   - $ref: '#/components/parameters/organization_id'
+  #   post:
+  #     operationId: logoutOrganizationAll
+  #     description: Invalidate current sessions for all users in the organization. Use when organization was re-configured to force users to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
+  # /apsLogin/{user_id}/logout:
+  #   parameters:
+  #   - $ref: '#/components/parameters/user_id'
+  #   post:
+  #     operationId: logout
+  #     description: Invalidate user session forcing them  to login again.
+  #     tags:
+  #     - APSLogin
+  #     responses:
+  #       '204':
+  #         description: Successful logout.
+  #       '400':
+  #         $ref: '#/components/responses/BadRequest'
+  #       '401':
+  #         $ref: '#/components/responses/Unauthorized'
+  #       '403':
+  #         $ref: '#/components/responses/Forbidden'
+  #       '404':
+  #         $ref: '#/components/responses/NotFound'
+  #       '500':
+  #         $ref: '#/components/responses/InternalServerError'
   /spec:
     get:
       tags:
@@ -2049,7 +2145,11 @@ components:
       - username
       - password
 
-
+    APSLoginInternal:
+      type: object
+      properties:
+        loginInternal:
+          type: boolean
     APSSessionLoginResponse:
       type: object
       description: temporary for testing.
@@ -2058,6 +2158,8 @@ components:
       properties:
         token:
           type: string
+        lastOrganizationId:
+          $ref: '#/components/schemas/APSId'
       required:
         - token
     APSSessionRefreshTokenResponse:
@@ -2066,11 +2168,16 @@ components:
       properties:
         success:
           type: boolean
+        organizationId:
+          $ref: "#/components/schemas/APSId"
+        userId:
+          $ref: "#/components/schemas/APSUserId"
         token:
           type: string
       required:
       - success
       - token
+      - userId
     APSSessionLogoutResponse:
       type: object
       properties:
@@ -2212,6 +2319,8 @@ components:
           $ref: '#/components/schemas/APSMemberOfOrganizationGroupsList'
         organizationSessionInfoList:
           $ref: '#/components/schemas/APSOrganizationSessionInfoList'
+        lastOrganizationId:
+          $ref: "#/components/schemas/APSId"
     #
     # Business Groups
     #

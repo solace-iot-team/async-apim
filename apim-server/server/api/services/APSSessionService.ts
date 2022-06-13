@@ -4,15 +4,20 @@ import { ApiKeyNotFoundServerError, ApiNotAuthorizedServerError, ServerErrorFrom
 import APSUsersService, { APSUserInternal } from './APSUsersService/APSUsersService';
 import { 
   APSSessionLogoutResponse, 
-  APSUserResponse, 
+  APSUserResponse,
+  APSUserUpdate, 
  } from '../../../src/@solace-iot-team/apim-server-openapi-node';
  import APSOrganizationsServiceEventEmitter from './apsAdministration/APSOrganizationsServiceEvent';
 import APSSecretsService from "../../common/authstrategies/APSSecretsService";
 import APSAuthStrategyService from "../../common/authstrategies/APSAuthStrategyService";
+import { ValidationUtils } from '../utils/ValidationUtils';
+import APSUsersServiceEventEmitter from './APSUsersService/APSUsersServiceEvent';
+import APSConnectorsServiceEventEmitter from './apsConfig/APSConnetorsServiceEvent';
 
 export type TRefreshTokenInternalResponse = {
   userId: string;
   newRefreshToken: string;
+  lastOrganizationId?: string;
 }
 
 export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password"> & {
@@ -29,6 +34,8 @@ export class APSSessionService {
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSSessionService.collectionName); 
     APSOrganizationsServiceEventEmitter.on('deleted', this.onOrganizationDeleted);
+    APSUsersServiceEventEmitter.on('updated', this.onUserUpdated);
+    APSConnectorsServiceEventEmitter.on('activeChanged', this.onActiveConnectorChanged);
   }
 
   // make public for test access
@@ -39,7 +46,7 @@ export class APSSessionService {
   /**
    * Invalidates all user sessions.
    */
-  private logoutAll_internal = async({ organizationId }:{
+  public logoutAll_internal = async({ organizationId }:{
     organizationId?: string;
   }): Promise<void> => {
     const funcName = 'logoutAll_internal';
@@ -49,14 +56,17 @@ export class APSSessionService {
       organizationId: organizationId
     }}));
 
+    // TODO: implement logging out of 1 organization only if logged into this organization
+
     // delete refreshToken from all users
-    // TODO: implement logging out of just if logged into this organization
+    // root user
+    APSUsersService.deleteRefreshTokenRootApsUserInternal();
+    // all other users
     const updateInternal: Partial<APSUserInternal> = {
       sessionInfo: {
         refreshToken: []
       }
     };
-
     await this.persistenceService.updateAll({ update: updateInternal });
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGED_OUT_ALL, message: 'logout all users', details: {
@@ -64,7 +74,70 @@ export class APSSessionService {
     }}));
 
   } 
+
+  private onActiveConnectorChanged = async(connectorId: string): Promise<void> => {
+    const x = async(): Promise<void> => {
+      await this._onActiveConnectorChanged(connectorId);
+    }
+    await APSUsersService.getCollectionMutex().runExclusive(x);
+  }
+  private _onActiveConnectorChanged = async(connectorId: string): Promise<void> => {
+    const funcName = '_onActiveConnectorChanged';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: 'activeConnectorChanged', details: {
+        connectorId: connectorId
+      }}));
+
+      await this.logoutAll_internal({ });
+
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_UPDATED, message: 'activeConnectorChanged', details: {
+        connectorId: connectorId
+      }}));
   
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: ex.message , details: ex.toObject() }));
+    } 
+  }
+
+  private onUserUpdated = async(apsUserUpdate: APSUserUpdate, apsUserResponse: APSUserResponse): Promise<void> => {
+    const x = async(): Promise<void> => {
+      await this._onUserUpdated(apsUserUpdate, apsUserResponse);
+    }
+    await APSUsersService.getCollectionMutex().runExclusive(x);
+  }
+  private _onUserUpdated = async(apsUserUpdate: APSUserUpdate, apsUserResponse: APSUserResponse): Promise<void> => {
+    const funcName = '_onUserUpdated';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+    try {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: 'APSUserUpdate', details: {
+        apsUserUpdate: apsUserUpdate,
+        apsUserResponse: apsUserResponse
+      }}));
+
+      // logout user if required
+      if(
+        apsUserUpdate.isActivated !== undefined ||
+        apsUserUpdate.password !== undefined ||
+        apsUserUpdate.profile !== undefined ||
+        apsUserUpdate.systemRoles !== undefined ||
+        apsUserUpdate.memberOfOrganizationGroups !== undefined ||
+        apsUserUpdate.memberOfOrganizations !== undefined
+      ) {
+        await this.logout_internal({ userId: apsUserResponse.userId });
+      }
+
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSED_ON_EVENT_UPDATED, message: 'APSUserUpdate', details: {
+        apsUserUpdate: apsUserUpdate
+      }}));
+  
+    } catch(e) {
+      const ex = new ServerErrorFromError(e, logName);
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.PROCESSING_ON_EVENT_UPDATED, message: ex.message , details: ex.toObject() }));
+    } 
+  }
+
   private onOrganizationDeleted = async(apsOrganizationId: string): Promise<void> => {
     // TODO: test without arrow function
     // await this.collectionMutex.runExclusive(async () => {
@@ -142,6 +215,8 @@ export class APSSessionService {
   private byId_internal = async({ userId }: {
     userId: string;
   }): Promise<APSSessionUser> => {
+    // const funcName = 'byId_internal';
+    // const logName = `${APSSessionService.name}.${funcName}()`;
     // check if root
     if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
       return this.map_ApsUserInternal_To_ApsSessionUser({ 
@@ -178,6 +253,11 @@ export class APSSessionService {
     }}));
 
     const apsSessionUser: APSSessionUser = await this.byId_internal({ userId: username });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHENTICATING_USER, message: 'APSSessionUser', details: {
+      apsSessionUser: apsSessionUser
+    }}));
+
     if( 
 
       !apsSessionUser.isActivated || 
@@ -316,15 +396,24 @@ export class APSSessionService {
     }}));
 
     const newRefreshToken: string = APSAuthStrategyService.generateRefreshToken_For_InternalAuth({ userId: userId });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHING_USER_TOKEN, message: 'token', details: {
+      newRefreshToken: newRefreshToken
+    }}));
 
     // get the user details
     // check if root
     if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
+      // check refreshToken
+      const rootUser: APSUserInternal = APSUsersService.getRootApsUserInternal();
+      if(!rootUser.sessionInfo.refreshToken || rootUser.sessionInfo.refreshToken.length !== 1 || rootUser.sessionInfo.refreshToken[0].length === 0) {
+        if(rootUser.sessionInfo.refreshToken[0] !== existingRefreshToken) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
       APSUsersService.updateRootApsUserInternal({ refreshToken: newRefreshToken });
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHED_USER_TOKEN, message: 'isRootUser', details: undefined }));
       return {
         newRefreshToken: newRefreshToken,
-        userId: userId
+        userId: userId,
+        // root has no organization id
       };
     }
     // check DB
@@ -333,6 +422,10 @@ export class APSSessionService {
       const apsUserInternal: APSUserInternal = await this.persistenceService.byId({
         documentId: userId
       }) as APSUserInternal;
+
+      if(!apsUserInternal.sessionInfo.refreshToken || apsUserInternal.sessionInfo.refreshToken.length !== 1 || apsUserInternal.sessionInfo.refreshToken[0].length === 0) {
+        if(apsUserInternal.sessionInfo.refreshToken[0] !== existingRefreshToken) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
+      }
 
       if (!apsUserInternal.isActivated) {
         throw new ApiNotAuthorizedServerError(logName, undefined, { userId: userId });
@@ -348,7 +441,8 @@ export class APSSessionService {
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.REFRESHED_USER_TOKEN, message: 'user', details: { userId: userId }}));      
       return {
         newRefreshToken: newRefreshToken,
-        userId: userId
+        userId: userId,
+        lastOrganizationId: apsUserInternal.lastOrganizationId
       };
     } catch (e) {
       if (e instanceof ApiKeyNotFoundServerError) {
@@ -359,19 +453,21 @@ export class APSSessionService {
     }
   }
 
-  public logout = async({ userId }:{
+  private logout_internal = async({ userId }: {
     userId: string;
-  }): Promise<APSSessionLogoutResponse> => {    
-
-    await this.wait4CollectionUnlock();
-
-    await this.deleteRefreshToken_internal({ userId: userId });
-    
+  }): Promise<APSSessionLogoutResponse> => {
+    await this.deleteRefreshToken_internal({ userId: userId });    
     const apsSessionLogoutResponse: APSSessionLogoutResponse = {
       success: true
     };
-
     return apsSessionLogoutResponse;
+  }
+
+  public logout = async({ userId }:{
+    userId: string;
+  }): Promise<APSSessionLogoutResponse> => {    
+    await this.wait4CollectionUnlock();
+    return await this.logout_internal({ userId: userId });
   }
 
   public logoutAll = async(): Promise<void> => {    
@@ -381,6 +477,20 @@ export class APSSessionService {
     await this.logoutAll_internal({ });
 
     return;
+  }
+  
+  public logoutOrganizationAll = async({ apsOrganizationId }:{
+    apsOrganizationId: string;
+  }): Promise<void> => {
+    const funcName = 'logoutOrganizationAll';
+    const logName = `${APSSessionService.name}.${funcName}()`;
+
+    await this.wait4CollectionUnlock();
+
+    await ValidationUtils.validateOrganization(logName, apsOrganizationId);
+
+    await this.logoutAll_internal({ organizationId: apsOrganizationId });
+
   }
   
 }

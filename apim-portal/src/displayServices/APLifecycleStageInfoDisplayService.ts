@@ -3,11 +3,12 @@ import { Globals } from "../utils/Globals";
 
 export interface IAPLifecycleStageInfo {
   stage: MetaEntityStage;
+  notes?: string;
 }
 export type TAPLifecycleStageList = Array<MetaEntityStage>;
 
-class APLifecycleStageInfoDisplayService {
-  private readonly ComponentName = "APLifecycleStageInfoDisplayService";
+export class APLifecycleStageInfoDisplayService {
+  private readonly BaseComponentName = "APLifecycleStageInfoDisplayService";
 
   public nameOf(name: keyof IAPLifecycleStageInfo) {
     return `${name}`;
@@ -32,13 +33,15 @@ class APLifecycleStageInfoDisplayService {
     return apLifecycleStageInfo.stage === MetaEntityStage.RELEASED;
   }
 
-  public create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta }:{
+  public create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta, notes }:{
     connectorMeta?: Meta;
+    notes?: string;
   }): IAPLifecycleStageInfo {
     if(connectorMeta === undefined) return this.create_Legacy_ApVersionInfo();
     if(connectorMeta.stage === undefined) return this.create_Legacy_ApVersionInfo();
     return {
       stage: connectorMeta.stage,
+      notes: notes
     };
   }
 
@@ -46,7 +49,7 @@ class APLifecycleStageInfoDisplayService {
     currentStage: MetaEntityStage;
   }): TAPLifecycleStageList {
     const funcName = 'getList_NextStages';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    const logName = `${this.BaseComponentName}.${funcName}()`;
 
     switch(currentStage) {
       case MetaEntityStage.DRAFT:

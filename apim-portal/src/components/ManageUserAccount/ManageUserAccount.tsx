@@ -21,6 +21,7 @@ import { ShowInfo } from "./ShowInfo";
 import { EditProfile } from "./EditProfile";
 import { EditAuthentication } from "./EditAuthentication";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
+import { SessionContext } from "../APContextProviders/APSessionContextProvider";
 
 import '../APComponents.css';
 import "./ManageUserAccount.css";
@@ -47,6 +48,8 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -72,21 +75,21 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
     return callState;
   }
 
-  const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
-    const funcName = 'apiLogout';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
-    try { 
-      await APLoginUsersDisplayService.apsLogout({
-        userId: userEntityId.id
-      });
-    } catch(e: any) {
-      APSClientOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
+  // const apiLogout = async(userEntityId: TAPEntityId): Promise<TApiCallState> => {
+  //   const funcName = 'apiLogout';
+  //   const logName = `${ComponentName}.${funcName}()`;
+  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_USER_LOGOUT, `logout user: ${userEntityId.id}`);
+  //   try { 
+  //     await APLoginUsersDisplayService.apsLogout({
+  //       userId: userEntityId.id
+  //     });
+  //   } catch(e: any) {
+  //     APSClientOpenApi.logError(logName, e);
+  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
+  //   }
+  //   setApiCallStatus(callState);
+  //   return callState;
+  // }
 
   const doInitialize = async () => {
     setIsLoading(true);
@@ -105,9 +108,10 @@ export const ManageUserAccount: React.FC<IManageUserAccountProps> = (props: IMan
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
       dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      dispatchSessionContextAction: dispatchSessionContextAction,
     });
-    navigateTo(EUICommonResourcePaths.Login);
-    await apiLogout(userContext.apLoginUserDisplay.apEntityId);
+    navigateTo(EUICommonResourcePaths.SecLogin);
+    // await apiLogout(userContext.apLoginUserDisplay.apEntityId);
   }
 
   // * useEffect Hooks *

@@ -18,7 +18,6 @@ echo " >>> Build..."
   runScript="npm run build"
   $runScript
   code=$?;
-  code=$?;
   if [[ $code != 0 ]]; then
     echo ">>> [$buildDir] ERROR - code=$code - $buildScript' - $scriptName"; exit 1;
   fi

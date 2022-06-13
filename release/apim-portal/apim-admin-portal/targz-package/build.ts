@@ -47,7 +47,8 @@ const setGlobals = () => {
   const apimPortalPackageJson = require(`${CONSTANTS.ApimAdminPortalBuildArtefactsDir}/package.json`);
   const releasePackageJson = require(`${scriptDir}/package.json`);
 
-  Globals.targzFileName = `${releasePackageJson.name}.${apimPortalPackageJson.version}.tgz`;
+  Globals.targzFileName = CONSTANTS.createTarGzFileName(releasePackageJson.name, apimPortalPackageJson.version );
+  // Globals.targzFileName = `${releasePackageJson.name}.${apimPortalPackageJson.version}.tgz`;
   console.log(`${logName}: Globals = ${JSON.stringify(Globals, null, 2)}`);
   console.log(`${logName}: success.`);
 }

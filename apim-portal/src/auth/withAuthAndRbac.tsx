@@ -22,7 +22,8 @@ export const withAuthAndRbac = <P extends object>(
 
   return (
     <React.Fragment>
-      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.Login} /> }
+      {/* { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.deleteme_Login} /> } */}
+      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.SecLogin} /> }
       { authContext.isLoggedIn && !isAuthorized && <Redirect to={EUICommonResourcePaths.Unauthorized} /> }
       { authContext.isLoggedIn && isAuthorized && <Component {...props} /> }
     </React.Fragment>

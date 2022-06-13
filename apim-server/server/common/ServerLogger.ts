@@ -68,6 +68,8 @@ export enum EServerStatusCodes {
   REFRESHING_USER_TOKEN = "REFRESHING_USER_TOKEN",
   REFRESHED_USER_TOKEN = "REFRESHED_USER_TOKEN",
 
+  CORS_POLICY = "CORS_POLICY",
+
 }
 
 export type TServerStatus = {

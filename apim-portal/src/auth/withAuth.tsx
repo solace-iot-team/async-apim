@@ -14,7 +14,8 @@ export const withAuth = <P extends object>(
 
   return (
     <React.Fragment>
-      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.Login} /> }
+      {/* { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.deleteme_Login} /> } */}
+      { !authContext.isLoggedIn && <Redirect to={EUICommonResourcePaths.SecLogin} /> }
       { authContext.isLoggedIn && <Component {...props} /> }
     </React.Fragment>
   );

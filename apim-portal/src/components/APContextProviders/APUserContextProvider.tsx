@@ -13,12 +13,12 @@ export type TUserRunttimeSettings = {
 }
 
 export type TUserContext = {
-  apLoginUserDisplay: TAPLoginUserDisplay,
-  currentAppState: EAppState,
-  originAppState: EAppState,
-  runtimeSettings: TUserRunttimeSettings,
-  userMessage?: TAPUserMessage,
-  showIsLoading?: boolean,
+  apLoginUserDisplay: TAPLoginUserDisplay;
+  currentAppState: EAppState;
+  originAppState: EAppState;
+  runtimeSettings: TUserRunttimeSettings;
+  userMessage?: TAPUserMessage;
+  showIsLoading?: boolean;
 }
   
 export interface IUserContextProviderProps {

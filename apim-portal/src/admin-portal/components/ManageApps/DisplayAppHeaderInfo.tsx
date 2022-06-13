@@ -19,7 +19,7 @@ export const DisplayAppHeaderInfo: React.FC<IDisplayAppHeaderInfoProps> = (props
             {/* <div><b>DEVEL Status: {props.apAdminPortalAppDisplay.apAppStatus}</b></div> */}
             <div className="p-mt-2"></div>
             <div>App Type: {props.apAdminPortalAppDisplay.apAppMeta.apAppType}</div>
-            <div>App Owner Id: {props.apAdminPortalAppDisplay.apAppMeta.appOwnerId}</div>
+            <div>App Owner Id: {props.apAdminPortalAppDisplay.apAppMeta.appOwnerDisplayName}</div>
             <div>App Owner Type: {props.apAdminPortalAppDisplay.apAppMeta.apAppOwnerType}</div>
           </div>
           <div className="ap-app-view-detail-right">

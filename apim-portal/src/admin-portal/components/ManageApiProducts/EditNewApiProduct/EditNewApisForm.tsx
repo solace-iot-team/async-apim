@@ -14,15 +14,11 @@ import {
   TAPApiProductDisplay_Apis, 
   TAPControlledChannelParameterList 
 } from "../../../../displayServices/APApiProductsDisplayService";
-import { 
-  TAPApiChannelParameterList, 
-  TAPApiDisplayList 
-} from "../../../../displayServices/APApisDisplayService";
 import { ManageSelectApis } from "./ManageSelectApis";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
 import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { EditControlledChannelParameters } from "./EditControlledChannelParameters";
 import { APDisplayApisDetails } from "../../../../components/APDisplay/APDisplayApisDetails";
+import APApisDisplayService, { TAPApiChannelParameterList, TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -62,7 +58,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     };
     const efd: TManagedObjectExtFormData = {
       selected_ApApiDisplayList: mo.apApiDisplayList,
-      selectedApis_combined_ApApiChannelParameterList: APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+      selectedApis_combined_ApApiChannelParameterList: APApisDisplayService.create_Combined_ApiChannelParameterList({
         apApiDisplayList: mo.apApiDisplayList,
       }),
       selected_ApControlledChannelParamterList: mo.apControlledChannelParameterList,
@@ -83,7 +79,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
     const ufd: TManagedObjectUseFormData = {
       apisDisplay: APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(update_selected_apApiDisplayList).join(', '),
     };
-    const available_combined_ApApiChannelParameterList: TAPApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+    const available_combined_ApApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
       apApiDisplayList: update_selected_apApiDisplayList,
     });    
     // alert(`${logName}: available_combined_ApApiChannelParameterList = ${JSON.stringify(available_combined_ApApiChannelParameterList, null, 2)}`);

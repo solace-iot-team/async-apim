@@ -7,7 +7,8 @@ import {
 import { 
   APApiProductsDisplayService, 
   EAPApprovalType, 
-  IAPApiProductDisplay 
+  IAPApiProductDisplay, 
+  IAPApiProductDisplay4List
 } from '../../displayServices/APApiProductsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
@@ -24,7 +25,8 @@ export enum E_APDeveloperPortalApiProductDisplay_AccessDisplay {
   UNDEFINED = "no access"
 }
 export type TAPDeveloperPortalApiProductDisplay = IAPApiProductDisplay & IAPSearchContent & {}; 
-export type TAPDeveloperPortalApiProductDisplayList = Array<TAPDeveloperPortalApiProductDisplay>;
+export type TAPDeveloperPortalApiProductDisplay4List = IAPApiProductDisplay4List & IAPSearchContent & {};
+export type TAPDeveloperPortalApiProductDisplay4ListList = Array<TAPDeveloperPortalApiProductDisplay4List>;
 
 export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APDeveloperPortalApiProductsDisplayService";
@@ -38,7 +40,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
   public create_AccessDisplay({ userId, userBusinessGroupId, apDeveloperPortalApiProductDisplay }:{
     userId?: string;
     userBusinessGroupId?: string;
-    apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
+    apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay | TAPDeveloperPortalApiProductDisplay4List;
   }): string {
     const funcName = 'create_AccessDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -72,7 +74,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
   public isAllowed_To_CreateApp({ userId, userBusinessGroupId, apDeveloperPortalApiProductDisplay }:{
     userId?: string;
     userBusinessGroupId?: string;
-    apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay;
+    apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay | TAPDeveloperPortalApiProductDisplay4List;
   }): boolean {
     if(apDeveloperPortalApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.RELEASED) return false;
     if(userId === undefined) return false;
@@ -139,6 +141,45 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalApiProductDisplay>(apDeveloperPortalApiProductDisplay);
   }
 
+  protected async create_ApDeveloperPortalApiProductDisplay4List_From_ApiEntities({ 
+    organizationId, 
+    connectorApiProduct, 
+    connectorRevisions, 
+    completeApEnvironmentDisplayList, 
+    currentVersion, 
+    default_ownerId,
+    complete_ApBusinessGroupDisplayList,
+    create_skinny,
+  }:{
+    organizationId: string;
+    connectorApiProduct: APIProduct;
+    connectorRevisions?: Array<string>;
+    completeApEnvironmentDisplayList: TAPEnvironmentDisplayList;
+    default_ownerId: string;
+    currentVersion?: string;
+    complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
+    create_skinny?: boolean;
+  }): Promise<TAPDeveloperPortalApiProductDisplay4List> {
+    
+    const base: IAPApiProductDisplay4List = await this.create_ApApiProductDisplay4List_From_ApiEntities({
+      organizationId: organizationId,
+      connectorApiProduct: connectorApiProduct,
+      connectorRevisions: connectorRevisions, 
+      completeApEnvironmentDisplayList: completeApEnvironmentDisplayList,
+      default_ownerId: default_ownerId,
+      currentVersion: currentVersion,
+      complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+      complete_ApExternalSystemDisplayList: [],
+    });
+
+    const apDeveloperPortalApiProductDisplay4List: TAPDeveloperPortalApiProductDisplay4List = {
+      ...base,
+      apSearchContent: '',
+    };
+    return APSearchContentService.add_SearchContent<TAPDeveloperPortalApiProductDisplay4List>(apDeveloperPortalApiProductDisplay4List);
+  }
+
+
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
@@ -152,33 +193,38 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
    * - optionally: filtered by isAllowed_To_CreateApp
    * - optionally: exclude list of api product ids
    */
-  public apiGetList_ApDeveloperPortalApiProductDisplayList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp, exclude_ApiProductIdList }: {
+  public apiGetList_ApDeveloperPortalApiProductDisplay4ListList = async({ organizationId, businessGroupId, userId, filterByIsAllowed_To_CreateApp, exclude_ApiProductIdList }: {
     organizationId: string;
     businessGroupId: string;
     userId: string;
     filterByIsAllowed_To_CreateApp: boolean;
     exclude_ApiProductIdList?: Array<string>;
-  }): Promise<TAPDeveloperPortalApiProductDisplayList> => {
-    
-    const connectorApiProductList: Array<APIProduct> = await this.apiGetList_ConnectorApiProductList({
+  }): Promise<TAPDeveloperPortalApiProductDisplay4ListList> => {
+    // const funcName = 'apiGetList_ApDeveloperPortalApiProductDisplay4ListList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // alert(`${logName}: optimize me ...`)
+
+    const connectorApiProductList: Array<APIProduct> = await this.apiGetFilteredList_ConnectorApiProduct({
       organizationId: organizationId,
       businessGroupId: businessGroupId,
       includeAccessLevelList: [
         APIProductAccessLevel.INTERNAL,
         APIProductAccessLevel.PUBLIC
       ],
+      exclude_ApiProductIdList: exclude_ApiProductIdList,
     });
-    if(exclude_ApiProductIdList && exclude_ApiProductIdList.length > 0) {
-      for(let idx=0; idx<connectorApiProductList.length; idx++) {
-        const exclude = exclude_ApiProductIdList.find( (id: string) => {
-          return id === connectorApiProductList[idx].name;
-        });
-        if(exclude !== undefined) {
-          connectorApiProductList.splice(idx, 1);
-          idx--;
-        }
-      }
-    }
+
+    // if(exclude_ApiProductIdList && exclude_ApiProductIdList.length > 0) {
+    //   for(let idx=0; idx<connectorApiProductList.length; idx++) {
+    //     const exclude = exclude_ApiProductIdList.find( (id: string) => {
+    //       return id === connectorApiProductList[idx].name;
+    //     });
+    //     if(exclude !== undefined) {
+    //       connectorApiProductList.splice(idx, 1);
+    //       idx--;
+    //     }
+    //   }
+    // }
 
     // get the complete env list for reference
     const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
@@ -190,11 +236,11 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
       fetchAssetReferences: false
     });
 
-    const apDeveloperPortalApiProductDisplayList: TAPDeveloperPortalApiProductDisplayList = [];
+    const apDeveloperPortalApiProductDisplay4ListList: TAPDeveloperPortalApiProductDisplay4ListList = [];
     for(const connectorApiProduct of connectorApiProductList) {
       if(APLifecycleStageInfoDisplayService.isLifecycleStage_Released({ connectorMeta: connectorApiProduct.meta })) {
         const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
-        const apDeveloperPortalApiProductDisplay: TAPDeveloperPortalApiProductDisplay = await this.create_ApDeveloperPortalApiProductDisplay_From_ApiEntities({
+        const apDeveloperPortalApiProductDisplay4List: TAPDeveloperPortalApiProductDisplay4List = await this.create_ApDeveloperPortalApiProductDisplay4List_From_ApiEntities({
           organizationId: organizationId,
           connectorApiProduct: connectorApiProduct,
           completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
@@ -204,23 +250,23 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
         });      
   
         // if this is a recovered API product, don't add to list
-        if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apDeveloperPortalApiProductDisplay })) {
+        if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apDeveloperPortalApiProductDisplay4List })) {
           // check if lifecycle status != draft
-          if(apDeveloperPortalApiProductDisplay.apLifecycleStageInfo.stage !== MetaEntityStage.DRAFT) {
+          if(apDeveloperPortalApiProductDisplay4List.apLifecycleStageInfo.stage !== MetaEntityStage.DRAFT) {
             if(filterByIsAllowed_To_CreateApp && this.isAllowed_To_CreateApp({
-              apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay,
+              apDeveloperPortalApiProductDisplay: apDeveloperPortalApiProductDisplay4List,
               userBusinessGroupId: businessGroupId,
               userId: userId
             })) {
-              apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+              apDeveloperPortalApiProductDisplay4ListList.push(apDeveloperPortalApiProductDisplay4List);
             } else {
-              apDeveloperPortalApiProductDisplayList.push(apDeveloperPortalApiProductDisplay);
+              apDeveloperPortalApiProductDisplay4ListList.push(apDeveloperPortalApiProductDisplay4List);
             }
           }
         }   
       }
     }
-    return apDeveloperPortalApiProductDisplayList;
+    return apDeveloperPortalApiProductDisplay4ListList;
   }
 
   public apiGet_DeveloperPortalApApiProductDisplay = async({ organizationId, apiProductId, default_ownerId, fetch_revision_list = false, revision }: {

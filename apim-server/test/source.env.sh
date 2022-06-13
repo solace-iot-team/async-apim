@@ -13,6 +13,11 @@ unset_source_env() {
     unset APIM_TEST_SERVER_API_BASE
     unset APIM_TEST_SERVER_ROOT_USER
     unset APIM_TEST_SERVER_ROOT_USER_PWD
+    unset APIM_SERVER_AUTH_TYPE
+    unset APIM_SERVER_AUTH_INTERNAL_JWT_SECRET
+    unset APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS
+    unset APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET
+    unset APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS
 
     # env vars for server
     unset APIM_SERVER_PORT
@@ -38,6 +43,21 @@ export APIM_SERVER_LOGGER_APP_ID="test-apim-server"
 export APIM_SERVER_LOGGER_LOG_LEVEL="trace"
 export APIM_SERVER_ROOT_USER="root.admin@async-apim.dev"
 export APIM_SERVER_ROOT_USER_PWD="admin123!"
+# Auth
+# APIM_SERVER_AUTH_TYPE = oidc | internal | none
+export APIM_SERVER_AUTH_TYPE="internal"
+# internal auth
+export APIM_SERVER_AUTH_INTERNAL_JWT_SECRET="myAuthJwtSecret"
+# 15 minutes: 60 * 15 = 900 seconds
+export APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS="900"
+export APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET="myRefreshJwtSecret"
+# 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
+# 5 days = 60 * 60 * 24 * 5 = 432000 seconds
+export APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS="432000"
+#future
+# APIM_SERVER_AUTH_WHITELISTED_DOMAINS = http://localhost:3000
+# oidc auth
+# todo
 
 # ENV vars for tests
 export APIM_TEST_SERVER_ENABLE_LOGGING="true"

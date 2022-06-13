@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Toast } from 'primereact/toast';
 import { MenuItem } from 'primereact/components/menuitem/MenuItem';
@@ -8,22 +8,22 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import type { TApiCallState } from '../../utils/ApiCallState';
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
-// import { ManageApiProducts } from '../components/ManageApiProducts/deleteme.ManageApiProducts';
 import { TAPEntityId } from '../../utils/APEntityIdsService';
 import { ManageApiProducts } from '../components/ManageApiProducts/ManageApiProducts';
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from '../../displayServices/APPageNavigationDisplayUtils';
 
 import "../../pages/Pages.css";
 
 export const ManageApiProductsPage: React.FC = () => {
-  const componentName = 'ManageApiProductsPage';
+  const ComponentName = 'ManageApiProductsPage';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);  
+  const [userContext] = React.useContext(UserContext);  
 
   const toast = React.useRef<any>(null);
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
+  const location = useLocation<TAPPageNavigationInfo>();
   const history = useHistory();
   const navigateTo = (path: string): void => { history.push(path); }
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
@@ -39,13 +39,29 @@ export const ManageApiProductsPage: React.FC = () => {
   }
 
   const renderBreadcrumbs = () => {
-    const breadcrumbItems: Array<MenuItem> = [
-      { 
+    const breadcrumbItems: Array<MenuItem> = [];
+    const isLocationSet: boolean = location.state !== undefined;
+
+    if(isLocationSet && location.state.apNavigationTarget.scope === E_AP_Navigation_Scope.LINKED) {
+      const locationItems: Array<MenuItem> = [
+        {
+          label: location.state.apNavigationOrigin.breadcrumbLabel
+        },
+        {
+          label: location.state.apNavigationOrigin.apEntityId.displayName,
+        },
+        {
+          label: 'Referenced by API Product'
+        }
+      ];
+      breadcrumbItems.push(...locationItems);
+    } else {
+      breadcrumbItems.push({
         label: 'API Products',
         style: GlobalElementStyles.breadcrumbLink(),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }
-      }
-    ];
+        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) }  
+      });
+    }
     breadCrumbItemList.forEach( (item: MenuItem) => {
       breadcrumbItems.push({
         ...item,
@@ -61,7 +77,7 @@ export const ManageApiProductsPage: React.FC = () => {
 
   React.useEffect(() => {
     const funcName = 'useEffect([])';
-    const logName = `${componentName}.${funcName}()`;
+    const logName = `${ComponentName}.${funcName}()`;
     if(!userContext.runtimeSettings.currentOrganizationEntityId) throw new Error(`${logName}: userContext.runtimeSettings.currentOrganizationEntityId is undefined`);
     setOrganizationEntityId(userContext.runtimeSettings.currentOrganizationEntityId);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -76,6 +92,7 @@ export const ManageApiProductsPage: React.FC = () => {
           onSuccess={onSuccess} 
           onError={onError} 
           setBreadCrumbItemList={setBreadCrumbItemList}
+          apPageNavigationInfo={location.state}
         />
       }
     </div>

@@ -10,12 +10,16 @@ SKIPPING="+++ SKIPPING +++";
 
 echo " >>> Starting $scriptName ..."
 
+# if alpha release, do nothing
+if [ -n "$APIM_RELEASE_APLPHA_BUILD_NUM" ]; then echo ">>> $SKIPPING: - $scriptDir/$scriptName - APIM_RELEASE_APLPHA_BUILD_NUM=$APIM_RELEASE_APLPHA_BUILD_NUM"; exit 0; fi
+
+
 echo " >>> Build ..."
   cd $scriptDir
   runScript="$scriptDir/build.sh"
   $runScript
   code=$?;
-  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1; fi
+  if [[ $code != 0 ]]; then echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1; fi
 echo " >>> Success."
 
 echo " >>> Publish ..."
@@ -24,11 +28,12 @@ echo " >>> Publish ..."
   $runScript
   code=$?;
   if [[ $code == 2 ]]; then
-    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptName"; exit 0;
+    echo ">>> [$SKIPPING]: version already exists - code=$code - $runScript' - $scriptDir/$scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
-    echo ">>> ERROR - code=$code - $runScript' - $scriptName"; exit 1;
+    echo ">>> ERROR - code=$code - $runScript' - $scriptDir/$scriptName"; exit 1;
   fi
-echo " >>> Success."
+
+echo " >>> Success: $scriptDir/$scriptName"
 
 ###
 # The End.

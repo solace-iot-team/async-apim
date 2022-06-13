@@ -1,19 +1,20 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 
 import { DataTable, DataTableSortOrderType } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
+// import { Button } from 'primereact/button';
 import { MenuItem } from "primereact/api";
 
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
-import { EUICommonResourcePaths, EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
+import { 
+  Globals 
+} from "../../../utils/Globals";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { RenderWithRbac } from "../../../auth/RenderWithRbac";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationUsersCommon";
 import { 
   TAPUserDisplayLazyLoadingTableParameters, 
@@ -25,8 +26,8 @@ import APOrganizationUsersDisplayService, {
   TAPOrganizationUserDisplay, 
   TAPOrganizationUserDisplayListResponse 
 } from "../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
-import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
-import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
+// import { TAPUserLoginCredentials } from "../../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
+// import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizationUsers.css";
@@ -52,11 +53,11 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
   type TManagedObject = TAPOrganizationUserDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const loginAsHistory = useHistory<TAPUserLoginCredentials>();
+  // const loginAsHistory = useHistory<TAPUserLoginCredentials>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>([]);  
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [userContext] = React.useContext(UserContext);
+  // const [userContext] = React.useContext(UserContext);
 
   // * Lazy Loading * 
   const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
@@ -156,15 +157,15 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     setGlobalFilter(_globalFilter);
   }
  
-  const onLoginAs = (mo: TManagedObject) => {
-    loginAsHistory.push( { 
-      pathname: EUICommonResourcePaths.Login,
-      state: {
-        username: mo.apEntityId.id,
-        password: mo.apUserAuthenticationDisplay.password,
-      }
-    });
-  }
+  // const onLoginAs = (mo: TManagedObject) => {
+  //   loginAsHistory.push( { 
+  //     pathname: EUICommonResourcePaths.Login,
+  //     state: {
+  //       username: mo.apEntityId.id,
+  //       password: mo.apUserAuthenticationDisplay.password,
+  //     }
+  //   });
+  // }
 
   const renderDataTableHeader = (): JSX.Element => {
     return (
@@ -180,24 +181,24 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     );
   }
 
-  const actionBodyTemplate = (mo: TManagedObject) => {
-    const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
-    return (
-        <React.Fragment>
-          {mo.apUserActivationDisplay.isActivated === true &&
-            <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
-              <Button 
-                tooltip="login as ..." 
-                icon="pi pi-sign-in" 
-                className="p-button-rounded p-button-outlined p-button-secondary" 
-                onClick={() => onLoginAs(mo)} 
-                disabled={!isLoginAsEnabled}
-              />
-            </RenderWithRbac>  
-          } 
-        </React.Fragment>
-    );
-  }
+  // const actionBodyTemplate = (mo: TManagedObject) => {
+  //   const isLoginAsEnabled: boolean = userContext.apLoginUserDisplay.apEntityId.id !== mo.apEntityId.id;
+  //   return (
+  //       <React.Fragment>
+  //         {mo.apUserActivationDisplay.isActivated === true &&
+  //           <RenderWithRbac resourcePath={EUIAdminPortalResourcePaths.LoginAs} >
+  //             <Button 
+  //               tooltip="login as ..." 
+  //               icon="pi pi-sign-in" 
+  //               className="p-button-rounded p-button-outlined p-button-secondary" 
+  //               onClick={() => onLoginAs(mo)} 
+  //               disabled={!isLoginAsEnabled}
+  //             />
+  //           </RenderWithRbac>  
+  //         } 
+  //       </React.Fragment>
+  //   );
+  // }
 
   const assetsBodyTemplate = (mo: TManagedObject): string => {
     if(mo.organizationAssetInfoDisplayList === undefined) return 'unknown';
@@ -248,7 +249,7 @@ export const ListOrganizationUsers: React.FC<IListOrganizationUsersProps> = (pro
     cols.push(<Column key={Globals.getUUID()} header="First Name" headerStyle={{width: '12em'}} field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('first')} sortable />);
     cols.push(<Column key={Globals.getUUID()} header="Last Name" headerStyle={{width: '12em'}} field={APOrganizationUsersDisplayService.nameOf_ApUserProfileDisplay('last')}  sortable />);
     cols.push(<Column key={Globals.getUUID()} header="Assets" headerStyle={{width: '5em'}} body={assetsBodyTemplate} bodyStyle={{textAlign: 'center', verticalAling: 'top'}} />);
-    cols.push(<Column key={Globals.getUUID()} headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
+    // cols.push(<Column key={Globals.getUUID()} headerStyle={{width: '8em'}} body={actionBodyTemplate} bodyStyle={{textAlign: 'right', verticalAlign: 'top'}}/>);
     return cols;
   }
   const renderManagedObjectDataTable = () => {

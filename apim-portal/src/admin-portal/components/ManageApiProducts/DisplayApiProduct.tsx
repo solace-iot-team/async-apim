@@ -1,8 +1,7 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
-import { Button } from "primereact/button";
-import { Toolbar } from "primereact/toolbar";
 import { TabPanel, TabView } from "primereact/tabview";
 import { Divider } from "primereact/divider";
 import { Dropdown, DropdownChangeParams } from "primereact/dropdown";
@@ -19,27 +18,32 @@ import APEntityIdsService, {
 } from "../../../utils/APEntityIdsService";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageApiProductsCommon";
-import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo, TAPManagedAssetPublishDestinationInfo } from "../../../displayServices/APManagedAssetDisplayService";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
 import { APDisplayApControlledChannelParameters } from "../../../components/APDisplay/APDisplayApControlledChannelParameters";
 import { Config } from "../../../Config";
-import { APDisplayApisDetails } from "../../../components/APDisplay/APDisplayApisDetails";
-import { Globals } from "../../../utils/Globals";
+import { EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
 import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
+import { DisplayAppReferenceList } from "./DisplayAppReferenceList";
+import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
+import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
+import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
+import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
-  VIEW_EXISTING = "VIEW_EXISTING"
+  VIEW_EXISTING = "VIEW_EXISTING",
+  VIEW_REFEREMCED_BY = "VIEW_REFEREMCED_BY",
+  VIEW_EXISTING_MAINTAIN = "VIEW_EXISTING_MAINTAIN"
 }
 
 export interface IDisplayAdminPortalApiProductProps {
@@ -49,6 +53,7 @@ export interface IDisplayAdminPortalApiProductProps {
   onSuccess: (apiCallState: TApiCallState) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProductProps> = (props: IDisplayAdminPortalApiProductProps) => {
@@ -68,6 +73,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
+  const viewAppReferenceHistory = useHistory<TAPPageNavigationInfo>();
+  const ReferencedByTabIndex: number = 5;
 
   // * Api Calls *
   const apiGetManagedObject = async(revision: string): Promise<TApiCallState> => {
@@ -99,6 +106,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     try {
       switch(props.scope) {
         case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
           const apiProductApiSpec: TAPApiSpecDisplay = await APApiSpecsDisplayService.apiGet_ApiProduct_ApiSpec({
             organizationId: props.organizationId, 
             apiProductId: managedObject.apEntityId.id,
@@ -143,6 +152,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
+    if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN) {
+      // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
+      if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
+    }
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -173,46 +186,29 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     doFetchApiSpec(showApiId);
   }, [showApiId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const renderShowApiButtons = () => {
-    const funcName = 'renderShowApiButtons';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject is undefined`);
+  const onViewAppReference = (appEntityId: TAPEntityId) => {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      viewAppReferenceHistory.push({       
+        pathname: EUIAdminPortalResourcePaths.ManageOrganizationApps,
+        state: {
+          apNavigationTarget: {
+            apEntityId: appEntityId,
+            scope: E_AP_Navigation_Scope.LINKED,
+          },
+          apNavigationOrigin: {
+            breadcrumbLabel: 'API Products',
+            apOriginPath: EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
+            apEntityId: props.apAdminPortalApiProductDisplay.apEntityId,
+            tabIndex: ReferencedByTabIndex,
+            scope: E_AP_Navigation_Scope.ORIGIN,
+          }
+        }
+      });
+    }
+  }
 
-    const onShowApi = (event: any): void => {
-      setShowApiId(event.currentTarget.dataset.id);
-    }
-  
-    const jsxButtonList: Array<JSX.Element> = [];
-    for (const apApiDisplay of managedObject.apApiDisplayList) {
-      jsxButtonList.push(
-        <Button 
-          label={apApiDisplay.apEntityId.displayName} 
-          key={apApiDisplay.apEntityId.id} 
-          data-id={apApiDisplay.apEntityId.id} 
-          // icon="pi pi-folder-open" 
-          // className="p-button-text p-button-plain p-button-outlined p-button-rounded" 
-          className="p-button-text p-button-plain p-button-outlined" 
-          style={{ whiteSpace: 'nowrap' }}          
-          onClick={onShowApi}
-        />        
-      );
-    }
-    const renderButtons = () => {
-      return (
-        <div className="p-grid">
-          {jsxButtonList}
-        </div>
-      );
-    }
-    return (
-      <Toolbar         
-        style={{ 
-          background: 'none',
-          border: 'none'
-        }} 
-        left={renderButtons()}
-      />
-    );
+  const onShowApiSpec = (apApiDisplay: IAPApiDisplay) => {
+    setShowApiId(apApiDisplay.apEntityId.id);
   }
 
   const renderBusinessGroupInfo = (apManagedAssetBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo): JSX.Element => {
@@ -232,35 +228,6 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     } else return (<></>);
   }
 
-  const render_UsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-    const funcName = 'render_UsedByApps';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    const renderUsedByApps = (apAppReferenceEntityIdList: TAPEntityIdList): JSX.Element => {
-      if(apAppReferenceEntityIdList.length === 0) return (<div>None.</div>);
-      return (
-        <div>
-          {APEntityIdsService.create_DisplayNameList(apAppReferenceEntityIdList).join(', ')}
-        </div>
-      );
-    }
-  
-    switch(props.scope) {
-      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
-        return (
-          <React.Fragment>
-            <div className="p-text-bold">Used by Apps:</div>
-            <div className="p-ml-2">{renderUsedByApps(apAppReferenceEntityIdList)}</div>
-          </React.Fragment>
-        );
-      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
-        return (<></>);
-      default:
-        Globals.assertNever(logName, props.scope);
-    }
-    return (<></>);
-  }
-
   const renderRevisionSelect = (): JSX.Element => {
     const funcName = 'renderRevisionSelect';
     const logName = `${ComponentName}.${funcName}()`;
@@ -270,12 +237,13 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const onRevisionSelect = (e: DropdownChangeParams) => {
       setSelectedRevision(e.value);
     }
-
+    const isSelectRevisionDisabled: boolean = props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY;
     return(
       <Dropdown
         value={selectedRevision}
         options={APVersioningDisplayService.get_Sorted_ApVersionList(managedObject.apVersionInfo.apVersionList)}
         onChange={onRevisionSelect}
+        disabled={isSelectRevisionDisabled}
       />                          
     );
   }
@@ -285,6 +253,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     const logName = `${ComponentName}.${funcName}()`;
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
         return (
           <div><b>Revision: </b>{renderRevisionSelect()}</div>
         );
@@ -369,6 +339,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     let apAttributeDisplayList: TAPAttributeDisplayList = [];
     switch(props.scope) {
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+      case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
         apAttributeDisplayList = mo.devel_display_complete_ApAttributeList;
         break;
       case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
@@ -388,6 +360,126 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
+  const renderTabPanels = (): Array<JSX.Element> => {
+    const funcName = 'renderTabPanels';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+    const tabPanels: Array<JSX.Element> = [];
+
+    tabPanels.push(
+      <TabPanel header='General'>
+        <div className="p-col-12">
+          <div className="api-product-view">
+            <div className="api-product-view-detail-left">
+
+              <div className="p-text-bold">Description:</div>
+              <div className="p-ml-2">{managedObject.apDescription}</div>
+
+            </div>
+            <div className="api-product-view-detail-right">
+              <div>Id: {managedObject.apEntityId.id}</div>
+              {renderMeta(managedObject)}
+            </div>            
+          </div>
+        </div>  
+      </TabPanel>
+    );
+    tabPanels.push(
+      <TabPanel header={ApiTabHeader}>
+        <React.Fragment>
+          <div>
+            <APDisplayApiProductApis 
+              apApiDisplayList={managedObject.apApiDisplayList}
+              onDisplayApiSpec={onShowApiSpec}
+              className="p-ml-4"
+            />
+            <APDisplayApControlledChannelParameters
+              apControlledChannelParameterList={managedObject.apControlledChannelParameterList}
+              emptyMessage="No controlled channel parameters defined"
+              className="p-ml-4 p-mt-4"
+            />
+          </div>
+          {apiSpec && showApiId &&
+            <React.Fragment>
+              <APDisplayAsyncApiSpec 
+                key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
+                schema={apiSpec.spec} 
+                schemaId={showApiId} 
+                onDownloadSuccess={props.onSuccess}
+                onDownloadError={props.onError}
+              />
+            </React.Fragment>  
+          }
+        </React.Fragment>
+      </TabPanel>
+    );
+    tabPanels.push(
+      <TabPanel header='Policies'>
+        <React.Fragment>
+          <div><b>Approval type</b>: {managedObject.apApprovalType}</div>
+          {/* <div className="p-text-bold">Client Options:</div> */}
+          <APDisplayClientOptions
+            apClientOptionsDisplay={managedObject.apClientOptionsDisplay}
+            className="p-mt-2"
+          />
+        </React.Fragment>
+      </TabPanel>
+    );
+    tabPanels.push(
+      <TabPanel header='Environments'>
+        <React.Fragment>
+          <div className="p-text-bold">Environments:</div>
+          <div className="p-ml-2">
+            {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apEnvironmentDisplayList).join(', ')}
+          </div>
+          <div className="p-text-bold">Protocols:</div>
+          <div className="p-ml-2">
+            {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apProtocolDisplayList).join(', ')}
+          </div>
+        </React.Fragment>
+      </TabPanel>
+    );
+    tabPanels.push(
+      <TabPanel header='Attributes'>
+        <React.Fragment>
+          <div className="p-text-bold">General Attributes:</div>
+          <APDisplayApAttributeDisplayList
+            apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
+            tableRowHeader_AttributeName="Attribute"
+            tableRowHeader_AttributeValue="Value"  
+            emptyMessage="No attributes defined"
+            className="p-ml-4"
+          />
+          {Config.getUseDevelTools() &&
+            <React.Fragment>
+              <Divider />
+              <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
+              {renderDevelAttributeList(managedObject)}
+            </React.Fragment>
+          }
+        </React.Fragment>
+      </TabPanel>
+    );
+    if(props.scope !== E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE) {
+      tabPanels.push(
+        <TabPanel header='Referenced By'>
+          <div className="p-ml-2">
+            <DisplayAppReferenceList
+              organizationId={props.organizationId}
+              apAdminPortalApiProductDisplay={managedObject}
+              onSuccess={props.onSuccess}
+              onError={props.onError}
+              onViewAppReference={onViewAppReference}
+            />
+          </div>
+        </TabPanel>
+      );  
+    } 
+    return tabPanels;
+  }
+
+
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -399,94 +491,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         {renderHeader(managedObject)}
 
         <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
-          <TabPanel header='General'>
-            <React.Fragment>
-            <div className="p-col-12">
-              <div className="api-product-view">
-                <div className="api-product-view-detail-left">
 
-                  <div className="p-text-bold">Description:</div>
-                  <div className="p-ml-2">{managedObject.apDescription}</div>
+          { renderTabPanels() }
 
-                  <div>{render_UsedByApps(managedObject.apAppReferenceEntityIdList)}</div>
-
-                </div>
-                <div className="api-product-view-detail-right">
-                  <div>Id: {managedObject.apEntityId.id}</div>
-                  {renderMeta(managedObject)}
-                </div>            
-              </div>
-            </div>  
-          </React.Fragment>
-          </TabPanel>
-          <TabPanel header={ApiTabHeader}>
-            <React.Fragment>
-              <div>
-                {renderShowApiButtons()}
-                <APDisplayApisDetails 
-                  apApiDisplayList={managedObject.apApiDisplayList}
-                  className="p-ml-4"
-                />
-                <APDisplayApControlledChannelParameters
-                  apControlledChannelParameterList={managedObject.apControlledChannelParameterList}
-                  emptyMessage="No controlled channel parameters defined"
-                  className="p-ml-4 p-mt-4"
-                />
-              </div>
-              {apiSpec && showApiId &&
-                <React.Fragment>
-                  <APDisplayAsyncApiSpec 
-                    key={`${ComponentName}_APDisplayAsyncApiSpec_${showApiSpecRefreshCounter}`}
-                    schema={apiSpec.spec} 
-                    schemaId={showApiId} 
-                    onDownloadSuccess={props.onSuccess}
-                    onDownloadError={props.onError}
-                  />
-                </React.Fragment>  
-              }
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Policies'>
-            <React.Fragment>
-              <div><b>Approval type</b>: {managedObject.apApprovalType}</div>
-              {/* <div className="p-text-bold">Client Options:</div> */}
-              <APDisplayClientOptions
-                apClientOptionsDisplay={managedObject.apClientOptionsDisplay}
-                className="p-mt-2"
-              />
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Environments'>
-            <React.Fragment>
-              <div className="p-text-bold">Environments:</div>
-              <div className="p-ml-2">
-                {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apEnvironmentDisplayList).join(', ')}
-              </div>
-              <div className="p-text-bold">Protocols:</div>
-              <div className="p-ml-2">
-                {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apProtocolDisplayList).join(', ')}
-              </div>
-            </React.Fragment>
-          </TabPanel>
-          <TabPanel header='Attributes'>
-            <React.Fragment>
-              <div className="p-text-bold">General Attributes:</div>
-              <APDisplayApAttributeDisplayList
-                apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
-                tableRowHeader_AttributeName="Attribute"
-                tableRowHeader_AttributeValue="Value"  
-                emptyMessage="No attributes defined"
-                className="p-ml-4"
-              />
-              {Config.getUseDevelTools() &&
-                <React.Fragment>
-                  <Divider />
-                  <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
-                  {renderDevelAttributeList(managedObject)}
-                </React.Fragment>
-              }
-            </React.Fragment>
-          </TabPanel>
         </TabView> 
       </React.Fragment>
     ); 
@@ -504,6 +511,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
         {/* <div>DEBUG: selectedVersion = '{selectedVersion}'</div>
         <div>DEBUG: managedObject.apVersionInfo={JSON.stringify(managedObject?.apVersionInfo)}</div> */}
+
+        {/* DEBUG */}
+        {/* <pre>props.scope={JSON.stringify(props.scope)}</pre> */}
+        {/* <pre>props.apPageNavigationInfo={JSON.stringify(props.apPageNavigationInfo)}</pre> */}
 
         {managedObject && selectedRevision !== undefined && renderManagedObject() }
 

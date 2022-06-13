@@ -1,15 +1,17 @@
-import { APIInfo, CommonEntityNameList } from '@solace-iot-team/apim-connector-openapi-browser';
+export const ButtonLabel_Next = "Next";
+export const ButtonLabel_Back = "Back";
+export const ButtonLabel_Cancel = "Cancel";
+export const ButtonLabel_Create = "Create";
+export const ButtonLabel_Save = "Save";
 
-export type TManagedObjectId = string;
-export type TViewApiObject = string;
-
-export type TViewManagedObject = {
-  id: TManagedObjectId,
-  displayName: string,
-  apiObject: TViewApiObject,
-  apiInfo: APIInfo,
-  apiUsedBy_ApiProductEntityNameList: CommonEntityNameList,
-  globalSearch: string
+export enum E_COMPONENT_STATE {
+  UNDEFINED = "UNDEFINED",
+  MANAGED_OBJECT_LIST_VIEW = "MANAGED_OBJECT_LIST_VIEW",
+  MANAGED_OBJECT_VIEW = "MANAGED_OBJECT_VIEW",
+  MANAGED_OBJECT_EDIT = "MANAGED_OBJECT_EDIT",
+  MANAGED_OBJECT_DELETE = "MANAGED_OBJECT_DELETE",
+  MANAGED_OBJECT_NEW = "MANAGED_OBJECT_NEW",
+  MANAGED_OBJECT_IMPORT_EVENT_PORTAL= "MANAGED_OBJECT_IMPORT_EVENT_PORTAL"
 }
 
 export enum E_CALL_STATE_ACTIONS {
@@ -17,12 +19,28 @@ export enum E_CALL_STATE_ACTIONS {
   API_GET_API_NAME_LIST = "API_GET_API_NAME_LIST",
   API_CREATE_API = "API_CREATE_API",
   API_GET_API = "API_GET_API",
+  API_GET_API_PRODUCT_REFERENCE_LIST = "API_GET_API_PRODUCT_REFERENCE_LIST",
+  API_GET_EMPTY_API = "API_GET_EMPTY_API",
   API_UPDATE_API = "API_UPDATE_API",
   API_IMPORT_API = "API_IMPORT_API",
   FILE_UPLOAD_API = "FILE_UPLOAD_API",
   API_GET_EVENT_API_PRODUCT = 'API_GET_EVENT_API_PRODUCT',
   API_GET_EVENT_API_PRODUCT_LIST = "API_GET_EVENT_API_PRODUCT_LIST",
   SELECT_EVENT_API_PRODUCT = "SELECT_EVENT_API_PRODUCT",
+  API_CHECK_API_ID_EXISTS = "API_CHECK_API_ID_EXISTS",
+  LOAD_ASYNC_API_SPEC_FROM_FILE = "LOAD_ASYNC_API_SPEC_FROM_FILE",
+  API_CHECK_API_VERSION_EXISTS = "API_CHECK_API_VERSION_EXISTS"
 }
 
+export enum E_COMPONENT_STATE_NEW {
+  UNDEFINED = "UNDEFINED",
+  ASYNC_API_SPEC = "ASYNC_API_SPEC",
+  GENERAL = "GENERAL",
+  ACCESS = "ACCESS",
+  REVIEW = "REVIEW"
+}
 
+export enum EAction {
+  EDIT = 'EDIT',
+  NEW = 'NEW'
+}

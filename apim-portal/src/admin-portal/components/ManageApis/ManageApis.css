@@ -37,17 +37,18 @@
 }
 .manage-apis .api-view {
   display: flex;
-  align-items: center;
   padding: 1rem;
   width: 100%;
 }
 .manage-apis .api-view .api-view-detail-left {
   flex: 1 1 0;
+  align-items: center;
 }
 .manage-apis .api-view .api-view-detail-right {
   display: flex;
   flex-direction: column;
   font-style: italic;
+  margin-left: 2.5rem;
 }
 
 .manage-apis .api-description {

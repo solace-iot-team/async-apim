@@ -20,13 +20,16 @@ for releaseDir in ${releaseDirs[@]}; do
   $releaseScript
 
   code=$?;
+
   if [[ $code == 2 ]]; then
-    echo ">>> [$releaseDir] [$SKIPPING], version already exists - code=$code - $releaseScript' - $scriptName"; exit 0;
+    echo ">>> [$releaseDir] [$SKIPPING], version already exists - code=$code - $releaseScript' - $scriptDir/$scriptName"; exit 0;
   elif [[ $code != 0 ]]; then
-    echo ">>> [$releaseDir] ERROR - code=$code - $releaseScript' - $scriptName"; exit 1;
+    echo ">>> [$releaseDir] ERROR - code=$code - $releaseScript' - $criptDir/$scriptName"; exit 1;
   fi
 
 done
+
+echo " >>> Success: $scriptDir/$scriptName"
 
 ###
 # The End.

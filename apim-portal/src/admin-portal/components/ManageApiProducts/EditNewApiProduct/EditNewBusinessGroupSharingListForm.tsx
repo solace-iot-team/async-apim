@@ -250,14 +250,14 @@ export const EditNewBusinessGroupSharingListForm: React.FC<IEditNewBusinessGroup
                     render={( { field, fieldState }) => {
                       return(
                         <TreeSelect
-                        id={field.name}
-                        {...field}
-                        options={apMemberOfBusinessGroupTreeTableNodeList}
-                        onChange={(e) => field.onChange(e.value)}
-                        filter={true}
-                        selectionMode="single"
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                      />
+                          id={field.name}
+                          {...field}
+                          options={apMemberOfBusinessGroupTreeTableNodeList}
+                          onChange={(e) => field.onChange(e.value)}
+                          filter={true}
+                          selectionMode="single"
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />
                     )}}
                   />
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.businessGroupId })}>Business Group*</label>

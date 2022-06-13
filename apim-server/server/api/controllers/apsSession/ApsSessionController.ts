@@ -1,16 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
-import { APSSessionLoginResponse, APSSessionLogoutResponse, APSSessionRefreshTokenResponse, APSUserResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSLoginInternal, APSSessionLoginResponse, APSSessionLogoutResponse, APSSessionRefreshTokenResponse, APSUserResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSAuthStrategyService from '../../../common/authstrategies/APSAuthStrategyService';
 import ServerConfig, { EAuthConfigType } from '../../../common/ServerConfig';
 import { ApiNotAuthorizedServerError, ServerError, ServerFatalError } from '../../../common/ServerError';
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { ServerUtils } from '../../../common/ServerUtils';
 import APSSessionService, { APSSessionUser, TRefreshTokenInternalResponse } from '../../services/APSSessionService';
+import { ControllerUtils } from '../ControllerUtils';
 
 export type UserId_Params = Pick<Components.PathParameters, 'user_id'>;
 export type OrganizationId_Params = Pick<Components.PathParameters, 'organization_id'>;
 
 export class ApsSessionController {
+
+  public static getLogin = (_req: Request, res: Response, _next: NextFunction): void => {
+    const funcName = 'getLogin';
+    const logName = `${ApsSessionController.name}.${funcName}()`;
+    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    //   req: req,
+    // } }));
+    // throw new ServerError(logName, `continue with ${logName}`);
+
+    const configAuthType: EAuthConfigType = ServerConfig.getAuthConfig().type;
+    switch(configAuthType) {
+      case EAuthConfigType.INTERNAL:
+        const apsLoginInternal: APSLoginInternal = {
+          loginInternal: true
+        }
+        res.status(200).send(apsLoginInternal);
+        // this creates a CORS error
+        // res.redirect(`${req.headers.origin}/?login=true`);
+        break;
+      case EAuthConfigType.OIDC:
+        throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
+      case EAuthConfigType.NONE:
+        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
+      default:
+        ServerUtils.assertNever(logName, configAuthType);
+    }
+  }
 
   public static login = (req: Request, res: Response, next: NextFunction): void => {
     const funcName = 'login';
@@ -50,13 +78,13 @@ export class ApsSessionController {
 
     const anyReq: any = req as any;
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'internal info', details: {
       _passport: anyReq._passport,
       session: anyReq.session
     } }));
     // throw new ServerError(logName, `${logName}: continue here`);
 
-    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'continue here', details: {
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.LOGGING_IN_USER, message: 'internal info', details: {
       user: anyReq.user,
     } }));
     // throw new ServerError(logName, `${logName}: continue with userId=${JSON.stringify(anyReq.user, null, 2)}`);
@@ -116,18 +144,20 @@ export class ApsSessionController {
       existingRefreshToken: refreshToken,
     })
     .then(( response: TRefreshTokenInternalResponse ) => {
-
-      res.cookie("refreshToken", response.newRefreshToken, APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
-
+      // refresh the bearer token(s)
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
         success: true,
-        token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId })
+        token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId }),
+        organizationId: response.lastOrganizationId,
+        userId: response.userId,
       };
 
       res.status(200).send(apsSessionRefreshTokenResponse);
 
     })
     .catch( (e) => {
+      // clear the cookie since it is no longer valid
+      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseClearCookieOptions_For_InternalAuth_RefreshToken());
       next(e);
     });
   }
@@ -161,8 +191,8 @@ export class ApsSessionController {
       userId: apsSessionUser.userId
     })
     .then( (apsSessionLogoutResponse: APSSessionLogoutResponse) => {
-
-      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
+  
+      res.clearCookie("refreshToken", APSAuthStrategyService.getResponseClearCookieOptions_For_InternalAuth_RefreshToken());
 
       res.status(200).json(apsSessionLogoutResponse);
 
@@ -181,6 +211,21 @@ export class ApsSessionController {
 
       res.status(200).send();
 
+    })
+    .catch( (e) => {
+      next(e);
+    });
+  }
+
+  public static logoutOrganizationAll = (req: Request<OrganizationId_Params>, res: Response, next: NextFunction): void => {
+    const funcName = 'logoutOrganizationAll';
+    const logName = `${ApsSessionController.name}.${funcName}()`;
+
+    APSSessionService.logoutOrganizationAll({
+      apsOrganizationId: ControllerUtils.getParamValue<OrganizationId_Params>(logName, req.params, 'organization_id')
+    })
+    .then((_r) => {
+      res.status(204).send();
     })
     .catch( (e) => {
       next(e);

@@ -48,7 +48,11 @@ const buildApimAdminPortal = () => {
   console.log(`${logName}: starting ...`);
 
   if(s.cd(`${WorkingApimPortalDir}`).code !== 0) process.exit(1);
-  if(s.exec('npm install').code !== 0) process.exit(1);
+  if(s.exec('npm install').code !== 0) {
+    // if it is an alpha version, try linking instead
+    console.log(`${logName}: npm install failed, trying npm link instead ....`);
+    if(s.exec('npm link @solace-iot-team/apim-connector-openapi-browser').code !== 0) process.exit(1);
+  }
   if(s.exec('npm run dev:build').code !== 0) process.exit(1);
   if(s.exec('npm run build').code !== 0) process.exit(1);
 

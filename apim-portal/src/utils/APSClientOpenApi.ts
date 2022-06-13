@@ -1,4 +1,3 @@
-
 import { 
   OpenAPI as APSOpenAPI, 
   ApiError as APSApiError 
@@ -17,6 +16,7 @@ export class APSClientOpenApi {
   private static componentName = 'APSClientOpenApi';
   private static isInitialized: boolean = false;
   private static config: TAPSClientOpenApiConfig;
+  private static token: string;
 
   public static initialize = (config: TAPSClientOpenApiConfig) => {
     const configStr = JSON.stringify(config);
@@ -26,6 +26,12 @@ export class APSClientOpenApi {
     APSClientOpenApi.set();
   }
 
+  public static setToken = (token: string | undefined) => {
+    APSClientOpenApi.token = token !== undefined ? token : '***';
+  }
+
+  private static getToken = (): string => { return APSClientOpenApi.token; }
+
   public static set = (): void => {
     const funcName = 'set';
     const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
@@ -33,9 +39,10 @@ export class APSClientOpenApi {
     if(APSClientOpenApi.config.apsServerUrl) {
       const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
       APSOpenAPI.BASE = base.toString();
-      APSOpenAPI.WITH_CREDENTIALS = false;
-      APSOpenAPI.CREDENTIALS = "omit";
     }
+    APSOpenAPI.WITH_CREDENTIALS = true;
+    APSOpenAPI.CREDENTIALS = "include";
+    APSOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
   }
 

@@ -1,12 +1,15 @@
 
 import React from "react";
 
-import { TAPApiChannelParameter, TAPApiChannelParameterList, TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
 import { TAPControlledChannelParameter, TAPControlledChannelParameterList } from "../../../../displayServices/APApiProductsDisplayService";
 import { SelectApiChannelParameter } from "./SelectApiChannelParameter";
 import { EditNewApAttributeListForm } from "../../../../components/APManageAttributes/EditNewApAttributeListForm";
-import APAdminPortalApisDisplayService from "../../../displayServices/APAdminPortalApisDisplayService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import APApisDisplayService, { 
+  TAPApiChannelParameter,
+  TAPApiChannelParameterList, 
+  TAPApiDisplayList 
+} from "../../../../displayServices/APApisDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -28,7 +31,7 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   React.useEffect(() => {
-    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APAdminPortalApisDisplayService.create_Combined_ApiChannelParameterList({
+    const combined_ApApiChannelParameterList: TAPApiChannelParameterList = APApisDisplayService.create_Combined_ApiChannelParameterList({
       apApiDisplayList: props.apApiDisplayList,
     });
     const availableEntityIdList: TAPEntityIdList = APEntityIdsService.sort_byDisplayName(APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(combined_ApApiChannelParameterList));
@@ -38,12 +41,16 @@ export const EditControlledChannelParameters: React.FC<IEditControlledChannelPar
 
 
   const onSelect_ApiChannelParameter = (apApiChannelParameter: TAPApiChannelParameter) => {
-    // alert(`onSelect_ApiChannelParameter(): apApiChannelParameter=${JSON.stringify(apApiChannelParameter, null, 2)}`);
+    // const funcName = 'onSelect_ApiChannelParameter';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // alert(`${logName}: apApiChannelParameter=${JSON.stringify(apApiChannelParameter, null, 2)}`);
     // transform to channel parameter
     const apControlledChannelParameter: TAPControlledChannelParameter = {
       apEntityId: apApiChannelParameter.apEntityId,
       value: apApiChannelParameter.valueList.join(','),
     };
+    // alert(`${logName}: apControlledChannelParameter=${JSON.stringify(apControlledChannelParameter, null, 2)}`);
+    // return;
     setPresetApControlledChannelParameter(apControlledChannelParameter);
     setRefreshCounter(refreshCounter + 1);
   }

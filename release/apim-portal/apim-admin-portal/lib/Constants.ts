@@ -1,4 +1,6 @@
 
+const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
+
 export type TAssetsInclude =   { 
   sources: string;
   targetDir: string;
@@ -16,8 +18,10 @@ export class Constants {
   private readonly _tarFileReleaseDir: string;
   private readonly _skipping: string;
   private readonly _dockerFile: string;
+  private _alphaVersion: string | undefined; 
 
   private _assetsIncludeList: TAssetsIncludeList = [];
+  private readonly _assetDir: string;
   
   private initAssetIncludeList() {
     this._assetsIncludeList = [
@@ -25,6 +29,10 @@ export class Constants {
         sources: `${this._workingApimPortalDir}/build/*`,
         targetDir: `${this._contextDir}/apim-portal`
       },
+      {
+        sources: `${this._assetDir}/nginx.conf`,
+        targetDir: `${this._contextDir}`
+      }
     ];  
 
     // this._assetsIncludeList = [
@@ -68,6 +76,8 @@ export class Constants {
     this._contextDir = `${this._workingDir}/context`;
     this._tarFileReleaseDir = `${this._workingDir}/tar-release`;
     this._dockerFile = `${scriptDir}/Dockerfile`;
+    this._alphaVersion = process.env[ENV_VAR_APIM_RELEASE_ALPHA_VERSION];
+    this._assetDir = `${scriptDir}/assets`;
     this.initAssetIncludeList();
   }
   public log() {
@@ -83,5 +93,22 @@ export class Constants {
   public get AssetsIncludeList() { return this._assetsIncludeList; }
   public get ContextDir() { return this._contextDir; }
   public get DockerFile() { return this._dockerFile; }
+  public get AlphaVersion() { return this._alphaVersion; }
+  public get AssetDir() { return this._assetDir; }
+
+  public createDockerImageTag = (version: string): string => {
+    if(this._alphaVersion) {
+      return `${version}-${this._alphaVersion.replaceAll('+', '-')}`;
+    }
+    return version;
+  }  
+  public createLatestTag = (): string => {
+    if(this._alphaVersion) return 'alpha-latest';
+    return 'latest';
+  } 
+  public createTarGzFileName = (name: string, version: string): string => {
+    return `${name}.${this.createDockerImageTag(version)}.tgz`;
+  }
+
 
 }

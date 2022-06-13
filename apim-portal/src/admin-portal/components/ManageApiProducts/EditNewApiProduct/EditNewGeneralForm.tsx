@@ -146,7 +146,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     // check if id exists
     const checkResult: boolean | undefined = await apiCheck_ApiProductIdExists(id);
     if(checkResult === undefined) return false;
-    if(checkResult) return 'API Product Id already exists, choose a unique Id.';
+    if(checkResult) return 'API Product Id already exists, please choose a unique Id.';
     return true;
   }
 

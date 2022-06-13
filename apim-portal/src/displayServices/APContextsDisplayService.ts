@@ -1,5 +1,6 @@
 import { AuthHelper } from '../auth/AuthHelper';
 import { TOrganizationContextAction } from '../components/APContextProviders/APOrganizationContextProvider';
+import { TAPSessionContext, TSessionContextAction } from '../components/APContextProviders/APSessionContextProvider';
 import { UserContextAction } from '../components/APContextProviders/APUserContextProvider';
 import { AuthContextAction } from '../components/AuthContextProvider/AuthContextProvider';
 import { TAPEntityId } from '../utils/APEntityIdsService';
@@ -9,9 +10,10 @@ import {
   TAPRbacRole, 
 } from '../utils/APRbac';
 import { EAppState, EUICommonResourcePaths, Globals } from '../utils/Globals';
+import { ApsAdministrationService, APSOrganization } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APSystemOrganizationsDisplayService from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APRbacDisplayService from './APRbacDisplayService';
-import { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
+import APLoginUsersDisplayService, { TAPLoginUserDisplay } from './APUsersDisplayService/APLoginUsersDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplay, TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from './APUsersDisplayService/APOrganizationUsersDisplayService';
 
@@ -21,6 +23,13 @@ class APContextsDisplayService {
   public get_RoleDisplayName(apsRole: EAPSCombinedAuthRole): string {
     const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
     return rbacRole.displayName;
+  }
+
+  public setup_SessionContext({ apSessionContext, dispatchSessionContextAction }:{
+    apSessionContext: TAPSessionContext;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
+  }): void {
+    dispatchSessionContextAction({ type: 'SET_SESSION_CONTEXT', apSessionContext: apSessionContext });
   }
 
   private setup_AuthContext({ authorizedResourcePathsAsString, dispatchAuthContextAction }:{
@@ -39,20 +48,30 @@ class APContextsDisplayService {
     isConnectorAvailable,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
+    doUpdateLastOrganizationId = true,
   }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
     organizationEntityId: TAPEntityId | undefined;
     isConnectorAvailable: boolean;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    doUpdateLastOrganizationId?: boolean;
   }): Promise<void> {
     const funcName = 'setup_OrganizationContext';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
-    // alert(`${logName}: organizationEntityId=${JSON.stringify(organizationEntityId)}`);
+    // alert(`${logName}: organizationEntityId=${JSON.stringify(organizationEntityId)}, isConnectorAvailable=${isConnectorAvailable}`);
     // alert(`${logName}: apLoginUserDisplay.apMemberOfOrganizationDisplayList = ${JSON.stringify(apLoginUserDisplay.apMemberOfOrganizationDisplayList, null, 2)}`);
 
     if(organizationEntityId !== undefined) {
+
+      // update the last organization id the user has selected for page refresh login
+      if(doUpdateLastOrganizationId) {
+        await APLoginUsersDisplayService.apsUpdate_LastOrganizationId({
+          userId: apLoginUserDisplay.apEntityId.id,
+          lastOrganizationId: organizationEntityId.id,
+        });  
+      }
 
       // get the Organization User to get the business groups tree and current business group
       const apOrganizationUserDisplay: TAPOrganizationUserDisplay = await APOrganizationUsersDisplayService.apsGet_ApOrganizationUserDisplay({
@@ -112,7 +131,8 @@ class APContextsDisplayService {
     userContextCurrentAppState, 
     userContextOriginAppState, 
     dispatchUserContextAction, 
-    navigateTo 
+    navigateTo,
+    navigateToPath,
   }:{
     isConnectorAvailable: boolean;
     authorizedResourcePathsAsString: string;
@@ -120,6 +140,7 @@ class APContextsDisplayService {
     userContextOriginAppState: EAppState;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     navigateTo: (path: string) => void;
+    navigateToPath?: string;
   }): void {
     const funcName = 'setup_App';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -155,12 +176,77 @@ class APContextsDisplayService {
     }
     dispatchUserContextAction({ type: 'SET_ORIGIN_APP_STATE', appState: originAppState});
     dispatchUserContextAction({ type: 'SET_CURRENT_APP_STATE', appState: newCurrentAppState});
-    navigateTo(Globals.getCurrentHomePath(true, newCurrentAppState));
+    navigateTo(navigateToPath === undefined ? Globals.getCurrentHomePath(true, newCurrentAppState) : navigateToPath);
+  }
+
+  /** setup contexts after page refresh */
+  public async setup_RefreshContexts({
+    apLoginUserDisplay,
+    organizationId,
+    isConnectorAvailable,
+    userContextCurrentAppState,
+    userContextOriginAppState,
+    dispatchAuthContextAction,
+    dispatchUserContextAction,
+    dispatchOrganizationContextAction,
+    navigateTo,
+    navigateToPath,
+  }:{
+    apLoginUserDisplay: TAPLoginUserDisplay;
+    organizationId?: string;
+    isConnectorAvailable: boolean;
+    userContextCurrentAppState: EAppState;
+    userContextOriginAppState: EAppState;
+    dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
+    dispatchUserContextAction: React.Dispatch<UserContextAction>;
+    dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    navigateTo: (path: string) => void;
+    navigateToPath: string;
+  }): Promise<void> {
+
+    // test show loading
+    // await Globals.sleep(5000);
+
+    let organizationEntityId: TAPEntityId | undefined = undefined;
+    if(organizationId !== undefined) {
+      // get the displayName
+      const apsOrganization: APSOrganization = await ApsAdministrationService.getApsOrganization({ organizationId: organizationId });
+      organizationEntityId = { id: organizationId, displayName: apsOrganization.displayName };
+    }
+    const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
+      apLoginUserDisplay: apLoginUserDisplay,
+      apOrganizationEntityId: organizationEntityId,
+    });
+    this.setup_AuthContext({
+      authorizedResourcePathsAsString: authorizedResourcePathsAsString,
+      dispatchAuthContextAction: dispatchAuthContextAction
+    });
+
+    await this.setup_OrganizationContext({
+      apLoginUserDisplay: apLoginUserDisplay,
+      organizationEntityId: organizationEntityId,
+      isConnectorAvailable: isConnectorAvailable,
+      dispatchUserContextAction: dispatchUserContextAction,
+      dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+      doUpdateLastOrganizationId: false
+    });
+
+    this.setup_App({
+      isConnectorAvailable: isConnectorAvailable,
+      authorizedResourcePathsAsString: authorizedResourcePathsAsString,
+      userContextCurrentAppState: userContextCurrentAppState,
+      userContextOriginAppState: userContextOriginAppState,
+      dispatchUserContextAction: dispatchUserContextAction,
+      navigateTo: navigateTo,
+      navigateToPath: navigateToPath
+    });
+
   }
 
   /** Setup the contexts after user login */
   public async setup_LoginContexts({
     apLoginUserDisplay,
+    apSessionContext,
     organizationEntityId,
     isConnectorAvailable,
     dispatchAuthContextAction,
@@ -168,9 +254,11 @@ class APContextsDisplayService {
     userContextOriginAppState,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
+    dispatchSessionContextAction,
     navigateTo,
   }:{
     apLoginUserDisplay: TAPLoginUserDisplay;
+    apSessionContext: TAPSessionContext;
     organizationEntityId: TAPEntityId | undefined;
     isConnectorAvailable: boolean;
     dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
@@ -178,12 +266,18 @@ class APContextsDisplayService {
     userContextOriginAppState: EAppState;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
     navigateTo: (path: string) => void;
     // onLoadingChange: (isLoading: boolean) => void;
   }): Promise<void> {
 
     // test show loading
     // await Globals.sleep(5000);
+
+    this.setup_SessionContext({
+      apSessionContext: apSessionContext,
+      dispatchSessionContextAction: dispatchSessionContextAction
+    });
 
     const authorizedResourcePathsAsString: string = await APRbacDisplayService.create_AuthorizedResourcePathListAsString({
       apLoginUserDisplay: apLoginUserDisplay,
@@ -219,12 +313,15 @@ class APContextsDisplayService {
     dispatchAuthContextAction,
     dispatchUserContextAction,
     dispatchOrganizationContextAction,
+    dispatchSessionContextAction,
   }:{
     dispatchAuthContextAction: React.Dispatch<AuthContextAction>;
     dispatchUserContextAction: React.Dispatch<UserContextAction>;
     dispatchOrganizationContextAction: React.Dispatch<TOrganizationContextAction>;
+    dispatchSessionContextAction: React.Dispatch<TSessionContextAction>;
   }): void {
 
+    dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
     dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT' });
     dispatchUserContextAction({ type: 'CLEAR_USER_CONTEXT' });
     dispatchOrganizationContextAction({ type: 'CLEAR_ORGANIZATION_CONTEXT' });

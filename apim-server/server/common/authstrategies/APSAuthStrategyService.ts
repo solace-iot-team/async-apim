@@ -3,18 +3,25 @@ import jwt from 'jsonwebtoken';
 import cors from "cors";
 
 import ServerConfig, { EAuthConfigType, TAuthConfig, TAuthConfigInternal, TExpressServerConfig } from "../ServerConfig";
-import { ApiCorsServerError, ServerError, ServerFatalError } from "../ServerError";
+import { ApiCorsServerError, ApiNotAuthorizedServerError, ServerError, ServerFatalError } from "../ServerError";
 import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
+import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
   INTERNAL_JWT = "internal_jwt",
   OIDC = "oidc"
 }
+export enum TTokenPayload_AccountType {
+  USER_ACCOUNT = "USER_ACCOUNT",
+  SERVICE_ACCOUNT = "SERVICE_ACCOUNT"
+}
 export type TTokenPayload = {
   _id: string;
+  iat: number;
+  accountType: TTokenPayload_AccountType;
 }
 type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
 
@@ -31,7 +38,12 @@ class APSAuthStrategyService {
   // private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
   private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
+  private static isRequestOriginLocalhost = false;
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
+  private static jwtHeader: jwt.JwtHeader = {
+    typ: 'JWT',
+    alg: 'HS256'
+  };
 
 
   // public getApsPassport = (): passport.PassportStatic => {
@@ -85,20 +97,43 @@ class APSAuthStrategyService {
   private static checkCorsOrigin = (requestOrigin: string | undefined, callback: (err: Error | null, origin?: StaticOrigin) => void) => {
     const funcName = 'checkCorsOrigin';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
-    // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'continue here', details: {
-    //   requestOrigin: requestOrigin,
-    // } }));
-    // throw new ServerError(logName, `continue with ${logName}`);
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'checking cors policy', details: {
+      requestOrigin: requestOrigin ? requestOrigin : 'undefined',
+      corsWhitelistedDomainList: APSAuthStrategyService.corsWhitelistedDomainList
+    } }));
+    // return callback(new ServerError(logName, `continue with ${logName}`));  
 
     if(requestOrigin !== undefined) {
       // localhost always allowed
-      if(APSAuthStrategyService.localhostRegExp.test(requestOrigin)) return callback(null, true);
-      // check whitelist
-      if(APSAuthStrategyService.corsWhitelistedDomainList.indexOf(requestOrigin) !== -1) return callback(null, true);
+      if(APSAuthStrategyService.localhostRegExp.test(requestOrigin)) {
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'localhost pass', details: {
+          requestOrigin: requestOrigin,
+        } }));    
+        APSAuthStrategyService.isRequestOriginLocalhost = true;
+        return callback(null, true);
+      }
+      ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'checking whitelisted IPs', details: {
+        requestOrigin: requestOrigin,
+        corsWhitelistedDomainList: APSAuthStrategyService.corsWhitelistedDomainList
+      } }));    
+      // check whitelist, if empty, allow all
+      if(APSAuthStrategyService.corsWhitelistedDomainList.length > 0) {
+        if(APSAuthStrategyService.corsWhitelistedDomainList.indexOf(requestOrigin) !== -1) return callback(null, true);
+      } else {
+        // no whitelisted IPs found, allowing all through
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'no whitelisted IPs found, allowing all through', details: {
+          requestOrigin: requestOrigin,
+        } }));    
+        return callback(null, true);
+      }
+    } else {
+      ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CORS_POLICY, message: 'requestOrigin is undefined, allowing through', details: {
+        requestOrigin: 'undefined',
+      } }));    
+      return callback(null, true);  
     }
     // error
-    // return callback(new Error(`CORS check failure: ${requestOrigin}`));
-    return callback(new ApiCorsServerError(logName));
+    return callback(new ApiCorsServerError(logName, requestOrigin));
   }
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {
@@ -184,6 +219,17 @@ class APSAuthStrategyService {
     }
   }
 
+  public getResponseClearCookieOptions_For_InternalAuth_RefreshToken(): any {
+    const funcName = 'getResponseClearCookieOptions_For_InternalAuth_RefreshToken';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    return {
+      ...this.getResponseCookieOptions_For_InternalAuth_RefreshToken(),
+      maxAge: 0,
+      expires: new Date(0),
+    };
+  }
   /**
    * Usage: 
    * res.cookie("refreshToken", refreshToken, APSAuthStrategyService.getResponseCookieOptions_For_InternalAuth_RefreshToken());
@@ -194,16 +240,24 @@ class APSAuthStrategyService {
 
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    let _secure = true;
+    let _sameSite: string | undefined = "none";
+    // for localhost, secure must be true
+    // secure: true, sameSite: "none"
+    // for others:
+    // secure: true (requires https) + sameSite: "none"
+    // secure: false (over http) + sameSite: "lax" (this is the default)
+    if(!APSAuthStrategyService.isRequestOriginLocalhost) {
+      _secure = false;
+      _sameSite = undefined;
+    }
     return {
       httpOnly: true,
-      // Since localhost is not having https protocol,
-      // secure cookies do not work correctly (in postman)
-      // secure: !dev,
-      // secure: true,
-      secure: false,
+      secure: _secure,
+      sameSite: _sameSite,
       signed: true,
-      maxAge: authConfig.refreshJwtExpirySecs,
-      sameSite: "none",
+      // milli seconds
+      maxAge: authConfig.refreshJwtExpirySecs * 1000,
       path: '/'
     };
   }
@@ -218,29 +272,49 @@ class APSAuthStrategyService {
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
     const payload: TTokenPayload = {
-      _id: userId
+      _id: userId,
+      iat: Date.now(),
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT
     };
-
-    return jwt.sign(payload, authConfig.authJwtSecret, {
-      expiresIn: authConfig.authJwtExpirySecs
-    });
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: authConfig.authJwtExpirySecs,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: userId,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    }
+    return jwt.sign(payload, authConfig.authJwtSecret, signOptions);
   }
 
   public generateRefreshToken_For_InternalAuth = ({ userId }:{
     userId: string;
   }): string => {
     const funcName = 'generateRefreshToken_For_InternalAuth';
-    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
     const payload: TTokenPayload = {
-      _id: userId
+      _id: userId,
+      iat: Date.now(),
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT
     };
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: authConfig.refreshJwtExpirySecs,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: userId,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    };
+    return jwt.sign(payload, authConfig.refreshJwtSecret, signOptions);
 
-    return jwt.sign(payload, authConfig.refreshJwtSecret, {
-      expiresIn: authConfig.refreshJwtExpirySecs
-    });
+    // return jwt.sign(payload, authConfig.refreshJwtSecret, {
+    //   // seconds
+    //   expiresIn: authConfig.refreshJwtExpirySecs
+    // });
+
   }
 
   public getUserId_From_RefreshToken = ({ refreshToken }:{
@@ -251,11 +325,13 @@ class APSAuthStrategyService {
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
     
-    const payload = jwt.verify(refreshToken, authConfig.refreshJwtSecret) as TTokenPayload;
-    return payload._id;
+    try {
+      const payload = jwt.verify(refreshToken, authConfig.refreshJwtSecret) as TTokenPayload;
+      return payload._id;
+    } catch(e: any) {
+      throw new ApiNotAuthorizedServerError(logName, undefined, { error: e });
+    }
   }
-
-
 }
 
 export default new APSAuthStrategyService();

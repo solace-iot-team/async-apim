@@ -14,8 +14,8 @@ import {
   $APIKeyAuthentication,
   $BearerTokenAuthentication
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APConnectorApiHelper } from "./APConnectorApiCalls";
-import { EAPAsyncApiSpecFormat, TAPAsyncApiSpec } from './APTypes';
+import APApiSpecsDisplayService, { EAPApiSpecFormat, TAPApiSpecDisplay } from '../displayServices/APApiSpecsDisplayService';
+import APEntityIdsService from './APEntityIdsService';
 
 export class APConnectorFormValidationRules {
 
@@ -304,7 +304,11 @@ export class APConnectorFormValidationRules {
 // could be async ==> call a server api to validate spec properly
     const validate = (specStr: string): string | boolean => {
       // alert(`spec=\n${specStr}`);
-      const result: TAPAsyncApiSpec | string =  APConnectorApiHelper.getAsyncApiSpecAsJson({ format: EAPAsyncApiSpecFormat.UNKNOWN, spec: specStr });
+      const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
+        apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+        asyncApiSpecString: specStr,
+        currentFormat: EAPApiSpecFormat.UNKNOWN
+      });
       // if(typeof(result) === 'string') alert(`result is string = ${result}`);
       // else alert(`result is not string = ${JSON.stringify(result, null, 2)}`);
       // return 'never validates until problem fixed';
@@ -313,7 +317,7 @@ export class APConnectorFormValidationRules {
     }
 
     return {
-      required: 'Enter Async API Spec.',
+      required: 'Please provide an Async API Spec.',
       validate: validate
     }
   }

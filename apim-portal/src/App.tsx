@@ -28,11 +28,12 @@ import {
 } from './utils/Globals';
 import { ProtectedRouteWithRbac } from "./auth/ProtectedRouteWithRbac";
 import { HomePage } from './pages/HomePage';
-import { UserLoginPage } from './pages/UserLoginPage';
+import { UserSecLoginPage } from "./pages/UserSecLoginPage";
+import { UserGetLoginPage } from "./pages/UserGetLoginPage";
 import { ManageUserAccountPage } from "./pages/ManageUserAccountPage";
 import { UnauthorizedPage } from "./pages/UnauthorizedPage";
 import { NoOrganizationPage } from "./pages/NoOrganizationPage";
-import { NotFoundPage } from './pages/NotFoundPage';
+// import { NotFoundPage } from './pages/NotFoundPage';
 import { NavBar } from './components/NavBar/NavBar';
 import { ShowUserMessage } from "./components/ShowUserMessage/ShowUserMessage";
 import { HealthCheckViewPage } from "./pages/HealthCheckViewPage";
@@ -42,6 +43,7 @@ import { RolesTestPage } from "./pages/devel/RolesTestPage";
 import { ContextsTestPage } from "./pages/devel/ContextsTestPage";
 import { ErrorTestPage } from "./pages/devel/ErrorTestPage";
 import { BusinessGroupsTestPage } from "./pages/devel/BusinessGroupsTestPage";
+import { SecTestPage } from "./pages/devel/SecTestPage";
 
 import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -155,6 +157,7 @@ const App: React.FC = () => {
       <PerformSystemHealthCheck />
       <ShowUserMessage />
       <NavBar />
+      {/* <UserSecVerify /> */}
       { isDebug && userContext && displayStateInfo() }
       <div className="ap-app-grid">
         <div className="ap-app-grid-left">
@@ -181,7 +184,10 @@ const App: React.FC = () => {
               <Route path={EUICommonResourcePaths.HealthCheckView} component={HealthCheckViewPage} exact />
               
               {/* User */}
-              <Route path={EUICommonResourcePaths.Login} component={UserLoginPage} exact />
+              <Route path={EUICommonResourcePaths.GetLogin} component={UserGetLoginPage} exact />
+              <Route path={EUICommonResourcePaths.SecLogin} component={UserSecLoginPage} exact />
+
+              {/* <Route path={EUICommonResourcePaths.deleteme_Login} component={UserLoginPage} exact /> */}
               <ProtectedRouteWithRbac path={EUICommonResourcePaths.ManageUserAccount} component={ManageUserAccountPage} exact />
 
               {/* Admin Portal */}
@@ -200,11 +206,12 @@ const App: React.FC = () => {
                   <Route path={EUIDeveloperToolsResourcePaths.ViewContexts} key={EUIDeveloperToolsResourcePaths.ViewContexts} component={ContextsTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.TestErrors} key={EUIDeveloperToolsResourcePaths.TestErrors} component={ErrorTestPage} exact />,
                   <Route path={EUIDeveloperToolsResourcePaths.TestBusinessGroups} key={EUIDeveloperToolsResourcePaths.TestBusinessGroups} component={BusinessGroupsTestPage} exact />,
+                  <Route path={EUIDeveloperToolsResourcePaths.TestSec} key={EUIDeveloperToolsResourcePaths.TestSec} component={SecTestPage} exact />,
                 ]
               }
 
               {/* Catch all */}
-              <Route component={NotFoundPage} />
+              <Route component={HomePage} />
             </Switch>
           </div>
         </div>
