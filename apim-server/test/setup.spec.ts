@@ -18,6 +18,8 @@ import Server from '../server/index';
 import { expect } from 'chai';
 import { 
   ApsMonitorService, 
+  APSSessionLoginResponse, 
+  ApsSessionService, 
   APSStatus,
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 import ServerConfig, { EAuthConfigType } from "../server/common/ServerConfig";
@@ -119,7 +121,6 @@ describe(`${scriptName}`, () => {
     it(`${scriptName}: should initialize open api`, async() => {
       const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
       if(isInternalIdp) {
-        throw new Error(`${scriptName}: must set a bearer token for open api - how to generate it - using server call`);
         ApimServerAPIClient.initializeAuthConfigInternal({ 
           host: TestEnv.host, 
           port: TestEnv.port,
@@ -138,6 +139,23 @@ describe(`${scriptName}`, () => {
         await testHelperSleep(500);
       } while (!apsStatus.isReady && i <= 5);
       expect(apsStatus.isReady, TestLogger.createTestFailMessage(`server not ready after i=${i} tries`)).to.be.true;
+    });
+
+    /**
+     * TODO: add creating a service account (with all roles) as root ==> use the service account as the main TEST token for all tests
+     */
+    it(`${scriptName}: should login as root user`, async() => {
+      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
+      if(isInternalIdp) {
+        // login as root and use the bearer token in open api
+        const apsSessionLoginResponse: APSSessionLoginResponse = await ApsSessionService.apsLogin({
+          requestBody: {
+            username: TestEnv.rootUsername,
+            password: TestEnv.rootUserPassword
+          }
+        });
+        ApimServerAPIClient.setCredentials({ bearerToken: apsSessionLoginResponse.token });
+      }
     });
 
 

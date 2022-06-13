@@ -449,8 +449,8 @@ export class APSUsersService {
     userId: string;
     apsUserUpdate: APSUserUpdate;
   }): Promise<APSUserResponse> => {
-    const funcName = 'update_internal';
-    const logName = `${APSUsersService.name}.${funcName}()`;
+    // const funcName = 'update_internal';
+    // const logName = `${APSUsersService.name}.${funcName}()`;
 
     const validationDoc: Partial<APSUserInternal> = {
       ...apsUserUpdate,

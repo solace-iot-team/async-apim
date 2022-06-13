@@ -38,7 +38,7 @@ class APSAuthStrategyService {
   // private static readonly localhostRegExp = new RegExp(/.*localhost:[0-9]*$/);
   private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
-  private static isRequestOriginLocalhost: boolean = false;
+  private static isRequestOriginLocalhost = false;
   public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
   private static jwtHeader: jwt.JwtHeader = {
     typ: 'JWT',
@@ -240,7 +240,7 @@ class APSAuthStrategyService {
 
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
-    let _secure: boolean = true;
+    let _secure = true;
     let _sameSite: string | undefined = "none";
     // for localhost, secure must be true
     // secure: true, sameSite: "none"

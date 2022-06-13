@@ -376,6 +376,7 @@ describe(`${scriptName}`, () => {
       }
       const res = await request(Server)
         .post(apiBase)
+        .set({"Authorization": "Bearer xxxx"})
         .send(toCreate);
 
       TestContext.setFromSuperTestRequestResponse(res);
@@ -399,6 +400,7 @@ describe(`${scriptName}`, () => {
       }
       const res = await request(Server)
         .post(apiBase)
+        .set({"Authorization": "Bearer xxxx"})
         .send(toCreate);
 
       TestContext.setFromSuperTestRequestResponse(res);

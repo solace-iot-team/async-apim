@@ -215,6 +215,8 @@ export class APSSessionService {
   private byId_internal = async({ userId }: {
     userId: string;
   }): Promise<APSSessionUser> => {
+    // const funcName = 'byId_internal';
+    // const logName = `${APSSessionService.name}.${funcName}()`;
     // check if root
     if(userId === APSUsersService.getRootApsUserLoginCredentials().username) {
       return this.map_ApsUserInternal_To_ApsSessionUser({ 
@@ -251,6 +253,11 @@ export class APSSessionService {
     }}));
 
     const apsSessionUser: APSSessionUser = await this.byId_internal({ userId: username });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHENTICATING_USER, message: 'APSSessionUser', details: {
+      apsSessionUser: apsSessionUser
+    }}));
+
     if( 
 
       !apsSessionUser.isActivated || 
