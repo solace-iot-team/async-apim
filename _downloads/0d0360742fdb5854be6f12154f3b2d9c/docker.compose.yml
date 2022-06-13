@@ -17,6 +17,7 @@ services:
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
     image : "solaceiotteam/async-apim-admin-portal:latest"
+    # image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
     # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
     ports:
       - 5080:80
@@ -33,6 +34,7 @@ services:
       - qs-async-apim-connector
       - qs-async-apim-server-mongodb
     image: "solaceiotteam/async-apim-server:latest"
+    # image: "solaceiotteam/async-apim-server:alpha-latest"
     # image: "solaceiotteam/async-apim-server:0.1.1"
     ports:
       - 5002:3000
@@ -46,13 +48,24 @@ services:
       - APIM_SERVER_MONGO_DB=solace-apim-server
       - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
       - APIM_SERVER_LOGGER_APP_ID=qs-async-apim-server
-      - APIM_SERVER_LOGGER_LOG_LEVEL=trace
+        # level: 'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'
+      - APIM_SERVER_LOGGER_LOG_LEVEL=debug
       - APIM_SERVER_REQUEST_SIZE_LIMIT=100kb
       - APIM_SERVER_COOKIE_SECRET=myCookieSecret
       - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
       - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
       - APIM_SERVER_DATA_PATH=/data
-      - APIM_SERVER_AUTH_TYPE=none
+        # Auth
+        # APIM_SERVER_AUTH_TYPE = oidc | internal | none
+      - APIM_SERVER_AUTH_TYPE=internal
+        # internal auth
+      - APIM_SERVER_AUTH_INTERNAL_JWT_SECRET=myAuthJwtSecret
+        # 15 minutes: 60 * 15 = 900 seconds
+      - APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS=900
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET=myRefreshJwtSecret
+        # 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
+        # 5 days = 60 * 60 * 24 * 5 = 432000 seconds
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS=432000
     logging:
       options:
         max-size: "10m"

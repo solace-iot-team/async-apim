@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview &mdash; Solace Async API Management r0.0.2 documentation</title>
+  <title>APIs &mdash; Solace Async API Management r0.0.2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API Products" href="api-products.html" />
-    <link rel="prev" title="Developer Portal" href="../developer-portal.html" /> 
+    <link rel="prev" title="Managed Assets Overview" href="overview.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,20 +41,32 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../managed-assets.html">Managed Assets</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../managed-assets.html">Managed Assets</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="overview.html">Managed Assets Overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">APIs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lifecycle-stage">Lifecycle Stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#managing-apis">Managing APIs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#view-api">View API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-api">Create API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update-api">Update API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#delete-api">Delete API</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#share-with-business-groups">Share with Business Groups</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api-products.html">API Products</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../admin-portal.html">Admin Portal</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="../developer-portal.html">Developer Portal</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api-products.html">API Products</a></li>
-</ul>
-</li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-portal.html">Developer Portal</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
 <ul>
@@ -75,10 +87,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../developer-portal.html">Developer Portal</a> &raquo;</li>
-      <li>Overview</li>
+          <li><a href="../managed-assets.html">Managed Assets</a> &raquo;</li>
+      <li>APIs</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/developer-portal-content/overview.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/managed-assets-content/apis.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -86,17 +98,67 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="overview">
-<span id="developer-portal-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading"></a></h1>
-<p>The developer portal is an example or reference implementation.</p>
-<p>It can be accessed by users with the role <cite>API Consumer</cite>.</p>
+  <section id="apis">
+<span id="managed-assets-apis"></span><h1>APIs<a class="headerlink" href="#apis" title="Permalink to this heading"></a></h1>
+<section id="lifecycle-stage">
+<h2>Lifecycle Stage<a class="headerlink" href="#lifecycle-stage" title="Permalink to this heading"></a></h2>
+<p>APIs have the following lifecycle stages:</p>
+<dl class="field-list simple">
+<dt class="field-odd">released</dt>
+<dd class="field-odd"><p>the API is released and can be used in API Products</p>
+</dd>
+<dt class="field-even">deprecated</dt>
+<dd class="field-even"><p>the API is deprecated and cannot be added to API Products. Existing API Products are unaffected</p>
+</dd>
+</dl>
+</section>
+<section id="managing-apis">
+<h2>Managing APIs<a class="headerlink" href="#managing-apis" title="Permalink to this heading"></a></h2>
+<section id="view-api">
+<h3>View API<a class="headerlink" href="#view-api" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>user is member of the business group with roles <cite>API Team</cite></p></li>
+</ul>
+</section>
+<section id="create-api">
+<h3>Create API<a class="headerlink" href="#create-api" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>user is member of the business group with roles <cite>API Team</cite></p></li>
+</ul>
+</section>
+<section id="update-api">
+<h3>Update API<a class="headerlink" href="#update-api" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>user is member of the business group with roles <cite>API Team</cite></p></li>
+</ul>
+</section>
+<section id="delete-api">
+<h3>Delete API<a class="headerlink" href="#delete-api" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>user is member of the business group with roles <cite>API Team</cite></p></li>
+<li><p>note: an API cannot be deleted if it is referenced by API Products</p></li>
+</ul>
+</section>
+<section id="share-with-business-groups">
+<h3>Share with Business Groups<a class="headerlink" href="#share-with-business-groups" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>user can share with other business groups if they are member of the target business group with role <cite>API Team</cite></p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="overview.html#managed-assets-overview"><span class="std std-ref">Managed Assets Overview</span></a></p></li>
+</ul>
+</div>
+</section>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../developer-portal.html" class="btn btn-neutral float-left" title="Developer Portal" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="overview.html" class="btn btn-neutral float-left" title="Managed Assets Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="api-products.html" class="btn btn-neutral float-right" title="API Products" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

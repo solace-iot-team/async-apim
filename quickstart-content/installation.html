@@ -15,6 +15,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/contentui.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -93,7 +94,7 @@
            <div itemprop="articleBody">
              
   <section id="installation">
-<span id="quickstart-content-installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<span id="quickstart-content-installation"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p>This guide describes the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> which is part of the project repo.</p>
 <p>The installation starts all required services using this
 <a class="reference download internal" download="" href="../_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
@@ -124,7 +125,7 @@
 </ul>
 </div>
 <section id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline"></a></h2>
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
 <p>The quickstart requires the following components:</p>
 <ul class="simple">
 <li><p>nodejs, version 16.x</p></li>
@@ -133,7 +134,7 @@
 </ul>
 </section>
 <section id="setup">
-<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline"></a></h2>
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h2>
 <p>At start-up, the APIM Server creates a <cite>root</cite> user based on these environment variables, which can be found in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/start.sh">start.sh</a>.
 All other variables are set directly in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> file.</p>
 <div class="admonition note">
@@ -147,7 +148,7 @@ All other variables are set directly in the <a class="reference external" href="
 </div>
 </section>
 <section id="start-stop-update">
-<h2>Start, Stop, Update<a class="headerlink" href="#start-stop-update" title="Permalink to this headline"></a></h2>
+<h2>Start, Stop, Update<a class="headerlink" href="#start-stop-update" title="Permalink to this heading"></a></h2>
 <p>Change to the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> directory.</p>
 <p>Start:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./start.sh
@@ -169,7 +170,7 @@ All other variables are set directly in the <a class="reference external" href="
 </div>
 </section>
 <section id="connect">
-<h2>Connect<a class="headerlink" href="#connect" title="Permalink to this headline"></a></h2>
+<h2>Connect<a class="headerlink" href="#connect" title="Permalink to this heading"></a></h2>
 <p>By default, the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> creates an NGINX container serving as a reverse proxy on port <cite>5000</cite>.</p>
 <p>Use the following URL in your browser: <cite>http://{ip-address}:5000</cite>.</p>
 <p>Additional exposed ports are:</p>
@@ -179,7 +180,7 @@ All other variables are set directly in the <a class="reference external" href="
 </ul>
 </section>
 <section id="details">
-<h2>Details<a class="headerlink" href="#details" title="Permalink to this headline"></a></h2>
+<h2>Details<a class="headerlink" href="#details" title="Permalink to this heading"></a></h2>
 <p>The following figure shows the set-up of the containers:</p>
 <figure class="align-default" id="id1">
 <a class="reference internal image-reference" href="../_images/async-apim.quickstart.containers.png"><img alt="../_images/async-apim.quickstart.containers.png" src="../_images/async-apim.quickstart.containers.png" style="width: 800px;" /></a>
@@ -209,7 +210,7 @@ All other variables are set directly in the <a class="reference external" href="
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 18 May 2022 at 05:52.
+      <span class="lastupdated">Last updated on 13 Jun 2022 at 10:21.
       </span></p>
   </div>
 

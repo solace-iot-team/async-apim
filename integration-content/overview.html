@@ -15,6 +15,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/contentui.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -94,20 +95,20 @@
            <div itemprop="articleBody">
              
   <section id="integration-overview">
-<span id="integration-content-overview"></span><h1>Integration Overview<a class="headerlink" href="#integration-overview" title="Permalink to this headline"></a></h1>
+<span id="integration-content-overview"></span><h1>Integration Overview<a class="headerlink" href="#integration-overview" title="Permalink to this heading"></a></h1>
 <section id="external-systems">
-<h2>External Systems<a class="headerlink" href="#external-systems" title="Permalink to this headline"></a></h2>
+<h2>External Systems<a class="headerlink" href="#external-systems" title="Permalink to this heading"></a></h2>
 <p>External Systems are registered with their ID and display name.</p>
 </section>
 <section id="external-business-groups">
-<h2>External Business Groups<a class="headerlink" href="#external-business-groups" title="Permalink to this headline"></a></h2>
+<h2>External Business Groups<a class="headerlink" href="#external-business-groups" title="Permalink to this heading"></a></h2>
 <p>Business Groups can be imported by external system id.</p>
 </section>
 <section id="subscribing-to-asset-change-events">
-<h2>Subscribing to Asset Change Events<a class="headerlink" href="#subscribing-to-asset-change-events" title="Permalink to this headline"></a></h2>
+<h2>Subscribing to Asset Change Events<a class="headerlink" href="#subscribing-to-asset-change-events" title="Permalink to this heading"></a></h2>
 <p>A suggested approach for integration of assets is to subscribe to asset create/update/delete events.</p>
 <section id="filtering">
-<h3>Filtering:<a class="headerlink" href="#filtering" title="Permalink to this headline"></a></h3>
+<h3>Filtering:<a class="headerlink" href="#filtering" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>External system connectors should only import / publish assets that are in <cite>released</cite> stage AND its publish destination contains the correct external system id.</p></li>
 <li><p>If a previously imported asset changes stage to <cite>deprecated</cite> or <cite>retired</cite>, external system connectors should remove the asset.</p></li>
@@ -134,7 +135,7 @@
 </ul>
 </section>
 <section id="extracting-business-group-information">
-<h3>Extracting Business Group information:<a class="headerlink" href="#extracting-business-group-information" title="Permalink to this headline"></a></h3>
+<h3>Extracting Business Group information:<a class="headerlink" href="#extracting-business-group-information" title="Permalink to this heading"></a></h3>
 <ul class="simple">
 <li><p>extract value from attribute: <cite>_AP_BUSINESS_GROUP_OWNING_EXTERNAL_ID_</cite></p></li>
 <li><p>extract values from attribute <cite>_AP_BUSINESS_GROUP_SHARING_LIST_</cite>, see <a class="reference internal" href="../managed-assets-content/overview.html#managed-assets-overview-business-group-sharing-list"><span class="std std-ref">Business Group Sharing List</span></a> for details.</p></li>
@@ -161,7 +162,7 @@
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 18 May 2022 at 05:52.
+      <span class="lastupdated">Last updated on 13 Jun 2022 at 10:21.
       </span></p>
   </div>
 
