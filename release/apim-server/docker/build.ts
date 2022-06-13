@@ -56,6 +56,7 @@ const buildApimServer = () => {
 
   if(s.cd(`${CONSTANTS.WorkingApimServerDir}`).code !== 0) process.exit(1);
   if(s.exec('npm install').code !== 0) process.exit(1);
+  if(s.exec('npm list').code !== 0) process.exit(1);
 
   if(s.exec('npm run dev:build').code !== 0) process.exit(1);
 
@@ -117,7 +118,7 @@ const buildDockerImage = () => {
   const funcName = 'buildDockerImage';
   const logName = `${scriptDir}/${scriptName}.${funcName}()`;
   console.log(`${logName}: starting ...`);
-  
+
   console.log(`${logName}]: building new image, tags=${CONSTANTS.DockerImageTag}, ${CONSTANTS.DockerImageTagLatest}`);
   if(s.exec(`docker build --progress=plain --no-cache --tag ${CONSTANTS.DockerImageTag} -f ${CONSTANTS.DockerFile} ${CONSTANTS.DockerContextDir}`).code !== 0) process.exit(1);
   if(s.exec(`docker tag ${CONSTANTS.DockerImageTag} ${CONSTANTS.DockerImageTagLatest}`).code !== 0) process.exit(1);
