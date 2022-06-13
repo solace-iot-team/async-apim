@@ -133,7 +133,7 @@ class APSAuthStrategyService {
       return callback(null, true);  
     }
     // error
-    return callback(new ApiCorsServerError(logName, requestOrigin));
+    return callback(new ApiCorsServerError(logName, requestOrigin ? requestOrigin : 'undefined'));
   }
   private getGeneralCorsOptions = (): cors.CorsOptions => {
     return {
