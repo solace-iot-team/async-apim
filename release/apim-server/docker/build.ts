@@ -56,6 +56,7 @@ const buildApimServer = () => {
 
   if(s.cd(`${CONSTANTS.WorkingApimServerDir}`).code !== 0) process.exit(1);
   if(s.exec('npm install').code !== 0) process.exit(1);
+  console.log(`${logName}: npm list for dev:`);
   if(s.exec('npm list').code !== 0) process.exit(1);
 
   if(s.exec('npm run dev:build').code !== 0) process.exit(1);
@@ -66,6 +67,8 @@ const buildApimServer = () => {
   if(s.rm('-rf', `${CONSTANTS.WorkingApimServerDir}/node_modules`).code !== 0) process.exit(1);
   if(s.exec('export NODE_ENV=production; npm ci --only=production').code !== 0) process.exit(1);
   // if(s.exec('npm prune --production --json').code !== 0) process.exit(1);
+  console.log(`${logName}: npm list for production:`);
+  if(s.exec('npm list').code !== 0) process.exit(1);
 
   console.log(`${logName}: success.`);
 }
