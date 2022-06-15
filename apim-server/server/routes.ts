@@ -5,6 +5,7 @@ import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsCon
 import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter';
 import apsMonitorRouter from './api/controllers/apsMonitor/ApsMonitorRouter';
 import apsOrganiztionsRouter from './api/controllers/apsAdministration/apsOrganizations/ApsOrganizationsRouter';
+import apsServiceAccountsRouter from './api/controllers/apsAdministration/apsServiceAccounts/ApsServiceAccountsRouter';
 import apsBusinessGroupRouter from './api/controllers/apsOrganization/apsBusinessGroups/ApsBusinessGroupsRouter';
 import apsExternalSystemsRouter from './api/controllers/apsOrganization/apsExternalSystems/ApsExternalSystemsRouter';
 import apsSessionRouter from './api/controllers/apsSession/ApsSessionRouter';
@@ -41,6 +42,7 @@ export default function routes(app: Application, apiBase: string): void {
   if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
     router.use('/apsSecureTests', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], ApsSecureTestsRouter);
     router.use('/apsSession', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
+    router.use('/apsAdministration/apsServiceAccounts', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsServiceAccountsRouter);
     // router.use('/apsAdministration/apsOrganizations', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsOrganiztionsRouter);
     // router.use('/apsBusinessGroups', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsBusinessGroupRouter);
     // router.use('/apsConfig/apsConnectors', [APSAuthStrategyService.verifyUser_Internal, APSAuthorizationService.withAuthorization], apsConnectorRouter);

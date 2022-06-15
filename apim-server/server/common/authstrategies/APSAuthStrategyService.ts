@@ -262,29 +262,60 @@ class APSAuthStrategyService {
     };
   }
 
-  public generateBearerToken_For_InternalAuth = ({ userId }:{
+  private generateBearerToken_For_InternalAuth = ({ id, accountType, expiresInSeconds, secret }:{
+    id: string;
+    accountType: TTokenPayload_AccountType;
+    expiresInSeconds: number;
+    secret: string;
+  }): string => {
+    const payload: TTokenPayload = {
+      _id: id,
+      iat: Date.now(),
+      accountType: accountType
+    };
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: expiresInSeconds,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: id,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    }
+    return jwt.sign(payload, secret, signOptions);
+  }
+
+  public generateUserAccountBearerToken_For_InternalAuth = ({ userId }:{
     userId: string;
   }): string => {
-    const funcName = 'generateBearerToken_For_InternalAuth';
+    const funcName = 'generateUserAccountBearerToken_For_InternalAuth';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
 
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
-    const payload: TTokenPayload = {
-      _id: userId,
-      iat: Date.now(),
-      accountType: TTokenPayload_AccountType.USER_ACCOUNT
-    };
-    const signOptions: jwt.SignOptions = {
-      // seconds
-      expiresIn: authConfig.authJwtExpirySecs,
-      issuer: ServerConfig.getConfig().serverLogger.appId,
-      subject: userId,
-      header: APSAuthStrategyService.jwtHeader,
-      algorithm: 'HS256'
-    }
-    return jwt.sign(payload, authConfig.authJwtSecret, signOptions);
+    return this.generateBearerToken_For_InternalAuth({ 
+      id: userId,
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT,
+      expiresInSeconds: authConfig.authJwtExpirySecs,
+      secret: authConfig.authJwtSecret
+    });
+  }
+
+  public generateServiceAccountBearerToken_For_InternalAuth = ({ serviceAccountId }:{
+    serviceAccountId: string;
+  }): string => {
+    const funcName = 'generateServiceAccountBearerToken_For_InternalAuth';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+
+    return this.generateBearerToken_For_InternalAuth({ 
+      id: serviceAccountId,
+      accountType: TTokenPayload_AccountType.SERVICE_ACCOUNT,
+      expiresInSeconds: -1,
+      secret: authConfig.authJwtSecret
+    });
   }
 
   public generateRefreshToken_For_InternalAuth = ({ userId }:{

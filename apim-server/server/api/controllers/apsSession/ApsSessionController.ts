@@ -90,7 +90,7 @@ export class ApsSessionController {
     // throw new ServerError(logName, `${logName}: continue with userId=${JSON.stringify(anyReq.user, null, 2)}`);
 
     const userId = anyReq.user;
-    const token = APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: userId });
+    const token = APSAuthStrategyService.generateUserAccountBearerToken_For_InternalAuth({ userId: userId });
     const refreshToken = APSAuthStrategyService.generateRefreshToken_For_InternalAuth({ userId: userId });
 
     APSSessionService.login({
@@ -147,7 +147,7 @@ export class ApsSessionController {
       // refresh the bearer token(s)
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = {
         success: true,
-        token: APSAuthStrategyService.generateBearerToken_For_InternalAuth({ userId: response.userId }),
+        token: APSAuthStrategyService.generateUserAccountBearerToken_For_InternalAuth({ userId: response.userId }),
         organizationId: response.lastOrganizationId,
         userId: response.userId,
       };

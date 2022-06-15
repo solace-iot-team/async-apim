@@ -15,6 +15,7 @@ import ServerMonitor from './common/ServerMonitor';
 import APSOrganizationsService from './api/services/apsAdministration/APSOrganizationsService';
 import APSBusinessGroupsService from './api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
+import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
 
 const componentName = 'index';
 
@@ -47,6 +48,7 @@ const bootstrapComponents = async(): Promise<void> => {
   try {
     await APSConnectorsService.bootstrap();
     await APSUsersService.bootstrap();
+    await APSServiceAccountsService.bootstrap();
     await APSOrganizationsService.bootstrap();
     await APSBusinessGroupsService.bootstrap();
     await APSExternalSystemsService.bootstrap();
@@ -73,6 +75,7 @@ export const initializeComponents = async(): Promise<void> => {
     await APSMonitorService.initialize();
     await APSConnectorsService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
+    await APSServiceAccountsService.initialize();
     await APSOrganizationsService.initialize();
     await APSBusinessGroupsService.initialize();
     await APSExternalSystemsService.initialize();

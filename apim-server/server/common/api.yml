@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.2.2
+  version: 0.3.0
 servers:
 - url: /apim-server/v1
 tags:
@@ -169,6 +169,116 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /apsAdministration/apsServiceAccounts:
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: listApsServiceAccounts
+      description: Get a list of APSServiceAccount objects.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: Array of APSServiceAccount objects and total count. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSServiceAccountsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: createApsServiceAccount
+      description: Create an APSServiceAccount object.
+      tags:
+      - APSAdministration
+      requestBody:
+        description: The APSServiceAccount object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSServiceAccountCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSServiceAccount object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSServiceAccountCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: >
+            "duplicate key": APSServiceAccount object with same id already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsAdministration/apsServiceAccounts/{service_account_id}:
+    parameters:
+    - $ref: '#/components/parameters/service_account_id'
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: getApsServiceAccount
+      description: Get an APSServiceAccount object by id.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: The APSServiceAccount object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSServiceAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: deleteApsServiceAccount
+      tags:
+      - APSAdministration
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -1564,6 +1674,12 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/APSId"
+    service_account_id:
+      name: service_account_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
     external_reference_id:
       name: external_reference_id
       in: path
@@ -2029,6 +2145,47 @@ components:
         - displayName
         - description
         - connectorClientConfig
+
+    ListAPSServiceAccountsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSServiceAccountList'
+      required:
+      - list
+    APSServiceAccountList:
+      description: Array of APSServiceAccount objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSServiceAccount'
+    APSServiceAccount:
+      type: object
+      properties:
+        serviceAccountId:
+          $ref: "#/components/schemas/APSId"
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+        description:
+          $ref: "#/components/schemas/APSDescription"
+      required:
+        - serviceAccountId
+        - displayName
+        - description
+    APSServiceAccountCreate:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSServiceAccount'
+    APSServiceAccountCreateResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSServiceAccount'
+      properties:
+        token:
+          type: string
+      required:
+      - token
 
     ListAPSExternalSystemsResponse:
       type: object
