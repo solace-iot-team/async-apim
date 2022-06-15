@@ -118,6 +118,7 @@ export const EditNewPoliciesForm: React.FC<IEditNewPoliciesFormProps> = (props: 
             </div>
 
             <EditNewGuaranteedMessagingFormFields
+              action={props.action}
               managedObjectUseForm={managedObjectUseForm}
             />
 

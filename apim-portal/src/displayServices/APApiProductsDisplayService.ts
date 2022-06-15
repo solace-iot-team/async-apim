@@ -82,6 +82,7 @@ export type TAPClientOptionsGuaranteedMessagingDisplay = {
   accessType: ClientOptionsGuaranteedMessaging.accessType;
   maxTtl: number;
   maxMsgSpoolUsage: number;
+  queueGranularity: ClientOptionsGuaranteedMessaging.queueGranularity;
 }
 export type TAPClientOptionsDisplay = {
   apGuaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay;  
@@ -195,7 +196,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         requireQueue: false,
         accessType: ClientOptionsGuaranteedMessaging.accessType.EXCLUSIVE,
         maxMsgSpoolUsage: 0,
-        maxTtl: 1
+        maxTtl: 1,
+        queueGranularity: ClientOptionsGuaranteedMessaging.queueGranularity.API_PRODUCT
       }
     };
   }
@@ -211,7 +213,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       accessType: connectorClientOptions.guaranteedMessaging.accessType,
       maxMsgSpoolUsage: connectorClientOptions.guaranteedMessaging.maxMsgSpoolUsage,
       maxTtl: connectorClientOptions.guaranteedMessaging.maxTtl,
-      requireQueue: connectorClientOptions.guaranteedMessaging.requireQueue ? connectorClientOptions.guaranteedMessaging.requireQueue : false
+      requireQueue: connectorClientOptions.guaranteedMessaging.requireQueue ? connectorClientOptions.guaranteedMessaging.requireQueue : false,
+      queueGranularity: connectorClientOptions.guaranteedMessaging.queueGranularity ? connectorClientOptions.guaranteedMessaging.queueGranularity : ClientOptionsGuaranteedMessaging.queueGranularity.API_PRODUCT,
     }
     const apClientOptionsDisplay: TAPClientOptionsDisplay = {
       apGuaranteedMessaging: apGuaranteedMessaging,
@@ -460,6 +463,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return combined_ApControlledChannelParameterList;
   }
 
+
+  public get_SelectList_For_QueueGranularity(): Array<ClientOptionsGuaranteedMessaging.queueGranularity> {
+    const e: any = ClientOptionsGuaranteedMessaging.queueGranularity;
+    return Object.keys(e).map(k => e[k]);
+  }
 
   public get_SelectList_For_QueueAccessType(): Array<ClientOptionsGuaranteedMessaging.accessType> {
     const e: any = ClientOptionsGuaranteedMessaging.accessType;

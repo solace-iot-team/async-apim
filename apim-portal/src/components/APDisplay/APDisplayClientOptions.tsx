@@ -30,7 +30,8 @@ export const APDisplayClientOptions: React.FC<IAPDisplayClientOptionsProps> = (p
       return (
         <React.Fragment>
           {renderRow('Enabled', String(props.apClientOptionsDisplay.apGuaranteedMessaging.requireQueue))}
-          {renderRow('AccessType', props.apClientOptionsDisplay.apGuaranteedMessaging.accessType)}
+          {renderRow('Queue Granularity', String(props.apClientOptionsDisplay.apGuaranteedMessaging.queueGranularity))}
+          {renderRow('Access Type', props.apClientOptionsDisplay.apGuaranteedMessaging.accessType)}
           {renderRow('Max Spool Usage', `${props.apClientOptionsDisplay.apGuaranteedMessaging.maxMsgSpoolUsage} MB`)}
           {renderRow('Max TTL', `${props.apClientOptionsDisplay.apGuaranteedMessaging.maxTtl} seconds`)}
         </React.Fragment>

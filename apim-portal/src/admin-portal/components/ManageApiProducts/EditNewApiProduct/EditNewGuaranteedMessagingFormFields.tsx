@@ -11,8 +11,10 @@ import { TManagedObjectFormDataEnvelope } from "./EditNewPoliciesForm";
 import APAdminPortalApiProductsDisplayService from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
+import { EAction } from "../ManageApiProductsCommon";
 
 export interface IEditNewGuaranteedMessagingFormFieldsProps {
+  action: EAction;
   managedObjectUseForm: UseFormReturn<TManagedObjectFormDataEnvelope>;
 }
 
@@ -21,6 +23,12 @@ export const EditNewGuaranteedMessagingFormFields: React.FC<IEditNewGuaranteedMe
 
   const managedObjectUseForm = props.managedObjectUseForm;
 
+  const renderHelp_QueueGranularity = (): string => {
+    const help = "API: 1 queue per API. API Product: 1 queue for all APIs.";
+    const noChange = "Note: Cannot be changed later."
+    if(props.action === EAction.NEW) return `${help} ${noChange}`;
+    else return help;
+  }
   const renderContent = (): JSX.Element => {
     return (
       <React.Fragment>
@@ -42,6 +50,34 @@ export const EditNewGuaranteedMessagingFormFields: React.FC<IEditNewGuaranteedMe
             )}}
           />
           <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.guaranteedMessaging?.requireQueue })}> Enabled</label>
+        </div>
+        {/* queue Granularity */}
+        <div className="p-field">
+          <span className="p-float-label">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="formData.guaranteedMessaging.queueGranularity"
+              rules={{
+                required: "Select queue granularity.",
+              }}
+              render={( { field, fieldState }) => {
+                return(
+                  <Dropdown
+                    id={field.name}
+                    {...field}
+                    options={APAdminPortalApiProductsDisplayService.get_SelectList_For_QueueGranularity()} 
+                    onChange={(e) => field.onChange(e.value)}
+                    className={classNames({ 'p-invalid': fieldState.invalid })}     
+                    disabled={props.action !== EAction.NEW}
+                  />                        
+                )}}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.guaranteedMessaging?.queueGranularity})}>Queue Granularity*</label>
+            <small id="clientOptionsGuaranteedMessaging.queueGranularity-help">
+              {renderHelp_QueueGranularity()}
+            </small>              
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.guaranteedMessaging?.queueGranularity)}
         </div>
         {/* Access Type */}
         <div className="p-field">
