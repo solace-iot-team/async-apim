@@ -1,14 +1,12 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
 import { 
-  APSId, 
   APSServiceAccount,
   APSServiceAccountCreate,
   APSServiceAccountCreateResponse,
   APSServiceAccountList,
   ListAPSServiceAccountsResponse
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
-import { RequestValidationServerError, TRequestValidationServerErrorMetaList } from '../../../common/ServerError';
 import APSAuthStrategyService from '../../../common/authstrategies/APSAuthStrategyService';
 
 export interface APSServiceAccountInternal extends APSServiceAccount {

@@ -6,10 +6,9 @@ import {
 }  from "passport-jwt";
 import { TTokenPayload, TTokenPayload_AccountType } from "./APSAuthStrategyService";
 import { TAuthConfigInternal } from "../ServerConfig";
-import { ApiInternalServerError, ApiNotAuthorizedServerError, ServerError } from "../ServerError";
+import { ApiNotAuthorizedServerError, ServerError } from "../ServerError";
 import APSSessionService, { APSSessionUser } from "../../api/services/APSSessionService";
 import { ServerUtils } from "../ServerUtils";
-import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 import APSServiceAccountsService from "../../api/services/apsAdministration/APSServiceAccountsService";
 import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
 
