@@ -9,10 +9,13 @@ import { TAuthConfigInternal } from "../ServerConfig";
 import { ApiInternalServerError, ApiNotAuthorizedServerError, ServerError } from "../ServerError";
 import APSSessionService, { APSSessionUser } from "../../api/services/APSSessionService";
 import { ServerUtils } from "../ServerUtils";
+import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
+import APSServiceAccountsService from "../../api/services/apsAdministration/APSServiceAccountsService";
+import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
 
 
 interface IVerifiedCallback {
-  (error: any, user?: APSSessionUser, info?: any): void;
+  (error: any, account?: APSSessionUser | APSServiceAccount, info?: TTokenPayload_AccountType): void;
 }
 
 /**
@@ -51,12 +54,21 @@ class APSJwtStrategy {
 
       switch(jwt_payload.accountType) {
         case TTokenPayload_AccountType.USER_ACCOUNT:
-          // check if user was logged out: no refreshToken, then not logged in
-          const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id }); 
-          if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
-          return done(undefined, apsSessionUser, undefined);
+          try {
+            // check if user was logged out: no refreshToken, then not logged in
+            const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id }); 
+            if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
+            return done(undefined, apsSessionUser, TTokenPayload_AccountType.USER_ACCOUNT);
+          } catch(e) {
+            throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
+          }
         case TTokenPayload_AccountType.SERVICE_ACCOUNT:
-          throw new ApiInternalServerError(logName, 'service account jwt validation not implemented');
+          try {
+            const apsServiceAccount: APSServiceAccount = await APSServiceAccountsService.byId({ serviceAccountId: jwt_payload._id });
+            return done(undefined, apsServiceAccount, TTokenPayload_AccountType.SERVICE_ACCOUNT);
+          } catch(e) {
+            throw new ApiNotAuthorizedServerError(logName, undefined, { serviceAccountId: jwt_payload._id });
+          }
         default:
           ServerUtils.assertNever(logName, jwt_payload.accountType);
       }

@@ -39,7 +39,7 @@ class APSAuthStrategyService {
   private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
   private static isRequestOriginLocalhost = false;
-  public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
+  public verify_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
   private static jwtHeader: jwt.JwtHeader = {
     typ: 'JWT',
     alg: 'HS256'

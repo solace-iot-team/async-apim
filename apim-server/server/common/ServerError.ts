@@ -350,6 +350,7 @@ export type TApiObjectNotFoundServerErrorMeta = {
 }
 export type TApiNotAuthorizedServerErrorMeta = {
   userId?: string;
+  serviceAccountId?: string;
   resource?: string;
   error?: any;
 }

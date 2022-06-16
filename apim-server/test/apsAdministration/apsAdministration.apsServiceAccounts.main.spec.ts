@@ -46,6 +46,11 @@ describe(`${scriptName}`, () => {
     TestContext.newItId();
   });
 
+  after(async() => {
+    TestContext.newItId();      
+    await ApimServerAPIClient.setServiceAccountCredentials();
+  });
+
   // ****************************************************************************************************************
   // * OpenApi API Tests *
   // ****************************************************************************************************************

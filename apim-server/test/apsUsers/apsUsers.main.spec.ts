@@ -27,6 +27,7 @@ import {
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { ApsUsersHelper } from '../lib/apsUsers.helper';
 import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
+import { ApimServerAPIClient } from '../lib/api.helpers';
 
 
 const scriptName: string = path.basename(__filename);
@@ -94,6 +95,9 @@ describe(`${scriptName}`, () => {
 // ****************************************************************************************************************
 // * OpenApi API Tests *
 // ****************************************************************************************************************
+    it(`${scriptName}: ensure service account credentials`, async () => {
+      await ApimServerAPIClient.setServiceAccountCredentials();
+    });
 
     it(`${scriptName}: should list users with paging`, async () => {
       let apsUserList: APSUserResponseList = [];

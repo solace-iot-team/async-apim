@@ -23,6 +23,7 @@ import ServerConfig from '../../server/common/ServerConfig';
 import { ServerErrorFactory } from '../../server/common/ServerError';
 import { MongoClientOptions } from 'mongodb';
 import { TestEnv } from '../setup.spec';
+import { ApimServerAPIClient } from '../lib/api.helpers';
 
 
 const scriptName: string = path.basename(__filename);
@@ -58,6 +59,10 @@ describe(`${scriptName}`, () => {
 
     beforeEach(() => {
       TestContext.newItId();
+    });
+
+    it(`${scriptName}: ensure service account credentials`, async () => {
+      await ApimServerAPIClient.setServiceAccountCredentials();
     });
 
     it(`${scriptName}: START: should test db connection and return status ready`, async () => {
@@ -149,9 +154,9 @@ describe(`${scriptName}`, () => {
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
         const apiError: ApiError = e;
-        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(500);
+        expect(apiError.status, TestLogger.createTestFailMessage('status code')).equal(401);
         const apsError: APSError = apiError.body;
-        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.INTERNAL_SERVER_ERROR);
+        expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.NOT_AUTHORIZED);
       }
     });
 
