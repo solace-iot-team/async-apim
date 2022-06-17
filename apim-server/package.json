@@ -54,6 +54,7 @@
     "express-requests-logger": "^3.0.3",
     "express-session": "^1.17.2",
     "form-data": "^4.0.0",
+    "http-proxy-middleware": "^2.0.6",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^4.1.0",
     "nocache": "^3.0.1",

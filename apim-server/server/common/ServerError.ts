@@ -488,7 +488,6 @@ export class ApiNotAuthorizedServerError extends ApiServerError {
 export type TApiPathNotFoundServerErrorMeta = {
   path: string
 }
-
 export class ApiPathNotFoundServerError extends ApiServerError {
   private static apiStatusCode = 404;
   private static apiErrorId: APSErrorIds = APSErrorIds.PATH_NOT_FOUND;
@@ -496,6 +495,19 @@ export class ApiPathNotFoundServerError extends ApiServerError {
 
   constructor(internalLogName: string, apiDescription: string = ApiPathNotFoundServerError.apiDefaultDescription, apiMeta: TApiPathNotFoundServerErrorMeta) {
     super(internalLogName, ApiPathNotFoundServerError.name, ApiPathNotFoundServerError.apiStatusCode, ApiPathNotFoundServerError.apiErrorId, apiDescription, apiMeta);
+  }  
+}
+
+export type TConnectorProxyErrorErrorMeta = {
+  connectorError: any;
+}
+export class ConnectorProxyError extends ApiServerError {
+  private static apiStatusCode = 502;
+  private static apiErrorId: APSErrorIds = APSErrorIds.CONNECTOR_PROXY_ERROR;
+  private static apiDefaultDescription = 'connector proxy error';
+
+  constructor(internalLogName: string, apiDescription: string = ConnectorProxyError.apiDefaultDescription, apiMeta: TConnectorProxyErrorErrorMeta) {
+    super(internalLogName, ConnectorProxyError.name, ConnectorProxyError.apiStatusCode, ConnectorProxyError.apiErrorId, apiDescription, apiMeta);
   }  
 }
 

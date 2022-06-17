@@ -151,6 +151,11 @@ export class APSConnectorsService {
     } else {
       ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping connector list bootstrap, no data path' }));  
     }
+
+    // cache the active connector info if it exists
+    const activeApsConnector: APSConnector = await this.byActive();
+    ServerConfig.setConnectorConfig(activeApsConnector);
+
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
@@ -276,12 +281,16 @@ export class APSConnectorsService {
       collectionDocument: newActive,
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
+
+    // cache the active connector info 
+    ServerConfig.setConnectorConfig(replacedNewActive);
+
     // emit changed event
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
       connectorId: replacedNewActive.connectorId,
     }}));
     APSConnectorsServiceEventEmitter.emit('activeChanged', replacedNewActive.connectorId );
-
+        
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedNewActive', details: replacedNewActive }));
 
     return replacedNewActive;

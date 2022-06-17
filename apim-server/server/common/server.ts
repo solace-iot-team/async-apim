@@ -68,6 +68,11 @@ export class ExpressServer {
         throw new ApiServerErrorFromOpenApiResponseValidatorError(logName, err, body, ServerLogger.getRequestInfo(req));
       })
     }
+    const validateIgnorePaths = (path: string) => {
+      if(path.endsWith('/spec')) return true;
+      if(path.includes('/connectorProxy/v1')) return true;
+      return false;
+    }
     let validateResponseValue: ValidateResponseOpts | boolean; 
     if (this.config.enableOpenApiResponseValidation) {
       validateResponseValue = validateResponseOpts;
@@ -78,7 +83,7 @@ export class ExpressServer {
         apiSpec: apiSpecFile,
         validateRequests: true,
         validateResponses: validateResponseValue,
-        ignorePaths: /.*\/spec(\/|$)/,
+        ignorePaths: validateIgnorePaths
       })
     );
 

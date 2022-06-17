@@ -63,8 +63,6 @@ export class ApsServiceAccountsController {
         return ApsServiceAccountsController.createInternal(req, res, next);
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
-      case EAuthConfigType.NONE:
-        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
       default:
         ServerUtils.assertNever(logName, configAuthType);
     }

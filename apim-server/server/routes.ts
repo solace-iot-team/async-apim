@@ -17,13 +17,21 @@ import { APSAuthorizationService } from './common/authstrategies/APSAuthorizatio
 import ServerConfig, { EAuthConfigType } from './common/ServerConfig';
 import ApsSecureTestsRouter from './api/controllers/apsSecureTests/ApsSecureTestsRouter';
 import { ApsConnectorsController } from './api/controllers/apsConfig/apsConnectors/ApsConnectorsController';
+import { ApsConnectorProxyController } from './api/controllers/ApsConnectorProxyController';
 
 export default function routes(app: Application, apiBase: string): void {
   const router = Router();
 
+  // proxy the connector
+  app.use(
+    `${apiBase}/connectorProxy/v1`, 
+    APSAuthStrategyService.verify_Internal,
+    ApsConnectorProxyController.all
+  );
+
   // Public Routes
   // app.get('/login') ==> re-direct to correct login system
-  if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
+  if(ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL) {
     app.get(`${apiBase}/apsSession/login`, ApsSessionController.getLogin);
     app.post(`${apiBase}/apsSession/login`, passport.authenticate(APSAuthStrategyService.getApsRegisteredAuthStrategyName()), ApsSessionController.login);
     app.get(`${apiBase}/apsSession/refreshToken`, ApsSessionController.refreshToken);
@@ -38,7 +46,7 @@ export default function routes(app: Application, apiBase: string): void {
   router.use('/apsConfig/apsAbout', apsAboutRouter);
 
   // secure routes
-  if(ServerConfig.getAuthConfig().type !== EAuthConfigType.NONE) {
+  if(ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL) {
     router.use('/apsSecureTests', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], ApsSecureTestsRouter);
     router.use('/apsSession', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsSessionRouter);
     router.use('/apsAdministration/apsServiceAccounts', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsServiceAccountsRouter);

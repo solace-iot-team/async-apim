@@ -12,13 +12,49 @@ tags:
   description: "Monitoring of the system."
 - name: APSUsers
   description: "Users of the system."
-- name: APSLogin
-  description: "Login Service."
+- name: APSSession
+  description: "Session Service."
 - name: Specification
   description: The swagger API specification
 - name: APSAdministration
   description: Manage system settings and organizations/tenants.
+- name: APSConnectorProxy
+  description: Proxy to APIM Connector.
 paths:
+  /connectorProxy/v1/:
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      tags:
+      - APSConnectorProxy
+      responses:
+        default:
+          $ref: '#/components/responses/APSConnectorProxyResponse'
+    post:
+      security:
+      - InternalAuthBearerToken: []
+      tags:
+      - APSConnectorProxy
+      responses:
+        default:
+          $ref: '#/components/responses/APSConnectorProxyResponse'
+    patch:
+      security:
+      - InternalAuthBearerToken: []
+      tags:
+      - APSConnectorProxy
+      responses:
+        default:
+          $ref: '#/components/responses/APSConnectorProxyResponse'
+    delete:
+      security:
+      - InternalAuthBearerToken: []
+      tags:
+      - APSConnectorProxy
+      responses:
+        default:
+          $ref: '#/components/responses/APSConnectorProxyResponse'
+
   /apsExternalSystems/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -1532,6 +1568,15 @@ components:
       scheme: bearer
       bearerFormat: JWT
   responses:
+    APSConnectorProxyResponse:
+      description: see connector api for responses.
+      content:
+        "*/*":
+          schema:
+            oneOf:
+              - type: object
+                description: The response from the connector. See Connector API for details.
+              - $ref: "#/components/schemas/APSConnectorError"
     BadRequest:
       description: "Bad Request."
       content:
@@ -1748,10 +1793,10 @@ components:
       # format: email
       # from: https://regexr.com/3e48o
       pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
-    APSOrganizationIdList:
-      type: array
-      items:
-        type: string
+    # APSOrganizationIdList:
+    #   type: array
+    #   items:
+    #     type: string
     APSOrganizationRoles:
       type: object
       properties:
@@ -1890,6 +1935,7 @@ components:
       - dependantObjects
       - organizationNotFound
       - requestValidation
+      - connectorProxyError
     APSErrorMeta:
       type: object
       description: Additional details about the error.
@@ -1919,6 +1965,26 @@ components:
       - description
       - errorId
       - appId
+    APSConnectorError:
+      type: object
+      properties:
+        description:
+          type: string
+          description: "The verbose description of the problem."
+        appId:
+          description: The Id of the Server.
+          type: string
+        errorId:
+          type: string
+          enum:
+          - connectorProxyError
+        meta:
+          $ref: "#/components/schemas/APSErrorMeta"
+      required:
+      - description
+      - errorId
+      - appId
+
     APSStatus:
       description: Status information about the Server.
       type: object

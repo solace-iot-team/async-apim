@@ -78,8 +78,6 @@ class APSAuthStrategyService {
         return this.apsInternal_LocalRegsiteredStrategyName;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
-      case EAuthConfigType.NONE:
-        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
       default:
         ServerUtils.assertNever(logName, configAuthType);
     }
@@ -140,15 +138,6 @@ class APSAuthStrategyService {
       origin: APSAuthStrategyService.checkCorsOrigin,
     };
   }
-  private getCorsOptions_NoAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
-    return { origin: true };
-  }
-  private initializeNoAuth = ({ app, config }:{
-    app: Application;
-    config: TExpressServerConfig;
-  }) => {
-    app.use(cors(this.getCorsOptions_NoAuth(config)));
-  }
   private getCorsOptions_InternalAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
     // const funcName = 'getCorsOptions_InternalAuth';
     // const logName = `${APSAuthStrategyService.name}.${funcName}()`;
@@ -206,9 +195,6 @@ class APSAuthStrategyService {
 
     const authConfigType: EAuthConfigType = config.authConfig.type;
     switch(authConfigType) {
-      case EAuthConfigType.NONE:
-        this.initializeNoAuth({ app: app, config: config });
-        return;
       case EAuthConfigType.INTERNAL:        
         this.initializeInternalAuth({ app: app, config: config });
         return;
@@ -260,6 +246,15 @@ class APSAuthStrategyService {
       maxAge: authConfig.refreshJwtExpirySecs * 1000,
       path: '/'
     };
+  }
+
+  public generateConnectorProxyAuthHeader = (): string => {
+    const funcName = 'getResponseCookieOptions_For_InternalAuth';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    // generate basic only for now, generate token later
+    return "Basic " + Buffer.from(ServerConfig.getConnectorConfig().connectorClientConfig.serviceUser + ":" + ServerConfig.getConnectorConfig().connectorClientConfig.serviceUserPwd).toString("base64");
   }
 
   private generateBearerToken_For_InternalAuth = ({ id, accountType, expiresInSeconds, secret }:{
