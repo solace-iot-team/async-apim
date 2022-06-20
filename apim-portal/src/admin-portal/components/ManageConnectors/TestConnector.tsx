@@ -69,7 +69,10 @@ export const TestConnector: React.FC<ITestConnectorProps> = (props: ITestConnect
     setApiCallStatus(null);
     let callState: TApiCallState = ApiCallState.getInitialCallState(logName, `test configuration for ${apsConnector.displayName}`);
     try {
-      const result: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      const result: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+        configContext: configContext, 
+        connectorId: apsConnector.connectorId
+      });    
       setHealthCheckResult(result);
       // console.log(`${logName}: healthCheckResult=${JSON.stringify(_healthCheckResult, null, 2)}`);
     } catch(e) {

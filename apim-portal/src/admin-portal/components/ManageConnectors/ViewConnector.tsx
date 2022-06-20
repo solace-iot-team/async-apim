@@ -51,7 +51,10 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
         connectorId: props.connectorId
       });
-      const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+      const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+        configContext: configContext, 
+        connectorId: apsConnector.connectorId
+      });    
       let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
       if(healthCheckResult.summary.success) {
         apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);

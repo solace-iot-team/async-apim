@@ -66,7 +66,10 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
       let _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
-        const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, apsConnector.connectorClientConfig);    
+        const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+          configContext: configContext, 
+          connectorId: apsConnector.connectorId
+        });    
         let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
         if(healthCheckResult.summary.success !== EAPHealthCheckSuccess.FAIL) {
           apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);

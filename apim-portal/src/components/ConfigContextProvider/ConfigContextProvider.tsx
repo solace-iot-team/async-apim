@@ -1,5 +1,4 @@
 import React from "react";
-import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { 
   APSConnector 
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
@@ -35,7 +34,7 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
       const newState: TAPConfigContext = JSON.parse(JSON.stringify(state));
       if(action.configContext.rbacRoleList) newState.rbacRoleList = action.configContext.rbacRoleList;
       if(action.configContext.connector) {
-        APClientConnectorOpenApi.initialize(action.configContext.connector.connectorClientConfig);
+        // APClientConnectorOpenApi.initialize(action.configContext.connector.connectorClientConfig);
         newState.connector = action.configContext.connector;
       }
       if(action.configContext.connectorInfo) newState.connectorInfo = action.configContext.connectorInfo;
@@ -48,9 +47,9 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
       }
       case 'SET_CONFIG_CONNECTOR':
         if(action.connector) {
-          APClientConnectorOpenApi.initialize(action.connector.connectorClientConfig);
+          // APClientConnectorOpenApi.initialize(action.connector.connectorClientConfig);
         } else {
-          APClientConnectorOpenApi.uninitialize();
+          // APClientConnectorOpenApi.uninitialize();
         }
         return {
           ...state,

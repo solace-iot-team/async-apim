@@ -164,7 +164,7 @@ export class APConnectorApiCalls {
 
     // WARNING: connector must be accessible
 
-    await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
+    // await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;
     try {
       const apiAbout: About = await AdministrationService.about();
@@ -179,7 +179,7 @@ export class APConnectorApiCalls {
       APClientConnectorOpenApi.logError(logName, e);
       result = undefined;
     } finally {
-      await APClientConnectorOpenApi.tmpUninitialize();
+      // await APClientConnectorOpenApi.tmpUninitialize();
       return result;
     }
   }
