@@ -16,6 +16,7 @@ import APSOrganizationsService from './api/services/apsAdministration/APSOrganiz
 import APSBusinessGroupsService from './api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
+import { ConnectorClient } from './common/ConnectorClient';
 
 const componentName = 'index';
 
@@ -102,6 +103,7 @@ ServerConfig.initialize();
 ServerLogger.initialize(ServerConfig.getServerLoggerConfig());
 ServerConfig.logConfig();
 ServerClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
+ConnectorClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
 const server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
 
 export default server;

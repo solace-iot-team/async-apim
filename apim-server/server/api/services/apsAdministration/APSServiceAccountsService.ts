@@ -18,6 +18,10 @@ export class APSServiceAccountsService {
   private static collectionName = "apsServiceAccounts";
   private static collectionSchemaVersion = 1;
   private persistenceService: MongoPersistenceService;
+
+  // create the articifial internal service account id
+  private static internalApsServiceAccountId = 'theApsInternalServiceAccountId';
+  private static internalApsServiceAccount: APSServiceAccountInternal;
   
   constructor() {
     this.persistenceService = new MongoPersistenceService(APSServiceAccountsService.collectionName);
@@ -26,11 +30,19 @@ export class APSServiceAccountsService {
   public getPersistenceService = (): MongoPersistenceService => { return this.persistenceService; }
   public getCollectionName = (): string => { return APSServiceAccountsService.collectionName; }
   public getDBObjectSchemaVersion = (): number => { return APSServiceAccountsService.collectionSchemaVersion; }
-
+  public getInternalApsServiceAccountId = (): string => { return APSServiceAccountsService.internalApsServiceAccountId; }
   public initialize = async() => {
     const funcName = 'initialize';
     const logName = `${APSServiceAccountsService.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
+
+    // create the articifial internal service account id
+    APSServiceAccountsService.internalApsServiceAccount = {
+      serviceAccountId: APSServiceAccountsService.internalApsServiceAccountId,
+      description: 'service account for internal APS calls to Connector',
+      displayName: 'The APS internal service account',
+      token: APSAuthStrategyService.generateServiceAccountBearerToken_For_InternalAuth({ serviceAccountId: APSServiceAccountsService.internalApsServiceAccountId })
+    };
 
     // for devel: drops the connector collection
     // await this.persistenceService.dropCollection();
@@ -88,9 +100,14 @@ export class APSServiceAccountsService {
       serviceAccountId: serviceAccountId
     }}));
 
-    const apsServiceAccountInternal: APSServiceAccountInternal = await this.persistenceService.byId({
-      documentId: serviceAccountId
-    }) as APSServiceAccountInternal;
+    let apsServiceAccountInternal: APSServiceAccountInternal;
+    if(serviceAccountId === APSServiceAccountsService.internalApsServiceAccount.serviceAccountId) {
+      apsServiceAccountInternal = APSServiceAccountsService.internalApsServiceAccount;
+    } else {
+      apsServiceAccountInternal = await this.persistenceService.byId({
+        documentId: serviceAccountId
+      }) as APSServiceAccountInternal;
+    }
     const apsServiceAccount: APSServiceAccount = this.createAPSServiceAccount({ apsServiceAccountInternal: apsServiceAccountInternal });
     
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSServiceAccount', details: apsServiceAccount }));

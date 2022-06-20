@@ -26,7 +26,13 @@
       "./server/@types"
     ]
   },
-  "include": ["server/**/*.ts", "dev-build.ts", "dev-build-types.ts", "build.ts"],
+  "include": [
+    "server/**/*.ts", 
+    "dev-build.ts", 
+    "dev-build-types.ts", 
+    "dev-build-open-apis.ts", 
+    "build.ts"
+  ],
   "exclude": [
     "node_modules",
     "_todo",

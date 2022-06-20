@@ -18,42 +18,77 @@ tags:
   description: The swagger API specification
 - name: APSAdministration
   description: Manage system settings and organizations/tenants.
-- name: APSConnectorProxy
-  description: Proxy to APIM Connector.
+# - name: APSConnectorProxy
+#   description: Proxy to APIM Connector.
 paths:
-  /connectorProxy/v1/:
-    get:
-      security:
-      - InternalAuthBearerToken: []
-      tags:
-      - APSConnectorProxy
-      responses:
-        default:
-          $ref: '#/components/responses/APSConnectorProxyResponse'
-    post:
-      security:
-      - InternalAuthBearerToken: []
-      tags:
-      - APSConnectorProxy
-      responses:
-        default:
-          $ref: '#/components/responses/APSConnectorProxyResponse'
-    patch:
-      security:
-      - InternalAuthBearerToken: []
-      tags:
-      - APSConnectorProxy
-      responses:
-        default:
-          $ref: '#/components/responses/APSConnectorProxyResponse'
-    delete:
-      security:
-      - InternalAuthBearerToken: []
-      tags:
-      - APSConnectorProxy
-      responses:
-        default:
-          $ref: '#/components/responses/APSConnectorProxyResponse'
+# NOTE: dtsgenerator cannot deal with the default responses?!
+  # /connectorProxy/v1/:
+  #   get:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   post:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   patch:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   delete:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+
+  # /connectorProxy/v1/:
+  #   get:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   post:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   patch:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   delete:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
 
   /apsExternalSystems/{organization_id}:
     parameters:
@@ -558,8 +593,8 @@ paths:
                 $ref: "#/components/schemas/APSError"
   /apsConfig/apsConnectors/active:
     get:
-      # security:
-      # - InternalAuthBearerToken: []
+      security:
+      - InternalAuthBearerToken: []
       operationId: getActiveApsConnector
       description: Get the currently active APSConnector object.
       tags:
@@ -864,6 +899,31 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /apsMonitor/apsConnectorStatus:
+    get:
+      operationId: getApsConnectorStatus
+      description: Get the APSConnectorStatus object.
+      tags:
+      - APSMonitor
+      parameters:
+        - $ref: '#/components/parameters/optionalConnectorId'
+      responses:
+        '200':
+          description: The APSConnectorStatus object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSConnectorStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsBusinessGroups/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -1107,6 +1167,8 @@ paths:
 
   /apsUsers:
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsUser
       description: Create an APSUser object.
       tags:
@@ -1142,6 +1204,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsUsers
       description: Get a list of APSUserResponses.
       tags:
@@ -1175,6 +1239,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/user_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsUser
       description: Get a APSUserResponse object by user id.
       tags:
@@ -1197,6 +1263,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
+      security:
+      - InternalAuthBearerToken: []
       operationId: updateApsUser
       description:
         Update an APSUser object by user id.
@@ -1235,6 +1303,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsUser
       description: Delete an APSUser object by user id.
       tags:
@@ -1574,9 +1644,9 @@ components:
         "*/*":
           schema:
             oneOf:
-              - type: object
-                description: The response from the connector. See Connector API for details.
-              - $ref: "#/components/schemas/APSConnectorError"
+            - type: object
+              description: The response from the connector. See Connector API for details.
+            - $ref: "#/components/schemas/APSConnectorError"
     BadRequest:
       description: "Bad Request."
       content:
@@ -1617,6 +1687,13 @@ components:
           schema:
             $ref: "#/components/schemas/APSError"
   parameters:
+    optionalConnectorId:
+      name: optionalConnectorId
+      description: If connector_id is omitted, uses the active connector.
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/APSId"
     page_size:
       name: pageSize
       in: query
@@ -1998,6 +2075,17 @@ components:
       required:
       - isReady
       - timestamp
+    APSConnectorStatus:
+      description: Status information about the selected connector.
+      type: object
+      properties:
+        connectorAbout:
+          description: Connector About info.
+          type: object
+        connectorHealthCheckStatus:
+          description: Connector health check status.
+          type: string
+
     APSAbout:
       description: Information about the Server.
       type: object

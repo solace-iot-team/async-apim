@@ -16,7 +16,7 @@ export class ControllerUtils {
   }
   
   public static getParamName<T>(name: keyof T): string {
-    return `${name}`;
+    return String(name);
   }
   
 }
