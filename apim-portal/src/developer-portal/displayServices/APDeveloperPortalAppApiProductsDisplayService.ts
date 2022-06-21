@@ -38,10 +38,10 @@ export type TAPAppGuaranteedMessagingDisplay = {
 export type TAPAppClientInformationDisplay = {
   apGuarenteedMessagingDisplay?: TAPAppGuaranteedMessagingDisplay;
 }
-
+export type TAPAppClientInformationDisplayList = Array<TAPAppClientInformationDisplay>;
 export type TAPDeveloperPortalAppApiProductDisplay = TAPDeveloperPortalApiProductDisplay & {
   apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
-  apAppClientInformationDisplay: TAPAppClientInformationDisplay;
+  apAppClientInformationDisplayList: TAPAppClientInformationDisplayList;
 }; 
 export type TAPDeveloperPortalAppApiProductDisplayList = Array<TAPDeveloperPortalAppApiProductDisplay>;
 
@@ -51,8 +51,9 @@ export type TAPApp_ApiProduct_AllowedActions = {
   isRevokeAllowed: boolean;
 }
 
-export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & TAPAppClientInformationDisplay & {
+export type TAPApp_ApiProduct_ClientInformationDisplay = IAPEntityIdDisplay & {
   apApp_ApiProduct_Status: EAPApp_ApiProduct_Status;
+  apAppClientInformationDisplayList: TAPAppClientInformationDisplayList;
 }
 export type TAPApp_ApiProduct_ClientInformationDisplayList = Array<TAPApp_ApiProduct_ClientInformationDisplay>;
 
@@ -162,10 +163,12 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     return apApp_ApiProduct_Status;
   }
 
-  private create_Empty_ApAppClientInformationDisplay(): TAPAppClientInformationDisplay {
-    return {
-      apGuarenteedMessagingDisplay: undefined
-    };
+  private create_Empty_ApAppClientInformationDisplayList(): TAPAppClientInformationDisplayList {
+    return [
+      {
+        apGuarenteedMessagingDisplay: undefined
+      }
+    ];
   }
 
   private create_ApDeveloperPortalAppApiProductDisplay_From_ApiEntities({ 
@@ -179,28 +182,31 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
   }): TAPDeveloperPortalAppApiProductDisplay {
 
     // find the matching client information
-    const apAppClientInformationDisplay: TAPAppClientInformationDisplay = {
-      apGuarenteedMessagingDisplay: undefined
-    };
+    const apAppClientInformationDisplayList: TAPAppClientInformationDisplayList = [];
     if(connectorAppResponse.clientInformation !== undefined && connectorAppResponse.clientInformation.length > 0) {
-      const found: ClientInformation | undefined = connectorAppResponse.clientInformation.find( (x) => {
-        return x.guaranteedMessaging?.apiProduct === apDeveloperPortalApiProductDisplay.apEntityId.id;
+      // find array of clientInformation for apiProduct
+      const foundList: Array<ClientInformation> = connectorAppResponse.clientInformation.filter( (connectorClientInformation: ClientInformation) => {
+        return connectorClientInformation.guaranteedMessaging?.apiProduct === apDeveloperPortalApiProductDisplay.apEntityId.id;
       });
-      if(found && found.guaranteedMessaging && found.guaranteedMessaging.name) {
-        const apAppGuaranteedMessagingDisplay: TAPAppGuaranteedMessagingDisplay = {
-          queueName: found.guaranteedMessaging.name,
-          accessType: found.guaranteedMessaging.accessType,
-          maxMsgSpoolUsage: found.guaranteedMessaging.maxMsgSpoolUsage,
-          maxTtl: found.guaranteedMessaging.maxTtl
-        };
-        apAppClientInformationDisplay.apGuarenteedMessagingDisplay = apAppGuaranteedMessagingDisplay;
+      for(const found of foundList) {
+        if(found.guaranteedMessaging && found.guaranteedMessaging.name) {
+          const apAppGuaranteedMessagingDisplay: TAPAppGuaranteedMessagingDisplay = {
+            queueName: found.guaranteedMessaging.name,
+            accessType: found.guaranteedMessaging.accessType,
+            maxMsgSpoolUsage: found.guaranteedMessaging.maxMsgSpoolUsage,
+            maxTtl: found.guaranteedMessaging.maxTtl,
+          };
+          const apAppClientInformationDisplay: TAPAppClientInformationDisplay = {
+            apGuarenteedMessagingDisplay: apAppGuaranteedMessagingDisplay
+          }
+          apAppClientInformationDisplayList.push(apAppClientInformationDisplay);
+        }
       }
     }
-
     const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = {
       ...apDeveloperPortalApiProductDisplay,
       apApp_ApiProduct_Status: apApp_ApiProduct_Status,
-      apAppClientInformationDisplay: apAppClientInformationDisplay,
+      apAppClientInformationDisplayList: apAppClientInformationDisplayList,
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<TAPDeveloperPortalAppApiProductDisplay>(apDeveloperPortalAppApiProductDisplay);
@@ -220,7 +226,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
     const apDeveloperPortalAppApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay = {
       ...apDeveloperPortalApiProductDisplay,
       apApp_ApiProduct_Status: this.calculate_Future_ApApp_ApiProduct_Status(apDeveloperPortalApiProductDisplay.apApprovalType),
-      apAppClientInformationDisplay: this.create_Empty_ApAppClientInformationDisplay(),
+      apAppClientInformationDisplayList: this.create_Empty_ApAppClientInformationDisplayList(),
       apSearchContent: '',
     };
     return apDeveloperPortalAppApiProductDisplay;
@@ -307,7 +313,7 @@ class APDeveloperPortalAppApiProductsDisplayService extends APDeveloperPortalApi
       const apApp_ApiProduct_ClientInformationDisplay: TAPApp_ApiProduct_ClientInformationDisplay = {
         apEntityId: apAppApiProductDisplay.apEntityId,
         apApp_ApiProduct_Status: apAppApiProductDisplay.apApp_ApiProduct_Status,
-        apGuarenteedMessagingDisplay: apAppApiProductDisplay.apAppClientInformationDisplay.apGuarenteedMessagingDisplay,
+        apAppClientInformationDisplayList: apAppApiProductDisplay.apAppClientInformationDisplayList
       };
       apApp_ApiProduct_ClientInformationDisplayList.push(apApp_ApiProduct_ClientInformationDisplay);
     }

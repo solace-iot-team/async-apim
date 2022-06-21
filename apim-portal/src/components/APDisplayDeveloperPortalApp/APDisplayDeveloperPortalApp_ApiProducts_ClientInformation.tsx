@@ -5,6 +5,8 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import APDeveloperPortalAppApiProductsDisplayService, { 
+  TAPAppClientInformationDisplay,
+  TAPAppClientInformationDisplayList,
   TAPAppGuaranteedMessagingDisplay,
   TAPApp_ApiProduct_ClientInformationDisplay, 
   TAPApp_ApiProduct_ClientInformationDisplayList,
@@ -22,14 +24,21 @@ export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps
 }
 
 export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps> = (props: IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps) => {
-  // const ComponentName='APDisplayDeveloperPortalAppApiProductsClientInformation';
+  const ComponentName='APDisplayDeveloperPortalAppApiProductsClientInformation';
 
   const componentDataTableRef = React.useRef<any>(null);
   const [guaranteedMessagingExpandedDataTableRows, setGuaranteedMessagingExpandedDataTableRows] = React.useState<any>(null);
   const guaranteedMessagingDataTableRef = React.useRef<any>(null);
 
   const renderGuaranteedMessaging = (row: TAPApp_ApiProduct_ClientInformationDisplay) => {
-    const dataTableList: Array<TAPAppGuaranteedMessagingDisplay> = row.apGuarenteedMessagingDisplay ? [row.apGuarenteedMessagingDisplay] : [];
+    // const funcName = 'renderGuaranteedMessaging';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: row=${JSON.stringify(row, null, 2)}`);
+    // alert(`${logName}: check console for log`);
+
+    const dataTableList: Array<TAPAppGuaranteedMessagingDisplay | undefined> = row.apAppClientInformationDisplayList.map( (apAppClientInformationDisplay: TAPAppClientInformationDisplay) => {
+      return apAppClientInformationDisplay.apGuarenteedMessagingDisplay;
+    });
     const dataKey = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('queueName');
     const accessTypeField = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('accessType');
     const maxTtlField = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('maxTtl');
