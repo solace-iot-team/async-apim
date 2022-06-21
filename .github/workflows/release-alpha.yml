@@ -2,7 +2,10 @@
 name: release-alpha
 on:
   workflow_dispatch:
-
+    inputs:
+      build_number:
+        type: string
+        description: build number in format 'nnn'
 env:
   # DEBUG_FLAG: ${{ true }}
   DEBUG_FLAG: ${{ false }}
