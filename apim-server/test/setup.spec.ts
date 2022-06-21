@@ -17,7 +17,10 @@ import request from 'supertest';
 import Server from '../server/index';
 import { expect } from 'chai';
 import { 
+  ApsAdministrationService,
   ApsMonitorService, 
+  APSServiceAccountCreate, 
+  APSServiceAccountCreateResponse, 
   APSSessionLoginResponse, 
   ApsSessionService, 
   APSStatus,
@@ -141,24 +144,27 @@ describe(`${scriptName}`, () => {
       expect(apsStatus.isReady, TestLogger.createTestFailMessage(`server not ready after i=${i} tries`)).to.be.true;
     });
 
-    /**
-     * TODO: add creating a service account (with all roles) as root ==> use the service account as the main TEST token for all tests
-     */
-    it(`${scriptName}: should login as root user`, async() => {
-      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
-      if(isInternalIdp) {
-        // login as root and use the bearer token in open api
-        const apsSessionLoginResponse: APSSessionLoginResponse = await ApsSessionService.apsLogin({
-          requestBody: {
-            username: TestEnv.rootUsername,
-            password: TestEnv.rootUserPassword
-          }
-        });
-        ApimServerAPIClient.setCredentials({ bearerToken: apsSessionLoginResponse.token });
-      }
+    // /**
+    //  * TODO: add creating a service account (with all roles) as root ==> use the service account as the main TEST token for all tests
+    //  */
+    // it(`${scriptName}: should login as root user`, async() => {
+    //   const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
+    //   if(isInternalIdp) {
+    //     // login as root and use the bearer token in open api
+    //     const apsSessionLoginResponse: APSSessionLoginResponse = await ApsSessionService.apsLogin({
+    //       requestBody: {
+    //         username: TestEnv.rootUsername,
+    //         password: TestEnv.rootUserPassword
+    //       }
+    //     });
+    //     ApimServerAPIClient.setCredentials({ bearerToken: apsSessionLoginResponse.token });
+    //   }
+    // });
+
+    it(`${scriptName}: should create service account and set credentials`, async() => {
+      await ApimServerAPIClient.setServiceAccountCredentials();
     });
-
-
+  
   });
 });
 

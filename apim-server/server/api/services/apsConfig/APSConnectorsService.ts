@@ -10,18 +10,19 @@ import {
   BootstrapErrorFromError 
 } from '../../../common/ServerError';
 import { ServerUtils } from '../../../common/ServerUtils';
-import APSConnector = Components.Schemas.APSConnector;
-import APSConnectorCreateRequest = Components.Schemas.APSConnectorCreate;
-import APSConnectorReplaceRequest = Components.Schemas.APSConnectorReplace;
-import APSListResponseMeta = Components.Schemas.APSListResponseMeta;
-import APSConnectorId = Components.Schemas.APSId;
-import APSConnectorList = Components.Schemas.APSConnectorList; 
 import { 
   APSConnectorCreate, 
   ApsConfigService, 
   ApiError,
+  APSListResponseMeta,
+  APSConnectorList,
+  APSConnector,
+  APSConnectorReplace,
+  APSConnectorStatus,
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSConnectorsServiceEventEmitter from './APSConnetorsServiceEvent';
+import { About, AdministrationService } from '@solace-iot-team/apim-connector-openapi-node';
+import { ConnectorClient } from '../../../common/ConnectorClient';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
 
@@ -151,6 +152,11 @@ export class APSConnectorsService {
     } else {
       ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping connector list bootstrap, no data path' }));  
     }
+
+    // cache the active connector info if it exists
+    const activeApsConnector: APSConnector = await this.byActive();
+    ServerConfig.setConnectorConfig(activeApsConnector);
+
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
@@ -164,7 +170,7 @@ export class APSConnectorsService {
     }
   }
 
-  public byId = async(apsConnectorId: APSConnectorId): Promise<APSConnector> => {
+  public byId = async(apsConnectorId: string): Promise<APSConnector> => {
     const funcName = 'byId';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
 
@@ -202,7 +208,7 @@ export class APSConnectorsService {
     return apsConnector;
   }
 
-  public create = async(apsConnectorCreateRequest: APSConnectorCreateRequest): Promise<APSConnector> => {
+  public create = async(apsConnectorCreateRequest: APSConnectorCreate): Promise<APSConnector> => {
     const funcName = 'create';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     const create: APSConnector = {
@@ -220,7 +226,7 @@ export class APSConnectorsService {
     return created;
   }
 
-  public replace = async(apsConnectorId: APSConnectorId, apsConnectorReplaceRequest: APSConnectorReplaceRequest): Promise<APSConnector> => {
+  public replace = async(apsConnectorId: string, apsConnectorReplaceRequest: APSConnectorReplace): Promise<APSConnector> => {
     const funcName = 'replace';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     const current: APSConnector = await this.persistenceService.byId({
@@ -249,7 +255,7 @@ export class APSConnectorsService {
     return replaced;
   }
 
-  public setActive = async(apsConnectorId: APSConnectorId): Promise<APSConnector> => {
+  public setActive = async(apsConnectorId: string): Promise<APSConnector> => {
     const funcName = 'setActive';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
     const newActive: APSConnector = await this.persistenceService.byId({
@@ -276,18 +282,22 @@ export class APSConnectorsService {
       collectionDocument: newActive,
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
+
+    // cache the active connector info 
+    ServerConfig.setConnectorConfig(replacedNewActive);
+
     // emit changed event
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
       connectorId: replacedNewActive.connectorId,
     }}));
     APSConnectorsServiceEventEmitter.emit('activeChanged', replacedNewActive.connectorId );
-
+        
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'replacedNewActive', details: replacedNewActive }));
 
     return replacedNewActive;
   }
 
-  public delete = async(apsConnectorId: APSConnectorId): Promise<void> => {
+  public delete = async(apsConnectorId: string): Promise<void> => {
     const funcName = 'delete';
     const logName = `${APSConnectorsService.name}.${funcName}()`;
 
@@ -308,6 +318,59 @@ export class APSConnectorsService {
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'deletedConnector', details: deletedConnector }));
 
   }
+
+  public connectorStatus = async({ apsConnectorId }:{
+    apsConnectorId?: string
+  }): Promise<APSConnectorStatus> => {
+    const funcName = 'connectorStatus';
+    const logName = `${APSConnectorsService.name}.${funcName}()`;
+
+    if(apsConnectorId === undefined) {
+      try {
+        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsConnectorId', details: {
+          apsConnectorId: 'currentlyActiveConnector'
+        }}));
+
+        const connectorAbout: About = await AdministrationService.about();
+
+        const connectorHealthCheckStatus: { status: string } = await AdministrationService.healthcheck();
+  
+        return {
+          connectorAbout: connectorAbout,
+          connectorHealthCheckStatus: connectorHealthCheckStatus.status,
+        };
+
+      } catch(e: any) {
+          ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+            connectorError: ConnectorClient.getErrorAsString(e)
+          }}));  
+        throw e;
+      }
+
+    } else {
+
+      // switch connectors in OpenApi for proxy
+      const activeApsConnector: APSConnector = ServerConfig.getConnectorConfig()
+      try {
+        const apsConnector: APSConnector = await this.byId(apsConnectorId);
+        ServerConfig.setConnectorConfig(apsConnector);
+        const connectorAbout: About = await AdministrationService.about();
+        const connectorHealthCheckStatus: { status: string } = await AdministrationService.healthcheck();
+        ServerConfig.setConnectorConfig(activeApsConnector);
+        return {
+          connectorAbout: connectorAbout,
+          connectorHealthCheckStatus: connectorHealthCheckStatus.status,
+        };
+      } catch (e: any) {
+        ServerConfig.setConnectorConfig(activeApsConnector);
+        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+          connectorError: ConnectorClient.getErrorAsString(e)
+        }}));  
+        throw e;
+      } 
+    }
+  }
+
 
 }
 

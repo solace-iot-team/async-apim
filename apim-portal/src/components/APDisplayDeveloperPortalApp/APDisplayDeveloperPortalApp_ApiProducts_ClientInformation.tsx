@@ -5,6 +5,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
 import APDeveloperPortalAppApiProductsDisplayService, { 
+  TAPAppClientInformationDisplay,
   TAPAppGuaranteedMessagingDisplay,
   TAPApp_ApiProduct_ClientInformationDisplay, 
   TAPApp_ApiProduct_ClientInformationDisplayList,
@@ -29,7 +30,14 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<I
   const guaranteedMessagingDataTableRef = React.useRef<any>(null);
 
   const renderGuaranteedMessaging = (row: TAPApp_ApiProduct_ClientInformationDisplay) => {
-    const dataTableList: Array<TAPAppGuaranteedMessagingDisplay> = row.apGuarenteedMessagingDisplay ? [row.apGuarenteedMessagingDisplay] : [];
+    // const funcName = 'renderGuaranteedMessaging';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: row=${JSON.stringify(row, null, 2)}`);
+    // alert(`${logName}: check console for log`);
+
+    const dataTableList: Array<TAPAppGuaranteedMessagingDisplay | undefined> = row.apAppClientInformationDisplayList.map( (apAppClientInformationDisplay: TAPAppClientInformationDisplay) => {
+      return apAppClientInformationDisplay.apGuarenteedMessagingDisplay;
+    });
     const dataKey = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('queueName');
     const accessTypeField = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('accessType');
     const maxTtlField = APDisplayUtils.nameOf<TAPAppGuaranteedMessagingDisplay>('maxTtl');

@@ -2,6 +2,26 @@
 
 Solace Async API Management.
 
+## Version 0.3.0
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.0
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.0
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.0
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.19
+
+**New Features:**
+  * **Apps**
+    - displays all queues for 1 API Product
+  * **API Products**
+    - added `queue granularity` to Guaranteed Messaging Options
+
+**Fixes:**
+  * **Apps**
+    - fixed display of App Endpoints for multiple environments
+
+**Framework:**
+  * **Proxy Connector Calls through Server**
+    - APIM-Server proxies APIM-Portal calls to connector, setting the correct credentials & roles for the logged in user.
+
 ## Version 0.2.4
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.2.4
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.2.2

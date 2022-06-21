@@ -2,6 +2,9 @@ import {
   OpenAPI as APSOpenAPI, 
   ApiError as APSApiError 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { 
+  OpenAPI as ConnectorOpenAPI, 
+} from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type APSClientOpenApiInfo = {
   base: string,
@@ -43,7 +46,16 @@ export class APSClientOpenApi {
     APSOpenAPI.WITH_CREDENTIALS = true;
     APSOpenAPI.CREDENTIALS = "include";
     APSOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
+    // ConnectorOpenApi
+    ConnectorOpenAPI.BASE = APSOpenAPI.BASE + '/connectorProxy' + ConnectorOpenAPI.BASE;
+    ConnectorOpenAPI.USERNAME = undefined;
+    ConnectorOpenAPI.PASSWORD = undefined;
+    ConnectorOpenAPI.WITH_CREDENTIALS = true;
+    // ConnectorOpenAPI.CREDENTIALS = "include";
+    ConnectorOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
+
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
+    console.log(`${logName}: ConnectorOpenAPI = ${JSON.stringify(ConnectorOpenAPI, null, 2)}`);
   }
 
   public static getOpenApiInfo = (): APSClientOpenApiInfo => {

@@ -17,8 +17,15 @@ import {
   APSError,
   APSErrorIds,
   APSOrganizationCreate,
+  APSSessionLoginResponse,
+  ApsSessionService,
+  APSServiceAccountCreate,
+  APSServiceAccountCreateResponse,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
+import ServerConfig, { EAuthConfigType } from '../../server/common/ServerConfig';
+import { TestEnv } from '../setup.spec';
+import { ApimServerAPIClient } from '../lib/api.helpers';
 
 
 const scriptName: string = path.basename(__filename);
@@ -47,25 +54,13 @@ describe(`${scriptName}`, () => {
     TestContext.newItId();
   });
 
-  // after(async() => {
-  //   TestContext.newItId();      
-  //   try {
-  //     const listOrgResponse: ListAPSOrganizationResponse = await ApsAdministrationService.listApsOrganizations();
-  //     const orgList: APSOrganizationList = listOrgResponse.list;
-  //     for(const org of orgList) {
-  //       await ApsAdministrationService.deleteApsOrganization({
-  //         organizationId: org.organizationId
-  //       });
-  //     }
-  //   } catch (e) {
-  //     expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-  //     expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-  //   }
-  // });
-
   // ****************************************************************************************************************
   // * OpenApi API Tests *
   // ****************************************************************************************************************
+
+  it(`${scriptName}: ensure service account credentials`, async () => {
+    await ApimServerAPIClient.setServiceAccountCredentials();
+  });
 
   it(`${scriptName}: should list all organizations and delete them`, async () => {
     try {
@@ -78,10 +73,14 @@ describe(`${scriptName}`, () => {
         });
       }
     } catch (e) {
-      expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-      expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
+      expect(e instanceof ApiError, TestLogger.createNotApiErrorMesssage(e.message)).to.be.true;
+      expect(false, TestLogger.createTestFailMessage('failed')).to.be.true;
     }
   });
+
+  // it(`${scriptName}: continue here`, async () => {
+  //   expect(false, TestLogger.createTestFailMessage('continue here')).to.be.true;
+  // });
 
   it(`${scriptName}: should create organizations`, async () => {
     try {

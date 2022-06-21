@@ -1,5 +1,7 @@
 
-import { OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import ServerConfig, { EAuthConfigType } from '../../server/common/ServerConfig';
+import { ApsAdministrationService, APSServiceAccountCreate, APSServiceAccountCreateResponse, APSSessionLoginResponse, ApsSessionService, OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import { TestEnv } from '../setup.spec';
 
 type OpenApiHeaders = Record<string, string>;
 
@@ -59,6 +61,37 @@ export class ApimServerAPIClient {
     }) => {
       // if(value !== undefined) throw new Error(`setRefreshToken, value = ${value}`);
       if(value !== undefined) ApimServerAPIClient.refreshToken = value;
+    }
+
+    public static setServiceAccountCredentials = async() => {
+      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
+      if(isInternalIdp) {
+        // login as root and use the bearer token in open api
+        const apsSessionLoginResponse: APSSessionLoginResponse = await ApsSessionService.apsLogin({
+          requestBody: {
+            username: TestEnv.rootUsername,
+            password: TestEnv.rootUserPassword
+          }
+        });
+        ApimServerAPIClient.setCredentials({ bearerToken: apsSessionLoginResponse.token });
+        const serviceAccountId = "serviceAccountId";
+        // try to delete the service account
+        try {
+          await ApsAdministrationService.deleteApsServiceAccount({ serviceAccountId: serviceAccountId });
+        } catch (e) {
+          // do nothing
+        }
+        // create service account and set the token
+        const apsServiceAccountCreate: APSServiceAccountCreate = {
+          serviceAccountId: serviceAccountId,
+          displayName: "displayName",
+          description: "description"
+        };
+        const apsServiceAccountCreateResponse: APSServiceAccountCreateResponse = await ApsAdministrationService.createApsServiceAccount({ 
+          requestBody: apsServiceAccountCreate
+        });
+        ApimServerAPIClient.setCredentials({ bearerToken: apsServiceAccountCreateResponse.token });
+      }  
     }
 
 }

@@ -2,7 +2,6 @@
 import { ParsedQs } from 'qs';
 import APSSortDirection = Components.Parameters.SortDirection;
 
-
 export type TApiPagingInfo = {
   pageNumber: Components.Parameters.PageNumber;
   pageSize: Components.Parameters.PageSize;

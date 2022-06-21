@@ -39,7 +39,7 @@ class APSAuthStrategyService {
   private static readonly localhostRegExp = new RegExp(/.*(localhost|127\.0\.0\.1):[0-9]*$/);
   private static corsWhitelistedDomainList: Array<string> = [];
   private static isRequestOriginLocalhost = false;
-  public verifyUser_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
+  public verify_Internal = passport.authenticate(ERegisteredStrategyName.INTERNAL_JWT, this.apsInternal_JwtStrategyAuthenticateOptions);
   private static jwtHeader: jwt.JwtHeader = {
     typ: 'JWT',
     alg: 'HS256'
@@ -78,8 +78,6 @@ class APSAuthStrategyService {
         return this.apsInternal_LocalRegsiteredStrategyName;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, `configAuthType = ${configAuthType} not implemented`);
-      case EAuthConfigType.NONE:
-        throw new ServerError(logName, `configAuthType = ${configAuthType}`);
       default:
         ServerUtils.assertNever(logName, configAuthType);
     }
@@ -140,15 +138,6 @@ class APSAuthStrategyService {
       origin: APSAuthStrategyService.checkCorsOrigin,
     };
   }
-  private getCorsOptions_NoAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
-    return { origin: true };
-  }
-  private initializeNoAuth = ({ app, config }:{
-    app: Application;
-    config: TExpressServerConfig;
-  }) => {
-    app.use(cors(this.getCorsOptions_NoAuth(config)));
-  }
   private getCorsOptions_InternalAuth = (_config: TExpressServerConfig): cors.CorsOptions => {
     // const funcName = 'getCorsOptions_InternalAuth';
     // const logName = `${APSAuthStrategyService.name}.${funcName}()`;
@@ -206,9 +195,6 @@ class APSAuthStrategyService {
 
     const authConfigType: EAuthConfigType = config.authConfig.type;
     switch(authConfigType) {
-      case EAuthConfigType.NONE:
-        this.initializeNoAuth({ app: app, config: config });
-        return;
       case EAuthConfigType.INTERNAL:        
         this.initializeInternalAuth({ app: app, config: config });
         return;
@@ -262,29 +248,69 @@ class APSAuthStrategyService {
     };
   }
 
-  public generateBearerToken_For_InternalAuth = ({ userId }:{
+  public generateConnectorProxyAuthHeader = (): string => {
+    const funcName = 'getResponseCookieOptions_For_InternalAuth';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    // generate basic only for now, generate token later
+    return "Basic " + Buffer.from(ServerConfig.getConnectorConfig().connectorClientConfig.serviceUser + ":" + ServerConfig.getConnectorConfig().connectorClientConfig.serviceUserPwd).toString("base64");
+  }
+
+  private generateBearerToken_For_InternalAuth = ({ id, accountType, expiresInSeconds, secret }:{
+    id: string;
+    accountType: TTokenPayload_AccountType;
+    expiresInSeconds: number;
+    secret: string;
+  }): string => {
+    const payload: TTokenPayload = {
+      _id: id,
+      iat: Date.now(),
+      accountType: accountType
+    };
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: expiresInSeconds,
+      issuer: ServerConfig.getConfig().serverLogger.appId,
+      subject: id,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    }
+    return jwt.sign(payload, secret, signOptions);
+  }
+
+  public generateUserAccountBearerToken_For_InternalAuth = ({ userId }:{
     userId: string;
   }): string => {
-    const funcName = 'generateBearerToken_For_InternalAuth';
+    const funcName = 'generateUserAccountBearerToken_For_InternalAuth';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
 
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
 
-    const payload: TTokenPayload = {
-      _id: userId,
-      iat: Date.now(),
-      accountType: TTokenPayload_AccountType.USER_ACCOUNT
-    };
-    const signOptions: jwt.SignOptions = {
-      // seconds
-      expiresIn: authConfig.authJwtExpirySecs,
-      issuer: ServerConfig.getConfig().serverLogger.appId,
-      subject: userId,
-      header: APSAuthStrategyService.jwtHeader,
-      algorithm: 'HS256'
-    }
-    return jwt.sign(payload, authConfig.authJwtSecret, signOptions);
+    return this.generateBearerToken_For_InternalAuth({ 
+      id: userId,
+      accountType: TTokenPayload_AccountType.USER_ACCOUNT,
+      expiresInSeconds: authConfig.authJwtExpirySecs,
+      secret: authConfig.authJwtSecret
+    });
+  }
+
+  public generateServiceAccountBearerToken_For_InternalAuth = ({ serviceAccountId }:{
+    serviceAccountId: string;
+  }): string => {
+    const funcName = 'generateServiceAccountBearerToken_For_InternalAuth';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;
+
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+
+    return this.generateBearerToken_For_InternalAuth({ 
+      id: serviceAccountId,
+      accountType: TTokenPayload_AccountType.SERVICE_ACCOUNT,
+      expiresInSeconds: -1,
+      secret: authConfig.authJwtSecret
+    });
   }
 
   public generateRefreshToken_For_InternalAuth = ({ userId }:{

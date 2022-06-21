@@ -1,23 +1,17 @@
 import path from 'path';
-import { OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSConnector, APSLocationConfigExternal, APSLocationConfigInternalProxy, OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import { ConfigEnvVarNotANumberServerError, ConfigEnvVarValueServerError, ConfigInvalidEnvVarValueFromListServerError, ConfigMissingEnvVarServerError, ServerError } from './ServerError';
-
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ServerUtils } from './ServerUtils';
 
 export enum EAuthConfigType {
   UNDEFINED = "UNDEFINED",
-  NONE = "none",
   INTERNAL = "internal",
   OIDC = "oidc",
 }
 const ValidEnvAuthConfigType = {
-  NONE: EAuthConfigType.NONE,
   INTERNAL: EAuthConfigType.INTERNAL,
   OIDC: EAuthConfigType.OIDC,
-}
-export type TAuthConfigNone = {
-  type: EAuthConfigType.NONE;
 }
 export type TAuthConfigOidc = {
   type: EAuthConfigType.OIDC;
@@ -29,8 +23,12 @@ export type TAuthConfigInternal = {
   refreshJwtSecret: string;
   refreshJwtExpirySecs: number;
 }
-export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc | TAuthConfigNone;
+export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc;
 
+export type TConnectorProxyConfig = {
+  // APIM_SERVER_INTERNAL_CONNECTOR_API_URL
+  internalConnectorApiUrl: string;
+}
 export type TExpressServerConfig = {
   rootDir: string;
   port: number;
@@ -39,6 +37,7 @@ export type TExpressServerConfig = {
   enableOpenApiResponseValidation: boolean;
   cookieSecret: string;
   authConfig: TAuthConfig;
+  connectorProxyConfig: TConnectorProxyConfig;
 }
 export type TServerLoggerConfig = {
   appId: string,
@@ -62,6 +61,7 @@ export type TServerConfig = {
   serverLogger: TServerLoggerConfig;
   rootUser: TRootUserConfig;
   monitorConfig: TMonitorConfig;
+  connectorConfig?: APSConnector;
 };
 
 enum EEnvVars {
@@ -76,6 +76,8 @@ enum EEnvVars {
   APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD',
   APIM_SERVER_DATA_PATH = 'APIM_SERVER_DATA_PATH',
   APIM_SERVER_COOKIE_SECRET = 'APIM_SERVER_COOKIE_SECRET',
+  // connector proxy
+  APIM_SERVER_INTERNAL_CONNECTOR_API_URL = "APIM_SERVER_INTERNAL_CONNECTOR_API_URL",
   // auth
   APIM_SERVER_AUTH_TYPE = "APIM_SERVER_AUTH_TYPE",
   APIM_SERVER_AUTH_INTERNAL_JWT_SECRET = "APIM_SERVER_AUTH_INTERNAL_JWT_SECRET",
@@ -140,7 +142,6 @@ export class ServerConfig {
     const funcName = 'initializeAuthConfig';
     const logName = `${ServerConfig.name}.${funcName}()`;
 
-    const authConfig: TAuthConfig = { type: EAuthConfigType.NONE };
     const authType: EAuthConfigType = this.getMandatoryEnvVarValueAsString_From_List(EEnvVars.APIM_SERVER_AUTH_TYPE, Object.values(ValidEnvAuthConfigType)) as EAuthConfigType;
     switch(authType) {
       case EAuthConfigType.UNDEFINED:
@@ -165,12 +166,17 @@ export class ServerConfig {
         return internalAuthConfig;
       case EAuthConfigType.OIDC:
         throw new ServerError(logName, 'currently not implemented');
-      case EAuthConfigType.NONE:
-        break;
       default:
         ServerUtils.assertNever(logName, authType);
     }
-    return authConfig;
+    // should never get here
+    throw new ServerError(logName, "reading auth config from envs");
+  }
+
+  private initializeConnectorProxyConfigConfig = (): TConnectorProxyConfig => {
+    return {
+      internalConnectorApiUrl: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_INTERNAL_CONNECTOR_API_URL)
+    };
   }
 
   public initialize = (): void => {
@@ -187,6 +193,7 @@ export class ServerConfig {
           enableOpenApiResponseValidation: this.getOptionalEnvVarValueAsBoolean(EEnvVars.APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION, true),
           cookieSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_COOKIE_SECRET),
           authConfig: this.initializeAuthConfig(),
+          connectorProxyConfig: this.initializeConnectorProxyConfigConfig(),
         },
         mongoDB: {
           mongoConnectionString: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_CONNECTION_STRING),
@@ -249,6 +256,36 @@ export class ServerConfig {
 
   public getMonitorConfig = (): TMonitorConfig => {
     return this.config.monitorConfig;
+  }
+
+  public setConnectorConfig = (apsConnector: APSConnector) => {
+    this.config.connectorConfig = apsConnector;
+  }
+
+  public getConnectorConfig = (): APSConnector => {
+    const funcName = 'getConnectorConfig';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+    if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
+    return this.config.connectorConfig;
+  }
+
+  public getActiveConnectorTarget = (): string => {
+    const funcName = 'getActiveConnectorTarget';
+    const logName = `${ServerConfig.name}.${funcName}()`;
+    if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
+    const connectorLocationConfigType: APSLocationConfigExternal.configType | APSLocationConfigInternalProxy.configType = this.config.connectorConfig.connectorClientConfig.locationConfig.configType;
+    switch(connectorLocationConfigType) {
+      case APSLocationConfigExternal.configType.EXTERNAL:
+        const apsLocationConfigExternal: APSLocationConfigExternal =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigExternal;
+        // http://18.184.18.52:3000/v1
+        return `${apsLocationConfigExternal.protocol}://${apsLocationConfigExternal.host}:${apsLocationConfigExternal.port}/v1`;
+      case APSLocationConfigInternalProxy.configType.INTERNAL_PROXY:
+        // const apsLocationConfigInternalProxy: APSLocationConfigInternalProxy =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigInternalProxy;
+        return this.config.expressServer.connectorProxyConfig.internalConnectorApiUrl;
+      default:
+        ServerUtils.assertNever(logName, connectorLocationConfigType);
+    }
+    return 'undefined';
   }
 }
 

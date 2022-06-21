@@ -27,6 +27,7 @@ export class APSMonitorService {
 
     return apsStatus;
   }
+
 }
 
 export default new APSMonitorService();

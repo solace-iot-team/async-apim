@@ -607,7 +607,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     organizationId: string;
     businessGroupId?: string;
   }): Promise<APIInfoList> {
-
+    // const funcName = 'apiGetFilteredList_ConnectorApiInfo';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
     const result: APIList | APISummaryList | APIInfoList = await ApisService.listApis({
       organizationName: organizationId,
       format: 'extended'

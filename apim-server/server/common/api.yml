@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.2.2
+  version: 0.3.0
 servers:
 - url: /apim-server/v1
 tags:
@@ -12,13 +12,84 @@ tags:
   description: "Monitoring of the system."
 - name: APSUsers
   description: "Users of the system."
-- name: APSLogin
-  description: "Login Service."
+- name: APSSession
+  description: "Session Service."
 - name: Specification
   description: The swagger API specification
 - name: APSAdministration
   description: Manage system settings and organizations/tenants.
+# - name: APSConnectorProxy
+#   description: Proxy to APIM Connector.
 paths:
+# NOTE: dtsgenerator cannot deal with the default responses?!
+  # /connectorProxy/v1/:
+  #   get:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   post:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   patch:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   delete:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+
+  # /connectorProxy/v1/:
+  #   get:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   post:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   patch:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+  #   delete:
+  #     security:
+  #     - InternalAuthBearerToken: []
+  #     tags:
+  #     - APSConnectorProxy
+  #     responses:
+  #       default:
+  #         $ref: '#/components/responses/APSConnectorProxyResponse'
+
   /apsExternalSystems/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -169,6 +240,116 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /apsAdministration/apsServiceAccounts:
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: listApsServiceAccounts
+      description: Get a list of APSServiceAccount objects.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: Array of APSServiceAccount objects and total count. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSServiceAccountsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: createApsServiceAccount
+      description: Create an APSServiceAccount object.
+      tags:
+      - APSAdministration
+      requestBody:
+        description: The APSServiceAccount object to create.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APSServiceAccountCreate'
+      responses:
+        '201':
+          description: Successful creation of new APSServiceAccount object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSServiceAccountCreateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: >
+            "duplicate key": APSServiceAccount object with same id already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APSError"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /apsAdministration/apsServiceAccounts/{service_account_id}:
+    parameters:
+    - $ref: '#/components/parameters/service_account_id'
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: getApsServiceAccount
+      description: Get an APSServiceAccount object by id.
+      tags:
+      - APSAdministration
+      responses:
+        '200':
+          description: The APSServiceAccount object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSServiceAccount'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: deleteApsServiceAccount
+      tags:
+      - APSAdministration
+      responses:
+        '204':
+          description: Deleted successfully.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -412,8 +593,8 @@ paths:
                 $ref: "#/components/schemas/APSError"
   /apsConfig/apsConnectors/active:
     get:
-      # security:
-      # - InternalAuthBearerToken: []
+      security:
+      - InternalAuthBearerToken: []
       operationId: getActiveApsConnector
       description: Get the currently active APSConnector object.
       tags:
@@ -718,6 +899,31 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /apsMonitor/apsConnectorStatus:
+    get:
+      operationId: getApsConnectorStatus
+      description: Get the APSConnectorStatus object.
+      tags:
+      - APSMonitor
+      parameters:
+        - $ref: '#/components/parameters/optionalConnectorId'
+      responses:
+        '200':
+          description: The APSConnectorStatus object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APSConnectorStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /apsBusinessGroups/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -961,6 +1167,8 @@ paths:
 
   /apsUsers:
     post:
+      security:
+      - InternalAuthBearerToken: []
       operationId: createApsUser
       description: Create an APSUser object.
       tags:
@@ -996,6 +1204,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: listApsUsers
       description: Get a list of APSUserResponses.
       tags:
@@ -1029,6 +1239,8 @@ paths:
     parameters:
     - $ref: '#/components/parameters/user_id'
     get:
+      security:
+      - InternalAuthBearerToken: []
       operationId: getApsUser
       description: Get a APSUserResponse object by user id.
       tags:
@@ -1051,6 +1263,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     patch:
+      security:
+      - InternalAuthBearerToken: []
       operationId: updateApsUser
       description:
         Update an APSUser object by user id.
@@ -1089,6 +1303,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      security:
+      - InternalAuthBearerToken: []
       operationId: deleteApsUser
       description: Delete an APSUser object by user id.
       tags:
@@ -1422,6 +1638,15 @@ components:
       scheme: bearer
       bearerFormat: JWT
   responses:
+    APSConnectorProxyResponse:
+      description: see connector api for responses.
+      content:
+        "*/*":
+          schema:
+            oneOf:
+            - type: object
+              description: The response from the connector. See Connector API for details.
+            - $ref: "#/components/schemas/APSConnectorError"
     BadRequest:
       description: "Bad Request."
       content:
@@ -1462,6 +1687,13 @@ components:
           schema:
             $ref: "#/components/schemas/APSError"
   parameters:
+    optionalConnectorId:
+      name: optionalConnectorId
+      description: If connector_id is omitted, uses the active connector.
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/APSId"
     page_size:
       name: pageSize
       in: query
@@ -1564,6 +1796,12 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/APSId"
+    service_account_id:
+      name: service_account_id
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/APSId"
     external_reference_id:
       name: external_reference_id
       in: path
@@ -1632,10 +1870,10 @@ components:
       # format: email
       # from: https://regexr.com/3e48o
       pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
-    APSOrganizationIdList:
-      type: array
-      items:
-        type: string
+    # APSOrganizationIdList:
+    #   type: array
+    #   items:
+    #     type: string
     APSOrganizationRoles:
       type: object
       properties:
@@ -1774,6 +2012,7 @@ components:
       - dependantObjects
       - organizationNotFound
       - requestValidation
+      - connectorProxyError
     APSErrorMeta:
       type: object
       description: Additional details about the error.
@@ -1803,6 +2042,26 @@ components:
       - description
       - errorId
       - appId
+    APSConnectorError:
+      type: object
+      properties:
+        description:
+          type: string
+          description: "The verbose description of the problem."
+        appId:
+          description: The Id of the Server.
+          type: string
+        errorId:
+          type: string
+          enum:
+          - connectorProxyError
+        meta:
+          $ref: "#/components/schemas/APSErrorMeta"
+      required:
+      - description
+      - errorId
+      - appId
+
     APSStatus:
       description: Status information about the Server.
       type: object
@@ -1816,6 +2075,17 @@ components:
       required:
       - isReady
       - timestamp
+    APSConnectorStatus:
+      description: Status information about the selected connector.
+      type: object
+      properties:
+        connectorAbout:
+          description: Connector About info.
+          type: object
+        connectorHealthCheckStatus:
+          description: Connector health check status.
+          type: string
+
     APSAbout:
       description: Information about the Server.
       type: object
@@ -2029,6 +2299,47 @@ components:
         - displayName
         - description
         - connectorClientConfig
+
+    ListAPSServiceAccountsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSServiceAccountList'
+      required:
+      - list
+    APSServiceAccountList:
+      description: Array of APSServiceAccount objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSServiceAccount'
+    APSServiceAccount:
+      type: object
+      properties:
+        serviceAccountId:
+          $ref: "#/components/schemas/APSId"
+        displayName:
+          $ref: "#/components/schemas/APSDisplayName"
+        description:
+          $ref: "#/components/schemas/APSDescription"
+      required:
+        - serviceAccountId
+        - displayName
+        - description
+    APSServiceAccountCreate:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSServiceAccount'
+    APSServiceAccountCreateResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSServiceAccount'
+      properties:
+        token:
+          type: string
+      required:
+      - token
 
     ListAPSExternalSystemsResponse:
       type: object

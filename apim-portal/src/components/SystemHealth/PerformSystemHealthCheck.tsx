@@ -131,7 +131,10 @@ export const PerformSystemHealthCheck: React.FC<IPerformSystemHealthCheckProps> 
     let _connectorHealthCheckResult: TAPConnectorHealthCheckResult = ConnectorHealthCheckResultNotPerformed;
     if(configContext.connector) {
       try {
-        _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck(configContext, configContext.connector.connectorClientConfig);
+        _connectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+          configContext: configContext, 
+          connectorId: undefined
+        });
       } catch(e) {
         // should never get here
         APLogger.error(APLogger.createLogEntry(logName, e));
