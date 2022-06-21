@@ -72,6 +72,12 @@ export class APAppEnvironmentsDisplayService {
   public nameOf<T extends IAPAppEnvironmentDisplay>(name: keyof T) {
     return name;
   }
+  public nameOf_TAPEnvironmentEndpointDisplay<T extends TAPEnvironmentEndpointDisplay>(name: keyof T) {
+    return name;
+  }
+  public nameOf_TAPEnvironmentEndpointDisplay_ApEntityId<T extends TAPEntityId>(name: keyof T) {
+    return `${this.nameOf_TAPEnvironmentEndpointDisplay('apEntityId')}.${String(name)}`;
+  }
 
   private create_ApChannelPermissionDisplayList_From_ApiEntities({ channelPermissions }:{
     channelPermissions?: Array<Record<string, ChannelPermission>>;

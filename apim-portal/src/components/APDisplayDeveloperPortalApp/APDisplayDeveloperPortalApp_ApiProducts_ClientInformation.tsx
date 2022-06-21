@@ -6,7 +6,6 @@ import { Column } from "primereact/column";
 
 import APDeveloperPortalAppApiProductsDisplayService, { 
   TAPAppClientInformationDisplay,
-  TAPAppClientInformationDisplayList,
   TAPAppGuaranteedMessagingDisplay,
   TAPApp_ApiProduct_ClientInformationDisplay, 
   TAPApp_ApiProduct_ClientInformationDisplayList,
@@ -24,7 +23,7 @@ export interface IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps
 }
 
 export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps> = (props: IAPDisplayDeveloperPortalApp_ApiProducts_ClientInformationProps) => {
-  const ComponentName='APDisplayDeveloperPortalAppApiProductsClientInformation';
+  // const ComponentName='APDisplayDeveloperPortalAppApiProductsClientInformation';
 
   const componentDataTableRef = React.useRef<any>(null);
   const [guaranteedMessagingExpandedDataTableRows, setGuaranteedMessagingExpandedDataTableRows] = React.useState<any>(null);

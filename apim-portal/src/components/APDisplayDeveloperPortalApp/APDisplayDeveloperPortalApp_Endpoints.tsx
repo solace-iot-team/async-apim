@@ -4,11 +4,10 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import { 
+import APAppEnvironmentsDisplayService, { 
   TAPEnvironmentEndpointDisplay, 
   TAPEnvironmentEndpointDisplayList 
 } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
-import APEntityIdsService from "../../utils/APEntityIdsService";
 
 import "../APComponents.css";
 
@@ -53,9 +52,13 @@ export const APDisplayDeveloperPortalAppEndpoints: React.FC<IAPDisplayDeveloperP
   }
 
   const renderComponentContent = (): JSX.Element => {
-    const dataKey = APEntityIdsService.nameOf('id');
-    const nameField = APEntityIdsService.nameOf('displayName');
-
+    // const funcName = 'renderComponentContent';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: props.apEnvironmentEndpointList=${JSON.stringify(props.apEnvironmentEndpointList, null, 2)}`);
+    // alert(`${logName}: check console for log`);
+    const dataKey = APAppEnvironmentsDisplayService.nameOf_TAPEnvironmentEndpointDisplay_ApEntityId('id');
+    const nameField = APAppEnvironmentsDisplayService.nameOf_TAPEnvironmentEndpointDisplay_ApEntityId('displayName');
+    // alert(`${logName}: nameField=${nameField}`)
     return (
       <div className="card">
         <DataTable
