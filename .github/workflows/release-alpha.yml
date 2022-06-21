@@ -6,6 +6,7 @@ on:
       build_number:
         type: string
         description: build number in format 'nnn'
+        required: true
 env:
   # DEBUG_FLAG: ${{ true }}
   DEBUG_FLAG: ${{ false }}
@@ -62,37 +63,8 @@ jobs:
         run: |
           export NODE_AUTH_TOKEN=${{ secrets.NPM_TOKEN }}
           cd "$GITHUB_WORKSPACE/${RELEASE_DIR}"
-          ./release.sh
-
-      - name: "docs:setup python"
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
-      - name: "docs:install dependencies"
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r docs/devel/docs.requirements.txt
-
-      - name: "docs:make"
-        run: |
-          cd docs
-          ./make.sh
-
-      - name: "docs: publish to gh-pages"
-        run: |
-          git fetch origin gh-pages
-          git worktree add gh-pages gh-pages
-          date > generated.txt
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          rsync -av ./docs/build/html/ gh-pages/
-          cd gh-pages
-          git add -A
-          git commit --allow-empty -F ../generated.txt
-          # git push -f -u origin gh-pages
-          git push -u origin gh-pages
-
+          export APIM_RELEASE_APLPHA_BUILD_NUM=${{ github.event.inputs.build_number }}
+          ./release-alpha.sh
 
 ###
 # The End.
