@@ -68,7 +68,7 @@ export const EditNewGuaranteedMessagingFormFields: React.FC<IEditNewGuaranteedMe
                     options={APAdminPortalApiProductsDisplayService.get_SelectList_For_QueueGranularity()} 
                     onChange={(e) => field.onChange(e.value)}
                     className={classNames({ 'p-invalid': fieldState.invalid })}     
-                    disabled={props.action !== EAction.NEW}
+                    // disabled={props.action !== EAction.NEW}
                   />                        
                 )}}
             />
