@@ -55,8 +55,9 @@ services:
       - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
       - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
       - APIM_SERVER_DATA_PATH=/data
+      - APIM_SERVER_INTERNAL_CONNECTOR_API_URL=http://qs-async-apim-connector:3000/v1
         # Auth
-        # APIM_SERVER_AUTH_TYPE = oidc | internal | none
+        # APIM_SERVER_AUTH_TYPE = oidc | internal
       - APIM_SERVER_AUTH_TYPE=internal
         # internal auth
       - APIM_SERVER_AUTH_INTERNAL_JWT_SECRET=myAuthJwtSecret
