@@ -103,7 +103,9 @@ The following figure shows the set-up of the containers:
    Figure 1: Quickstart Docker Compose Container Setup
 
 
-Browser connections:
+**Browser connections:**
+
+Note that the portal app uses the APIM Server as a proxy for the APIM Connector with the following URL: `/apim-server/v1/connectorProxy/v1`.
 
 .. figure:: ../images/async-apim.quickstart.connect.png
    :width: 800
