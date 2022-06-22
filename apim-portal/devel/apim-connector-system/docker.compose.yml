@@ -3,6 +3,8 @@ services:
   apim-devel-connector-mongodb:
     container_name: apim-devel-connector-mongodb
     image : mongo:5.0.2
+    ports:
+      - 27020:27017
     volumes:
       - ./docker-volumes/apim-connector-mongodb-data:/data/db
     restart: unless-stopped
@@ -22,12 +24,12 @@ services:
       - APP_ID="apim-connector"
       - FILE_USER_REGISTRY=/data/organization_users.json
       - PLATFORM_PORT=3000
-      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.preferred_username"
+      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.userId"
       - AUTH_EXTRACTION_ORGS="$$.organization"
-      - AUTH_EXTRACTION_ROLES="$$.groups"
-      - AUTH_VERIFICATION_KEY=/data/dummy.pem
-      - AUTH_VERIFICATION_ISSUER="https://dev-1.okta.com/oauth2/default"
-      - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
+      - AUTH_EXTRACTION_ROLES="$$.roles"
+      - AUTH_VERIFICATION_KEY=/data/secret.txt
+      - AUTH_VERIFICATION_ISSUER=apim-server
+      - AUTH_VERIFICATION_AUD=platform-api-server
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
 
