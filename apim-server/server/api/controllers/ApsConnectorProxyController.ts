@@ -4,7 +4,7 @@ import queryString from 'querystring';
 import * as http from "http";
 import { EServerStatusCodes, ServerLogger } from '../../common/ServerLogger';
 import { APSSessionUser } from '../services/APSSessionService';
-import APSAuthStrategyService from '../../common/authstrategies/APSAuthStrategyService';
+import APSAuthStrategyService, { TTokenPayload_AccountType } from '../../common/authstrategies/APSAuthStrategyService';
 import ServerConfig from '../../common/ServerConfig';
 import { ConnectorProxyError } from '../../common/ServerError';
 
@@ -81,8 +81,8 @@ export class ApsConnectorProxyController {
   };
 
   public static all = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'all';
-    const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
+    // const funcName = 'all';
+    // const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
 
     const anyReq: any = req as any;
     // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'request', details: {
@@ -90,10 +90,15 @@ export class ApsConnectorProxyController {
     // } }));
     // throw new ServerError(logName, `continue with ${logName}`);
     const apsSessionUser: APSSessionUser = anyReq.user;
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'apsSessionUser', details: {
+    const accountType: TTokenPayload_AccountType = anyReq.authInfo;
+    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'apsSessionUser', details: {
+    //   apsSessionUser: apsSessionUser,
+    //   accountType: accountType
+    // } }));
+    req.headers.authorization = APSAuthStrategyService.generateConnectorProxyAuthHeader({ 
       apsSessionUser: apsSessionUser,
-    } }));
-    req.headers.authorization = APSAuthStrategyService.generateConnectorProxyAuthHeader();
+      accountType: accountType
+    });
     ConnectorProxy.web(req, res, {
       // target: "http://18.184.18.52:3000/v1",
       target: ServerConfig.getActiveConnectorTarget()

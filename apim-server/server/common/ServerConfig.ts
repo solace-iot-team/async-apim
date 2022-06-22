@@ -22,6 +22,11 @@ export type TAuthConfigInternal = {
   authJwtExpirySecs: number;
   refreshJwtSecret: string;
   refreshJwtExpirySecs: number;
+  connectorAuth: {
+    issuer: string;
+    audience: string;
+    secret: string;
+  }
 }
 export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc;
 
@@ -84,6 +89,9 @@ enum EEnvVars {
   APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS",
   APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET",
   APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS",
+  APIM_SERVER_CONNECTOR_AUTH_ISSUER="APIM_SERVER_CONNECTOR_AUTH_ISSUER",
+  APIM_SERVER_CONNECTOR_AUTH_AUDIENCE="APIM_SERVER_CONNECTOR_AUTH_AUDIENCE",
+  APIM_SERVER_CONNECTOR_AUTH_SECRET="APIM_SERVER_CONNECTOR_AUTH_SECRET",
 }
 
 export class ServerConfig {
@@ -154,6 +162,11 @@ export class ServerConfig {
           authJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS),
           refreshJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET),
           refreshJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS),      
+          connectorAuth: {
+            issuer: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_ISSUER),
+            audience: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_AUDIENCE),
+            secret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_SECRET)
+          }
         };
         // validate values
         if(internalAuthConfig.refreshJwtExpirySecs < internalAuthConfig.authJwtExpirySecs) {

@@ -8,6 +8,8 @@ import { ServerUtils } from "../ServerUtils";
 import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
 import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
+import { APSSessionUser } from "../../api/services/APSSessionService";
+import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
@@ -22,6 +24,16 @@ export type TTokenPayload = {
   _id: string;
   iat: number;
   accountType: TTokenPayload_AccountType;
+}
+enum EConnectorRoles {
+  PLATFORM_ADMIN = "platform-admin",
+  ORG_ADMIN = "org-admin"
+}
+export type TConnectorTokenPayload = {
+  userId: string;
+  iat: number;
+  organization: Array<string>;
+  roles: Array<EConnectorRoles>;
 }
 type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
 
@@ -248,13 +260,89 @@ class APSAuthStrategyService {
     };
   }
 
-  public generateConnectorProxyAuthHeader = (): string => {
+  private generateBearerToken_For_Connector = ({ userId, organizationId, authConfig }:{
+    userId: string;
+    organizationId?: string;
+    authConfig: TAuthConfigInternal;
+  }): string => {
+    const payload: TConnectorTokenPayload = {
+      userId: userId,
+      iat: Date.now(),
+      organization: organizationId ? [organizationId] : [],
+      roles: [EConnectorRoles.PLATFORM_ADMIN, EConnectorRoles.ORG_ADMIN]
+    };
+    const signOptions: jwt.SignOptions = {
+      // seconds
+      expiresIn: 600,
+      issuer: authConfig.connectorAuth.issuer,
+      audience: authConfig.connectorAuth.audience,
+      subject: userId,
+      header: APSAuthStrategyService.jwtHeader,
+      algorithm: 'HS256'
+    };
+    return jwt.sign(payload, authConfig.connectorAuth.secret, signOptions);
+  }
+  private generateBearerToken_For_Connector_For_UserAccount = ({ apsSessionUser }:{
+    apsSessionUser: APSSessionUser;
+  }): string => {
+    const funcName = 'generateBearerToken_For_Connector_For_UserAccount';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    return this.generateBearerToken_For_Connector({ 
+      userId: apsSessionUser.userId,
+      authConfig: authConfig,
+      organizationId: apsSessionUser.lastOrganizationId
+    });
+  }
+
+  private generateBearerToken_For_Connector_For_ServiceAccount = ({ apsServiceAccount }:{
+    apsServiceAccount: APSServiceAccount;
+  }): string => {
+    const funcName = 'generateBearerToken_For_Connector_For_ServiceAccount';
+    const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
+    const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
+    if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    return this.generateBearerToken_For_Connector({ 
+      userId: apsServiceAccount.serviceAccountId,
+      authConfig: authConfig,
+    });
+  }
+
+  public generateConnectorProxyAuthHeader = ({ apsSessionUser, accountType }:{
+    apsSessionUser: APSSessionUser | APSServiceAccount;
+    accountType: TTokenPayload_AccountType;
+  }): string => {
     const funcName = 'getResponseCookieOptions_For_InternalAuth';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+
+    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'apsSessionUser', details: {
+      apsSessionUser: apsSessionUser,
+      accountType: accountType
+    } }));
+    let connectorToken = '';
+    switch(accountType) {
+      case TTokenPayload_AccountType.USER_ACCOUNT:
+        const _apsSessionUser: APSSessionUser = apsSessionUser as APSSessionUser;
+        connectorToken = this.generateBearerToken_For_Connector_For_UserAccount({ apsSessionUser: _apsSessionUser});
+        break;
+      case TTokenPayload_AccountType.SERVICE_ACCOUNT:
+        const _apsServiceAccount: APSServiceAccount = apsSessionUser as APSServiceAccount;
+        connectorToken = this.generateBearerToken_For_Connector_For_ServiceAccount({ apsServiceAccount: _apsServiceAccount });
+        break;
+      default:
+        ServerUtils.assertNever(logName, accountType);
+    }
+    ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'connectorToken', details: {
+      connectorToken: connectorToken,
+    } }));
+
+    return "Bearer " + connectorToken;
+    // for testing, use user based auth
     // generate basic only for now, generate token later
-    return "Basic " + Buffer.from(ServerConfig.getConnectorConfig().connectorClientConfig.serviceUser + ":" + ServerConfig.getConnectorConfig().connectorClientConfig.serviceUserPwd).toString("base64");
+    // return "Basic " + Buffer.from(ServerConfig.getConnectorConfig().connectorClientConfig.serviceUser + ":" + ServerConfig.getConnectorConfig().connectorClientConfig.serviceUserPwd).toString("base64");
   }
 
   private generateBearerToken_For_InternalAuth = ({ id, accountType, expiresInSeconds, secret }:{

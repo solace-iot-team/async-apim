@@ -4,7 +4,7 @@ services:
     container_name: apim-devel-connector-mongodb
     image : mongo:5.0.2
     ports:
-      - 27020:27017
+      - 27021:27017
     volumes:
       - ./docker-volumes/apim-connector-mongodb-data:/data/db
     restart: unless-stopped
