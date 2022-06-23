@@ -24,9 +24,9 @@ services:
       - APP_ID="apim-devel-connector"
       - FILE_USER_REGISTRY=/data/organization_users.json
       - PLATFORM_PORT=3000
-      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.userId"
-      - AUTH_EXTRACTION_ORGS="$$.organization"
-      - AUTH_EXTRACTION_ROLES="$$.roles"
+      - AUTH_EXTRACTION_USER_PRINCIPAL=$$.userId
+      - AUTH_EXTRACTION_ORGS=$$.organization
+      - AUTH_EXTRACTION_ROLES=$$.roles
       - AUTH_VERIFICATION_KEY=/data/secret.txt
       - AUTH_VERIFICATION_ISSUER=apim-server
       - AUTH_VERIFICATION_AUD=platform-api-server

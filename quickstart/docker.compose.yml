@@ -22,17 +22,17 @@ services:
     ports:
       - 5080:80
     restart: unless-stopped
-  qs-async-apim-server-mongodb:
-    container_name: qs-async-apim-server-mongodb
+  qs-async-apim-mongodb:
+    container_name: qs-async-apim-mongodb
     image : mongo:5.0.2
     volumes:
-      - ./docker-volumes/apim-server-mongodb-data:/data/db
+      - ./docker-volumes/apim-mongodb-data:/data/db
     restart: unless-stopped
   qs-async-apim-server:
     container_name: qs-async-apim-server
     links:
       - qs-async-apim-connector
-      - qs-async-apim-server-mongodb
+      - qs-async-apim-mongodb
     image: "solaceiotteam/async-apim-server:latest"
     # image: "solaceiotteam/async-apim-server:alpha-latest"
     # image: "solaceiotteam/async-apim-server:0.1.1"
@@ -45,7 +45,7 @@ services:
       # apim server
       - APIM_SERVER_APP_ID=qs-async-apim-server
       - APIM_SERVER_PORT=3000
-      - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-server-mongodb:27017/?retryWrites=true&w=majority
+      - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-mongodb:27017/?retryWrites=true&w=majority
       - APIM_SERVER_MONGO_DB=solace-apim-server
       - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
         # level: 'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'
@@ -75,17 +75,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
-  # apim connector
-  qs-async-apim-connector-mongodb:
-    container_name: qs-async-apim-connector-mongodb
-    image : mongo:5.0.2
-    volumes:
-      - ./docker-volumes/apim-connector-mongodb-data:/data/db
-    restart: unless-stopped
   qs-async-apim-connector:
     container_name: qs-async-apim-connector
     links:
-      - qs-async-apim-connector-mongodb
+      - qs-async-apim-mongodb
     image: "solaceiotteam/apim-connector-server:latest"
     # image: "solaceiotteam/apim-connector-server:0.3.2"
     ports:
@@ -94,14 +87,14 @@ services:
       - ./docker-volumes/apim-connector:/data
     restart: unless-stopped
     environment:
-      - DB_URL="mongodb://qs-async-apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
+      - DB_URL="mongodb://qs-async-apim-mongodb:27017/platform?retryWrites=true&w=majority"
       - LOG_LEVEL=trace
       - APP_ID=qs-async-apim-connector
       - FILE_USER_REGISTRY=/data/organization_users.json
       - PLATFORM_PORT=3000
-      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.userId"
-      - AUTH_EXTRACTION_ORGS="$$.organization"
-      - AUTH_EXTRACTION_ROLES="$$.roles"
+      - AUTH_EXTRACTION_USER_PRINCIPAL=$$.userId
+      - AUTH_EXTRACTION_ORGS=$$.organization
+      - AUTH_EXTRACTION_ROLES=$$.roles
       - AUTH_VERIFICATION_KEY=/data/secret.txt
       - AUTH_VERIFICATION_ISSUER=apim-server
       - AUTH_VERIFICATION_AUD=platform-api-server
