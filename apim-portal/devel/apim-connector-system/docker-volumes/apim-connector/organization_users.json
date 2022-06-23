@@ -1,9 +1,0 @@
-{
-  "apim-portal-service-admin": {
-    "password": "Solace123!",
-    "roles": [
-      "platform-admin",
-      "org-admin"
-    ]
-  }
-}
