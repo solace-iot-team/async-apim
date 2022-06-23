@@ -67,6 +67,10 @@ services:
         # 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
         # 5 days = 60 * 60 * 24 * 5 = 432000 seconds
       - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS=432000
+        # token auth for connector
+      - APIM_SERVER_CONNECTOR_AUTH_ISSUER=apim-server
+      - APIM_SERVER_CONNECTOR_AUTH_AUDIENCE=platform-api-server
+      - APIM_SERVER_CONNECTOR_AUTH_SECRET=myConnectorAuthJwtSecret
     logging:
       options:
         max-size: "10m"
@@ -95,12 +99,13 @@ services:
       - APP_ID=qs-async-apim-connector
       - FILE_USER_REGISTRY=/data/organization_users.json
       - PLATFORM_PORT=3000
-      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.preferred_username"
+      - AUTH_EXTRACTION_USER_PRINCIPAL="$$.userId"
       - AUTH_EXTRACTION_ORGS="$$.organization"
-      - AUTH_EXTRACTION_ROLES="$$.groups"
-      - AUTH_VERIFICATION_KEY=/data/dummy.pem
-      - AUTH_VERIFICATION_ISSUER="https://dev-1.okta.com/oauth2/default"
-      - AUTH_VERIFICATION_AUD="0oancf26sFegoXz8l5d6"
+      - AUTH_EXTRACTION_ROLES="$$.roles"
+      - AUTH_VERIFICATION_KEY=/data/secret.txt
+      - AUTH_VERIFICATION_ISSUER=apim-server
+      - AUTH_VERIFICATION_AUD=platform-api-server
+      # unused for internal idp
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
     logging:
