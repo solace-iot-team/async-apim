@@ -8,7 +8,7 @@ This guide describes the `Quickstart`_ which is part of the project repo.
 The installation starts all required services using this
 :download:`docker-compose-file <../../../quickstart/docker.compose.yml>`:
 
-:qs-async-apim-www: an nginx service as a single point of entry, see `nginx.conf`_ for exposed services
+:qs-async-apim-www: a nginx service as a single point of entry, see `nginx.conf`_ for exposed services
 :qs-async-apim-admin-portal: the admin and developer portal web server
 :qs-async-apim-server: the portal server
 :qs-async-apim-server-mongodb: the portal database
@@ -17,7 +17,11 @@ The installation starts all required services using this
 
 .. seealso::
 
-  - `Quickstart`_ - quickstart directory in Repo.
+  - `Quickstart`_ - quickstart directory in repo.
+  - `docker.compose.yml`_ - docker compose in repo.
+  - `nginx.conf`_ - nginx config in repo.
+  - `start.sh`_ - shell script to install the system.
+  - :ref:`System configuration details.<system-content-configuration>`
 
 Prerequisites
 +++++++++++++
