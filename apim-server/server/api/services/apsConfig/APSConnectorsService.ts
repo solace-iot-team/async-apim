@@ -350,7 +350,7 @@ export class APSConnectorsService {
     } else {
 
       // switch connectors in OpenApi for proxy
-      const activeApsConnector: APSConnector = ServerConfig.getConnectorConfig()
+      const activeApsConnector: APSConnector | undefined = ServerConfig.getConnectorConfig();
       try {
         const apsConnector: APSConnector = await this.byId(apsConnectorId);
         ServerConfig.setConnectorConfig(apsConnector);

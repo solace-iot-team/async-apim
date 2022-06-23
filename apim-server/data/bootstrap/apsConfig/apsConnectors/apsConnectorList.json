@@ -1,7 +1,7 @@
 [
   {
-    "connectorId": "localDevelApimConnector",
-    "displayName": "Local Devel Connector",
+    "connectorId": "localDevelApimConnectorDocker",
+    "displayName": "Local Devel Connector Docker",
     "description": "uses docker/release",
     "isActive": true,
     "connectorClientConfig": {
