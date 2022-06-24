@@ -71,14 +71,20 @@ class APApiSpecsDisplayService {
     apApiEntityId: TAPEntityId;
     asyncApiSpecString: string;
   }): TAPApiSpecDisplay {
-    const funcName = 'create_ApApiSpecDisplayJson_From_AsyncApiString';
+    const funcName = 'create_ApApiSpecDisplay_From_AsyncApiString';
     const logName = `${this.ComponentName}.${funcName}()`;
     const result: TAPApiSpecDisplay | string = this.create_ApApiSpecDisplayJson_From_AsyncApiString({ 
       apApiEntityId: apApiEntityId,
       asyncApiSpecString: asyncApiSpecString,
       currentFormat: EAPApiSpecFormat.UNKNOWN,
     });
-    if(typeof(result) === 'string') throw new Error(`${logName}: invalid asyncApiSpecString, error=${result}`);
+    if(typeof(result) === 'string') {
+      return {
+        format: EAPApiSpecFormat.UNKNOWN,
+        apEntityId: apApiEntityId,
+        spec: undefined,
+      }
+    }
     return result;
   }
 
@@ -121,6 +127,7 @@ class APApiSpecsDisplayService {
         }
       }
       case EAPApiSpecFormat.UNKNOWN: {
+        if(asyncApiSpecString === '') return 'Unable to parse, contents are empty.';
         try {
           const parsedSpec: any = JSON.parse(asyncApiSpecString);
           const apApiSpecDisplay: TAPApiSpecDisplay = {
