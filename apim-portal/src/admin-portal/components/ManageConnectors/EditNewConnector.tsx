@@ -6,7 +6,6 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { InputNumber } from "primereact/inputnumber";
-import { Password } from "primereact/password";
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { classNames } from 'primereact/utils';
@@ -95,8 +94,8 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
     connectorClientConfig: {
       locationConfig: emptyLocationConfigInternalProxy,
       apiVersion: 'v1',
-      serviceUser: '',
-      serviceUserPwd: ''
+      // serviceUser: 'unused-service-user',
+      // serviceUserPwd: 'unused-service-user-pwd'
     }    
   };
   
@@ -276,8 +275,8 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
     managedObjectUseForm.setValue('managedObject.description', mofd.managedObject.description);
 
     managedObjectUseForm.setValue('managedObject.connectorClientConfig.apiVersion', mofd.managedObject.connectorClientConfig.apiVersion);
-    managedObjectUseForm.setValue('managedObject.connectorClientConfig.serviceUser', mofd.managedObject.connectorClientConfig.serviceUser);
-    managedObjectUseForm.setValue('managedObject.connectorClientConfig.serviceUserPwd', mofd.managedObject.connectorClientConfig.serviceUserPwd);
+    // managedObjectUseForm.setValue('managedObject.connectorClientConfig.serviceUser', mofd.managedObject.connectorClientConfig.serviceUser);
+    // managedObjectUseForm.setValue('managedObject.connectorClientConfig.serviceUserPwd', mofd.managedObject.connectorClientConfig.serviceUserPwd);
 
     managedObjectUseForm.setValue('selectedLocationConfigTypeId', mofd.selectedLocationConfigTypeId);
     managedObjectUseForm.setValue('locationConfigExternal', mofd.locationConfigExternal);
@@ -488,7 +487,7 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.managedObject?.description)}
             </div>
             {/* serviceUser */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="managedObject.connectorClientConfig.serviceUser"
@@ -511,9 +510,9 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
                 <label htmlFor="managedObject.connectorClientConfig.serviceUser" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.serviceUser })}>Service User*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.serviceUser)}
-            </div>
+            </div> */}
             {/* serviceUserPwd */}
-            <div className="p-field">
+            {/* <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   name="managedObject.connectorClientConfig.serviceUserPwd"
@@ -539,7 +538,7 @@ export const EditNewConnector: React.FC<IEditNewConnectorProps> = (props: IEditN
                 <label htmlFor="managedObject.connectorClientConfig.serviceUserPwd" className={classNames({ 'p-error': managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.serviceUserPwd })}>Service User Password*</label>
               </span>
               {displayManagedObjectFormFieldErrorMessage(managedObjectUseForm.formState.errors.managedObject?.connectorClientConfig?.serviceUserPwd)}
-            </div>
+            </div> */}
 
             {/* config Type */}
             <div className="p-field">

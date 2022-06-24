@@ -51,72 +51,8 @@ export class APClientConnectorOpenApi {
     return base;
   }
   
-  public static deleteme_initialize = (config: APSConnectorClientConfig) => {
-    // const funcName: string = `initialize`;
-    // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
-    APClientConnectorOpenApi.config = (JSON.parse(JSON.stringify(config)));
-    OpenAPI.BASE = APClientConnectorOpenApi.constructOpenApiBase(APClientConnectorOpenApi.config);
-    OpenAPI.USERNAME = APClientConnectorOpenApi.config.serviceUser;
-    OpenAPI.PASSWORD = APClientConnectorOpenApi.config.serviceUserPwd;
-    APClientConnectorOpenApi.isInitialized = true;
-    // console.log(`${logName}: OpenAPI = ${JSON.stringify(OpenAPI, null, 2)}`);
-  } 
-
   public static uninitialize = () => {
     APClientConnectorOpenApi.isInitialized = false;
-  }
-
-  // ************ PROXY *******************
-  // public static tmpInitializeAsProxy = async () => {
-  //   const funcName: string = `tmpInitializeAsProxy`;
-  //   const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
-  //   // APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
-  //   if(APClientConnectorOpenApi.isInitialized) {
-  //     APClientConnectorOpenApi.orgSettings = {
-  //       config: JSON.parse(JSON.stringify(APClientConnectorOpenApi.config)),
-  //       isInitialized: true
-  //     }
-  //   }
-  //   const url: string = APSOpenAPI.BASE + '/connectorProxy';
-  //   OpenAPI.BASE = `${url}/${APClientConnectorOpenApi.config.apiVersion}`;
-  //   OpenAPI.USERNAME = undefined;
-  //   OpenAPI.PASSWORD = undefined;
-  //   OpenAPI.WITH_CREDENTIALS = true;
-  //   // OpenAPI.CREDENTIALS = "include";
-  //   OpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
-  //   console.log(`${logName}: ConnectorOpenAPI=${JSON.stringify(OpenAPI, null, 2)}`);
-  // }
-  // public static tmpUninitializeAsProxy = async () => {
-  //   if(APClientConnectorOpenApi.orgSettings) {
-  //     APClientConnectorOpenApi.initialize(APClientConnectorOpenApi.orgSettings.config);
-  //   } else {
-  //     APClientConnectorOpenApi.uninitialize();
-  //   }
-  //   APClientConnectorOpenApi.mutexReleaser();
-  // }
-  // ************ PROXY *******************
-
-  public static deleteme_tmpInitialize = async (tmpConfig: APSConnectorClientConfig) => {
-    // const funcName: string = `tmpInitialize`;
-    // const logName: string = `${APClientConnectorOpenApi.componentName}.${funcName}()`  
-    // APClientConnectorOpenApi.mutexReleaser = await APClientConnectorOpenApi.mutex.acquire();
-    // if(APClientConnectorOpenApi.isInitialized) {
-    //   APClientConnectorOpenApi.orgSettings = {
-    //     config: JSON.parse(JSON.stringify(APClientConnectorOpenApi.config)),
-    //     isInitialized: true
-    //   }
-    // }
-    // APClientConnectorOpenApi.initialize(tmpConfig);
-    // console.log(`${logName}: OpenAPI=${JSON.stringify(OpenAPI, null, 2)}`);
-  }
-
-  public static deleteme_tmpUninitialize = async () => {
-    // if(APClientConnectorOpenApi.orgSettings) {
-    //   APClientConnectorOpenApi.initialize(APClientConnectorOpenApi.orgSettings.config);
-    // } else {
-    //   APClientConnectorOpenApi.uninitialize();
-    // }
-    // APClientConnectorOpenApi.mutexReleaser();
   }
 
   public static getOpenApiInfo = (): APConnectorClientOpenApiInfo => {
