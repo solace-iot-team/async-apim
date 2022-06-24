@@ -9,31 +9,29 @@ import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDis
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
-import { EditNewCredentialsForm } from "./EditNewCredentialsForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
+import { EditInternalCredentialsForm } from "./EditInternalCredentialsForm";
 
-export interface IEditCredentialsProps {
+export interface IEditInternalCredentialsProps {
   organizationId: string;
-  apAdminPortalAppDisplay: TAPAdminPortalAppDisplay;
+  apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCredentialsProps) => {
-  const ComponentName = 'EditCredentials';
+export const EditInternalCredentials: React.FC<IEditInternalCredentialsProps> = (props: IEditInternalCredentialsProps) => {
+  const ComponentName = 'EditInternalCredentials';
 
   type TManagedObject = TAPAppDisplay_Credentials;
 
   const FormId = `ManageApps_ManageAccess_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  // const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
@@ -53,9 +51,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
   }
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalAppsDisplayService.get_ApAppDisplay_Credentials({ 
-      apAppDisplay: props.apAdminPortalAppDisplay 
-    }));
+    setManagedObject(props.apAppDisplay_Credentials);
   }
 
   // * useEffect Hooks *
@@ -111,7 +107,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     return (
       <div className="card p-mt-6">
         <div className="p-fluid">
-          <EditNewCredentialsForm
+          <EditInternalCredentialsForm
             // key={ComponentName + '_EditNewCredentialsForm_' + refreshCounter}
             formId={FormId}
             organizationId={props.organizationId}

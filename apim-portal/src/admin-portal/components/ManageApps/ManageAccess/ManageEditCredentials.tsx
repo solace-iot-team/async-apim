@@ -4,7 +4,7 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 import { TabPanel, TabView } from "primereact/tabview";
 
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
@@ -13,77 +13,39 @@ import APAdminPortalAppsDisplayService, {
 } from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
 import { EditApiProducts } from "./EditApiProducts";
-// import { EditCredentials } from "./EditCredentials";
 import { EditChannelParameters } from "./EditChannelParameters";
 import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { ManageEditCredentials } from "./ManageEditCredentials";
+import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
+import { EditInternalCredentials } from "./EditInternalCredentials";
 
-export interface IManageAccessProps {
+export interface IManageEditCredentialsProps {
   organizationId: string;
-  appEntityId: TAPEntityId;
-  onError: (apiCallState: TApiCallState) => void;
+  apAdminPortalAppDisplay: TAPAdminPortalAppDisplay;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
+  onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  onNavigateToCommand: (appEntityId: TAPEntityId) => void;
 }
 
-export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessProps) => {
-  const ComponentName = 'ManageAccess';
+export const ManageEditCredentials: React.FC<IManageEditCredentialsProps> = (props: IManageEditCredentialsProps) => {
+  const ComponentName = 'ManageEditCredentials';
 
-  type TManagedObject = TAPAdminPortalAppDisplay;
+  type TManagedObject = TAPAppDisplay_Credentials;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
+  // const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [organizationContext] = React.useContext(OrganizationContext);
-
-  const ManagedAccess_onNavigateToCommand = (e: MenuItemCommandParams): void => {
-    props.onNavigateToCommand(props.appEntityId);
-  }
-
-  // * Api Calls *
-  const apiGetManagedObject = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObject';
-    const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP, `retrieve details for app: ${props.appEntityId.displayName}`);
-    try { 
-      const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = await APAdminPortalAppsDisplayService.apiGet_ApAdminPortalAppDisplay({
-        organizationId: props.organizationId,
-        appId: props.appEntityId.id,
-        apOrganizationAppSettings: { apAppCredentialsExpiryDuration_millis: organizationContext.apAppCredentialsExpiryDuration_millis }
-      });
-      setManagedObject(apAdminPortalAppDisplay);
-    } catch(e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
-      callState = ApiCallState.addErrorToApiCallState(e, callState);
-    }
-    setApiCallStatus(callState);
-    return callState;
-  }
 
   const doInitialize = async () => {
-    props.onLoadingChange(true);
-    await apiGetManagedObject();
-    props.onLoadingChange(false);
-  }
-
-  const setBreadCrumbItemList = (moDisplayName: string) => {
-    props.setBreadCrumbItemList([
-      {
-        label: moDisplayName,
-        command: ManagedAccess_onNavigateToCommand
-      },
-      {
-        label: 'Manage Access'
-      }  
-    ]);
+    setManagedObject(APAdminPortalAppsDisplayService.get_ApAppDisplay_Credentials({ 
+      apAppDisplay: props.apAdminPortalAppDisplay 
+    }));
   }
 
   // * useEffect Hooks *
@@ -94,7 +56,6 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
-    setBreadCrumbItemList(managedObject.apEntityId.displayName);
     setRefreshCounter(refreshCounter + 1);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -104,19 +65,8 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onSaveSuccess_ChannelParameters = (apiCallState: TApiCallState) => {
+  const onSaveSuccess = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
-    doInitialize();
-  }
-
-  const onSaveSuccess_ApiProducts = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
-  }
-
-  const onSaveSuccess_Credentials = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
   }
 
   const onError = (apiCallStatus: TApiCallState) => {
@@ -124,20 +74,75 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     props.onError(apiCallStatus);
   }
 
+  const SelectInternalCredentialsId = "SelectInternalCredentialsId";
+  const SelectExternalCredentialsId = "SelectExternalCredentialsId";
+  const SelectCredentialOptions: TAPEntityIdList = [
+    { id: SelectInternalCredentialsId, displayName: 'Internal Credentials' },
+    { id: SelectExternalCredentialsId, displayName: 'External Credentials' },
+  ];
+  const [selectedCredentialsOptionId, setSelectedCredentialsOptionId] = React.useState<string>(SelectInternalCredentialsId);
+
+  const renderSelectCredentialsButton = () => {
+    const onSelectOptionChange = (params: SelectButtonChangeParams) => {
+      if(params.value !== null) {
+        setSelectedCredentialsOptionId(params.value);
+      }
+    }
+    return(
+      <SelectButton
+        value={selectedCredentialsOptionId} 
+        options={SelectCredentialOptions} 
+        optionLabel={APEntityIdsService.nameOf('displayName')}
+        optionValue={APEntityIdsService.nameOf('id')}
+        onChange={onSelectOptionChange} 
+        // style={{ textAlign: 'end' }}
+      />
+    );
+  }
+
+  const renderInternalCredentialsContent = () => {
+    const funcName = 'renderInternalCredentialsContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    return (
+      <div>
+        <EditInternalCredentials
+          key={`${ComponentName}_EditCredentials_${refreshCounter}`}
+          organizationId={props.organizationId}
+          apAppDisplay_Credentials={managedObject}
+          onCancel={props.onCancel}
+          onError={onError}
+          onLoadingChange={props.onLoadingChange}
+          onSaveSuccess={onSaveSuccess}
+        />
+      </div>
+    );
+  }
+
+  const renderExternalCredentialsContent = () => {
+    const funcName = 'renderExternalCredentialsContent';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    return (
+      <div>
+        <p>TODO: {logName} - implement me</p>
+      </div>
+    );
+  }
+
   const renderContent = () => {
     const funcName = 'renderContent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(selectedCredentialsOptionId === undefined) throw new Error(`${logName}: selectedCredentialsOptionId === undefined`);
     return (
       <React.Fragment>
         <div className="p-mt-2">
-          <DisplayAppHeaderInfo
-            key={`${ComponentName}_DisplayAppHeaderInfo_${refreshCounter}`}
-            apAdminPortalAppDisplay={managedObject}
-          />
+          { selectedCredentialsOptionId === SelectInternalCredentialsId && renderInternalCredentialsContent() }
+          { selectedCredentialsOptionId === SelectExternalCredentialsId && renderExternalCredentialsContent() }
         </div>              
 
-        <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
+        {/* <TabView className="p-mt-4" activeIndex={tabActiveIndex} onTabChange={(e) => setTabActiveIndex(e.index)}>
           <TabPanel header='Channel Parameters'>
             <React.Fragment>
               <EditChannelParameters
@@ -166,7 +171,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
           </TabPanel>
           <TabPanel header='Credentials'>
             <React.Fragment>
-              <ManageEditCredentials
+              <EditCredentials
                 key={`${ComponentName}_EditCredentials_${refreshCounter}`}
                 organizationId={props.organizationId}
                 apAdminPortalAppDisplay={managedObject}
@@ -175,18 +180,9 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
                 onLoadingChange={props.onLoadingChange}
                 onSaveSuccess={onSaveSuccess_Credentials}
               />
-              {/* <EditCredentials
-                key={`${ComponentName}_EditCredentials_${refreshCounter}`}
-                organizationId={props.organizationId}
-                apAdminPortalAppDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={onError}
-                onLoadingChange={props.onLoadingChange}
-                onSaveSuccess={onSaveSuccess_Credentials}
-              /> */}
             </React.Fragment>
           </TabPanel>
-        </TabView>
+        </TabView> */}
       </React.Fragment>
     ); 
   }
@@ -194,11 +190,9 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
   return (
     <div className="ap-manage-apps">
 
-      {managedObject && <APComponentHeader header={`Manage Access for App: ${managedObject.apEntityId.displayName}`} /> }
+      { managedObject && renderSelectCredentialsButton() }
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
-
-      { managedObject && renderContent() }
+      { managedObject && selectedCredentialsOptionId && renderContent() }
 
     </div>
   );
