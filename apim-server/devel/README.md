@@ -54,45 +54,6 @@ npm run lint
 - implement a new test in `test`
 - run tests
 
-### MongoDB
-### Start Mongo in Docker Container
-
-````bash
-# start it with an external volume
-vi mongodb/start.mongo.external-volume.sh
-# start it with an internal volume
-vi mongodb/start.mongo.internal-volume.sh
-# check the port number mapped and adjust / align with env for apim-server
-````
-
-````bash
-# start it with an external volume
-./mongodb/start.mongo.external-volume.sh
-# login
-docker exec -it apim-devel-server-mongodb-ext-vols bash
-# docker logs
-docker logs apim-devel-server-mongodb-ext-vols
-
-# or
-
-# start it with an internal volume
-./mongodb/start.mongo.internal-volume.sh
-# login
-docker exec -it apim-devel-server-mongodb-int-vols bash
-# docker logs
-docker logs apim-devel-server-mongodb-int-vols
-````
-
-### Stop Mongo Docker Container
-````bash
-./mongodb/stop.mongo.external-volume.sh
-
-# or
-
-./mongodb/stop.mongo.internal-volume.sh
-````
-
-
 ### Start Devel Server
 ````bash
 npm run dev

@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.3.0
+  version: 0.3.1
 servers:
 - url: /apim-server/v1
 tags:
@@ -2220,20 +2220,20 @@ components:
           $ref: '#/components/schemas/APSLocationConfig'
         apiVersion:
           type: string
-        serviceUser:
-          description: A user who has access to all resources of the connector.
-          type: string
-        serviceUserPwd:
-          description: The password for the serviceUser.
-          type: string
+        # serviceUser:
+        #   description: A user who has access to all resources of the connector.
+        #   type: string
+        # serviceUserPwd:
+        #   description: The password for the serviceUser.
+        #   type: string
         basePath:
           type: string
           description: Base path prepended to connector resource path. Useful when using a proxy.
       required:
       - locationConfig
       - apiVersion
-      - serviceUser
-      - serviceUserPwd
+      # - serviceUser
+      # - serviceUserPwd
     ListApsConnectorsResponse:
       type: object
       allOf:

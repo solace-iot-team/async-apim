@@ -20,7 +20,7 @@ export type TRefreshTokenInternalResponse = {
   lastOrganizationId?: string;
 }
 
-export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password"> & {
+export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password" | "lastOrganizationId"> & {
   // TODO: needs to be a list by organzationId & businessGroupId
   authorizedResourcePathList: Array<string>;
 };
@@ -188,6 +188,7 @@ export class APSSessionService {
       userId: apsUserInternal.userId,
       sessionInfo: apsUserInternal.sessionInfo,
       password: apsUserInternal.password,
+      lastOrganizationId: apsUserInternal.lastOrganizationId,
     };
   }
 
@@ -252,7 +253,12 @@ export class APSSessionService {
       username: username
     }}));
 
-    const apsSessionUser: APSSessionUser = await this.byId_internal({ userId: username });
+    let apsSessionUser: APSSessionUser;
+    try {
+      apsSessionUser = await this.byId_internal({ userId: username });
+    } catch (e) {
+      throw new ApiNotAuthorizedServerError(logName, undefined, { userId: username });
+    }
 
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.AUTHENTICATING_USER, message: 'APSSessionUser', details: {
       apsSessionUser: apsSessionUser

@@ -28,6 +28,9 @@ unset_source_env() {
     unset APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS
     unset APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET
     unset APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS
+    unset APIM_SERVER_CONNECTOR_AUTH_ISSUER
+    unset APIM_SERVER_CONNECTOR_AUTH_AUDIENCE
+    unset APIM_SERVER_CONNECTOR_AUTH_SECRET
 
     # unset this function
     unset -f unset_source_env
@@ -56,6 +59,11 @@ export APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET="myRefreshJwtSecret"
 # 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
 # 5 days = 60 * 60 * 24 * 5 = 432000 seconds
 export APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS="432000"
+# token auth for connector
+export APIM_SERVER_CONNECTOR_AUTH_ISSUER=apim-server
+export APIM_SERVER_CONNECTOR_AUTH_AUDIENCE=platform-api-server
+export APIM_SERVER_CONNECTOR_AUTH_SECRET=myConnectorAuthJwtSecret
+
 #future
 # APIM_SERVER_AUTH_WHITELISTED_DOMAINS = http://localhost:3000
 # oidc auth

@@ -10,7 +10,6 @@ import {
 import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
 import APSServiceAccountsService from '../api/services/apsAdministration/APSServiceAccountsService';
 
-
 export class ConnectorClient {
   private static protocol = 'http';
   private static host = 'localhost';

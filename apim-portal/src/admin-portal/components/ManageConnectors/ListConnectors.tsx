@@ -193,8 +193,8 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
             autoLayout={true}
           >
             <Column header="URL" headerStyle={{ width: '35%' }} field="composedConnectorUrl"  />
-            <Column header="Service User" field="apsConnector.connectorClientConfig.serviceUser" />
-            <Column header="Service User Password" field="apsConnector.connectorClientConfig.serviceUserPwd" />
+            {/* <Column header="Service User" field="apsConnector.connectorClientConfig.serviceUser" />
+            <Column header="Service User Password" field="apsConnector.connectorClientConfig.serviceUserPwd" /> */}
           </DataTable>
         </div>
       );

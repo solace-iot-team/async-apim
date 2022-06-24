@@ -40,8 +40,8 @@ const apsConnectorTemplate: APSConnector = {
       port: 3000  
     },
     apiVersion: 'apiVersion',
-    serviceUser: 'serviceUser',
-    serviceUserPwd: 'serviceUserPwd'
+    // serviceUser: 'serviceUser',
+    // serviceUserPwd: 'serviceUserPwd'
   }
 }
 
@@ -203,8 +203,8 @@ describe(`${scriptName}`, () => {
         displayName: 'replaced',
         description: 'replaced',
         connectorClientConfig: {
-          serviceUser: 'replaced',
-          serviceUserPwd: 'replaced',
+          // serviceUser: 'replaced',
+          // serviceUserPwd: 'replaced',
           apiVersion: 'replaced',
           locationConfig: {
             configType: APSLocationConfigExternal.configType.EXTERNAL,
@@ -312,8 +312,8 @@ describe(`${scriptName}`, () => {
             configType: APSLocationConfigInternalProxy.configType.INTERNAL_PROXY
           },
           apiVersion: 'v1',
-          serviceUser: 'serviceUser',
-          serviceUserPwd: 'servicePassword'
+          // serviceUser: 'serviceUser',
+          // serviceUserPwd: 'servicePassword'
         }
       };
       try {
@@ -336,8 +336,8 @@ describe(`${scriptName}`, () => {
             configType: APSLocationConfigInternalProxy.configType.INTERNAL_PROXY
           },
           apiVersion: 'v1',
-          serviceUser: 'serviceUser',
-          serviceUserPwd: 'servicePassword',
+          // serviceUser: 'serviceUser',
+          // serviceUserPwd: 'servicePassword',
           basePath: 'basePath'
         }
       };
@@ -385,7 +385,7 @@ describe(`${scriptName}`, () => {
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(400);
       expect(res.body, TestLogger.createTestFailMessage('body.errorId')).to.be.an('object').that.has.property('errorId').equal('openApiRequestValidation');
       expect(res.body, TestLogger.createTestFailMessage('body.meta')).to.have.property('meta').to.be.an('object');
-      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(8);
+      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(6);
       expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.description')).contains('description');
       expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.apiUserPwd')).contains('connectorClientConfig');
     });
@@ -409,9 +409,8 @@ describe(`${scriptName}`, () => {
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(400);
       expect(res.body, TestLogger.createTestFailMessage('body.errorId')).to.be.an('object').that.has.property('errorId').equal('openApiRequestValidation');
       expect(res.body, TestLogger.createTestFailMessage('body.meta')).to.have.property('meta').to.be.an('object');
-      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(5);
+      expect(res.body.meta, TestLogger.createTestFailMessage('body.meta.errors length')).to.have.property('errors').to.be.an('array').of.length(3);
       expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.description')).contains('description');
-      expect(JSON.stringify(res.body.meta), TestLogger.createTestFailMessage('body.meta.apiUserPwd')).contains('serviceUserPwd');
     });
 
     xit(`${scriptName}: should return forbidden`, async() => {

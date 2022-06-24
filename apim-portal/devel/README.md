@@ -1,18 +1,5 @@
 # APIM Portal Development
 
-## Standup APIM Connector System
-
-````bash
-apim-connector-system/start.system.sh
-````
-- Check the [docker.compose.yml](./docker.compose.yml) for ports / credentials, etc.
-- [Connector username/password](./apim-connector-system/docker-volumes/apim-connector/organization_users.json).
-
-Stop:
-````bash
-apim-connector-system/stop.system.sh
-````
-
 ## Start Devel Portal
 ````bash
 npm install

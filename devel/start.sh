@@ -6,10 +6,10 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 # Settings
 
   # docker compose
-  apimConnectorSystemProjectName="apim-devel-connector-system"
+  apimSystemProjectName="apim-devel-system"
   dockerComposeFile="$scriptDir/docker.compose.yml"
   # apim connector
-  export APIM_PORTAL_CONNECTOR_CONTAINER_NAME="apim-devel-connector"
+  export APIM_DEVEL_CONNECTOR_CONTAINER_NAME="apim-devel-connector"
 
 ############################################################################################################################
 # Run
@@ -17,19 +17,19 @@ scriptName=$(basename $(test -L "$0" && readlink "$0" || echo "$0"));
 export DOCKER_CLIENT_TIMEOUT=120
 export COMPOSE_HTTP_TIMEOUT=120
 
-echo " >>> Docker-compose down for project: $apimConnectorSystemProjectName ..."
-  docker-compose -p $apimConnectorSystemProjectName -f "$dockerComposeFile" down --volumes --rmi all
-  if [[ $? != 0 ]]; then echo " >>> ERROR: docker compose down for '$apimConnectorSystemProjectName'"; exit 1; fi
+echo " >>> Docker-compose down for project: $apimSystemProjectName ..."
+  docker-compose -p $apimSystemProjectName -f "$dockerComposeFile" down --volumes --rmi all
+  if [[ $? != 0 ]]; then echo " >>> ERROR: docker compose down for '$apimSystemProjectName'"; exit 1; fi
 echo " >>> Success."
 
-echo " >>> Docker-compose up for project: $apimConnectorSystemProjectName ..."
+echo " >>> Docker-compose up for project: $apimSystemProjectName ..."
 
-  docker-compose -p $apimConnectorSystemProjectName -f "$dockerComposeFile" up -d
-  if [[ $? != 0 ]]; then echo " >>> ERROR: docker compose up for '$apimConnectorSystemProjectName'"; exit 1; fi
+  docker-compose -p $apimSystemProjectName -f "$dockerComposeFile" up -d
+  if [[ $? != 0 ]]; then echo " >>> ERROR: docker compose up for '$apimSystemProjectName'"; exit 1; fi
 
   docker ps -a
 
-  containerName="$APIM_PORTAL_CONNECTOR_CONTAINER_NAME"
+  containerName="$APIM_DEVEL_CONNECTOR_CONTAINER_NAME"
   echo "   >>> check: docker logs $containerName ..."
     WORKING_DIR=$scriptDir/tmp; mkdir -p $WORKING_DIR; rm -rf $WORKING_DIR/*;
     dockerLogsFile="$WORKING_DIR/$containerName.docker.logs"

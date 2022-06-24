@@ -22,6 +22,11 @@ export type TAuthConfigInternal = {
   authJwtExpirySecs: number;
   refreshJwtSecret: string;
   refreshJwtExpirySecs: number;
+  connectorAuth: {
+    issuer: string;
+    audience: string;
+    secret: string;
+  }
 }
 export type TAuthConfig = TAuthConfigInternal | TAuthConfigOidc;
 
@@ -55,6 +60,7 @@ export type TMonitorConfig = {
   connectionTestInterval_secs: number;
 }
 export type TServerConfig = {
+  appId: string;
   dataPath?: string;
   expressServer: TExpressServerConfig;
   mongoDB: TMongoDBConfig;
@@ -65,12 +71,12 @@ export type TServerConfig = {
 };
 
 enum EEnvVars {
+  APIM_SERVER_APP_ID = 'APIM_SERVER_APP_ID',
   APIM_SERVER_PORT = 'APIM_SERVER_PORT',
   APIM_SERVER_MONGO_CONNECTION_STRING = 'APIM_SERVER_MONGO_CONNECTION_STRING',
   APIM_SERVER_MONGO_DB = 'APIM_SERVER_MONGO_DB',
   APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION = 'APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION',
   APIM_SERVER_LOGGER_LOG_LEVEL= 'APIM_SERVER_LOGGER_LOG_LEVEL',
-  APIM_SERVER_LOGGER_APP_ID = 'APIM_SERVER_LOGGER_APP_ID',
   APIM_SERVER_REQUEST_SIZE_LIMIT = 'APIM_SERVER_REQUEST_SIZE_LIMIT',
   APIM_SERVER_ROOT_USER = 'APIM_SERVER_ROOT_USER',
   APIM_SERVER_ROOT_USER_PWD = 'APIM_SERVER_ROOT_USER_PWD',
@@ -84,6 +90,9 @@ enum EEnvVars {
   APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS",
   APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET",
   APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS = "APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS",
+  APIM_SERVER_CONNECTOR_AUTH_ISSUER="APIM_SERVER_CONNECTOR_AUTH_ISSUER",
+  APIM_SERVER_CONNECTOR_AUTH_AUDIENCE="APIM_SERVER_CONNECTOR_AUTH_AUDIENCE",
+  APIM_SERVER_CONNECTOR_AUTH_SECRET="APIM_SERVER_CONNECTOR_AUTH_SECRET",
 }
 
 export class ServerConfig {
@@ -154,6 +163,11 @@ export class ServerConfig {
           authJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS),
           refreshJwtSecret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET),
           refreshJwtExpirySecs: this.getMandatoryEnvVarValueAsNumber(EEnvVars.APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS),      
+          connectorAuth: {
+            issuer: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_ISSUER),
+            audience: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_AUDIENCE),
+            secret: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_CONNECTOR_AUTH_SECRET)
+          }
         };
         // validate values
         if(internalAuthConfig.refreshJwtExpirySecs < internalAuthConfig.authJwtExpirySecs) {
@@ -184,6 +198,7 @@ export class ServerConfig {
     const logName = `${ServerConfig.name}.${funcName}()`;
     try {
       this.config = {
+        appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_APP_ID),
         dataPath: this.getOptionalEnvVarValueAsPathWithReadPermissions(EEnvVars.APIM_SERVER_DATA_PATH),
         expressServer: {
           rootDir: path.normalize(__dirname + '/../..'),
@@ -200,7 +215,7 @@ export class ServerConfig {
           serverMongoDatabaseName: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_DB)
         },
         serverLogger: {
-          appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_APP_ID),
+          appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_APP_ID),
           level: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_LOGGER_LOG_LEVEL),
         },
         rootUser: {
@@ -258,14 +273,14 @@ export class ServerConfig {
     return this.config.monitorConfig;
   }
 
-  public setConnectorConfig = (apsConnector: APSConnector) => {
+  public setConnectorConfig = (apsConnector: APSConnector | undefined) => {
     this.config.connectorConfig = apsConnector;
   }
 
-  public getConnectorConfig = (): APSConnector => {
-    const funcName = 'getConnectorConfig';
-    const logName = `${ServerConfig.name}.${funcName}()`;
-    if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
+  public getConnectorConfig = (): APSConnector | undefined => {
+    // const funcName = 'getConnectorConfig';
+    // const logName = `${ServerConfig.name}.${funcName}()`;
+    // if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
     return this.config.connectorConfig;
   }
 

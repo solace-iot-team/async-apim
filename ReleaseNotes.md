@@ -2,6 +2,26 @@
 
 Solace Async API Management.
 
+## Version 0.3.1
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.1
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.1
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.19
+
+**Enhancements:**
+  * **API Products**
+    - enabled editing `queue granularity` to Guaranteed Messaging Options - Connector re-provisions apps on changing setting
+
+**APIM Server:**
+- **Internal IDP**
+  - APIM server functions as an internal IDP (bearer token + refresh token)
+  - APIM Server proxy to Connector API with bearer token
+  - removed connector username + password from config & bootstrap files
+
+**Quickstart:**
+- **Mongo DB**
+  - changed quickstart docker compose to use only 1 mongo db for apim server & connector
+
 ## Version 0.3.0
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.0
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.0
