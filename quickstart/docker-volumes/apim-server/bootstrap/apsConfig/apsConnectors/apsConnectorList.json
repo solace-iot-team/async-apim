@@ -8,9 +8,7 @@
       "locationConfig": {
         "configType": "Internal Proxy"
       },
-      "apiVersion": "v1",
-      "serviceUser": "apim-portal-service-admin",
-      "serviceUserPwd": "Solace123!"
+      "apiVersion": "v1"
     }
   }
 ]
