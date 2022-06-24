@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APIM Server Configuration &mdash; Solace Async API Management r0.0.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/contentui.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer Portal" href="../developer-portal.html" />
+    <link rel="prev" title="System Configuration" href="../system.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Solace Async API Management
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Guides</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../managed-assets.html">Managed Assets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../admin-portal.html">Admin Portal</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../system.html">System Configuration</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">APIM Server Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bootstrapping-data">Bootstrapping Data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#boostrapping-connector-configuration">Boostrapping Connector Configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-portal.html">Developer Portal</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Vendor Integrations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://solace-iot-team.github.io/solace-axway-agent/">Axway Integration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Solace Async API Management</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../system.html">System Configuration</a> &raquo;</li>
+      <li>APIM Server Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/system-content/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="apim-server-configuration">
+<span id="system-content-configuration"></span><h1>APIM Server Configuration<a class="headerlink" href="#apim-server-configuration" title="Permalink to this heading"></a></h1>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading"></a></h2>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">General</span><a class="headerlink" href="#id1" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Environment Variable</p></th>
+<th class="head"><p>Value(s)/Format</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>APIM_SERVER_APP_ID</p></td>
+<td><p>alpha &amp; ‘-’</p></td>
+<td><p>the server app id</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_PORT</p></td>
+<td><p>number</p></td>
+<td><p>the port the http server is listening on</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_MONGO_CONNECTION_STRING</p></td>
+<td><p>mongodb connection string</p></td>
+<td><p>connection string for mongo. example: <cite>mongodb://{hostname}:{port}/?retryWrites=true&amp;w=majority</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION</p></td>
+<td><p>boolean (false|true)</p></td>
+<td><p>whether the responses from server should be validated against it’s open api spec. switch off for production.</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_LOGGER_LOG_LEVEL</p></td>
+<td><p>‘fatal’, ‘error’, ‘warn’, ‘info’, ‘debug’, ‘trace’ or ‘silent’</p></td>
+<td><p>the log level. use warn or info for production.</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_REQUEST_SIZE_LIMIT</p></td>
+<td><p>number + ‘kb’</p></td>
+<td><p>the limit of the request size. example: <cite>100kb</cite></p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_COOKIE_SECRET</p></td>
+<td><p>string</p></td>
+<td><p>the secret for signing browser cookies</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_ROOT_USER</p></td>
+<td><p>string in e-mail format</p></td>
+<td><p>the user name for the root user. example: <cite>root&#64;apim-server.com</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_ROOT_USER_PWD</p></td>
+<td><p>string</p></td>
+<td><p>the password for the root user.</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_DATA_PATH</p></td>
+<td><p>directory</p></td>
+<td><p>the directory for server data. see below.</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_INTERNAL_CONNECTOR_API_URL</p></td>
+<td><p>url</p></td>
+<td><p>APIM Connector API url for <cite>internal</cite> connector configuration. example:<cite>http://{hostname}:{port}/v1</cite></p></td>
+</tr>
+</tbody>
+</table>
+<table class="colwidths-given docutils align-default" id="id2">
+<caption><span class="caption-text">Internal IDP Configuration</span><a class="headerlink" href="#id2" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Environment Variable</p></th>
+<th class="head"><p>Value(s)/Format</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>APIM_SERVER_AUTH_TYPE</p></td>
+<td><p><cite>internal</cite></p></td>
+<td><p>denotes that the APIM Server acts as the IDP</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_AUTH_INTERNAL_JWT_SECRET</p></td>
+<td><p>string</p></td>
+<td><p>the secret for signing the JWT</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS</p></td>
+<td><p>number (JWT expiry in seconds)</p></td>
+<td><p>the JWT expiration in seconds. example: 15 minutes = 60 * 15 = 900 seconds. must be lower than refresh token expiry</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET</p></td>
+<td><p>string</p></td>
+<td><p>the secret for signing the refresh JWT</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS</p></td>
+<td><p>number (refresh JWT expiry in seconds)</p></td>
+<td><p>the refresh JWT expiration in seconds. example: 5 days = 60 * 60 * 24 * 5 = 432000 seconds. must be higher than jwt expiry</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_CONNECTOR_AUTH_ISSUER</p></td>
+<td><p>string</p></td>
+<td><p>the issuer in the generated token for the APIM Connector. Must be the same as in Connector configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p>APIM_SERVER_CONNECTOR_AUTH_AUDIENCE</p></td>
+<td><p>string</p></td>
+<td><p>the audience in the generated token for the APIM Connector. Must be the same as in Connector configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p>APIM_SERVER_CONNECTOR_AUTH_SECRET</p></td>
+<td><p>string</p></td>
+<td><p>the secret for signing the bearer token for the APIM Connector. Must be the same as in Connector configuration.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When signing into the Portal app, the server generates two tokens, the bearer token for the API requests and the refresh token.
+The refresh token is stored as a Cookie on the browser and is used to automatically refresh the bearer token until it is expired.
+The portal refreshes the bearer token for the signed in user every 5 minutes, hence, the bearer token expiry must be greater than 5 mins.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The APIM Server functions as a proxy from the APIM Portal to the APIM Connector.
+It generates the connector api bearer token from information of the signed-in user.</p>
+</div>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-text">OpenID Connect IDP Configuration</span><a class="headerlink" href="#id3" title="Permalink to this table"></a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Environment Variable</p></th>
+<th class="head"><p>Value(s)/Format</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>APIM_SERVER_AUTH_TYPE</p></td>
+<td><p><cite>oidc</cite></p></td>
+<td><p>future support for open id connect idp configuration</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="bootstrapping-data">
+<h2>Bootstrapping Data<a class="headerlink" href="#bootstrapping-data" title="Permalink to this heading"></a></h2>
+<section id="boostrapping-connector-configuration">
+<h3>Boostrapping Connector Configuration<a class="headerlink" href="#boostrapping-connector-configuration" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>TODO, example file</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> - docker compose in repo.</p></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../system.html" class="btn btn-neutral float-left" title="System Configuration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../developer-portal.html" class="btn btn-neutral float-right" title="Developer Portal" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
+      <span class="lastupdated">Last updated on 24 Jun 2022 at 09:18.
+      </span></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

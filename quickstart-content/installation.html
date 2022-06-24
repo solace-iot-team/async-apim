@@ -58,6 +58,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../integration.html">Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../connector.html">The Complete APIM Connector Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../admin-portal.html">Admin Portal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../system.html">System Configuration</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Portal</span></p>
 <ul>
@@ -100,7 +101,7 @@
 <a class="reference download internal" download="" href="../_downloads/0d0360742fdb5854be6f12154f3b2d9c/docker.compose.yml"><code class="xref download docutils literal notranslate"><span class="pre">docker-compose-file</span></code></a>:</p>
 <dl class="field-list simple">
 <dt class="field-odd">qs-async-apim-www</dt>
-<dd class="field-odd"><p>an nginx service as a single point of entry, see <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> for exposed services</p>
+<dd class="field-odd"><p>a nginx service as a single point of entry, see <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> for exposed services</p>
 </dd>
 <dt class="field-even">qs-async-apim-admin-portal</dt>
 <dd class="field-even"><p>the admin and developer portal web server</p>
@@ -121,7 +122,11 @@
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in Repo.</p></li>
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/tree/main/quickstart">Quickstart</a> - quickstart directory in repo.</p></li>
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> - docker compose in repo.</p></li>
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker-volumes/apim-www/nginx.conf">nginx.conf</a> - nginx config in repo.</p></li>
+<li><p><a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/start.sh">start.sh</a> - shell script to install the system.</p></li>
+<li><p><a class="reference internal" href="../system-content/configuration.html#system-content-configuration"><span class="std std-ref">System configuration details.</span></a></p></li>
 </ul>
 </div>
 <section id="prerequisites">
@@ -211,7 +216,7 @@ All other variables are set directly in the <a class="reference external" href="
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 21 Jun 2022 at 09:01.
+      <span class="lastupdated">Last updated on 24 Jun 2022 at 09:18.
       </span></p>
   </div>
 

@@ -11,6 +11,7 @@ Solace Async API Management
   integration
   connector
   admin-portal
+  system
 
 .. toctree::
   :maxdepth: 2
