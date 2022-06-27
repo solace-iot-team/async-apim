@@ -7,12 +7,12 @@ import { Toolbar } from 'primereact/toolbar';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../../displayServices/APAdminPortalAppsDisplayService";
+import APAdminPortalAppsDisplayService from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
+import { EditInternalCredentialsForm } from "./EditInternalCredentialsForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { EditInternalCredentialsForm } from "./EditInternalCredentialsForm";
 
 export interface IEditInternalCredentialsProps {
   organizationId: string;
@@ -38,7 +38,7 @@ export const EditInternalCredentials: React.FC<IEditInternalCredentialsProps> = 
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP, `update app: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalAppsDisplayService.apiUpdate_ApAppDisplay_Credentials({
+      await APAdminPortalAppsDisplayService.apiUpdateInternal_ApAppDisplay_Credentials({
         organizationId: props.organizationId,
         apAppDisplay_Credentials: mo
       });

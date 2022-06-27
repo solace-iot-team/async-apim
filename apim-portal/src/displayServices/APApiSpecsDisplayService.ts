@@ -71,8 +71,8 @@ class APApiSpecsDisplayService {
     apApiEntityId: TAPEntityId;
     asyncApiSpecString: string;
   }): TAPApiSpecDisplay {
-    const funcName = 'create_ApApiSpecDisplay_From_AsyncApiString';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApApiSpecDisplay_From_AsyncApiString';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     const result: TAPApiSpecDisplay | string = this.create_ApApiSpecDisplayJson_From_AsyncApiString({ 
       apApiEntityId: apApiEntityId,
       asyncApiSpecString: asyncApiSpecString,

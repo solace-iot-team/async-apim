@@ -46,7 +46,6 @@ services:
       - APIM_SERVER_APP_ID=qs-async-apim-server
       - APIM_SERVER_PORT=3000
       - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-mongodb:27017/?retryWrites=true&w=majority
-      #- APIM_SERVER_MONGO_DB=solace-apim-server
       - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
         # level: 'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'
       - APIM_SERVER_LOGGER_LOG_LEVEL=debug

@@ -55,6 +55,7 @@ export type TAPOrganizationAppSettings = {
   apAppCredentialsExpiryDuration_millis: number;
 }
 export type TAPAppCredentialsDisplay = {
+  apOrganizationAppSettings: TAPOrganizationAppSettings; /** contains the configured app credentials expiration millis at org level */
   apConsumerKeyExiresIn: number; /** duration in millseconds  */
   expiresAt: number; /** millis since epoch */
   issuedAt: CommonTimestampInteger; /** millis since epoch */
@@ -198,6 +199,7 @@ export class APAppsDisplayService {
       apConsumerKeyExiresIn: apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       devel_calculated_expiresAt: -1,
       devel_connector_app_expires_in: -1,
+      apOrganizationAppSettings: apOrganizationAppSettings,
     }
   }
   protected create_Empty_ApAppDisplay({ apAppMeta, apOrganizationAppSettings }:{
@@ -307,6 +309,7 @@ export class APAppsDisplayService {
       appCredentials.secret.consumerSecret = connectorAppResponse.credentials.secret.consumerSecret;
     }
     if(connectorAppResponse.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse.expiresIn;
+    appCredentials.apOrganizationAppSettings = apOrganizationAppSettings;
     // devel:
     appCredentials.devel_calculated_expiresAt = appCredentials.issuedAt + appCredentials.apConsumerKeyExiresIn;
     appCredentials.devel_connector_app_expires_in = connectorAppResponse.expiresIn ? connectorAppResponse.expiresIn : -1;
@@ -690,23 +693,54 @@ export class APAppsDisplayService {
   }
 
   /**
-   * Re-generate app credentials
+   * external app credentials
    */
-  public async apiUpdate_ApAppDisplay_Credentials({ organizationId, apAppDisplay_Credentials }:{
+   public async apiUpdateExternal_ApAppDisplay_Credentials({ organizationId, apAppDisplay_Credentials }:{
     organizationId: string;
     apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): Promise<void> {
 
-    // update expiresIn in case it is not set
     const update: AppPatch = {
-      expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn,
+      // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn,
+      credentials: {
+        secret: {
+          consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
+          consumerSecret: apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret    
+        }
+      }
+    };
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apAppMeta: apAppDisplay_Credentials.apAppMeta,
+      appId: apAppDisplay_Credentials.apEntityId.id,
+      connectorAppPatch: update
+    });
+
+  }
+  /**
+   * Re-generate app credentials
+   */
+  public async apiUpdateInternal_ApAppDisplay_Credentials({ organizationId, apAppDisplay_Credentials }:{
+    organizationId: string;
+    apAppDisplay_Credentials: TAPAppDisplay_Credentials;
+  }): Promise<void> {
+    // const funcName = 'apiUpdateInternal_ApAppDisplay_Credentials';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // test error handling
+    // throw new Error(`${logName} test upstream error handling`)
+
+    // update expiresIn in case it is not set
+    // use the configured expiry at org level
+    const update: AppPatch = {
+      expiresIn: apAppDisplay_Credentials.apAppCredentials.apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       credentials: {
         secret: {
           consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
           consumerSecret: undefined, // ensures it is re-generated          
         }
       }
-    }
+    };
 
     await this.apiUpdate({
       organizationId: organizationId,

@@ -13,14 +13,13 @@ import APAdminPortalAppsDisplayService, {
 } from "../../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
 import { EditApiProducts } from "./EditApiProducts";
-// import { EditCredentials } from "./EditCredentials";
 import { EditChannelParameters } from "./EditChannelParameters";
 import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { ManageEditCredentials } from "./ManageEditCredentials";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { ManageEditCredentials } from "./ManageEditCredentials";
 
 export interface IManageAccessProps {
   organizationId: string;
@@ -49,7 +48,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
   }
 
   // * Api Calls *
-  const apiGetManagedObject = async(): Promise<TApiCallState> => {
+  const apiGetManagedObject = async(preserveApiCallStatus: boolean): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP, `retrieve details for app: ${props.appEntityId.displayName}`);
@@ -64,13 +63,13 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
     }
-    setApiCallStatus(callState);
+    if(!preserveApiCallStatus) setApiCallStatus(callState);
     return callState;
   }
 
-  const doInitialize = async () => {
+  const doInitialize = async(preserveError: boolean) => {
     props.onLoadingChange(true);
-    await apiGetManagedObject();
+    await apiGetManagedObject(preserveError);
     props.onLoadingChange(false);
   }
 
@@ -89,7 +88,7 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
   // * useEffect Hooks *
 
   React.useEffect(() => {
-    doInitialize();
+    doInitialize(false);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -104,24 +103,26 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  const onSaveSuccess_ChannelParameters = (apiCallState: TApiCallState) => {
+  const onSuccess = (apiCallState: TApiCallState) => {
     props.onSaveSuccess(apiCallState);
-    doInitialize();
+    doInitialize(false);
+  }
+  const onSaveSuccess_ChannelParameters = (apiCallState: TApiCallState) => {
+    onSuccess(apiCallState);
   }
 
   const onSaveSuccess_ApiProducts = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
+    onSuccess(apiCallState);
   }
 
   const onSaveSuccess_Credentials = (apiCallState: TApiCallState) => {
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
+    onSuccess(apiCallState);
   }
 
   const onError = (apiCallStatus: TApiCallState) => {
     setApiCallStatus(apiCallStatus);
     props.onError(apiCallStatus);
+    doInitialize(true);
   }
 
   const renderContent = () => {
@@ -175,15 +176,6 @@ export const ManageAccess: React.FC<IManageAccessProps> = (props: IManageAccessP
                 onLoadingChange={props.onLoadingChange}
                 onSaveSuccess={onSaveSuccess_Credentials}
               />
-              {/* <EditCredentials
-                key={`${ComponentName}_EditCredentials_${refreshCounter}`}
-                organizationId={props.organizationId}
-                apAdminPortalAppDisplay={managedObject}
-                onCancel={props.onCancel}
-                onError={onError}
-                onLoadingChange={props.onLoadingChange}
-                onSaveSuccess={onSaveSuccess_Credentials}
-              /> */}
             </React.Fragment>
           </TabPanel>
         </TabView>

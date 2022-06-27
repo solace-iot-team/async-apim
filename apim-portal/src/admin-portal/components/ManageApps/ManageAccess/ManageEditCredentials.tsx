@@ -1,27 +1,18 @@
 import React from "react";
 
-import { MenuItem, MenuItemCommandParams } from "primereact/api";
-import { TabPanel, TabView } from "primereact/tabview";
+import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
-import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
-import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 import APAdminPortalAppsDisplayService, { 
   TAPAdminPortalAppDisplay 
 } from "../../../displayServices/APAdminPortalAppsDisplayService";
-import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
-import { EditApiProducts } from "./EditApiProducts";
-import { EditChannelParameters } from "./EditChannelParameters";
-import { DisplayAppHeaderInfo } from "../DisplayAppHeaderInfo";
-import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import { EditInternalCredentials } from "./EditInternalCredentials";
+import { EditExternalCredentials } from "./EditExternalCredentials";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
-import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
-import { EditInternalCredentials } from "./EditInternalCredentials";
 
 export interface IManageEditCredentialsProps {
   organizationId: string;
@@ -107,7 +98,7 @@ export const ManageEditCredentials: React.FC<IManageEditCredentialsProps> = (pro
     return (
       <div>
         <EditInternalCredentials
-          key={`${ComponentName}_EditCredentials_${refreshCounter}`}
+          key={`${ComponentName}_EditInternalCredentials_${refreshCounter}`}
           organizationId={props.organizationId}
           apAppDisplay_Credentials={managedObject}
           onCancel={props.onCancel}
@@ -125,7 +116,15 @@ export const ManageEditCredentials: React.FC<IManageEditCredentialsProps> = (pro
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     return (
       <div>
-        <p>TODO: {logName} - implement me</p>
+        <EditExternalCredentials
+          key={`${ComponentName}_EditExternalCredentials_${refreshCounter}`}
+          organizationId={props.organizationId}
+          apAppDisplay_Credentials={managedObject}
+          onCancel={props.onCancel}
+          onError={onError}
+          onLoadingChange={props.onLoadingChange}
+          onSaveSuccess={onSaveSuccess}
+        />
       </div>
     );
   }
