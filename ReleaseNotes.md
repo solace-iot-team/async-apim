@@ -2,6 +2,28 @@
 
 Solace Async API Management.
 
+## Version 0.3.2
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.2
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.2
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.19
+
+**Enhancements:**
+- **Admin Portal: Apps: Manage Access: Credentials**
+  - added option to provide external credentials for app
+
+**Fixes:**
+- **Admin Portal:APIs:Edit / Create API**
+  - catch error when user uploads an empty file
+- **Admin Portal:Manage Apps: Re-generate App Credentials**
+  - fixed bug to use the organization setting for app credential expiry when re-generating app credentials
+
+**Quickstart:**
+- **apim server mongo db name**
+  - removed from configuration, hardcoded to `solace-apim-server`
+
+
+
 ## Version 0.3.1
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.1
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1

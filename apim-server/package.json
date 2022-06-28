@@ -1,6 +1,6 @@
 {
   "name": "@solace-iot-team/apim-server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Async API Management Server",
   "scripts": {
     "start": "node dist/server/index.js",
