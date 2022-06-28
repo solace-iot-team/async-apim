@@ -10,7 +10,7 @@ import { EAction } from "../ManageAppsCommon";
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
 
-export interface IEditNewCredentialsFormProps {
+export interface IEditInternalCredentialsFormProps {
   action: EAction;
   organizationId: string;
   apAppDisplay_Credentials: TAPAppDisplay_Credentials;
@@ -20,7 +20,7 @@ export interface IEditNewCredentialsFormProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditNewCredentialsForm: React.FC<IEditNewCredentialsFormProps> = (props: IEditNewCredentialsFormProps) => {
+export const EditInternalCredentialsForm: React.FC<IEditInternalCredentialsFormProps> = (props: IEditInternalCredentialsFormProps) => {
   // const ComponentName = 'EditNewCredentialsForm';
 
   type TManagedObject = TAPAppDisplay_Credentials;

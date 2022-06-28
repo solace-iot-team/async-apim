@@ -12,8 +12,7 @@ import { UserContext } from "../../../../components/APContextProviders/APUserCon
 import APDeveloperPortalUserAppsDisplayService, { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { EAppType, E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageAppsCommon";
 import { EditGeneral } from "./EditGeneral";
-import { TAPAppDisplay_Credentials, TAPAppDisplay_General } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import { EditCredentials } from "./EditCredentials";
+import { TAPAppDisplay_General } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { DeveloperPortalDisplayAppHeaderInfo } from "../DeveloperPortalDisplayAppHeaderInfo";
 import APDeveloperPortalTeamAppsDisplayService, { TAPDeveloperPortalTeamAppDisplay } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
 import { Globals } from "../../../../utils/Globals";
@@ -130,10 +129,10 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
     doInitialize();
   }
 
-  const onSaveSuccess_Credentials = (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => {
-    props.onSaveSuccess(apiCallState);
-    doInitialize();
-  }
+  // const onSaveSuccess_Credentials = (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => {
+  //   props.onSaveSuccess(apiCallState);
+  //   doInitialize();
+  // }
 
   const onError = (apiCallStatus: TApiCallState) => {
     setApiCallStatus(apiCallStatus);
@@ -172,7 +171,7 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Credentials'>
+          {/* <TabPanel header='Credentials'>
             <React.Fragment>
               <EditCredentials
                 key={`${ComponentName}_EditCredentials_${refreshCounter}`}
@@ -184,7 +183,7 @@ export const ManageEditApp: React.FC<IManageEditAppProps> = (props: IManageEditA
                 onLoadingChange={props.onLoadingChange}
               />
             </React.Fragment>
-          </TabPanel>
+          </TabPanel> */}
         </TabView>
       </React.Fragment>
     ); 

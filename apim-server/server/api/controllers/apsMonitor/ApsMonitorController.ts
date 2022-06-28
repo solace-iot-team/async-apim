@@ -8,9 +8,10 @@ export type ConnectorStatusApiBase_QueryParams = Pick<Components.QueryParameters
 export class ApsMonitorController {
 
   public static status = (_req: Request, res: Response, next: NextFunction): void => {
+    // Cache-Control: no-cache
     APSMonitorService.status()
     .then( (r: APSStatus) => {
-      res.status(200).json(r);
+      res.header("Cache-Control", "no-cache").status(200).json(r);
     })
     .catch( (e) => {
       next(e);

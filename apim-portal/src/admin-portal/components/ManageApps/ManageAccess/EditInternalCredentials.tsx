@@ -5,34 +5,32 @@ import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
-import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
-import { TAPDeveloperPortalTeamAppDisplay } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
-import APAppsDisplayService, { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
-import { EAction, E_CALL_STATE_ACTIONS } from "../DeveloperPortalManageAppsCommon";
+import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { EditNewCredentialsForm } from "./EditNewCredentialsForm";
+import APAdminPortalAppsDisplayService from "../../../displayServices/APAdminPortalAppsDisplayService";
+import { EAction, E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
+import { EditInternalCredentialsForm } from "./EditInternalCredentialsForm";
 
 import '../../../../components/APComponents.css';
-import "../DeveloperPortalManageApps.css";
+import "../ManageApps.css";
 
-export interface IEditCredentialsProps {
+export interface IEditInternalCredentialsProps {
   organizationId: string;
-  apDeveloperPortalAppDisplay: TAPDeveloperPortalUserAppDisplay | TAPDeveloperPortalTeamAppDisplay;
-  onSaveSuccess: (apiCallState: TApiCallState, apAppDisplay_Credentials: TAPAppDisplay_Credentials) => void;
+  apAppDisplay_Credentials: TAPAppDisplay_Credentials;
+  onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCredentialsProps) => {
-  const ComponentName = 'EditCredentials';
+export const EditInternalCredentials: React.FC<IEditInternalCredentialsProps> = (props: IEditInternalCredentialsProps) => {
+  const ComponentName = 'EditInternalCredentials';
 
   type TManagedObject = TAPAppDisplay_Credentials;
 
-  const FormId = `DeveloperPortalManageApps_EditNewUserApp_${ComponentName}`;
+  const FormId = `ManageApps_ManageAccess_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
@@ -40,11 +38,10 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP, `update app: ${mo.apEntityId.displayName}`);
     try {
-      await APAppsDisplayService.apiUpdateInternal_ApAppDisplay_Credentials({
+      await APAdminPortalAppsDisplayService.apiUpdateInternal_ApAppDisplay_Credentials({
         organizationId: props.organizationId,
         apAppDisplay_Credentials: mo
       });
-      setUpdatedManagedObject(mo);
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -54,9 +51,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
   }
 
   const doInitialize = async () => {
-    setManagedObject(APAppsDisplayService.get_ApAppDisplay_Credentials({ 
-      apAppDisplay: props.apDeveloperPortalAppDisplay 
-    }));
+    setManagedObject(props.apAppDisplay_Credentials);
   }
 
   // * useEffect Hooks *
@@ -66,13 +61,13 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${ComponentName}.${funcName}()`;
+    // const funcName = 'useEffect[apiCallStatus]';
+    // const logName = `${ComponentName}.${funcName}()`;
     if (apiCallStatus !== null) {
       if(!apiCallStatus.success) props.onError(apiCallStatus);
       else {
-        if(updatedManagedObject === undefined) throw new Error(`${logName}: updatedManagedObject === undefined`);
-        props.onSaveSuccess(apiCallStatus, updatedManagedObject);
+        // if(updatedManagedObject === undefined) throw new Error(`${logName}: updatedManagedObject === undefined`);
+        props.onSaveSuccess(apiCallStatus);
       }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
@@ -81,6 +76,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     props.onLoadingChange(true);
     await apiUpdateManagedObject(mo);
     props.onLoadingChange(false);
+    // setRefreshCounter(refreshCounter + 1);
   }
 
   const onSubmit = (mo: TManagedObject) => {
@@ -111,7 +107,8 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     return (
       <div className="card p-mt-6">
         <div className="p-fluid">
-          <EditNewCredentialsForm
+          <EditInternalCredentialsForm
+            // key={ComponentName + '_EditNewCredentialsForm_' + refreshCounter}
             formId={FormId}
             organizationId={props.organizationId}
             action={EAction.EDIT}
@@ -129,7 +126,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
 
   
   return (
-    <div className="apd-manage-user-apps">
+    <div className="ap-manage-apps">
 
       { managedObject && renderManagedObjectForm(managedObject) }
 

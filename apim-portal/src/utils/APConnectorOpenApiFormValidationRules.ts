@@ -12,7 +12,8 @@ import {
   $CommonDisplayName,
   $BasicAuthentication,
   $APIKeyAuthentication,
-  $BearerTokenAuthentication
+  $BearerTokenAuthentication,
+  $Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APApiSpecsDisplayService, { EAPApiSpecFormat, TAPApiSpecDisplay } from '../displayServices/APApiSpecsDisplayService';
 import APEntityIdsService from './APEntityIdsService';
@@ -320,6 +321,24 @@ export class APConnectorFormValidationRules {
       required: 'Please provide an Async API Spec.',
       validate: validate
     }
+  }
+  public static ConsumerKey = (): any => {
+    const schema = $Secret.properties.consumerKey;
+    const rules: any = {};
+    rules['required'] = `Enter a consumer key.`;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid key`);
+    return rules;
+  }
+  public static ConsumerSecret = (): any => {
+    const schema = $Secret.properties.consumerSecret;
+    const rules: any = {};
+    rules['required'] = `Enter a consumer secret.`;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid secret`);
+    return rules;
   }
 
 }

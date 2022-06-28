@@ -30,14 +30,12 @@ export const APButtonLoadFileContents: React.FC<IAPButtonLoadFileContentsProps> 
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    const funcName = 'useEffect[apiCallStatus]';
-    const logName = `${componentName}.${funcName}()`;
+    if(fileContents === undefined) return;
     if (apiCallStatus !== null) {
-      if(!apiCallStatus.success) props.onError(apiCallStatus);
-      if(!fileContents) throw new Error(`${logName}: fileContents is undefined`);
-      props.onSuccess(apiCallStatus, fileContents);
+      if(!apiCallStatus.success) return props.onError(apiCallStatus);
+      return props.onSuccess(apiCallStatus, fileContents);
     }
-  }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [apiCallStatus, fileContents]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onBeforeSend = async (event: FileUploadBeforeSendParams) => {
     // const funcName = 'onBeforeSend';

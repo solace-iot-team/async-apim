@@ -7,40 +7,38 @@ import { Toolbar } from 'primereact/toolbar';
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { TAPAppDisplay_Credentials } from "../../../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import APAdminPortalAppsDisplayService, { TAPAdminPortalAppDisplay } from "../../../displayServices/APAdminPortalAppsDisplayService";
-import { EAction, E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
-import { EditNewCredentialsForm } from "./EditNewCredentialsForm";
+import APAdminPortalAppsDisplayService from "../../../displayServices/APAdminPortalAppsDisplayService";
+import { E_CALL_STATE_ACTIONS } from "../ManageAppsCommon";
+import { EditExternalCredentialsForm } from "./EditExternalCredentialsForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
 
-export interface IEditCredentialsProps {
+export interface IEditExternalCredentialsProps {
   organizationId: string;
-  apAdminPortalAppDisplay: TAPAdminPortalAppDisplay;
+  apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCredentialsProps) => {
-  const ComponentName = 'EditCredentials';
+export const EditExternalCredentials: React.FC<IEditExternalCredentialsProps> = (props: IEditExternalCredentialsProps) => {
+  const ComponentName = 'EditExternalCredentials';
 
   type TManagedObject = TAPAppDisplay_Credentials;
 
   const FormId = `ManageApps_ManageAccess_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-  // const [updatedManagedObject, setUpdatedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
 
   const apiUpdateManagedObject = async(mo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiUpdateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_APP, `update app: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalAppsDisplayService.apiUpdate_ApAppDisplay_Credentials({
+      await APAdminPortalAppsDisplayService.apiUpdateExternal_ApAppDisplay_Credentials({
         organizationId: props.organizationId,
         apAppDisplay_Credentials: mo
       });
@@ -53,9 +51,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
   }
 
   const doInitialize = async () => {
-    setManagedObject(APAdminPortalAppsDisplayService.get_ApAppDisplay_Credentials({ 
-      apAppDisplay: props.apAdminPortalAppDisplay 
-    }));
+    setManagedObject(props.apAppDisplay_Credentials);
   }
 
   // * useEffect Hooks *
@@ -98,7 +94,7 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     const managedObjectFormFooterRightToolbarTemplate = () => {
       return (
         <React.Fragment>
-          <Button key={ComponentName+'Generate'} form={FormId} type="submit" label="Re-Generate Consumer Secret" icon="pi pi-refresh" className="p-button-text p-button-plain p-button-outlined" />
+          <Button key={ComponentName+'Save'} form={FormId} type="submit" label="Save" icon="pi pi-save" className="p-button-text p-button-plain p-button-outlined" />
         </React.Fragment>
       );
     }  
@@ -111,11 +107,10 @@ export const EditCredentials: React.FC<IEditCredentialsProps> = (props: IEditCre
     return (
       <div className="card p-mt-6">
         <div className="p-fluid">
-          <EditNewCredentialsForm
+          <EditExternalCredentialsForm
             // key={ComponentName + '_EditNewCredentialsForm_' + refreshCounter}
             formId={FormId}
             organizationId={props.organizationId}
-            action={EAction.EDIT}
             apAppDisplay_Credentials={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}

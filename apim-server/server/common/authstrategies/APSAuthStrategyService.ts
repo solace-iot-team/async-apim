@@ -313,7 +313,7 @@ class APSAuthStrategyService {
     apsSessionUser: APSSessionUser | APSServiceAccount;
     accountType: TTokenPayload_AccountType;
   }): string => {
-    const funcName = 'getResponseCookieOptions_For_InternalAuth';
+    const funcName = 'generateConnectorProxyAuthHeader';
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
@@ -335,9 +335,9 @@ class APSAuthStrategyService {
       default:
         ServerUtils.assertNever(logName, accountType);
     }
-    ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'connectorToken', details: {
-      connectorToken: connectorToken,
-    } }));
+    // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'connectorToken', details: {
+    //   connectorToken: connectorToken,
+    // } }));
 
     return "Bearer " + connectorToken;
     // for testing, use user based auth

@@ -259,8 +259,8 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     }
 
     const render_apAppCredentialsExpiryDuration = (duration: number): string => {
-      if(duration === -1) return 'no expiry';
-      return APDisplayUtils.convertMilliseconds_To_Days(duration).toString();
+      if(duration === -1) return 'no expiry configured';
+      return `${APDisplayUtils.convertMilliseconds_To_Days(duration).toString()} days`;
     }
 
     const jsxTabPanelList: Array<JSX.Element> = [];
@@ -268,7 +268,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
       <TabPanel header='General' key={Globals.getUUID()}>
         <React.Fragment>
           <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRatio(managedObject.apMaxNumApis_Per_ApiProduct)}</p>
-          <p><b>App Credentials Expiration: </b>{render_apAppCredentialsExpiryDuration(managedObject.apAppCredentialsExpiryDuration_millis)} days</p>
+          <p><b>App Credentials Expiration: </b>{render_apAppCredentialsExpiryDuration(managedObject.apAppCredentialsExpiryDuration_millis)}</p>
         </React.Fragment>
         </TabPanel>
     );

@@ -97,6 +97,7 @@ enum EEnvVars {
 
 export class ServerConfig {
   private config: TServerConfig;
+  private static APIM_SERVER_MONGO_DB = "solace-apim-server";
 
   private static DefaultServerLoggerConfig: TServerLoggerConfig = {
     appId: 'apim-server',
@@ -124,6 +125,12 @@ export class ServerConfig {
     return process.env[envVarName];
   }
 
+  private getOptionalEnvVarValueAsStringWithDefault = (envVarName: string, defaultValue: string): string => {
+    const value: string | undefined = process.env[envVarName];
+    if(value === undefined) return defaultValue;
+    return value;    
+  }
+  
   private getOptionalEnvVarValueAsBoolean = (envVarName: string, defaultValue: boolean): boolean => {
     const value: string | undefined = process.env[envVarName];
     if(!value) return defaultValue;
@@ -212,7 +219,11 @@ export class ServerConfig {
         },
         mongoDB: {
           mongoConnectionString: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_CONNECTION_STRING),
-          serverMongoDatabaseName: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_DB)
+          
+          // serverMongoDatabaseName: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_MONGO_DB)
+
+          serverMongoDatabaseName: this.getOptionalEnvVarValueAsStringWithDefault(EEnvVars.APIM_SERVER_MONGO_DB, ServerConfig.APIM_SERVER_MONGO_DB)
+
         },
         serverLogger: {
           appId: this.getMandatoryEnvVarValueAsString(EEnvVars.APIM_SERVER_APP_ID),
