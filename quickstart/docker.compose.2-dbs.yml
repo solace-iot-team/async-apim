@@ -1,0 +1,115 @@
+version: "3.7"
+services:
+  # reverse proxy
+  qs-async-apim-www:
+    container_name: qs-async-apim-www
+    image: nginx:1.21.4-alpine
+    restart: unless-stopped
+    ports:
+      - 5000:80
+    links:
+      - qs-async-apim-admin-portal
+      - qs-async-apim-connector
+      - qs-async-apim-server
+    volumes:
+      - ./docker-volumes/apim-www/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker-volumes/apim-www-logs:/etc/nginx/logs
+  qs-async-apim-admin-portal:
+    container_name: qs-async-apim-admin-portal
+    image : "solaceiotteam/async-apim-admin-portal:latest"
+    # image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
+    # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
+    ports:
+      - 5080:80
+    restart: unless-stopped
+  qs-async-apim-server-mongodb:
+    container_name: qs-async-apim-server-mongodb
+    image : mongo:5.0.2
+    volumes:
+      - ./docker-volumes/apim-server-mongodb-data:/data/db
+    restart: unless-stopped
+  qs-async-apim-server:
+    container_name: qs-async-apim-server
+    links:
+      - qs-async-apim-connector
+      - qs-async-apim-server-mongodb
+    image: "solaceiotteam/async-apim-server:latest"
+    # image: "solaceiotteam/async-apim-server:alpha-latest"
+    # image: "solaceiotteam/async-apim-server:0.1.1"
+    ports:
+      - 5002:3000
+    volumes:
+      - ./docker-volumes/apim-server:/data
+    restart: unless-stopped
+    environment:
+      # apim server
+      - APIM_SERVER_APP_ID=qs-async-apim-server
+      - APIM_SERVER_PORT=3000
+      - APIM_SERVER_MONGO_CONNECTION_STRING=mongodb://qs-async-apim-server-mongodb:27017/?retryWrites=true&w=majority
+      - APIM_SERVER_OPENAPI_ENABLE_RESPONSE_VALIDATION=false
+        # level: 'fatal', 'error', 'warn', 'info', 'debug', 'trace' or 'silent'
+      - APIM_SERVER_LOGGER_LOG_LEVEL=debug
+      - APIM_SERVER_REQUEST_SIZE_LIMIT=100kb
+      - APIM_SERVER_COOKIE_SECRET=myCookieSecret
+      - APIM_SERVER_ROOT_USER=${APIM_SERVER_ROOT_USER}
+      - APIM_SERVER_ROOT_USER_PWD=${APIM_SERVER_ROOT_USER_PWD}
+      - APIM_SERVER_DATA_PATH=/data
+      - APIM_SERVER_INTERNAL_CONNECTOR_API_URL=http://qs-async-apim-connector:3000/v1
+        # Auth
+        # APIM_SERVER_AUTH_TYPE = oidc | internal | none
+      - APIM_SERVER_AUTH_TYPE=internal
+        # internal auth
+      - APIM_SERVER_AUTH_INTERNAL_JWT_SECRET=myAuthJwtSecret
+        # 15 minutes: 60 * 15 = 900 seconds
+      - APIM_SERVER_AUTH_INTERNAL_JWT_EXPIRY_SECS=900
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_SECRET=myRefreshJwtSecret
+        # 30 days = 60 * 60 * 24 * 30 = 2592000 seconds
+        # 5 days = 60 * 60 * 24 * 5 = 432000 seconds
+      - APIM_SERVER_AUTH_INTERNAL_REFRESH_JWT_EXPIRY_SECS=432000
+        # token auth for connector
+      - APIM_SERVER_CONNECTOR_AUTH_ISSUER=apim-server
+      - APIM_SERVER_CONNECTOR_AUTH_AUDIENCE=platform-api-server
+      - APIM_SERVER_CONNECTOR_AUTH_SECRET=myConnectorAuthJwtSecret
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+  # apim connector
+  qs-async-apim-connector-mongodb:
+    container_name: qs-async-apim-connector-mongodb
+    image : mongo:5.0.2
+    volumes:
+      - ./docker-volumes/apim-connector-mongodb-data:/data/db
+    restart: unless-stopped
+  qs-async-apim-connector:
+    container_name: qs-async-apim-connector
+    links:
+      - qs-async-apim-connector-mongodb
+    image: "solaceiotteam/apim-connector-server:latest"
+    # image: "solaceiotteam/apim-connector-server:0.3.2"
+    ports:
+      - 5001:3000
+    volumes:
+      - ./docker-volumes/apim-connector:/data
+    restart: unless-stopped
+    environment:
+      - DB_URL="mongodb://qs-async-apim-connector-mongodb:27017/platform?retryWrites=true&w=majority"
+      - LOG_LEVEL=trace
+      - APP_ID=qs-async-apim-connector
+      - FILE_USER_REGISTRY=/data/organization_users.json
+      - PLATFORM_PORT=3000
+      - AUTH_EXTRACTION_USER_PRINCIPAL=$$.userId
+      - AUTH_EXTRACTION_ORGS=$$.organization
+      - AUTH_EXTRACTION_ROLES=$$.roles
+      - AUTH_VERIFICATION_KEY=/data/secret.txt
+      - AUTH_VERIFICATION_ISSUER=apim-server
+      - AUTH_VERIFICATION_AUD=platform-api-server
+      - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
+      # - APIS_PROXY_MODE=false
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+##
+# The End.
