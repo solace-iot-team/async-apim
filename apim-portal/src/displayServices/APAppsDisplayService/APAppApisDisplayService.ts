@@ -7,10 +7,12 @@ import APEntityIdsService, {
   TAPEntityId 
 } from '../../utils/APEntityIdsService';
 import { IAPApiDisplay } from '../APApisDisplayService';
+import { IAPLifecycleStageInfo } from '../APLifecycleStageInfoDisplayService';
 
 export type TAPAppApiDisplay = IAPEntityIdDisplay & {
   apVersion: string;
   apApiProductEntityId: TAPEntityId;
+  apLifecycleStageInfo: IAPLifecycleStageInfo;
   // apApiChannelParameterList: TAPApiChannelParameterList;
 }
 export type TAPAppApiDisplayList = Array<TAPAppApiDisplay>;
@@ -23,7 +25,7 @@ export class APAppApisDisplayService {
   }
 
   private create_ApAppApiDisplayList_From_ApiEntities = ({ apApp_ApiProductDisplay }:{
-    apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay
+    apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay;
   }): TAPAppApiDisplayList => {
 
     const list: TAPAppApiDisplayList = [];
@@ -32,6 +34,7 @@ export class APAppApisDisplayService {
         apEntityId: apApiDisplay.apEntityId,
         apVersion: apApiDisplay.apVersionInfo.apCurrentVersion,
         apApiProductEntityId: apApp_ApiProductDisplay.apEntityId,
+        apLifecycleStageInfo: apApiDisplay.apLifecycleStageInfo,
       };
       list.push(apAppApiDisplay);
     });
