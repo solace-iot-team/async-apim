@@ -97,7 +97,7 @@ enum EEnvVars {
 
 export class ServerConfig {
   private config: TServerConfig;
-  private static APIM_SERVER_MONGO_DB: string = "solace-apim-server";
+  private static APIM_SERVER_MONGO_DB = "solace-apim-server";
 
   private static DefaultServerLoggerConfig: TServerLoggerConfig = {
     appId: 'apim-server',
