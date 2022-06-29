@@ -62,6 +62,14 @@ class APRbacDisplayService {
     return rbacRole.displayName;
   }
 
+  public get_RoleEntityId(apsRole: EAPSCombinedAuthRole): TAPEntityId {
+    const rbacRole: TAPRbacRole = APRbac.getByRole(apsRole);
+    return {
+      id: rbacRole.id,
+      displayName: rbacRole.displayName,
+    };
+  }
+
   private create_Roles_SelectEntityIdList(rbacRoleList: TAPRbacRoleList): TAPEntityIdList {
     const entityIdList: TAPEntityIdList = rbacRoleList.map( (x) => {
       return {

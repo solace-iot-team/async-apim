@@ -23,6 +23,7 @@ import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStage
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
+// import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -264,8 +265,14 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
                 </div>            
               </div>
             </div>  
-          </React.Fragment>
+            </React.Fragment>
           </TabPanel>
+          {/* <TabPanel header='Documentation'>
+            <APDisplayApiProductDocumentation
+              apApiProductDocumentationDisplay={managedObject.apApiProductDocumentationDisplay}
+              className="p-ml-4"
+            />
+          </TabPanel> */}
           <TabPanel header='API(s)'>
             <React.Fragment>
               <div>

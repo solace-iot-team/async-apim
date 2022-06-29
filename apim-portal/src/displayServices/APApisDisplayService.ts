@@ -29,6 +29,9 @@ import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './AP
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from './APApiSpecsDisplayService';
 import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
+import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
+import { EAPSOrganizationAuthRole } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
+import APRbacDisplayService from './APRbacDisplayService';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {
@@ -603,9 +606,9 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
   }
 
-  private async apiGetFilteredList_ConnectorApiInfo({ organizationId, businessGroupId }:{
+  private async apiGetFilteredList_ConnectorApiInfo({ organizationId, businessGroupIdList }:{
     organizationId: string;
-    businessGroupId?: string;
+    businessGroupIdList: Array<string>;
   }): Promise<APIInfoList> {
     // const funcName = 'apiGetFilteredList_ConnectorApiInfo';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
@@ -618,7 +621,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
 
     // filter by business group id & sharing business group id
     const filteredApiInfoList: APIInfoList = [];
-    if(businessGroupId !== undefined) {
+    if(businessGroupIdList.length > 0) {
       const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
       const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
       for(const apiInfo of completeApiInfoList) {
@@ -629,11 +632,17 @@ class APApisDisplayService extends APManagedAssetDisplayService {
           const sharingAttribute = apiInfo.attributes.find( (x) => {
             return x.name === sharingBusinessGroup_AttributeName;
           });
-          if(
-            (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
-            (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
-          ) {
-            filteredApiInfoList.push(apiInfo);
+          for(const businessGroupId of businessGroupIdList) {
+            if(
+              (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
+              (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
+             ) {
+              // don't add again if already in
+              const found = filteredApiInfoList.find( (x) => {
+                return x.name === apiInfo.name;
+              });
+              if(found === undefined) filteredApiInfoList.push(apiInfo);
+             }
           }
         }
       }
@@ -652,7 +661,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     // get each version
     const masterApiInfoList: APIInfoList = await this.apiGetFilteredList_ConnectorApiInfo({
       organizationId: organizationId,
-      businessGroupId: businessGroupId
+      businessGroupIdList: [businessGroupId]
     });
     if(masterApiInfoList.length === 0) return apApiVersionDisplayList;
 
@@ -696,18 +705,31 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return apApiVersionDisplayList;
   }
 
-  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId }:{
+  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId, apMemberOfBusinessGroupDisplayTreeNodeList=[] }:{
     organizationId: string;
     default_ownerId: string;
     businessGroupId: string;
+    apMemberOfBusinessGroupDisplayTreeNodeList?: TAPMemberOfBusinessGroupDisplayTreeNodeList;
   }): Promise<TAPApiDisplayList> {
     // const funcName = 'apiGetList_ApApiDisplayList';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
+    const businessGroupIdList: Array<string> = [];
+    if(apMemberOfBusinessGroupDisplayTreeNodeList.length > 0) {
+      const _businessGroupIdList: Array<string> = APMemberOfService.getChildrenBusinessGroupIdList_WithRole({
+        businessGroupId: businessGroupId,
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        role: APRbacDisplayService.get_RoleEntityId(EAPSOrganizationAuthRole.API_TEAM)
+      });
+      businessGroupIdList.push(..._businessGroupIdList);
+    } else {
+      businessGroupIdList.push(businessGroupId);
+    }
+
     const apiInfoList: APIInfoList = await this.apiGetFilteredList_ConnectorApiInfo({
       organizationId: organizationId,
-      businessGroupId: businessGroupId
+      businessGroupIdList: businessGroupIdList,
     });
 
     // get the complete business group list for reference

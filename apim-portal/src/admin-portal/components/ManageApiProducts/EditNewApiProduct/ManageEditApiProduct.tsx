@@ -23,6 +23,7 @@ import { EditEnvironments } from "./EditEnvironments";
 import { EditAttributes } from "./EditAttributes";
 import { EditAccessAndState } from "./EditAccessAndState";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+// import { EditDocumentation } from "./EditDocumentation";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -191,6 +192,21 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
         </React.Fragment>
       </TabPanel>  
     );
+    // tabPanels.push(
+    //   <TabPanel header='Documentation'>
+    //     <React.Fragment>
+    //       <EditDocumentation
+    //         key={`${ComponentName}_EditDocumentation_${refreshCounter}`}
+    //         organizationId={props.organizationId}
+    //         apAdminPortalApiProductDisplay={managedObject}
+    //         onError={onError_SubComponent}
+    //         onCancel={props.onCancel}
+    //         onLoadingChange={props.onLoadingChange}
+    //         onSaveSuccess={onEdit_SaveSuccess}
+    //       />
+    //     </React.Fragment>
+    //   </TabPanel>  
+    // );
     tabPanels.push(
       <TabPanel header={ApiTabHeader}>
         <React.Fragment>

@@ -16,10 +16,13 @@ import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
+import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
+import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from '../../displayServices/APUsersDisplayService/APMemberOfService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths } from '../../utils/Globals';
+import { EAPSOrganizationAuthRole } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 
 export type TAPAdminPortalApiProductDisplay_CloningInfo = {
   apOriginalEntityId: TAPEntityId;
@@ -407,30 +410,44 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
   }
 
 
-  public apiGetList_ApAdminPortalApiProductDisplay4ListList = async({ organizationId, businessGroupId, default_ownerId }:{
+  public apiGetList_ApAdminPortalApiProductDisplay4ListList = async({ organizationId, businessGroupId, default_ownerId, apMemberOfBusinessGroupDisplayTreeNodeList=[] }:{
     organizationId: string;
     businessGroupId: string;
     default_ownerId: string;
+    apMemberOfBusinessGroupDisplayTreeNodeList?: TAPMemberOfBusinessGroupDisplayTreeNodeList;
   }): Promise<TAPAdminPortalApiProductDisplay4ListList> => {
     // const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList';
     // const logName = `${this.ComponentName}.${funcName}()`;
+    // alert(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList)}`);
 
+    const businessGroupIdList: Array<string> = [];
+    if(apMemberOfBusinessGroupDisplayTreeNodeList.length > 0) {
+      const _businessGroupIdList: Array<string> = APMemberOfService.getChildrenBusinessGroupIdList_WithRole({
+        businessGroupId: businessGroupId,
+        apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+        role: APRbacDisplayService.get_RoleEntityId(EAPSOrganizationAuthRole.API_TEAM)
+      });
+      businessGroupIdList.push(..._businessGroupIdList);
+    } else {
+      businessGroupIdList.push(businessGroupId);
+    }
+    
     const connectorApiProductList: Array<APIProduct> = await this.apiGetFilteredList_ConnectorApiProduct({
       organizationId: organizationId,
-      businessGroupId: businessGroupId,
+      businessGroupIdList: businessGroupIdList,
       includeAccessLevelList: [
         APIProductAccessLevel.INTERNAL,
         APIProductAccessLevel.PUBLIC
       ],
     });
-    // get the complete env list for reference
-    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-      organizationId: organizationId
-    });
     // get the complete business group list for reference
     const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
       organizationId: organizationId,
       fetchAssetReferences: false
+    });
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
     });
     // get the complete external system list for reference
     const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
@@ -516,8 +533,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     
     const connectorApiProductList: Array<APIProduct> = await this.apiGetFilteredList_ConnectorApiProduct({
       organizationId: organizationId,
-      businessGroupId: businessGroupId
-    })
+      businessGroupIdList: [businessGroupId]
+    });
 
     const list: TAPEntityIdList = connectorApiProductList.map( (x) => {
       return {

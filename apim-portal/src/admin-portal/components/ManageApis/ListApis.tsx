@@ -5,7 +5,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { MenuItem } from "primereact/api";
-import { Divider } from "primereact/divider";
+import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
@@ -36,6 +36,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const ComponentName = 'ListApis';
 
   const MessageNoManagedObjectsFound = 'No APIs defined.';
+  const MessageNoManagedObjectsFoundForFilter = 'No APIs found for filter.';
   const GlobalSearchPlaceholder = 'search ...';
 
   type TManagedObject = IAPApiDisplay;
@@ -50,9 +51,35 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
+  const SelectAllId = "SelectAllId";
+  const SelectBusinessGroupId = "SelectBusinessGroupId";
+  const SelectAllFilterOptions: TAPEntityIdList = [
+    { id: SelectBusinessGroupId, displayName: 'Current Business Group Only' },
+    { id: SelectAllId, displayName: 'Current Business Group & Children' },
+  ];
+  const [selectedFilterOptionId, setSelectedFilterOptionId] = React.useState<string>(SelectBusinessGroupId);
+
+  const getSelectButton = () => {
+    const onSelectFilterOptionChange = (params: SelectButtonChangeParams) => {
+      if(params.value !== null) {
+        setSelectedFilterOptionId(params.value);
+      }
+    }
+    return(
+      <SelectButton
+        value={selectedFilterOptionId} 
+        options={SelectAllFilterOptions} 
+        optionLabel={APEntityIdsService.nameOf('displayName')}
+        optionValue={APEntityIdsService.nameOf('id')}
+        onChange={onSelectFilterOptionChange} 
+        // style={{ textAlign: 'end' }}
+      />
+    );
+  }
+
   // * Api Calls *
-  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetManagedObjectList';
+  const apiGetManagedObjectList_For_BusinessGroup = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObjectList_For_BusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
@@ -69,6 +96,43 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     }
     setApiCallStatus(callState);
     return callState;
+  }
+
+    /**
+   * Current Business Group and all it's children
+   */
+  const apiGetManagedObjectList_For_All = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetManagedObjectList_For_All';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_NAME_LIST, 'retrieve list of APIs');
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
+    if(userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
+    try {
+      const list: TAPApiDisplayList = await APApisDisplayService.apiGetList_ApApiDisplayList({
+        organizationId: props.organizationEntityId.id,
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+        businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList
+      });
+      setManagedObjectList(list);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
+  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
+    if(selectedFilterOptionId === SelectBusinessGroupId) return await apiGetManagedObjectList_For_BusinessGroup();
+    else return await apiGetManagedObjectList_For_All();
+  }
+
+  const reInitialize = async () => {
+    setIsInitialized(false);
+    setIsLoading(true);
+    await apiGetManagedObjectList();
+    setIsLoading(false);
   }
 
   const doInitialize = async () => {
@@ -93,6 +157,11 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     else props.onError(apiCallStatus);
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    reInitialize();
+  }, [selectedFilterOptionId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
@@ -110,7 +179,9 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
-        <div className="table-header-container" />
+        <div className="table-header-container">
+          {getSelectButton()}
+        </div> 
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
           <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
@@ -150,6 +221,10 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     if(mo.apApiProductReferenceEntityIdList.length === 0) return (<>None</>);
     return(<>{mo.apApiProductReferenceEntityIdList.length}</>);
   }
+  const getEmptyMessage = (): string => {
+    if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
+    return MessageNoManagedObjectsFoundForFilter;
+  }
   const renderManagedObjectDataTable = () => {
     const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
     const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
@@ -163,6 +238,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
           ref={dt}
           className="p-datatable-sm"
           autoLayout={true}
+          emptyMessage={getEmptyMessage()}
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
@@ -198,25 +274,30 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     const funcName = 'renderContent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
-
-    if(managedObjectList.length === 0) {
-      return (
-        <React.Fragment>
-          <Divider />
-          {MessageNoManagedObjectsFound}
-          <Divider />
-        </React.Fragment>
-      );
-    }
-    if(managedObjectList.length > 0) {
-      return renderManagedObjectDataTable();
-    } 
+    // if(managedObjectList.length === 0) {
+    //   return (
+    //     <React.Fragment>
+    //       <Divider />
+    //       {MessageNoManagedObjectsFound}
+    //       <Divider />
+    //     </React.Fragment>
+    //   );
+    // }
+    // if(managedObjectList.length > 0) {
+    //   return renderManagedObjectDataTable();
+    // } 
+    return renderManagedObjectDataTable();
   }
 
   const renderBusinessGroupInfo = (): JSX.Element => {
+    const funcName = 'renderBusinessGroupInfo';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
+    let info: string = userContext.runtimeSettings.currentBusinessGroupEntityId.displayName;
+    if(selectedFilterOptionId === SelectAllId) info += ' & children';
     return(
       <div>
-        <span><b>Business Group:</b> {userContext.runtimeSettings.currentBusinessGroupEntityId?.displayName}</span>
+        <span><b>Business Group:</b> {info}</span>
       </div>
     );
   }

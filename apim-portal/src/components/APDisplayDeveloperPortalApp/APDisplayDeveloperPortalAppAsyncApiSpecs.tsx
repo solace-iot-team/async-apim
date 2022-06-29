@@ -103,6 +103,19 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
   const apiBodyTemplate = (row: TAPAppApiDisplay) => {
     return (<div className="p-ml-2">Async API: {row.apEntityId.displayName}</div>)
   }
+  const stateTemplate = (row: TAPAppApiDisplay): string => {
+    return row.apLifecycleStageInfo.stage;
+  }
+  const notesTemplate = (row: TAPAppApiDisplay): JSX.Element => {
+    if(row.apLifecycleStageInfo.notes) {
+      return (
+        <div>
+          { row.apLifecycleStageInfo.notes }
+        </div>
+      );
+    }
+    return (<>-</>);
+  }
   const renderComponent = (): JSX.Element => {
     const rowGroupHeaderTemplate = (row: TAPAppApiDisplay) => {
       return(<span className="p-text-bold">API Product: {row.apApiProductEntityId.displayName}</span>);
@@ -141,6 +154,8 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
       >
         <Column header="API" body={apiBodyTemplate} field={apiField} sortable />
         <Column header="Version" field={versionField} style={{width: '10em', textAlign: 'center'}} />
+        <Column header="State" body={stateTemplate} style={{width: '10em', textAlign: 'left'}}  />
+        <Column header="Notes" body={notesTemplate} />
       </DataTable>
     );
   }

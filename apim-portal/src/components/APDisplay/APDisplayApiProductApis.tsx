@@ -42,6 +42,16 @@ export const APDisplayApiProductApis: React.FC<IAPDisplayApiProductApisProps> = 
   const stateTemplate = (mo: TManagedObject): string => {
     return mo.apLifecycleStageInfo.stage;
   }
+  const notesTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apLifecycleStageInfo.notes) {
+      return (
+        <div>
+          { mo.apLifecycleStageInfo.notes }
+        </div>
+      );
+    }
+    return (<>-</>);
+  }
 
   const rowExpansionTemplateApiChannelParameters = (mo: TManagedObject) => {
     return(
@@ -88,9 +98,10 @@ export const APDisplayApiProductApis: React.FC<IAPDisplayApiProductApisProps> = 
           >
             <Column expander style={{ width: '3em' }} />  
             <Column header="Name" body={nameBodyTemplate} sortField={sortField} sortable />
-            <Column header="Version" body={versionBodyTemplate} />
+            <Column header="Version" body={versionBodyTemplate} style={{width: '10em', textAlign: 'center'}} />
             {/* <Column header="Version" body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} /> */}
-            <Column header="State" body={stateTemplate} />
+            <Column header="State" body={stateTemplate} style={{width: '10em', textAlign: 'left'}}  />
+            <Column header="Notes" body={notesTemplate} />
             {/* <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} /> */}
         </DataTable>
       </div>

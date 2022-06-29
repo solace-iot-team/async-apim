@@ -977,6 +977,70 @@ class APMemberOfService {
     return find_list_ApMemberOfBusinessGroupDisplay_with_Access(apMemberOfBusinessGroupDisplayTreeNodeList);
   }
 
+  /**
+   * 
+   * @returns sub tree node list for business group id
+   */
+  private find_ApMemberOfBusinessGroupDisplayTreeNode({ apMemberOfBusinessGroupDisplayTreeNodeList, businessGroupId }: {
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    businessGroupId: string;
+  }): TAPMemberOfBusinessGroupDisplayTreeNode | undefined {
+
+    const find = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode): TAPMemberOfBusinessGroupDisplayTreeNode | undefined => {
+      if(treeNode.children.length > 0) return find_tree_node(treeNode.children);
+      else return undefined;
+    }
+
+    const find_tree_node = (treeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList): TAPMemberOfBusinessGroupDisplayTreeNode | undefined => {
+      for(const treeNode of treeNodeList) {
+        if(treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id === businessGroupId) {
+          return treeNode;
+        }
+        const found: TAPMemberOfBusinessGroupDisplayTreeNode | undefined = find(treeNode);
+        if(found !== undefined) return found;
+      }
+      return undefined;
+    }
+    return find_tree_node(apMemberOfBusinessGroupDisplayTreeNodeList);
+  } 
+
+  /**
+   * Returns a list of children business group ids (starting with business group id) where calculated roles include role.
+  */
+  public getChildrenBusinessGroupIdList_WithRole({ businessGroupId, apMemberOfBusinessGroupDisplayTreeNodeList, role }:{
+    businessGroupId: string;
+    apMemberOfBusinessGroupDisplayTreeNodeList: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    role: TAPEntityId;
+  }): Array<string> {
+    const funcName = 'getChildrenBusinessGroupIdList_WithRole';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    const businessGroupIdList: Array<string> = [];
+
+    const create_from_tree_node = (treeNode: TAPMemberOfBusinessGroupDisplayTreeNode) => {
+      if(treeNode.apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList !== undefined) {
+        const found = treeNode.apMemberOfBusinessGroupDisplay.apCalculatedBusinessGroupRoleEntityIdList.find( (x) => {
+          return x.id === role.id;
+        });
+        if(found) businessGroupIdList.push(treeNode.apMemberOfBusinessGroupDisplay.apBusinessGroupDisplay.apEntityId.id);  
+      }
+      for(const childTreeNode of treeNode.children) {
+        create_from_tree_node(childTreeNode);
+      }
+    }
+    // find the business group sub-tree in the tree
+    const businessGroupTreeNode: TAPMemberOfBusinessGroupDisplayTreeNode | undefined = this.find_ApMemberOfBusinessGroupDisplayTreeNode({
+      businessGroupId: businessGroupId,
+      apMemberOfBusinessGroupDisplayTreeNodeList: apMemberOfBusinessGroupDisplayTreeNodeList,
+    });
+    if(businessGroupTreeNode === undefined) throw new Error(`${logName}: businessGroupTreeNode === undefined`);
+    // alert(`${logName}: check console `);
+    // console.log(`${logName}: businessGroupTreeNode=${JSON.stringify(businessGroupTreeNode, null, 2)}`);
+    create_from_tree_node(businessGroupTreeNode);
+    // console.log(`${logName}: businessGroupIdList=${JSON.stringify(businessGroupIdList, null, 2)}`);
+    return businessGroupIdList;
+  }
+
   /** Updates existing apMemberOfBusinessGroupDisplayList and returns modified list */
   public update_ApMemberOfBusinessGroupDisplayList({ apMemberOfBusinessGroupDisplayList, businessGroupEntityId, new_apConfiguredBusinessGroupRoleEntityIdList, completeApOrganizationBusinessGroupDisplayList }:{
     apMemberOfBusinessGroupDisplayList: TAPMemberOfBusinessGroupDisplayList;
