@@ -23,10 +23,10 @@ import { EditEnvironments } from "./EditEnvironments";
 import { EditAttributes } from "./EditAttributes";
 import { EditAccessAndState } from "./EditAccessAndState";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+// import { EditDocumentation } from "./EditDocumentation";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditDocumentation } from "./EditDocumentation";
 
 export interface IManageEditApiProductProps {
   organizationId: string;

@@ -23,10 +23,10 @@ import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStage
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
+// import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
-import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
 
 
 export interface IDisplayDeveloperPortalApiProductProps {

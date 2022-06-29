@@ -6,15 +6,14 @@ import { Toolbar } from 'primereact/toolbar';
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
-import { EditNewGeneralForm } from "./EditNewGeneralForm";
 import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPApiProductDisplay_Documentation } from "../../../../displayServices/APApiProductsDisplayService";
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import { EditNewDocumentationForm } from "./EditNewDocumentationForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
-import { EditNewDocumentationForm } from "./EditNewDocumentationForm";
 
 export interface IEditDocumentationProps {
   organizationId: string;
