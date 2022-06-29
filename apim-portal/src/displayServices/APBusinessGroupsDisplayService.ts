@@ -190,7 +190,6 @@ class APBusinessGroupsDisplayService {
     return tnDisplay;
   }
 
-
   private generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay(apBusinessGroupDisplay: TAPBusinessGroupDisplay, referenceApBusinessGroupDisplayList: TAPBusinessGroupDisplayList): TAPBusinessGroupTreeNodeDisplay {
     const funcName = 'generate_ApBusinessGroupTreeNodeDisplay_From_ApBusinessGroupDisplay';
     const logName = `${this.BaseComponentName}.${funcName}()`;

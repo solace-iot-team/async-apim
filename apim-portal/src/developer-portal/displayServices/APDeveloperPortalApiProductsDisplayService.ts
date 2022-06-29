@@ -206,7 +206,7 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
 
     const connectorApiProductList: Array<APIProduct> = await this.apiGetFilteredList_ConnectorApiProduct({
       organizationId: organizationId,
-      businessGroupId: businessGroupId,
+      businessGroupIdList: [businessGroupId],
       includeAccessLevelList: [
         APIProductAccessLevel.INTERNAL,
         APIProductAccessLevel.PUBLIC

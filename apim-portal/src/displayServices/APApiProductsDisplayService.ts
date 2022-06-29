@@ -717,9 +717,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return connectorApiProductList;
   }
   
-  protected apiGetFilteredList_ConnectorApiProduct = async({ organizationId, businessGroupId, includeAccessLevelList, exclude_ApiProductIdList }: {
+  protected apiGetFilteredList_ConnectorApiProduct = async({ organizationId, businessGroupIdList, includeAccessLevelList, exclude_ApiProductIdList }: {
     organizationId: string;
-    businessGroupId?: string;
+    businessGroupIdList: Array<string>;
     includeAccessLevelList?: Array<APIProductAccessLevel>;
     exclude_ApiProductIdList?: Array<string>;
   }): Promise<Array<APIProduct>> => {
@@ -731,7 +731,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     });
 
     const filteredConnectorApiProductList: Array<APIProduct> = [];
-    if(businessGroupId !== undefined) {
+    if(businessGroupIdList.length > 0) {
       const owningBusinessGroup_AttributeName: string = this.get_AttributeName_OwningBusinessGroupId();
       const sharingBusinessGroup_AttributeName: string = this.get_AttributeName_SharingBusinessGroupId();
       for(const connectorApiProduct of completeConnectorApiProductList) {
@@ -754,12 +754,23 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
             const sharingAttribute = connectorApiProduct.attributes.find( (x) => {
               return x.name === sharingBusinessGroup_AttributeName;
             });
-            if(
-              (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
-              (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
-            ) add2List = true;
+            // check if attributes contain any id is the list
+            for(const businessGroupId of businessGroupIdList) {
+              if(
+                (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
+                (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
+              ) {
+                // don't add again if already in
+                const found = filteredConnectorApiProductList.find( (x) => {
+                  return x.name === connectorApiProduct.name;
+                });
+                if(found === undefined) add2List = true;  
+              }
+            }
           }
-          if(add2List) filteredConnectorApiProductList.push(connectorApiProduct);  
+          if(add2List) {
+            filteredConnectorApiProductList.push(connectorApiProduct);  
+          }
         }
       }
     }
