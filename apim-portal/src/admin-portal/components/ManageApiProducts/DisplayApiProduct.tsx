@@ -35,6 +35,7 @@ import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displaySe
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displayServices/APApiSpecsDisplayService";
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
+import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -385,6 +386,14 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
         </div>  
       </TabPanel>
     );
+    // tabPanels.push(
+    //   <TabPanel header='Documentation'>
+    //     <APDisplayApiProductDocumentation
+    //       apApiProductDocumentationDisplay={managedObject.apApiProductDocumentationDisplay}
+    //       className="p-ml-4"
+    //     />
+    //   </TabPanel>
+    // );
     tabPanels.push(
       <TabPanel header={ApiTabHeader}>
         <React.Fragment>

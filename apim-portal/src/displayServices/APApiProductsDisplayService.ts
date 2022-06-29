@@ -49,6 +49,9 @@ export enum EAPApprovalType {
   AUTO = "auto"
 }
 
+export type TAPApiProductDisplay_Documentation = IAPEntityIdDisplay & {
+  apApiProductDocumentationDisplay: TAPApiProductDocumentationDisplay;
+}
 export type TAPApiProductDisplay_General = IAPEntityIdDisplay & {
   apDescription: string;
   apApiProductCategoryDisplayName: string;  
@@ -87,6 +90,10 @@ export type TAPClientOptionsGuaranteedMessagingDisplay = {
 export type TAPClientOptionsDisplay = {
   apGuaranteedMessaging: TAPClientOptionsGuaranteedMessagingDisplay;  
 }
+export type TAPApiProductDocumentationDisplay = {
+  apSupportDocumentation?: string;
+  apReferenceDocumentation?: string;
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // keep for devel purposes only
   devel_connectorApiProduct: APIProduct;
@@ -94,6 +101,9 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // General
   apDescription: string;
   apApiProductCategoryDisplayName: string;
+
+  // Documentation
+  apApiProductDocumentationDisplay: TAPApiProductDocumentationDisplay;
 
   // Policies
   apApprovalType: EAPApprovalType;
@@ -153,6 +163,13 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   //   }
   //   return connectorApiProductList;
   // }
+
+  private create_ApApiProductDocumentation(connectorApiProduct: APIProduct): TAPApiProductDocumentationDisplay {
+    return {
+      apSupportDocumentation: "<h1>Support Documentation</h1><p>the support doc here</p>",
+      apReferenceDocumentation: "<h1>Reference Documentation</h1><p>the reference doc here</p>",
+    };
+  }
 
   private create_ApApprovalType(connectorApprovalType?: APIProduct.approvalType): EAPApprovalType {
     const funcName = 'create_ApApprovalType';
@@ -251,6 +268,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       devel_connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
 
       apDescription: '',
+      apApiProductDocumentationDisplay: {
+        apSupportDocumentation: '',
+        apReferenceDocumentation: ''
+      },
       apApprovalType: this.create_ApApprovalType(),
       apClientOptionsDisplay: this.create_Empty_ApClientOptionsDisplay(),
       apApiDisplayList: [],
@@ -309,6 +330,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       ..._base,
 
       devel_connectorApiProduct: connectorApiProduct,
+
+      apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
 
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
@@ -403,7 +426,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       ..._base,
 
       devel_connectorApiProduct: connectorApiProduct,
-
+      apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
       apDescription: connectorApiProduct.description ? connectorApiProduct.description : '',
@@ -509,12 +532,30 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   */
   public set_ApiProductDisplay_General({ apApiProductDisplay, apApiProductDisplay_General }:{
     apApiProductDisplay: IAPApiProductDisplay;
-    apApiProductDisplay_General: TAPApiProductDisplay_General
+    apApiProductDisplay_General: TAPApiProductDisplay_General;
   }): IAPApiProductDisplay {
     apApiProductDisplay.apDescription = apApiProductDisplay_General.apDescription;
     apApiProductDisplay.apApiProductCategoryDisplayName = apApiProductDisplay_General.apApiProductCategoryDisplayName;
     apApiProductDisplay.apEntityId = apApiProductDisplay_General.apEntityId;
     apApiProductDisplay.apVersionInfo = apApiProductDisplay_General.apVersionInfo;
+    return apApiProductDisplay;
+  }
+
+  public get_ApiProductDisplay_Documentation({ apApiProductDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+  }): TAPApiProductDisplay_Documentation {
+    const apApiProductDisplay_Documentation: TAPApiProductDisplay_Documentation = {
+      apEntityId: apApiProductDisplay.apEntityId,
+      apApiProductDocumentationDisplay: apApiProductDisplay.apApiProductDocumentationDisplay
+    };
+    return apApiProductDisplay_Documentation;
+  }
+
+  public set_ApiProductDisplay_Documentation({ apApiProductDisplay, apApiProductDisplay_Documentation }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_Documentation: TAPApiProductDisplay_Documentation;
+  }): IAPApiProductDisplay {
+    apApiProductDisplay.apApiProductDocumentationDisplay = apApiProductDisplay_Documentation.apApiProductDocumentationDisplay;
     return apApiProductDisplay;
   }
 
@@ -920,6 +961,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'apiUpdate_ApApiProductDisplay';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
+    // alert(`${logName}: implement documentation update`)
 
     apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
 
