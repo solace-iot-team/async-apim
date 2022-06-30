@@ -15,6 +15,7 @@ import {
   TAPAppMeta, 
   TAPOrganizationAppSettings
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { 
@@ -76,6 +77,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     apDeveloperPortalApp_ApiProductDisplayList,
     apAppApiDisplayList,
     apOrganizationAppSettings,
+    complete_ApEnvironmentDisplayList,
   }: {
     teamId: string;
     connectorAppResponse_smf: AppResponse;
@@ -84,6 +86,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): TAPDeveloperPortalTeamAppDisplay {
 
     const apDeveloperPortalAppDisplay: TAPDeveloperPortalAppDisplay = this.create_ApDeveloperPortalAppDisplay_From_ApiEntities({
@@ -93,7 +96,8 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
-      apOrganizationAppSettings: apOrganizationAppSettings
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_ApEnvironmentDisplayList
     });
 
     const apDeveloperPortalTeamAppDisplay: TAPDeveloperPortalTeamAppDisplay = {
@@ -153,6 +157,11 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
     });
     if(!exists_teamId) throw new Error(`${logName}: !exists_teamId`);
 
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
     const connectorAppResponse_smf: AppResponse = await AppsService.getTeamApp({
       organizationName: organizationId,
       teamName: teamId,
@@ -194,6 +203,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
       apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_apEnvironmentDisplayList
     });
 
     return apDeveloperPortalTeamAppDisplay;

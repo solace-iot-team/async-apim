@@ -69,6 +69,7 @@ export abstract class APDeveloperPortalAppsDisplayService extends APAppsDisplayS
     apDeveloperPortalApp_ApiProductDisplayList,
     apAppApiDisplayList,
     apOrganizationAppSettings,
+    complete_ApEnvironmentDisplayList,
   }: {
     ownerId: string;
     connectorAppResponse_smf: AppResponse;
@@ -77,6 +78,7 @@ export abstract class APDeveloperPortalAppsDisplayService extends APAppsDisplayS
     apDeveloperPortalApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): TAPDeveloperPortalAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
@@ -86,7 +88,8 @@ export abstract class APDeveloperPortalAppsDisplayService extends APAppsDisplayS
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apAppApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
-      apOrganizationAppSettings: apOrganizationAppSettings
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_ApEnvironmentDisplayList
     });
 
     return apAppDisplay;
@@ -170,7 +173,8 @@ export abstract class APDeveloperPortalAppsDisplayService extends APAppsDisplayS
         connectorAppResponse_mqtt: undefined,
         apDeveloperPortalApp_ApiProductDisplayList: apDeveloperPortalApp_ApiProductDisplayList,
         apAppApiDisplayList: [],
-        apOrganizationAppSettings: apOrganizationAppSettings
+        apOrganizationAppSettings: apOrganizationAppSettings,
+        complete_ApEnvironmentDisplayList: complete_apEnvironmentDisplayList
       });
 
       const apDeveloperPortalAppListDisplay: IAPDeveloperPortalAppListDisplay = {

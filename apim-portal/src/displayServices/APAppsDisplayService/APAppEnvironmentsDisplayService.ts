@@ -8,6 +8,7 @@ import {
   IAPEntityIdDisplay, 
   TAPEntityId
 } from '../../utils/APEntityIdsService';
+import { TAPEnvironmentDisplay, TAPEnvironmentDisplayList } from '../APEnvironmentsDisplayService';
 
 export enum E_ApEndpoint_Properties {
   SECURE_AND_COMPRESSED = "secure+compressed",
@@ -20,7 +21,8 @@ export type TAPEndpointDisplay = {
   protocol: Protocol;
   transport: string;
   properties: E_ApEndpoint_Properties;
-  uri: string;  
+  uri: string;
+  messageVpnName?: string;
 };
 export type TAPEndpointDisplayList = Array<TAPEndpointDisplay>;
 
@@ -107,8 +109,9 @@ export class APAppEnvironmentsDisplayService {
     return E_ApEndpoint_Properties.PLAIN;
   }
 
-  private create_ApEndpointDisplayList_From_ApiEntities({ endpoints }:{
+  private create_ApEndpointDisplayList_From_ApiEntities({ endpoints, apEnvironmentDisplay }:{
     endpoints?: Array<Endpoint>;
+    apEnvironmentDisplay: TAPEnvironmentDisplay;
   }): TAPEndpointDisplayList {
     const funcName = 'create_ApEndpointDisplayList_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -121,15 +124,17 @@ export class APAppEnvironmentsDisplayService {
         protocol: endpoint.protocol,
         transport: endpoint.transport,
         uri: endpoint.uri,
-        properties: this.create_ApEndpoint_Properties({ secure: endpoint.secure, compressed: endpoint.compressed })
+        properties: this.create_ApEndpoint_Properties({ secure: endpoint.secure, compressed: endpoint.compressed }),
+        messageVpnName: apEnvironmentDisplay.connectorEnvironmentResponse.msgVpnName
       } 
       return apEndpointDisplay;
     });
   }
 
-  public create_ApAppEnvironmentDisplay_From_ApiEntities({ connectorAppEnvironment_smf, connectorAppEnvironment_mqtt }: {
+  public create_ApAppEnvironmentDisplay_From_ApiEntities({ connectorAppEnvironment_smf, connectorAppEnvironment_mqtt, apEnvironmentDisplay }: {
     connectorAppEnvironment_smf: AppEnvironment;
     connectorAppEnvironment_mqtt?: AppEnvironment;
+    apEnvironmentDisplay: TAPEnvironmentDisplay;
   }): IAPAppEnvironmentDisplay {
     const funcName = 'create_ApAppEnvironmentDisplay_From_ApiEntities';
     const logName = `${this.BaseComponentName}.${funcName}()`;
@@ -156,7 +161,7 @@ export class APAppEnvironmentsDisplayService {
     };
     const apAppEnvironmentDisplay: IAPAppEnvironmentDisplay = {
       apEntityId: apEnvironmentEntityId,
-      apEndpointList: this.create_ApEndpointDisplayList_From_ApiEntities({ endpoints: connectorAppEnvironment_smf.messagingProtocols }),
+      apEndpointList: this.create_ApEndpointDisplayList_From_ApiEntities({ endpoints: connectorAppEnvironment_smf.messagingProtocols, apEnvironmentDisplay: apEnvironmentDisplay }),
       apChannelPermissions_smf: {
         apSubscribePermissionList: apSubscribePermissionList_smf,
         apPublishPermissionList: apPublishPermissionList_smf,  
@@ -173,13 +178,22 @@ export class APAppEnvironmentsDisplayService {
 
   }
 
-  public create_ApAppEnvironmentDisplayList_From_ApiEntities({  connectorAppEnvironments_smf, connectorAppEnvironments_mqtt }: {
+  public create_ApAppEnvironmentDisplayList_From_ApiEntities({  connectorAppEnvironments_smf, connectorAppEnvironments_mqtt, complete_ApEnvironmentDisplayList }: {
     connectorAppEnvironments_smf?: Array<AppEnvironment>;
     connectorAppEnvironments_mqtt?: Array<AppEnvironment>;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): TAPAppEnvironmentDisplayList {
+    const funcName = 'create_ApAppEnvironmentDisplayList_From_ApiEntities';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+
     if(connectorAppEnvironments_smf === undefined) return [];
     const apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList = [];
     for(const connectorAppEnvironment_smf of connectorAppEnvironments_smf) {
+      // find the complete environment
+      const apEnvironmentDisplay: TAPEnvironmentDisplay | undefined = complete_ApEnvironmentDisplayList.find( (_apEnvironmentDisplay: TAPEnvironmentDisplay) => {
+        return connectorAppEnvironment_smf.name === _apEnvironmentDisplay.apEntityId.id;
+      });
+      if(apEnvironmentDisplay === undefined) throw new Error(`${logName}: apEnvironmentDisplay === undefined`);
       // find the corresponding mqtt environment
       let connectorAppEnvironment_mqtt: AppEnvironment | undefined = undefined;
       if(connectorAppEnvironments_mqtt !== undefined) {
@@ -190,7 +204,8 @@ export class APAppEnvironmentsDisplayService {
       }
       apAppEnvironmentDisplayList.push(this.create_ApAppEnvironmentDisplay_From_ApiEntities({
         connectorAppEnvironment_smf: connectorAppEnvironment_smf,
-        connectorAppEnvironment_mqtt: connectorAppEnvironment_mqtt
+        connectorAppEnvironment_mqtt: connectorAppEnvironment_mqtt,
+        apEnvironmentDisplay: apEnvironmentDisplay,
       }));
     }
     return apAppEnvironmentDisplayList;

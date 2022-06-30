@@ -28,6 +28,7 @@ import {
   TAPTopicSyntax
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplay, TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APOrganizationUsersDisplayService, { 
   TAPCheckOrganizationUserIdExistsResult, TAPOrganizationUserDisplay, TAPOrganizationUserDisplayList
@@ -170,6 +171,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     apApp_ApiProduct_DisplayList,
     apApp_Api_DisplayList,
     apOrganizationAppSettings,
+    complete_ApEnvironmentDisplayList,
   }: {
     apAppMeta: TAPAppMeta;
     apAdminPortalApp_Status: EAPAdminPortalApp_Status;
@@ -179,6 +181,7 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     apApp_ApiProduct_DisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apApp_Api_DisplayList: TAPAppApiDisplayList;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): TAPAdminPortalAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
@@ -188,7 +191,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       connectorAppResponse_mqtt: connectorAppResponse_mqtt,
       apAppApiProductDisplayList: apApp_ApiProduct_DisplayList,
       apAppApiDisplayList: apApp_Api_DisplayList,
-      apOrganizationAppSettings: apOrganizationAppSettings
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_ApEnvironmentDisplayList
     });
 
     const apAdminPortalAppDisplay: TAPAdminPortalAppDisplay = {
@@ -359,6 +363,11 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
     // TEST upstream error handling
     // throw new Error(`${logName}: test error handling`);
 
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
     const connectorAppResponseGeneric: AppResponseGeneric = await AppsService.getApp({
       organizationName: organizationId,
       appName: appId
@@ -413,7 +422,8 @@ class APAdminPortalAppsDisplayService extends APAppsDisplayService {
       connectorAppConnectionStatus: connectorAppConnectionStatus,
       apApp_ApiProduct_DisplayList: apAppApiProductDisplayList,
       apApp_Api_DisplayList: apAppApiDisplayList,
-      apOrganizationAppSettings: apOrganizationAppSettings
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_apEnvironmentDisplayList
     });
 
     return apAdminPortalAppDisplay;
