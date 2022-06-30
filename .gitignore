@@ -1,3 +1,4 @@
 .devel
 gh-pages
 .DS_Store
+.vscode
