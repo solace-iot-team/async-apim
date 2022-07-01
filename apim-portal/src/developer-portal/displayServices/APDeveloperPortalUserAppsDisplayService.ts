@@ -18,6 +18,7 @@ import {
   TAPAppMeta, 
   TAPOrganizationAppSettings
 } from '../../displayServices/APAppsDisplayService/APAppsDisplayService';
+import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import APDeveloperPortalAppApiProductsDisplayService, { 
@@ -73,6 +74,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     apDeveloperPortalUserApp_ApiProductDisplayList,
     apAppApiDisplayList,
     apOrganizationAppSettings,
+    complete_ApEnvironmentDisplayList,
   }: {
     userId: string;
     connectorAppResponse_smf: AppResponse;
@@ -81,6 +83,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     apDeveloperPortalUserApp_ApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): TAPDeveloperPortalUserAppDisplay {
 
     const apAppDisplay: IAPAppDisplay = this.create_ApAppDisplay_From_ApiEntities({
@@ -91,6 +94,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
       apAppApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
       apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_ApEnvironmentDisplayList,
     });
 
     const apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay = {
@@ -157,6 +161,11 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
     });
     if(!exists_userId) throw new Error(`${logName}: !exists_userId`);
 
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
     const connectorAppResponse_smf: AppResponse = await AppsService.getDeveloperApp({
       organizationName: organizationId,
       developerUsername: userId,
@@ -198,6 +207,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
       apDeveloperPortalUserApp_ApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
       apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_apEnvironmentDisplayList
     });
 
     return apDeveloperPortalUserAppDisplay;

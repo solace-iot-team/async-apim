@@ -42,8 +42,15 @@ export const APDisplayDeveloperPortalAppEndpoints: React.FC<IAPDisplayDeveloperP
   }
 
   const rowGroupHeaderTemplate = (row: TAPEnvironmentEndpointDisplay) => {
+    // let header = row.apEntityId.displayName;
+    // if(row.messageVpnName) header += ` - Message Vpn: ${row.messageVpnName}`;
     return(
-      <span className="p-text-bold">Environment: {row.apEntityId.displayName}</span>
+      <div>
+        <div className="p-text-bold">Environment: {row.apEntityId.displayName}</div>
+        {row.messageVpnName &&
+          <div className="p-ml-2">Message Vpn: {row.messageVpnName}</div>
+        }
+      </div>
     );
   }
 

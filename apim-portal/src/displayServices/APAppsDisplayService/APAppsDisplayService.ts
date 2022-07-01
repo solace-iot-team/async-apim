@@ -324,6 +324,7 @@ export class APAppsDisplayService {
     apAppApiProductDisplayList,
     apAppApiDisplayList,
     apOrganizationAppSettings,
+    complete_ApEnvironmentDisplayList,
   }: {
     connectorAppResponse_smf: AppResponse;
     connectorAppResponse_mqtt?: AppResponse;
@@ -332,6 +333,7 @@ export class APAppsDisplayService {
     apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
     apAppApiDisplayList: TAPAppApiDisplayList;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
+    complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): IAPAppDisplay {
 
     const appCredentials: TAPAppCredentialsDisplay = this.create_ApAppCredentials_From_ApiEntities({ connectorAppResponse: connectorAppResponse_smf, apOrganizationAppSettings: apOrganizationAppSettings });
@@ -368,7 +370,8 @@ export class APAppsDisplayService {
       apAppCredentials: appCredentials,
       apAppEnvironmentDisplayList: APAppEnvironmentsDisplayService.create_ApAppEnvironmentDisplayList_From_ApiEntities({
         connectorAppEnvironments_smf: connectorAppResponse_smf.environments,
-        connectorAppEnvironments_mqtt: connectorAppResponse_mqtt?.environments
+        connectorAppEnvironments_mqtt: connectorAppResponse_mqtt?.environments,
+        complete_ApEnvironmentDisplayList: complete_ApEnvironmentDisplayList,
       }),
       apAppApiProductDisplayList: apAppApiProductDisplayList,
       apAppApiDisplayList: apAppApiDisplayList,
@@ -532,6 +535,11 @@ export class APAppsDisplayService {
       connectorAppResponse: connectorAppResponse_smf,
     });
 
+    // get the complete env list for reference
+    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
+      organizationId: organizationId
+    });
+    
     // // create the app api display list
     // const apAppApiDisplayList: TAPAppApiDisplayList = await APAppApisDisplayService.apiGetList_ApAppApiDisplay({
     //   organizationId: organizationId,
@@ -546,7 +554,8 @@ export class APAppsDisplayService {
       connectorAppResponse_mqtt: undefined,
       apAppApiProductDisplayList: apDeveloperPortalUserApp_ApiProductDisplayList,
       apAppApiDisplayList: [],
-      apOrganizationAppSettings: apOrganizationAppSettings
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      complete_ApEnvironmentDisplayList: complete_apEnvironmentDisplayList
     });
 
     return apAppDisplay;
