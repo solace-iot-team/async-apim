@@ -23,6 +23,7 @@ import {
   APManagedAssetDisplayService, 
   IAPManagedAssetDisplay,
   TAPManagedAssetDisplay_AccessAndState,
+  TAPManagedAssetDisplay_Attributes,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './APVersioningDisplayService';
@@ -978,6 +979,37 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         meta: {
           lastModifiedBy: userId,
           createdBy: userId,
+        }
+      }
+    });
+  }
+
+  public async apiUpdate_ApApiDisplay_Attributes({ organizationId, userId, apApiDisplay, apManagedAssetDisplay_Attributes }:{
+    organizationId: string;
+    userId: string;
+    apApiDisplay: IAPApiDisplay;
+    apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
+  }): Promise<void> {
+    // const funcName = 'apiUpdate_ApApiDisplay_Attributes';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    apApiDisplay = this.set_ApManagedAssetDisplay_Attributes({ 
+      apManagedAssetDisplay: apApiDisplay,
+      apManagedAssetDisplay_Attributes: apManagedAssetDisplay_Attributes
+    }) as IAPApiDisplay;
+    
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiDisplay 
+    });
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiId: apApiDisplay.apEntityId.id,
+      apRawAttributeList: apRawAttributeList,
+      apiInfoUpdate: {
+        deprecated: apApiDisplay.apLifecycleStageInfo.stage === MetaEntityStage.DEPRECATED,
+        meta: {
+          lastModifiedBy: userId
         }
       }
     });
