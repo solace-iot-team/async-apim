@@ -2,6 +2,21 @@
 
 Solace Async API Management.
 
+## Version 0.3.4
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.4
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.2
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.19
+
+**Enhancements:**
+- **App: Connection Endpoints**
+  - added the message vpn. required for smf/s connections.
+
+**Releases:**
+- **APIM Portal:Docker Image**
+  - runs in unprivileged mode
+
+
 ## Version 0.3.3
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.3
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
