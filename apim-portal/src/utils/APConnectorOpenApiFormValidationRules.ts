@@ -15,8 +15,6 @@ import {
   $BearerTokenAuthentication,
   $Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APApiSpecsDisplayService, { EAPApiSpecFormat, TAPApiSpecDisplay } from '../displayServices/APApiSpecsDisplayService';
-import APEntityIdsService from './APEntityIdsService';
 
 export class APConnectorFormValidationRules {
 
@@ -298,29 +296,6 @@ export class APConnectorFormValidationRules {
     rules['required'] = `Enter a valid semantic version number.`;
     rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Use format {major}.{minor}.{patch}.`, false);
     return rules;
-  }
-  public static AsyncApiSpec = (): any => {
-// example: https://www.carlrippon.com/custom-validation-rules-in-react-hook-form/
-// https://react-hook-form.com/api/useform/register
-// could be async ==> call a server api to validate spec properly
-    const validate = (specStr: string): string | boolean => {
-      // alert(`spec=\n${specStr}`);
-      const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
-        apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
-        asyncApiSpecString: specStr,
-        currentFormat: EAPApiSpecFormat.UNKNOWN
-      });
-      // if(typeof(result) === 'string') alert(`result is string = ${result}`);
-      // else alert(`result is not string = ${JSON.stringify(result, null, 2)}`);
-      // return 'never validates until problem fixed';
-      if(typeof(result) === 'string') return result;
-      return true;
-    }
-
-    return {
-      required: 'Please provide an Async API Spec.',
-      validate: validate
-    }
   }
   public static ConsumerKey = (): any => {
     const schema = $Secret.properties.consumerKey;
