@@ -28,6 +28,10 @@ services:
     volumes:
       - ./docker-volumes/apim-server-mongodb-data:/data/db
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   qs-async-apim-server:
     container_name: qs-async-apim-server
     links:
@@ -81,6 +85,10 @@ services:
     volumes:
       - ./docker-volumes/apim-connector-mongodb-data:/data/db
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"    
   qs-async-apim-connector:
     container_name: qs-async-apim-connector
     links:
