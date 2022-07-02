@@ -123,7 +123,7 @@ class APApiSpecsDisplayService {
 
     try {
       const asyncApiDocument: any = await AsyncApiSpecParser.parse(asyncApiSpecString);
-      console.log(`${logName}: asyncApiDocument=\n${JSON.stringify(asyncApiDocument, null, 2)}`);
+      // console.log(`${logName}: asyncApiDocument=\n${JSON.stringify(asyncApiDocument, null, 2)}`);
       // get the complete spec
       // note: this is a hack, _json property not documented and could change
       if(asyncApiDocument["_json"] === undefined) return(`${logName}: asyncApiDocument["_json"] === undefined`);
@@ -134,7 +134,8 @@ class APApiSpecsDisplayService {
       };
       return apApiSpecDisplay;
     } catch(e: any) {
-      return `${e.title} Errors: ${JSON.stringify(e.validationErrors)}`;
+      const errors = e.validationErrors ? `, Errors: ${JSON.stringify(e.validationErrors)}` : '';
+      return `${e.title}${errors}`;
     }
   }
 
