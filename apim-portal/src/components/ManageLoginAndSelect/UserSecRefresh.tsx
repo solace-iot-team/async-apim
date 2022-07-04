@@ -23,10 +23,9 @@ export interface UserSecRefreshProps {
 export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefreshProps) => {
   const ComponentName = 'UserSecRefresh';
 
-  // const VerifyUserInterval_ms: number = 300000; // every 5 minutes
-  // const VerifyUserInterval_ms: number = 60000; // every minute
-  const VerifyUserInterval_ms: number = 30000; // every 30 seconds
-  // const VerifyUserInterval_ms: number = 10000; // every 10 seconds
+  const VerifyUserInterval_ms: number = 300000; // every 5 minutes
+  // const VerifyUserInterval_ms: number = 5000; // every 5 seconds
+  // const VerifyUserInterval_ms: number = 1000; // every 1 seconds (test health + refresh at same time)
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
@@ -83,7 +82,8 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
     const funcName = 'apiVerifyUser';
     const logName = `${ComponentName}.${funcName}()`;
     console.log(`${logName}: starting ...`);
-    try { 
+    try {
+      await APSClientOpenApi.lockToken4Refresh();
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await APLoginUsersDisplayService.apsSecRefreshToken();
       // alert(`${logName}: apsSessionRefreshTokenResponse=${JSON.stringify(apsSessionRefreshTokenResponse, null, 2)}`);
       if(apsSessionRefreshTokenResponse.success) {
@@ -108,6 +108,8 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
       setRunInterval(false);
       dispatchSessionContextAction({ type: 'CLEAR_SESSION_CONTEXT' });
       dispatchAuthContextAction({ type: 'CLEAR_AUTH_CONTEXT'});
+    } finally {
+      await APSClientOpenApi.unlockToken4Refresh();
     }
   }
 
