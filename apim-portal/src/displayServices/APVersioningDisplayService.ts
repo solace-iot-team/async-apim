@@ -228,6 +228,8 @@ class APVersioningDisplayService {
     const funcName = 'create_SemVerString';
     const logName = `${this.ComponentName}.${funcName}()`;
     try {
+      // tolerance for OLD apis: version='default'
+      if(versionString === 'default') versionString = '1.1.1';
       // semVer?
       const semVer: SemVer | null = SemVerCoerce(versionString, {
         loose: true

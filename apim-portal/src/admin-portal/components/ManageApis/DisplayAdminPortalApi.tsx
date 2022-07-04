@@ -399,6 +399,27 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         </div>  
       </TabPanel>
     );
+    tabPanels.push(
+      <TabPanel header='Attributes'>
+        <React.Fragment>
+          <div className="p-text-bold">General Attributes:</div>
+          <APDisplayApAttributeDisplayList
+            apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
+            tableRowHeader_AttributeName="Attribute"
+            tableRowHeader_AttributeValue="Value"  
+            emptyMessage="No attributes defined"
+            className="p-ml-4"
+          />
+          {Config.getUseDevelTools() &&
+            <React.Fragment>
+              <Divider />
+              <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
+              {renderDevelAttributeList(managedObject)}
+            </React.Fragment>
+          }
+        </React.Fragment>
+      </TabPanel>
+    );  
     if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING || props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN) {
       tabPanels.push(
         <TabPanel header='Referenced By'>
@@ -414,29 +435,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
         </TabPanel>
       );  
     } 
-    if(Config.getUseDevelTools()) {
-      tabPanels.push(
-        <TabPanel header='Attributes'>
-          <React.Fragment>
-            <div className="p-text-bold">General Attributes:</div>
-            <APDisplayApAttributeDisplayList
-              apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
-              tableRowHeader_AttributeName="Attribute"
-              tableRowHeader_AttributeValue="Value"  
-              emptyMessage="No attributes defined"
-              className="p-ml-4"
-            />
-            {Config.getUseDevelTools() &&
-              <React.Fragment>
-                <Divider />
-                <div className="p-text-bold">DEVEL: All Attributes for cross checking:</div>
-                {renderDevelAttributeList(managedObject)}
-              </React.Fragment>
-            }
-          </React.Fragment>
-        </TabPanel>
-      );  
-    }
     return tabPanels;
   }
 

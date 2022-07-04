@@ -157,6 +157,8 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
     // const funcName = 'doSetupOrganization';
     // const logName = `${ComponentName}.${funcName}()`;
     setIsLoading(true);
+    // navigate home first - don't want current page to referesh - token is not valid any more
+    navigateToCurrentHome();
     await APContextsDisplayService.setup_LoginContexts({
       apLoginUserDisplay: userContext.apLoginUserDisplay,
       apSessionContext: sessionContext,

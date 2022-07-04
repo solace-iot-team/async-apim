@@ -2,6 +2,22 @@
 
 Solace Async API Management.
 
+## Version 0.3.5
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.5
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.2
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.7.19
+
+**Enhancements:**
+- **Admin Portal:APIs**
+  - added management of custom attributes
+  - async api spec with url references is converted to self-contained spec (provided all urls are accessible, otherwise error is displayed)
+
+**Fixes:**
+- **Switch Organization**
+  - fixed exception when changing organization when on page which makes API calls (switches to current home before org change)
+
+
 ## Version 0.3.4
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.4
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1

@@ -5,6 +5,7 @@ import {
 import { 
   OpenAPI as ConnectorOpenAPI, 
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { Mutex } from "async-mutex";
 
 export type APSClientOpenApiInfo = {
   base: string,
@@ -20,6 +21,8 @@ export class APSClientOpenApi {
   private static isInitialized: boolean = false;
   private static config: TAPSClientOpenApiConfig;
   private static token: string;
+  private static tokenMutex: Mutex = new Mutex();
+  private static isTokenRefreshing: boolean = false;
 
   public static initialize = (config: TAPSClientOpenApiConfig) => {
     const configStr = JSON.stringify(config);
@@ -32,8 +35,36 @@ export class APSClientOpenApi {
   public static setToken = (token: string | undefined) => {
     APSClientOpenApi.token = token !== undefined ? token : '***';
   }
-
-  private static getToken = (): string => { return APSClientOpenApi.token; }
+  public static lockToken4Refresh = async() => {
+    // const funcName = 'lockToken4Refresh';
+    // const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    // console.log(`${logName}: starting: this.collectionMutex.isLocked()=${APSClientOpenApi.tokenMutex.isLocked()}`);
+    APSClientOpenApi.isTokenRefreshing = true;
+    await APSClientOpenApi.tokenMutex.acquire();
+  }
+  public static unlockToken4Refresh = async() => {
+    APSClientOpenApi.isTokenRefreshing = false;
+    APSClientOpenApi.tokenMutex.release();
+  }
+  private static wait4TokenUnlock = async() => {
+    // const funcName = 'wait4TokenUnlock';
+    // const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    // console.log(`${logName}: starting: this.collectionMutex.isLocked()=${APSClientOpenApi.tokenMutex.isLocked()}`);
+    if(!APSClientOpenApi.isTokenRefreshing) {
+      // console.log(`${logName}: APSClientOpenApi.isTokenRefreshing=${APSClientOpenApi.isTokenRefreshing}`);
+      // alert(`${logName}: is this case working?`)
+      const releaser = await APSClientOpenApi.tokenMutex.acquire();
+      releaser();  
+    }
+    // console.log(`${logName}: done.`);
+  }
+  private static getToken = async(): Promise<string> => {
+    // const funcName = 'getToken';
+    // const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    // console.log(`${logName}: check token mutex`);
+    await APSClientOpenApi.wait4TokenUnlock();
+    return APSClientOpenApi.token;
+  }
 
   public static set = (): void => {
     const funcName = 'set';
@@ -45,14 +76,14 @@ export class APSClientOpenApi {
     }
     APSOpenAPI.WITH_CREDENTIALS = true;
     APSOpenAPI.CREDENTIALS = "include";
-    APSOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
+    APSOpenAPI.TOKEN = async() => { return await APSClientOpenApi.getToken(); }
     // ConnectorOpenApi
     ConnectorOpenAPI.BASE = APSOpenAPI.BASE + '/connectorProxy' + ConnectorOpenAPI.BASE;
     ConnectorOpenAPI.USERNAME = undefined;
     ConnectorOpenAPI.PASSWORD = undefined;
     ConnectorOpenAPI.WITH_CREDENTIALS = true;
     // ConnectorOpenAPI.CREDENTIALS = "include";
-    ConnectorOpenAPI.TOKEN = async() => { return APSClientOpenApi.getToken(); }
+    ConnectorOpenAPI.TOKEN = async() => { return await APSClientOpenApi.getToken(); }
 
     console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
     console.log(`${logName}: ConnectorOpenAPI = ${JSON.stringify(ConnectorOpenAPI, null, 2)}`);

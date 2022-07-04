@@ -32,6 +32,10 @@ export class Constants {
       {
         sources: `${this._assetDir}/nginx.conf`,
         targetDir: `${this._contextDir}`
+      },
+      {
+        sources: `${this._assetDir}/default.nginx.conf`,
+        targetDir: `${this._contextDir}`
       }
     ];  
 

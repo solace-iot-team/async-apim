@@ -15,7 +15,7 @@ import APApisDisplayService, {
   TAPApiDisplay_General 
 } from "../../../../displayServices/APApisDisplayService";
 import { 
-  TAPManagedAssetBusinessGroupInfo, 
+  TAPManagedAssetBusinessGroupInfo, TAPManagedAssetDisplay_Attributes, 
 } from "../../../../displayServices/APManagedAssetDisplayService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APVersioningDisplayService from "../../../../displayServices/APVersioningDisplayService";
@@ -30,6 +30,7 @@ import { NewAccess } from "./NewAccess";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
+import { NewAttributes } from "./NewAttributes";
 
 export interface IManageNewApiProps {
   organizationId: string;
@@ -71,6 +72,8 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
       case E_COMPONENT_STATE_NEW.GENERAL:
         return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS);
       case E_COMPONENT_STATE_NEW.ACCESS:
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ATTRIBUTES);  
+      case E_COMPONENT_STATE_NEW.ATTRIBUTES:
         return setNewComponentState(E_COMPONENT_STATE_NEW.REVIEW);  
       case E_COMPONENT_STATE_NEW.REVIEW:
         return;
@@ -89,8 +92,10 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
         return setNewComponentState(E_COMPONENT_STATE_NEW.ASYNC_API_SPEC);
       case E_COMPONENT_STATE_NEW.ACCESS:
         return setNewComponentState(E_COMPONENT_STATE_NEW.GENERAL);
-      case E_COMPONENT_STATE_NEW.REVIEW:
+      case E_COMPONENT_STATE_NEW.ATTRIBUTES:
         return setNewComponentState(E_COMPONENT_STATE_NEW.ACCESS);
+      case E_COMPONENT_STATE_NEW.REVIEW:
+        return setNewComponentState(E_COMPONENT_STATE_NEW.ATTRIBUTES);
       default:
         Globals.assertNever(logName, componentState.currentState);
     }
@@ -99,7 +104,8 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
     [E_COMPONENT_STATE_NEW.ASYNC_API_SPEC, 0],
     [E_COMPONENT_STATE_NEW.GENERAL, 1],
     [E_COMPONENT_STATE_NEW.ACCESS, 2],
-    [E_COMPONENT_STATE_NEW.REVIEW, 3]
+    [E_COMPONENT_STATE_NEW.ATTRIBUTES, 3],
+    [E_COMPONENT_STATE_NEW.REVIEW, 4]
   ]);
   const setActiveTabIndexByComponentState = (state: E_COMPONENT_STATE_NEW) => {
     const funcName = 'setActiveTabIndexByComponentState';
@@ -116,6 +122,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
   const [showAsyncApiSpec, setShowAsyncApiSpec] = React.useState<boolean>(false);
   const [showGeneral, setShowGeneral] = React.useState<boolean>(false);
   const [showAccess, setShowAccess] = React.useState<boolean>(false);
+  const [showAttributes, setShowAttributes] = React.useState<boolean>(false);
   const [showReview, setShowReview] = React.useState<boolean>(false);
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
@@ -193,6 +200,7 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
       setShowAsyncApiSpec(false);
       setShowGeneral(false);
       setShowAccess(false);
+      setShowAttributes(false);
       setShowReview(false);
       return;
     }
@@ -200,24 +208,35 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
       setShowAsyncApiSpec(true);
       setShowGeneral(false);
       setShowAccess(false);
+      setShowAttributes(false);
       setShowReview(false);
     }
     if(componentState.currentState === E_COMPONENT_STATE_NEW.GENERAL) {
       setShowAsyncApiSpec(false);
       setShowGeneral(true);
       setShowAccess(false);
+      setShowAttributes(false);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW.ACCESS) {
       setShowAsyncApiSpec(false);
       setShowGeneral(false);
       setShowAccess(true);
+      setShowAttributes(false);
+      setShowReview(false);
+    }
+    else if(componentState.currentState === E_COMPONENT_STATE_NEW.ATTRIBUTES) {
+      setShowAsyncApiSpec(false);
+      setShowGeneral(false);
+      setShowAccess(false);
+      setShowAttributes(true);
       setShowReview(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE_NEW.REVIEW) {
       setShowAsyncApiSpec(false);
       setShowGeneral(false);
       setShowAccess(false);
+      setShowAttributes(false);
       setShowReview(true);
     }
     // set the tabIndex
@@ -260,6 +279,19 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
       apApiDisplay: managedObject,
       apApiDisplay_Access: apApiDisplay_Access
     });
+    setManagedObject(newMo);
+    setNextComponentState();
+  }
+  
+  const onNext_From_Attributes = (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => {
+    const funcName = 'onNext_From_Attributes';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+
+    const newMo: TManagedObject = APApisDisplayService.set_ApManagedAssetDisplay_Attributes({ 
+      apManagedAssetDisplay: managedObject,
+      apManagedAssetDisplay_Attributes: apManagedAssetDisplay_Attributes
+    }) as TManagedObject;
     setManagedObject(newMo);
     setNextComponentState();
   }
@@ -332,6 +364,19 @@ export const ManageNewApi: React.FC<IManageNewApiProps> = (props: IManageNewApiP
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}
                 onSaveChanges={onNext_From_Access}
+                onBack={onBack} 
+              />
+            </React.Fragment>
+          </TabPanel>
+          <TabPanel header='Attributes' disabled={!showAttributes}>
+            <React.Fragment>
+              <NewAttributes
+                organizationId={props.organizationId}
+                apApiDisplay={mo}
+                onError={onError_SubComponent}
+                onCancel={props.onCancel}
+                onLoadingChange={props.onLoadingChange}
+                onSaveChanges={onNext_From_Attributes}
                 onBack={onBack} 
               />
             </React.Fragment>
