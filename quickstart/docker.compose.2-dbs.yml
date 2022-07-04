@@ -20,7 +20,7 @@ services:
     # image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
     # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
     ports:
-      - 5080:80
+      - 5080:8080
     restart: unless-stopped
   qs-async-apim-server-mongodb:
     container_name: qs-async-apim-server-mongodb
@@ -88,7 +88,7 @@ services:
     logging:
       options:
         max-size: "10m"
-        max-file: "3"    
+        max-file: "3"
   qs-async-apim-connector:
     container_name: qs-async-apim-connector
     links:
