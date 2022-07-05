@@ -1,7 +1,7 @@
 
 const ENV_VAR_APIM_RELEASE_ALPHA_VERSION = "APIM_RELEASE_ALPHA_VERSION";
 
-export type TAssetsInclude =   { 
+export type TAssetsInclude =   {
   sources: string;
   targetDir: string;
   targetFile?: string;
@@ -18,11 +18,11 @@ export class Constants {
   private readonly _tarFileReleaseDir: string;
   private readonly _skipping: string;
   private readonly _dockerFile: string;
-  private _alphaVersion: string | undefined; 
+  private _alphaVersion: string | undefined;
 
   private _assetsIncludeList: TAssetsIncludeList = [];
   private readonly _assetDir: string;
-  
+
   private initAssetIncludeList() {
     this._assetsIncludeList = [
       {
@@ -30,14 +30,10 @@ export class Constants {
         targetDir: `${this._contextDir}/apim-portal`
       },
       {
-        sources: `${this._assetDir}/nginx.conf`,
-        targetDir: `${this._contextDir}`
-      },
-      {
         sources: `${this._assetDir}/default.nginx.conf`,
         targetDir: `${this._contextDir}`
       }
-    ];  
+    ];
 
     // this._assetsIncludeList = [
     //   {
@@ -68,9 +64,9 @@ export class Constants {
     //     sources: `${this._workingApimPortalDir}/build/manifest.json`,
     //     targetDir: `${this._tarFileContextDir}/admin-portal`
     //   }
-    // ];  
+    // ];
   }
-  
+
   constructor(scriptDir: string) {
     this._scriptDir = scriptDir;
     this._skipping = '+++ SKIPPING +++';
@@ -105,11 +101,11 @@ export class Constants {
       return `${version}-${this._alphaVersion.replaceAll('+', '-')}`;
     }
     return version;
-  }  
+  }
   public createLatestTag = (): string => {
     if(this._alphaVersion) return 'alpha-latest';
     return 'latest';
-  } 
+  }
   public createTarGzFileName = (name: string, version: string): string => {
     return `${name}.${this.createDockerImageTag(version)}.tgz`;
   }

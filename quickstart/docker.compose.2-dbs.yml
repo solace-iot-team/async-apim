@@ -22,6 +22,10 @@ services:
     ports:
       - 5080:8080
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"    
   qs-async-apim-server-mongodb:
     container_name: qs-async-apim-server-mongodb
     image : mongo:5.0.2
