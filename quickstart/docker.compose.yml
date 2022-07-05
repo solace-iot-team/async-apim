@@ -16,8 +16,8 @@ services:
       - ./docker-volumes/apim-www-logs:/etc/nginx/logs
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
-    # image : "solaceiotteam/async-apim-admin-portal:latest"
-    image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
+    image : "solaceiotteam/async-apim-admin-portal:latest"
+    # image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
     # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
     ports:
       - 5080:8080
