@@ -242,7 +242,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   private create_ConnectorClientOptions(apClientOptionsDisplay: TAPClientOptionsDisplay): ClientOptions {
     const clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging | undefined = apClientOptionsDisplay.apGuaranteedMessaging;
     const connectorClientOptions: ClientOptions = {
-      guaranteedMessaging: clientOptionsGuaranteedMessaging,
+      // if disabled, set to undefined 
+      // note: loses previously configured options, acceptable for user?
+      guaranteedMessaging: clientOptionsGuaranteedMessaging.requireQueue ? clientOptionsGuaranteedMessaging : undefined,
     }
     return connectorClientOptions;
   }
