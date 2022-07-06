@@ -10,6 +10,7 @@ import APAppEnvironmentsDisplayService, {
 } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 
 import "../APComponents.css";
+import { Protocol } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IAPDisplayDeveloperPortalApp_EndpointsProps {
   apEnvironmentEndpointList: TAPEnvironmentEndpointDisplayList;
@@ -39,6 +40,17 @@ export const APDisplayDeveloperPortalAppEndpoints: React.FC<IAPDisplayDeveloperP
     return (
       <div>{row.uri}</div>
     );
+  }
+
+  const notesBodyTemplate = (row: TAPEnvironmentEndpointDisplay): JSX.Element => {
+    if(row.protocol.name === Protocol.name.MQTT || row.protocol.name === Protocol.name.SECURE_MQTT) {
+      return (
+        <div>
+          clientId: see Async API Spec (Servers section).
+        </div>
+      );
+    }
+    return (<></>);
   }
 
   const rowGroupHeaderTemplate = (row: TAPEnvironmentEndpointDisplay) => {
@@ -87,8 +99,9 @@ export const APDisplayDeveloperPortalAppEndpoints: React.FC<IAPDisplayDeveloperP
           rowGroupFooterTemplate={rowGroupFooterTemplate}
         >
           <Column header="Protocol" body={protocolBodyTemplate} style={{ width: '15%' }} />
-          <Column header="Properties" body={propertiesBodyTemplate} style={{ width: '20%' }} />
+          <Column header="Properties" body={propertiesBodyTemplate} style={{ width: '15%' }} />
           <Column header="Endpoint" body={endpointBodyTemplate}  />
+          <Column header="Notes" body={notesBodyTemplate} />
         </DataTable>
       </div>    
     );
