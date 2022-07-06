@@ -13,4 +13,15 @@ Stop:
 ./stop.sh
 ````
 
+## Standup Standalone MongoDB
+
+````bash
+./mongodb/start.sh
+````
+
+Stop:
+````bash
+./mongodb/stop.sh
+````
+
 ---
