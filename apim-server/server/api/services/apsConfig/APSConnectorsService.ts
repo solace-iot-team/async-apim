@@ -6,6 +6,7 @@ import {
   ApiInternalServerErrorFromError, 
   ApiKeyNotFoundServerError, 
   ApiObjectNotFoundServerError, 
+  ApiServerError, 
   BootstrapErrorFromApiError, 
   BootstrapErrorFromError 
 } from '../../../common/ServerError';
@@ -58,7 +59,7 @@ export class APSConnectorsService {
       const bootstrapApsConnectorListFileName = `${ServerConfig.getConfig().dataPath}/${APSConnectorsService.boostrapApsConnectorListPath}`;
       const bootstrapApsConnectorListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsConnectorListFileName);
       if(bootstrapApsConnectorListFile) {
-        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
 
         // read file
         const bootstrapApsConnectorListData = ServerUtils.readFileContentsAsJson(bootstrapApsConnectorListFile);
@@ -147,16 +148,31 @@ export class APSConnectorsService {
           }
         }
       } else {
-        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list file not found, skipping', details: { file: bootstrapApsConnectorListFileName } }));  
+        ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list file not found, skipping', details: { file: bootstrapApsConnectorListFileName } }));  
       }
     } else {
       ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping connector list bootstrap, no data path' }));  
     }
 
     // cache the active connector info if it exists
-    const activeApsConnector: APSConnector = await this.byActive();
-    ServerConfig.setConnectorConfig(activeApsConnector);
-
+    try {
+      const activeApsConnector: APSConnector = await this.byActive();
+      ServerConfig.setConnectorConfig(activeApsConnector);
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'setting active connector', details: { activeApsConnector: activeApsConnector } }));  
+    } catch (e: any) {
+      if(e instanceof ApiServerError) {
+        if(e.apiStatusCode === 404) {
+          ServerLogger.warn(ServerLogger.createLogEntry(logName, { 
+            code: EServerStatusCodes.BOOTSTRAPPING, 
+            message: 'no active connector configured', 
+          }));    
+        } else {
+          throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
