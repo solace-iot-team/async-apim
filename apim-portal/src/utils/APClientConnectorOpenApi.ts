@@ -5,7 +5,7 @@ import {
   APSLocationConfigExternal, 
   APSLocationConfigInternalProxy 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { Mutex, MutexInterface } from "async-mutex";
+// import { Mutex, MutexInterface } from "async-mutex";
 
 export type APConnectorClientOpenApiInfo = {
   base: string,
@@ -14,14 +14,14 @@ export type APConnectorClientOpenApiInfo = {
 
 export class APClientConnectorOpenApi {
   private static componentName = 'APClientConnectorOpenApi';
-  private static orgSettings?: {
-    config: APSConnectorClientConfig
-    isInitialized: boolean
-  };
-  private static config: APSConnectorClientConfig;  
+  // private static orgSettings?: {
+  //   config: APSConnectorClientConfig
+  //   isInitialized: boolean
+  // };
+  // private static config: APSConnectorClientConfig;  
   private static isInitialized: boolean = false;
-  private static mutex = new Mutex();
-  private static mutexReleaser: MutexInterface.Releaser;
+  // private static mutex = new Mutex();
+  // private static mutexReleaser: MutexInterface.Releaser;
 
   public static constructBaseUrl = (config: APSConnectorClientConfig): string => {
     const funcName: string = `constructBaseUrl`;
