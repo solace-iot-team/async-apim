@@ -65,12 +65,14 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
       apApiEntityId: mo.apEntityId,
       asyncApiSpecString: fd.asyncApiSpecString 
     });
-    // create a suggested id from title
-    const title: string | undefined = APApiSpecsDisplayService.get_Title({ apApiSpecDisplay: mo.apApiSpecDisplay });
-    const generatedId = APApisDisplayService.generate_Id_From_Title({ title: title }); 
-    mo.apEntityId = {
-      id: generatedId,
-      displayName: generatedId,
+    // create a suggested id from title if new
+    if(props.action === EAction.NEW) {
+      const title: string | undefined = APApiSpecsDisplayService.get_Title({ apApiSpecDisplay: mo.apApiSpecDisplay });
+      const generatedId = APApisDisplayService.generate_Id_From_Title({ title: title }); 
+      mo.apEntityId = {
+        id: generatedId,
+        displayName: generatedId,
+      }
     }
     return mo;
   }
@@ -177,7 +179,10 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
     const funcName = 'validate_AsyncApiSpec';
     const logName = `${ComponentName}.${funcName}()`;
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);    
+    console.log(`${logName}: managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
+    if(managedObjectUseForm.formState.isSubmitted && (managedObjectUseForm.formState.isSubmitting || managedObjectUseForm.formState.isSubmitSuccessful)) return true;
+
     // try parsing it
     const result: TAPApiSpecDisplay | string = await APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
       apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),

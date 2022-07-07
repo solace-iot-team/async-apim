@@ -165,7 +165,7 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
         <TabPanel header='Async Api Spec'>
           <React.Fragment>
             <EditAsyncApiSpec
-              key={`${ComponentName}_EditAccess_${refreshCounter}`}
+              key={`${ComponentName}_EditAsyncApiSpec_${refreshCounter}`}
               organizationId={props.organizationId}
               apApiDisplay={managedObject}
               onError={onError_SubComponent}
