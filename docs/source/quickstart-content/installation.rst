@@ -96,6 +96,30 @@ Additional exposed ports are:
 - `5001` - APIM Connector
 - `5002` - APIM Server
 
+Test Exposed Routes
+-------------------
+
+Test the following URLs in your browser:
+
+- Route to the **APIM Server**: `http://{ip-address}:5000/apim-server`
+
+  - You should see a response in your browser similar to this:
+
+  .. code-block:: json
+
+    {"appId":"qs-async-apim-server","errorId":"pathNotFound","description":"path does not exist","meta":{"path":"/apim-server"}}
+
+
+- Route to the **APIM Server API**: `http://{ip-address}:5000/apim-server/v1/apsMonitor/apsStatus`
+
+  - You should see a response in your browser similar to this:
+
+  .. code-block:: json
+
+    {"isReady":true,"timestamp":1656929362213}
+
+
+
 Details
 +++++++
 
