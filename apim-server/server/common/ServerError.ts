@@ -138,6 +138,12 @@ export class MigrateServerError extends ServerError {
   }
 }
 
+export class ConfigTestServerError extends ServerError {
+  constructor(internalLogName: string, internalMessage: string) {
+    super(internalLogName, internalMessage);
+  }
+}
+
 type ApiServerErrorResponseHeaders = {
   headerField: string,
   headerValue: string
