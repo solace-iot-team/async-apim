@@ -18,10 +18,10 @@ import { E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import { EditAccess } from "./EditAccess";
 import { EditAsyncApiSpec } from "./EditAsyncApiSpec";
 import { EditState } from "./EditState";
+import { EditAttributes } from "./EditAttributes";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import { EditAttributes } from "./EditAttributes";
 
 export enum E_Edit_Scope {
   MAINTAIN = "MAINTAiN",
