@@ -7,9 +7,11 @@ import { PanelMenu } from 'primereact/panelmenu';
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
+import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
+import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 import '../../../components/APComponents.css';
 
@@ -24,6 +26,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const [authContext] = React.useContext(AuthContext);
   const [userContext] = React.useContext(UserContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -35,7 +38,8 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const isDisabledWithoutOrg = (resourcePath: EUICombinedResourcePaths): boolean => {
     return ( 
       !AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, resourcePath) ||
-      !userContext.runtimeSettings.currentOrganizationEntityId
+      !userContext.runtimeSettings.currentOrganizationEntityId ||
+      organizationContext.apOrganizationConfigStatus !== EAPOrganizationConfigStatus.OPERATIONAL
     );
   }
   const isDisabledWithConnectorUnavailable = (isDisabledFunc: (resourcePath: EUICombinedResourcePaths) => boolean, resourcePath: EUICombinedResourcePaths): boolean => {

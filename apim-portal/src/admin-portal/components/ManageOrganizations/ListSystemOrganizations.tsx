@@ -21,6 +21,7 @@ import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export interface IListSystemOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
@@ -120,11 +121,11 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     return (<span style={configStatusStyle}>{row.apOrganizationConfigStatus}</span>);
   }
   const renderManagedObjectDataTable = () => {
-    const idField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('id');
-    const nameField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APSystemOrganizationsDisplayService.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
-    // const configTypeField = APSystemOrganizationsDisplayService.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
-    const configStatusField = APSystemOrganizationsDisplayService.nameOf('apOrganizationConfigStatus');
+    const idField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.displayName');;
+    const filterField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
+    const configStatusField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apOrganizationConfigStatus');
+
 
     return (
       <div className="card">

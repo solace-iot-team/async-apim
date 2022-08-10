@@ -173,12 +173,12 @@ export class APOrganizationsDisplayService {
   private readonly DefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0';
   private readonly DefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal';
 
-  public nameOf<T extends IAPOrganizationDisplay>(name: keyof T): string {
-    return `${name}`;
-  }
-  public nameOf_ApEntityId(name: keyof TAPEntityId): string {
-    return `${this.nameOf('apEntityId')}.${name}`;
-  }
+  // public nameOf<T extends IAPOrganizationDisplay>(name: keyof T): string {
+  //   return `${name}`;
+  // }
+  // public nameOf_ApEntityId(name: keyof TAPEntityId): string {
+  //   return `${this.nameOf('apEntityId')}.${name}`;
+  // }
 
   public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.UnlimitedMaxNumApis_Per_ApiProduct; }
   public is_NumApis_Per_ApiProduct_Limited(maxNumApisPerApiProduct: number): boolean { 
@@ -286,10 +286,18 @@ export class APOrganizationsDisplayService {
   protected set_ApOrganizationConfigStatus({ apOrganizationDisplay }: {
     apOrganizationDisplay: IAPOrganizationDisplay;
   }): IAPOrganizationDisplay {
+    // const funcName = 'set_ApOrganizationConfigStatus';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: apOrganizationDisplay = ${JSON.stringify(apOrganizationDisplay, null, 2)}`);
     apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
-    if (apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) {
+    if(apOrganizationDisplay.apOrganizationOperationalStatus.cloudConnectivity !== EAPOrganizationOperationalStatus.UP) {
       apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
     }
+    // apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
+    // if (apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) {
+    //   apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
+    // }
     return apOrganizationDisplay;
   }
 
@@ -298,6 +306,8 @@ export class APOrganizationsDisplayService {
   }): TAPCloudConnectivityConfig {
     // const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: connectorCloudToken = ${JSON.stringify(connectorCloudToken, null, 2)}`);
 
     if (connectorCloudToken === undefined) {
       return this.create_Emtpy_ApCloudConnectivityConfig();
@@ -357,6 +367,11 @@ export class APOrganizationsDisplayService {
   private create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus }: {
     connectorOrganizationStatus: OrganizationStatus | undefined;
   }): TAPOrganizationOperationalStatus {
+    const funcName = 'create_ApOrganizationOperationalStatus_From_ApiEntities';
+    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: connectorOrganizationStatus = ${JSON.stringify(connectorOrganizationStatus, null, 2)}`);
+
     let cloudConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
     let eventPortalConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
     if (connectorOrganizationStatus !== undefined) {
@@ -369,6 +384,8 @@ export class APOrganizationsDisplayService {
       cloudConnectivity: cloudConnectivity,
       eventPortalConnectivity: eventPortalConnectivity
     };
+    // // DEBUG
+    // throw new Error(`${logName}: apOrganizationOperationalStatus = ${JSON.stringify(apOrganizationOperationalStatus, null, 2)}`);
     return apOrganizationOperationalStatus;
   }
 
