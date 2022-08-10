@@ -417,6 +417,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
                 schemaId={showApiId} 
                 onDownloadSuccess={props.onSuccess}
                 onDownloadError={props.onError}
+
+                // fetchZipContentsFunc={}
+
               />
             </React.Fragment>  
           }

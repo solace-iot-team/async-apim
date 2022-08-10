@@ -1,10 +1,19 @@
 import yaml from "js-yaml";
 import * as AsyncApiSpecParser from '@asyncapi/parser';
 
-import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApiError, ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import { Globals } from "../utils/Globals";
 import APVersioningDisplayService from "./APVersioningDisplayService";
+import { OpenAPI, OpenAPIConfig } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { APSClientOpenApi } from "../utils/APSClientOpenApi";
+
+
+export enum EApFileDownloadType {
+  JSON='application/json',
+  YAML='application/x-yaml',
+  ZIP='application/zip'
+}
 
 export enum EAPApiSpecFormat {
   JSON = 'application/json',
@@ -362,7 +371,7 @@ class APApiSpecsDisplayService {
       organizationName: organizationId,
       appName: appId,
       apiName: apiEntityId.id,
-      format: EAPApiSpecFormat.JSON      
+      format: EApFileDownloadType.JSON      
     });
     return {
       apEntityId: apiEntityId,
@@ -380,7 +389,7 @@ class APApiSpecsDisplayService {
       organizationName: organizationId, 
       apiProductName: apiProductId,
       apiName: apiEntityId.id,
-      format: EAPApiSpecFormat.JSON
+      format: EApFileDownloadType.JSON
     });
     return {
       apEntityId: apiEntityId,
@@ -399,13 +408,13 @@ class APApiSpecsDisplayService {
       spec = await ApisService.getApi({
         organizationName: organizationId,
         apiName: apiEntityId.id,
-        format: EAPApiSpecFormat.JSON
+        format: EApFileDownloadType.JSON
       });  
     } else {
       spec = await ApisService.getApiRevision({
         organizationName: organizationId,
         apiName: apiEntityId.id,
-        format: EAPApiSpecFormat.JSON,
+        format: EApFileDownloadType.JSON,
         version: version,
       });
     }
@@ -417,7 +426,73 @@ class APApiSpecsDisplayService {
     };
   }
 
+  public async apiGet_Api_ApiSpec_ZipContents({ organizationId, apiEntityId, version }:{
+    organizationId: string;
+    apiEntityId: TAPEntityId;
+    version?: string;
+  }): Promise<Blob> {
+    const funcName = 'apiGet_Api_ApiSpec_ZipContents';
+    const logName = `${this.ComponentName}.${funcName}()`;
 
+    const connectorOpenApiConfig: any = await APSClientOpenApi.getConnectorClientOpenApiConfig();
+    // console.warn(`${logName}: connectorOpenApiConfig = ${JSON.stringify(connectorOpenApiConfig)}`);
+    // throw new Error(`${logName}: check the connectorOpenApiConfig`);
+    // {"BASE":"http://localhost:3003/apim-server/v1/connectorProxy/v1","VERSION":"0.11.0","WITH_CREDENTIALS":true,"TOKEN":"xxx"
+
+    let url: URL;
+    const base = connectorOpenApiConfig.BASE + '/';
+    if(version === undefined) {
+      url = new URL(`${organizationId}/apis/${apiEntityId.id}?format=${encodeURIComponent('application/zip')}`, base);
+    } else {
+      url = new URL(`${organizationId}/apis/${apiEntityId.id}/revisions/${version}?format=${encodeURIComponent('application/zip')}`, base);
+    }
+    const headers = new Headers({
+      "Authorization": `Bearer ${connectorOpenApiConfig.TOKEN}`,
+      "Content-Type": 'application/json',
+      "accept": "application/zip",
+    });
+    const requestInit: RequestInit = {
+      method: 'GET',
+      credentials: 'include',
+      headers: headers,
+    };
+    const response = await window.fetch( url, requestInit);
+    if(!response.ok) {
+      throw new ApiError(response, logName);
+    }
+    const zipContents: Blob = await response.blob();
+    return zipContents;
+  }
+
+  // // this does not work - the response is NOT a blob
+  // // cannot figure out how to convert the response to a blob
+  // // no use
+  // public async apiGet_Api_ApiSpec_ZipContents({ organizationId, apiEntityId, version }:{
+  //   organizationId: string;
+  //   apiEntityId: TAPEntityId;
+  //   version?: string;
+  // }): Promise<Blob> {  
+  //   const funcName = 'apiGet_Api_ApiSpec_ZipContents';
+  //   const logName = `${this.ComponentName}.${funcName}()`;
+  
+  //   let zipContents: Blob | undefined = undefined;
+  //   if(version === undefined) {
+  //     zipContents = await ApisService.getApi({
+  //       organizationName: organizationId,
+  //       apiName: apiEntityId.id,
+  //       format: EApFileDownloadType.ZIP
+  //     });  
+  //   } else {
+  //     zipContents = await ApisService.getApiRevision({
+  //       organizationName: organizationId,
+  //       apiName: apiEntityId.id,
+  //       version: version,
+  //       format: EApFileDownloadType.ZIP
+  //     });
+  //   }
+  //   if(zipContents === undefined) throw new Error(`${logName}: zipContents === undefined`);
+  //   return zipContents;
+  // }
 
 }
 

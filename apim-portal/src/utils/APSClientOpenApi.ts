@@ -1,6 +1,7 @@
 import { 
   OpenAPI as APSOpenAPI, 
-  ApiError as APSApiError 
+  ApiError as APSApiError, 
+  OpenAPIConfig as APSOpenAPIConfig,
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { 
   OpenAPI as ConnectorOpenAPI, 
@@ -97,6 +98,26 @@ export class APSClientOpenApi {
       base: APSOpenAPI.BASE,
       versionStr: APSOpenAPI.VERSION
     }
+  }
+
+  public static getApsClientOpenApiConfig = async(): Promise<APSOpenAPIConfig> => {
+    const funcName = 'getApsClientOpenApiConfig';
+    const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
+    return {
+      ...APSOpenAPI,
+      TOKEN: await APSClientOpenApi.getToken()
+    };
+  }
+
+  public static getConnectorClientOpenApiConfig = async(): Promise<any> => {
+    const funcName = 'getConnectorClientOpenApiConfig';
+    const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
+    if (!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
+    return {
+      ...ConnectorOpenAPI,
+      TOKEN: await APSClientOpenApi.getToken()
+    };
   }
 
   public static isInstanceOfApiError(error: Error): boolean {

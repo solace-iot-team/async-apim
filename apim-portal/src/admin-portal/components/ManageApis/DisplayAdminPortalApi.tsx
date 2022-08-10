@@ -28,6 +28,7 @@ import { DisplayAdminPortalApiProductReferenceList } from "./DisplayAdminPortalA
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import { APDisplayApiChannelParameterList } from "../../../components/APDisplay/APDisplayApiChannelParameterList";
+import APApiSpecsDisplayService from "../../../displayServices/APApiSpecsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -92,6 +93,30 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     return callState;
   }
 
+  const apiGetManagedObjectZipContents = async(): Promise<Blob | undefined> => {
+    const funcName = 'apiGetManagedObjectZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API, `retrieve zip contents for api: ${props.apApiDisplay.apEntityId.displayName}, version: ${managedObject.apVersionInfo.apCurrentVersion}`);
+    let zipContents: Blob | undefined = undefined;
+    try { 
+      const connectorRevision = APVersioningDisplayService.get_OrginalConnectorRevision({
+        apVersion_ConnectorRevision_Map: props.apApiDisplay.apVersionInfo.apVersion_ConnectorRevision_Map,
+        apVersion: managedObject.apVersionInfo.apCurrentVersion
+      });
+      zipContents = await APApiSpecsDisplayService.apiGet_Api_ApiSpec_ZipContents({ 
+        organizationId: props.organizationId,
+        apiEntityId: managedObject.apEntityId,
+        version: connectorRevision,
+      });
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return zipContents;
+  }
+
   const doInitialize = async () => {
     props.onLoadingChange(true);
     setApiCallStatus(null);
@@ -105,6 +130,13 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     await apiGetManagedObject(version);
     props.onLoadingChange(false);
     setShowApiSpecRefreshCounter(showApiSpecRefreshCounter + 1);
+  }
+
+  const doFetchZipContents = async(): Promise<Blob | undefined> => {
+    props.onLoadingChange(true);
+    const zipContents: Blob | undefined = await apiGetManagedObjectZipContents();
+    props.onLoadingChange(false);
+    if(zipContents !== undefined) return zipContents;
   }
 
   // * useEffect Hooks *
@@ -136,7 +168,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       }
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
 
   const onViewApiProductReference = (apiProductEntityId: TAPEntityId) => {
     // alert(`${ComponentName}: open mo.apEntityId=${JSON.stringify(mo.apEntityId)}`);
@@ -376,6 +407,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
           renderDownloadButtons={props.scope !== E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE}
           onDownloadError={props.onError}
           onDownloadSuccess={props.onSuccess}
+          fetchZipContentsFunc={doFetchZipContents}
         />
       </TabPanel>
     );
