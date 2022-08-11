@@ -367,8 +367,8 @@ export class APOrganizationsDisplayService {
   private create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus }: {
     connectorOrganizationStatus: OrganizationStatus | undefined;
   }): TAPOrganizationOperationalStatus {
-    const funcName = 'create_ApOrganizationOperationalStatus_From_ApiEntities';
-    const logName = `${this.BaseComponentName}.${funcName}()`;
+    // const funcName = 'create_ApOrganizationOperationalStatus_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
     // // DEBUG
     // throw new Error(`${logName}: connectorOrganizationStatus = ${JSON.stringify(connectorOrganizationStatus, null, 2)}`);
 

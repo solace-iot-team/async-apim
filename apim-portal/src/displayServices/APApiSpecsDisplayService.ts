@@ -1,12 +1,11 @@
 import yaml from "js-yaml";
 import * as AsyncApiSpecParser from '@asyncapi/parser';
 
-import { ApiError, ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import { Globals } from "../utils/Globals";
 import APVersioningDisplayService from "./APVersioningDisplayService";
-import { OpenAPI, OpenAPIConfig } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { APSClientOpenApi } from "../utils/APSClientOpenApi";
+import { APFetch } from "../utils/APFetch";
 
 
 export enum EApFileDownloadType {
@@ -380,6 +379,18 @@ class APApiSpecsDisplayService {
     };
   }
 
+  public async apiGet_App_ApiSpec_ZipContents({ organizationId, appId, apiEntityId }:{
+    organizationId: string;
+    appId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<Blob> {
+    // /{organization_name}/apps/{app_name}/apis/{api_name}
+    const zipContents: Blob = await APFetch.GETConnector_ZipContents({
+      connectorUrlPath: `${organizationId}/apps/${appId}/apis/${apiEntityId.id}?format=${encodeURIComponent('application/zip')}`,
+    });
+    return zipContents;
+  }
+
   public async apiGet_ApiProduct_ApiSpec({ organizationId, apiProductId, apiEntityId }: {
     organizationId: string;
     apiProductId: string;
@@ -396,6 +407,17 @@ class APApiSpecsDisplayService {
       format: EAPApiSpecFormat.JSON,
       spec: spec
     };
+  }
+
+  public async apiGet_ApiProduct_ApiSpec_ZipContents({ organizationId, apiProductId, apiEntityId }:{
+    organizationId: string;
+    apiProductId: string;
+    apiEntityId: TAPEntityId;
+  }): Promise<Blob> {
+    const zipContents: Blob = await APFetch.GETConnector_ZipContents({
+      connectorUrlPath: `${organizationId}/apiProducts/${apiProductId}/apis/${apiEntityId.id}?format=${encodeURIComponent('application/zip')}`,
+    });
+    return zipContents;
   }
 
   public async apiGet_Api_ApiSpec({ organizationId, apiEntityId, version }: {
@@ -431,36 +453,9 @@ class APApiSpecsDisplayService {
     apiEntityId: TAPEntityId;
     version?: string;
   }): Promise<Blob> {
-    const funcName = 'apiGet_Api_ApiSpec_ZipContents';
-    const logName = `${this.ComponentName}.${funcName}()`;
-
-    const connectorOpenApiConfig: any = await APSClientOpenApi.getConnectorClientOpenApiConfig();
-    // console.warn(`${logName}: connectorOpenApiConfig = ${JSON.stringify(connectorOpenApiConfig)}`);
-    // throw new Error(`${logName}: check the connectorOpenApiConfig`);
-    // {"BASE":"http://localhost:3003/apim-server/v1/connectorProxy/v1","VERSION":"0.11.0","WITH_CREDENTIALS":true,"TOKEN":"xxx"
-
-    let url: URL;
-    const base = connectorOpenApiConfig.BASE + '/';
-    if(version === undefined) {
-      url = new URL(`${organizationId}/apis/${apiEntityId.id}?format=${encodeURIComponent('application/zip')}`, base);
-    } else {
-      url = new URL(`${organizationId}/apis/${apiEntityId.id}/revisions/${version}?format=${encodeURIComponent('application/zip')}`, base);
-    }
-    const headers = new Headers({
-      "Authorization": `Bearer ${connectorOpenApiConfig.TOKEN}`,
-      "Content-Type": 'application/json',
-      "accept": "application/zip",
+    const zipContents: Blob = await APFetch.GETConnector_ZipContents({
+      connectorUrlPath: `${organizationId}/apis/${apiEntityId.id}?format=${encodeURIComponent('application/zip')}`
     });
-    const requestInit: RequestInit = {
-      method: 'GET',
-      credentials: 'include',
-      headers: headers,
-    };
-    const response = await window.fetch( url, requestInit);
-    if(!response.ok) {
-      throw new ApiError(response, logName);
-    }
-    const zipContents: Blob = await response.blob();
     return zipContents;
   }
 

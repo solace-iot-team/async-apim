@@ -22,7 +22,7 @@ export interface IAPDisplayAsyncApiSpecProps {
   renderDownloadButtons?: boolean;
   onDownloadError: (apiCallState: TApiCallState) => void;
   onDownloadSuccess: (apiCallState: TApiCallState) => void;
-  fetchZipContentsFunc?: () => Promise<Blob | undefined>;
+  fetchZipContentsFunc: () => Promise<Blob | undefined>;
 }
 
 export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (props: IAPDisplayAsyncApiSpecProps) => {

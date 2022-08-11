@@ -95,6 +95,26 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     return callState;
   }
 
+  const apiGetApiZipContents = async(apiId: string, apiDisplayName: string): Promise<Blob | undefined> => {
+    const funcName = 'apiGetApiZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_SPEC, `retrieve zip contents for api: ${apiDisplayName}`);
+    let zipContents: Blob | undefined = undefined;
+    try { 
+      zipContents = await APApiSpecsDisplayService.apiGet_ApiProduct_ApiSpec_ZipContents({
+        organizationId: props.organizationId, 
+        apiProductId: managedObject.apEntityId.id,
+        apiEntityId: { id: apiId, displayName: apiDisplayName }
+      });
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return zipContents;
+  }
+
   const doInitialize = async () => {
     setManagedObject(props.apDeveloperPortalApiProductDisplay);
   }
@@ -103,6 +123,22 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     props.onLoadingChange(true);
     await apiGetManagedObject(revision);
     props.onLoadingChange(false);
+  }
+
+  const doFetchApiSpec = async (apiId: string) => {
+    props.onLoadingChange(true);
+    await apiGetApiSpec(apiId, apiId);
+    props.onLoadingChange(false);
+  }
+
+  const doFetchApiZipContents = async(): Promise<Blob | undefined> => {
+    const funcName = 'doFetchApiZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(showApiId === undefined) throw new Error(`${logName}: showApiId === undefined`);
+    props.onLoadingChange(true);
+    const zipContents: Blob | undefined = await apiGetApiZipContents(showApiId, showApiId);
+    props.onLoadingChange(false);
+    if(zipContents !== undefined) return zipContents;
   }
 
   // * useEffect Hooks *
@@ -132,12 +168,6 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
     if(apiSpec === undefined) return;
     setShowApiSpecRefreshCounter(showApiSpecRefreshCounter + 1);
   }, [apiSpec]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  const doFetchApiSpec = async (apiId: string) => {
-    props.onLoadingChange(true);
-    await apiGetApiSpec(apiId, apiId);
-    props.onLoadingChange(false);
-  }
 
   React.useEffect(() => {
     if(showApiId === undefined) return;
@@ -295,6 +325,7 @@ export const DisplayDeveloperPortalApiProduct: React.FC<IDisplayDeveloperPortalA
                     schemaId={showApiId} 
                     onDownloadSuccess={props.onSuccess}
                     onDownloadError={props.onError}
+                    fetchZipContentsFunc={doFetchApiZipContents}
                   />
                 </React.Fragment>  
               }

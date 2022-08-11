@@ -54,14 +54,6 @@ export const APButtonDownloadContentAsFile: React.FC<IAPButtonDownloadContentAsF
     props.onSuccess(props.initialCallState);
   }
 
-  const str2bytes = (str: string): Uint8Array => {
-    var bytes = new Uint8Array(str.length);
-    for (var i=0; i<str.length; i++) {
-       bytes[i] = str.charCodeAt(i);
-     }
-     return bytes;
-  }
-
   const getFormattedContent = (content: any, downloadType: EApFileDownloadType): string | Uint8Array => {
     const funcName = 'getFormattedContent';
     const logName = `${ComponentName}.${funcName}()`;

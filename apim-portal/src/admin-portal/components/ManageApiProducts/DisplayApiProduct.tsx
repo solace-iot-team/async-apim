@@ -134,6 +134,40 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     return callState;
   }
 
+  const apiGetApiZipContents = async(apiId: string, apiDisplayName: string): Promise<Blob | undefined> => {
+    const funcName = 'apiGetApiZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_SPEC, `retrieve zip contents for api: ${apiDisplayName}`);
+    let zipContents: Blob | undefined = undefined;
+    try { 
+      switch(props.scope) {
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_REFEREMCED_BY:
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING_MAINTAIN:
+          zipContents = await APApiSpecsDisplayService.apiGet_ApiProduct_ApiSpec_ZipContents({
+            organizationId: props.organizationId, 
+            apiProductId: managedObject.apEntityId.id,
+            apiEntityId: { id: apiId, displayName: apiDisplayName }
+          });
+          break;
+        case E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.REVIEW_AND_CREATE:
+          zipContents = await APApiSpecsDisplayService.apiGet_Api_ApiSpec_ZipContents({ 
+            organizationId: props.organizationId,
+            apiEntityId: { id: apiId, displayName: apiDisplayName }
+          });
+          break;
+        default:
+          Globals.assertNever(logName, props.scope);
+      }
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return zipContents;
+  }
+
   const doInitialize = async () => {
     setManagedObject(props.apAdminPortalApiProductDisplay);
   }
@@ -180,6 +214,16 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     props.onLoadingChange(true);
     await apiGetApiSpec(apiId, apiId);
     props.onLoadingChange(false);
+  }
+
+  const doFetchZipContents = async(): Promise<Blob | undefined> => {
+    const funcName = 'doFetchZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(showApiId === undefined) throw new Error(`${logName}: showApiId === undefined`);
+    props.onLoadingChange(true);
+    const zipContents: Blob | undefined = await apiGetApiZipContents(showApiId, showApiId);
+    props.onLoadingChange(false);
+    if(zipContents !== undefined) return zipContents;
   }
 
   React.useEffect(() => {
@@ -417,9 +461,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
                 schemaId={showApiId} 
                 onDownloadSuccess={props.onSuccess}
                 onDownloadError={props.onError}
-
-                // fetchZipContentsFunc={}
-
+                fetchZipContentsFunc={doFetchZipContents}
               />
             </React.Fragment>  
           }
