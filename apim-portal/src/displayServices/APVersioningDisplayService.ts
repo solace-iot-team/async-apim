@@ -286,7 +286,7 @@ class APVersioningDisplayService {
 
   public create_NextVersion(version: string): string {
     const versionSemVer = new SemVer(version);
-    versionSemVer.inc("minor");
+    versionSemVer.inc("patch");
     return versionSemVer.format();
   }
   
