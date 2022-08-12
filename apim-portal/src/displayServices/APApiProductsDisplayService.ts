@@ -4,6 +4,7 @@ import {
   APIProductAccessLevel,
   APIProductPatch,
   ApiProductsService,
+  attributes,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -21,6 +22,7 @@ import APApisDisplayService, {
 import APAttributesDisplayService, {
   IAPAttributeDisplay,
   TAPAttributeDisplayList,
+  TAPRawAttribute,
   TAPRawAttributeList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
@@ -300,6 +302,21 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apControlledChannelParameterList;
   }
 
+  private create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct }:{
+    connectorApiProduct: APIProduct;
+  }): TAPRawAttributeList {
+    // meta attributes override product attributes
+    const metaAttributes: TAPRawAttributeList = connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined ? connectorApiProduct.meta.attributes : [];
+    const apRawAttributeList: TAPRawAttributeList = metaAttributes;
+    for(const nameValuePair of connectorApiProduct.attributes) {
+      const exists: TAPRawAttribute | undefined = apRawAttributeList.find( (apRawAttribute: TAPRawAttribute) => {
+        return apRawAttribute.name === nameValuePair.name;
+      });
+      if(exists === undefined) apRawAttributeList.push(nameValuePair);
+    }
+    return apRawAttributeList;
+  }
+
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -319,10 +336,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }): Promise<IAPApiProductDisplay4List> {
     // const funcName = 'create_ApApiProductDisplay4List_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: connectorApiProduct.attributes,
+      apRawAttributeList: this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct }),
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -380,7 +398,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: connectorApiProduct.attributes,
+      apRawAttributeList: this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct }),
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList

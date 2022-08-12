@@ -79,25 +79,24 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   // * Api Calls *
-  const apiCheck_ApiIsValid = async(spec: any): Promise<boolean | string> => {
-    const funcName = 'apiCheck_ApiIsValid';
+  const apiCheck_ValidateSpec = async({ apApiSpecDisplay }: {
+    apApiSpecDisplay: TAPApiSpecDisplay;
+  }): Promise<boolean | string> => {
+    const funcName = 'apiCheck_ValidateSpec';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_API_IS_VALID, `check api is valid: ${props.apApiDisplay_AsyncApiSpec.apEntityId.displayName}`);
-    return `${logName}: implement me`;
-    // let checkResult: boolean | undefined = undefined;
-    // try { 
-    //   // alert(`${logName}: checking if version=${version} exists`);
-    //   checkResult = await APApisDisplayService.apiCheck_ApApiDisplay_Version_Exists({
-    //     organizationId: props.organizationId,
-    //     apiId: props.apApiDisplay_AsyncApiSpec.apEntityId.id,
-    //     version: version,
-    //   });
-    // } catch(e: any) {
-    //   APClientConnectorOpenApi.logError(logName, e);
-    //   callState = ApiCallState.addErrorToApiCallState(e, callState);
-    // }
-    // setApiCallStatus(callState);
-    // return checkResult;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_API_IS_VALID, `check api is valid`);
+    let checkResult: boolean | string = false;
+    try { 
+      checkResult = await APApiSpecsDisplayService.validateSpec({ 
+        organizationId: props.organizationId, 
+        apApiSpecDisplay: apApiSpecDisplay 
+      });
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return checkResult;
   }
 
   const apiCheck_ApiVersionExists = async(version: string): Promise<boolean | undefined> => {
@@ -180,11 +179,10 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     throw new Error(`${logName}: unhandled error, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
   }
 
-  const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
-    const funcName = 'validate_AsyncApiSpec';
+  const doValidate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
+    const funcName = 'doValidate_AsyncApiSpec';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);    
-
     // console.log(`${logName}: managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
     if(managedObjectUseForm.formState.isSubmitted && (managedObjectUseForm.formState.isSubmitting || managedObjectUseForm.formState.isSubmitSuccessful)) return true;
 
@@ -197,14 +195,11 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     });
     if(typeof(apApiSpecDisplay) === 'string') return apApiSpecDisplay as string;
 
-    const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
-    if(typeof isSpecValid === 'string') return isSpecValid;
-    if(!isSpecValid) return 'Invalid Async API - unknown cause.';
-
-    // check if api is valid with connector
-    const isSpecValid_ByConnector: boolean | string = await apiCheck_ApiIsValid(apApiSpecDisplay.spec);
-    if(typeof isSpecValid_ByConnector === 'string') return isSpecValid_ByConnector;
-    if(!isSpecValid_ByConnector) return 'Invalid Async API - unknown cause.';
+    const validateSpecResult: boolean | string = await apiCheck_ValidateSpec({
+      apApiSpecDisplay: apApiSpecDisplay
+    });
+    if(typeof validateSpecResult === 'string') return validateSpecResult;
+    if(!validateSpecResult) return 'Unable to validate Async API. Unknown cause.';
 
     if(props.action === EAction.NEW) return true;
     // check if version already exists
@@ -219,6 +214,21 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
     if(checkVersionResult === undefined) return 'Could not validate version.';
     if(checkVersionResult) return `Async API version '${versionString}' already exists, please specify a new version.`;
+    return true;
+  }
+
+  const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
+    props.onLoadingChange(true);
+    let error: any = undefined;
+    try {
+      const validateResult = await doValidate_AsyncApiSpec(specStr);
+      return validateResult;
+    } catch(e) {
+      error = e;
+    } finally {
+      props.onLoadingChange(false);
+      if(error) throw error;
+    }
     return true;
   }
 

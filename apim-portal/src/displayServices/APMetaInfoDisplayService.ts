@@ -1,4 +1,5 @@
-import { Meta, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
+import { attributes, Meta, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
+import APAttributesDisplayService, { TAPAttributeDisplayList } from "./APAttributesDisplayService/APAttributesDisplayService";
 
 const EmptyTimestamp = -1;
 export type TAPMetaInfo = {
@@ -7,6 +8,7 @@ export type TAPMetaInfo = {
   apLastModifiedBy: string;
   apLastModifiedOn: number;
   apDerivedFrom?: MetaEntityReference;
+
 }
 
 class APMetaInfoDisplayService {
@@ -29,6 +31,12 @@ class APMetaInfoDisplayService {
     connectorMeta?: Meta;
   }): TAPMetaInfo {
     if(connectorMeta === undefined) return this.create_Empty_ApMetaInfo();
+
+    // const _apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+    //   prefixed_with: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.CUSTOM }),
+    //   apAttributeDisplayList: working_ApAttributeDisplayList
+    // });
+
     return {
       apCreatedBy: connectorMeta.createdBy ? connectorMeta.createdBy : '',
       apCreatedOn: connectorMeta.created ? connectorMeta.created : EmptyTimestamp,

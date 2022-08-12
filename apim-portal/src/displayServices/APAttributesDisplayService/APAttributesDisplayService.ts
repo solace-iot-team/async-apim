@@ -32,18 +32,6 @@ class APAttributesDisplayService {
     return `${this.nameOf('apEntityId')}.${name}`;
   }
 
-  // private construct_RawAttributeValue(value: string): string {
-  //   const constructed = value.replaceAll(" ", "_x_");
-  //   alert(`construct_RawAttributeValue: value: ${value}, constructed=${constructed}`);
-  //   return value.replaceAll(" ", "_x_");
-  // }
-
-  // private reconstruct_RawAttributeValue(value: string): string {
-  //   const reconstructed = value.replaceAll("_x_", " ");
-  //   alert(`reconstruct_RawAttributeValue: value: ${value}, reconstructed=${reconstructed}`);
-  //   return value.replaceAll("_x_", " ");
-  // }
-
   public create_Empty_ApAttributeDisplay(): IAPAttributeDisplay {
     return {
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),

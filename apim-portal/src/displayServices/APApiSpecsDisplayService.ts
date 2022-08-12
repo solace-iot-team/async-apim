@@ -1,10 +1,12 @@
 import yaml from "js-yaml";
 
-import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
+import { ApiProductsService, ApisService, AppsService, ApiError } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
 import { Globals } from "../utils/Globals";
 import APVersioningDisplayService from "./APVersioningDisplayService";
 import { APFetch } from "../utils/APFetch";
+import APApisDisplayService from "./APApisDisplayService";
+import { APClientConnectorOpenApi } from "../utils/APClientConnectorOpenApi";
 
 
 export enum EApFileDownloadType {
@@ -169,14 +171,18 @@ class APApiSpecsDisplayService {
   }
 
   /**
+   * Validates correctness of AsyncAPI Spec.
    * Rudimentary validations:
    * - must have $.info.title
    * - must have $.info.version
    * - must hvae $.info.version in semVer format
+   * Deep validation:
+   * - send to backend for deep validation using parser
    * @param object 
    * @returns 
    */
-  public async validateSpec({ apApiSpecDisplay }:{
+  public async validateSpec({ organizationId, apApiSpecDisplay }: {
+    organizationId: string;
     apApiSpecDisplay: TAPApiSpecDisplay;
   }): Promise<boolean | string> {
     const funcName = 'validateSpec';
@@ -194,7 +200,27 @@ class APApiSpecsDisplayService {
     } catch(e: any) {
       return `Async API version is not in semantic version format (version: '${this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay })}').`;
     }
-    return true;
+    // now send to backend for a deep check
+    const connectorValidationResult: boolean | ApiError = await APApisDisplayService.apiCheck_ApApiDisplay_IsApiSpecValid({ 
+      organizationId: organizationId,
+      apApiSpecDisplay: apApiSpecDisplay 
+    });
+    if(typeof connectorValidationResult === 'boolean') return connectorValidationResult;
+    // // DEBUG
+    // console.log(`${logName}: connectorValidationResult=${JSON.stringify(connectorValidationResult, null, 2)}`);
+    if(APClientConnectorOpenApi.isInstanceOfApiError(connectorValidationResult)) {
+      const apiError: ApiError = connectorValidationResult;
+      // // DEBUG
+      // console.log(`${logName}: apiError=${JSON.stringify(apiError, null, 2)}`);
+      if(apiError.status === 400) {
+        // Bad Request, get details from body.messge
+        return `Async API validation error(s): ${JSON.stringify(apiError.body.message)}`;
+        // return `${e.title} Errors: ${JSON.stringify(e.validationErrors)}`;
+      } else {
+        throw apiError;
+      }
+    } 
+    throw connectorValidationResult;
   }
 
   public get_RawVersionString({ apApiSpecDisplay }:{

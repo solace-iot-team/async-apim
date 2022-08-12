@@ -524,6 +524,33 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     }
   }
 
+  public async apiCheck_ApApiDisplay_IsApiSpecValid({ organizationId, apApiSpecDisplay }: {
+    organizationId: string;
+    apApiSpecDisplay: TAPApiSpecDisplay;
+  }): Promise<boolean | ApiError> {
+    // const funcName = 'apiCheck_ApApiDisplay_IsApiSpecValid';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    try {
+      await ApisService.createApi({
+        organizationName: organizationId,
+        apiName: Globals.getUUID(),
+        mode: "test",
+        requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiSpecDisplay })
+      });
+      return true;
+     } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        // // DEBUG
+        // console.log(`${logName}: apiError=${JSON.stringify(apiError, null, 2)}`);
+        return apiError;
+      }
+      // must be some other error
+      throw e;
+    }
+  }
+
   public apiGetList_ApiProductReferenceEntityIdList = async({ organizationId, apiId, version }: {
     organizationId: string;
     apiId: string;
