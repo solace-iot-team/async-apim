@@ -1,5 +1,4 @@
 import yaml from "js-yaml";
-import * as AsyncApiSpecParser from '@asyncapi/parser';
 
 import { ApiProductsService, ApisService, AppsService } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
@@ -42,22 +41,6 @@ class APApiSpecsDisplayService {
     return spec === this.EmptySpec;
   }
 
-  // public static getAsyncApiSpecJsonAsDisplayString = (asyncApiSpec: TAPAsyncApiSpec): string => {
-  //   const funcName = 'getAsyncApiSpecJsonAsDisplayString';
-  //   const logName = `${APConnectorApiHelper.name}.${funcName}()`;
-  //   if(asyncApiSpec.format !== EAPAsyncApiSpecFormat.JSON) throw new Error(`${logName}: cannot handle asyncApiSpec.format other than JSON. format=${asyncApiSpec.format}`);
-  //   return JSON.stringify(asyncApiSpec.spec, null, 2);
-  // }
-
-  // public get_AsyncApiSpec_Json_As_String({ apApiSpecDisplay }:{
-  //   apApiSpecDisplay: TAPApiSpecDisplay;
-  // }): string {
-  //   const funcName = 'get_AsyncApiSpec_Json_As_String';
-  //   const logName = `${this.ComponentName}.${funcName}()`;
-  //   if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: cannot handle asyncApiSpec.format other than JSON. format=${apApiSpecDisplay.format}`);
-  //   return JSON.stringify(apApiSpecDisplay.spec);
-  // }
-
   public get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay }:{
     apApiSpecDisplay: TAPApiSpecDisplay;
   }): string {
@@ -82,205 +65,142 @@ class APApiSpecsDisplayService {
     const funcName = 'create_ApApiSpecDisplay_From_AsyncApiString';
     const logName = `${this.ComponentName}.${funcName}()`;
 
-    const result: string | TAPApiSpecDisplay = await this.create_ApApiSpecDisplayJson_From_AsyncApiString({ 
+    const result: string | TAPApiSpecDisplay = this.create_ApApiSpecDisplayJson_From_AsyncApiString({ 
       apApiEntityId: apApiEntityId,
       asyncApiSpecString: asyncApiSpecString,
       currentFormat: EAPApiSpecFormat.UNKNOWN,
     });
-    if(typeof result === 'string') throw new Error(`${logName}: result`);
+    if(typeof result === 'string') throw new Error(`${logName}: result=${result}`);
     return result;
-
-
-    // .then((result: string | TAPApiSpecDisplay) => {
-    //   if(typeof(result) === 'string') {
-    //     throw new Error(`${logName}: error=${result}`);
-    //   }
-    //   return result;  
-    // });
-
-    // return create.then( (apApiSpecDisplay: TAPApiSpecDisplay) => {
-    //   return apApiSpecDisplay;
-    // });
-    // // this is wrong
-
-    // this.create_ApApiSpecDisplayJson_From_AsyncApiString({ 
-    //   apApiEntityId: apApiEntityId,
-    //   asyncApiSpecString: asyncApiSpecString,
-    //   currentFormat: EAPApiSpecFormat.UNKNOWN,
-    // })
-    // .then((result: string | TAPApiSpecDisplay) => {
-    //   if(typeof(result) === 'string') {
-    //     throw new Error(`${logName}: error=${result}`);
-    //   }
-    //   return result;  
-    // });
-    // throw new Error(`${logName}: should never get here`);
   }
 
-  /**
-   * Creates a JSON format of TAPApiSpecDisplay from the async api string.
-   * In case of error, returns an error message. Can be used for validation.
-   */
-  public async create_ApApiSpecDisplayJson_From_AsyncApiString({ apApiEntityId, asyncApiSpecString, currentFormat }:{
+  public create_ApApiSpecDisplayJson_From_AsyncApiString({ apApiEntityId, asyncApiSpecString, currentFormat }:{
     apApiEntityId: TAPEntityId;
     asyncApiSpecString: string;
     currentFormat: EAPApiSpecFormat;
-  }): Promise<TAPApiSpecDisplay | string> {
+  }): TAPApiSpecDisplay | string {
     const funcName = 'create_ApApiSpecDisplayJson_From_AsyncApiString';
     const logName = `${this.ComponentName}.${funcName}()`;
-
-    try {
-      const asyncApiDocument: any = await AsyncApiSpecParser.parse(asyncApiSpecString);
-      // console.log(`${logName}: asyncApiDocument=\n${JSON.stringify(asyncApiDocument, null, 2)}`);
-      // get the complete spec
-      // note: this is a hack, _json property not documented and could change
-      if(asyncApiDocument["_json"] === undefined) return(`${logName}: asyncApiDocument["_json"] === undefined`);
-      const apApiSpecDisplay: TAPApiSpecDisplay = {
-        apEntityId: apApiEntityId,
-        format: EAPApiSpecFormat.JSON,
-        spec: asyncApiDocument["_json"]
-      };
-      return apApiSpecDisplay;
-    } catch(e: any) {
-      const errors = e.validationErrors ? `, Errors: ${JSON.stringify(e.validationErrors)}` : '';
-      return `${e.title}${errors}`;
+    switch(currentFormat) {
+      case EAPApiSpecFormat.JSON:
+        const apApiSpecDisplay: TAPApiSpecDisplay = {
+          apEntityId: apApiEntityId,
+          format: EAPApiSpecFormat.JSON,
+          spec: asyncApiSpecString
+        };
+        return apApiSpecDisplay;
+      case EAPApiSpecFormat.YAML: {
+        // return `${logName}: implement conversion from YAML to JSON`;
+        try {
+          const doc: any = yaml.load(asyncApiSpecString);
+          try {
+            const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
+            const apApiSpecDisplay: TAPApiSpecDisplay = {
+              apEntityId: apApiEntityId,
+              format: EAPApiSpecFormat.JSON,
+              spec: jsonParsedDoc,
+            };
+            return apApiSpecDisplay;
+          } catch (e) {
+            return `Unable to convert YAML to JSON, e=${e}`;
+          }
+        } catch (e) {
+          return `Unable to convert YAML to JSON, e=${e}`;
+        }
+      }
+      case EAPApiSpecFormat.UNKNOWN: {
+        if(asyncApiSpecString === '') return 'Unable to parse, contents are empty.';
+        try {
+          const parsedSpec: any = JSON.parse(asyncApiSpecString);
+          const apApiSpecDisplay: TAPApiSpecDisplay = {
+            apEntityId: apApiEntityId,
+            format: EAPApiSpecFormat.JSON,
+            spec: parsedSpec,
+          };
+          return apApiSpecDisplay;
+        } catch(jsonError: any) {
+          console.error(`${logName}: jsonError=${jsonError}`);
+          try {
+            const doc: any = yaml.load(asyncApiSpecString);
+            try {
+              const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
+              if(typeof(jsonParsedDoc) !== 'object') return `Unable to parse as JSON or YAML, type:${typeof(jsonParsedDoc)}`;
+              // console.log(`${logName}: typeof(jsonParseddoc)=${typeof(jsonParsedDoc)} , jsonParseddoc = ${JSON.stringify(doc, null, 2)}`);
+              return this.create_ApApiSpecDisplayJson_From_AsyncApiString({
+                apApiEntityId: apApiEntityId,
+                asyncApiSpecString: asyncApiSpecString,
+                currentFormat: EAPApiSpecFormat.YAML,
+              });
+            } catch (yamlError) {
+              console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
+              return `Unable to parse as JSON or YAML, jsonError=${JSON.stringify(jsonError)}, yamlerror=${JSON.stringify(yamlError)}`;
+            }
+            // return { format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec };
+          } catch(yamlError: any) {
+            console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
+            return `Unable to parse as JSON or YAML (${yamlError.name}:${yamlError.reason})`;
+          }  
+        }
+      }
+      default:
+        return Globals.assertNever(logName, currentFormat);
     }
   }
 
-  // public create_ApApiSpecDisplayJson_From_AsyncApiString({ apApiEntityId, asyncApiSpecString, currentFormat }:{
-  //   apApiEntityId: TAPEntityId;
-  //   asyncApiSpecString: string;
-  //   currentFormat: EAPApiSpecFormat;
-  // }): TAPApiSpecDisplay | string {
-  //   const funcName = 'create_ApApiSpecDisplayJson_From_AsyncApiString';
-  //   const logName = `${this.ComponentName}.${funcName}()`;
-  //   switch(currentFormat) {
-  //     case EAPApiSpecFormat.JSON:
-  //       const apApiSpecDisplay: TAPApiSpecDisplay = {
-  //         apEntityId: apApiEntityId,
-  //         format: EAPApiSpecFormat.JSON,
-  //         spec: asyncApiSpecString
-  //       };
-  //       return apApiSpecDisplay;
-  //     case EAPApiSpecFormat.YAML: {
-  //       // return `${logName}: implement conversion from YAML to JSON`;
-  //       try {
-  //         const doc: any = yaml.load(asyncApiSpecString);
-  //         try {
-  //           const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
-  //           const apApiSpecDisplay: TAPApiSpecDisplay = {
-  //             apEntityId: apApiEntityId,
-  //             format: EAPApiSpecFormat.JSON,
-  //             spec: jsonParsedDoc,
-  //           };
-  //           return apApiSpecDisplay;
-  //         } catch (e) {
-  //           return `Unable to convert YAML to JSON, e=${e}`;
-  //         }
-  //       } catch (e) {
-  //         return `Unable to convert YAML to JSON, e=${e}`;
-  //       }
-  //     }
-  //     case EAPApiSpecFormat.UNKNOWN: {
-  //       if(asyncApiSpecString === '') return 'Unable to parse, contents are empty.';
-  //       try {
-  //         const parsedSpec: any = JSON.parse(asyncApiSpecString);
-  //         const apApiSpecDisplay: TAPApiSpecDisplay = {
-  //           apEntityId: apApiEntityId,
-  //           format: EAPApiSpecFormat.JSON,
-  //           spec: parsedSpec,
-  //         };
-  //         return apApiSpecDisplay;
-  //       } catch(jsonError: any) {
-  //         console.error(`${logName}: jsonError=${jsonError}`);
-  //         try {
-  //           const doc: any = yaml.load(asyncApiSpecString);
-  //           try {
-  //             const jsonParsedDoc: any = JSON.parse(JSON.stringify(doc));
-  //             if(typeof(jsonParsedDoc) !== 'object') return `Unable to parse as JSON or YAML, type:${typeof(jsonParsedDoc)}`;
-  //             // console.log(`${logName}: typeof(jsonParseddoc)=${typeof(jsonParsedDoc)} , jsonParseddoc = ${JSON.stringify(doc, null, 2)}`);
-  //             return this.create_ApApiSpecDisplayJson_From_AsyncApiString({
-  //               apApiEntityId: apApiEntityId,
-  //               asyncApiSpecString: asyncApiSpecString,
-  //               currentFormat: EAPApiSpecFormat.YAML,
-  //             });
-  //           } catch (yamlError) {
-  //             console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
-  //             return `Unable to parse as JSON or YAML, jsonError=${JSON.stringify(jsonError)}, error=${JSON.stringify(yamlError)}`;
-  //           }
-  //           // return { format: EAPAsyncApiSpecFormat.YAML, spec: asyncApiSpec.spec };
-  //         } catch(yamlError: any) {
-  //           console.error(`${logName}: yamlError=${JSON.stringify(yamlError, null, 2)}`);
-  //           return `Unable to parse as JSON or YAML, error=${yamlError.reason}`;
-  //         }  
-  //       }
-  //     }
-  //     default:
-  //       return Globals.assertNever(logName, currentFormat);
-  //   }
-  // }
-
-  // private has_VersionString({ apApiSpecDisplay }:{
-  //   apApiSpecDisplay: TAPApiSpecDisplay
-  // }): boolean {
-  //   try {
-  //     this.get_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
-  //     return true;
-  //   } catch(e: any) {
-  //     return false;
-  //   }
-  // }
-  // private has_Title({ apApiSpecDisplay }:{
-  //   apApiSpecDisplay: TAPApiSpecDisplay
-  // }): boolean {
-  //   try {
-  //     this.get_Title({ apApiSpecDisplay: apApiSpecDisplay });
-  //     return true;
-  //   } catch(e: any) {
-  //     return false;
-  //   }
-  // }
-
-  public async validateSpec({ specJSONorYAML }:{
-    specJSONorYAML: any;
-  }): Promise<boolean | string> {
+  private has_Title({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay
+  }): boolean {
     try {
-      await AsyncApiSpecParser.parse(specJSONorYAML);
-      // const asyncApiDocument: AsyncApiSpecParser.AsyncAPIDocument = await AsyncApiSpecParser.parse(specJSONorYAML);
-      // // test if version is semVer format
-      // try {
-      //   APVersioningDisplayService.create_SemVerString(asyncApiDocument.version());
-      // } catch (semverError: any) {
-      //   return `cannot parse version as semVer, version=${asyncApiDocument.version()}`
-      // }
+      this.get_Title({ apApiSpecDisplay: apApiSpecDisplay });
+      return true;
     } catch(e: any) {
-      return `${e.title} Errors: ${JSON.stringify(e.validationErrors)}`;
+      return false;
+    }
+  }
+  private has_VersionString({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay;
+  }): boolean {
+    try {
+      this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay });
+      return true;
+    } catch(e: any) {
+      return false;
+    }
+  }
+
+  /**
+   * Rudimentary validations:
+   * - must have $.info.title
+   * - must have $.info.version
+   * - must hvae $.info.version in semVer format
+   * @param object 
+   * @returns 
+   */
+  public async validateSpec({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay;
+  }): Promise<boolean | string> {
+    const funcName = 'validateSpec';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
+
+    const hasTitle: boolean = this.has_Title({ apApiSpecDisplay: apApiSpecDisplay });
+    if(!hasTitle) return `Cannot read title from Async API. Missing element: $.info.title.`;
+
+    const hasVersionString: boolean = this.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
+    if(!hasVersionString) return `Cannot read version from Async API. Missing element: $.info.version.`;
+
+    try {
+      this.get_VersionAsSemVerString({ apApiSpecDisplay: apApiSpecDisplay });
+    } catch(e: any) {
+      return `Async API version is not in semantic version format (version: '${this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay })}').`;
     }
     return true;
   }
 
-  // public async validateSpec({ apApiSpecDisplay }:{
-  //   apApiSpecDisplay: TAPApiSpecDisplay
-  // }): Promise<boolean | string> {
-  //   const funcName = 'validateSpec';
-  //   const logName = `${this.ComponentName}.${funcName}()`;
-  //   if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
-  //   try {
-  //     await AsyncApiSpecParser.parse(apApiSpecDisplay.spec);
-  //   } catch(e: any) {
-  //     return `${e.title} Errors: ${JSON.stringify(e.validationErrors)}`;
-  //   }
-  //   const hasVersionString: boolean = this.has_VersionString({ apApiSpecDisplay: apApiSpecDisplay });
-  //   if(!hasVersionString) return `Cannot read version from Async Api Spec. Missing object info/version.`;
-  //   const hasTitle: boolean = this.has_Title({ apApiSpecDisplay: apApiSpecDisplay });
-  //   if(!hasTitle) return `Cannot read title from Async Api Spec. Missing object info/title.`;
-  //   return true;
-  // }
-
   public get_RawVersionString({ apApiSpecDisplay }:{
-    apApiSpecDisplay: TAPApiSpecDisplay
+    apApiSpecDisplay: TAPApiSpecDisplay;
   }): string {
-    const funcName = 'get_VersionString';
+    const funcName = 'get_RawVersionString';
     const logName = `${this.ComponentName}.${funcName}()`;
     if(apApiSpecDisplay.format !== EAPApiSpecFormat.JSON) throw new Error(`${logName}: apApiSpecDisplay.format !== EAPApiSpecFormat.JSON`);
     if(typeof(apApiSpecDisplay.spec) !== 'object') throw new Error(`${logName}: typeof(apApiSpecDisplay.spec) !== 'object'`);
@@ -288,10 +208,19 @@ class APApiSpecsDisplayService {
     if(apApiSpecDisplay.spec['info']['version'] === undefined) throw new Error(`${logName}: apApiSpecDisplay.spec['info']['version'] === undefined`);
     return apApiSpecDisplay.spec['info']['version'];
   }
-  public get_VersionString({ apApiSpecDisplay }:{
-    apApiSpecDisplay: TAPApiSpecDisplay
+  // public get_VersionString({ apApiSpecDisplay }:{
+  //   apApiSpecDisplay: TAPApiSpecDisplay;
+  // }): string {
+  //   return APVersioningDisplayService.create_SemVerString(this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay }));
+  // }
+  public get_VersionAsSemVerString({ apApiSpecDisplay }:{
+    apApiSpecDisplay: TAPApiSpecDisplay;
   }): string {
-    return APVersioningDisplayService.create_SemVerString(this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay }));
+    const funcName = 'get_VersionAsSemVerString';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    const rawVersionString = this.get_RawVersionString({ apApiSpecDisplay: apApiSpecDisplay });
+    if(APVersioningDisplayService.isSemVerFormat(rawVersionString)) return rawVersionString;
+    throw new Error(`${logName}: not in semver format, rawVersionString=${rawVersionString}`);
   }
 
   public get_Title({ apApiSpecDisplay }:{

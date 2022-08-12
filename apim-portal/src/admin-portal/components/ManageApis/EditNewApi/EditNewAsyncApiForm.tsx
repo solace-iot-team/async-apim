@@ -43,10 +43,6 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     formData: TManagedObjectFormData;
   }
 
-  // const isNewManagedObject = (): boolean => {
-  //   return props.action === EAction.NEW;
-  // }
-
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
       asyncApiSpecString: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: mo.apApiSpecDisplay }),
@@ -146,16 +142,15 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     const funcName = 'onUploadSpecFromFileSuccess';
     const logName = `${ComponentName}.${funcName}()`;
     if(!apiCallState.success) throw new Error(`${logName}: apiCallState.success is false, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
-    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    const apApiSpecDisplay: TAPApiSpecDisplay = await APApiSpecsDisplayService.create_ApApiSpecDisplay_From_AsyncApiString({ 
-      apApiEntityId: managedObject.apEntityId,
-      asyncApiSpecString: apiSpecStr
-    });
-    const newMo: TManagedObject = {
-      ...managedObject,
-      apApiSpecDisplay: apApiSpecDisplay
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    // set the form data
+    const newMofde: TManagedObjectFormDataEnvelope = {
+      formData: {
+        ...managedObjectFormDataEnvelope.formData,
+        asyncApiSpecString: apiSpecStr
+      }
     };
-    setManagedObject(newMo);
+    setManagedObjectFormDataEnvelope(newMofde);
   }
 
   const onUploadSpecFromFileError = (apiCallState: TApiCallState) => {
@@ -164,83 +159,41 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     throw new Error(`${logName}: unhandled error, apiCallState=${JSON.stringify(apiCallState, null, 2)}`);
   }
 
-  // const validate_SemVer = (newVersion: string): string | boolean => {
-  //   const funcName = 'validate_SemVer';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-  //   if(isNewManagedObject()) return true;
-  //   if(APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({
-  //     lastVersion: managedObject.apVersionInfo.apLastVersion, 
-  //     newVersion: newVersion
-  //   })) return true;
-  //   return `New version must be greater than current version: ${managedObject.apVersionInfo.apLastVersion}.`
-  // }
-
   const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
     const funcName = 'validate_AsyncApiSpec';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);    
-    console.log(`${logName}: managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
+
+    // console.log(`${logName}: managedObjectUseForm.formState = ${JSON.stringify(managedObjectUseForm.formState, null, 2)}`);
     if(managedObjectUseForm.formState.isSubmitted && (managedObjectUseForm.formState.isSubmitting || managedObjectUseForm.formState.isSubmitSuccessful)) return true;
 
-    // try parsing it
-    const result: TAPApiSpecDisplay | string = await APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
+    // console.log(`${logName}: specStr=${specStr}`);
+
+    const apApiSpecDisplay: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
       apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       asyncApiSpecString: specStr,
       currentFormat: EAPApiSpecFormat.UNKNOWN
     });
-    if(typeof(result) === 'string') return result as string;
-    const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ specJSONorYAML: specStr });
+    if(typeof(apApiSpecDisplay) === 'string') return apApiSpecDisplay as string;
+
+    const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
     if(typeof isSpecValid === 'string' || !isSpecValid) return isSpecValid;
+
     if(props.action === EAction.NEW) return true;
-    // must be a new version
-    const versionString: string = APApiSpecsDisplayService.get_RawVersionString({
-      apApiSpecDisplay: result
+    // check if version already exists
+    const versionString: string = APApiSpecsDisplayService.get_VersionAsSemVerString({
+      apApiSpecDisplay: apApiSpecDisplay
     });
-    // must be in SemVer format
-    if(!APVersioningDisplayService.isSemVerFormat(versionString)) return `Please use semantic versioning format for API version instead of '${versionString}'.`;
     // check new version is greater than latest 
     if(props.apLastVersion === undefined) throw new Error(`${logName}: props.apLastVersion === undefined`);
     if(!APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({ newVersion: versionString, lastVersion: props.apLastVersion })) {
-      return `API version '${versionString}' must be greater than last version '${props.apLastVersion}'.`;;
+      return `Async API version '${versionString}' must be greater than last version '${props.apLastVersion}'.`;;
     }
     const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
     if(checkVersionResult === undefined) return 'Could not validate version.';
-    if(checkVersionResult) return `API version '${versionString}' already exists, please specify a new version in the Async API Spec.`;
+    if(checkVersionResult) return `Async API version '${versionString}' already exists, please specify a new version.`;
     return true;
   }
-
-  // const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
-  //   const funcName = 'validate_AsyncApiSpec';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-  //   // try parsing it
-  //   const result: TAPApiSpecDisplay | string = APApiSpecsDisplayService.create_ApApiSpecDisplayJson_From_AsyncApiString({
-  //     apApiEntityId: APEntityIdsService.create_EmptyObject_NoId(),
-  //     asyncApiSpecString: specStr,
-  //     currentFormat: EAPApiSpecFormat.UNKNOWN
-  //   });
-  //   if(typeof(result) === 'string') return result as string;
-  //   const apApiSpecDisplay: TAPApiSpecDisplay = result as TAPApiSpecDisplay;
-  //   const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
-  //   if(typeof isSpecValid === 'string' || !isSpecValid) return isSpecValid;
-  //   if(props.action === EAction.NEW) return true;
-  //   // must be a new version
-  //   const versionString: string = APApiSpecsDisplayService.get_RawVersionString({
-  //     apApiSpecDisplay: apApiSpecDisplay
-  //   });
-  //   // must be in SemVer format
-  //   if(!APVersioningDisplayService.isSemVerFormat(versionString)) return `Please use semantic versioning format for API version instead of '${versionString}'.`;
-  //   // check new version is greater than latest 
-  //   if(props.apLastVersion === undefined) throw new Error(`${logName}: props.apLastVersion === undefined`);
-  //   if(!APVersioningDisplayService.is_NewVersion_GreaterThan_LastVersion({ newVersion: versionString, lastVersion: props.apLastVersion })) {
-  //     return `API version '${versionString}' must be greater than last version '${props.apLastVersion}'.`;;
-  //   }
-  //   const checkVersionResult: boolean | undefined = await apiCheck_ApiVersionExists(versionString);
-  //   if(checkVersionResult === undefined) return 'Could not validate version.';
-  //   if(checkVersionResult) return `API version '${versionString}' already exists, please specify a new version in the Async API Spec.`;
-  //   return true;
-  // }
 
   const renderApisToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [

@@ -297,7 +297,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   public generate_Id_From_Title({ title }:{ 
     title: string; 
   }): string {
-    return title.replaceAll(/\s/g, '-');
+    return title.replaceAll(/[^0-9a-zA-Z]+/g, '-');
   } 
 
 
