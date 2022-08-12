@@ -79,6 +79,27 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   // * Api Calls *
+  const apiCheck_ApiIsValid = async(spec: any): Promise<boolean | string> => {
+    const funcName = 'apiCheck_ApiIsValid';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CHECK_API_IS_VALID, `check api is valid: ${props.apApiDisplay_AsyncApiSpec.apEntityId.displayName}`);
+    return `${logName}: implement me`;
+    // let checkResult: boolean | undefined = undefined;
+    // try { 
+    //   // alert(`${logName}: checking if version=${version} exists`);
+    //   checkResult = await APApisDisplayService.apiCheck_ApApiDisplay_Version_Exists({
+    //     organizationId: props.organizationId,
+    //     apiId: props.apApiDisplay_AsyncApiSpec.apEntityId.id,
+    //     version: version,
+    //   });
+    // } catch(e: any) {
+    //   APClientConnectorOpenApi.logError(logName, e);
+    //   callState = ApiCallState.addErrorToApiCallState(e, callState);
+    // }
+    // setApiCallStatus(callState);
+    // return checkResult;
+  }
+
   const apiCheck_ApiVersionExists = async(version: string): Promise<boolean | undefined> => {
     const funcName = 'apiCheck_ApiVersionExists';
     const logName = `${ComponentName}.${funcName}()`;
@@ -177,7 +198,13 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
     if(typeof(apApiSpecDisplay) === 'string') return apApiSpecDisplay as string;
 
     const isSpecValid: boolean | string = await APApiSpecsDisplayService.validateSpec({ apApiSpecDisplay: apApiSpecDisplay });
-    if(typeof isSpecValid === 'string' || !isSpecValid) return isSpecValid;
+    if(typeof isSpecValid === 'string') return isSpecValid;
+    if(!isSpecValid) return 'Invalid Async API - unknown cause.';
+
+    // check if api is valid with connector
+    const isSpecValid_ByConnector: boolean | string = await apiCheck_ApiIsValid(apApiSpecDisplay.spec);
+    if(typeof isSpecValid_ByConnector === 'string') return isSpecValid_ByConnector;
+    if(!isSpecValid_ByConnector) return 'Invalid Async API - unknown cause.';
 
     if(props.action === EAction.NEW) return true;
     // check if version already exists
