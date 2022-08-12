@@ -9,7 +9,6 @@ import { EnvironmentListItem, EnvironmentsService } from '@solace-iot-team/apim-
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { TOrganizationService } from "./ManageEnvironmentsCommon";
 
 import '../../../components/APComponents.css';
@@ -20,7 +19,7 @@ export enum E_MANAGED_OBJECT_CALL_STATE_ACTIONS {
 }
 
 export interface IListUnregisteredOrganizationServicesProps {
-  organizationName: TAPOrganizationId;
+  organizationName: string;
   tableHeader: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
