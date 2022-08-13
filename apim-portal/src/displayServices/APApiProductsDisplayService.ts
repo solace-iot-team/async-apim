@@ -306,8 +306,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     connectorApiProduct: APIProduct;
   }): TAPRawAttributeList {
     // meta attributes override product attributes
-    const metaAttributes: TAPRawAttributeList = connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined ? connectorApiProduct.meta.attributes : [];
-    const apRawAttributeList: TAPRawAttributeList = metaAttributes;
+    const metaRawAttributes: TAPRawAttributeList = connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined ? connectorApiProduct.meta.attributes : [];
+    const apRawAttributeList: TAPRawAttributeList = metaRawAttributes;
     for(const nameValuePair of connectorApiProduct.attributes) {
       const exists: TAPRawAttribute | undefined = apRawAttributeList.find( (apRawAttribute: TAPRawAttribute) => {
         return apRawAttribute.name === nameValuePair.name;
@@ -337,7 +337,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'create_ApApiProductDisplay4List_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
+    const _base: IAPManagedAssetDisplay = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
       apRawAttributeList: this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct }),
