@@ -17,14 +17,14 @@ import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService'
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
 const CAPManagedAssetAttribute_Prefix = "AP";
-enum EAPManagedAssetAttribute_Scope {
+export enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
   BUSINESS_GROUP = "BUSINESS_GROUP",
   CLASSIFICATION = "CLASSIFICATION",
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
 }
-enum EAPManagedAssetAttribute_BusinessGroup_Tag {
+export enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_ID = "OWNING_ID",
   OWNING_DISPLAY_NAME = "OWNING_DISPLAY_NAME",
   OWNING_EXTERNAL_ID = "OWNING_EXTERNAL_ID",
@@ -32,7 +32,7 @@ enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   EXTERNAL_SYSTEM_ID = "EXTERNAL_SYSTEM_ID",
   SHARING_LIST = "SHARING_LIST",
 }
-enum EAPManagedAssetAttribute_Owner_Tag {
+export enum EAPManagedAssetAttribute_Owner_Tag {
   ID = "ID",
 }
 enum EAPManagedAssetAttribute_Classification_Tag {
@@ -41,7 +41,7 @@ enum EAPManagedAssetAttribute_Classification_Tag {
   C3 = "C3",
   C4 = "C4"
 }
-enum EAPManagedAssetAttribute_Publish_Tag {
+export enum EAPManagedAssetAttribute_Publish_Tag {
   DESTINATION = "DESTINATION",
 }
 type TManagedAssetAttribute_Tag = 
@@ -204,7 +204,7 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  private create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
+  protected create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
     return JSON.stringify(apManagedAssetDisplay_BusinessGroupSharingList);
   }
 
@@ -234,7 +234,7 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  private create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
+  protected create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
     if(apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return undefined;
     return APEntityIdsService.create_IdList(apPublishDestinationInfo.apExternalSystemEntityIdList).join(',');
   }

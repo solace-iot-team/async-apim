@@ -942,17 +942,17 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // };
 
 
-  protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate, apRawAttributeList }:{
+  protected async apiUpdate({ organizationId, apiProductId, apiProductPatch, apRawAttributeList } : {
     organizationId: string;
     apiProductId: string;
-    apiProductUpdate: APIProductPatch;    
-    apRawAttributeList: TAPRawAttributeList;    
+    apiProductPatch: APIProductPatch;    
+    apRawAttributeList?: TAPRawAttributeList;    
   }): Promise<void> {
     // const funcName = 'apiUpdate';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
     const update: APIProductPatch = {
-      ...apiProductUpdate,
+      ...apiProductPatch,
       attributes: apRawAttributeList
     }
     await ApiProductsService.updateApiProduct({
@@ -983,6 +983,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // throw new Error(`${logName}: test error handling`);
     // alert(`${logName}: implement documentation update`)
 
+    // TODO:
+    // this one is the normal one
+    // should not need meta attributes update
+
+    // Then: need a accessAndStateUpdate
+    // only updates meta, with attributes
+    // new method: create_ApiProductMeta_ApRawAttributeList
+
+   
     apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
 
     const update: APIProductPatch = {
@@ -998,16 +1007,33 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       meta: {
         version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
         stage: apApiProductDisplay.apLifecycleStageInfo.stage,
-        lastModifiedBy: userId,
+        // now set by connector from token
+        // lastModifiedBy: userId,
       },
       accessLevel: apApiProductDisplay.apAccessLevel
     };
 
     // always update with the full attribute list
+
+    // TODO:
+    // new method: create_ApiProduct_ApRawAttributeList
+    // new method: create_ApiProductMeta_ApRawAttributeList
+
+    // apiUpdate ==> apiUpdate_ApiProduct
+
+    // new: apiUpdate_ApiProductMeta
+
+
+    // TODO:
+    // new method: create_ApiProduct_ApRawAttributeList
+    // new method: create_ApiProductMeta_ApRawAttributeList
+
+
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay.apEntityId.id,
-      apiProductUpdate: update,
+      apiProductPatch: update,
+
       apRawAttributeList: await this.create_Complete_ApRawAttributeList({
         organizationId: organizationId,
         apManagedAssetDisplay: apApiProductDisplay

@@ -32,19 +32,21 @@ class APMetaInfoDisplayService {
   public create_ApMetaInfo_From_ApiEntities({ connectorMeta }:{
     connectorMeta?: Meta;
   }): TAPMetaInfo {
+    const funcName = 'create_ApMetaInfo_From_ApiEntities';
+    const logName = `${this.ComponentName}.${funcName}()`;
     
     if(connectorMeta === undefined) return this.create_Empty_ApMetaInfo();
 
-    // const apRawAttributeList: TAPRawAttributeList = connectorMeta.attributes !== undefined ? connectorMeta.attributes : [];
-    const apRawAttributeList: TAPRawAttributeList = [];
-    return {
+    const apMetaInfo: TAPMetaInfo = {
       apCreatedBy: connectorMeta.createdBy ? connectorMeta.createdBy : '',
       apCreatedOn: connectorMeta.created ? connectorMeta.created : EmptyTimestamp,
       apLastModifiedBy: connectorMeta.lastModifiedBy ? connectorMeta.lastModifiedBy : '',
       apLastModifiedOn: connectorMeta.lastModified ? connectorMeta.lastModified : EmptyTimestamp,
       apDerivedFrom: connectorMeta.derivedFrom,
-      apAttributeDisplayList: APAttributesDisplayService.create_ApAttributeDisplayList({ apRawAttributeList: apRawAttributeList })
+      apAttributeDisplayList: APAttributesDisplayService.create_ApAttributeDisplayList({ apRawAttributeList: connectorMeta.attributes !== undefined ? connectorMeta.attributes : [] })
     };
+    console.log(`${logName}: apMetaInfo=${JSON.stringify(apMetaInfo, null, 2)}`);
+    return apMetaInfo;
   }
   
   public create_Timestamp_DisplayString(timestamp: number): string {
