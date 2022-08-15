@@ -2,9 +2,6 @@ import {
   About,
   AdministrationService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { 
-  APSConnectorClientConfig 
-} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { APConnectorApiMismatchError, APError } from './APError';
 import { APLogger } from './APLogger';
@@ -74,13 +71,12 @@ export class APConnectorApiHelper {
 
 export class APConnectorApiCalls {
   
-  public static getConnectorInfo = async(connectorClientConfig: APSConnectorClientConfig): Promise<TAPConnectorInfo | undefined> => {
+  public static getConnectorInfo = async(): Promise<TAPConnectorInfo | undefined> => {
     const funcName = 'getConnectorInfo';
     const logName= `${APConnectorApiCalls.name}.${funcName}()`;
 
     // WARNING: connector must be accessible
 
-    // await APClientConnectorOpenApi.tmpInitialize(connectorClientConfig);
     let result: TAPConnectorInfo | undefined;
     try {
       const apiAbout: About = await AdministrationService.about();
@@ -95,7 +91,6 @@ export class APConnectorApiCalls {
       APClientConnectorOpenApi.logError(logName, e);
       result = undefined;
     } finally {
-      // await APClientConnectorOpenApi.tmpUninitialize();
       return result;
     }
   }

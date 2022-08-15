@@ -8,7 +8,6 @@ import {
   EntityDeriveRequest,
   MetaEntityStage,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { version } from 'dompurify';
 import { AuthHelper } from '../../auth/AuthHelper';
 import { 
   APApiProductsDisplayService, 
