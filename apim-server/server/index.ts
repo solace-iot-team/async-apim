@@ -5,7 +5,7 @@ import ServerConfig from './common/ServerConfig';
 import ServerStatus from './common/ServerStatus';
 import { EServerStatusCodes, ServerLogger } from './common/ServerLogger';
 import { MongoDatabaseAccess } from './common/MongoDatabaseAccess';
-import { BootstrapErrorFromApiError, BootstrapErrorFromError, ConfigTestServerError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
+import { BootstrapErrorFromApiError, BootstrapErrorFromError, ConfigTestServerError, ConnectorProxyError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
 import APSConnectorsService from './api/services/apsConfig/APSConnectorsService';
 import APSUsersService from './api/services/APSUsersService/APSUsersService';
 import { ServerClient } from './common/ServerClient';
@@ -17,6 +17,8 @@ import APSBusinessGroupsService from './api/services/apsOrganization/apsBusiness
 import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
 import { ConnectorClient } from './common/ConnectorClient';
+import { APSConnectorStatus } from '../src/@solace-iot-team/apim-server-openapi-node';
+import ConnectorMonitor from './common/ConnectorMonitor';
 
 const componentName = 'index';
 
@@ -68,74 +70,7 @@ const testConfig = async(): Promise<void> => {
   const funcName = 'testConfig';
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTING }));
-
-  try {
-
-    // testing would include:
-
-    // - set the open api
-    // - use the connector open api
-    // - make a call to get e.g. about
-    // - unauthorized ==> wrong config
-    // - url not found ==> wrong config
-
-    // public static set = (): void => {
-    //   const funcName = 'set';
-    //   const logName = `${APSClientOpenApi.componentName}.${funcName}()`;
-    //   if(!APSClientOpenApi.isInitialized) throw new Error(`${logName}: not initialized`);
-    //   if(APSClientOpenApi.config.apsServerUrl) {
-    //     const base: URL = new URL(APSOpenAPI.BASE, APSClientOpenApi.config.apsServerUrl.toString());
-    //     APSOpenAPI.BASE = base.toString();
-    //   }
-    //   APSOpenAPI.WITH_CREDENTIALS = true;
-    //   APSOpenAPI.CREDENTIALS = "include";
-    //   APSOpenAPI.TOKEN = async() => { return await APSClientOpenApi.getToken(); }
-    //   // ConnectorOpenApi
-    //   ConnectorOpenAPI.BASE = APSOpenAPI.BASE + '/connectorProxy' + ConnectorOpenAPI.BASE;
-    //   ConnectorOpenAPI.USERNAME = undefined;
-    //   ConnectorOpenAPI.PASSWORD = undefined;
-    //   ConnectorOpenAPI.WITH_CREDENTIALS = true;
-    //   // ConnectorOpenAPI.CREDENTIALS = "include";
-    //   ConnectorOpenAPI.TOKEN = async() => { return await APSClientOpenApi.getToken(); }
-  
-    //   console.log(`${logName}: APSOpenAPI = ${JSON.stringify(APSOpenAPI, null, 2)}`);
-    //   console.log(`${logName}: ConnectorOpenAPI = ${JSON.stringify(ConnectorOpenAPI, null, 2)}`);
-    // }
-
-    // ServerConfig.getAuthConfig().
-    // connectorAuth: {
-    //   issuer: string;
-    //   audience: string;
-    //   secret: string;
-    // }
-  
-    ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTING, details: { 
-      message: "currently not implemented, should test the following",
-      tests: [
-        {
-          name: "test url configuration",
-          envVar: "APIM_SERVER_INTERNAL_CONNECTOR_API_URL",
-        },
-        { 
-          name: "test matching auth configuration",
-          envVars: [
-            "APIM_SERVER_CONNECTOR_AUTH_ISSUER",
-            "APIM_SERVER_CONNECTOR_AUTH_AUDIENCE",
-            "APIM_SERVER_CONNECTOR_AUTH_SECRET"
-          ]
-        }
-      ]
-    }}));
-
-  } catch(e: any) {
-    if(e instanceof ConfigTestServerError) {
-      ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TEST_ERROR, details: { error: e }}));
-    } else {
-      ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TEST_ERROR, details: { error: e.toString() }}));
-    }
-    throw e;
-  }
-
+  await ConnectorMonitor.testActiveConnector();
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTED }));
 }
 export const initializeComponents = async(): Promise<void> => {
@@ -171,6 +106,7 @@ export const initializeComponents = async(): Promise<void> => {
   await migrateComponents();
   await bootstrapComponents();
   await testConfig();
+  ConnectorMonitor.initialize(ServerConfig.getMonitorConfig().connectionTestInterval_secs);
 }
 
 // startup

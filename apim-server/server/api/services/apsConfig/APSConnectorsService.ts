@@ -8,7 +8,8 @@ import {
   ApiObjectNotFoundServerError, 
   ApiServerError, 
   BootstrapErrorFromApiError, 
-  BootstrapErrorFromError 
+  BootstrapErrorFromError, 
+  ConnectorProxyError
 } from '../../../common/ServerError';
 import { ServerUtils } from '../../../common/ServerUtils';
 import { 
@@ -357,10 +358,13 @@ export class APSConnectorsService {
         };
 
       } catch(e: any) {
-          ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
-            connectorError: ConnectorClient.getErrorAsString(e)
-          }}));  
-        throw e;
+        const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
+          connectorError: e
+        });
+        ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+          connectorProxyError: connectorProxyError
+        }}));  
+        throw connectorProxyError;
       }
 
     } else {
@@ -379,10 +383,13 @@ export class APSConnectorsService {
         };
       } catch (e: any) {
         ServerConfig.setConnectorConfig(activeApsConnector);
-        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
-          connectorError: ConnectorClient.getErrorAsString(e)
+        const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
+          connectorError: e
+        });
+        ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+          connectorProxyError: connectorProxyError
         }}));  
-        throw e;
+        throw connectorProxyError;
       } 
     }
   }

@@ -4,7 +4,8 @@ import {
   ApiInternalServerErrorFromError, 
   ApiInternalServerErrorFromMongoError, 
   ApiServerErrorFromOpenApiRequestValidatorError, 
-  ApiServerError 
+  ApiServerError, 
+  ConnectorProxyError
 } from '../../common/ServerError';
 import { EServerStatusCodes, ServerLogger, TServerLogEntry } from '../../common/ServerLogger';
 import { MongoError } from 'mongodb';
@@ -26,7 +27,11 @@ export default function errorHandler(
     if(err instanceof MongoError) internalServerError = new ApiInternalServerErrorFromMongoError(err, logName);
     else if(err instanceof OpenApiValidatorHttpError) {
       internalServerError = new ApiServerErrorFromOpenApiRequestValidatorError(logName, err, req.body, ServerLogger.getRequestInfo(req));
-    } else internalServerError = new ApiInternalServerErrorFromError(err, logName);
+    } 
+    // else if(err instanceof ConnectorProxyError) {
+
+    // } 
+    else internalServerError = new ApiInternalServerErrorFromError(err, logName);
     serverErrorHandler(internalServerError, req, res, next);
   } 
 }
