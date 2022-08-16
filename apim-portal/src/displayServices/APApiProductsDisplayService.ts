@@ -138,8 +138,6 @@ export type IAPApiProductDisplay4List = Omit<IAPApiProductDisplay, "apApiDisplay
   apApiEntityIdList: TAPEntityIdList;
 };
 
-
-
 export abstract class APApiProductsDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApiProductsDisplayService";
 
@@ -298,14 +296,25 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   private create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct }:{
     connectorApiProduct: APIProduct;
   }): TAPRawAttributeList {
+    // const funcName = 'create_ApRawAttributeList_From_ApiEntities';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // meta attributes override product attributes
     const metaRawAttributes: TAPRawAttributeList = connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined ? connectorApiProduct.meta.attributes : [];
-    const apRawAttributeList: TAPRawAttributeList = metaRawAttributes;
+    // console.log(`${logName}: connectorApiProduct.displayName=${connectorApiProduct.displayName}, metaRawAttributes=${JSON.stringify(metaRawAttributes)}`);
+    // metaRawAttributes could have null values in it, filter them out
+    const apRawAttributeList: TAPRawAttributeList = metaRawAttributes.filter( (x) => {
+      return x !== null;
+    });
+    // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList)}`);
     for(const nameValuePair of connectorApiProduct.attributes) {
-      const exists: TAPRawAttribute | undefined = apRawAttributeList.find( (apRawAttribute: TAPRawAttribute) => {
-        return apRawAttribute.name === nameValuePair.name;
-      });
-      if(exists === undefined) apRawAttributeList.push(nameValuePair);
+      // console.log(`${logName}: nameValuePair=${JSON.stringify(nameValuePair)}`);
+      if(nameValuePair !== null) {
+        const exists: TAPRawAttribute | undefined = apRawAttributeList.find( (apRawAttribute: TAPRawAttribute) => {
+          // console.log(`${logName}: apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+          return apRawAttribute.name === nameValuePair.name;
+        });
+        if(exists === undefined) apRawAttributeList.push(nameValuePair);  
+      }
     }
     return apRawAttributeList;
   }
@@ -330,10 +339,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'create_ApApiProductDisplay4List_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
+    const apRawAttributeList: TAPRawAttributeList = this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct });
+
     const _base: IAPManagedAssetDisplay = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct }),
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -357,7 +368,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -388,10 +399,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
 
+    const apRawAttributeList: TAPRawAttributeList = this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct });
+
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct }),
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -455,7 +468,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -703,11 +716,18 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     organizationId: string;
     apManagedAssetDisplay: IAPManagedAssetDisplay;
   }): Promise<TAPAttributeDisplayList> {
+    const funcName = 'create_Complete_ApAttributeList';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const _complete_ApAttributeList: TAPAttributeDisplayList = await super.create_Complete_ApAttributeList({
       organizationId: organizationId,
       apManagedAssetDisplay: apManagedAssetDisplay
     });
+
+    // TODO: need to take out the meta attribute list
+    console.log(`${logName}: _complete_ApAttributeList=${JSON.stringify(_complete_ApAttributeList, null, 2)}`);
+    throw new Error(`${logName}: check  console for _complete_ApAttributeList for update`);
+
 
     // add controlled channel parameters
     const apApiProductDisplay: IAPApiProductDisplay = apManagedAssetDisplay as IAPApiProductDisplay;

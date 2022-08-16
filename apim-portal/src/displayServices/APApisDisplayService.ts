@@ -210,10 +210,12 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     // const funcName = 'create_ApApiDisplay_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
+    const apRawAttributeList: TAPRawAttributeList = connectorApiInfo.attributes ? connectorApiInfo.attributes : [];
+
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiInfo.name,
       displayName: connectorApiInfo.name,
-      apRawAttributeList: connectorApiInfo.attributes ? connectorApiInfo.attributes : [],
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -229,7 +231,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
-      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
+      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
       
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 
