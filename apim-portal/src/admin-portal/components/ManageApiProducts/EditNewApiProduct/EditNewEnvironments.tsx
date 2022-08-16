@@ -20,6 +20,7 @@ export interface IEditNewEnvironmentsProps {
   action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  isSingleSelection: boolean;
   onSaveChanges: (apApiProductDisplay_Environments: TAPApiProductDisplay_Environments) => void;
   onBack?: () => void;
   onCancel: () => void;
@@ -94,6 +95,7 @@ export const EditNewEnvironments: React.FC<IEditNewEnvironmentsProps> = (props: 
             action={props.action}
             organizationId={props.organizationId}
             apApiProductDisplay_Environments={mo}
+            isSingleSelection={props.isSingleSelection}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

@@ -18,6 +18,7 @@ import "../ManageApiProducts.css";
 export interface IEditEnvironmentsProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
+  isSingleSelection: boolean;
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
@@ -115,6 +116,7 @@ export const EditEnvironments: React.FC<IEditEnvironmentsProps> = (props: IEditE
             action={EAction.EDIT}
             organizationId={props.organizationId}
             apApiProductDisplay_Environments={mo}
+            isSingleSelection={props.isSingleSelection}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}

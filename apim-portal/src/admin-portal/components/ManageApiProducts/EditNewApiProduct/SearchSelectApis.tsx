@@ -47,7 +47,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
   const [userContext] = React.useContext(UserContext);
 
   const isSingleSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
-
   const [isMaxExceeded, setIsMaxExceeded] = React.useState<boolean>(false);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [selectedManagedObjectList, setSelectedManagedObjectList] = React.useState<TManagedObjectList>();
@@ -133,7 +132,6 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     const funcName = 'renderDataTableHeader';
     const logName = `${ComponentName}.${funcName}()`;
     if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
-    // const isSaveDisabled: boolean = selectedManagedObjectList.length === 0;
     const isSaveDisabled: boolean = isSingleSelection ? selectedManagedObject === undefined : selectedManagedObjectList.length === 0;
     return (
       <div className="table-header">
@@ -204,90 +202,87 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
     );
   }
 
-  const renderManagedObjectDataTableMultiple = (): JSX.Element => {
-    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
-    const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
-    return (
-      <div className="card p-mt-2">
-        <DataTable
-          ref={dt}
-          className="p-datatable-sm"
-          autoLayout={true}
-          resizableColumns 
-          columnResizeMode="fit"
-          showGridlines={false}
-
-          header={renderDataTableHeader()}
-          value={managedObjectList}
-          globalFilter={globalFilter}
-          scrollable 
-          scrollHeight="800px" 
-          dataKey={dataKey}
-          emptyMessage={renderManagedObjectTableEmptyMessage()}
-          // selection
-          selection={selectedManagedObjectList}
-          onSelectionChange={onListSelectionChange}              
-          // sorting
-          sortMode='single'
-          sortField={sortField}
-          sortOrder={1}
-        >
-          <Column selectionMode="multiple" style={{width:'3em'}}/>
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          {/* <Column header="Current Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} /> */}
-          {/* <Column header="Source" headerStyle={{width: '9em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable /> */}
-          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
-        </DataTable>
-      </div>
-    );
-  }
-
-  const renderManagedObjectDataTableSingle = (): JSX.Element => {
-    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
-    const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
-    return (
-      <div className="card p-mt-2">
-        <DataTable
-          ref={dt}
-          className="p-datatable-sm"
-          autoLayout={true}
-          resizableColumns 
-          columnResizeMode="fit"
-          showGridlines={false}
-          header={renderDataTableHeader()}
-          value={managedObjectList}
-          globalFilter={globalFilter}
-          scrollable 
-          scrollHeight="800px" 
-          dataKey={dataKey}
-          emptyMessage={renderManagedObjectTableEmptyMessage()}
-          // selection
-          selectionMode="single"
-          selection={selectedManagedObject}
-          onSelectionChange={onSingleSelectionChange}              
-          // sorting
-          sortMode='single'
-          sortField={sortField}
-          sortOrder={1}
-        >
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
-        </DataTable>
-      </div>
-    );
-  }
-
   const renderManagedObjectDataTable = (): JSX.Element => {
+    const dataKey = APDisplayUtils.nameOf<IAPApiDisplay>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<IAPApiDisplay>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<IAPApiDisplay>('apSearchContent');
+    const stateSortField = APDisplayUtils.nameOf<IAPApiDisplay>('apLifecycleStageInfo.stage');
+    const businessGroupSortField = APDisplayUtils.nameOf<IAPApiDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
+
+    const renderManagedObjectDataTableMultiple = (): JSX.Element => {  
+      return (
+        <div className="card p-mt-2">
+          <DataTable
+            ref={dt}
+            className="p-datatable-sm"
+            autoLayout={true}
+            resizableColumns 
+            columnResizeMode="fit"
+            showGridlines={false}
+  
+            header={renderDataTableHeader()}
+            value={managedObjectList}
+            globalFilter={globalFilter}
+            scrollable 
+            scrollHeight="800px" 
+            dataKey={dataKey}
+            emptyMessage={renderManagedObjectTableEmptyMessage()}
+            // selection
+            selection={selectedManagedObjectList}
+            onSelectionChange={onListSelectionChange}              
+            // sorting
+            sortMode='single'
+            sortField={sortField}
+            sortOrder={1}
+          >
+            <Column selectionMode="multiple" style={{width:'3em'}}/>
+            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
+            {/* <Column header="Current Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} /> */}
+            {/* <Column header="Source" headerStyle={{width: '9em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable /> */}
+            <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
+            <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
+            <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+          </DataTable>
+        </div>
+      );
+    }
+  
+    const renderManagedObjectDataTableSingle = (): JSX.Element => {
+      return (
+        <div className="card p-mt-2">
+          <DataTable
+            ref={dt}
+            className="p-datatable-sm"
+            autoLayout={true}
+            resizableColumns 
+            columnResizeMode="fit"
+            showGridlines={false}
+            header={renderDataTableHeader()}
+            value={managedObjectList}
+            globalFilter={globalFilter}
+            scrollable 
+            scrollHeight="800px" 
+            dataKey={dataKey}
+            emptyMessage={renderManagedObjectTableEmptyMessage()}
+            // selection
+            selectionMode="single"
+            selection={selectedManagedObject}
+            onSelectionChange={onSingleSelectionChange}              
+            // sorting
+            sortMode='single'
+            sortField={sortField}
+            sortOrder={1}
+          >
+            <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
+            <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
+            <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
+            <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
+          </DataTable>
+        </div>
+      );
+    }
+  
+    // main
     if(isSingleSelection) return renderManagedObjectDataTableSingle();
     else return renderManagedObjectDataTableMultiple();
   }

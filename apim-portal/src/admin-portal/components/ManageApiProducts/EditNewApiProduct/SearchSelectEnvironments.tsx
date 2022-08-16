@@ -16,9 +16,12 @@ import { E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
+import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 export interface ISearchSelectEnvironmentsProps {
   organizationId: string;
@@ -35,19 +38,22 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   type TManagedObject = TAPEnvironmentDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const DialogHeader = 'Search & Select Environment(s):';
+  const DialogHeaderSingular = "Search & Select one Environment";
+  const DialogHeaderPlural = 'Search & Select Environment(s):';
+
   const MessageNoManagedObjectsFound = "No Environments found."
   const MessageNoManagedObjectsFoundWithFilter = 'No Environments found for filter';
   // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
   const GlobalSearchPlaceholder = 'search...';
 
+  const [organizationContext] = React.useContext(OrganizationContext);
 
+  const isSingleSelection: boolean = organizationContext.apMaxNumEnvs_Per_ApiProduct === 1;
+  const [isMaxExceeded, setIsMaxExceeded] = React.useState<boolean>(false);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [selectedManagedObjectList, setSelectedManagedObjectList] = React.useState<TManagedObjectList>();
+  const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);
-  
-  // const [managedObjectTableDataList, setManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
-  // const [selectedManagedObjectTableDataList, setSelectedManagedObjectTableDataList] = React.useState<TAPEnvironmentDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [globalFilter, setGlobalFilter] = React.useState<string>();  // * Data Table *
   const dt = React.useRef<any>(null);
@@ -82,18 +88,18 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
 
   React.useEffect(() => {
     if(managedObjectList === undefined) return;
-    setSelectedManagedObjectList(
-      APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPEnvironmentDisplay>({
-        apDisplayObjectList: managedObjectList,
-        filterByEntityIdList: props.selectedEnvironmentEntityIdList
-      })
-    );
+    const selectedList: TAPEnvironmentDisplayList = APEntityIdsService.create_ApDisplayObjectList_FilteredBy_EntityIdList<TAPEnvironmentDisplay>({
+      apDisplayObjectList: managedObjectList,
+      filterByEntityIdList: props.selectedEnvironmentEntityIdList
+    });
+    if(isSingleSelection && selectedList.length > 0) setSelectedManagedObject(selectedList[0]);
+    setSelectedManagedObjectList(selectedList);
   }, [managedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
   
   React.useEffect(() => {
     if(selectedManagedObjectList === undefined) return;
     setIsInitialized(true);
-  }, [selectedManagedObjectList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [selectedManagedObjectList, selectedManagedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if (apiCallStatus !== null) {
@@ -106,8 +112,13 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   const onSaveSelectedEnvironments = () => {
     const funcName = 'onSaveSelectedEnvironments';
     const logName = `${ComponentName}.${funcName}()`;
-    if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
-    props.onSave(selectedManagedObjectList);
+    if(isSingleSelection) {
+      if(selectedManagedObject === undefined) throw new Error(`${logName}: isSingleSelection && selectedManagedObject === undefined`);
+      props.onSave([selectedManagedObject]);
+    } else {
+      if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
+      props.onSave(selectedManagedObjectList);
+    }
   }
 
   // * Data Table *
@@ -120,7 +131,7 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     const funcName = 'renderDataTableHeader';
     const logName = `${ComponentName}.${funcName}()`;
     if(selectedManagedObjectList === undefined) throw new Error(`${logName}: selectedManagedObjectList === undefined`);
-    const isSaveDisabled: boolean = selectedManagedObjectList.length === 0;
+    const isSaveDisabled: boolean = isSingleSelection ? selectedManagedObject === undefined : selectedManagedObjectList.length === 0;
     return (
       <div className="table-header">
         <div style={{ whiteSpace: "nowrap"}}>
@@ -142,8 +153,22 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
     );
   }
 
-  const onSelectionChange = (event: any): void => {
-    setSelectedManagedObjectList(event.value);
+  const onListSelectionChange = (event: any): void => {
+    const moList: TManagedObjectList = event.value;
+    if(APOrganizationsDisplayService.is_NumEnvs_Per_ApiProduct_Limited(organizationContext.apMaxNumEnvs_Per_ApiProduct)) {
+      if(moList.length > organizationContext.apMaxNumEnvs_Per_ApiProduct) setIsMaxExceeded(true);
+      else {
+        setIsMaxExceeded(false);
+        setSelectedManagedObjectList(event.value);
+      }
+    } else {
+      setIsMaxExceeded(false);
+      setSelectedManagedObjectList(event.value);
+    }
+  }
+
+  const onSingleSelectionChange = (event: any): void => {
+    setSelectedManagedObject(event.value);
   }
 
   const renderManagedObjectTableEmptyMessage = () => {
@@ -152,10 +177,51 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-    const dataKey = APEnvironmentsDisplayService.nameOf_ApEntityId('id');
-    const sortField = APEnvironmentsDisplayService.nameOf_ApEntityId('displayName');
-    return (
-      <div className="card">
+    const dataKey = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('apSearchContent');
+    const serviceNameField = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('connectorEnvironmentResponse.serviceName');
+    const msgVpnNameField = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('connectorEnvironmentResponse.msgVpnName');
+    const datacenterProviderField = APDisplayUtils.nameOf<TAPEnvironmentDisplay>('connectorEnvironmentResponse.datacenterProvider');
+
+    const renderManagedObjectDataTableMultiple = (): JSX.Element => {  
+      return (
+        <div className="card">
+            <DataTable
+              ref={dt}
+              className="p-datatable-sm"
+              autoLayout={true}
+              resizableColumns 
+              columnResizeMode="fit"
+              showGridlines={false}
+              header={renderDataTableHeader()}
+              value={managedObjectList}
+              globalFilter={globalFilter}
+              scrollable 
+              scrollHeight="800px" 
+              dataKey={dataKey}
+              emptyMessage={renderManagedObjectTableEmptyMessage()}
+              // selection
+              selection={selectedManagedObjectList}
+              onSelectionChange={onListSelectionChange}
+              // sorting
+              sortMode='single'
+              sortField={sortField}
+              sortOrder={1}
+            >
+              <Column selectionMode="multiple" style={{width:'3em'}}/>
+              <Column header="Name" field={sortField} filterField={filterField} sortable />
+              <Column header="Service Name" field={serviceNameField} sortable />
+              <Column header="Msg Vpn Name" field={msgVpnNameField} sortable />
+              <Column header="Datacenter Provider" field={datacenterProviderField} sortable />
+          </DataTable>
+        </div>
+      );
+    }
+  
+    const renderManagedObjectDataTableSingle = (): JSX.Element => {
+      return (
+        <div className="card p-mt-2">
           <DataTable
             ref={dt}
             className="p-datatable-sm"
@@ -171,39 +237,58 @@ export const SearchSelectEnvironments: React.FC<ISearchSelectEnvironmentsProps> 
             dataKey={dataKey}
             emptyMessage={renderManagedObjectTableEmptyMessage()}
             // selection
-            selection={selectedManagedObjectList}
-            onSelectionChange={onSelectionChange}
+            selectionMode="single"
+            selection={selectedManagedObject}
+            onSelectionChange={onSingleSelectionChange}              
             // sorting
             sortMode='single'
             sortField={sortField}
             sortOrder={1}
           >
-            <Column selectionMode="multiple" style={{width:'3em'}}/>
-            <Column header="Name" field={sortField} filterField="apSearchContent" sortable />
-            <Column header="Service Name" field="connectorEnvironmentResponse.serviceName" sortable />
-            <Column header="Msg Vpn Name" field="connectorEnvironmentResponse.msgVpnName" sortable />
-            <Column header="Datacenter Provider" field="connectorEnvironmentResponse.datacenterProvider" sortable />
-            {/* <Column header="Description" field="connectorEnvironmentResponse.description" /> */}
-        </DataTable>
+            <Column header="Name" field={sortField} filterField={filterField} sortable />
+            <Column header="Service Name" field={serviceNameField} sortable />
+            <Column header="Msg Vpn Name" field={msgVpnNameField} sortable />
+            <Column header="Datacenter Provider" field={datacenterProviderField} sortable />
+          </DataTable>
+        </div>
+      );
+    }
+  
+    // main
+    if(isSingleSelection) return renderManagedObjectDataTableSingle();
+    else return renderManagedObjectDataTableMultiple();
+  }
+
+  const renderHeader = () => {
+    if(isSingleSelection) {
+      return (
+        <APComponentHeader header={DialogHeaderSingular} />  
+      ); 
+    } else {
+      return (
+        <APComponentHeader header={DialogHeaderPlural} />  
+      );
+    }
+  }
+
+  const renderMaxExceededMessage = () => {
+    return(
+      <div style={{ color: 'red' }}>
+        Max number of Environments per API Product exceeded. Max: {organizationContext.apMaxNumEnvs_Per_ApiProduct}.
       </div>
-    );
+    )
   }
 
   return (
     <div className="manage-api-products">
 
-      <APComponentHeader header={DialogHeader} />  
+      { renderHeader() }
+
+      { isMaxExceeded && renderMaxExceededMessage() }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       { isInitialialized && renderManagedObjectDataTable() }
-
-      {/* DEBUG */}
-      {/* {managedObjectTableDataList.length > 0 && selectedManagedObjectTableDataList && 
-        <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(selectedManagedObjectTableDataList, null, 2)}
-        </pre>
-      } */}
 
     </div>
   );

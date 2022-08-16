@@ -25,6 +25,7 @@ export interface IEditNewEnvironmentsFormProps {
   action: EAction;
   organizationId: string;
   apApiProductDisplay_Environments: TAPApiProductDisplay_Environments;
+  isSingleSelection: boolean;
   onSubmit: (apApiProductDisplay_Environments: TAPApiProductDisplay_Environments) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -42,7 +43,9 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
     formData: TManagedObjectFormData;
   }
   
-  const ButtonLabelSelectEnvironments = 'Select Environment(s)';
+  const ButtonLabelSelectEnvs = props.isSingleSelection ? 'Select Environment' : 'Select Environment(s)';
+  const HeaderFormElementEnvs = props.isSingleSelection ? 'Environment' : 'Environment(s)';
+
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
@@ -200,7 +203,7 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
 
   const renderEnvironmentsToolbar = () => {
     let jsxButtonList: Array<JSX.Element> = [
-      <Button style={ { width: '20rem' } } type="button" label={ButtonLabelSelectEnvironments} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchEnvironments()} />,
+      <Button style={ { width: '20rem' } } type="button" label={ButtonLabelSelectEnvs} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSearchEnvironments()} />,
     ];
     return (
       <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
@@ -219,7 +222,7 @@ export const EditNewEnvironmentsForm: React.FC<IEditNewEnvironmentsFormProps> = 
         <div className="p-fluid">
           <form id={props.formId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">      
             {/* environments */}
-            <div className="p-text-bold p-mb-3">Environments:</div>
+            <div className="p-text-bold p-mb-3">{HeaderFormElementEnvs}:</div>
             {/* <div className="p-ml-3 p-mt-3"> */}
             <div className="p-field">
               <span className="p-float-label">

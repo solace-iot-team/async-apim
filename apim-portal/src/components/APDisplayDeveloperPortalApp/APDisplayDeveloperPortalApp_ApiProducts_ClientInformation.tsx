@@ -4,7 +4,7 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import APDeveloperPortalAppApiProductsDisplayService, { 
+import { 
   TAPAppClientInformationDisplay,
   TAPAppGuaranteedMessagingDisplay,
   TAPApp_ApiProduct_ClientInformationDisplay, 
@@ -64,8 +64,8 @@ export const APDisplayDeveloperPortalAppApiProductsClientInformation: React.FC<I
   }
 
   const renderComponentContent = (): JSX.Element => {    
-    const dataKey = APDeveloperPortalAppApiProductsDisplayService.nameOf_ApEntityId('id');
-    const nameField = APDeveloperPortalAppApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    const dataKey = APDisplayUtils.nameOf<TAPApp_ApiProduct_ClientInformationDisplay>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<TAPApp_ApiProduct_ClientInformationDisplay>('apEntityId.displayName');
 
     return (
       <div className="card">

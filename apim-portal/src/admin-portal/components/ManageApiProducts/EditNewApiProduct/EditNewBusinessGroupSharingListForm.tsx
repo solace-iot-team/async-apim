@@ -187,10 +187,15 @@ export const EditNewBusinessGroupSharingListForm: React.FC<IEditNewBusinessGroup
         </React.Fragment>
       );
     }
-    const dataKey = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('id');
-    const sortField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('displayName');
-    const businessGroupNameField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('displayName');
-    const accessTypeField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing('apSharingAccessType');
+    // const dataKey = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('id');
+    // const sortField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('displayName');
+    // const businessGroupNameField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing_ApEntityId('displayName');
+    // const accessTypeField = APAdminPortalApiProductsDisplayService.nameOf_BusinessGroupSharing('apSharingAccessType');
+    const dataKey = APDisplayUtils.nameOf<TAPManagedAssetDisplay_BusinessGroupSharing>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TAPManagedAssetDisplay_BusinessGroupSharing>('apEntityId.displayName');
+    const businessGroupNameField = APDisplayUtils.nameOf<TAPManagedAssetDisplay_BusinessGroupSharing>('apEntityId.displayName');
+    const accessTypeField = APDisplayUtils.nameOf<TAPManagedAssetDisplay_BusinessGroupSharing>('apSharingAccessType');
+
     return (
       <React.Fragment>
         <DataTable

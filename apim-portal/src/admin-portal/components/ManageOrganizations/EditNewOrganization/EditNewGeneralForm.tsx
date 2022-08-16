@@ -6,18 +6,21 @@ import { InputText } from 'primereact/inputtext';
 import { Checkbox } from "primereact/checkbox";
 import { classNames } from 'primereact/utils';
 import { InputNumber } from "primereact/inputnumber";
+import { Dropdown } from "primereact/dropdown";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import { EAction, E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
+import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, EAction, E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
+import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -35,6 +38,11 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
+
+    assetIncVersionStrategy: APSAssetIncVersionStrategy;
+
+    is_Configured_MaxNumEnvs_Per_ApiProduct: boolean;
+    maxNumEnvs_Per_ApiProduct: number;
 
     is_Configured_MaxNumApis_Per_ApiProduct: boolean;
     maxNumApis_Per_ApiProduct: number;
@@ -54,7 +62,12 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
-      
+
+      assetIncVersionStrategy: mo.apAssetIncVersionStrategy,
+
+      is_Configured_MaxNumEnvs_Per_ApiProduct: mo.apMaxNumEnvs_Per_ApiProduct > APOrganizationsDisplayService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
+      maxNumEnvs_Per_ApiProduct: mo.apMaxNumEnvs_Per_ApiProduct,
+
       is_Configured_MaxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct > APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct(),
       maxNumApis_Per_ApiProduct: mo.apMaxNumApis_Per_ApiProduct,
 
@@ -76,6 +89,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
+    mo.apAssetIncVersionStrategy = fd.assetIncVersionStrategy;
+    mo.apMaxNumEnvs_Per_ApiProduct = fd.is_Configured_MaxNumEnvs_Per_ApiProduct ? fd.maxNumEnvs_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumEnvs_Per_ApiProduct();
     mo.apMaxNumApis_Per_ApiProduct = fd.is_Configured_MaxNumApis_Per_ApiProduct ? fd.maxNumApis_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct();
     mo.apAppCredentialsExpiryDuration_millis = fd.is_Configured_AppCredentialsExpiryDays ? APDisplayUtils.convertDays_To_Milliseconds(fd.appCredentialsExpiryDays) : APOrganizationsDisplayService.get_DefaultAppCredentialsExpiryDuration_Millis();
     // DEBUG
@@ -149,6 +164,51 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     if(checkResult === undefined) return false;
     if(checkResult) return 'Organization Id already exists, choose a unique Id.';
     return true;
+  }
+
+  const renderFields_MaxNumEnvs_Per_ApiProduct = (isActive: boolean) => {
+    const rules_MaxNumEnvs_Per_ApiProduct = (isActive: boolean): any => {
+      if(isActive) return {
+        required: "Enter Max Number of Environments per API Product.",
+        min: {
+          value: 1,
+          message: 'Max Number of Environments per API Product must be > 0.',
+        }
+      };
+      else return {
+        required: false,
+        min: undefined
+      };
+    }
+    if(isActive === undefined) return (<></>);
+    return (
+      <div className="p-ml-2 p-mt-4" hidden={!isActive}>
+        {/* maxNumEnvs_Per_ApiProduct */}
+        <div className="p-field">
+          <span className="p-float-label">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="formData.maxNumEnvs_Per_ApiProduct"
+              rules={rules_MaxNumEnvs_Per_ApiProduct(isActive)}
+              render={( { field, fieldState }) => {
+                return(
+                  <InputNumber
+                    id={field.name}
+                    {...field}
+                    onChange={(e) => field.onChange(e.value)}
+                    mode="decimal" 
+                    useGrouping={false}
+                    className={classNames({ 'p-invalid': fieldState.invalid })}      
+                  />
+                );
+              }}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.maxNumEnvs_Per_ApiProduct })}>Max Number of Environments per API Product*</label>
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.maxNumEnvs_Per_ApiProduct)}
+        </div>
+      </div>
+    );
   }
 
   const renderFields_MaxNumApis_Per_ApiProduct = (isActive: boolean) => {
@@ -243,6 +303,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
 
   const renderManagedObjectForm = () => {
     const isNewObject: boolean = isNewManagedObject();
+    const is_Configured_MaxNumEnvs_Per_ApiProduct = managedObjectUseForm.watch('formData.is_Configured_MaxNumEnvs_Per_ApiProduct');
     const is_Configured_MaxNumApis_Per_ApiProduct = managedObjectUseForm.watch('formData.is_Configured_MaxNumApis_Per_ApiProduct');
     const is_Configured_AppCredentialsExpiryDays = managedObjectUseForm.watch('formData.is_Configured_AppCredentialsExpiryDays');
     return (
@@ -296,57 +357,121 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
             </div>
-            {/* set max num apis per api product */}
-            <div className="p-field-checkbox">
-              <span>
-                <Controller
-                  control={managedObjectUseForm.control}
-                  name="formData.is_Configured_MaxNumApis_Per_ApiProduct"
-                  render={( { field, fieldState }) => {
-                    return(
-                      <Checkbox
-                        inputId={field.name}
-                        checked={field.value}
-                        // onChange={(e) => field.onChange(e.checked)}     
-                        onChange={(e) => {                           
-                          field.onChange(e.checked);
-                          managedObjectUseForm.clearErrors('formData.maxNumApis_Per_ApiProduct');
-                        }}    
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                      />
-                  )}}
-                />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct })}> Configure Max Number of APIs per API Product</label>
-              </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct)}
-            </div>
-            { renderFields_MaxNumApis_Per_ApiProduct(is_Configured_MaxNumApis_Per_ApiProduct) }
 
-            {/* set max num apis per api product */}
-            <div className="p-field-checkbox">
-              <span>
-                <Controller
-                  control={managedObjectUseForm.control}
-                  name="formData.is_Configured_AppCredentialsExpiryDays"
-                  render={( { field, fieldState }) => {
-                    return(
-                      <Checkbox
-                        inputId={field.name}
-                        checked={field.value}
-                        // onChange={(e) => field.onChange(e.checked)}     
-                        onChange={(e) => {                           
-                          field.onChange(e.checked);
-                          managedObjectUseForm.clearErrors('formData.appCredentialsExpiryDays');
-                        }}    
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                      />
-                  )}}
-                />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays })}> Configure App Credentials Expiry</label>
-              </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays)}
+            <div className="p-mb-4 p-mt-4 ap-display-component-header">{DisplaySectionHeader_AssetManagement}:</div>
+            <div className="p-ml-4">
+              {/* asset inc version strategy */}
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    control={managedObjectUseForm.control}
+                    name="formData.assetIncVersionStrategy"
+                    rules={APConnectorFormValidationRules.isRequired('Select Asset Version Increment Strategy.', true)}
+                    render={( { field, fieldState }) => {
+                      return(
+                        <Dropdown
+                          id={field.name}
+                          {...field}
+                          options={Object.values(APSAssetIncVersionStrategy)} 
+                          onChange={(e) => {                           
+                            field.onChange(e.value);
+                            managedObjectUseForm.clearErrors();
+                          }}
+                          className={classNames({ 'p-invalid': fieldState.invalid })}      
+                          // leave it fixed at patch
+                          disabled={true}                 
+                        />                        
+                      );
+                    }}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.assetIncVersionStrategy })}>Asset Version Increment Strategy*</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.assetIncVersionStrategy)}
+              </div>
             </div>
-            { renderFields_AppCredentialsExpiryDays(is_Configured_AppCredentialsExpiryDays) }
+
+            <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_ApiProducts}:</div>
+            <div className="p-ml-4">
+              {/* set max num envs per api product */}
+              <div className="p-field-checkbox">
+                <span>
+                  <Controller
+                    control={managedObjectUseForm.control}
+                    name="formData.is_Configured_MaxNumEnvs_Per_ApiProduct"
+                    render={( { field, fieldState }) => {
+                      return(
+                        <Checkbox
+                          inputId={field.name}
+                          checked={field.value}
+                          // onChange={(e) => field.onChange(e.checked)}     
+                          onChange={(e) => {                           
+                            field.onChange(e.checked);
+                            managedObjectUseForm.clearErrors('formData.maxNumEnvs_Per_ApiProduct');
+                          }}    
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />
+                    )}}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumEnvs_Per_ApiProduct })}> Configure Max Number of Environments per API Product</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumEnvs_Per_ApiProduct)}
+              </div>
+              { renderFields_MaxNumEnvs_Per_ApiProduct(is_Configured_MaxNumEnvs_Per_ApiProduct) }
+              {/* set max num apis per api product */}
+              <div className="p-field-checkbox">
+                <span>
+                  <Controller
+                    control={managedObjectUseForm.control}
+                    name="formData.is_Configured_MaxNumApis_Per_ApiProduct"
+                    render={( { field, fieldState }) => {
+                      return(
+                        <Checkbox
+                          inputId={field.name}
+                          checked={field.value}
+                          // onChange={(e) => field.onChange(e.checked)}     
+                          onChange={(e) => {                           
+                            field.onChange(e.checked);
+                            managedObjectUseForm.clearErrors('formData.maxNumApis_Per_ApiProduct');
+                          }}    
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />
+                    )}}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct })}> Configure Max Number of APIs per API Product</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_MaxNumApis_Per_ApiProduct)}
+              </div>
+              { renderFields_MaxNumApis_Per_ApiProduct(is_Configured_MaxNumApis_Per_ApiProduct) }
+            </div>
+
+            <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_Apps}:</div>
+            <div className="p-ml-4">
+              {/* set app credentials expiry */}
+              <div className="p-field-checkbox">
+                <span>
+                  <Controller
+                    control={managedObjectUseForm.control}
+                    name="formData.is_Configured_AppCredentialsExpiryDays"
+                    render={( { field, fieldState }) => {
+                      return(
+                        <Checkbox
+                          inputId={field.name}
+                          checked={field.value}
+                          // onChange={(e) => field.onChange(e.checked)}     
+                          onChange={(e) => {                           
+                            field.onChange(e.checked);
+                            managedObjectUseForm.clearErrors('formData.appCredentialsExpiryDays');
+                          }}    
+                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                        />
+                    )}}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays })}> Configure App Credentials Expiry</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.is_Configured_AppCredentialsExpiryDays)}
+              </div>
+              { renderFields_AppCredentialsExpiryDays(is_Configured_AppCredentialsExpiryDays) }
+            </div>              
           </form>  
         </div>
       </div>

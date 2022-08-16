@@ -27,6 +27,7 @@ import APExternalSystemsDisplayService from "../../../../displayServices/APExter
 import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { IAPLifecycleStageInfo } from "../../../../displayServices/APLifecycleStageInfoDisplayService";
 import { ManagePublishApiProductForm } from "./ManagePublishApiProductForm";
+import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -53,6 +54,8 @@ export const ManagePublishApiProduct: React.FC<IManagePublishApiProductProps> = 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [userContext] = React.useContext(UserContext);
+  const [organizationContext] = React.useContext(OrganizationContext);
+
   const FormId = `ManageApiProducts_ManagePublish_${ComponentName}`;
 
   // * Api Calls * 
@@ -102,7 +105,10 @@ export const ManagePublishApiProduct: React.FC<IManagePublishApiProductProps> = 
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`); 
     try { 
       // create a suggested next version
-      apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion);
+      apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextLifecycleUpdateVersion({
+        currentVersion: apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion,
+        apsAssetIncVersionStrategy: organizationContext.apAssetIncVersionStrategy
+      });
       await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
         organizationId: props.organizationId,
         apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_PublishDestinationInfo({ 

@@ -1,5 +1,7 @@
 import { Meta } from "@solace-iot-team/apim-connector-openapi-browser";
 import { SemVer, coerce as SemVerCoerce, valid as SemVerValid } from "semver";
+import { Globals } from "../utils/Globals";
+import { APSAssetIncVersionStrategy } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 export type TAPVersionTreeTableNode = {
   key: string;
@@ -27,10 +29,6 @@ export type TAPVersionList = Array<string>;
 
 class APVersioningDisplayService {
   private readonly ComponentName = "APVersioningDisplayService";
-
-  public nameOf(name: keyof IAPVersionInfo) {
-    return `${name}`;
-  }
 
   public create_Empty_ApVersionInfo = (): IAPVersionInfo => {
     return {
@@ -284,15 +282,41 @@ class APVersioningDisplayService {
     return versionSemVer.format();
   }
 
-  public create_NextVersion(version: string): string {
-    const versionSemVer = new SemVer(version);
-    versionSemVer.inc("patch");
-    return versionSemVer.format();
-  }
+  // public create_NextVersion(version: string): string {
+  //   const versionSemVer = new SemVer(version);
+  //   versionSemVer.inc("patch");
+  //   return versionSemVer.format();
+  // }
   
-  public create_NextLifecycleUpdateVersion(version: string): string {
-    const versionSemVer = new SemVer(version);
-    versionSemVer.inc("patch");
+  // public create_NextLifecycleUpdateVersion(version: string): string {
+  //   const versionSemVer = new SemVer(version);
+  //   versionSemVer.inc("patch");
+  //   return versionSemVer.format();
+  // }
+
+  // public create_NextVersion(version: string): string {
+  //   const versionSemVer = new SemVer(version);
+  //   versionSemVer.inc("patch");
+  //   return versionSemVer.format();
+  // }
+  
+  public create_NextLifecycleUpdateVersion({ currentVersion, apsAssetIncVersionStrategy }:{
+    currentVersion: string;
+    apsAssetIncVersionStrategy: APSAssetIncVersionStrategy;
+  }): string {
+    const funcName = 'create_NextLifecycleUpdateVersion';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    const versionSemVer = new SemVer(currentVersion);
+    switch(apsAssetIncVersionStrategy) {
+      case APSAssetIncVersionStrategy.BUMP_MINOR:
+        versionSemVer.inc("minor");
+        break;
+      case APSAssetIncVersionStrategy.BUMP_PATCH:
+        versionSemVer.inc("patch");
+        break;
+      default:
+        Globals.assertNever(logName, apsAssetIncVersionStrategy);
+    }
     return versionSemVer.format();
   }
 

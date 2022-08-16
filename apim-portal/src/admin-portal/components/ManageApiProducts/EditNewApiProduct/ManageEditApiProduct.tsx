@@ -52,7 +52,9 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
   const [userContext] = React.useContext(UserContext);
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const IsSingleEnvSelection: boolean = organizationContext.apMaxNumEnvs_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
+  const EnvTabHeader: string = IsSingleEnvSelection ? "Environment" : "Environment(s)";
 
   // * Api Calls *
 
@@ -67,7 +69,10 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       // create a suggested next version
-      apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion);
+      apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextLifecycleUpdateVersion({
+        currentVersion: apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion,
+        apsAssetIncVersionStrategy: organizationContext.apAssetIncVersionStrategy
+      });
       setManagedObject(apAdminPortalApiProductDisplay);
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -214,7 +219,7 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
             key={`${ComponentName}_EditApis_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
-            isSingleApiSelection={IsSingleApiSelection}
+            isSingleSelection={IsSingleApiSelection}
             onError={onError_SubComponent}
             onCancel={props.onCancel}
             onLoadingChange={props.onLoadingChange}
@@ -239,12 +244,13 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
       </TabPanel>
     );
     tabPanels.push(
-      <TabPanel header='Environments'>
+      <TabPanel header={EnvTabHeader}>
         <React.Fragment>
           <EditEnvironments
             key={`${ComponentName}_EditEnvironments_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
+            isSingleSelection={IsSingleEnvSelection}
             onError={onError_SubComponent}
             onCancel={props.onCancel}
             onLoadingChange={props.onLoadingChange}

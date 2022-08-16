@@ -73,7 +73,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
 
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const IsSingleEnvSelection: boolean = organizationContext.apMaxNumEnvs_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
+  const EnvTabHeader: string = IsSingleEnvSelection ? "Environment" : "Environment(s)";
   const viewAppReferenceHistory = useHistory<TAPPageNavigationInfo>();
   const ReferencedByTabIndex: number = 5;
 
@@ -481,9 +483,9 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       </TabPanel>
     );
     tabPanels.push(
-      <TabPanel header='Environments'>
+      <TabPanel header={EnvTabHeader}>
         <React.Fragment>
-          <div className="p-text-bold">Environments:</div>
+          <div className="p-text-bold">{EnvTabHeader}:</div>
           <div className="p-ml-2">
             {APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(managedObject.apEnvironmentDisplayList).join(', ')}
           </div>

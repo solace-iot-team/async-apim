@@ -1,5 +1,8 @@
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
+export const DisplaySectionHeader_AssetManagement = "Asset Management";
+export const DisplaySectionHeader_ApiProducts = "API Products";
+export const DisplaySectionHeader_Apps = "Apps";
 export const DisplaySectionHeader_SolaceCloudServices = "Solace Cloud Services";
 export const DisplaySectionHeader_EventPortalServices = "Event Portal Services";
 export const DisplaySectionHeader_SempV2Auth = "Broker SempV2 Auth";

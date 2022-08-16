@@ -4,7 +4,7 @@ import React from "react";
 import { TabPanel, TabView } from "primereact/tabview";
 
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import { DisplaySectionHeader_EventPortalServices, DisplaySectionHeader_SempV2Auth, DisplaySectionHeader_SolaceCloudServices, E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
+import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, DisplaySectionHeader_EventPortalServices, DisplaySectionHeader_SempV2Auth, DisplaySectionHeader_SolaceCloudServices, E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APOrganizationsDisplayService, { 
@@ -28,6 +28,7 @@ import { DisplayIntegration } from "./DisplayIntegration";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
@@ -252,7 +253,17 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    
+
+    const renderAssetIncVersionStrategy = (apsAssetIncVersionStrategy: APSAssetIncVersionStrategy): string => {
+      // TODO: switch and translate e-num values to displayValues
+      return apsAssetIncVersionStrategy;
+    }
+
+    const renderEnvs2ApiProductsRatio = (ratio: number): string => {
+      if(ratio === -1) return 'not limited';
+      return ratio.toString();
+    }
+
     const renderApis2ApiProductsRatio = (ratio: number): string => {
       if(ratio === -1) return 'not limited';
       return ratio.toString();
@@ -266,11 +277,20 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     const jsxTabPanelList: Array<JSX.Element> = [];
     jsxTabPanelList.push(
       <TabPanel header='General' key={Globals.getUUID()}>
-        <React.Fragment>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_AssetManagement}:</div>
+        <div className="p-ml-4">
+          <p><b>Version Increment Strategy: </b>{renderAssetIncVersionStrategy(managedObject.apAssetIncVersionStrategy)}</p>
+        </div>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_ApiProducts}:</div>
+        <div className="p-ml-4">
+          <p><b>Max Number of Environments per API Product: </b>{renderEnvs2ApiProductsRatio(managedObject.apMaxNumEnvs_Per_ApiProduct)}</p>
           <p><b>Max Number of APIs per API Product: </b>{renderApis2ApiProductsRatio(managedObject.apMaxNumApis_Per_ApiProduct)}</p>
+        </div>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_Apps}:</div>
+        <div className="p-ml-4">
           <p><b>App Credentials Expiration: </b>{render_apAppCredentialsExpiryDuration(managedObject.apAppCredentialsExpiryDuration_millis)}</p>
-        </React.Fragment>
-        </TabPanel>
+        </div>
+      </TabPanel>
     );
     managedObject.apOrganizationConnectivityConfigType = EAPOrganizationConnectivityConfigType.ADVANCED
     jsxTabPanelList.push(

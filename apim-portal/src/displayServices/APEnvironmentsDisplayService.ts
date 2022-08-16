@@ -4,7 +4,7 @@ import {
   EnvironmentsService,
   Protocol,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay, TAPEntityId } from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APProtocolsDisplayService, { TAPProtocolDisplay, TAPProtocolDisplayList } from './APProtocolsDisplayService';
 
@@ -18,13 +18,6 @@ export type TAPEnvironmentDisplayList = Array<TAPEnvironmentDisplay>;
 
 class APEnvironmentsDisplayService {
   private readonly BaseComponentName = "APEnvironmentsDisplayService";
-
-  public nameOf(name: keyof TAPEnvironmentDisplay) {
-    return name;
-  }
-  public nameOf_ApEntityId(name: keyof TAPEntityId) {
-    return `${this.nameOf('apEntityId')}.${name}`;
-  }
 
   private create_DisplayString(envResponse: EnvironmentResponse): string {
     return `${envResponse.displayName} (${envResponse.datacenterProvider}:${envResponse.datacenterId})`;

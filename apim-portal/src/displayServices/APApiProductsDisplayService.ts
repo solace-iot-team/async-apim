@@ -146,13 +146,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   private readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
   private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
 
-  public nameOf<IAPApiProductDisplay>(name: keyof IAPApiProductDisplay) {
-    return name;
-  }
-  public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
-    return `${this.nameOf<IAPApiProductDisplay>('apLifecycleStageInfo')}.${name}`;
-  }
-
   // private filterConnectorApiProductList(connectorApiProductList: Array<APIProduct>, includeAccessLevel?: APIProductAccessLevel): Array<APIProduct> {
   //   if(includeAccessLevel === undefined) return connectorApiProductList;
   //   const indicesToDelete: Array<number> = connectorApiProductList.map( (connectorApiProduct: APIProduct, idx: number) => {

@@ -28,7 +28,7 @@ export interface IEditNewApisFormProps {
   action: EAction;
   organizationId: string;
   apApiProductDisplay_Apis: TAPApiProductDisplay_Apis;
-  isSingleApiSelection: boolean;
+  isSingleSelection: boolean;
   onSubmit: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
@@ -134,8 +134,8 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   const [selectedApis_RefreshCounter, setSelectedApis_RefreshCounter] = React.useState<number>(0);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
 
-  const ButtonLabelSelectApis = props.isSingleApiSelection ? 'Select API' : 'Select API(s)';
-  const HeaderFormElementApis = props.isSingleApiSelection ? 'API' : 'API(s)';
+  const ButtonLabelSelectApis = props.isSingleSelection ? 'Select API' : 'Select API(s)';
+  const HeaderFormElementApis = props.isSingleSelection ? 'API' : 'API(s)';
 
   const doInitialize = async () => {
     setManagedObject(props.apApiProductDisplay_Apis);

@@ -101,18 +101,18 @@ export type TAPManagedAssetDisplay_AccessAndState = {
 export abstract class APManagedAssetDisplayService {
   private readonly BaseComponentName = "APManagedAssetDisplayService";
 
-  public nameOf<T extends IAPManagedAssetDisplay>(name: keyof T) {
-    return name;
-  }
-  public nameOf_ApEntityId(name: keyof TAPEntityId) {
-    return `${this.nameOf('apEntityId')}.${name}`;
-  }
-  private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
-    return `${this.nameOf('apBusinessGroupInfo')}.${name}`;
-  }
-  public nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId(name: keyof TAPEntityId) {
-    return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
-  }
+  // public nameOf<T extends IAPManagedAssetDisplay>(name: keyof T) {
+  //   return name;
+  // }
+  // public nameOf_ApEntityId(name: keyof TAPEntityId) {
+  //   return `${this.nameOf('apEntityId')}.${name}`;
+  // }
+  // private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
+  //   return `${this.nameOf('apBusinessGroupInfo')}.${name}`;
+  // }
+  // public nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId(name: keyof TAPEntityId) {
+  //   return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
+  // }
   
   // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference(name: keyof TAPBusinessGroupDisplayReference) {
   //   return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
@@ -120,12 +120,12 @@ export abstract class APManagedAssetDisplayService {
   // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId(name: keyof TAPEntityId) {
   //   return `${this._nameOf_ApBusinessGroupInfo('apEntityId')}.${name}`;
   // }
-  public nameOf_BusinessGroupSharing(name: keyof TAPManagedAssetDisplay_BusinessGroupSharing) {
-    return name;
-  }
-  public nameOf_BusinessGroupSharing_ApEntityId(name: keyof TAPEntityId) {
-    return `${this.nameOf_BusinessGroupSharing('apEntityId')}.${name}`;
-  }
+  // public nameOf_BusinessGroupSharing(name: keyof TAPManagedAssetDisplay_BusinessGroupSharing) {
+  //   return name;
+  // }
+  // public nameOf_BusinessGroupSharing_ApEntityId(name: keyof TAPEntityId) {
+  //   return `${this.nameOf_BusinessGroupSharing('apEntityId')}.${name}`;
+  // }
 
   protected create_ManagedAssetAttribute_Prefix = (): string => {
     return `_${CAPManagedAssetAttribute_Prefix}_`;
