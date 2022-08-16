@@ -1,11 +1,5 @@
-import { MongoPersistenceService } from "./MongoPersistenceService";
-
-import { TMonitorConfig } from "./ServerConfig";
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
-import ServerStatus, { TConnectionTestDetails } from "./ServerStatus";
-import { ApiKeyNotFoundServerError, ConnectorProxyError, ServerError } from "./ServerError";
-import { MongoDatabaseAccess } from "./MongoDatabaseAccess";
-import { initializeComponents } from "..";
+import { ConnectorProxyError } from "./ServerError";
 import { APSConnectorStatus } from "../../src/@solace-iot-team/apim-server-openapi-node";
 import APSConnectorsService from "../api/services/apsConfig/APSConnectorsService";
 

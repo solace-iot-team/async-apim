@@ -5,7 +5,6 @@ import {
   ApiInternalServerErrorFromMongoError, 
   ApiServerErrorFromOpenApiRequestValidatorError, 
   ApiServerError, 
-  ConnectorProxyError
 } from '../../common/ServerError';
 import { EServerStatusCodes, ServerLogger, TServerLogEntry } from '../../common/ServerLogger';
 import { MongoError } from 'mongodb';

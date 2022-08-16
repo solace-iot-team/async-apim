@@ -38,6 +38,7 @@ import {
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
+import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
 
 const scriptName: string = path.basename(__filename);
@@ -75,7 +76,11 @@ describe(`${scriptName}`, () => {
     try {
       const apsOrg: APSOrganizationCreate = {
         organizationId: OrganizationId,
-        displayName: OrganizationId
+        displayName: OrganizationId,
+        appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+        maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+        assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+        maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       }
       const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
         requestBody: apsOrg

@@ -24,7 +24,6 @@ import {
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSConnectorsServiceEventEmitter from './APSConnetorsServiceEvent';
 import { About, AdministrationService } from '@solace-iot-team/apim-connector-openapi-node';
-import { ConnectorClient } from '../../../common/ConnectorClient';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
 

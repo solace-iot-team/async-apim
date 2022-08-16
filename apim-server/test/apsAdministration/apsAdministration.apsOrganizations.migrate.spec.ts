@@ -84,7 +84,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should migrate all DB 0 orgs to DB 1 orgs`, async () => {
+  it(`${scriptName}: should migrate all DB 0 orgs to DB 'latest' orgs`, async () => {
     try {
       const numberMigrated = await APSOrganizationsDBMigrate.migrate(APSOrganizationsService);
       expect(numberMigrated, TestLogger.createTestFailMessage(`incorrect numberMigrated=${numberMigrated}`)).to.equal(numberMigrated);
@@ -94,7 +94,7 @@ describe(`${scriptName}`, () => {
     }
   });
 
-  it(`${scriptName}: should get all migrated DB 0 orgs via API`, async () => {
+  it(`${scriptName}: should get all migrated DB orgs via API`, async () => {
     try {
       const expectedTotalCount = NumberOfOrganizations;
       const listAPSOrganizationResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();

@@ -5,7 +5,7 @@ import ServerConfig from './common/ServerConfig';
 import ServerStatus from './common/ServerStatus';
 import { EServerStatusCodes, ServerLogger } from './common/ServerLogger';
 import { MongoDatabaseAccess } from './common/MongoDatabaseAccess';
-import { BootstrapErrorFromApiError, BootstrapErrorFromError, ConfigTestServerError, ConnectorProxyError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
+import { BootstrapErrorFromApiError, BootstrapErrorFromError, MigrateServerError, ServerError, ServerErrorFromError } from './common/ServerError';
 import APSConnectorsService from './api/services/apsConfig/APSConnectorsService';
 import APSUsersService from './api/services/APSUsersService/APSUsersService';
 import { ServerClient } from './common/ServerClient';
@@ -17,7 +17,6 @@ import APSBusinessGroupsService from './api/services/apsOrganization/apsBusiness
 import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
 import { ConnectorClient } from './common/ConnectorClient';
-import { APSConnectorStatus } from '../src/@solace-iot-team/apim-server-openapi-node';
 import ConnectorMonitor from './common/ConnectorMonitor';
 
 const componentName = 'index';

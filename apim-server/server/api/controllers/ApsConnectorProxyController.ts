@@ -51,7 +51,6 @@ export class ApsConnectorProxyController {
       const funcName = 'connectorRequestCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
 
-      res;
       options;  
       const anyReq = req as any;
 
@@ -65,7 +64,10 @@ export class ApsConnectorProxyController {
           url: `${anyOptions.target.href}${anyReq.originalUrl}`,
           body: anyReq.body,  
         },
-        // response: res
+        response: {
+          statusCode: res.statusCode,
+          statusMessage: res.statusMessage
+        }
       } } ));
   
       if (!anyReq.body || !Object.keys(anyReq.body).length) {
@@ -125,7 +127,6 @@ export class ApsConnectorProxyController {
         connectorError: err
       });
       next(connectorError);
-     
     });
   }
 }

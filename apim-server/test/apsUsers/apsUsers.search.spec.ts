@@ -159,7 +159,9 @@ describe(`${scriptName}`, () => {
             organizationId: orgId,
             displayName: orgId,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
       }
@@ -170,7 +172,9 @@ describe(`${scriptName}`, () => {
             organizationId: orgId,
             displayName: orgId,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
       }
