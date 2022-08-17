@@ -31,7 +31,7 @@ export class ConnectorMonitor {
       }}));
     } catch(err: any) {
       if(err instanceof ConnectorProxyError) {
-        ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.ACTIVE_CONNECTOR_TEST_ERROR, details: { error: err }}));
+        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.ACTIVE_CONNECTOR_TEST_ERROR, details: { error: err }}));
       } else {
         ServerLogger.fatal(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.ACTIVE_CONNECTOR_TEST_ERROR, details: { error: err.toString() }}));
         throw err;

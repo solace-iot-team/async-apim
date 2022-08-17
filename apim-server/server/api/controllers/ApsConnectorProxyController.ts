@@ -120,7 +120,7 @@ export class ApsConnectorProxyController {
       // called when network errors occur 
       const funcName = 'ConnectorProxy.web.errorCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
-      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
+      ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
         error: err 
       } } ));
       const connectorError = new ConnectorProxyError(logName, undefined, {

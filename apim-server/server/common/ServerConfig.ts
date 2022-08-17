@@ -298,18 +298,20 @@ export class ServerConfig {
   public getActiveConnectorTarget = (): string => {
     const funcName = 'getActiveConnectorTarget';
     const logName = `${ServerConfig.name}.${funcName}()`;
-    if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
-    const connectorLocationConfigType: APSLocationConfigExternal.configType | APSLocationConfigInternalProxy.configType = this.config.connectorConfig.connectorClientConfig.locationConfig.configType;
-    switch(connectorLocationConfigType) {
-      case APSLocationConfigExternal.configType.EXTERNAL:
-        const apsLocationConfigExternal: APSLocationConfigExternal =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigExternal;
-        // http://18.184.18.52:3000/v1
-        return `${apsLocationConfigExternal.protocol}://${apsLocationConfigExternal.host}:${apsLocationConfigExternal.port}/v1`;
-      case APSLocationConfigInternalProxy.configType.INTERNAL_PROXY:
-        // const apsLocationConfigInternalProxy: APSLocationConfigInternalProxy =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigInternalProxy;
-        return this.config.expressServer.connectorProxyConfig.internalConnectorApiUrl;
-      default:
-        ServerUtils.assertNever(logName, connectorLocationConfigType);
+    // if(this.config.connectorConfig === undefined) throw new ServerError(logName, 'this.config.connectorConfig === undefined');
+    if(this.config.connectorConfig !== undefined) {
+      const connectorLocationConfigType: APSLocationConfigExternal.configType | APSLocationConfigInternalProxy.configType = this.config.connectorConfig.connectorClientConfig.locationConfig.configType;
+      switch(connectorLocationConfigType) {
+        case APSLocationConfigExternal.configType.EXTERNAL:
+          const apsLocationConfigExternal: APSLocationConfigExternal =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigExternal;
+          // http://18.184.18.52:3000/v1
+          return `${apsLocationConfigExternal.protocol}://${apsLocationConfigExternal.host}:${apsLocationConfigExternal.port}/v1`;
+        case APSLocationConfigInternalProxy.configType.INTERNAL_PROXY:
+          // const apsLocationConfigInternalProxy: APSLocationConfigInternalProxy =  this.config.connectorConfig.connectorClientConfig.locationConfig as APSLocationConfigInternalProxy;
+          return this.config.expressServer.connectorProxyConfig.internalConnectorApiUrl;
+        default:
+          ServerUtils.assertNever(logName, connectorLocationConfigType);
+      }  
     }
     return 'undefined';
   }

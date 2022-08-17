@@ -155,15 +155,25 @@ export class APSConnectorsService {
     }
 
     // cache the active connector info if it exists
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'setting active connector'}));  
+    await this.updateActiveConnector();
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
+  private updateActiveConnector = async(): Promise<void> => {
+    const funcName = 'updateActiveConnector';
+    const logName = `${APSConnectorsService.name}.${funcName}()`;
+
     try {
       const activeApsConnector: APSConnector = await this.byActive();
       ServerConfig.setConnectorConfig(activeApsConnector);
-      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'setting active connector', details: { activeApsConnector: activeApsConnector } }));  
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.ACTIVE_CONNECTOR_UPDATE, message: 'updating active connector', details: { activeApsConnector: activeApsConnector } }));  
     } catch (e: any) {
+      ServerConfig.setConnectorConfig(undefined);
       if(e instanceof ApiServerError) {
         if(e.apiStatusCode === 404) {
           ServerLogger.warn(ServerLogger.createLogEntry(logName, { 
-            code: EServerStatusCodes.BOOTSTRAPPING, 
+            code: EServerStatusCodes.ACTIVE_CONNECTOR_UPDATE, 
             message: 'no active connector configured', 
           }));    
         } else {
@@ -173,7 +183,6 @@ export class APSConnectorsService {
         throw e;
       }
     }
-    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
   }
 
   public all = async(): Promise<TAPSListAPSConnectorResponse> => {
@@ -259,6 +268,7 @@ export class APSConnectorsService {
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
     if(replaced.isActive) {
+      await this.updateActiveConnector();
       // emit changed event
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
         connectorId: replaced.connectorId,
@@ -300,7 +310,7 @@ export class APSConnectorsService {
     });
 
     // cache the active connector info 
-    ServerConfig.setConnectorConfig(replacedNewActive);
+    await this.updateActiveConnector();
 
     // emit changed event
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
@@ -324,8 +334,9 @@ export class APSConnectorsService {
     }) as unknown) as APSConnector;
 
     if(deletedConnector.isActive) {
+      await this.updateActiveConnector();
       // emit changed event
-      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeConnectorDeleted', details: {
         connectorId: deletedConnector.connectorId,
       }}));
       APSConnectorsServiceEventEmitter.emit('activeChanged', deletedConnector.connectorId );
@@ -360,7 +371,7 @@ export class APSConnectorsService {
         const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
           connectorError: e
         });
-        ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
           connectorProxyError: connectorProxyError
         }}));  
         throw connectorProxyError;
@@ -385,7 +396,7 @@ export class APSConnectorsService {
         const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
           connectorError: e
         });
-        ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
           connectorProxyError: connectorProxyError
         }}));  
         throw connectorProxyError;
