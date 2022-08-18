@@ -7,22 +7,16 @@ import _ from 'lodash';
 import { TestContext, TestLogger } from '../lib/test.helpers';
 import { 
   ApiError, 
-  APSId,
   ApsAdministrationService,
   APSOrganization,
   APSError,
   APSErrorIds,
   APSOrganizationCreate,
   ApsBusinessGroupsService,
-  APSBusinessGroupCreate,
   APSBusinessGroupResponse,
-  APSExternalReference,
   ListAPSBusinessGroupsResponse,
   APSBusinessGroupResponseList,
-  ApsExternalSystemsService,
-  APSBusinessGroupUpdate,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import { TestApsOrganizationUtils } from '../lib/TestApsOrganizationsUtils';
 import APSBusinessGroupsService from '../../server/api/services/apsOrganization/apsBusinessGroups/APSBusinessGroupsService';
 import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 
@@ -82,6 +76,8 @@ describe(`${scriptName}`, () => {
         displayName: OrganizationId,
         appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
         maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+        assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+        maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       }
       const created: APSOrganization = await ApsAdministrationService.createApsOrganization({
         requestBody: create

@@ -6,8 +6,10 @@ import {
   ApiInternalServerErrorFromError, 
   ApiKeyNotFoundServerError, 
   ApiObjectNotFoundServerError, 
+  ApiServerError, 
   BootstrapErrorFromApiError, 
-  BootstrapErrorFromError 
+  BootstrapErrorFromError, 
+  ConnectorProxyError
 } from '../../../common/ServerError';
 import { ServerUtils } from '../../../common/ServerUtils';
 import { 
@@ -22,7 +24,6 @@ import {
 } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSConnectorsServiceEventEmitter from './APSConnetorsServiceEvent';
 import { About, AdministrationService } from '@solace-iot-team/apim-connector-openapi-node';
-import { ConnectorClient } from '../../../common/ConnectorClient';
 
 export type TAPSListAPSConnectorResponse = APSListResponseMeta & { list: APSConnectorList };
 
@@ -58,7 +59,7 @@ export class APSConnectorsService {
       const bootstrapApsConnectorListFileName = `${ServerConfig.getConfig().dataPath}/${APSConnectorsService.boostrapApsConnectorListPath}`;
       const bootstrapApsConnectorListFile: string | undefined = ServerUtils.validateFilePathWithReadPermission(bootstrapApsConnectorListFileName);
       if(bootstrapApsConnectorListFile) {
-        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
+        ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'boostrap connector list file', details: { file: bootstrapApsConnectorListFile } }));  
 
         // read file
         const bootstrapApsConnectorListData = ServerUtils.readFileContentsAsJson(bootstrapApsConnectorListFile);
@@ -147,17 +148,41 @@ export class APSConnectorsService {
           }
         }
       } else {
-        ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list file not found, skipping', details: { file: bootstrapApsConnectorListFileName } }));  
+        ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'bootstrap connector list file not found, skipping', details: { file: bootstrapApsConnectorListFileName } }));  
       }
     } else {
       ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'skipping connector list bootstrap, no data path' }));  
     }
 
     // cache the active connector info if it exists
-    const activeApsConnector: APSConnector = await this.byActive();
-    ServerConfig.setConnectorConfig(activeApsConnector);
-
+    ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING, message: 'setting active connector'}));  
+    await this.updateActiveConnector();
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
+  }
+
+  private updateActiveConnector = async(): Promise<void> => {
+    const funcName = 'updateActiveConnector';
+    const logName = `${APSConnectorsService.name}.${funcName}()`;
+
+    try {
+      const activeApsConnector: APSConnector = await this.byActive();
+      ServerConfig.setConnectorConfig(activeApsConnector);
+      ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.ACTIVE_CONNECTOR_UPDATE, message: 'updating active connector', details: { activeApsConnector: activeApsConnector } }));  
+    } catch (e: any) {
+      ServerConfig.setConnectorConfig(undefined);
+      if(e instanceof ApiServerError) {
+        if(e.apiStatusCode === 404) {
+          ServerLogger.warn(ServerLogger.createLogEntry(logName, { 
+            code: EServerStatusCodes.ACTIVE_CONNECTOR_UPDATE, 
+            message: 'no active connector configured', 
+          }));    
+        } else {
+          throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
   }
 
   public all = async(): Promise<TAPSListAPSConnectorResponse> => {
@@ -243,6 +268,7 @@ export class APSConnectorsService {
       collectionSchemaVersion: APSConnectorsService.collectionSchemaVersion
     });
     if(replaced.isActive) {
+      await this.updateActiveConnector();
       // emit changed event
       ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
         connectorId: replaced.connectorId,
@@ -284,7 +310,7 @@ export class APSConnectorsService {
     });
 
     // cache the active connector info 
-    ServerConfig.setConnectorConfig(replacedNewActive);
+    await this.updateActiveConnector();
 
     // emit changed event
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
@@ -308,8 +334,9 @@ export class APSConnectorsService {
     }) as unknown) as APSConnector;
 
     if(deletedConnector.isActive) {
+      await this.updateActiveConnector();
       // emit changed event
-      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeChanged', details: {
+      ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.EMITTING_EVENT, message: 'activeConnectorDeleted', details: {
         connectorId: deletedConnector.connectorId,
       }}));
       APSConnectorsServiceEventEmitter.emit('activeChanged', deletedConnector.connectorId );
@@ -341,10 +368,13 @@ export class APSConnectorsService {
         };
 
       } catch(e: any) {
-          ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
-            connectorError: ConnectorClient.getErrorAsString(e)
-          }}));  
-        throw e;
+        const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
+          connectorError: e
+        });
+        ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
+          connectorProxyError: connectorProxyError
+        }}));  
+        throw connectorProxyError;
       }
 
     } else {
@@ -363,10 +393,13 @@ export class APSConnectorsService {
         };
       } catch (e: any) {
         ServerConfig.setConnectorConfig(activeApsConnector);
+        const connectorProxyError: ConnectorProxyError = new ConnectorProxyError(logName, undefined, {
+          connectorError: e
+        });
         ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_API_ERROR, details: {
-          connectorError: ConnectorClient.getErrorAsString(e)
+          connectorProxyError: connectorProxyError
         }}));  
-        throw e;
+        throw connectorProxyError;
       } 
     }
   }

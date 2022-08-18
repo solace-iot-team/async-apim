@@ -108,10 +108,14 @@ export const DisplayAdminPortalApiProductReferenceList: React.FC<IDisplayAdminPo
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
   }
   const renderManagedObjectDataTable = () => {
-    const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay4List>('apSearchContent');
-    // const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
+    // const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
+    // const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    // const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay4List>('apSearchContent');
+
+    const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay4List>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay4List>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay4List>('apSearchContent');
+
     return (
       <div className="card">
         <DataTable

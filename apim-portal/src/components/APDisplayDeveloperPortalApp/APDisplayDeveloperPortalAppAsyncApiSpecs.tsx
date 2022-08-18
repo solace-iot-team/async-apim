@@ -9,7 +9,7 @@ import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { APDisplayAsyncApiSpec } from "../APDisplayAsyncApiSpec/APDisplayAsyncApiSpec";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
-import APEntityIdsService, { TAPEntityId } from "../../utils/APEntityIdsService";
+import { TAPEntityId } from "../../utils/APEntityIdsService";
 import { TAPAppApiDisplay, TAPAppApiDisplayList } from "../../displayServices/APAppsDisplayService/APAppApisDisplayService";
 import APDisplayUtils from "../../displayServices/APDisplayUtils";
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../displayServices/APApiSpecsDisplayService";
@@ -65,10 +65,39 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
     return callState;
   }
 
+  const apiGetApiZipContents = async(apiEntityId: TAPEntityId): Promise<Blob | undefined> => {
+    const funcName = 'apiGetApiZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_APP_API, `retrieve zip contents for api: ${apiEntityId.displayName}`);
+    let zipContents: Blob | undefined = undefined;
+    try { 
+      zipContents = await APApiSpecsDisplayService.apiGet_App_ApiSpec_ZipContents({
+        organizationId: props.organizationId, 
+        appId: props.appId,
+        apiEntityId: apiEntityId
+      });
+    } catch(e) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return zipContents;
+  }
+
   const doFetchAppApi = async (apiEntityId: TAPEntityId) => {
     props.onLoadingChange(true);
     await apiGetAppApi(apiEntityId);
     props.onLoadingChange(false);
+  }
+
+  const doFetchZipContents = async(): Promise<Blob | undefined> => {
+    const funcName = 'doFetchZipContents';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(showApiEntityId === undefined) throw new Error(`${logName}: showApiEntityId === undefined`);
+    props.onLoadingChange(true);
+    const zipContents: Blob | undefined = await apiGetApiZipContents(showApiEntityId);
+    props.onLoadingChange(false);
+    if(zipContents !== undefined) return zipContents;
   }
 
   React.useEffect(() => {
@@ -122,9 +151,9 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
     }  
     const rowGroupFooterTemplate = (row: TAPAppApiDisplay) => { return(<></>); }
   
-    const dataKey = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId')}.${APEntityIdsService.nameOf('id')}`;
-    const groupField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apApiProductEntityId')}.${APEntityIdsService.nameOf('id')}`;
-    const apiField = `${APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId')}.${APEntityIdsService.nameOf('displayName')}`;
+    const dataKey = APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId.id');
+    const groupField = APDisplayUtils.nameOf<TAPAppApiDisplay>('apApiProductEntityId.id');
+    const apiField = APDisplayUtils.nameOf<TAPAppApiDisplay>('apEntityId.displayName');
     const versionField = APDisplayUtils.nameOf<TAPAppApiDisplay>('apVersion');
 
     return (
@@ -180,6 +209,7 @@ export const APDisplayDeveloperPortalAppAsyncApiSpecs: React.FC<IAPDisplayDevelo
             schemaId={showApiEntityId.id} 
             onDownloadSuccess={onDownloadSuccess}
             onDownloadError={props.onError}
+            fetchZipContentsFunc={doFetchZipContents}
           />
         </React.Fragment> 
       }

@@ -17,6 +17,7 @@ import APSystemOrganizationsDisplayService, {
 } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -127,10 +128,9 @@ export const ListImportableSystemOrganizations: React.FC<IListImportableSystemOr
   }
 
   const renderManagedObjectDataTable = () => {
-    const idField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('id');
-    const nameField = APSystemOrganizationsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APSystemOrganizationsDisplayService.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
-
+    const idField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apSearchContent');
     return (
       <div className="card">
           <DataTable

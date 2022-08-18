@@ -3,19 +3,18 @@ import React from "react";
 
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
+import { SelectButton } from "primereact/selectbutton";
 
-import APAppEnvironmentsDisplayService, { 
+import { 
   E_APChannelOperation,
   E_APTopicSyntax,
   IAPAppEnvironmentDisplay,
   TAPAppEnvironmentDisplayList,
   TAPChannelPermissionsDisplay,
 } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
-import APEntityIdsService from "../../utils/APEntityIdsService";
-import { SelectButton } from "primereact/selectbutton";
 import { Globals } from "../../utils/Globals";
-// import { APDisplayDeveloperPortalApp_ChannelTopics_Grouped } from "./APDisplayDeveloperPortalApp_ChannelTopics_Grouped";
 import { APDisplayDeveloperPortalAppChannelTopicsExpand } from "./APDisplayDeveloperPortalApp_ChannelTopics_Expand";
+import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 import "../APComponents.css";
 
@@ -82,8 +81,8 @@ export const APDisplayDeveloperPortalAppEnvironmentChannelPermissions: React.FC<
       );
     }
 
-    const environmentDataKey = `${APAppEnvironmentsDisplayService.nameOf('apEntityId')}.${APEntityIdsService.nameOf('id')}`;
-    const environmentNameField = `${APAppEnvironmentsDisplayService.nameOf('apEntityId')}.${APEntityIdsService.nameOf('displayName')}`;
+    const environmentDataKey = APDisplayUtils.nameOf<IAPAppEnvironmentDisplay>('apEntityId.id');
+    const environmentNameField = APDisplayUtils.nameOf<IAPAppEnvironmentDisplay>('apEntityId.displayName');
 
     return (
       <div className="card">

@@ -21,16 +21,15 @@ import {
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { TAPOrganizationId } from "../../../components/deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, TManagedObjectId, TOrganizationService } from "./ManageEnvironmentsCommon";
+import { ListUnregisteredOrganizationServices } from "./ListUnregisteredOrganizationServices";
 
 import '../../../components/APComponents.css';
 import "./ManageEnvironments.css";
-import { ListUnregisteredOrganizationServices } from "./ListUnregisteredOrganizationServices";
 
 export interface INewEnvironmentProps {
-  organizationName: TAPOrganizationId;
+  organizationName: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState, newEnvironmentName: TManagedObjectId, newEnvironmentDisplayName: string) => void;
   onCancel: () => void;

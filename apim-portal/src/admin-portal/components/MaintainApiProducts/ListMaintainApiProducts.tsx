@@ -175,13 +175,20 @@ export const ListMaintainApiProducts: React.FC<IListMaintainApiProductsProps> = 
     return row.apLifecycleStageInfo.stage;
   }
   const renderManagedObjectDataTable = () => {
-    const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
-    const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');    
-    const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
+    // const dataKey = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('id');
+    // const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    // const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
+    // // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
+    // const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');    
+    // const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
+    // const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
+    const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
+    const accessLevelSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
+    const stateSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apLifecycleStageInfo.stage');
+    const businessGroupSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
+
     return (
       <div className="card">
         <DataTable

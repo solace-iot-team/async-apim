@@ -1,9 +1,17 @@
 import React from "react";
-import { TAPUserMessage } from "../deleteme.APComponentsCommon";
 import { EAppState } from "../../utils/Globals";
 import { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { TAPMemberOfBusinessGroupDisplayTreeNodeList } from "../../displayServices/APUsersDisplayService/APMemberOfService";
+
+export type TAPUserMessage = {
+  success: boolean,
+  context: {
+    internalAction: string,
+    userAction: string,
+    userMessage: string
+  }
+}
 
 export type TUserRunttimeSettings = {
   currentOrganizationEntityId?: TAPEntityId;

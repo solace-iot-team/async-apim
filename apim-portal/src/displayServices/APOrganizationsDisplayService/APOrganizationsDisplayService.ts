@@ -14,7 +14,8 @@ import {
 import {
   ApsAdministrationService,
   APSOrganization,
-  APSOrganizationUpdate
+  APSOrganizationUpdate,
+  APSAssetIncVersionStrategy
 } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, {
@@ -137,9 +138,11 @@ export enum EAPOrganizationConfigStatus {
 export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   connectorOrganizationResponse: OrganizationResponse;
   apOrganizationConfigStatus: EAPOrganizationConfigStatus;
+  // settings
+  apAssetIncVersionStrategy: APSAssetIncVersionStrategy;
   apMaxNumApis_Per_ApiProduct: number; /** -1 = infinity, min = 1 (0 not allowed) */
+  apMaxNumEnvs_Per_ApiProduct: number; /** -1 = infinity, min = 1 (0 not allowed) */
   apAppCredentialsExpiryDuration_millis: number;
-  // add more settings over time from APS
 
   apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
   apCloudConnectivityConfig: TAPCloudConnectivityConfig;
@@ -152,6 +155,8 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
 }
 
 export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
+  apAssetIncVersionStrategy: APSAssetIncVersionStrategy;
+  apMaxNumEnvs_Per_ApiProduct: number;
   apMaxNumApis_Per_ApiProduct: number;
   apAppCredentialsExpiryDuration_millis: number;
 }
@@ -168,18 +173,17 @@ export interface IAPOrganizationDisplay_Integration extends IAPEntityIdDisplay {
 export class APOrganizationsDisplayService {
   private readonly BaseComponentName = "APOrganizationsDisplayService";
   private readonly UnlimitedMaxNumApis_Per_ApiProduct: number = -1; /** any number of Apis */
+  private readonly UnlimitedMaxNumEnvs_Per_ApiProduct: number = -1; /** any number of Envs */
   private readonly DefaultAppCredentialsExpiryDuration_Millis: number = -1; /** no expiry */
   private readonly SecretMask = '***';
   private readonly DefaultSolaceCloudBaseUrlStr: string = 'https://api.solace.cloud/api/v0';
   private readonly DefaultEventPortalBaseUrlStr: string = 'https://api.solace.cloud/api/v0/eventPortal';
 
-  public nameOf<T extends IAPOrganizationDisplay>(name: keyof T): string {
-    return `${name}`;
+  public get_DefaultAssetIncVersionStrategy(): APSAssetIncVersionStrategy { return APSAssetIncVersionStrategy.BUMP_PATCH; }
+  public get_DefaultMaxNumEnvs_Per_ApiProduct(): number { return this.UnlimitedMaxNumEnvs_Per_ApiProduct; }
+  public is_NumEnvs_Per_ApiProduct_Limited(maxNumEnvsPerApiProduct: number): boolean { 
+    return maxNumEnvsPerApiProduct !== this.UnlimitedMaxNumEnvs_Per_ApiProduct; 
   }
-  public nameOf_ApEntityId(name: keyof TAPEntityId): string {
-    return `${this.nameOf('apEntityId')}.${name}`;
-  }
-
   public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.UnlimitedMaxNumApis_Per_ApiProduct; }
   public is_NumApis_Per_ApiProduct_Limited(maxNumApisPerApiProduct: number): boolean { 
     return maxNumApisPerApiProduct !== this.UnlimitedMaxNumApis_Per_ApiProduct; 
@@ -265,6 +269,8 @@ export class APOrganizationsDisplayService {
     const apOrganizationDisplay: IAPOrganizationDisplay = {
       connectorOrganizationResponse: this.create_Empty_ConnectorOrganizationResponse(),
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      apAssetIncVersionStrategy: this.get_DefaultAssetIncVersionStrategy(),
+      apMaxNumEnvs_Per_ApiProduct: this.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       apMaxNumApis_Per_ApiProduct: this.get_DefaultMaxNumApis_Per_ApiProduct(),
       apAppCredentialsExpiryDuration_millis: this.DefaultAppCredentialsExpiryDuration_Millis,
 
@@ -286,10 +292,18 @@ export class APOrganizationsDisplayService {
   protected set_ApOrganizationConfigStatus({ apOrganizationDisplay }: {
     apOrganizationDisplay: IAPOrganizationDisplay;
   }): IAPOrganizationDisplay {
+    // const funcName = 'set_ApOrganizationConfigStatus';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: apOrganizationDisplay = ${JSON.stringify(apOrganizationDisplay, null, 2)}`);
     apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
-    if (apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) {
+    if(apOrganizationDisplay.apOrganizationOperationalStatus.cloudConnectivity !== EAPOrganizationOperationalStatus.UP) {
       apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
     }
+    // apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.OPERATIONAL;
+    // if (apOrganizationDisplay.apCloudConnectivityConfig.configType === EAPCloudConnectivityConfigType.UNDEFINED) {
+    //   apOrganizationDisplay.apOrganizationConfigStatus = EAPOrganizationConfigStatus.NOT_OPERATIONAL;
+    // }
     return apOrganizationDisplay;
   }
 
@@ -298,6 +312,8 @@ export class APOrganizationsDisplayService {
   }): TAPCloudConnectivityConfig {
     // const funcName = 'create_ApCloudConnectivityConfig_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: connectorCloudToken = ${JSON.stringify(connectorCloudToken, null, 2)}`);
 
     if (connectorCloudToken === undefined) {
       return this.create_Emtpy_ApCloudConnectivityConfig();
@@ -357,6 +373,11 @@ export class APOrganizationsDisplayService {
   private create_ApOrganizationOperationalStatus_From_ApiEntities({ connectorOrganizationStatus }: {
     connectorOrganizationStatus: OrganizationStatus | undefined;
   }): TAPOrganizationOperationalStatus {
+    // const funcName = 'create_ApOrganizationOperationalStatus_From_ApiEntities';
+    // const logName = `${this.BaseComponentName}.${funcName}()`;
+    // // DEBUG
+    // throw new Error(`${logName}: connectorOrganizationStatus = ${JSON.stringify(connectorOrganizationStatus, null, 2)}`);
+
     let cloudConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
     let eventPortalConnectivity: EAPOrganizationOperationalStatus = EAPOrganizationOperationalStatus.UNDEFINED;
     if (connectorOrganizationStatus !== undefined) {
@@ -369,6 +390,8 @@ export class APOrganizationsDisplayService {
       cloudConnectivity: cloudConnectivity,
       eventPortalConnectivity: eventPortalConnectivity
     };
+    // // DEBUG
+    // throw new Error(`${logName}: apOrganizationOperationalStatus = ${JSON.stringify(apOrganizationOperationalStatus, null, 2)}`);
     return apOrganizationOperationalStatus;
   }
 
@@ -469,6 +492,8 @@ export class APOrganizationsDisplayService {
       connectorOrganizationResponse: connectorOrganizationResponse,
       apEntityId: { id: apsOrganization.organizationId, displayName: apsOrganization.displayName },
 
+      apAssetIncVersionStrategy: apsOrganization.assetIncVersionStrategy,
+      apMaxNumEnvs_Per_ApiProduct: apsOrganization.maxNumEnvsPerApiProduct,
       apMaxNumApis_Per_ApiProduct: apsOrganization.maxNumApisPerApiProduct,
       apAppCredentialsExpiryDuration_millis: apsOrganization.appCredentialsExpiryDuration,
 
@@ -518,7 +543,9 @@ export class APOrganizationsDisplayService {
     return {
       apEntityId: apOrganizationDisplay.apEntityId,
       apAppCredentialsExpiryDuration_millis: apOrganizationDisplay.apAppCredentialsExpiryDuration_millis,
-      apMaxNumApis_Per_ApiProduct: apOrganizationDisplay.apMaxNumApis_Per_ApiProduct
+      apAssetIncVersionStrategy: apOrganizationDisplay.apAssetIncVersionStrategy,
+      apMaxNumApis_Per_ApiProduct: apOrganizationDisplay.apMaxNumApis_Per_ApiProduct,
+      apMaxNumEnvs_Per_ApiProduct: apOrganizationDisplay.apMaxNumEnvs_Per_ApiProduct,
     };
   }
 
@@ -531,7 +558,9 @@ export class APOrganizationsDisplayService {
   }): T {
     apOrganizationDisplay.apEntityId = apOrganizationDisplay_General.apEntityId;
     apOrganizationDisplay.apAppCredentialsExpiryDuration_millis = apOrganizationDisplay_General.apAppCredentialsExpiryDuration_millis;
+    apOrganizationDisplay.apAssetIncVersionStrategy = apOrganizationDisplay_General.apAssetIncVersionStrategy;
     apOrganizationDisplay.apMaxNumApis_Per_ApiProduct = apOrganizationDisplay_General.apMaxNumApis_Per_ApiProduct;
+    apOrganizationDisplay.apMaxNumEnvs_Per_ApiProduct = apOrganizationDisplay_General.apMaxNumEnvs_Per_ApiProduct;
     return apOrganizationDisplay;
   }
 
@@ -691,6 +720,8 @@ export class APOrganizationsDisplayService {
       displayName: apOrganizationDisplay_General.apEntityId.displayName,
       appCredentialsExpiryDuration: apOrganizationDisplay_General.apAppCredentialsExpiryDuration_millis,
       maxNumApisPerApiProduct: apOrganizationDisplay_General.apMaxNumApis_Per_ApiProduct,
+      maxNumEnvsPerApiProduct: apOrganizationDisplay_General.apMaxNumEnvs_Per_ApiProduct,
+      assetIncVersionStrategy: apOrganizationDisplay_General.apAssetIncVersionStrategy,
     };
     await this.apiUpdate({
       organizationId: apOrganizationDisplay_General.apEntityId.id,

@@ -62,8 +62,10 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
   }): APSOrganization {
     const apsOrganization: APSOrganization = {
       organizationId: connectorOrganizationResponse.name,
-      displayName: connectorOrganizationResponse.name,
+      displayName: connectorOrganizationResponse.name,      
       appCredentialsExpiryDuration: this.get_DefaultAppCredentialsExpiryDuration_Millis(),
+      assetIncVersionStrategy: this.get_DefaultAssetIncVersionStrategy(),
+      maxNumEnvsPerApiProduct: this.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       maxNumApisPerApiProduct: this.get_DefaultMaxNumApis_Per_ApiProduct(),
     };
     return apsOrganization;
@@ -195,6 +197,8 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       organizationId: apOrganizationDisplay_General.apEntityId.id,
       displayName: apOrganizationDisplay_General.apEntityId.displayName,
       appCredentialsExpiryDuration: apOrganizationDisplay_General.apAppCredentialsExpiryDuration_millis,
+      assetIncVersionStrategy: apOrganizationDisplay_General.apAssetIncVersionStrategy,
+      maxNumEnvsPerApiProduct: apOrganizationDisplay_General.apMaxNumEnvs_Per_ApiProduct,
       maxNumApisPerApiProduct: apOrganizationDisplay_General.apMaxNumApis_Per_ApiProduct,
     };
     await ApsAdministrationService.createApsOrganization({
@@ -209,6 +213,8 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       organizationId: apSystemOrganizationDisplay.apEntityId.id,
       displayName: apSystemOrganizationDisplay.apEntityId.displayName,
       appCredentialsExpiryDuration: apSystemOrganizationDisplay.apAppCredentialsExpiryDuration_millis,
+      assetIncVersionStrategy: apSystemOrganizationDisplay.apAssetIncVersionStrategy,
+      maxNumEnvsPerApiProduct: apSystemOrganizationDisplay.apMaxNumEnvs_Per_ApiProduct,
       maxNumApisPerApiProduct: apSystemOrganizationDisplay.apMaxNumApis_Per_ApiProduct,
     };
     await ApsAdministrationService.createApsOrganization({

@@ -8,7 +8,7 @@ import {
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from "../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
-import APDeveloperPortalApiProductsDisplayService from "../../developer-portal/displayServices/APDeveloperPortalApiProductsDisplayService";
+import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 import "../APComponents.css";
 
@@ -91,9 +91,9 @@ export const APDisplayDeveloperPortalAppApiProducts: React.FC<IAPDisplayDevelope
   }
 
   const renderComponentContent = (): JSX.Element => {
-    const dataKey = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const nameField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const statusField = APDeveloperPortalApiProductsDisplayService.nameOf<TAPDeveloperPortalAppApiProductDisplay>('apApp_ApiProduct_Status');
+    const dataKey = APDisplayUtils.nameOf<TAPDeveloperPortalAppApiProductDisplay>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<TAPDeveloperPortalAppApiProductDisplay>('apEntityId.displayName');
+    const statusField = APDisplayUtils.nameOf<TAPDeveloperPortalAppApiProductDisplay>('apApp_ApiProduct_Status');
 
     return (
       <div className="card">

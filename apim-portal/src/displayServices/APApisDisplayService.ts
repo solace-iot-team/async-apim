@@ -91,18 +91,18 @@ export type TAPApiVersionDisplayList = Array<IAPApiVersionDisplay>
 class APApisDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApisDisplayService";
 
-  public nameOf<IAPApiDisplay>(name: keyof IAPApiDisplay) {
-    return name;
-  }
-  public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
-    return `${this.nameOf('connectorApiInfo')}.${name}`;
-  }
-  public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
-    return name;
-  }
-  public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
-    return `${this.nameOf<IAPApiDisplay>('apLifecycleStageInfo')}.${name}`;
-  }
+  // public nameOf<IAPApiDisplay>(name: keyof IAPApiDisplay) {
+  //   return name;
+  // }
+  // public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
+  //   return `${this.nameOf('connectorApiInfo')}.${name}`;
+  // }
+  // public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
+  //   return name;
+  // }
+  // public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
+  //   return `${this.nameOf<IAPApiDisplay>('apLifecycleStageInfo')}.${name}`;
+  // }
 
   private create_Empty_ConnectorApiInfo(): APIInfo {
     return {
@@ -210,10 +210,12 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     // const funcName = 'create_ApApiDisplay_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
+    const apRawAttributeList: TAPRawAttributeList = connectorApiInfo.attributes ? connectorApiInfo.attributes : [];
+
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiInfo.name,
       displayName: connectorApiInfo.name,
-      apRawAttributeList: connectorApiInfo.attributes ? connectorApiInfo.attributes : [],
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -229,7 +231,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
-      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta }),
+      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
       
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 
@@ -297,7 +299,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
   public generate_Id_From_Title({ title }:{ 
     title: string; 
   }): string {
-    return title.replaceAll(/\s/g, '-');
+    return title.replaceAll(/[^0-9a-zA-Z]+/g, '-');
   } 
 
 
@@ -520,6 +522,33 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         const apiError: ApiError = e;
         if(apiError.status === 404) return false;
       }
+      throw e;
+    }
+  }
+
+  public async apiCheck_ApApiDisplay_IsApiSpecValid({ organizationId, apApiSpecDisplay }: {
+    organizationId: string;
+    apApiSpecDisplay: TAPApiSpecDisplay;
+  }): Promise<boolean | ApiError> {
+    // const funcName = 'apiCheck_ApApiDisplay_IsApiSpecValid';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+    try {
+      await ApisService.createApi({
+        organizationName: organizationId,
+        apiName: Globals.getUUID(),
+        mode: "test",
+        requestBody: APApiSpecsDisplayService.get_AsyncApiSpec_As_Yaml_String({ apApiSpecDisplay: apApiSpecDisplay })
+      });
+      return true;
+     } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        // // DEBUG
+        // console.log(`${logName}: apiError=${JSON.stringify(apiError, null, 2)}`);
+        return apiError;
+      }
+      // must be some other error
       throw e;
     }
   }

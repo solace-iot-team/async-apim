@@ -24,7 +24,7 @@ export interface IEditNewApisProps {
   action: EAction;
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
-  isSingleApiSelection: boolean;
+  isSingleSelection: boolean;
   onSaveChanges: (apApiProductDisplay_Apis: TAPApiProductDisplay_Apis) => void;
   onBack?: () => void;
   onCancel: () => void;
@@ -99,7 +99,7 @@ export const EditNewApis: React.FC<IEditNewApisProps> = (props: IEditNewApisProp
             formId={formId}
             action={props.action}
             organizationId={props.organizationId}
-            isSingleApiSelection={props.isSingleApiSelection}
+            isSingleSelection={props.isSingleSelection}
             apApiProductDisplay_Apis={mo}
             onError={props.onError}
             onLoadingChange={props.onLoadingChange}

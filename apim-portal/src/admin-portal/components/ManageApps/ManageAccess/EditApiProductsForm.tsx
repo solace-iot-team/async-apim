@@ -13,7 +13,7 @@ import APDeveloperPortalAppApiProductsDisplayService, {
   TAPDeveloperPortalAppApiProductDisplay, 
   TAPDeveloperPortalAppApiProductDisplayList 
 } from "../../../../developer-portal/displayServices/APDeveloperPortalAppApiProductsDisplayService";
-import APDeveloperPortalApiProductsDisplayService from "../../../../developer-portal/displayServices/APDeveloperPortalApiProductsDisplayService";
+import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 
 import '../../../../components/APComponents.css';
 import "../ManageApps.css";
@@ -181,11 +181,13 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
   }
 
   const renderApiProductsTable = (): JSX.Element => {
-    // const funcName = 'renderApiProductsTable';
-    // const logName = `${ComponentName}.${funcName}()`;
-    const dataKey = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const nameField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    const statusField = APDeveloperPortalApiProductsDisplayService.nameOf<TManagedObjectElement>('apApp_ApiProduct_Status');
+    // const dataKey = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
+    // const nameField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    // const statusField = APDeveloperPortalApiProductsDisplayService.nameOf<TManagedObjectElement>('apApp_ApiProduct_Status');
+
+    const dataKey = APDisplayUtils.nameOf<TManagedObjectElement>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<TManagedObjectElement>('apEntityId.displayName');
+    const statusField = APDisplayUtils.nameOf<TManagedObjectElement>('apApp_ApiProduct_Status');
 
     return (
       <div className="card">

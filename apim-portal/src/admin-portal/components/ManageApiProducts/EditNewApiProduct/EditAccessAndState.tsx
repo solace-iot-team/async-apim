@@ -63,14 +63,17 @@ export const EditAccessAndState: React.FC<IEditAccessAndStateProps> = (props: IE
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
+      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_AccessAndState({
         organizationId: props.organizationId,
-        apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_AccessAndState({
-          apApiProductDisplay: props.apAdminPortalApiProductDisplay,
-          apApiProductDisplay_AccessAndState: mo
-        }),
         userId: userContext.apLoginUserDisplay.apEntityId.id,
+        apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+        apApiProductDisplay_AccessAndState: mo
       });  
+    // TODO: set the new values - required?
+    // apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApApiProductDisplay_AccessAndState({
+    //   apApiProductDisplay: props.apAdminPortalApiProductDisplay,
+    //   apApiProductDisplay_AccessAndState: mo
+    // }),
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

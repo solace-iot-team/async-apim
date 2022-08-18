@@ -11,8 +11,6 @@ import {
   APSError, 
   APSErrorIds, 
   APSListResponseMeta, 
-  APSOrganizationRoles, 
-  APSOrganizationRolesList, 
   APSOrganizationRolesResponse, 
   APSOrganizationRolesResponseList, 
   APSUserCreate, 
@@ -25,7 +23,6 @@ import {
   EAPSSystemAuthRole,
   ListApsUsersResponse
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
-import { ApsUsersHelper } from '../lib/apsUsers.helper';
 import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
 import { ApimServerAPIClient } from '../lib/api.helpers';
 
@@ -167,7 +164,9 @@ describe(`${scriptName}`, () => {
             organizationId: ReferenceOrg_1,
             displayName: ReferenceOrg_1,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
         await ApsAdministrationService.createApsOrganization({
@@ -175,7 +174,9 @@ describe(`${scriptName}`, () => {
             organizationId: ReferenceOrg_2,
             displayName: ReferenceOrg_2,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
         await ApsAdministrationService.createApsOrganization({
@@ -183,7 +184,9 @@ describe(`${scriptName}`, () => {
             organizationId: ReferenceOrg_Updated,
             displayName: ReferenceOrg_Updated,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
         await ApsAdministrationService.createApsOrganization({
@@ -191,7 +194,9 @@ describe(`${scriptName}`, () => {
             organizationId: ReferenceOrg_Replaced,
             displayName: ReferenceOrg_Replaced,
             appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
-            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),  
+            maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+            assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+            maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           }
         });
       } catch (e) {

@@ -26,7 +26,6 @@ const scriptName: string = path.basename(__filename);
 TestLogger.logMessage(scriptName, ">>> starting ...");
 
 const numberOfConnectors: number = 10;
-APSLocationConfigExternal
 const apsConnectorTemplate: APSConnector = {
   connectorId: 'connectorId',
   displayName: 'displayName',

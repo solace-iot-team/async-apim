@@ -158,7 +158,9 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
   const [userContext] = React.useContext(UserContext);
   const [organizationContext] = React.useContext(OrganizationContext);
   const IsSingleApiSelection: boolean = organizationContext.apMaxNumApis_Per_ApiProduct === 1;
+  const IsSingleEnvSelection: boolean = organizationContext.apMaxNumEnvs_Per_ApiProduct === 1;
   const ApiTabHeader: string = IsSingleApiSelection ? "API" : "API(s)";
+  const EnvTabHeader: string = IsSingleEnvSelection ? "Environment" : "Environment(s)";
 
   // * Api Calls * 
 
@@ -211,7 +213,10 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
       });
       // create a suggested next version
-      object.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(object.apVersionInfo.apLastVersion);
+      object.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextLifecycleUpdateVersion({
+        currentVersion: object.apVersionInfo.apLastVersion,
+        apsAssetIncVersionStrategy: organizationContext.apAssetIncVersionStrategy
+      });
       setManagedObject(object);
       setOriginal_ManagedObject(JSON.parse(JSON.stringify(object)));
     } catch(e) {
@@ -526,7 +531,7 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
               <EditNewApis
                 action={props.action}
                 organizationId={props.organizationId}
-                isSingleApiSelection={IsSingleApiSelection}
+                isSingleSelection={IsSingleApiSelection}
                 apAdminPortalApiProductDisplay={mo}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
@@ -550,12 +555,13 @@ export const ManageEditNewApiProduct: React.FC<IManageEditNewApiProductProps> = 
               />
             </React.Fragment>
           </TabPanel>
-          <TabPanel header='Environments' disabled={!showEnvironments}>
+          <TabPanel header={EnvTabHeader} disabled={!showEnvironments}>
             <React.Fragment>
               <EditNewEnvironments
                 action={props.action}
                 organizationId={props.organizationId}
                 apAdminPortalApiProductDisplay={mo}
+                isSingleSelection={IsSingleEnvSelection}
                 onError={onError_SubComponent}
                 onCancel={props.onCancel}
                 onLoadingChange={props.onLoadingChange}

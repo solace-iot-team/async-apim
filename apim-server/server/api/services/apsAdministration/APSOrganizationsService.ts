@@ -1,6 +1,7 @@
 import { EServerStatusCodes, ServerLogger } from '../../../common/ServerLogger';
 import { MongoPersistenceService, TMongoAllReturn } from '../../../common/MongoPersistenceService';
 import { 
+  APSAssetIncVersionStrategy,
   APSId, 
   APSOrganization, 
   APSOrganizationCreate, 
@@ -14,8 +15,9 @@ import { RequestValidationServerError, TRequestValidationServerErrorMetaList } f
 
 export class APSOrganizationsService {
   private static collectionName = "apsOrganizations";
-  private static collectionSchemaVersion = 1;
+  private static collectionSchemaVersion = 2;
   private persistenceService: MongoPersistenceService;
+  private readonly DefaultMaxNumEnvs_Per_ApiProduct: number = -1; /** any number of Envs */
   private readonly DefaultMaxNumApis_Per_ApiProduct: number = -1; /** any number of Apis */
   private readonly DefaultAppCredentialsExpiryDuration: number = -1; /** no expiry */
   
@@ -26,6 +28,8 @@ export class APSOrganizationsService {
   public getPersistenceService = (): MongoPersistenceService => { return this.persistenceService; }
   public getCollectionName = (): string => { return APSOrganizationsService.collectionName; }
   public getDBObjectSchemaVersion = (): number => { return APSOrganizationsService.collectionSchemaVersion; }
+  public get_DefaultAssetIncVersionStrategy = (): APSAssetIncVersionStrategy => { return APSAssetIncVersionStrategy.BUMP_PATCH; }
+  public get_DefaultMaxNumEnvs_Per_ApiProduct(): number { return this.DefaultMaxNumEnvs_Per_ApiProduct; }
   public get_DefaultMaxNumApis_Per_ApiProduct(): number { return this.DefaultMaxNumApis_Per_ApiProduct; }
   public get_DefaultAppCredentialsExpiryDuration(): number { return this.DefaultAppCredentialsExpiryDuration; }
 
@@ -180,6 +184,7 @@ export class APSOrganizationsService {
     const requestValidationServerErrorMetaList: TRequestValidationServerErrorMetaList = [];
     const appCredentialsExpiryDuration_ValidMsg = 'allowed values: -1: no expiration, > 0: expiration in milliseconds';
     const maxNumApisPerApiProduct_ValidMsg = 'allowed values: -1: no limit, > 0: limit';
+    const maxNumEnvsPerApiProduct_ValidMsg = 'allowed values: -1: no limit, > 0: limit';
     if(requestBody.appCredentialsExpiryDuration !== undefined) {
       if(requestBody.appCredentialsExpiryDuration < -1) {
         requestValidationServerErrorMetaList.push({
@@ -193,6 +198,22 @@ export class APSOrganizationsService {
           errorFieldName: 'appCredentialsExpiryDuration',
           errorDescription: 'requestBody.appCredentialsExpiryDuration === 0',
           validDescription: appCredentialsExpiryDuration_ValidMsg
+        });    
+      }  
+    }
+    if(requestBody.maxNumEnvsPerApiProduct !== undefined) {
+      if(requestBody.maxNumEnvsPerApiProduct < -1) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'maxNumEnvsPerApiProduct',
+          errorDescription: 'requestBody.maxNumEnvsPerApiProduct < -1',
+          validDescription: maxNumEnvsPerApiProduct_ValidMsg
+        });
+      }
+      if(requestBody.maxNumEnvsPerApiProduct === 0) {
+        requestValidationServerErrorMetaList.push({
+          errorFieldName: 'maxNumEnvsPerApiProduct',
+          errorDescription: 'requestBody.maxNumEnvsPerApiProduct === 0',
+          validDescription: maxNumEnvsPerApiProduct_ValidMsg
         });    
       }  
     }

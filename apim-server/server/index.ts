@@ -17,6 +17,7 @@ import APSBusinessGroupsService from './api/services/apsOrganization/apsBusiness
 import APSExternalSystemsService from './api/services/apsOrganization/apsExternalSystems/APSExternalSystemsService';
 import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
 import { ConnectorClient } from './common/ConnectorClient';
+import ConnectorMonitor from './common/ConnectorMonitor';
 
 const componentName = 'index';
 
@@ -64,6 +65,13 @@ const bootstrapComponents = async(): Promise<void> => {
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPED }));
 }
 
+const testConfig = async(): Promise<void> => {
+  const funcName = 'testConfig';
+  const logName = `${componentName}.${funcName}()`;
+  ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTING }));
+  await ConnectorMonitor.testActiveConnector();
+  ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTED }));
+}
 export const initializeComponents = async(): Promise<void> => {
   const funcName = 'initializeComponents';
   const logName = `${componentName}.${funcName}()`;
@@ -96,6 +104,8 @@ export const initializeComponents = async(): Promise<void> => {
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   await migrateComponents();
   await bootstrapComponents();
+  await testConfig();
+  ConnectorMonitor.initialize(ServerConfig.getMonitorConfig().connectionTestInterval_secs);
 }
 
 // startup

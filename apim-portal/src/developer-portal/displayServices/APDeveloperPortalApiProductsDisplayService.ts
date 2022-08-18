@@ -279,9 +279,9 @@ export class APDeveloperPortalApiProductsDisplayService extends APApiProductsDis
 
     let connectorApiProduct: APIProduct;
     if(revision === undefined) {
-      connectorApiProduct = await ApiProductsService.getApiProduct({
-        organizationName: organizationId,
-        apiProductName: apiProductId
+      connectorApiProduct = await this.ApiProductsService_getApiProduct({
+        organizationId: organizationId,
+        apiProductId: apiProductId
       });
     } else {
       connectorApiProduct = await ApiProductsService.getApiProductRevision({

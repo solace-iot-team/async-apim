@@ -17,6 +17,7 @@ import APDeveloperPortalApiProductsDisplayService, {
   TAPDeveloperPortalApiProductDisplay4ListList 
 } from "../../displayServices/APDeveloperPortalApiProductsDisplayService";
 import { TAPManagedAssetBusinessGroupInfo } from "../../../displayServices/APManagedAssetDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./DeveloperPortalProductCatalog.css";
@@ -317,8 +318,11 @@ const renderApiProductAsGridItem = (mo: TManagedObject) => {
 
   const renderView = () => {
     const header = renderHeader();
-    const dataKeyField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    const sortField: string = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    // const dataKeyField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
+    // const sortField: string = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
+    const dataKeyField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.id');
+    const sortField: string = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
+
     return (
       <div className="card">
         <DataView 

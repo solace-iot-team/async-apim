@@ -21,7 +21,7 @@ export interface INewAttributesProps {
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const NewAttributes: React.FC<INewAttributesProps> = (props: INewAttributesProps) => {

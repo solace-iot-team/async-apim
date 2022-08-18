@@ -16,7 +16,7 @@ import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
-import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { DisplaySystemHealthInfo, EAPSystemHealthInfoPart } from "../../../components/SystemHealth/DisplaySystemHealthInfo";
 import { DisplayConnectorHealthCheckLog } from "../../../components/SystemHealth/DisplayConnectorHealthCheckLog";
 
@@ -51,15 +51,12 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
       const apsConnector: APSConnector = await ApsConfigService.getApsConnector({
         connectorId: props.connectorId
       });
-      const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+      const apConnectorHealthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
         configContext: configContext, 
         connectorId: apsConnector.connectorId
       });    
-      let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
-      if(healthCheckResult.summary.success) {
-        apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-      }
-      setManagedObject(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
+      const apConnectorInfo: TAPConnectorInfo | undefined = ManageConnectorsCommon.getApConnectorInfo({ apConnectorHealthCheckResult: apConnectorHealthCheckResult });
+      setManagedObject(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, apConnectorHealthCheckResult));
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);

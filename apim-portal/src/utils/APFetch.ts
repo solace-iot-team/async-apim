@@ -1,5 +1,7 @@
 
 import base64 from 'base-64';
+import { ApiError } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { APSClientOpenApi } from './APSClientOpenApi';
 
 export enum EAPFetchResultBodyType {
   JSON = 'JSON',
@@ -83,5 +85,36 @@ export class APFetch {
     return response;
   }
   
+  public static GETConnector_ZipContents = async({ connectorUrlPath }:{
+    connectorUrlPath: string;
+  }): Promise<Blob> => {
+    const funcName = 'GETConnector_ZipContents';
+    const logName = `${APFetch.name}.${funcName}()`;
+
+    const connectorOpenApiConfig: any = await APSClientOpenApi.getConnectorClientOpenApiConfig();
+    // console.warn(`${logName}: connectorOpenApiConfig = ${JSON.stringify(connectorOpenApiConfig)}`);
+    // throw new Error(`${logName}: check the connectorOpenApiConfig`);
+    // {"BASE":"http://localhost:3003/apim-server/v1/connectorProxy/v1","VERSION":"0.11.0","WITH_CREDENTIALS":true,"TOKEN":"xxx"
+
+    const base = connectorOpenApiConfig.BASE + '/';
+    const url: URL = new URL(connectorUrlPath, base);
+    const headers = new Headers({
+      "Authorization": `Bearer ${connectorOpenApiConfig.TOKEN}`,
+      "Content-Type": 'application/json',
+      "accept": "application/zip",
+    });
+    const requestInit: RequestInit = {
+      method: 'GET',
+      credentials: 'include',
+      headers: headers,
+    };
+    const response = await window.fetch( url.toString(), requestInit);
+    if(!response.ok) {
+      throw new ApiError(response, logName);
+    }
+    const zipContents: Blob = await response.blob();
+    return zipContents;
+
+  }
 }
 

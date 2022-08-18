@@ -3,8 +3,9 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import APApisDisplayService, { IAPApiDisplay, TAPApiDisplayList } from "../../displayServices/APApisDisplayService";
+import { IAPApiDisplay, TAPApiDisplayList } from "../../displayServices/APApisDisplayService";
 import { APDisplayApiChannelParameterList } from "./APDisplayApiChannelParameterList";
+import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 import "../APComponents.css";
 
@@ -64,8 +65,9 @@ export const APDisplayApiProductApis: React.FC<IAPDisplayApiProductApisProps> = 
   }
 
   const renderComponent = (): JSX.Element => {
-    const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
+    const dataKey = APDisplayUtils.nameOf<TManagedObject>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
+
     return (
       <div className="card p-mt-4">
           <DataTable

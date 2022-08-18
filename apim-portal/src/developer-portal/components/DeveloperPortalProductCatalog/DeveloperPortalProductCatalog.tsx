@@ -54,12 +54,12 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
       currentState: newState
     });
   }
-  const setPreviousComponentState = () => {
-    setComponentState({
-      previousState: componentState.currentState,
-      currentState: componentState.previousState
-    });
-  }
+  // const setPreviousComponentState = () => {
+  //   setComponentState({
+  //     previousState: componentState.currentState,
+  //     currentState: componentState.previousState
+  //   });
+  // }
 
   const [userContext] = React.useContext(UserContext);
 
@@ -189,9 +189,8 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
   const onListViewSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
-  const onSubComponentSuccess = (apiCallState: TApiCallState) => {
+  const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
-    setPreviousComponentState();
   }
   const onSubComponentError = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
@@ -247,7 +246,7 @@ export const DeveloperPortalProductCatalog: React.FC<IDeveloperPortalProductCata
           mode={props.mode}
           organizationId={props.organizationId}
           apiProductEntityId={managedObjectEntityId}
-          onSuccess={onSubComponentSuccess} 
+          onSuccess={onSubComponentUserNotification} 
           onError={onSubComponentError} 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}

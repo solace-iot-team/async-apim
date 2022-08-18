@@ -24,6 +24,17 @@ export type APSOrganization_v1 = {
 export type APSOrganization_DB_v1 = APSOrganization_v1 & {
   _id: string;
 }
+export type APSOrganization_v2 = {
+  organizationId: string;
+  displayName: string;
+  assetIncVersionStrategy: string;
+  maxNumEnvsPerApiProduct: number;
+  maxNumApisPerApiProduct: number;
+  appCredentialsExpiryDuration: number;
+}
+export type APSOrganization_DB_v2 = APSOrganization_v2 & {
+  _id: string;
+}
 
 export class APSOrganizationsDBMigrate {
 
@@ -49,11 +60,48 @@ export class APSOrganizationsDBMigrate {
         currentDBRawOrg = await APSOrganizationsDBMigrate.migrate_0_to_1(apsOrganizationsService, currentDBRawOrg);
         currentDBSchemaVersion = 1;
       }
+      if(currentDBSchemaVersion === 1) {
+        currentDBRawOrg = await APSOrganizationsDBMigrate.migrate_1_to_2(apsOrganizationsService, currentDBRawOrg);
+        currentDBSchemaVersion = 2;
+      }
       // next one here
 
     }
 
     return currentDBRawOrgListToMigrate.length;
+  }
+
+  private static migrate_1_to_2 = async(apsOrganizationsService: APSOrganizationsService, dbOrg_1: APSOrganization_DB_v1): Promise<APSOrganization_DB_v2> => {
+    const funcName = 'migrate_1_to_2';
+    const logName = `${APSOrganizationsDBMigrate.name}.${funcName}()`;
+
+    const newSchemaVersion = 2;
+    const orgId = dbOrg_1.organizationId;
+
+    const dbOrg_2: APSOrganization_DB_v2 = {
+      ...dbOrg_1,
+      assetIncVersionStrategy: apsOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+      maxNumEnvsPerApiProduct: apsOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
+    }
+
+    const replaced = await apsOrganizationsService.getPersistenceService().replace({
+      collectionDocumentId: orgId,
+      collectionDocument: dbOrg_2,
+      collectionSchemaVersion: newSchemaVersion
+    });
+
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'replaced', details: { 
+      APSOrganization_DB_2: replaced,
+    }}));  
+
+    const newRawDBDocument = await apsOrganizationsService.getPersistenceService().byIdRaw({
+      documentId: orgId
+    });
+    ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATED, details: {
+      APSOrganization_DB_1: dbOrg_1,
+      APSOrganization_DB_2: newRawDBDocument
+    }}));
+    return newRawDBDocument;
   }
 
   private static migrate_0_to_1 = async(apsOrganizationsService: APSOrganizationsService, dbOrg_0: APSOrganization_DB_v0): Promise<APSOrganization_DB_v1> => {
@@ -123,9 +171,13 @@ export class APSOrganizationsDBMigrate {
     let numOrgsCreated = 0;
     for(const org of userOrgList) {
       try {
-        await apsOrganizationsService.create(org);
+        const created = await apsOrganizationsService.getPersistenceService().create({
+          collectionDocumentId: org.organizationId,
+          collectionDocument: org,
+          collectionSchemaVersion: 0
+        });
         ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.MIGRATING, message: 'created org', details: { 
-          organization: org
+          organization: created
         }}));      
         numOrgsCreated++;
       } catch(e) {

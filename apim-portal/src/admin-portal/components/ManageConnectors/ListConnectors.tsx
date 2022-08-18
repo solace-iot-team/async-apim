@@ -16,8 +16,8 @@ import {
 import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
-import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
-import { APConnectorApiCalls, TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
+import { TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -64,17 +64,14 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
     try { 
       const listApsConnectorsResponse: ListApsConnectorsResponse = await ApsConfigService.listApsConnectors();  
       const apsConnectorList: APSConnectorList = listApsConnectorsResponse.list;
-      let _managedObjectList: TManagedObjectList = [];
+      const _managedObjectList: TManagedObjectList = [];
       for(const apsConnector of apsConnectorList) {
-        const healthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
+        const apConnectorHealthCheckResult: TAPConnectorHealthCheckResult = await APConnectorHealthCheck.doHealthCheck({
           configContext: configContext, 
           connectorId: apsConnector.connectorId
-        });    
-        let apConnectorInfo: TAPConnectorInfo | undefined = undefined;
-        if(healthCheckResult.summary.success !== EAPHealthCheckSuccess.FAIL) {
-          apConnectorInfo = await APConnectorApiCalls.getConnectorInfo(apsConnector.connectorClientConfig);
-        }
-        _managedObjectList.push(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, healthCheckResult));
+        });
+        const apConnectorInfo: TAPConnectorInfo | undefined = ManageConnectorsCommon.getApConnectorInfo({ apConnectorHealthCheckResult: apConnectorHealthCheckResult });
+        _managedObjectList.push(ManageConnectorsCommon.createViewManagedObject(apsConnector, apConnectorInfo, apConnectorHealthCheckResult));
       }
       setManagedObjectList(_managedObjectList);
     } catch(e: any) {

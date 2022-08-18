@@ -3,15 +3,17 @@ import React from "react";
 import { FieldError } from "react-hook-form";
 import { EAPSSortDirection } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
+type DotPrefix<T extends string> = T extends "" ? "" : `.${T}`;
+type DotNestedKeys<T> = (T extends object ?
+    { [K in Exclude<keyof T, symbol>]: `${K}${DotPrefix<DotNestedKeys<T[K]>>}` }[Exclude<keyof T, symbol>]
+    : "") extends infer D ? Extract<D, string> : never;
+
 class APDisplayUtils {
   private readonly BaseComponentName = "APDisplayUtils";
 
-  // placeholder for common render functions
-  // probably from APRenderUtils.tsx
-
-  public nameOf<T>(name: keyof T) {
+  public nameOf<T>(name: DotNestedKeys<T>) {
     return name;
-  }  
+  }
 
   public displayFormFieldErrorMessage = (fieldError: FieldError | undefined) => {
     return fieldError && <small className="p-error">{fieldError.message}</small>    

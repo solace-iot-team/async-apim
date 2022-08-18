@@ -17,14 +17,8 @@ import {
   APSError,
   APSErrorIds,
   APSOrganizationCreate,
-  APSSessionLoginResponse,
-  ApsSessionService,
-  APSServiceAccountCreate,
-  APSServiceAccountCreateResponse,
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSOrganizationsService from '../../server/api/services/apsAdministration/APSOrganizationsService';
-import ServerConfig, { EAuthConfigType } from '../../server/common/ServerConfig';
-import { TestEnv } from '../setup.spec';
 import { ApimServerAPIClient } from '../lib/api.helpers';
 
 
@@ -91,6 +85,8 @@ describe(`${scriptName}`, () => {
           organizationId: orgId,
           displayName: orgDisplayName,
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
         }
         const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
@@ -140,6 +136,8 @@ describe(`${scriptName}`, () => {
           displayName: orgUpdate.displayName,
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
         expect(updatedOrg, TestLogger.createTestFailMessage('response does not equal request')).to.deep.equal(expectedUpdatedOrg);
       }
@@ -179,6 +177,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       await ApsAdministrationService.createApsOrganization({
@@ -187,6 +187,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -226,6 +228,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: -2,
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -248,6 +252,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: 0,
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -270,6 +276,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: -2,
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -292,6 +300,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: 0,
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -314,6 +324,8 @@ describe(`${scriptName}`, () => {
           displayName:'d',
           appCredentialsExpiryDuration: 0,
           maxNumApisPerApiProduct: 0,
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: 0,
         }
       });
       expect(false, TestLogger.createTestFailMessage('should not get here')).to.be.true;
@@ -323,6 +335,7 @@ describe(`${scriptName}`, () => {
       expect(apiError.status, TestLogger.createTestFailMessage('status not 400')).equal(400);
       const apsError: APSError = apiError.body;
       expect(apsError.errorId, TestLogger.createTestFailMessage('incorrect errorId')).equal(APSErrorIds.REQUEST_VALIDATION);
+      expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('maxNumEnvsPerApiProduct === 0');
       expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('maxNumApisPerApiProduct === 0');
       expect(JSON.stringify(apsError.meta), TestLogger.createTestFailMessage('error does not contain the reason')).to.contain('appCredentialsExpiryDuration === 0');
     }

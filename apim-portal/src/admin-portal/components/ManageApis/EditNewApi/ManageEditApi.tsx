@@ -18,10 +18,10 @@ import { E_CALL_STATE_ACTIONS } from "../ManageApisCommon";
 import { EditAccess } from "./EditAccess";
 import { EditAsyncApiSpec } from "./EditAsyncApiSpec";
 import { EditState } from "./EditState";
+import { EditAttributes } from "./EditAttributes";
 
 import '../../../../components/APComponents.css';
 import "../ManageApis.css";
-import { EditAttributes } from "./EditAttributes";
 
 export enum E_Edit_Scope {
   MAINTAIN = "MAINTAiN",
@@ -33,7 +33,7 @@ export interface IManageEditApiProps {
   apiEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onSaveSuccessNotification: (apiCallState: TApiCallState) => void;
   onChanged: (apApiDisplay: IAPApiDisplay) => void;
@@ -165,7 +165,7 @@ export const ManageEditApi: React.FC<IManageEditApiProps> = (props: IManageEditA
         <TabPanel header='Async Api Spec'>
           <React.Fragment>
             <EditAsyncApiSpec
-              key={`${ComponentName}_EditAccess_${refreshCounter}`}
+              key={`${ComponentName}_EditAsyncApiSpec_${refreshCounter}`}
               organizationId={props.organizationId}
               apApiDisplay={managedObject}
               onError={onError_SubComponent}

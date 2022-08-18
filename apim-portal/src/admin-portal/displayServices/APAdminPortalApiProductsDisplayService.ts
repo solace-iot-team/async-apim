@@ -1,6 +1,8 @@
 import { 
+  ApiError,
   APIProduct,
   APIProductAccessLevel,
+  APIProductPatch,
   ApiProductsService, 
   CommonEntityNameList,
   EntityDeriveRequest,
@@ -10,8 +12,10 @@ import { AuthHelper } from '../../auth/AuthHelper';
 import { 
   APApiProductsDisplayService, 
   IAPApiProductDisplay,
-  IAPApiProductDisplay4List, 
+  IAPApiProductDisplay4List,
+  TAPApiProductDisplay_AccessAndState, 
 } from '../../displayServices/APApiProductsDisplayService';
+import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttribute, TAPRawAttributeList } from '../../displayServices/APAttributesDisplayService/APAttributesDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
@@ -19,6 +23,7 @@ import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServic
 import APRbacDisplayService from '../../displayServices/APRbacDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from '../../displayServices/APUsersDisplayService/APMemberOfService';
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
+import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths } from '../../utils/Globals';
@@ -49,6 +54,7 @@ export type TAPAdminPortalApiProductDisplay4ListList = Array<TAPAdminPortalApiPr
 
 class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
+  private readonly RAW_ATTRIBUTE_VALUE_UNDEFINED = "RAW_ATTRIBUTE_VALUE_UNDEFINED";
 
   public get_CloningInfo({ apAdminPortalApiProductDisplay }:{
     apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
@@ -157,7 +163,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;    
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
   }): Promise<TAPAdminPortalApiProductDisplay4List> {
-
+    // const funcName = 'create_ApAdminPortalApiProductDisplay4List_From_ApiEntities';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // console.log(`${logName}: STARTING with connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
     const base: IAPApiProductDisplay4List = await this.create_ApApiProductDisplay4List_From_ApiEntities({
       organizationId: organizationId,
       connectorApiProduct: connectorApiProduct,
@@ -168,6 +176,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
+    // console.log(`${logName}: base done for connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
     const apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List = {
       ...base,
       apAppReferenceEntityIdList: await this.apiGetList_AppReferenceEntityIdList({ 
@@ -176,6 +185,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       }),
       apSearchContent: '',
     };
+    // console.log(`${logName}: apAdminPortalApiProductDisplay4List done for connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
     return APSearchContentService.add_SearchContent<TAPAdminPortalApiProductDisplay4List>(apAdminPortalApiProductDisplay4List);
   }
 
@@ -313,59 +323,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
 
   }
 
-  public deleteme_apiGetRecoverableList_ApAdminPortalApiProductDisplayList = async({ organizationId, default_businessGroupId, default_ownerId }:{
-    organizationId: string;
-    default_businessGroupId: string;
-    default_ownerId: string;
-  }): Promise<TAPAdminPortalApiProductDisplayList> => {
-
-    const connectorApiProductList: Array<APIProduct> = await this.deleteme_apiGetList_ConnectorApiProductList({
-      organizationId: organizationId,
-      businessGroupId: default_businessGroupId,
-      includeAccessLevelList: [
-        APIProductAccessLevel.INTERNAL,
-        APIProductAccessLevel.PUBLIC
-      ],
-    });
-
-    // get the complete env list for reference
-    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-      organizationId: organizationId
-    });
-
-    // get the complete business group list for reference
-    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-      organizationId: organizationId,
-      fetchAssetReferences: false
-    });
-    
-    // get the complete external system list for reference
-    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
-      organizationId: organizationId,
-    });
-    
-    const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
-    for(const connectorApiProduct of connectorApiProductList) {
-      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
-      const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
-        organizationId: organizationId,
-        connectorApiProduct: connectorApiProduct,
-        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-        default_ownerId: default_ownerId,
-        currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
-        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
-      });
-      // add only to list if this is a recoverable api product
-      if(this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) {
-        // apAdminPortalApiProductDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id = default_businessGroupId;
-        apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
-      }
-    }
-    return apAdminPortalApiProductDisplayList;
-
-  }
-
   public apiGetList_ApAdminPortalApiProductDisplay4ListList_For_ApiProductEntityIdList = async({ organizationId, default_ownerId, apiProductEntityIdList }:{ 
     organizationId: string;
     default_ownerId: string;
@@ -390,9 +347,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     });
     const apAdminPortalApiProductDisplay4ListList: TAPAdminPortalApiProductDisplay4ListList = [];
     for(const apiProductEntityId of apiProductEntityIdList) {
-      const connectorApiProduct = await ApiProductsService.getApiProduct({
-        organizationName: organizationId,
-        apiProductName: apiProductEntityId.id,
+      const connectorApiProduct = await this.ApiProductsService_getApiProduct({
+        organizationId: organizationId,
+        apiProductId: apiProductEntityId.id,
       });
       const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
       const apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List = await this.create_ApAdminPortalApiProductDisplay4List_From_ApiEntities({
@@ -416,8 +373,8 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     default_ownerId: string;
     apMemberOfBusinessGroupDisplayTreeNodeList?: TAPMemberOfBusinessGroupDisplayTreeNodeList;
   }): Promise<TAPAdminPortalApiProductDisplay4ListList> => {
-    // const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
+    const funcName = 'apiGetList_ApAdminPortalApiProductDisplay4ListList';
+    const logName = `${this.ComponentName}.${funcName}()`;
     // alert(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList)}`);
 
     const businessGroupIdList: Array<string> = [];
@@ -453,23 +410,32 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
       organizationId: organizationId,
     });
+
     const apAdminPortalApiProductDisplay4ListList: TAPAdminPortalApiProductDisplay4ListList = [];
     for(const connectorApiProduct of connectorApiProductList) {
-      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
-      const apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List = await this.create_ApAdminPortalApiProductDisplay4List_From_ApiEntities({
-        organizationId: organizationId,
-        connectorApiProduct: connectorApiProduct,
-        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-        default_ownerId: default_ownerId,
-        currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
-        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
-      });
-      // if this is a recovered API product, don't add to list
-      if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay4List })) apAdminPortalApiProductDisplay4ListList.push(apAdminPortalApiProductDisplay4List);
+      try {
+        // console.log(`${logName}: STARTING connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
+        const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
+        // console.log(`${logName}: done apVersionInfo for connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
+        const apAdminPortalApiProductDisplay4List: TAPAdminPortalApiProductDisplay4List = await this.create_ApAdminPortalApiProductDisplay4List_From_ApiEntities({
+          organizationId: organizationId,
+          connectorApiProduct: connectorApiProduct,
+          completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
+          default_ownerId: default_ownerId,
+          currentVersion: apVersionInfo.apCurrentVersion,
+          complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+          complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
+        });
+        // console.log(`${logName}: done apAdminPortalApiProductDisplay4List for connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
+        // if this is a recovered API product, don't add to list
+        if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay4List })) apAdminPortalApiProductDisplay4ListList.push(apAdminPortalApiProductDisplay4List);
+        // console.log(`${logName}: done apAdminPortalApiProductDisplay4ListList for connectorApiProduct.displayName=${connectorApiProduct.displayName}`);
+      } catch(e) {
+        console.error(`${logName}: unable to process connectorApiProduct=${JSON.stringify(connectorApiProduct, null, 2)}\nerror=${e}`);
+        // throw(e);
+      }
     }
     return apAdminPortalApiProductDisplay4ListList;
-
   }
   /**
    * Returns a list of API products.
@@ -477,55 +443,6 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
    * - any public or internal API product
    * - api products shared with this business group (regardless of visibility)
    */
-  public deleteme_apiGetList_ApAdminPortalApiProductDisplayList = async({ organizationId, businessGroupId, default_ownerId }: {
-    organizationId: string;
-    businessGroupId: string;
-    default_ownerId: string;
-  }): Promise<TAPAdminPortalApiProductDisplayList> => {
-    // const funcName = 'apiGetList_ApAdminPortalApiProductDisplayList';
-    // const logName = `${this.ComponentName}.${funcName}()`;
-    // throw new Error(`${logName}: test error handling`);
-
-    const connectorApiProductList: Array<APIProduct> = await this.deleteme_apiGetList_ConnectorApiProductList({
-      organizationId: organizationId,
-      businessGroupId: businessGroupId,
-      includeAccessLevelList: [
-        APIProductAccessLevel.INTERNAL,
-        APIProductAccessLevel.PUBLIC
-      ],
-    });
-    // get the complete env list for reference
-    const complete_apEnvironmentDisplayList: TAPEnvironmentDisplayList = await APEnvironmentsDisplayService.apiGetList_ApEnvironmentDisplay({
-      organizationId: organizationId
-    });
-    // get the complete business group list for reference
-    const complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
-      organizationId: organizationId,
-      fetchAssetReferences: false
-    });
-    // get the complete external system list for reference
-    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
-      organizationId: organizationId,
-    });
-    
-    const apAdminPortalApiProductDisplayList: TAPAdminPortalApiProductDisplayList = [];
-    for(const connectorApiProduct of connectorApiProductList) {
-      const apVersionInfo: IAPVersionInfo = APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta });
-      const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.create_ApAdminPortalApiProductDisplay_From_ApiEntities({
-        organizationId: organizationId,
-        connectorApiProduct: connectorApiProduct,
-        completeApEnvironmentDisplayList: complete_apEnvironmentDisplayList,
-        default_ownerId: default_ownerId,
-        currentVersion: apVersionInfo.apCurrentVersion,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
-        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
-      });
-      // if this is a recovered API product, don't add to list
-      if(!this.is_recovered_ApManagedAssetDisplay({ apManagedAssetDisplay: apAdminPortalApiProductDisplay })) apAdminPortalApiProductDisplayList.push(apAdminPortalApiProductDisplay);
-    }
-    return apAdminPortalApiProductDisplayList;
-  }
-
   public apiGetList_ApiProductEntityIdList_By_BusinessGroupId = async({ organizationId, businessGroupId }: {
     organizationId: string;
     businessGroupId: string;
@@ -559,9 +476,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
 
     let connectorApiProduct: APIProduct;
     if(revision === undefined) {
-      connectorApiProduct = await ApiProductsService.getApiProduct({
-        organizationName: organizationId,
-        apiProductName: apiProductId
+      connectorApiProduct = await this.ApiProductsService_getApiProduct({
+        organizationId: organizationId,
+        apiProductId: apiProductId
       });
     } else {
       connectorApiProduct = await ApiProductsService.getApiProductRevision({
@@ -635,24 +552,245 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       requestBody: clone
     });
 
-    // // get the api product to patch it
-    // const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = await this.apiGet_AdminPortalApApiProductDisplay({
+  }
+
+  private getChangedProperty = ({ existingProperty, newProperty }:{
+    existingProperty: any;
+    newProperty: any;
+  }): any => {
+    if(existingProperty === newProperty) return undefined;
+    return newProperty;
+  }
+
+  // private isObjectEmpty = (obj: any): boolean => {
+  //   return Object.getOwnPropertyNames(obj).length === 0;
+  // }
+
+  private apiManagePresence_Meta_Attribute = async({ organizationId, apiProductId, apRawAttribute }: {
+    organizationId: string;
+    apiProductId: string;
+    apRawAttribute: TAPRawAttribute;
+  }): Promise<void> => {
+    const funcName = 'apiManagePresence_Meta_Attribute';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    // console.log(`${logName}: checking apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+    if(apRawAttribute === null || apRawAttribute.name === null || apRawAttribute.value === null) {
+      // overhang - should never happen
+      throw new Error(`${logName}: found a null value in apRawAttribute=${JSON.stringify(apRawAttribute, null, 2)}`);
+    }
+
+    let exists: boolean = true;
+    try {
+      await ApiProductsService.getApiProductMetaAttribute({
+        organizationName: organizationId,
+        apiProductName: apiProductId,
+        attributeName: apRawAttribute.name
+      });
+      exists = true;
+    } catch(e: any) {
+      if(APClientConnectorOpenApi.isInstanceOfApiError(e)) {
+        const apiError: ApiError = e;
+        if(apiError.status === 404) exists = false;
+      } else throw e;
+    }
+    if(exists) {
+      if(apRawAttribute.value === this.RAW_ATTRIBUTE_VALUE_UNDEFINED) {
+        // delete it
+        console.log(`${logName}: deleting apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+        await ApiProductsService.deleteApiProductMetaAttribute({
+          organizationName: organizationId,
+          apiProductName: apiProductId,
+          attributeName: apRawAttribute.name,
+        });
+
+        // for testing: get it again
+        try {
+          const value: string = await ApiProductsService.getApiProductMetaAttribute({
+            organizationName: organizationId,
+            apiProductName: apiProductId,
+            attributeName: apRawAttribute.name
+          });
+          console.error(`${logName}: value after delete: value=${value} for name=${apRawAttribute.name}`);
+        } catch(e) {
+          // good case
+        }
+      } else {
+        // update it
+        // console.log(`${logName}: updating apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+        await ApiProductsService.updateApiProductMetaAttribute({
+          organizationName: organizationId,
+          apiProductName: apiProductId,
+          attributeName: apRawAttribute.name,
+          requestBody: apRawAttribute.value
+        });  
+      }
+    } else {
+      // create it
+      // console.log(`${logName}: creating apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+      await ApiProductsService.createApiProductMetaAttribute({
+        organizationName: organizationId,
+        apiProductName: apiProductId,
+        attributeName: apRawAttribute.name,
+        requestBody: apRawAttribute.value
+      });
+    }
+  }
+
+  private create_Meta_ApAttributeList = async({ organizationId, apApiProductDisplay_AccessAndState }:{
+    organizationId: string;
+    apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
+  }): Promise<TAPAttributeDisplayList> => {
+    // const funcName = 'create_Meta_ApAttributeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apAttributeDisplayList: TAPAttributeDisplayList = [];
+
+    return apAttributeDisplayList;
+
+    // unused
+    // // get the business group
+    // const apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
     //   organizationId: organizationId,
-    //   apiProductId: connectorApiProduct.name,
-    //   default_ownerId: userId,
+    //   businessGroupId: apApiProductDisplay_AccessAndState.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id,
     // });
-    // // unpublish
-    // apAdminPortalApiProductDisplay.apVersionInfo.apCurrentVersion = APVersioningDisplayService.create_NextVersion(apAdminPortalApiProductDisplay.apVersionInfo.apLastVersion);
-    // // apAdminPortalApiProductDisplay.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
-    // // stage=draft
-    // apAdminPortalApiProductDisplay.apLifecycleStageInfo.stage = MetaEntityStage.DRAFT;
-    // await this.apiUpdate_ApApiProductDisplay({
+    // // add the business group info attributes
+    // // business group id
+    // apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //   name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_ID }), 
+    //   value: apBusinessGroupDisplay.apEntityId.id
+    // }));
+    // // business group displayName
+    // apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //   name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_DISPLAY_NAME }), 
+    //   value: apBusinessGroupDisplay.apEntityId.displayName
+    // }));
+    // if(apBusinessGroupDisplay.apExternalReference !== undefined) {
+    //   // external business group id
+    //   apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //     name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_EXTERNAL_ID }), 
+    //     value: apBusinessGroupDisplay.apExternalReference.externalId,
+    //   }));
+    //   // external business group displayName
+    //   apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //     name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_EXTERNAL_DISPLAY_NAME }), 
+    //     value: apBusinessGroupDisplay.apExternalReference.displayName
+    //   }));
+    //   // external system id
+    //   apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //     name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.EXTERNAL_SYSTEM_ID }), 
+    //     value: apBusinessGroupDisplay.apExternalReference.externalSystemId
+    //   }));    
+    // }
+    // // business group sharing
+    // apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //   name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }), 
+    //   value: this.create_BusinessGroupSharingListString(apApiProductDisplay_AccessAndState.apBusinessGroupInfo.apBusinessGroupSharingList)
+    // }));
+    
+    // // owner info
+    // apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //   name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.ASSET_OWNER, tag: EAPManagedAssetAttribute_Owner_Tag.ID }), 
+    //   value: apApiProductDisplay_AccessAndState.apOwnerInfo.id
+    // }));
+
+    // // publishDestination info
+    // const publishDestinationInfoStr: string | undefined = this.create_PublishDestinationInfoString(apApiProductDisplay_AccessAndState.apPublishDestinationInfo);
+    // apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+    //   name: this.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.PUBLISH, tag: EAPManagedAssetAttribute_Publish_Tag.DESTINATION }), 
+    //   value: publishDestinationInfoStr !== undefined ? publishDestinationInfoStr : this.RAW_ATTRIBUTE_VALUE_UNDEFINED
+    // }));  
+    // return apAttributeDisplayList;
+  }
+
+  private async apiUpdate_Meta_AttributeList({ organizationId, apApiProductDisplay_AccessAndState }: {
+    organizationId: string;
+    apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
+  }): Promise<void> {
+
+    const apRawAttributeList: TAPRawAttributeList = APAttributesDisplayService.create_ApRawAttributeList({
+      apAttributeDisplayList:  await this.create_Meta_ApAttributeList({
+        organizationId: organizationId,
+        apApiProductDisplay_AccessAndState: apApiProductDisplay_AccessAndState
+      })
+    });
+
+    for(const apRawAttribute of apRawAttributeList) {
+      await this.apiManagePresence_Meta_Attribute({ 
+        organizationId: organizationId,
+        apiProductId: apApiProductDisplay_AccessAndState.apEntityId.id,
+        apRawAttribute: apRawAttribute
+      });
+    }
+  }
+
+  public async apiUpdate_ApApiProductDisplay_AccessAndState({ organizationId, userId, apApiProductDisplay, apApiProductDisplay_AccessAndState }:{
+    organizationId: string;
+    userId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
+    apApiProductDisplay_AccessAndState: TAPApiProductDisplay_AccessAndState;
+  }): Promise<void> { 
+    // const funcName = 'apiUpdate_ApApiProductDisplay_AccessAndState';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    await this.apiUpdate_Meta_AttributeList({
+      organizationId: organizationId,
+      apApiProductDisplay_AccessAndState: apApiProductDisplay_AccessAndState
+    });
+
+    const apiProductPatch: APIProductPatch = {
+      accessLevel: this.getChangedProperty({ existingProperty: apApiProductDisplay.apAccessLevel, newProperty: apApiProductDisplay_AccessAndState.apAccessLevel }),
+      meta: {
+        stage: this.getChangedProperty({ existingProperty: apApiProductDisplay.apLifecycleStageInfo.stage, newProperty: apApiProductDisplay_AccessAndState.apLifecycleStageInfo.stage }),
+        version: apApiProductDisplay.apVersionInfo.apCurrentVersion
+      }
+    };
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({
+      organizationId: organizationId,
+      apManagedAssetDisplay: this.set_ApApiProductDisplay_AccessAndState({
+        apApiProductDisplay: apApiProductDisplay,
+        apApiProductDisplay_AccessAndState: apApiProductDisplay_AccessAndState
+      })
+    });
+    
+    // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
+
+    await this.apiUpdate({
+      organizationId: organizationId,
+      apiProductId: apApiProductDisplay.apEntityId.id,
+      apiProductPatch: apiProductPatch,
+      apRawAttributeList: apRawAttributeList
+    });
+  }
+
+  public async apiCreate_ApApiProductDisplay({ organizationId, apApiProductDisplay, userId }: {
+    organizationId: string;
+    apApiProductDisplay: IAPApiProductDisplay;
+    userId: string;
+  }): Promise<void> {
+    // const funcName = 'apiCreate_ApApiProductDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // // test upstream error handling
+    // throw new Error(`${logName}: test error handling`);
+
+    await super.apiCreate_ApApiProductDisplay({
+      organizationId: organizationId,
+      userId: userId,
+      apApiProductDisplay: apApiProductDisplay,
+    });
+
+    // unused
+    // const apApiProductDisplay_AccessAndState = this.get_ApApiProductDisplay_AccessAndState({
+    //   apApiProductDisplay: apApiProductDisplay,
+    // });
+    // // alert(`${logName}: check creation of the meta attributes, apApiProductDisplay_AccessAndState=${JSON.stringify(apApiProductDisplay_AccessAndState, null, 2)}`);
+    // await this.apiUpdate_Meta_AttributeList({
     //   organizationId: organizationId,
-    //   apApiProductDisplay: apAdminPortalApiProductDisplay,
-    //   userId: userId,
-    // });  
+    //   apApiProductDisplay_AccessAndState: apApiProductDisplay_AccessAndState
+    // });
 
   }
+ 
 
 }
 

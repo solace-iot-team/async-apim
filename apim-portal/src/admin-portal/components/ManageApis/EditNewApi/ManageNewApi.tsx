@@ -37,7 +37,7 @@ export interface IManageNewApiProps {
   onError: (apiCallState: TApiCallState) => void;
   onUserNotification: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNewSuccess: (apiCallState: TApiCallState, apiEntityId: TAPEntityId) => void;
 }

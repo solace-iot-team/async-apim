@@ -19,7 +19,7 @@ export interface INewGeneralProps {
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const NewGeneral: React.FC<INewGeneralProps> = (props: INewGeneralProps) => {

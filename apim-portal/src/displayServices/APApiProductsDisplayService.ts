@@ -4,6 +4,7 @@ import {
   APIProductAccessLevel,
   APIProductPatch,
   ApiProductsService,
+  attributes,
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -21,6 +22,7 @@ import APApisDisplayService, {
 import APAttributesDisplayService, {
   IAPAttributeDisplay,
   TAPAttributeDisplayList,
+  TAPRawAttribute,
   TAPRawAttributeList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
@@ -136,33 +138,11 @@ export type IAPApiProductDisplay4List = Omit<IAPApiProductDisplay, "apApiDisplay
   apApiEntityIdList: TAPEntityIdList;
 };
 
-
-
 export abstract class APApiProductsDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApiProductsDisplayService";
 
   private readonly CDefaultApiProductCategory = 'Solace AsyncAPI';
   private readonly CDefaultApiProductImageUrl = 'https://www.primefaces.org/primereact/showcase/showcase/demo/images/product/chakra-bracelet.jpg';
-
-  public nameOf<IAPApiProductDisplay>(name: keyof IAPApiProductDisplay) {
-    return name;
-  }
-  public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
-    return `${this.nameOf<IAPApiProductDisplay>('apLifecycleStageInfo')}.${name}`;
-  }
-
-  // private filterConnectorApiProductList(connectorApiProductList: Array<APIProduct>, includeAccessLevel?: APIProductAccessLevel): Array<APIProduct> {
-  //   if(includeAccessLevel === undefined) return connectorApiProductList;
-  //   const indicesToDelete: Array<number> = connectorApiProductList.map( (connectorApiProduct: APIProduct, idx: number) => {
-  //     // return -1 if not found, otherwise the actual index
-  //     if(connectorApiProduct.accessLevel?.includes(includeAccessLevel)) return -1;
-  //     else return idx;
-  //   }).filter(idx => idx !== -1); // filter all indeces === -1 out
-  //   for(let idx = indicesToDelete.length -1; idx >= 0; idx--) {
-  //     connectorApiProductList.splice(indicesToDelete[idx], 1);
-  //   }
-  //   return connectorApiProductList;
-  // }
 
   private create_ApApiProductDocumentation(connectorApiProduct: APIProduct): TAPApiProductDocumentationDisplay {
     return {
@@ -242,7 +222,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   private create_ConnectorClientOptions(apClientOptionsDisplay: TAPClientOptionsDisplay): ClientOptions {
     const clientOptionsGuaranteedMessaging: ClientOptionsGuaranteedMessaging | undefined = apClientOptionsDisplay.apGuaranteedMessaging;
     const connectorClientOptions: ClientOptions = {
-      guaranteedMessaging: clientOptionsGuaranteedMessaging,
+      // if disabled, set to undefined 
+      // note: loses previously configured options, acceptable for user?
+      guaranteedMessaging: clientOptionsGuaranteedMessaging.requireQueue ? clientOptionsGuaranteedMessaging : undefined,
     }
     return connectorClientOptions;
   }
@@ -298,6 +280,32 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apControlledChannelParameterList;
   }
 
+  private create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct }:{
+    connectorApiProduct: APIProduct;
+  }): TAPRawAttributeList {
+    // const funcName = 'create_ApRawAttributeList_From_ApiEntities';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // meta attributes override product attributes
+    const metaRawAttributes: TAPRawAttributeList = connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined ? connectorApiProduct.meta.attributes : [];
+    // console.log(`${logName}: connectorApiProduct.displayName=${connectorApiProduct.displayName}, metaRawAttributes=${JSON.stringify(metaRawAttributes)}`);
+    // metaRawAttributes could have null values in it, filter them out
+    const apRawAttributeList: TAPRawAttributeList = metaRawAttributes.filter( (x) => {
+      return x !== null;
+    });
+    // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList)}`);
+    for(const nameValuePair of connectorApiProduct.attributes) {
+      // console.log(`${logName}: nameValuePair=${JSON.stringify(nameValuePair)}`);
+      if(nameValuePair !== null) {
+        const exists: TAPRawAttribute | undefined = apRawAttributeList.find( (apRawAttribute: TAPRawAttribute) => {
+          // console.log(`${logName}: apRawAttribute=${JSON.stringify(apRawAttribute)}`);
+          return apRawAttribute.name === nameValuePair.name;
+        });
+        if(exists === undefined) apRawAttributeList.push(nameValuePair);  
+      }
+    }
+    return apRawAttributeList;
+  }
+
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -317,10 +325,13 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }): Promise<IAPApiProductDisplay4List> {
     // const funcName = 'create_ApApiProductDisplay4List_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
-    const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
+
+    const apRawAttributeList: TAPRawAttributeList = this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct });
+
+    const _base: IAPManagedAssetDisplay = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: connectorApiProduct.attributes,
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -344,7 +355,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -375,10 +386,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     const funcName = 'create_ApApiProductDisplay_From_ApiEntities';
     const logName = `${this.MiddleComponentName}.${funcName}()`;
 
+    const apRawAttributeList: TAPRawAttributeList = this.create_ApRawAttributeList_From_ApiEntities({ connectorApiProduct: connectorApiProduct });
+
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiProduct.name,
       displayName: connectorApiProduct.displayName,
-      apRawAttributeList: connectorApiProduct.attributes,
+      apRawAttributeList: apRawAttributeList,
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -442,7 +455,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -688,12 +701,15 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
   public async create_Complete_ApAttributeList({ organizationId, apManagedAssetDisplay }:{
     organizationId: string;
-    apManagedAssetDisplay: IAPManagedAssetDisplay;
+    apManagedAssetDisplay: IAPApiProductDisplay;
   }): Promise<TAPAttributeDisplayList> {
+    // const funcName = 'create_Complete_ApAttributeList';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
     const _complete_ApAttributeList: TAPAttributeDisplayList = await super.create_Complete_ApAttributeList({
       organizationId: organizationId,
-      apManagedAssetDisplay: apManagedAssetDisplay
+      apManagedAssetDisplay: apManagedAssetDisplay,
+      // includeManagedAssetsAttributes: true
     });
 
     // add controlled channel parameters
@@ -704,26 +720,63 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         value: apControlledChannelParameter.value
       });  
     }
-
     return _complete_ApAttributeList;
-  }
-
-  public async create_Complete_ApRawAttributeList({ organizationId, apManagedAssetDisplay }:{
-    organizationId: string;
-    apManagedAssetDisplay: IAPManagedAssetDisplay;
-  }): Promise<TAPRawAttributeList> {
-    const rawAttributeList: TAPRawAttributeList = APAttributesDisplayService.create_ApRawAttributeList({
-      apAttributeDisplayList: await this.create_Complete_ApAttributeList({ 
-        organizationId: organizationId,
-        apManagedAssetDisplay: apManagedAssetDisplay 
-      })
-    });
-    return rawAttributeList;
   }
 
   // ********************************************************************************************************************************
   // API calls
   // ********************************************************************************************************************************
+
+  private filter_ConnectorApiProduct = ({ connectorApiProduct }:{
+    connectorApiProduct: APIProduct;
+  }): APIProduct => {
+    const filteredAttributes: attributes = connectorApiProduct.attributes.filter( (x) => {
+      return x !== null;
+    });
+    connectorApiProduct.attributes = filteredAttributes;
+    if(connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined) {
+      const filteredMetaAttributes: attributes = connectorApiProduct.meta.attributes.filter( (x) => {
+        return x !== null;
+      });
+      connectorApiProduct.meta.attributes = filteredMetaAttributes;
+    }
+    return connectorApiProduct;
+  }
+
+  protected ApiProductsService_listApiProducts = async ({ organizationId, filter }:{
+    organizationId: string;
+    filter?: string;
+  }): Promise<Array<APIProduct>> => {
+
+    const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
+      organizationName: organizationId,
+      filter: filter
+    });
+
+    // workaround
+    // filter all attributes that are null
+    // meta and object
+    for(const connectorApiProduct of connectorApiProductList) {
+
+      this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+
+    }
+    return connectorApiProductList;
+  }
+
+  protected ApiProductsService_getApiProduct = async({ organizationId, apiProductId }:{
+    organizationId: string;
+    apiProductId: string;
+
+  }): Promise<APIProduct> => {
+
+    const connectorApiProduct: APIProduct = await ApiProductsService.getApiProduct({
+      organizationName: organizationId,
+      apiProductName: apiProductId
+    });
+
+    return this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+  }
 
   public async apiCheck_ApApiProductDisplay_Exists({ organizationId, apiProductId }: {
     organizationId: string;
@@ -751,8 +804,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     organizationId: string;
   }): Promise<Array<APIProduct>> => {
 
-    const connectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-      organizationName: organizationId,
+    const connectorApiProductList: Array<APIProduct> = await this.ApiProductsService_listApiProducts({
+      organizationId: organizationId,
     });
 
     return connectorApiProductList;
@@ -767,8 +820,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'apiGetFilteredList_ConnectorApiProduct';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    const completeConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-      organizationName: organizationId,
+    const completeConnectorApiProductList: Array<APIProduct> = await this.ApiProductsService_listApiProducts({
+      organizationId: organizationId,
     });
 
     const filteredConnectorApiProductList: Array<APIProduct> = [];
@@ -788,25 +841,26 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
           if(includeAccessLevelList !== undefined && connectorApiProduct.accessLevel !== undefined) {
             add2List = includeAccessLevelList.includes(connectorApiProduct.accessLevel);
           }
-          if(connectorApiProduct.attributes !== undefined) {
-            const owningAttribute = connectorApiProduct.attributes.find( (x) => {
-              return x.name === owningBusinessGroup_AttributeName;
-            });
-            const sharingAttribute = connectorApiProduct.attributes.find( (x) => {
-              return x.name === sharingBusinessGroup_AttributeName;
-            });
-            // check if attributes contain any id is the list
-            for(const businessGroupId of businessGroupIdList) {
-              if(
-                (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
-                (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
-              ) {
-                // don't add again if already in
-                const found = filteredConnectorApiProductList.find( (x) => {
-                  return x.name === connectorApiProduct.name;
-                });
-                if(found === undefined) add2List = true;  
-              }
+          const apRawAttributeList: TAPRawAttributeList = this.create_ApRawAttributeList_From_ApiEntities({
+            connectorApiProduct: connectorApiProduct
+          });
+          const owningAttribute = apRawAttributeList.find( (x) => {
+            return x.name === owningBusinessGroup_AttributeName;
+          });
+          const sharingAttribute = apRawAttributeList.find( (x) => {
+            return x.name === sharingBusinessGroup_AttributeName;
+          });
+          // check if attributes contain any id is the list
+          for(const businessGroupId of businessGroupIdList) {
+            if(
+              (owningAttribute !== undefined && owningAttribute.value.includes(businessGroupId)) ||
+              (sharingAttribute !== undefined && sharingAttribute.value.includes(businessGroupId))
+            ) {
+              // don't add again if already in
+              const found = filteredConnectorApiProductList.find( (x) => {
+                return x.name === connectorApiProduct.name;
+              });
+              if(found === undefined) add2List = true;  
             }
           }
           if(add2List) {
@@ -844,8 +898,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       });
     }
 
-    const businessGroupConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-      organizationName: organizationId,
+    const businessGroupConnectorApiProductList: Array<APIProduct> = await this.ApiProductsService_listApiProducts({
+      organizationId: organizationId,
       filter: filter
     });
     // console.log(`${logName}: filter = ${filter}`);
@@ -869,8 +923,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         attributeName: this.get_AttributeName_SharingBusinessGroupId(),
         attributeValue: businessGroupId
       });
-      const sharingConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-        organizationName: organizationId,
+      const sharingConnectorApiProductList: Array<APIProduct> = await this.ApiProductsService_listApiProducts({
+        organizationId: organizationId,
         filter: filter
       });
       // console.log(`${logName}: sharing filter = ${filter}`);
@@ -889,8 +943,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     // now include all products not in businessGroup but with accessLevel in list
     if(includeAccessLevelList !== undefined) {
-      const accessLevelConnectorApiProductList: Array<APIProduct> = await ApiProductsService.listApiProducts({
-        organizationName: organizationId,
+      const accessLevelConnectorApiProductList: Array<APIProduct> = await this.ApiProductsService_listApiProducts({
+        organizationId: organizationId,
       });
       for(const connectorApiProduct of accessLevelConnectorApiProductList) {
         if(connectorApiProduct.accessLevel !== undefined) {
@@ -907,32 +961,17 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return connectorApiProductList;
   }
 
-    // const patch: APIProductPatch = {
-  //   displayName: apiProduct.displayName,
-  //   description: apiProduct.description,
-  //   approvalType: apiProduct.approvalType,
-  //   attributes: apiProduct.attributes,
-  //   clientOptions: apiProduct.clientOptions,
-  //   environments: apiProduct.environments,
-  //   protocols: apiProduct.protocols,
-  //   pubResources: apiProduct.pubResources,
-  //   subResources: apiProduct.subResources,
-  //   apis: apiProduct.apis,
-  //   accessLevel: apiProduct.accessLevel
-  // };
-
-
-  protected async apiUpdate({ organizationId, apiProductId, apiProductUpdate, apRawAttributeList }:{
+  protected async apiUpdate({ organizationId, apiProductId, apiProductPatch, apRawAttributeList } : {
     organizationId: string;
     apiProductId: string;
-    apiProductUpdate: APIProductPatch;    
-    apRawAttributeList: TAPRawAttributeList;    
+    apiProductPatch: APIProductPatch;    
+    apRawAttributeList?: TAPRawAttributeList;    
   }): Promise<void> {
     // const funcName = 'apiUpdate';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // alert(`${logName}: apiProductUpdate=${JSON.stringify(apiProductUpdate, null, 2)}`);
     const update: APIProductPatch = {
-      ...apiProductUpdate,
+      ...apiProductPatch,
       attributes: apRawAttributeList
     }
     await ApiProductsService.updateApiProduct({
@@ -961,8 +1000,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // const funcName = 'apiUpdate_ApApiProductDisplay';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
-    // alert(`${logName}: implement documentation update`)
-
+   
     apApiProductDisplay = this.apiUpdate_ApplyRules({ apApiProductDisplay: apApiProductDisplay });
 
     const update: APIProductPatch = {
@@ -978,20 +1016,22 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       meta: {
         version: apApiProductDisplay.apVersionInfo.apCurrentVersion,
         stage: apApiProductDisplay.apLifecycleStageInfo.stage,
-        lastModifiedBy: userId,
+        // now set by connector from token
+        // lastModifiedBy: userId,
       },
       accessLevel: apApiProductDisplay.apAccessLevel
     };
 
     // always update with the full attribute list
+    const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({
+      organizationId: organizationId,
+      apManagedAssetDisplay: apApiProductDisplay
+    });
     await this.apiUpdate({
       organizationId: organizationId,
       apiProductId: apApiProductDisplay.apEntityId.id,
-      apiProductUpdate: update,
-      apRawAttributeList: await this.create_Complete_ApRawAttributeList({
-        organizationId: organizationId,
-        apManagedAssetDisplay: apApiProductDisplay
-      })
+      apiProductPatch: update,
+      apRawAttributeList: apRawAttributeList
     });
 
   }
@@ -1003,19 +1043,13 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   }): Promise<void> {
     // const funcName = 'apiCreate_ApApiProductDisplay';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // // test upstream error handling
     // throw new Error(`${logName}: test error handling`);
-    // alert(`${logName}: dont include version`);
 
     const apRawAttributeList: TAPRawAttributeList = await this.create_Complete_ApRawAttributeList({ 
       organizationId: organizationId,
       apManagedAssetDisplay: apApiProductDisplay 
     });
-
-    // alert(`${logName}: check console ...`);
-    // console.log(`${logName}: apRawAttributeList = ${JSON.stringify(apRawAttributeList, null, 2)}`);
-    // test upstream error handling
-    // throw new Error(`${logName}: test create error case: check attributes not set to raw attributes`);
-
     const create: APIProduct = {
       apis: APEntityIdsService.create_IdList_From_ApDisplayObjectList(apApiProductDisplay.apApiDisplayList),
       approvalType: this.create_ConnectorApprovalType(apApiProductDisplay.apApprovalType),
@@ -1043,7 +1077,6 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       organizationName: organizationId,
       requestBody: create
     });  
-
   }
   
   public async apiDelete_ApApiProductDisplay({ organizationId, apiProductId }: {

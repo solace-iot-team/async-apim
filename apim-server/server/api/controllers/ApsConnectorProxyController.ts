@@ -51,12 +51,23 @@ export class ApsConnectorProxyController {
       const funcName = 'connectorRequestCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
 
-      res;
       options;  
       const anyReq = req as any;
 
+      const anyOptions = options as any;
       ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
-        request_body: anyReq.body
+        // proxyReq: proxyReq,
+        // options: options,
+        // anyReq: anyReq,
+        request: {
+          method: anyReq.method,
+          url: `${anyOptions.target.href}${anyReq.originalUrl}`,
+          body: anyReq.body,  
+        },
+        response: {
+          statusCode: res.statusCode,
+          statusMessage: res.statusMessage
+        }
       } } ));
   
       if (!anyReq.body || !Object.keys(anyReq.body).length) {
@@ -99,21 +110,23 @@ export class ApsConnectorProxyController {
       apsSessionUser: apsSessionUser,
       accountType: accountType
     });
+    const timeout_ms = 5000;
     ConnectorProxy.web(req, res, {
       // target: "http://18.184.18.52:3000/v1",
-      target: ServerConfig.getActiveConnectorTarget()
+      target: ServerConfig.getActiveConnectorTarget(),
+      proxyTimeout: timeout_ms,
+      timeout: timeout_ms,
     }, function (err) {
       // called when network errors occur 
       const funcName = 'ConnectorProxy.web.errorCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
-      // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
-      //   error: err 
-      // } } ));
+      ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
+        error: err 
+      } } ));
       const connectorError = new ConnectorProxyError(logName, undefined, {
         connectorError: err
       });
       next(connectorError);
-     
     });
   }
 }

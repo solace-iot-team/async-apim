@@ -107,6 +107,8 @@ describe(`${scriptName}`, () => {
         displayName: orgDisplayName,
         appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
         maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+        assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+        maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       }
       const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
         requestBody: apsOrg
@@ -192,6 +194,8 @@ describe(`${scriptName}`, () => {
           displayName: orgDisplayName,
           appCredentialsExpiryDuration: APSOrganizationsService.get_DefaultAppCredentialsExpiryDuration(),
           maxNumApisPerApiProduct: APSOrganizationsService.get_DefaultMaxNumApis_Per_ApiProduct(),
+          assetIncVersionStrategy: APSOrganizationsService.get_DefaultAssetIncVersionStrategy(),
+          maxNumEnvsPerApiProduct: APSOrganizationsService.get_DefaultMaxNumEnvs_Per_ApiProduct(),
         }
         const apsOrgCreated: APSOrganization = await ApsAdministrationService.createApsOrganization({
           requestBody: apsOrg

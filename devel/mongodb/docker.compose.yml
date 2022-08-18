@@ -1,0 +1,10 @@
+version: "3.7"
+services:
+    apim-devel-standalone-mongodb:
+      container_name: apim-devel-standalone-mongodb
+      image : mongo:3.6
+      ports:
+        - 27021:27017
+      restart: unless-stopped
+##
+# The End.

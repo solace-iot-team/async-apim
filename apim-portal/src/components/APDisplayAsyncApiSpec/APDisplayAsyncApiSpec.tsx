@@ -4,9 +4,9 @@ import React from "react";
 import AsyncApiComponent, { ConfigInterface } from "@asyncapi/react-component";
 
 import { Toolbar } from "primereact/toolbar";
-import { APButtonDownloadContentAsFile } from "../APButtons/APButtonDownloadContentAsFile";
+import { APButtonDownloadContentAsFile, EApFileExtension } from "../APButtons/APButtonDownloadContentAsFile";
+import { EApFileDownloadType } from "../../displayServices/APApiSpecsDisplayService";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { EFileDownloadType, EFileExtension } from "../deleteme.APComponentsCommon";
 import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
 import { Globals } from "../../utils/Globals";
 
@@ -22,6 +22,7 @@ export interface IAPDisplayAsyncApiSpecProps {
   renderDownloadButtons?: boolean;
   onDownloadError: (apiCallState: TApiCallState) => void;
   onDownloadSuccess: (apiCallState: TApiCallState) => void;
+  fetchZipContentsFunc: () => Promise<Blob | undefined>;
 }
 
 export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (props: IAPDisplayAsyncApiSpecProps) => {
@@ -29,6 +30,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
 
   const ToolbarButtonLabel_DownloadJson = 'Download JSON';
   const ToolbarButtonLabel_DownloadYaml = 'Download YAML';
+  const ToolbarButtonLabel_DownloadZip = 'Download Assets(zip)';
   const renderDownloadButtons: boolean = props.renderDownloadButtons !== undefined ? props.renderDownloadButtons : true;
   
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -60,14 +62,15 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
     props.onDownloadError(callState);
   }
 
-  const getFileName = (name: string, fileExtension: EFileExtension): string => {
+  const getFileName = (name: string, fileExtension: EApFileExtension): string => {
     return `${name}.${fileExtension}`;
   }
 
   const renderToolbar = () => {
     if(!renderDownloadButtons) return (<></>);
-    const jsonFileName: string = getFileName(props.schemaId, EFileExtension.JSON);
-    const yamlFileName: string = getFileName(props.schemaId, EFileExtension.YAML);
+    const jsonFileName: string = getFileName(props.schemaId, EApFileExtension.JSON);
+    const yamlFileName: string = getFileName(props.schemaId, EApFileExtension.YAML);
+    const zipFileName: string = getFileName(props.schemaId, EApFileExtension.ZIP);
     const buttonClassName: string = "p-button-text p-button-plain p-button-outlined";
     let jsxButtonList: Array<JSX.Element> = [
       <APButtonDownloadContentAsFile 
@@ -76,7 +79,7 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
         buttonClassName={buttonClassName}
         jsonContentObject={props.schema}
         fileName={jsonFileName}
-        fileContentType={EFileDownloadType.JSON}
+        fileContentType={EApFileDownloadType.JSON}
         initialCallState={ApiCallState.getInitialCallState('ASYNC_API_SPEC_DOWNLOAD', `download async api spec to ${jsonFileName}`)}
         onSuccess={props.onDownloadSuccess}
         onError={onDownloadError}
@@ -87,12 +90,28 @@ export const APDisplayAsyncApiSpec: React.FC<IAPDisplayAsyncApiSpecProps> = (pro
         buttonClassName={buttonClassName}
         jsonContentObject={props.schema}
         fileName={yamlFileName}
-        fileContentType={EFileDownloadType.YAML}
+        fileContentType={EApFileDownloadType.YAML}
         initialCallState={ApiCallState.getInitialCallState('ASYNC_API_SPEC_DOWNLOAD', `download async api spec to ${yamlFileName}`)}
         onSuccess={props.onDownloadSuccess}
         onError={onDownloadError}
       />,
     ];
+    if(props.fetchZipContentsFunc !== undefined) {
+      jsxButtonList.push(
+        <APButtonDownloadContentAsFile 
+          key={`${componentName}_zip`}
+          buttonLabel={ToolbarButtonLabel_DownloadZip}
+          buttonClassName={buttonClassName}
+          jsonContentObject={undefined}
+          fetchZipContentsFunc={props.fetchZipContentsFunc}
+          fileName={zipFileName}
+          fileContentType={EApFileDownloadType.ZIP}
+          initialCallState={ApiCallState.getInitialCallState('ASYNC_API_SPEC_DOWNLOAD', `download async api spec assets to ${zipFileName}`)}
+          onSuccess={props.onDownloadSuccess}
+          onError={onDownloadError}
+        />,
+      );
+    }
     return (
       <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none', 'paddingTop': '1rem', 'paddingBottom': '0rem', 'marginBottom': '0rem !important' } } right={jsxButtonList} />      
     );

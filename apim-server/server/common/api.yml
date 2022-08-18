@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.3.1
+  version: 0.3.2
 servers:
 - url: /apim-server/v1
 tags:
@@ -2404,6 +2404,15 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/APSOrganization'
+    APSAssetIncVersionStrategy:
+      type: string
+      enum:
+      - bump_minor
+      - bump_patch
+    APSMaxNumEnvsPerApiProduct:
+      type: integer
+      description:
+        Value of '-1' indicates no restriction. Value > 0 restricts the number of Environments each API Product can use.
     APSMaxNumApisPerApiProduct:
       type: integer
       description:
@@ -2420,6 +2429,10 @@ components:
           $ref: "#/components/schemas/APSId"
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        assetIncVersionStrategy:
+          $ref: "#/components/schemas/APSAssetIncVersionStrategy"
+        maxNumEnvsPerApiProduct:
+          $ref: "#/components/schemas/APSMaxNumEnvsPerApiProduct"
         maxNumApisPerApiProduct:
           $ref: "#/components/schemas/APSMaxNumApisPerApiProduct"
         appCredentialsExpiryDuration:
@@ -2427,6 +2440,8 @@ components:
       required:
         - organizationId
         - displayName
+        - assetIncVersionStrategy
+        - maxNumEnvsPerApiProduct
         - maxNumApisPerApiProduct
         - appCredentialsExpiryDuration
     APSOrganizationCreate:
@@ -2440,6 +2455,10 @@ components:
       properties:
         displayName:
           $ref: "#/components/schemas/APSDisplayName"
+        assetIncVersionStrategy:
+          $ref: "#/components/schemas/APSAssetIncVersionStrategy"
+        maxNumEnvsPerApiProduct:
+          $ref: "#/components/schemas/APSMaxNumEnvsPerApiProduct"
         maxNumApisPerApiProduct:
           $ref: "#/components/schemas/APSMaxNumApisPerApiProduct"
         appCredentialsExpiryDuration:

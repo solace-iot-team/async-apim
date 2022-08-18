@@ -20,10 +20,6 @@ export type TAPAppApiDisplayList = Array<TAPAppApiDisplay>;
 export class APAppApisDisplayService {
   private readonly BaseComponentName = "APAppApisDisplayService";
 
-  public nameOf(name: keyof TAPAppApiDisplay) {
-    return name;
-  }
-
   private create_ApAppApiDisplayList_From_ApiEntities = ({ apApp_ApiProductDisplay }:{
     apApp_ApiProductDisplay: TAPDeveloperPortalAppApiProductDisplay;
   }): TAPAppApiDisplayList => {

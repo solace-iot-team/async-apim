@@ -23,7 +23,7 @@ export interface INewReviewAndCreateProps {
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: INewReviewAndCreateProps) => {

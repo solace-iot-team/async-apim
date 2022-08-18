@@ -8,10 +8,9 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 import { Globals } from '../../../utils/Globals';
-import { TAPEnvironmentName } from "../../../components/deleteme.APComponentsCommon";
 
 export type TOrganizationService = Service;
-export type TManagedObjectId = TAPEnvironmentName;
+export type TManagedObjectId = string;
 export type TServiceEndpoint = Endpoint;
 export type TViewServiceEndpoint = Endpoint & {
   attributes: string

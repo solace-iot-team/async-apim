@@ -20,13 +20,13 @@ export type TAPOrgAsset = {
 }
 export type TAPOrgAssetList = Array<TAPOrgAsset>;
 
-export enum EAPAsyncApiSpecFormat {
-  JSON = 'application/json',
-  YAML = 'application/x-yaml',
-  UNKNOWN = 'application/x-unknown'
-}
+// export enum EAPAsyncApiSpecFormat {
+//   JSON = 'application/json',
+//   YAML = 'application/x-yaml',
+//   UNKNOWN = 'application/x-unknown'
+// }
 
-export type TAPAsyncApiSpec = {
-  format: EAPAsyncApiSpecFormat,
-  spec: any
-}
+// export type TAPAsyncApiSpec = {
+//   format: EAPAsyncApiSpecFormat,
+//   spec: any
+// }

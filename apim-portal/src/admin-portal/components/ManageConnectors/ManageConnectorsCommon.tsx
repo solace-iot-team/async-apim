@@ -6,7 +6,7 @@ import {
 import { Globals } from '../../../utils/Globals';
 import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
-import { TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
+import { EAPConnectorHealthCheckLogEntryType, EAPHealthCheckSuccess, TAPConnectorHealthCheckLogEntry_About, TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
 import { SystemHealthCommon } from '../../../components/SystemHealth/SystemHealthCommon';
 
 export type TViewManagedObject = {
@@ -41,6 +41,35 @@ export class ManageConnectorsCommon {
       }
     }
     return Globals.generateDeepObjectValuesString(filteredViewApiObject);
+  }
+
+  public static getApConnectorInfo = ({ apConnectorHealthCheckResult }:{
+    apConnectorHealthCheckResult: TAPConnectorHealthCheckResult;
+  }): TAPConnectorInfo | undefined => {
+
+    if(apConnectorHealthCheckResult.summary.success === EAPHealthCheckSuccess.FAIL) return undefined;
+
+    // console.log(`${logName}: healthCheckResult = ${JSON.stringify(healthCheckResult, null, 2)}`);
+    // find "entryType": "GET_CONNECTOR_ABOUT",
+    for(const apConnectorHealthCheckLogEntry of apConnectorHealthCheckResult.healthCheckLog) {
+      if(apConnectorHealthCheckLogEntry.entryType === EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_ABOUT) {
+        const apConnectorHealthCheckLogEntry_About: TAPConnectorHealthCheckLogEntry_About = apConnectorHealthCheckLogEntry;
+        if(apConnectorHealthCheckLogEntry_About.about !== undefined) {
+          const apConnectorInfo: TAPConnectorInfo = {
+            connectorAbout: {
+              apiAbout: apConnectorHealthCheckLogEntry_About.about,
+              portalAbout: {
+                isEventPortalApisProxyMode: apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE ? apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE : false,
+                connectorOpenApiVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-openapi"],
+                connectorServerVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-server"],
+              }
+            }
+          };
+          return apConnectorInfo;  
+        }
+      }
+    }
+    return undefined;
   }
 
   public static createViewManagedObject = (apsConnector: APSConnector, apConnectorInfo: TAPConnectorInfo | undefined, healthCheckResult: TAPConnectorHealthCheckResult): TViewManagedObject => {
