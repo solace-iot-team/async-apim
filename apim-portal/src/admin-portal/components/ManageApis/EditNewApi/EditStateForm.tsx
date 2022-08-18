@@ -29,7 +29,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
   type TManagedObject = TAPApiDisplay_State;
   type TManagedObjectFormData = {
     lifecycleState: MetaEntityStage;
-    notes: string;
+    notes?: string;
     // version: string;
   };
   type TManagedObjectFormDataEnvelope = {
@@ -39,7 +39,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
       lifecycleState: mo.apLifecycleStageInfo.stage,
-      notes: mo.apLifecycleStageInfo.notes === undefined ? '' : mo.apLifecycleStageInfo.notes,
+      notes: mo.apLifecycleStageInfo.notes,
       // version: mo.version,
       // version: '',
     };
@@ -87,6 +87,8 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
     managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    // must set the watched elements directly, otherwise it won't trigger properly
+    managedObjectUseForm.setValue('formData.lifecycleState', managedObjectFormDataEnvelope.formData.lifecycleState);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
@@ -99,11 +101,41 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
     // placeholder
   }
 
+  const renderFormNotes = (lifecycleState: MetaEntityStage) => {
+    const isActive: boolean = (lifecycleState === MetaEntityStage.DEPRECATED);
+    return (
+      <div className="p-ml-2" hidden={!isActive}>
+        {/* notes */}
+        <div className="p-field">
+          <span className="p-float-label">
+            <Controller
+              control={managedObjectUseForm.control}
+              name="formData.notes"
+              // rules={{
+              //   required: "Please enter notes.",
+              // }}
+              render={( { field, fieldState }) => {
+                return(
+                  <InputTextarea
+                    id={field.name}
+                    {...field}
+                    className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                  />
+                )}}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.notes })}>Notes</label>
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.notes)}
+        </div>
+      </div>
+    );
+  }
+
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-    // const apVersionTreeTableNodeList: TAPVersionTreeTableNodeList = APVersioningDisplayService.create_VersionTreeTableNodeList({ apVersionList: managedObject.apVersionList });
+    const lifecycleState: MetaEntityStage = managedObjectUseForm.watch('formData.lifecycleState');
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -158,28 +190,7 @@ export const EditStateForm: React.FC<IEditStateFormProps> = (props: IEditStateFo
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.lifecycleState)} 
             </div>
-            {/* notes */}
-            <div className="p-field">
-              <span className="p-float-label">
-                <Controller
-                  control={managedObjectUseForm.control}
-                  name="formData.notes"
-                  rules={{
-                    required: "Please enter notes.",
-                  }}
-                  render={( { field, fieldState }) => {
-                    return(
-                      <InputTextarea
-                        id={field.name}
-                        {...field}
-                        className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                      />
-                    )}}
-                />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.notes })}>Notes*</label>
-              </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.notes)}
-            </div>
+            { renderFormNotes(lifecycleState)}
           </form>  
         </div>
       </div>
