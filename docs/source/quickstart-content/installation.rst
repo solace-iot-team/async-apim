@@ -28,12 +28,41 @@ Prerequisites
 
 The quickstart requires the following components:
 
-- nodejs, version 16.x
+.. - nodejs, version 16.x
+
 - docker
 - docker-compose
 
+Tested with:
+
+- MacOs: Docker Desktop
+
+  - Docker version 20.10.17, build 100c70
+  - docker-compose version 1.29.2, build 5becea4c
+
+- ubuntu-18.04:
+
+  - xxxxx
+  - xxxxx
+
+.. note::
+
+  CentOS: use `docker-ce` instead of `docker` to get the latest version(s).
+
+
 Setup
 +++++
+
+.. note::
+
+  To use the quickstart configuration, clone the github repository:
+
+  .. code-block:: bash
+
+    git clone https://github.com/solace-iot-team/async-apim.git
+    cd async-apim/quickstart
+
+
 
 At start-up, the APIM Server creates a `root` user based on these environment variables, which can be found in the `start.sh`_.
 All other variables are set directly in the `docker.compose.yml`_ file.

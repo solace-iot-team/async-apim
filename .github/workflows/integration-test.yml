@@ -18,8 +18,8 @@ on:
     branches:
       - main
 env:
-  # DEBUG_FLAG: ${{ true }}
-  DEBUG_FLAG: ${{ false }}
+  DEBUG_FLAG: ${{ true }}
+  # DEBUG_FLAG: ${{ false }}
   APIM_SERVER_DIR: "apim-server"
   APIM_SERVER_TEST_LOGS_DIR: "apim-server/test/logs"
   APIM_SERVER_TEST_LOGS_OUTPUT_NAME: "apim-server-test-logs"
@@ -68,6 +68,7 @@ jobs:
           echo "node --version: "; node --version
           echo "npm --version: "; npm --version
           echo "docker --version"; docker --version
+          echo "docker-compose --version"; docker-compose --version
 
       - name: "server: npm install"
         run: |
