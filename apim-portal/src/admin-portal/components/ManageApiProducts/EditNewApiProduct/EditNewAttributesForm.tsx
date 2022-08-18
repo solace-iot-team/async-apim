@@ -90,7 +90,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
         ...managedObjectFormDataEnvelope.formData,
         external_attribute_list: apAttributeDisplayList  
       }
-    }
+    };
     setManagedObjectFormDataEnvelope(newMofde);
   }
 

@@ -589,6 +589,10 @@ export abstract class APManagedAssetDisplayService {
 
     _complete_ApAttributeList.push(...this.get_ApCustomAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay }));
     
+    // if(!includeManagedAssetsAttributes) return _complete_ApAttributeList;
+
+    // add managed assets attributes
+
     // get the business group
     const apBusinessGroupDisplay: TAPBusinessGroupDisplay = await APBusinessGroupsDisplayService.apsGet_ApBusinessGroupDisplay({
       organizationId: organizationId,

@@ -1,5 +1,5 @@
-import { attributes, Meta, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
-import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttributeList } from "./APAttributesDisplayService/APAttributesDisplayService";
+import { Meta, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
+import { TAPAttributeDisplayList, TAPRawAttributeList } from "./APAttributesDisplayService/APAttributesDisplayService";
 
 const EmptyTimestamp = -1;
 export type TAPMetaInfo = {
@@ -38,16 +38,20 @@ class APMetaInfoDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
     // console.log(`${logName}: apRawAttributeList=${JSON.stringify(apRawAttributeList, null, 2)}`);
     
+    // unused
+    // apRawAttributeList;
+    // apManagedAssetAttributePrefix;
+    // unused
     // extract all AP owned attributes
-
-    const apManaged_AttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
-      prefixed_with: apManagedAssetAttributePrefix,
-      apAttributeDisplayList: APAttributesDisplayService.create_ApAttributeDisplayList({
-        apRawAttributeList: apRawAttributeList
-      })
-    });
+    // const apManaged_AttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+    //   prefixed_with: apManagedAssetAttributePrefix,
+    //   apAttributeDisplayList: APAttributesDisplayService.create_ApAttributeDisplayList({
+    //     apRawAttributeList: apRawAttributeList
+    //   })
+    // });
     // console.log(`${logName}: apManaged_AttributeDisplayList=${JSON.stringify(apManaged_AttributeDisplayList, null, 2)}`);
 
+    const apManaged_AttributeDisplayList: TAPAttributeDisplayList = [];
     let apMetaInfo: TAPMetaInfo = this.create_Empty_ApMetaInfo();
     if(connectorMeta !== undefined) {
       apMetaInfo = {
