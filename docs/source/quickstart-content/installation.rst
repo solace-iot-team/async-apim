@@ -42,8 +42,8 @@ Tested with:
 
 - ubuntu-18.04:
 
-  - xxxxx
-  - xxxxx
+  - Docker version 20.10.17+azure-1, build 100c70180fde3601def79a59cc3e996aa553c9b9
+  - docker-compose version 1.29.2, build 5becea4c
 
 .. note::
 
