@@ -47,11 +47,15 @@
 <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#start-stop-update">Start, Stop, Update</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#connect">Connect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connect">Connect</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#test-exposed-routes">Test Exposed Routes</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#details">Details</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="setup.html">Setup &amp; Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faqs.html">FAQs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../managed-assets.html">Managed Assets</a></li>
@@ -133,13 +137,39 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this heading"></a></h2>
 <p>The quickstart requires the following components:</p>
 <ul class="simple">
-<li><p>nodejs, version 16.x</p></li>
 <li><p>docker</p></li>
 <li><p>docker-compose</p></li>
 </ul>
+<p>Tested with:</p>
+<ul class="simple">
+<li><p>MacOs: Docker Desktop</p>
+<ul>
+<li><p>Docker version 20.10.17, build 100c70</p></li>
+<li><p>docker-compose version 1.29.2, build 5becea4c</p></li>
+</ul>
+</li>
+<li><p>ubuntu-18.04:</p>
+<ul>
+<li><p>Docker version 20.10.17+azure-1, build 100c70180fde3601def79a59cc3e996aa553c9b9</p></li>
+<li><p>docker-compose version 1.29.2, build 5becea4c</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CentOS: use <cite>docker-ce</cite> instead of <cite>docker</cite> to get the latest version(s).</p>
+</div>
 </section>
 <section id="setup">
 <h2>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To use the quickstart configuration, clone the github repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/solace-iot-team/async-apim.git
+<span class="nb">cd</span> async-apim/quickstart
+</pre></div>
+</div>
+</div>
 <p>At start-up, the APIM Server creates a <cite>root</cite> user based on these environment variables, which can be found in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/start.sh">start.sh</a>.
 All other variables are set directly in the <a class="reference external" href="https://github.com/solace-iot-team/async-apim/blob/main/quickstart/docker.compose.yml">docker.compose.yml</a> file.</p>
 <div class="admonition note">
@@ -183,6 +213,28 @@ All other variables are set directly in the <a class="reference external" href="
 <li><p><cite>5001</cite> - APIM Connector</p></li>
 <li><p><cite>5002</cite> - APIM Server</p></li>
 </ul>
+<section id="test-exposed-routes">
+<h3>Test Exposed Routes<a class="headerlink" href="#test-exposed-routes" title="Permalink to this heading"></a></h3>
+<p>Test the following URLs in your browser:</p>
+<ul>
+<li><p>Route to the <strong>APIM Server</strong>: <cite>http://{ip-address}:5000/apim-server</cite></p>
+<ul class="simple">
+<li><p>You should see a response in your browser similar to this:</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;appId&quot;</span><span class="p">:</span><span class="s2">&quot;qs-async-apim-server&quot;</span><span class="p">,</span><span class="nt">&quot;errorId&quot;</span><span class="p">:</span><span class="s2">&quot;pathNotFound&quot;</span><span class="p">,</span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="s2">&quot;path does not exist&quot;</span><span class="p">,</span><span class="nt">&quot;meta&quot;</span><span class="p">:{</span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="s2">&quot;/apim-server&quot;</span><span class="p">}}</span><span class="w"></span>
+</pre></div>
+</div>
+</li>
+<li><p>Route to the <strong>APIM Server API</strong>: <cite>http://{ip-address}:5000/apim-server/v1/apsMonitor/apsStatus</cite></p>
+<ul class="simple">
+<li><p>You should see a response in your browser similar to this:</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="nt">&quot;isReady&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="mi">1656929362213</span><span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
 </section>
 <section id="details">
 <h2>Details<a class="headerlink" href="#details" title="Permalink to this heading"></a></h2>
@@ -216,7 +268,7 @@ All other variables are set directly in the <a class="reference external" href="
 
   <div role="contentinfo">
     <p>&#169; Copyright 2021/2022, Solace Corporation, Ricardo Gomez-Ulmke, &lt;ricardo.gomez-ulmke@solace.com&gt;.
-      <span class="lastupdated">Last updated on 04 Jul 2022 at 10:00.
+      <span class="lastupdated">Last updated on 18 Aug 2022 at 11:10.
       </span></p>
   </div>
 

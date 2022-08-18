@@ -16,12 +16,16 @@ services:
       - ./docker-volumes/apim-www-logs:/etc/nginx/logs
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
-    # image : "solaceiotteam/async-apim-admin-portal:latest"
-    image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
+    image : "solaceiotteam/async-apim-admin-portal:latest"
+    # image : "solaceiotteam/async-apim-admin-portal:alpha-latest"
     # image : "solaceiotteam/async-apim-admin-portal:0.1.9"
     ports:
       - 5080:8080
     restart: unless-stopped
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
   qs-async-apim-mongodb:
     container_name: qs-async-apim-mongodb
     image : mongo:5.0.2
@@ -71,6 +75,7 @@ services:
       - APIM_SERVER_CONNECTOR_AUTH_AUDIENCE=platform-api-server
       - APIM_SERVER_CONNECTOR_AUTH_SECRET=myConnectorAuthJwtSecret
     logging:
+      driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
@@ -101,6 +106,7 @@ services:
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
     logging:
+      driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"

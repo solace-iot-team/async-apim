@@ -8,3 +8,4 @@ Quickstart
 
   quickstart-content/installation
   quickstart-content/setup
+  quickstart-content/faqs
