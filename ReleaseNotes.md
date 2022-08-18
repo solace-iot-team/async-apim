@@ -2,6 +2,54 @@
 
 Solace Async API Management.
 
+## Version 0.3.6
+  * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.6
+  * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.2
+  * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.3.3
+  * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.11.1
+
+**New Features:**
+- **Download API asset zip file**
+  - asset zip file download added to:
+    - apis, api products, apps
+- **Organization Settings**
+  - option to configure max number of environments per api product
+  - display of asset version increment strategy: bump_patch (edit is disabled)
+
+**Enhancements:**
+- **API Products: Policies: Guaranteed Messaging**
+  - if disabled, deletes previous GM settings, mqtt bindings in API spec are set to qos=0 (drawback: previous settings are lost)
+- **Apps: Connection Endpoints**
+  - for mqtt: added note: clientId can be found in Async API Spec (servers section)
+
+**Changes:**
+- **APIs**
+  - validation of Async API change to:
+    - portal validates: title exists, version in semver format
+    - connector validates everything else (including url $refs)
+- **API Products: new version number**
+  - increment patch version on edit instead of minor version
+
+**Fixes:**
+- **Organization Status**
+  - restrict access to organization resources if organization connectivity is down (e.g. expired token)
+- **Active Connector**
+  - fixed bug updating cache when updating active connector object
+
+**APIM Server:**
+- **Connectors:Bootstrap**
+  - fixed error handling and logging for non-existent connector bootstrap file & non-existent active connector
+- **Active Connector:Healthcheck**
+  - improved error handling when connector is not healthy:
+    - error: ConnectorProxyError, carries details of original error
+    - logged and sent back to caller
+  - added periodic healthcheck of active connector
+    - if connector not healthy, log warning,  code: "ACTIVE_CONNECTOR_TEST_ERROR"
+
+**Releases:**
+- **APIM Portal**
+  - changed to unprivileged nginx docker image: nginxinc/nginx-unprivileged:1.23.0
+
 ## Version 0.3.5
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.5
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.1
