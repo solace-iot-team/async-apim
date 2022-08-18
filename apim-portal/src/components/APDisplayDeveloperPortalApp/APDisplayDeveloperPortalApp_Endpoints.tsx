@@ -4,13 +4,14 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import APAppEnvironmentsDisplayService, { 
+import { 
   TAPEnvironmentEndpointDisplay, 
   TAPEnvironmentEndpointDisplayList 
 } from "../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
+import { Protocol } from "@solace-iot-team/apim-connector-openapi-browser";
+import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 import "../APComponents.css";
-import { Protocol } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IAPDisplayDeveloperPortalApp_EndpointsProps {
   apEnvironmentEndpointList: TAPEnvironmentEndpointDisplayList;
@@ -73,11 +74,8 @@ export const APDisplayDeveloperPortalAppEndpoints: React.FC<IAPDisplayDeveloperP
   const renderComponentContent = (): JSX.Element => {
     // const funcName = 'renderComponentContent';
     // const logName = `${ComponentName}.${funcName}()`;
-    // console.log(`${logName}: props.apEnvironmentEndpointList=${JSON.stringify(props.apEnvironmentEndpointList, null, 2)}`);
-    // alert(`${logName}: check console for log`);
-    const dataKey = APAppEnvironmentsDisplayService.nameOf_TAPEnvironmentEndpointDisplay_ApEntityId('id');
-    const nameField = APAppEnvironmentsDisplayService.nameOf_TAPEnvironmentEndpointDisplay_ApEntityId('displayName');
-    // alert(`${logName}: nameField=${nameField}`)
+    const dataKey = APDisplayUtils.nameOf<TAPEnvironmentEndpointDisplay>('apEntityId.id');
+    const nameField = APDisplayUtils.nameOf<TAPEnvironmentEndpointDisplay>('apEntityId.displayName');
     return (
       <div className="card">
         <DataTable
