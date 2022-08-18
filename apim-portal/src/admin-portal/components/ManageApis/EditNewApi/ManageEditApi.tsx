@@ -33,7 +33,7 @@ export interface IManageEditApiProps {
   apiEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onSaveSuccessNotification: (apiCallState: TApiCallState) => void;
   onChanged: (apApiDisplay: IAPApiDisplay) => void;

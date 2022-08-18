@@ -19,7 +19,7 @@ export interface IEditGeneralProps {
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const EditGeneral: React.FC<IEditGeneralProps> = (props: IEditGeneralProps) => {

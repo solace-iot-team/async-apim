@@ -20,7 +20,7 @@ export interface IEditAccessProps {
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const EditAccess: React.FC<IEditAccessProps> = (props: IEditAccessProps) => {

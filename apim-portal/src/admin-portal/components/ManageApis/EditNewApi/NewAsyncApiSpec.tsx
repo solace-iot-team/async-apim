@@ -19,7 +19,7 @@ export interface INewAsyncApiSpecProps {
   onBack: () => void;
   onCancel: () => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const NewAsyncApiSpec: React.FC<INewAsyncApiSpecProps> = (props: INewAsyncApiSpecProps) => {

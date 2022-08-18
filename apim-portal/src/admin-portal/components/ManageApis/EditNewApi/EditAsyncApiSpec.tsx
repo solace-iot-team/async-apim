@@ -23,7 +23,7 @@ export interface IEditAsyncApiSpecProps {
   onError: (apiCallState: TApiCallState) => void;
   onSaveSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const EditAsyncApiSpec: React.FC<IEditAsyncApiSpecProps> = (props: IEditAsyncApiSpecProps) => {

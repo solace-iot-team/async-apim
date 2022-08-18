@@ -22,7 +22,7 @@ export interface IEditNewGeneralFormProps {
   formId: string;
   onSubmit: (apApiDisplay_General: TAPApiDisplay_General) => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IEditNewGeneralFormProps) => {

@@ -71,6 +71,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const [organizationContext] = React.useContext(OrganizationContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [loadingHeader, setLoadingHeader] = React.useState<string>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
@@ -297,6 +298,10 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const onSubComponentCancel = () => {
     setPreviousComponentState();
   }
+  const onLoadingChange = (isLoading: boolean, loadingHeader?: string) => {
+    setLoadingHeader(loadingHeader);
+    setIsLoading(isLoading);
+  }
 
   const calculateShowStates = (componentState: TComponentState) => {
     const funcName = 'calculateShowStates';
@@ -377,7 +382,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
 
       <CheckConnectorHealth />
 
-      <Loading key={ComponentName} show={isLoading} />      
+      <Loading key={ComponentName} show={isLoading} header={loadingHeader} />      
       
       { !isLoading && renderToolbar() }
 
@@ -401,7 +406,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           onInitialized={onInitializedManagedObject}
           onSuccess={onSubComponentUserNotification} 
           onError={onSubComponentError_Notification} 
-          onLoadingChange={setIsLoading}
+          onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
           apPageNavigationInfo={pageNavigationInfo}
@@ -413,7 +418,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           organizationId={props.organizationEntityId.id}
           apiEntityId={managedObjectEntityId}
           onError={onSubComponentError_Notification} 
-          onLoadingChange={setIsLoading}
+          onLoadingChange={onLoadingChange}
           onCancel={onSubComponentCancel}
           onDeleteSuccess={onDeleteManagedObjectSuccess}
         />
@@ -423,7 +428,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           organizationId={props.organizationEntityId.id}
           onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
+          onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNewSuccess={onNewManagedObjectSuccess}
           onUserNotification={onSubComponentUserNotification}
@@ -436,7 +441,7 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
           apiEntityId={managedObjectEntityId}
           onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
-          onLoadingChange={setIsLoading}
+          onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onSaveSuccessNotification={onEditSaveManagedObjectSuccess}
           onNavigateToCommand={onSetManageObjectComponentState_To_View}    

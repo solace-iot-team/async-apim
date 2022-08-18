@@ -7,11 +7,15 @@ import "./Loading.css";
 
 export interface ILoadingProps {
   show: boolean;
-  header?: JSX.Element;
+  header?: JSX.Element | string;
 }
 
 export const Loading: React.FC<ILoadingProps> = (props: ILoadingProps) => {
-  const header: JSX.Element = props.header ? props.header : (<div/>);
+  let header: JSX.Element = (<div/>);
+  if(props.header) {
+    if(typeof(props.header) === 'string') header = (<div>{props.header}</div>);
+    else header = props.header;
+  } 
   return (
     <React.Fragment>
       {props.show &&

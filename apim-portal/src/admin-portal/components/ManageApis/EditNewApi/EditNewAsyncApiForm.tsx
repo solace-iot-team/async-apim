@@ -27,7 +27,7 @@ export interface IEditNewAsyncApiSpecFormProps {
   formId: string;
   onSubmit: (apApiDisplay_AsyncApiSpec: TAPApiDisplay_AsyncApiSpec) => void;
   onError: (apiCallState: TApiCallState) => void;
-  onLoadingChange: (isLoading: boolean) => void;
+  onLoadingChange: (isLoading: boolean, loadingHeader?: string) => void;
 }
 
 export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = (props: IEditNewAsyncApiSpecFormProps) => {
@@ -218,7 +218,7 @@ export const EditNewAsyncApiSpecForm: React.FC<IEditNewAsyncApiSpecFormProps> = 
   }
 
   const validate_AsyncApiSpec = async(specStr: string): Promise<string | boolean> => {
-    props.onLoadingChange(true);
+    props.onLoadingChange(true, "Validating API ...");
     let error: any = undefined;
     try {
       const validateResult = await doValidate_AsyncApiSpec(specStr);
