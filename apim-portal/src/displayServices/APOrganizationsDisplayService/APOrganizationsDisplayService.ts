@@ -596,7 +596,6 @@ export class APOrganizationsDisplayService {
     return (apOrganizationDisplay.apOrganizationOperationalStatus.eventPortalConnectivity === EAPOrganizationOperationalStatus.UP);
   }
 
-
   public get_ApOrganizationDisplay_Integration<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
     apOrganizationDisplay: T;
   }): IAPOrganizationDisplay_Integration {

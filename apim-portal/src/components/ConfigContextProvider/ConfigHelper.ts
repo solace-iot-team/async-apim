@@ -11,11 +11,14 @@ import {
   APSOrganizationAuthRoleList,
   APSOrganizationRoles,
   EAPSOrganizationAuthRole,
+  ApsMonitorService,
+  APSConnectorStatus,
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-import { TAPPortalAppInfo } from '../../utils/Globals';
+import { EEventPortalVersion, TAPPortalAppInfo } from '../../utils/Globals';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../utils/APortalApiCalls';
+import { About } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type TRoleSelectItem = { label: string, value: EAPSOrganizationAuthRole };
 export type TRoleSelectItemList = Array<TRoleSelectItem>;
@@ -166,12 +169,18 @@ export class ConfigHelper {
 
   private static getPortalAppInfo = async(): Promise<TAPPortalAppInfo>  => {
     const adminPortalAppResult = await APortalAppApiCalls.apiGetPortalAppAbout(E_APORTAL_APP_CALL_STATE_ACTIONS.API_GET_ADMIN_PORTAL_APP_ABOUT);
-    const portalInfo: TAPPortalAppInfo = {
+    // get the connector status & about for active connector
+    const apsConnectorStatus: APSConnectorStatus = await ApsMonitorService.getApsConnectorStatus({ optionalConnectorId: undefined });
+    const connectorAbout: About = apsConnectorStatus.connectorAbout as About;
+    const apPortalAppInfo: TAPPortalAppInfo = {
       connectorClientOpenApiInfo: APClientConnectorOpenApi.getOpenApiInfo(),
       portalAppServerClientOpenApiInfo: APSClientOpenApi.getOpenApiInfo(),
-      adminPortalAppAbout: adminPortalAppResult.apPortalAppAbout
+      adminPortalAppAbout: adminPortalAppResult.apPortalAppAbout,
+      // TODO: FIX_ME
+      // eventPortalVersion: connectorAbout.EVENT_PORTAL_VERSION === "2" ? EEventPortalVersion.VERSION_2 : EEventPortalVersion.VERSION_1,
+      eventPortalVersion: EEventPortalVersion.VERSION_2,
     };
-    return portalInfo;
+    return apPortalAppInfo;
   }
 
   public static getEmptyContext = (): TAPConfigContext => {
@@ -185,14 +194,14 @@ export class ConfigHelper {
     // const funcName: string = `doInitialize`;
     // const logName: string = `${ConfigHelper.name}.${funcName}()`
 
-    const portalAppInfo = await ConfigHelper.getPortalAppInfo();
+    const apPortalAppInfo = await ConfigHelper.getPortalAppInfo();
     const rbacRoleList = await ConfigHelper.getConfigRbacRoleList();
     const connector = await ConfigHelper.getActiveConnectorInstance();
 
     // console.log(`${logName}: portalAppInfo=${JSON.stringify(portalAppInfo, null, 2)}`);
 
     dispatchConfigContextAction( { type: 'UPDATE_CONFIG_CONTEXT', configContext: {
-      portalAppInfo: portalAppInfo,
+      portalAppInfo: apPortalAppInfo,
       rbacRoleList: rbacRoleList,
       connector: connector
     }});

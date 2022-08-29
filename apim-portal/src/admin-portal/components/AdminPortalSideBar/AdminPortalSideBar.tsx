@@ -4,13 +4,14 @@ import { useHistory } from 'react-router-dom';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
+import { EEventPortalVersion, EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 import '../../../components/APComponents.css';
@@ -27,6 +28,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const [userContext] = React.useContext(UserContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
   const [organizationContext] = React.useContext(OrganizationContext);
+  const [configContext] = React.useContext(ConfigContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -46,6 +48,9 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if(isDisabledFunc(resourcePath)) return true;
     if( healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ) return true;    
     return false;
+  }
+  const isDisabledWithEventPortal_1 = (): boolean => {
+    return configContext.portalAppInfo?.eventPortalVersion !== EEventPortalVersion.VERSION_2;
   }
   
   const getApimMenuItems = (): Array<MenuItem> => {
@@ -153,20 +158,15 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
           },
           {
+            label: 'Event Portal 2.0',
+            disabled: isDisabledWithEventPortal_1() || isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEP2Settings); }
+          },
+          {
             label: 'Status',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
           },
-          // {
-          //   label: 'DELETEME: Settings',
-          //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationSettings); }
-          // },
-          // {
-          //   label: 'DELETEME: Status',
-          //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_MonitorOrganizationStatus); }
-          // },
           {
             label: 'Integration',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationIntegration),

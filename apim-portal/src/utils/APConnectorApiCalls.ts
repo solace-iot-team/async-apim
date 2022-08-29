@@ -1,15 +1,13 @@
 import { 
   About,
-  AdministrationService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { APConnectorApiMismatchError, APError } from './APError';
-import { APLogger } from './APLogger';
 
 export type TAPConnectorPortalAbout = {
-  isEventPortalApisProxyMode: boolean,
-  connectorServerVersionStr?: string,
-  connectorOpenApiVersionStr?: string
+  isEventPortalApisProxyMode: boolean;
+  eventPortalVersion: string;
+  connectorServerVersionStr?: string
+  connectorOpenApiVersionStr?: string;
 }
 export type TAPConnectorAbout = {
   apiAbout: About;
@@ -37,7 +35,8 @@ export class APConnectorApiHelper {
       apConnectorAbout: {
         apiAbout: apiAbout,
         portalAbout: {
-          isEventPortalApisProxyMode: apiAbout.APIS_PROXY_MODE ? apiAbout.APIS_PROXY_MODE : false
+          isEventPortalApisProxyMode: apiAbout.APIS_PROXY_MODE ? apiAbout.APIS_PROXY_MODE : false,
+          eventPortalVersion: apiAbout.EVENT_PORTAL_VERSION,
         }
       }
     }
@@ -67,32 +66,4 @@ export class APConnectorApiHelper {
     };
     return createResult(undefined);
   }
-}
-
-export class APConnectorApiCalls {
-  
-  public static getConnectorInfo = async(): Promise<TAPConnectorInfo | undefined> => {
-    const funcName = 'getConnectorInfo';
-    const logName= `${APConnectorApiCalls.name}.${funcName}()`;
-
-    // WARNING: connector must be accessible
-
-    let result: TAPConnectorInfo | undefined;
-    try {
-      const apiAbout: About = await AdministrationService.about();
-      const transformResult: TTransformApiAboutToAPConnectorAboutResult = APConnectorApiHelper.transformApiAboutToAPConnectorAbout(apiAbout);      
-      if(transformResult.apError) {
-        APLogger.error(APLogger.createLogEntry(logName, transformResult.apError));
-      }
-      result = {
-        connectorAbout: transformResult.apConnectorAbout
-      }
-    } catch (e: any) {
-      APClientConnectorOpenApi.logError(logName, e);
-      result = undefined;
-    } finally {
-      return result;
-    }
-  }
-
 }

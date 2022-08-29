@@ -60,6 +60,7 @@ export class ManageConnectorsCommon {
               apiAbout: apConnectorHealthCheckLogEntry_About.about,
               portalAbout: {
                 isEventPortalApisProxyMode: apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE ? apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE : false,
+                eventPortalVersion: apConnectorHealthCheckLogEntry_About.about.EVENT_PORTAL_VERSION,
                 connectorOpenApiVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-openapi"],
                 connectorServerVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-server"],
               }

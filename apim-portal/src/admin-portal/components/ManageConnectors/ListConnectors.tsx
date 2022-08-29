@@ -160,18 +160,21 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
   // }
 
   const infoBodyTemplate = (managedObject: TManagedObject) => {
-    let EventPortalIsProxyMode: string = '?';
+    // let EventPortalIsProxyMode: string = '?';
+    let EventPortalVersion: string = '?';
     let ConnectorVersion: string = '?';
     let ConnectorOpenApiVersion: string = '?';
     if(managedObject.apConnectorInfo) {
       const portalAbout = managedObject.apConnectorInfo.connectorAbout.portalAbout;
-      EventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      // EventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      EventPortalVersion = portalAbout.eventPortalVersion === '1' ? 'EP 1.0' : 'EP 2.0';
       if(portalAbout.connectorServerVersionStr) ConnectorVersion = portalAbout.connectorServerVersionStr; 
       if(portalAbout.connectorOpenApiVersionStr) ConnectorOpenApiVersion = portalAbout.connectorOpenApiVersionStr; 
     }
     return (
       <div>
-        <div>EventPortal:Event API Products proxy: {EventPortalIsProxyMode}</div>
+        {/* <div>EventPortal:Event API Products proxy: {EventPortalIsProxyMode}</div> */}
+        <div>Event Portal Vesion: {EventPortalVersion}</div>
         <div>Connector Version: {ConnectorVersion}</div>
         <div>API Version: {ConnectorOpenApiVersion}</div>
       </div>

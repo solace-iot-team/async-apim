@@ -100,12 +100,14 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
   }
 
   const renderInfo = (mo: TManagedObject) => {
-    let eventPortalIsProxyMode: string = '?';
+    // let eventPortalIsProxyMode: string = '?';
+    let eventPortalVersion: string = '?';
     let connectorVersion: string = '?';
     let connectorOpenApiVersion: string = '?';
     if(mo.apConnectorInfo) {
       const portalAbout = mo.apConnectorInfo.connectorAbout.portalAbout;
-      eventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      // eventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      eventPortalVersion = portalAbout.eventPortalVersion === '1' ? 'EP 1.0' : 'EP 2.0';
       if(portalAbout.connectorServerVersionStr) connectorVersion = portalAbout.connectorServerVersionStr; 
       if(portalAbout.connectorOpenApiVersionStr) connectorOpenApiVersion = portalAbout.connectorOpenApiVersionStr; 
     }
@@ -115,7 +117,8 @@ export const ViewConnector: React.FC<IViewConnectorProps> = (props: IViewConnect
           Info:
         </div>
         <div className="p-ml-4">
-          <div><b>EventPortal</b>: Event API Products proxy: {eventPortalIsProxyMode}</div>
+          {/* <div><b>EventPortal</b>: Event API Products proxy: {eventPortalIsProxyMode}</div> */}
+          <div><b>Event Portal Version</b>: {eventPortalVersion}</div>
           <div><b>Connector Version</b>: {connectorVersion}</div>
           <div><b>API Version</b>: {connectorOpenApiVersion}</div>
         </div>

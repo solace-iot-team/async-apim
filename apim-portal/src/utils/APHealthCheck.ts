@@ -500,7 +500,12 @@ export class APConnectorHealthCheck {
       entryType: EAPConnectorHealthCheckLogEntryType.GET_CONNECTOR_ABOUT,
       success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState,
-      about: apiAbout
+      // TODO: FIX_ME
+      // about: apiAbout,
+      about: { 
+        ...apiAbout,
+        EVENT_PORTAL_VERSION: '2'
+      }
     };
     return logEntry;
   }

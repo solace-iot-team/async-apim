@@ -10,10 +10,10 @@ import { TAPPortalAppInfo } from "../../utils/Globals";
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   isInitialized: boolean;
-  rbacRoleList: TAPRbacRoleList,
-  connector?: APSConnector,
-  connectorInfo?: TAPConnectorInfo,
-  portalAppInfo?: TAPPortalAppInfo
+  rbacRoleList: TAPRbacRoleList;
+  connector?: APSConnector;
+  connectorInfo?: TAPConnectorInfo;
+  portalAppInfo?: TAPPortalAppInfo;
 }
 
 export interface IConfigContextProviderProps {

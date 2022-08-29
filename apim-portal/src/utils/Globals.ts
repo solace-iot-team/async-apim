@@ -29,10 +29,16 @@ export type TAPPortalAppAbout = {
   "apim-connector-openapi-version": string;
 }
 
+export enum EEventPortalVersion {
+  VERSION_1 = "1",
+  VERSION_2 = "2"
+}
+
 export type TAPPortalAppInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo;
   portalAppServerClientOpenApiInfo: APSClientOpenApiInfo;
   adminPortalAppAbout?: TAPPortalAppAbout;
+  eventPortalVersion: EEventPortalVersion;
 }
 export enum EAPConfigIssueNames {
   CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH',
@@ -96,6 +102,7 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
+  ManageOrganizationEP2Settings = '/admin-portal/manage/organization/ep2settings',
   MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
