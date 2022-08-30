@@ -11,8 +11,9 @@ import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSu
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { EEventPortalVersion, EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../components/APComponents.css';
 
@@ -50,7 +51,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     return false;
   }
   const isDisabledWithEventPortal_1 = (): boolean => {
-    return configContext.portalAppInfo?.eventPortalVersion !== EEventPortalVersion.VERSION_2;
+    return configContext.portalAppInfo?.eventPortalVersion !== About.EVENT_PORTAL_VERSION._2;
   }
   
   const getApimMenuItems = (): Array<MenuItem> => {

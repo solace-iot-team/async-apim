@@ -501,11 +501,11 @@ export class APConnectorHealthCheck {
       success: (callState.success ? EAPHealthCheckSuccess.PASS : EAPHealthCheckSuccess.FAIL),
       callState: callState,
       // TODO: FIX_ME
-      // about: apiAbout,
-      about: { 
-        ...apiAbout,
-        EVENT_PORTAL_VERSION: '2'
-      }
+      about: apiAbout,
+      // about: { 
+      //   ...apiAbout,
+      //   EVENT_PORTAL_VERSION: '2'
+      // }
     };
     return logEntry;
   }

@@ -9,6 +9,7 @@ import {
 import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export type TAPPortalAppAbout = {
   name: string;
@@ -29,16 +30,16 @@ export type TAPPortalAppAbout = {
   "apim-connector-openapi-version": string;
 }
 
-export enum EEventPortalVersion {
-  VERSION_1 = "1",
-  VERSION_2 = "2"
-}
+// export enum EEventPortalVersion {
+//   VERSION_1 = "1",
+//   VERSION_2 = "2"
+// }
 
 export type TAPPortalAppInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo;
   portalAppServerClientOpenApiInfo: APSClientOpenApiInfo;
   adminPortalAppAbout?: TAPPortalAppAbout;
-  eventPortalVersion: EEventPortalVersion;
+  eventPortalVersion: About.EVENT_PORTAL_VERSION;
 }
 export enum EAPConfigIssueNames {
   CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH',

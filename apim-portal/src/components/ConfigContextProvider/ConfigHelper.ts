@@ -15,7 +15,7 @@ import {
   APSConnectorStatus,
 } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-import { EEventPortalVersion, TAPPortalAppInfo } from '../../utils/Globals';
+import { TAPPortalAppInfo } from '../../utils/Globals';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../utils/APortalApiCalls';
 import { About } from '@solace-iot-team/apim-connector-openapi-browser';
@@ -178,7 +178,8 @@ export class ConfigHelper {
       adminPortalAppAbout: adminPortalAppResult.apPortalAppAbout,
       // TODO: FIX_ME
       // eventPortalVersion: connectorAbout.EVENT_PORTAL_VERSION === "2" ? EEventPortalVersion.VERSION_2 : EEventPortalVersion.VERSION_1,
-      eventPortalVersion: EEventPortalVersion.VERSION_2,
+      eventPortalVersion: connectorAbout.EVENT_PORTAL_VERSION === undefined ? About.EVENT_PORTAL_VERSION._1 : connectorAbout.EVENT_PORTAL_VERSION,
+      // eventPortalVersion: EEventPortalVersion.VERSION_2,
     };
     return apPortalAppInfo;
   }

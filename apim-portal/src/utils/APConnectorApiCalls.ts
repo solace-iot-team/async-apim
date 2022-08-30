@@ -5,7 +5,7 @@ import { APConnectorApiMismatchError, APError } from './APError';
 
 export type TAPConnectorPortalAbout = {
   isEventPortalApisProxyMode: boolean;
-  eventPortalVersion: string;
+  eventPortalVersion: About.EVENT_PORTAL_VERSION;
   connectorServerVersionStr?: string
   connectorOpenApiVersionStr?: string;
 }
@@ -36,7 +36,7 @@ export class APConnectorApiHelper {
         apiAbout: apiAbout,
         portalAbout: {
           isEventPortalApisProxyMode: apiAbout.APIS_PROXY_MODE ? apiAbout.APIS_PROXY_MODE : false,
-          eventPortalVersion: apiAbout.EVENT_PORTAL_VERSION,
+          eventPortalVersion: apiAbout.EVENT_PORTAL_VERSION === undefined ? About.EVENT_PORTAL_VERSION._1 : apiAbout.EVENT_PORTAL_VERSION,
         }
       }
     }
