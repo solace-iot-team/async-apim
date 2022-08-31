@@ -122,6 +122,8 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
         <DisplayOrganization
           scope={get_DisplayOrganizationScope()}
           apOrganizationDisplay={managedObject}
+          onSuccess={props.onSuccess}
+          onError={props.onError}
         />
       }
 

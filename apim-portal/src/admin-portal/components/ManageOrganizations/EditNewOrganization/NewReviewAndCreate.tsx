@@ -107,12 +107,17 @@ export const NewReviewAndCreate: React.FC<INewReviewAndCreateProps> = (props: IN
     )
   }
 
+  const onSuccess = (apiCallState: TApiCallState) => {
+    // do nothing
+  }
   const renderManagedObjectReviewView = (mo: TManagedObject) => {
     return (
       <React.Fragment>
         <DisplayOrganization
           scope={E_DISPLAY_ORGANIZATION_SCOPE.REVIEW_AND_CREATE}
           apOrganizationDisplay={mo}
+          onSuccess={onSuccess}
+          onError={props.onError}
         />
       </React.Fragment>
     );

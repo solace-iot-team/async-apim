@@ -158,11 +158,11 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
           },
-          {
-            label: 'Event Portal 2.0',
-            disabled: isDisabledWithEventPortal_1() || isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
-            command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEP2Settings); }
-          },
+          // {
+          //   label: 'Event Portal 2.0',
+          //   disabled: isDisabledWithEventPortal_1() || isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
+          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEP2Settings); }
+          // },
           {
             label: 'Status',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),

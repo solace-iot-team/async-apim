@@ -25,14 +25,21 @@ import APOrganizationsDisplayService, {
 import { Globals } from "../../../../utils/Globals";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { DisplayIntegration } from "./DisplayIntegration";
+import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
+import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
+import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
+import { TApiCallState } from "../../../../utils/ApiCallState";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
   scope: E_DISPLAY_ORGANIZATION_SCOPE;
+  onError: (apiCallState: TApiCallState) => void;
+  onSuccess: (apiCallState: TApiCallState) => void;
 }
 
 export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: IDisplayOrganizationProps) => {
@@ -42,6 +49,8 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
+  const [configContext] = React.useContext(ConfigContext);
+
 
   const doInitialize = async () => {
     setManagedObject(props.apOrganizationDisplay);
@@ -321,6 +330,18 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
         <TabPanel header='Integration' key={Globals.getUUID()}>
           <DisplayIntegration
             apNotificationHubConfig={managedObject.apNotificationHubConfig}
+          />
+        </TabPanel>
+      );  
+    }
+    if(props.scope !== E_DISPLAY_ORGANIZATION_SCOPE.REVIEW_AND_CREATE && configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
+      jsxTabPanelList.push(
+        <TabPanel header='Event Portal' key={Globals.getUUID()}>
+          <ManageEpSettings
+            scope={EManageEpSettingsScope.VIEW}
+            organizationEntityId={managedObject.apEntityId}
+            onSuccess={props.onSuccess}
+            onError={props.onError}
           />
         </TabPanel>
       );  

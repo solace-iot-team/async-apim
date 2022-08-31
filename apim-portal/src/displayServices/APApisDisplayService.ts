@@ -91,19 +91,6 @@ export type TAPApiVersionDisplayList = Array<IAPApiVersionDisplay>
 class APApisDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApisDisplayService";
 
-  // public nameOf<IAPApiDisplay>(name: keyof IAPApiDisplay) {
-  //   return name;
-  // }
-  // public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
-  //   return `${this.nameOf('connectorApiInfo')}.${name}`;
-  // }
-  // public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
-  //   return name;
-  // }
-  // public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
-  //   return `${this.nameOf<IAPApiDisplay>('apLifecycleStageInfo')}.${name}`;
-  // }
-
   private create_Empty_ConnectorApiInfo(): APIInfo {
     return {
       source: APIInfo.source.UPLOAD,
