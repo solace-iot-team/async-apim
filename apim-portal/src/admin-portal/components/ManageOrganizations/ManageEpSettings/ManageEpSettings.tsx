@@ -1,32 +1,36 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
 import { MenuItem } from "primereact/api";
+import { BreadCrumb } from "primereact/breadcrumb";
 
 import { TApiCallState } from "../../../../utils/ApiCallState";
 import { Loading } from "../../../../components/Loading/Loading";
-import { CheckConnectorHealth } from "../../../../components/SystemHealth/CheckConnectorHealth";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
-import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { EAction, EManageEpSettingsScope, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TAPEpSettingsDisplay_AllowedActions } from "../../../../displayServices/APEpSettingsDisplayService";
 import APSystemOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { ListEpSettings } from "./ListEpSettings";
+import { ManageEditNewEpSetting } from "./EditNewEpSetting/ManageEditNewEpSetting";
+import { ViewEpSetting } from "./ViewEpSetting";
+import { DeleteEpSetting } from "./DeleteEpSetting";
+import { EUICommonResourcePaths, GlobalElementStyles } from "../../../../utils/Globals";
+import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";
+import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { ManageEditNewEpSetting } from "./EditNewEpSetting/ManageEditNewEpSetting";
-import { ViewEpSetting } from "./ViewEpSetting";
 
 export interface IManageEpSettingsProps {
   scope: EManageEpSettingsScope;
-  organizationEntityId: TAPEntityId;
+  organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
@@ -61,10 +65,6 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
 
-  const [configContext] = React.useContext(ConfigContext);
-  const [userContext] = React.useContext(UserContext);
-  const [authContext] = React.useContext(AuthContext);
-  const [organizationContext] = React.useContext(OrganizationContext);
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [loadingHeader, setLoadingHeader] = React.useState<string>();
@@ -75,6 +75,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  const [breadCrumbsRefreshCounter, setBreadCrumbsRefreshCounter] = React.useState<number>(0);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -82,6 +83,60 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
 
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+    const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+    const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+    const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
+    /* eslint-enable @typescript-eslint/no-unused-vars */
+  
+  const history = useHistory();
+
+  const navigateTo = (path: string): void => { history.push(path); }
+
+  const doLogoutThisUser = async(organizationId: string) => {
+    if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
+      if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
+        APContextsDisplayService.clear_LoginContexts({
+          dispatchAuthContextAction: dispatchAuthContextAction,
+          dispatchUserContextAction: dispatchUserContextAction,
+          dispatchOrganizationContextAction: dispatchOrganizationContextAction,
+          dispatchSessionContextAction: dispatchSessionContextAction,
+        });
+        navigateTo(EUICommonResourcePaths.Home);    
+      }
+    }
+  }
+
+  const setListView = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
+    setRefreshCounter(refreshCounter + 1);
+  }
+
+  const renderBreadcrumbs = () => {
+    const breadcrumbItems: Array<MenuItem> = [
+      { 
+        label: 'Configurations',
+        style: GlobalElementStyles.breadcrumbLink(),
+        command: () => { setListView() }
+      }
+    ];
+    breadCrumbItemList.forEach( (item: MenuItem) => {
+      breadcrumbItems.push({
+        ...item,
+        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+      });
+    });
+    return (
+      <React.Fragment>
+        <BreadCrumb 
+          key={`${ComponentName}_Breadcrumbs_${breadCrumbsRefreshCounter}`}
+          model={breadcrumbItems} 
+        />
+      </React.Fragment>
+    )
+  }
 
   // * useEffect Hooks *
   React.useEffect(() => {
@@ -101,16 +156,24 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     if(apiCallStatus.success) {
       switch (apiCallStatus.context.action) {
         case E_CALL_STATE_ACTIONS.API_GET_LIST:
+        case E_CALL_STATE_ACTIONS.API_GET:
+        case E_CALL_STATE_ACTIONS.API_CHECK_ID_EXISTS:
+          break;
         case E_CALL_STATE_ACTIONS.API_CREATE:
+        case E_CALL_STATE_ACTIONS.API_UPDATE:
+        case E_CALL_STATE_ACTIONS.API_DELETE:
+          doLogoutThisUser(props.organizationId);
           break;
         default:
           props.onSuccess(apiCallStatus);
         }
-    } else props.onError(apiCallStatus);
+    }
+    // propagation of the error causes re-rendering - cannot find where
+    // switch off for now (side effect: no error toast)
+    // else props.onError(apiCallStatus);
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // * initialized object *
-  const onInitializedManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay) => {
+  const setAllowedActions = (apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     const apEpSettingsDisplay_AllowedActions: TAPEpSettingsDisplay_AllowedActions = APEpSettingsDisplayService.get_AllowedActions({
       apEpSettingsDisplay: apEpSettingsDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
@@ -121,22 +184,23 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       }),
     });
     setManagedObject_AllowedActions(apEpSettingsDisplay_AllowedActions);
+  }
+  // * initialized object *
+  const onInitializedManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay) => {
+    setAllowedActions(apEpSettingsDisplay);
   }
 
   // * Changed object *
   const onChangedManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay) => {
-    const apEpSettingsDisplay_AllowedActions: TAPEpSettingsDisplay_AllowedActions = APEpSettingsDisplayService.get_AllowedActions({
-      apEpSettingsDisplay: apEpSettingsDisplay,
-      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
-      hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-        apOrganizationDisplay: organizationContext
-      }),
-    });
-    setManagedObject_AllowedActions(apEpSettingsDisplay_AllowedActions);
+    setAllowedActions(apEpSettingsDisplay);
     setRefreshCounter(refreshCounter + 1);
   }
+
+  // const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
+  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
+  //   setBreadCrumbItemList(newItemList);
+  //   setBreadCrumbsRefreshCounter(breadCrumbsRefreshCounter + 1)
+  // }
 
   //  * View Object *
   const onViewManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay): void => {
@@ -174,11 +238,6 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     const logName = `${ComponentName}.${funcName}()`;
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     if(managedObject_AllowedActions === undefined) throw new Error(`${logName}: managedObject_AllowedActions === undefined`);
-    // const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-    //   apOrganizationDisplay: organizationContext
-    // });
-    // const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
-    const showImportEventPortalButton: boolean = false;
     if(showListComponent) return (
       <React.Fragment>
         <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
@@ -218,6 +277,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     }
   }
   const renderToolbar = (): JSX.Element => {
+    if(props.scope === EManageEpSettingsScope.VIEW) return (<></>);
     const rightToolbarTemplate: JSX.Element | undefined = renderRightToolbarContent();
     const leftToolbarTemplate: JSX.Element | undefined = renderLeftToolbarContent();
     if(leftToolbarTemplate || rightToolbarTemplate) return (<Toolbar className="p-mb-4" left={leftToolbarTemplate} right={rightToolbarTemplate} />);
@@ -225,12 +285,12 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   }
   
   // * prop callbacks *
-  const onSetManageObjectComponentState_To_View = (apiEntityId: TAPEntityId) => {
-    setApiCallStatus(null);
-    setManagedObjectEntityId(apiEntityId);
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-    setRefreshCounter(refreshCounter + 1);
-  }
+  // const onSetManageObjectComponentState_To_View = (apiEntityId: TAPEntityId) => {
+  //   setApiCallStatus(null);
+  //   setManagedObjectEntityId(apiEntityId);
+  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+  //   setRefreshCounter(refreshCounter + 1);
+  // }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -240,21 +300,24 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
+  const onNewManagedObjectSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     setApiCallStatus(apiCallState);
+    setManagedObjectEntityId(apEpSettingsDisplay.apEntityId);
     // always go to view the new entity
-    setManagedObjectEntityId(newMoEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }
-  const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState) => {
+  const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     setApiCallStatus(apiCallState);
+    setManagedObjectEntityId(apEpSettingsDisplay.apEntityId);
+    onChangedManagedObject(apEpSettingsDisplay);
     setRefreshCounter(refreshCounter + 1);
   }
   const onSubComponentUserNotification = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
   }
   const onSubComponentError_Notification = (apiCallState: TApiCallState) => {
-    props.onError(apiCallState);
+    setApiCallStatus(apiCallState);
+    // props.onError(apiCallState);
   }
   const onSubComponentCancel = () => {
     setPreviousComponentState();
@@ -326,10 +389,9 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   return (
     <div className="manage-apis">
 
-      {/* <CheckConnectorHealth /> */}
-
       <Loading key={ComponentName} show={isLoading} header={loadingHeader} />      
       
+      { !isLoading && renderBreadcrumbs() }
       { !isLoading && renderToolbar() }
 
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
@@ -337,7 +399,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       {showListComponent && 
         <ListEpSettings
           key={`${ComponentName}_ListEpSettings_${refreshCounter}`}
-          organizationEntityId={props.organizationEntityId}
+          organizationId={props.organizationId}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError_Notification} 
           onManagedObjectView={onViewManagedObject}
@@ -346,27 +408,27 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       {showViewComponent && managedObjectEntityId &&
         <ViewEpSetting
           key={`${ComponentName}_showViewComponent_${refreshCounter}`}
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           apEpSettingEntityId={managedObjectEntityId}
-          onError={props.onError}
+          onError={onSubComponentError_Notification}
           onLoadingChange={onLoadingChange}
+          onLoadSuccess={onInitializedManagedObject}
         />
       }
       {showDeleteComponent && managedObjectEntityId &&
-        <p>showDeleteComponent</p>
-        // <DeleteApi
-        //   organizationId={props.organizationEntityId.id}
-        //   apiEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError_Notification} 
-        //   onLoadingChange={onLoadingChange}
-        //   onCancel={onSubComponentCancel}
-        //   onDeleteSuccess={onDeleteManagedObjectSuccess}
-        // />
+        <DeleteEpSetting
+          organizationId={props.organizationId}
+          apEpSettingDisplayEntityId={managedObjectEntityId}
+          onSuccess={onDeleteManagedObjectSuccess}
+          onError={onSubComponentError_Notification}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={onLoadingChange}
+        />
       }
       { showNewComponent &&
         <ManageEditNewEpSetting
           action={EAction.NEW}
-          organizationId={props.organizationEntityId.id}
+          organizationId={props.organizationId}
           onError={onSubComponentError_Notification}
           onCancel={onSubComponentCancel}
           onLoadingChange={onLoadingChange}
@@ -374,30 +436,19 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
           onSuccessNotification={onSubComponentUserNotification}
           // setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
         />
-        // <ManageNewApi
-        //   organizationId={props.organizationEntityId.id}
-        //   onError={onSubComponentError_Notification}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={onLoadingChange}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onNewSuccess={onNewManagedObjectSuccess}
-        //   onUserNotification={onSubComponentUserNotification}
-        // />
       }
       {showEditComponent && managedObjectEntityId &&
-        <p>showEditComponent</p>
-        // <ManageEditApi
-        //   scope={E_Edit_Scope.MANAGE}
-        //   organizationId={props.organizationEntityId.id}
-        //   apiEntityId={managedObjectEntityId}
-        //   onError={onSubComponentError_Notification}
-        //   onCancel={onSubComponentCancel}
-        //   onLoadingChange={onLoadingChange}
-        //   setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
-        //   onSaveSuccessNotification={onEditSaveManagedObjectSuccess}
-        //   onNavigateToCommand={onSetManageObjectComponentState_To_View}    
-        //   onChanged={onChangedManagedObject}
-        // />
+        <ManageEditNewEpSetting
+          action={EAction.EDIT}
+          organizationId={props.organizationId}
+          apEpSettingDisplayEntityId={managedObjectEntityId}
+          onError={onSubComponentError_Notification}
+          onCancel={onSubComponentCancel}
+          onLoadingChange={onLoadingChange}
+          onEditSuccess={onEditSaveManagedObjectSuccess}
+          onSuccessNotification={onSubComponentUserNotification}
+          // setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        />
       }
     </div>
   );

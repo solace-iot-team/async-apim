@@ -18,11 +18,11 @@ import "../../ManageOrganizations.css";
 export interface IManageEditNewEpSettingProps {
   action: EAction;
   organizationId: string;
-  apEpSettingsDisplay?: IAPEpSettingsDisplay;
+  apEpSettingDisplayEntityId?: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccessNotification: (apiCallState: TApiCallState) => void;
-  onNewSuccess?: (apiCallState: TApiCallState, entityId: TAPEntityId) => void;
-  onEditSuccess?: (apiCallState: TApiCallState, entityId: TAPEntityId) => void;
+  onNewSuccess?: (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
+  onEditSuccess?: (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
   // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
@@ -48,11 +48,11 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     const funcName = 'apiGetManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET, 'get ep settings');
-    if(props.apEpSettingsDisplay === undefined) throw new Error(`${logName}: props.apEpSettingsDisplay === undefined`);
+    if(props.apEpSettingDisplayEntityId === undefined) throw new Error(`${logName}: props.apEpSettingDisplayEntityId === undefined`);
     try {
       const apEpSettingsDisplay: IAPEpSettingsDisplay = await APEpSettingsDisplayService.apiGet_ApEpSettingsDisplay({
         organizationId: props.organizationId,
-        id: props.apEpSettingsDisplay.apEntityId.id
+        id: props.apEpSettingDisplayEntityId.id
       });
       setManagedObject(apEpSettingsDisplay);
     } catch(e: any) {
@@ -66,13 +66,31 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   const apiCreateManagedObject = async(createMo: TManagedObject): Promise<TApiCallState> => {
     const funcName = 'apiCreateManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE, 'create ep settings');
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_CREATE, 'create ep configuration');
     try {
-      const xvoid: void = await APEpSettingsDisplayService.apiCreate_ApEpSettingsDisplay({
+      const created: IAPEpSettingsDisplay = await APEpSettingsDisplayService.apiCreate_ApEpSettingsDisplay({
        organizationId: props.organizationId,
        apEpSettingsDisplay: createMo 
       });
-      setManagedObject(createMo);
+      setManagedObject(created);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;  
+  }
+
+  const apiUpdateManagedObject = async(updateMo: TManagedObject): Promise<TApiCallState> => {
+    const funcName = 'apiUpdateManagedObject';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE, 'update ep configuration');
+    try {
+      const updated: IAPEpSettingsDisplay = await APEpSettingsDisplayService.apiUpdate_ApEpSettingsDisplay({
+        organizationId: props.organizationId,
+        apEpSettingsDisplay: updateMo
+       });
+      setManagedObject(updated);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -91,11 +109,18 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     }
   }
 
-  const onCreateSuccess = (apiCallState: TApiCallState, entityId: TAPEntityId) => {
+  const onCreateSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     const funcName = 'onCreateSuccess';
     const logName = `${ComponentName}.${funcName}()`;
     if(props.onNewSuccess === undefined) throw new Error(`${logName}: props.onNewSuccess === undefined`);
-    props.onNewSuccess(apiCallState, entityId);
+    props.onNewSuccess(apiCallState, apEpSettingsDisplay);
+  }
+
+  const onUpdateSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
+    const funcName = 'onUpdateSuccess';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(props.onEditSuccess === undefined) throw new Error(`${logName}: props.onEditSuccess === undefined`);
+    props.onEditSuccess(apiCallState, apEpSettingsDisplay);
   }
 
   // * useEffect Hooks *
@@ -112,9 +137,11 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     const logName = `${ComponentName}.${funcName}([apiCallStatus])`;
     if(apiCallStatus === null) return;
     if(!apiCallStatus.success) props.onError(apiCallStatus);
-    else if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE) {
+    else {
       if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
-      onCreateSuccess(apiCallStatus, managedObject.apEntityId);
+      if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE) onCreateSuccess(apiCallStatus, managedObject);
+      if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE) onUpdateSuccess(apiCallStatus, managedObject);
+        
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -122,12 +149,12 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     setApiCallStatus(apiCallState);
   }
 
-  const onSubmit_Create = async(apEpSettingsDisplay: IAPEpSettingsDisplay) => {
+  const onSubmit_EditNew = async(apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     props.onLoadingChange(true);
-    await apiCreateManagedObject(apEpSettingsDisplay);
+    if(props.action === EAction.NEW) await apiCreateManagedObject(apEpSettingsDisplay);
+    else await apiUpdateManagedObject(apEpSettingsDisplay);
     props.onLoadingChange(false);
   }
-
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
     const managedObjectFormFooterLeftToolbarTemplate = () => {
@@ -165,7 +192,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
             organizationId={props.organizationId}
             apEpSettingsDisplay={managedObject}
             formId={FormId}
-            onSubmit={onSubmit_Create}
+            onSubmit={onSubmit_EditNew}
             onError={props.onError}
           />
           { renderManagedObjectFormFooter() }
@@ -174,14 +201,14 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   }
   const getComponentHeader = (): string => {
     if(props.action === EAction.NEW) return `${NewHeader}:`;
-    return `${EditHeader}: ${props.apEpSettingsDisplay?.apEntityId.displayName}`;
+    return `${EditHeader}: ${props.apEpSettingDisplayEntityId?.displayName}`;
   }
   return (
     <div className="manage-organizations">
 
       <APComponentHeader header={getComponentHeader()} />
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       {managedObject && renderComponent(managedObject)}
 

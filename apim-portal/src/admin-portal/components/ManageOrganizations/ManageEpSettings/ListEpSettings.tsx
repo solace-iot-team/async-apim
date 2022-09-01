@@ -10,7 +10,6 @@ import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton"
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
@@ -22,7 +21,7 @@ import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
 
 export interface IListEpSettingsProps {
-  organizationEntityId: TAPEntityId;
+  organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onManagedObjectView: (apApiDisplay: IAPEpSettingsDisplay) => void;
@@ -82,7 +81,7 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try { 
       const list: TAPEpSettingsDisplayList = await APEpSettingsDisplayService.apiGetList_ApEpSettingsDisplayList({
-        organizationId: props.organizationEntityId.id
+        organizationId: props.organizationId
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -275,7 +274,7 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
 
       {/* <div className="p-mt-2">{renderBusinessGroupInfo()}</div> */}
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       <div className="p-mt-2">
         {isInitialized && renderContent()}

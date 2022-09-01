@@ -339,7 +339,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
         <TabPanel header='Event Portal' key={Globals.getUUID()}>
           <ManageEpSettings
             scope={EManageEpSettingsScope.VIEW}
-            organizationEntityId={managedObject.apEntityId}
+            organizationId={managedObject.apEntityId.id}
             onSuccess={props.onSuccess}
             onError={props.onError}
           />

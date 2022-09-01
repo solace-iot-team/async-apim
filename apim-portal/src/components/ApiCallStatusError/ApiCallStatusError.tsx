@@ -19,7 +19,7 @@ export interface IApiCallStatusErrorProps {
 }
 
 export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IApiCallStatusErrorProps) => {
-  // const ComponentName = 'ApiCallStatusError';
+  const ComponentName = 'ApiCallStatusError';
 
   const history = useHistory();
   const navigateHome = (): void => { history.push(EUICommonResourcePaths.Home); }
@@ -32,8 +32,8 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
 
-  const doSecLogout = () => {
-    navigateHome()
+  const doLogoutThisUser = () => {
+    navigateHome();
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
@@ -43,9 +43,11 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
   }
 
   React.useEffect(() => {
+    if(props.apiCallStatus === null) return;
+    if(props.apiCallStatus.success) return;
     // console.log(`${ComponentName}: props.apiCallStatus=${JSON.stringify(props.apiCallStatus, null, 2)}`);
-    if(props.apiCallStatus !== null && !props.apiCallStatus.success && props.apiCallStatus.isUnauthorizedError) {
-      doSecLogout();
+    if(props.apiCallStatus.isUnauthorizedError && props.apiCallStatus.isAPSApiError) {
+      doLogoutThisUser();
     }
   }, [props.apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

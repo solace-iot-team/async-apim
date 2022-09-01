@@ -18,6 +18,7 @@ export interface IViewEpSettingProps {
   onError: (apiCallState: TApiCallState) => void;
   // onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
+  onLoadSuccess: (apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   // onNavigateHere: (organizationEntityId: TAPEntityId) => void;
 }
@@ -78,10 +79,11 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // React.useEffect(() => {
-  //   if(managedObject === undefined) return;
-  //   setBreadCrumbItemList(managedObject.apEntityId.displayName);
-  // }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  React.useEffect(() => {
+    if(managedObject === undefined) return;
+    props.onLoadSuccess(managedObject);
+    // setBreadCrumbItemList(managedObject.apEntityId.displayName);
+  }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(apiCallStatus === null) return;
@@ -126,7 +128,7 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
 
       { managedObject && <APComponentHeader header={`Configuration: ${managedObject.apEntityId.displayName}`} /> }
 
-      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       { managedObject && renderManagedObject() }
 

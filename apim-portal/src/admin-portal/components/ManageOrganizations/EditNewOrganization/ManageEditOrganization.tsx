@@ -15,6 +15,10 @@ import { Globals } from "../../../../utils/Globals";
 import { EditGeneral } from "./EditGeneral";
 import { EditConnectivity } from "./EditConnectivity";
 import { EditIntegration } from "./EditIntegration";
+import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
+import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
+import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -41,7 +45,7 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [tabActiveIndex, setTabActiveIndex] = React.useState(0);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  // const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
+  const [configContext] = React.useContext(ConfigContext);
 
   // * Api Calls *
 
@@ -202,6 +206,18 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
           </React.Fragment>
         </TabPanel>
       );
+      if(configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
+        tabPanels.push(
+          <TabPanel header='Event Portal' key={Globals.getUUID()}>
+            <ManageEpSettings
+              scope={EManageEpSettingsScope.EDIT}
+              organizationId={managedObject.apEntityId.id}
+              onSuccess={onEdit_SaveSuccess}
+              onError={props.onError}
+            />
+          </TabPanel>
+        );
+      }    
     } 
     return tabPanels;
   }

@@ -9,9 +9,11 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, TAPEntityId,
 } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
+import { ApsSessionService } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APApisDisplayService from './APApisDisplayService';
 import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 import { EAPManagedAssetAttribute_BusinessGroup_Tag, EAPManagedAssetAttribute_Scope } from './APManagedAssetDisplayService';
+import APLoginUsersDisplayService from './APUsersDisplayService/APLoginUsersDisplayService';
 
 enum ConnectorImporterTypes {
   EventPortalImporter = "EventPortalImporter"
@@ -233,6 +235,10 @@ class APEpSettingsDisplayService {
     organizationId: string;
     id: string;
   }): Promise<boolean> {
+    // const funcName = 'apiCheck_ApEpSettingId_Exists';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+
     try {
       await ManagementService.getImporterJob({ 
         organizationName: organizationId,
@@ -251,8 +257,8 @@ class APEpSettingsDisplayService {
   public async apiGetList_ApEpSettingsDisplayList({ organizationId }:{
     organizationId: string;
   }): Promise<TAPEpSettingsDisplayList> {
-    const funcName = 'apiGetList_ApEpSettingsDisplayList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGetList_ApEpSettingsDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const connectorImporterConfigurationList: Array<ImporterConfiguration> = await ManagementService.getAllImporters({ 
@@ -271,8 +277,8 @@ class APEpSettingsDisplayService {
     organizationId: string;
     id: string;
   }): Promise<IAPEpSettingsDisplay> {
-    const funcName = 'apiGet_ApEpSettingsDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGet_ApEpSettingsDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const connectorImporterConfiguration: ImporterConfiguration = await ManagementService.getImporterJob({ 
@@ -287,9 +293,9 @@ class APEpSettingsDisplayService {
   public async apiCreate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay }: {
     organizationId: string;
     apEpSettingsDisplay: IAPEpSettingsDisplay;
-  }): Promise<void> {
-    const funcName = 'apiCreate_ApEpSettingsDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+  }): Promise<IAPEpSettingsDisplay> {
+    // const funcName = 'apiCreate_ApEpSettingsDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const apEpSettings_ConnectorAttributeMapElementList: TApEpSettings_ConnectorAttributeMapElementList = this.create_ConnectorAttributeMap_From_ApEpSettings({ apEpSettingsDisplay: apEpSettingsDisplay });
@@ -306,21 +312,24 @@ class APEpSettingsDisplayService {
       organizationName: organizationId,
       requestBody: create
     });
+    // logout all users from org
+    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
+    return this.create_ApEpSettingsDisplay_From_ApiEntities({ connectorImporterConfiguration: created });
   }
 
   public async apiUpdate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay }: {
     organizationId: string;
     apEpSettingsDisplay: IAPEpSettingsDisplay;
-  }): Promise<void> {
-    const funcName = 'apiUpdate_ApEpSettingsDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+  }): Promise<IAPEpSettingsDisplay> {
+    // const funcName = 'apiUpdate_ApEpSettingsDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const apEpSettings_ConnectorAttributeMapElementList: TApEpSettings_ConnectorAttributeMapElementList = this.create_ConnectorAttributeMap_From_ApEpSettings({ apEpSettingsDisplay: apEpSettingsDisplay });
     const update: ImporterConfiguration = {
       name: apEpSettingsDisplay.apEntityId.id,
       displayName: apEpSettingsDisplay.apEntityId.displayName,
-      importerType: 'what type?',
+      importerType: ConnectorImporterTypes.EventPortalImporter,
       filter: apEpSettings_ConnectorAttributeMapElementList.map( (x) => {
         return x.name ? x.name : '';
       }),
@@ -331,17 +340,25 @@ class APEpSettingsDisplayService {
       importerJobName: apEpSettingsDisplay.apEntityId.id,
       requestBody: update
     });
+    // logout all users from org
+    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
+    return this.create_ApEpSettingsDisplay_From_ApiEntities({ connectorImporterConfiguration: updated });
   }
 
   public async apiDelete_ApEpSettingsDisplay({ organizationId, id }:{
     organizationId: string;
     id: string;
   }): Promise<void> {
+    // const funcName = 'apiDelete_ApEpSettingsDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
 
     await ManagementService.deleteImporterJob({ 
       organizationName: organizationId,
       importerJobName: id
     });
+    // logout all users from org
+    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
 
   }
 

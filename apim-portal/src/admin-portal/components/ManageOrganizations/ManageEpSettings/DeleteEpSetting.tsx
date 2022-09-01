@@ -4,28 +4,29 @@ import React from "react";
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 
-import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
-import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
-import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPEntityId } from "../../../utils/APEntityIdsService";
-import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
-import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
+import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
+import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
+import { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
+import APEpSettingsDisplayService from "../../../../displayServices/APEpSettingsDisplayService";
 
-import '../../../components/APComponents.css';
-import "./ManageOrganizations.css";
+import '../../../../components/APComponents.css';
+import "../ManageOrganizations.css";
 
-export interface IDeleteOrganizationProps {
-  organizationEntityId: TAPEntityId;
+export interface IDeleteEpSettingProps {
+  organizationId: string;
+  apEpSettingDisplayEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: IDeleteOrganizationProps) => {
-  const componentName = 'DeleteOrganization';
+export const DeleteEpSetting: React.FC<IDeleteEpSettingProps> = (props: IDeleteEpSettingProps) => {
+  const componentName = 'DeleteEpSetting';
 
-  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting Organization";
+  const DeleteManagedObjectConfirmDialogHeader = "Confirm Deleting Configuration";
 
   const [showManagedObjectDeleteDialog, setShowManagedObjectDeleteDialog] = React.useState<boolean>(true);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -35,10 +36,11 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;
-    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE_ORGANIZATION, `delete organization: ${props.organizationEntityId.displayName}`);
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_DELETE, `delete configuration: ${props.apEpSettingDisplayEntityId.displayName}`);
     try { 
-      await APSystemOrganizationsDisplayService.apiDelete_ApSystemOrganizationDisplay({
-        organizationId: props.organizationEntityId.id
+      await APEpSettingsDisplayService.apiDelete_ApEpSettingsDisplay({ 
+        organizationId: props.organizationId,
+        id: props.apEpSettingDisplayEntityId.id
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -79,9 +81,8 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
   const renderDeleteManagedObjectDialogContent = (): JSX.Element => {
     return (
       <React.Fragment>
-        <p>Deleting organization <b>{props.organizationEntityId.displayName}</b> will also delete all it's assets!</p>
-        <p>Are you sure you want to delete it?</p>
-        <p><b>This action is irreversible!</b></p>
+        <p>Are you sure you want to delete configuration:</p>
+        <p> {props.apEpSettingDisplayEntityId.displayName}</p>
       </React.Fragment>  
     );
   }
@@ -109,7 +110,7 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
         contentClassName="manage-organizations-delete-confirmation-content"
       >
         <div>
-          <p><i className="pi pi-exclamation-triangle p-mr-3" style={{ fontSize: '2rem'}} /></p>
+          <p><i className="pi pi-exclamation-triangle" style={{ fontSize: '2rem'}} /></p>
           {renderDeleteManagedObjectDialogContent()}
           <ApiCallStatusError apiCallStatus={apiCallStatus} />
         </div>

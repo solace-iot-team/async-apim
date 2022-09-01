@@ -106,10 +106,9 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
 
   const navigateTo = (path: string): void => { history.push(path); }
 
-  const doLogoutAllOrganizationUsers = async(organizationId: string) => {
+  const doLogoutThisUser = async(organizationId: string) => {
     if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
       if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
-        // logout this user as well
         APContextsDisplayService.clear_LoginContexts({
           dispatchAuthContextAction: dispatchAuthContextAction,
           dispatchUserContextAction: dispatchUserContextAction,
@@ -327,7 +326,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
-    doLogoutAllOrganizationUsers(managedObjectEntityId.id);
+    doLogoutThisUser(managedObjectEntityId.id);
   }
   const onNewManagedObjectSuccess = (apiCallState: TApiCallState, newMoEntityId: TAPEntityId) => {
     setApiCallStatus(apiCallState);
@@ -343,7 +342,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     if(managedObjectEntityId === undefined) throw new Error(`${logName}: managedObjectEntityId === undefined`);
     setApiCallStatus(apiCallState);
     setRefreshCounter(refreshCounter + 1);
-    doLogoutAllOrganizationUsers(managedObjectEntityId.id);
+    doLogoutThisUser(managedObjectEntityId.id);
   }
   const onImportManagedObject = (organizationEntityId: TAPEntityId) => {
     setApiCallStatus(null);

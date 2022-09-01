@@ -11,9 +11,9 @@ import { TApiCallState } from "../../utils/ApiCallState";
 import { EUIAdminPortalResourcePaths, GlobalElementStyles } from '../../utils/Globals';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { E_ManageOrganizations_Scope } from '../components/ManageOrganizations/ManageOrganizationsCommon';
+import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 
 import "../../pages/Pages.css";
-import { ManageOrganizations } from '../components/ManageOrganizations/ManageOrganizations';
 
 export const ManageOrganizationSettingsPage: React.FC = () => {
   // const componentName = 'ManageOrganizationSettingsPage';
