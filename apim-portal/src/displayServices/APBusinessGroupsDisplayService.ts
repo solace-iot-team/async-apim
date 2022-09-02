@@ -265,6 +265,29 @@ class APBusinessGroupsDisplayService {
     return found;
   }
 
+  public find_ApBusinessGroupDisplay_From_ApBusinessGroupDisplayTreeNodeList({ apBusinessGroupTreeNodeDisplayList, businessGroupId }: {
+    apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
+    businessGroupId: string;
+  }): TAPBusinessGroupTreeNodeDisplay | undefined {
+
+    const find = (treeNode: TAPBusinessGroupTreeNodeDisplay): TAPBusinessGroupTreeNodeDisplay | undefined => {
+      if(treeNode.children.length > 0) return find_list(treeNode.children);
+      else return undefined;
+    }
+
+    const find_list = (treeNodeList: TAPBusinessGroupTreeNodeDisplayList): TAPBusinessGroupTreeNodeDisplay | undefined => {
+      for(const treeNode of treeNodeList) {
+        if(treeNode.key === businessGroupId) {
+          return treeNode;
+        }
+        const found: TAPBusinessGroupTreeNodeDisplay | undefined = find(treeNode);
+        if(found !== undefined) return found;
+      }
+      return undefined;
+    }
+    return find_list(apBusinessGroupTreeNodeDisplayList);
+  } 
+
   private create_ApMemberUserEntityIdList_From_ApiEntities({ apsMemberUserIdList }: {
     apsMemberUserIdList: APSUserIdList;
   }): TAPEntityIdList {
@@ -489,6 +512,15 @@ class APBusinessGroupsDisplayService {
       }));
     }
     return list;
+  }
+
+  public async apsGetList_TAPBusinessGroupTreeNodeDisplayList({ organizationId}:{
+    organizationId: string;
+  }): Promise<TAPBusinessGroupTreeNodeDisplayList> {
+    const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await this.apsGetList_ApBusinessGroupSystemDisplayList({
+      organizationId: organizationId,      
+    });
+    return this.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(apBusinessGroupDisplayList);
   }
 
   public async apsGetList_ApBusinessGroupSystemDisplay_By_ExternalSystem({ organizationId, externalSystemId, fetchAssetReferences = false }: {

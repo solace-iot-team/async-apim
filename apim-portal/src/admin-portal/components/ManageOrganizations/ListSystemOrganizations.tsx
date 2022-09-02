@@ -120,6 +120,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     const configStatusStyle: React.CSSProperties = row.apOrganizationConfigStatus === EAPOrganizationConfigStatus.NOT_OPERATIONAL ? {color: 'red'} : {};
     return (<span style={configStatusStyle}>{row.apOrganizationConfigStatus}</span>);
   }
+
   const renderManagedObjectDataTable = () => {
     const idField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.id');
     const nameField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.displayName');;

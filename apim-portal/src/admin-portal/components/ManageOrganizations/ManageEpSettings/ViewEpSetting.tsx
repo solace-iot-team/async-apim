@@ -3,14 +3,14 @@ import React from "react";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-
-import '../../../../components/APComponents.css';
-import "../ManageOrganizations.css";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../displayServices/APEpSettingsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+
+import '../../../../components/APComponents.css';
+import "../ManageOrganizations.css";
+import { DisplayEpSettingMappings } from "./DisplayEpSettingMappings";
 
 export interface IViewEpSettingProps {
   organizationId: string;
@@ -91,15 +91,17 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderConfig = () => {
+    const funcName = 'renderConfig';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
     return(
       <React.Fragment> 
-        <div className="p-mb-2 p-mt-4 ap-display-component-header">some section:</div>
-        <div className="p-ml-4">
-          <p><b>some section info: </b>the info</p>
-        </div>
-        <div>
-          <p>TODO: render table: applicationDomainName + business group mappings</p>
-        </div>
+        {/* <div className="p-mb-2 p-mt-4 ap-display-component-header">Mappings:</div> */}
+        {/* <div className="p-ml-4"> */}
+          <DisplayEpSettingMappings 
+            apEpSettings_MappingList={managedObject.apEpSettings_MappingList}
+          />
+        {/* </div> */}
       </React.Fragment>
     );
   }

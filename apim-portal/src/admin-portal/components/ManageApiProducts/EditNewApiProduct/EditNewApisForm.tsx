@@ -72,7 +72,7 @@ export const EditNewApisForm: React.FC<IEditNewApisFormProps> = (props: IEditNew
   const update_FormDataEnvelope_With_Ext_ApApiDisplayList = ({ update_selected_apApiDisplayList }:{
     update_selected_apApiDisplayList: TAPApiDisplayList;
   }): TManagedObjectFormDataEnvelope => {
-    const funcName = 'update_FormDataEnvelope_With_ApControlledChannelParameterList';
+    const funcName = 'update_FormDataEnvelope_With_Ext_ApApiDisplayList';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
 

@@ -11,6 +11,7 @@ import { E_CALL_STATE_ACTIONS, EAction } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewEpSettingForm } from "./EditNewEpSettingForm";
 import { APClientConnectorOpenApi } from "../../../../../utils/APClientConnectorOpenApi";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -39,7 +40,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   const FormId = `ManageOrganizations_EditNewOrganization_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
-
+  const [apBusinessGroupTreeNodeDisplayList, setApBusinessGroupTreeNodeDisplayList] = React.useState<TAPBusinessGroupTreeNodeDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   // * Api Calls *
@@ -99,9 +100,27 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     return callState;  
   }
 
+  const apiGetAPBusinessGroupTreeNodeDisplayList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetAPBusinessGroupTreeNodeDisplayList';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_TREE_LIST, 'get business group info');
+    try {
+      const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = await APBusinessGroupsDisplayService.apsGetList_TAPBusinessGroupTreeNodeDisplayList({
+        organizationId: props.organizationId
+      });
+      setApBusinessGroupTreeNodeDisplayList(apBusinessGroupTreeNodeDisplayList);
+    } catch(e: any) {
+      APClientConnectorOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;  
+  }
+
   const doInitialize = async () => {
     if(props.action === EAction.EDIT) {
       props.onLoadingChange(true);
+      await apiGetAPBusinessGroupTreeNodeDisplayList();
       await apiGetManagedObject();
       props.onLoadingChange(false);
     } else {
@@ -138,10 +157,9 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     if(apiCallStatus === null) return;
     if(!apiCallStatus.success) props.onError(apiCallStatus);
     else {
-      if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+      if(managedObject === undefined) return;
       if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_CREATE) onCreateSuccess(apiCallStatus, managedObject);
       if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE) onUpdateSuccess(apiCallStatus, managedObject);
-        
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -185,12 +203,14 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(apBusinessGroupTreeNodeDisplayList === undefined) throw new Error(`${logName}: apBusinessGroupTreeNodeDisplayList === undefined`);
     return (      
         <div className="card p-mt-4">
           <EditNewEpSettingForm     
             action={props.action}
             organizationId={props.organizationId}
             apEpSettingsDisplay={managedObject}
+            apBusinessGroupTreeNodeDisplayList={apBusinessGroupTreeNodeDisplayList}
             formId={FormId}
             onSubmit={onSubmit_EditNew}
             onError={props.onError}

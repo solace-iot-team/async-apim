@@ -4,18 +4,16 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
-import { MenuItem } from "primereact/api";
-import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { Loading } from "../../../../components/Loading/Loading";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TAPEpSettingsDisplayList } from "../../../../displayServices/APEpSettingsDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
+import APEntityIdsService from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -157,15 +155,17 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   const nameBodyTemplate = (mo: TManagedObject): string => {
     return mo.apEntityId.displayName;
   }
-  // const businessGroupBodyTemplate = (mo: TManagedObject): JSX.Element => {
-  //   return (<div>{mo.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
-  // }
-  // const versionBodyTemplate = (mo: TManagedObject): JSX.Element => {
-  //   return (<div>{mo.apVersionInfo.apLastVersion}</div>);
-  // }
-  // const sourceBodyTemplate = (mo: TManagedObject): string => {
-  //   return mo.connectorApiInfo.source;
-  // }
+
+  const statusBodyTemplate = (mo:TManagedObject): JSX.Element => {
+    if(mo.apEpSettings_MappingList.length === 0) return (<span style={{ color: 'orange' }}>incomplete</span>);
+    const areAllValid: boolean = mo.apEpSettings_MappingList.map((x)=> {
+      return x.isValid;
+    }).reduce( (previous, current, index, array) => {
+      return current;
+    }, true);
+    if(areAllValid) return (<span style={ {color: 'green'} }>valid</span>);
+    return (<span style={ {color: 'red'} }>issues</span>);
+  }
   // const sharedBodyTemplate = (mo: TManagedObject): JSX.Element => {
   //   const sharingEntityIdList: TAPEntityIdList = mo.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
   //     return {
@@ -178,13 +178,25 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   //     <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
   //   );
   // }
-  // const stateTemplate = (mo: TManagedObject): string => {
-  //   return mo.apLifecycleStageInfo.stage;
-  // }
-  // const usedByApiProductsBodyTemplate = (mo: TManagedObject): JSX.Element => {
-  //   if(mo.apApiProductReferenceEntityIdList.length === 0) return (<>None</>);
-  //   return(<>{mo.apApiProductReferenceEntityIdList.length}</>);
-  // }
+  const applicationDomainsBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    // const applicationDomainNameList: Array<string> = APEntityIdsService.create_SortedDisplayNameList(APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(mo.apEpSettings_MappingList));
+    // const x = APEntityIdsService.sor
+    const listJoin = (list: Array<JSX.Element>): Array<JSX.Element> => {
+      const listJoin: Array<JSX.Element> = [];
+      for(let idx=0; idx<list.length; idx++) {  
+        if(idx < list.length -1 ) listJoin.push(<span>{list[idx]}, </span>);
+        else listJoin.push(<span>{list[idx]}</span>);
+      }
+      return listJoin;
+    }
+    const list: Array<JSX.Element> = [];
+    for(const apEpSettings_Mapping of mo.apEpSettings_MappingList) {
+      if(apEpSettings_Mapping.isValid) list.push(<span>{apEpSettings_Mapping.apEntityId.displayName}</span>)
+      else list.push(<span style={{color: 'red'}}>{apEpSettings_Mapping.apEntityId.displayName}</span>)
+    }
+    return (<div>{listJoin(list)}</div>);
+  }
+
   const getEmptyMessage = (): string => {
     if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
     return MessageNoManagedObjectsFoundForFilter;
@@ -193,9 +205,6 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     const dataKey = APDisplayUtils.nameOf<IAPEpSettingsDisplay>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<IAPEpSettingsDisplay>('apEntityId.displayName');
     const filterField = APDisplayUtils.nameOf<IAPEpSettingsDisplay>('apSearchContent');
-    // const stateSortField = APDisplayUtils.nameOf<IAPApiDisplay>('apLifecycleStageInfo.stage');
-    // const sourceSortField = APDisplayUtils.nameOf<IAPApiDisplay>('connectorApiInfo.source');
-    // const businessGroupSortField = APDisplayUtils.nameOf<IAPApiDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
 
     return (
       <div className="card">
@@ -223,11 +232,10 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
           sortField={sortField}
           sortOrder={1}
         >
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          {/* <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-          <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
-          <Column header="API Products" headerStyle={{width: '8em'}} body={usedByApiProductsBodyTemplate} bodyStyle={{verticalAlign: 'top', textAlign: 'center'}} /> */}
+          <Column header="Name" style={{width: '20%'}} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
+          <Column header="Application Domains" body={applicationDomainsBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} />
+          <Column header="Status" body={statusBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} />
+          {/* <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} /> */}
         </DataTable>
       </div>
     );
@@ -237,44 +245,15 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     const funcName = 'renderContent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
-    // if(managedObjectList.length === 0) {
-    //   return (
-    //     <React.Fragment>
-    //       <Divider />
-    //       {MessageNoManagedObjectsFound}
-    //       <Divider />
-    //     </React.Fragment>
-    //   );
-    // }
-    // if(managedObjectList.length > 0) {
-    //   return renderManagedObjectDataTable();
-    // } 
     return renderManagedObjectDataTable();
   }
 
-  // const renderBusinessGroupInfo = (): JSX.Element => {
-  //   const funcName = 'renderBusinessGroupInfo';
-  //   const logName = `${ComponentName}.${funcName}()`;
-  //   if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
-  //   let info: string = userContext.runtimeSettings.currentBusinessGroupEntityId.displayName;
-  //   if(selectedFilterOptionId === SelectAllId) info += ' & children';
-  //   return(
-  //     <div>
-  //       <span><b>Business Group:</b> {info}</span>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="manage-apis">
+    <div className="manage-organizations">
 
       <Loading key={ComponentName} show={isLoading} />      
 
       <APComponentHeader header='Configurations:' />
-
-      {/* <div className="p-mt-2">{renderBusinessGroupInfo()}</div> */}
-
-      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       <div className="p-mt-2">
         {isInitialized && renderContent()}

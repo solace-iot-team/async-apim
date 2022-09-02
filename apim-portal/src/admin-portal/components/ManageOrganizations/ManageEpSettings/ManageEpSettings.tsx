@@ -387,7 +387,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   }
 
   return (
-    <div className="manage-apis">
+    <div className="manage-organizations">
 
       <Loading key={ComponentName} show={isLoading} header={loadingHeader} />      
       

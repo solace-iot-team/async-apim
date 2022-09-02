@@ -8,7 +8,6 @@ import { MenuItem } from "primereact/api";
 
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
-import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 import { EUICommonResourcePaths, Globals } from "../../../utils/Globals";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { 
@@ -34,6 +33,7 @@ import { DeleteOrganization } from "./DeleteOrganization";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
 import { MonitorOrganization } from "./MonitorOrganization";
+import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";

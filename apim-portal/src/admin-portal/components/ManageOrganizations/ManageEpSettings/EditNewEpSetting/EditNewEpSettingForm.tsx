@@ -3,18 +3,17 @@ import React from "react";
 import { useForm, Controller } from 'react-hook-form';
 
 import { InputText } from 'primereact/inputtext';
-import { Checkbox } from "primereact/checkbox";
 import { classNames } from 'primereact/utils';
-import { InputNumber } from "primereact/inputnumber";
-import { Dropdown } from "primereact/dropdown";
 
 import { ApiCallState, TApiCallState } from "../../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../../displayServices/APDisplayUtils";
 import { APClientConnectorOpenApi } from "../../../../../utils/APClientConnectorOpenApi";
-// import { APSOpenApiFormValidationRules } from "../../../../../utils/APSOpenApiFormValidationRules";
 import { APConnectorFormValidationRules } from "../../../../../utils/APConnectorOpenApiFormValidationRules";
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageEpSettingsCommon";
-import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../../displayServices/APEpSettingsDisplayService";
+import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
+import { EditNewApplicationDomainMappingForm } from "./EditNewApplicationDomainMappingForm";
+import { Globals } from "../../../../../utils/Globals";
+import { TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -24,6 +23,7 @@ export interface IEditNewEpSettingFormProps {
   organizationId: string;
   apEpSettingsDisplay: IAPEpSettingsDisplay;
   formId: string;
+  apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
   onSubmit: (apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   onError: (apiCallState: TApiCallState) => void;
   // onLoadingChange: (isLoading: boolean) => void;
@@ -36,7 +36,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
-    // apEpSettings_MappingList: TApEpSettings_MappingList;
+    apEpSettings_MappingList: TApEpSettings_MappingList;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -50,6 +50,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     const fd: TManagedObjectFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
+      apEpSettings_MappingList: mo.apEpSettings_MappingList
     };
     return {
       formData: fd
@@ -66,7 +67,8 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
-    // DEBUG
+    mo.apEpSettings_MappingList = fd.apEpSettings_MappingList;
+    // // DEBUG
     // alert(`${logName}: check console for logging...`);
     // console.log(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);
     return mo;
@@ -140,8 +142,26 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     return true;
   }
 
+  const onChange_ApEpSettings_MappingList = (apEpSettings_MappingList: TApEpSettings_MappingList) => {
+    const funcName = 'onChange_ApEpSettings_MappingList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    const newMofde: TManagedObjectFormDataEnvelope = {
+      formData: {
+        ...managedObjectFormDataEnvelope.formData,
+        apEpSettings_MappingList: apEpSettings_MappingList
+      }
+    };
+    setManagedObjectFormDataEnvelope(newMofde);
+  }
+
   const renderManagedObjectForm = () => {
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${ComponentName}.${funcName}()`;
     const isNewObject: boolean = isNewManagedObject();
+    const uniqueKey_Mappings = ComponentName+'_EditNewApplicationDomainMappingForm_'+Globals.getUUID();
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -193,8 +213,22 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
             </div>
-
           </form>  
+
+          {/* <div className="p-field"> */}
+            {/* mappings */}
+            <div className="p-mb-2 p-mt-4 ap-display-component-header">Mappings:</div>
+            <EditNewApplicationDomainMappingForm 
+              key={uniqueKey_Mappings}
+              organizationId={props.organizationId}
+              uniqueFormKeyPrefix={uniqueKey_Mappings}
+              apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
+              apEpSettings_MappingList={managedObjectFormDataEnvelope.formData.apEpSettings_MappingList}
+              onChange={onChange_ApEpSettings_MappingList}
+              onError={props.onError}
+            />
+          {/* </div> */}
+
         </div>
       </div>
     );
@@ -203,7 +237,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   return (
     <div className="manage-organizations">
 
-      { renderManagedObjectForm() }
+      { managedObjectFormDataEnvelope && renderManagedObjectForm() }
 
     </div>
   );
