@@ -39,9 +39,6 @@ export const SearchSelectAppDomain: React.FC<ISearchSelectAppDomainProps> = (pro
   const MessageNoManagedObjectsFoundWithFilter = 'No Application Domains found for filter';
   const GlobalSearchPlaceholder = 'search...';
 
-  // const [organizationContext] = React.useContext(OrganizationContext);
-  // const [userContext] = React.useContext(UserContext);
-
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [isInitialialized, setIsInitialized] = React.useState<boolean>(false);

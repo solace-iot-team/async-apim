@@ -33,13 +33,16 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   const ComponentName = 'EditNewEpSettingForm';
 
   type TManagedObject = IAPEpSettingsDisplay;
-  type TManagedObjectFormData = {
+  type TManagedObjectUseFormData = {
     id: string;
     displayName: string;
+  };
+  type TManagedObjectExtFormData = {
     apEpSettings_MappingList: TApEpSettings_MappingList;
   };
   type TManagedObjectFormDataEnvelope = {
-    formData: TManagedObjectFormData;
+    useFormData: TManagedObjectUseFormData;
+    extFormData: TManagedObjectExtFormData;
   }
 
   const isNewManagedObject = (): boolean => {
@@ -47,13 +50,16 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
-    const fd: TManagedObjectFormData = {
+    const ufd: TManagedObjectUseFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
+    };
+    const efd: TManagedObjectExtFormData = {
       apEpSettings_MappingList: mo.apEpSettings_MappingList
     };
     return {
-      formData: fd
+      useFormData: ufd,
+      extFormData: efd
     };
   }
 
@@ -62,12 +68,10 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   }): TManagedObject => {
     // const funcName = 'create_ManagedObject_From_FormEntities';
     // const logName = `${ComponentName}.${funcName}()`;
-
     const mo: TManagedObject = props.apEpSettingsDisplay;
-    const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    if(isNewManagedObject()) mo.apEntityId.id = fd.id;
-    mo.apEntityId.displayName = fd.displayName;
-    mo.apEpSettings_MappingList = fd.apEpSettings_MappingList;
+    if(isNewManagedObject()) mo.apEntityId.id = formDataEnvelope.useFormData.id;
+    mo.apEntityId.displayName = formDataEnvelope.useFormData.displayName;
+    mo.apEpSettings_MappingList = formDataEnvelope.extFormData.apEpSettings_MappingList;
     // // DEBUG
     // alert(`${logName}: check console for logging...`);
     // console.log(`${logName}: mo=${JSON.stringify(mo, null, 2)}`);
@@ -110,7 +114,8 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
-    if(managedObjectFormDataEnvelope) managedObjectUseForm.setValue('formData', managedObjectFormDataEnvelope.formData);
+    if(managedObjectFormDataEnvelope === undefined) return;
+    managedObjectUseForm.setValue('useFormData', managedObjectFormDataEnvelope.useFormData);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -120,8 +125,17 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
+    const funcName = 'onSubmitManagedObjectForm';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    // // DEBUG
+    // alert(`${logName}: check console for logging...`);
+    // console.log(`${logName}: newMofde=${JSON.stringify(newMofde, null, 2)}`);
+    // add extFormData back in
+    const complete_mofde: TManagedObjectFormDataEnvelope = managedObjectFormDataEnvelope;
+    complete_mofde.useFormData = newMofde.useFormData;
     props.onSubmit(create_ManagedObject_From_FormEntities({
-      formDataEnvelope: newMofde,
+      formDataEnvelope: complete_mofde,
     }));
   }
 
@@ -146,12 +160,16 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     const funcName = 'onChange_ApEpSettings_MappingList';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+
     const newMofde: TManagedObjectFormDataEnvelope = {
-      formData: {
-        ...managedObjectFormDataEnvelope.formData,
+      useFormData: managedObjectFormDataEnvelope.useFormData,
+      extFormData: {
         apEpSettings_MappingList: apEpSettings_MappingList
       }
     };
+    // // DEBUG
+    // alert(`${logName}: check console for logging...`);
+    // console.log(`${logName}: mo=${JSON.stringify(newMofde, null, 2)}`);
     setManagedObjectFormDataEnvelope(newMofde);
   }
 
@@ -172,7 +190,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
                 <i className="pi pi-key" />
                 <Controller
                   control={managedObjectUseForm.control}
-                  name="formData.id"
+                  name="useFormData.id"
                   rules={{
                     ...APConnectorFormValidationRules.CommonName(),
                     validate: validate_Id
@@ -188,16 +206,16 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
                       />
                   )}}
                 />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.id })}>Id*</label>
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.id })}>Id*</label>
               </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.id)}
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.id)}
             </div>
             {/* Display Name */}
             <div className="p-field">
               <span className="p-float-label">
                 <Controller
                   control={managedObjectUseForm.control}
-                  name="formData.displayName"
+                  name="useFormData.displayName"
                   rules={APConnectorFormValidationRules.CommonDisplayName()}
                   render={( { field, fieldState }) => {
                     return(
@@ -209,9 +227,9 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
                       />
                   )}}
                 />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.displayName })}>Display Name*</label>
+                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.displayName })}>Display Name*</label>
               </span>
-              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
+              {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.displayName)}
             </div>
           </form>  
 
@@ -223,7 +241,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
               organizationId={props.organizationId}
               uniqueFormKeyPrefix={uniqueKey_Mappings}
               apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
-              apEpSettings_MappingList={managedObjectFormDataEnvelope.formData.apEpSettings_MappingList}
+              apEpSettings_MappingList={managedObjectFormDataEnvelope.extFormData.apEpSettings_MappingList}
               onChange={onChange_ApEpSettings_MappingList}
               onError={props.onError}
             />

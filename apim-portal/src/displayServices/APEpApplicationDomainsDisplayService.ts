@@ -13,8 +13,8 @@ type APIApplicationDomain = {
 }
 const HardCoded_APIApplicationDomainList: Array<APIApplicationDomain> = [
   {
-    id: "id",
-    displayName: "displayName"
+    id: "cgsh8nobngu",
+    displayName: "integration/acme-retail"
   }
 ];
 
