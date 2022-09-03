@@ -162,7 +162,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
 
     const newMofde: TManagedObjectFormDataEnvelope = {
-      useFormData: managedObjectFormDataEnvelope.useFormData,
+      useFormData: managedObjectUseForm.getValues('useFormData'),
       extFormData: {
         apEpSettings_MappingList: apEpSettings_MappingList
       }

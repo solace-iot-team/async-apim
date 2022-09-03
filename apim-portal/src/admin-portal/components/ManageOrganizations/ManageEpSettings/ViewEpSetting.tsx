@@ -7,16 +7,15 @@ import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../displayServices/APEpSettingsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
+import { DisplayEpSettingMappings } from "./DisplayEpSettingMappings";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { DisplayEpSettingMappings } from "./DisplayEpSettingMappings";
 
 export interface IViewEpSettingProps {
   organizationId: string;
   apEpSettingEntityId: TAPEntityId;
   onError: (apiCallState: TApiCallState) => void;
-  // onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onLoadSuccess: (apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;

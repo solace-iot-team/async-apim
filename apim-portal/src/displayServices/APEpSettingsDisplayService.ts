@@ -3,6 +3,7 @@ import {
   ImporterConfiguration,
   ImporterInfo,
   ManagementService,
+  SuccessResponse,
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
@@ -45,6 +46,18 @@ export type TAPEpSettingsDisplayList = Array<IAPEpSettingsDisplay>;
 
 class APEpSettingsDisplayService {
   private readonly ComponentName = "APEpSettingsDisplayService";
+
+  public areAllMappingsValid({ apEpSettingsDisplay }:{
+    apEpSettingsDisplay: IAPEpSettingsDisplay
+  }): boolean {
+    if(apEpSettingsDisplay.apEpSettings_MappingList.length === 0) return false;
+    const areAllValid: boolean = apEpSettingsDisplay.apEpSettings_MappingList.map((x)=> {
+      return x.isValid;
+    }).reduce( (previous, current, index, array) => {
+      return current;
+    }, true);
+    return areAllValid;
+  }
 
   private create_Empty_ConnectorImporterConfiguration(): ImporterConfiguration {
     return {
@@ -309,9 +322,10 @@ class APEpSettingsDisplayService {
     });
   }
 
-  public async apiCreate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay }: {
+  public async apiCreate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay, doLogoutAllUsers }: {
     organizationId: string;
     apEpSettingsDisplay: IAPEpSettingsDisplay;
+    doLogoutAllUsers: boolean;
   }): Promise<IAPEpSettingsDisplay> {
     // const funcName = 'apiCreate_ApEpSettingsDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -332,16 +346,17 @@ class APEpSettingsDisplayService {
       requestBody: create
     });
     // logout all users from org
-    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
+    if(doLogoutAllUsers) await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
     return await this.create_ApEpSettingsDisplay_From_ApiEntities({ 
       organizationId: organizationId,
       connectorImporterConfiguration: created
     });
   }
 
-  public async apiUpdate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay }: {
+  public async apiUpdate_ApEpSettingsDisplay({ organizationId, apEpSettingsDisplay, doLogoutAllUsers }: {
     organizationId: string;
     apEpSettingsDisplay: IAPEpSettingsDisplay;
+    doLogoutAllUsers: boolean;
   }): Promise<IAPEpSettingsDisplay> {
     // const funcName = 'apiUpdate_ApEpSettingsDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -363,16 +378,17 @@ class APEpSettingsDisplayService {
       requestBody: update
     });
     // logout all users from org
-    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
+    if(doLogoutAllUsers) await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
     return await this.create_ApEpSettingsDisplay_From_ApiEntities({ 
       organizationId: organizationId,
       connectorImporterConfiguration: updated 
     });
   }
 
-  public async apiDelete_ApEpSettingsDisplay({ organizationId, id }:{
+  public async apiDelete_ApEpSettingsDisplay({ organizationId, id, doLogoutAllUsers }:{
     organizationId: string;
     id: string;
+    doLogoutAllUsers: boolean;
   }): Promise<void> {
     // const funcName = 'apiDelete_ApEpSettingsDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -383,10 +399,24 @@ class APEpSettingsDisplayService {
       importerJobName: id
     });
     // logout all users from org
-    await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
-
+    if(doLogoutAllUsers) await APLoginUsersDisplayService.apsSecLogoutOrganizationAll({ organizationId: organizationId });
   }
 
+  public async apiRun_ImportJob({ organizationId, id }: {
+    organizationId: string;
+    id: string;
+  }): Promise<SuccessResponse> {
+    const funcName = 'apiRun_ImportJob';
+    const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+
+    const successResponse: SuccessResponse = await ManagementService.runImporterJob({ 
+      organizationName: organizationId,
+      importerJobName: id
+    });
+
+    return successResponse;
+  }
 }
 
 export default new APEpSettingsDisplayService();

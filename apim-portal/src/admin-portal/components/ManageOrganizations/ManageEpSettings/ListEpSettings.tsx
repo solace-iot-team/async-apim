@@ -4,31 +4,34 @@ import React from "react";
 import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
+import { Button } from "primereact/button";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
+import { EManageEpSettingsScope, E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { Loading } from "../../../../components/Loading/Loading";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TAPEpSettingsDisplayList } from "../../../../displayServices/APEpSettingsDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import APEntityIdsService from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
 
 export interface IListEpSettingsProps {
   organizationId: string;
+  scope: EManageEpSettingsScope;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onManagedObjectView: (apApiDisplay: IAPEpSettingsDisplay) => void;
+  onManagedObjectRun: (apApiDisplay: IAPEpSettingsDisplay) => void;
   // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSettingsProps) => {
   const ComponentName = 'ListEpSettings';
 
+  const ButtonLabe_RunJob = "Run Import";
   const MessageNoManagedObjectsFound = 'No Configuration defined.';
   const MessageNoManagedObjectsFoundForFilter = 'No Configuration(s) found for filter.';
   const GlobalSearchPlaceholder = 'search ...';
@@ -125,6 +128,9 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   // }, [selectedFilterOptionId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
+  const onRunImportJob = (mo: TManagedObject): void => {
+    props.onManagedObjectRun(mo);
+  }
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
   }  
@@ -158,11 +164,7 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
 
   const statusBodyTemplate = (mo:TManagedObject): JSX.Element => {
     if(mo.apEpSettings_MappingList.length === 0) return (<span style={{ color: 'orange' }}>incomplete</span>);
-    const areAllValid: boolean = mo.apEpSettings_MappingList.map((x)=> {
-      return x.isValid;
-    }).reduce( (previous, current, index, array) => {
-      return current;
-    }, true);
+    const areAllValid: boolean = APEpSettingsDisplayService.areAllMappingsValid({ apEpSettingsDisplay: mo });
     if(areAllValid) return (<span style={ {color: 'green'} }>valid</span>);
     return (<span style={ {color: 'red'} }>issues</span>);
   }
@@ -196,7 +198,23 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     }
     return (<div>{listJoin(list)}</div>);
   }
-
+  const actionBodyTemplate = (mo: TManagedObject) => {
+    if(props.scope !== EManageEpSettingsScope.VIEW) return;
+    const isDisabled = !APEpSettingsDisplayService.areAllMappingsValid({ apEpSettingsDisplay: mo });
+    return (
+      <React.Fragment>
+        <Button 
+          key={ComponentName+'_run_'+mo.apEntityId.id} 
+          label={ButtonLabe_RunJob}
+          type='button'
+          icon="pi pi-fast-forward"
+          className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" 
+          onClick={() => onRunImportJob(mo)} 
+          disabled={isDisabled}
+        />
+      </React.Fragment>
+    );
+  }
   const getEmptyMessage = (): string => {
     if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
     return MessageNoManagedObjectsFoundForFilter;
@@ -234,8 +252,9 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
         >
           <Column header="Name" style={{width: '20%'}} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
           <Column header="Application Domains" body={applicationDomainsBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} />
-          <Column header="Status" body={statusBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} />
           {/* <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} /> */}
+          <Column header="Status" style={{ width: '10em'}} body={statusBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} />
+          <Column style={{ width: '13em'}} body={actionBodyTemplate} bodyStyle={{ textAlign: 'end' }} />
         </DataTable>
       </div>
     );

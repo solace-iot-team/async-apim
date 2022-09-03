@@ -8,7 +8,7 @@ import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
+import { DoLogoutAllUsers, E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import APEpSettingsDisplayService from "../../../../displayServices/APEpSettingsDisplayService";
 
 import '../../../../components/APComponents.css';
@@ -40,7 +40,8 @@ export const DeleteEpSetting: React.FC<IDeleteEpSettingProps> = (props: IDeleteE
     try { 
       await APEpSettingsDisplayService.apiDelete_ApEpSettingsDisplay({ 
         organizationId: props.organizationId,
-        id: props.apEpSettingDisplayEntityId.id
+        id: props.apEpSettingDisplayEntityId.id,
+        doLogoutAllUsers: DoLogoutAllUsers
       });
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);

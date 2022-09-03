@@ -14,7 +14,7 @@ import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/Ap
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { EAction, EManageEpSettingsScope, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageEpSettingsCommon";
+import { DoLogoutAllUsers, EAction, EManageEpSettingsScope, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TAPEpSettingsDisplay_AllowedActions } from "../../../../displayServices/APEpSettingsDisplayService";
 import APSystemOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { ListEpSettings } from "./ListEpSettings";
@@ -24,6 +24,7 @@ import { DeleteEpSetting } from "./DeleteEpSetting";
 import { EUICommonResourcePaths, GlobalElementStyles } from "../../../../utils/Globals";
 import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";
 import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
+import { RunEpImporterJob } from "./RunEpImporterJob";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -82,19 +83,21 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const [showEditComponent, setShowEditComponent] = React.useState<boolean>(false);
   const [showDeleteComponent, setShowDeleteComponent] = React.useState<boolean>(false);
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
+  const [showRunComponent, setShowRunComponent] = React.useState<boolean>(false);
 
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-    const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-    const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
-    const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
-    /* eslint-enable @typescript-eslint/no-unused-vars */
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
+  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
+  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
   
   const history = useHistory();
 
   const navigateTo = (path: string): void => { history.push(path); }
 
   const doLogoutThisUser = async(organizationId: string) => {
+    if(!DoLogoutAllUsers) return;
     if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
       if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
         APContextsDisplayService.clear_LoginContexts({
@@ -202,6 +205,12 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   //   setBreadCrumbsRefreshCounter(breadCrumbsRefreshCounter + 1)
   // }
 
+  const onRunManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay): void => {
+    setApiCallStatus(null);
+    setManagedObjectEntityId(apEpSettingsDisplay.apEntityId);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_RUN);
+  }  
+
   //  * View Object *
   const onViewManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay): void => {
     setApiCallStatus(null);
@@ -285,12 +294,14 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   }
   
   // * prop callbacks *
-  // const onSetManageObjectComponentState_To_View = (apiEntityId: TAPEntityId) => {
-  //   setApiCallStatus(null);
-  //   setManagedObjectEntityId(apiEntityId);
-  //   setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
-  //   setRefreshCounter(refreshCounter + 1);
-  // }
+  const onRunImporterJobSuccess = (apiCallState: TApiCallState) => {
+    setApiCallStatus(null);
+    setPreviousComponentState();
+  }
+  const onRunImporterJobError = (apiCallState: TApiCallState) => {
+    setApiCallStatus(apiCallState);
+    setPreviousComponentState();
+  }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     setApiCallStatus(apiCallState);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -304,7 +315,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     setApiCallStatus(apiCallState);
     setManagedObjectEntityId(apEpSettingsDisplay.apEntityId);
     // always go to view the new entity
-    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
+    setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }
   const onEditSaveManagedObjectSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     setApiCallStatus(apiCallState);
@@ -336,6 +347,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if(componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW) {
       setShowListComponent(true);
@@ -343,6 +355,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW && 
               componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -351,6 +364,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if(  componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
       setShowListComponent(false);
@@ -358,6 +372,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(false)
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW && 
       componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_DELETE) {
@@ -366,6 +381,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(true);
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_EDIT) {
       setShowListComponent(false);
@@ -373,6 +389,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(true);
       setShowDeleteComponent(false);
       setShowNewComponent(false);
+      setShowRunComponent(false);
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_NEW) {
       setShowListComponent(false);
@@ -380,6 +397,16 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
       setShowEditComponent(false);
       setShowDeleteComponent(false);
       setShowNewComponent(true);
+      setShowRunComponent(false);
+    }
+    else if(  componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW &&
+              componentState.currentState === E_COMPONENT_STATE.MANAGED_OBJECT_RUN) {
+      setShowListComponent(true);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowRunComponent(true);
     }
     else {
       throw new Error(`${logName}: unknown state combination, componentState=${JSON.stringify(componentState, null, 2)}`);
@@ -400,9 +427,11 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
         <ListEpSettings
           key={`${ComponentName}_ListEpSettings_${refreshCounter}`}
           organizationId={props.organizationId}
+          scope={props.scope}
           onSuccess={onListManagedObjectsSuccess} 
           onError={onSubComponentError_Notification} 
           onManagedObjectView={onViewManagedObject}
+          onManagedObjectRun={onRunManagedObject}
         />
       }
       {showViewComponent && managedObjectEntityId &&
@@ -448,6 +477,15 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
           onEditSuccess={onEditSaveManagedObjectSuccess}
           onSuccessNotification={onSubComponentUserNotification}
           // setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
+        />
+      }
+      {showRunComponent && managedObjectEntityId &&
+        <RunEpImporterJob
+          organizationId={props.organizationId}
+          apEpSettingDisplayEntityId={managedObjectEntityId}
+          onError={onRunImporterJobError}
+          onSuccess={onRunImporterJobSuccess}
+          onLoadingChange={onLoadingChange}
         />
       }
     </div>

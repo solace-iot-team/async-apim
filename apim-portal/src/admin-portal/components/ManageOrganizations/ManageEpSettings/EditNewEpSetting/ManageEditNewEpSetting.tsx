@@ -7,7 +7,7 @@ import { APComponentHeader } from "../../../../../components/APComponentHeader/A
 import { ApiCallState, TApiCallState } from "../../../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../../utils/APEntityIdsService";
-import { E_CALL_STATE_ACTIONS, EAction } from "../ManageEpSettingsCommon";
+import { E_CALL_STATE_ACTIONS, EAction, DoLogoutAllUsers } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewEpSettingForm } from "./EditNewEpSettingForm";
 import { APClientConnectorOpenApi } from "../../../../../utils/APClientConnectorOpenApi";
@@ -71,7 +71,8 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     try {
       const created: IAPEpSettingsDisplay = await APEpSettingsDisplayService.apiCreate_ApEpSettingsDisplay({
        organizationId: props.organizationId,
-       apEpSettingsDisplay: createMo 
+       apEpSettingsDisplay: createMo,
+       doLogoutAllUsers: DoLogoutAllUsers
       });
       setManagedObject(created);
     } catch(e: any) {
@@ -89,8 +90,9 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     try {
       const updated: IAPEpSettingsDisplay = await APEpSettingsDisplayService.apiUpdate_ApEpSettingsDisplay({
         organizationId: props.organizationId,
-        apEpSettingsDisplay: updateMo
-       });
+        apEpSettingsDisplay: updateMo,
+        doLogoutAllUsers: DoLogoutAllUsers
+      });
       setManagedObject(updated);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -118,14 +120,14 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   }
 
   const doInitialize = async () => {
+    props.onLoadingChange(true);
+    await apiGetAPBusinessGroupTreeNodeDisplayList();
     if(props.action === EAction.EDIT) {
-      props.onLoadingChange(true);
-      await apiGetAPBusinessGroupTreeNodeDisplayList();
       await apiGetManagedObject();
-      props.onLoadingChange(false);
     } else {
       setManagedObject(APEpSettingsDisplayService.create_Empty_ApEpSettingsDisplay());
     }
+    props.onLoadingChange(false);
   }
 
   const onCreateSuccess = (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => {
@@ -199,7 +201,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     )
   }
 
-  const renderComponent = (mo: TManagedObject) => {
+  const renderComponent = () => {
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
@@ -230,7 +232,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
 
       {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
-      {managedObject && renderComponent(managedObject)}
+      {managedObject && apBusinessGroupTreeNodeDisplayList && renderComponent()}
 
     </div>
   );
