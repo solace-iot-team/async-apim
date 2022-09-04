@@ -260,15 +260,15 @@ class APSAuthStrategyService {
     };
   }
 
-  private generateBearerToken_For_Connector = ({ userId, organizationId, authConfig }:{
+  private generateBearerToken_For_Connector = ({ userId, organizationIdList, authConfig }:{
     userId: string;
-    organizationId?: string;
+    organizationIdList?: Array<string>;
     authConfig: TAuthConfigInternal;
   }): string => {
     const payload: TConnectorTokenPayload = {
       userId: userId,
       iat: Date.now(),
-      organization: organizationId ? [organizationId] : [],
+      organization: organizationIdList ? organizationIdList : [],
       roles: [EConnectorRoles.PLATFORM_ADMIN, EConnectorRoles.ORG_ADMIN]
     };
     const signOptions: jwt.SignOptions = {
@@ -289,10 +289,16 @@ class APSAuthStrategyService {
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    let organizationIdList: Array<string> = [];
+    if(apsSessionUser.memberOfOrganizations !== undefined) {
+      organizationIdList = apsSessionUser.memberOfOrganizations.map( (x) => {
+        return x.organizationId;
+      });
+    }
     return this.generateBearerToken_For_Connector({ 
       userId: apsSessionUser.userId,
       authConfig: authConfig,
-      organizationId: apsSessionUser.lastOrganizationId
+      organizationIdList: organizationIdList
     });
   }
 
