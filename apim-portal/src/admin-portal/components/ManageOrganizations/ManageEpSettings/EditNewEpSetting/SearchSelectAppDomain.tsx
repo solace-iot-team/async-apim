@@ -107,8 +107,6 @@ export const SearchSelectAppDomain: React.FC<ISearchSelectAppDomainProps> = (pro
   }
  
   const renderDataTableHeader = (): JSX.Element => {
-    const funcName = 'renderDataTableHeader';
-    const logName = `${ComponentName}.${funcName}()`;
     const isSaveDisabled: boolean = selectedManagedObject === undefined;
     return (
       <div className="table-header">
@@ -131,20 +129,6 @@ export const SearchSelectAppDomain: React.FC<ISearchSelectAppDomainProps> = (pro
     );
   }
 
-  // const onListSelectionChange = (event: any): void => {
-  //   const moList: TManagedObjectList = event.value;
-  //   if(APOrganizationsDisplayService.is_NumApis_Per_ApiProduct_Limited(organizationContext.apMaxNumApis_Per_ApiProduct)) {
-  //     if(moList.length > organizationContext.apMaxNumApis_Per_ApiProduct) setIsMaxExceeded(true);
-  //     else {
-  //       setIsMaxExceeded(false);
-  //       setSelectedManagedObjectList(event.value);
-  //     }
-  //   } else {
-  //     setIsMaxExceeded(false);
-  //     setSelectedManagedObjectList(event.value);
-  //   }
-  // }
-
   const onSelectionChange = (event: any): void => {
     setSelectedManagedObject(event.value);
   }
@@ -162,7 +146,6 @@ export const SearchSelectAppDomain: React.FC<ISearchSelectAppDomainProps> = (pro
     const dataKey = APDisplayUtils.nameOf<TManagedObject>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
     const filterField = APDisplayUtils.nameOf<TManagedObject>('apSearchContent');
-    // const businessGroupSortField = APDisplayUtils.nameOf<IAPApiDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');  
     const renderManagedObjectDataTableSingle = (): JSX.Element => {
       return (
         <div className="card p-mt-2">
@@ -190,9 +173,6 @@ export const SearchSelectAppDomain: React.FC<ISearchSelectAppDomainProps> = (pro
             sortOrder={1}
           >
             <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-            {/* <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable /> */}
-            {/* <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable /> */}
-            {/* <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} /> */}
           </DataTable>
         </div>
       );

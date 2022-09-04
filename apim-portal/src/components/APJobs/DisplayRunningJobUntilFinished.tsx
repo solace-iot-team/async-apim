@@ -34,7 +34,7 @@ export const DisplayRunningJobUntilFinished: React.FC<IDisplayRunningJobUntilFin
     setApiCallStatus(null);
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_JOB, `get job: ${props.jobId}`);
     try {
-      const apJobDisplay: IAPJobDisplay = await APJobsDisplayService.apiGet_Job({ 
+      const apJobDisplay: IAPJobDisplay = await APJobsDisplayService.apiGet_IAPJobDisplay({ 
         organizationId: props.organizationId,
         jobId: props.jobId
       });

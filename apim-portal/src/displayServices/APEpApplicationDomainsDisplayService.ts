@@ -15,6 +15,10 @@ const HardCoded_APIApplicationDomainList: Array<APIApplicationDomain> = [
   {
     id: "cgsh8nobngu",
     displayName: "integration/acme-retail"
+  },
+  {
+    id: '5aie6fukgys',
+    displayName: 'integration/bricks-and-mortar'
   }
 ];
 
@@ -25,8 +29,8 @@ class APEpApplicationDomainsDisplayService {
   private create_ApEpApplicationDomainDisplay_From_ApiEntities = ({ apiApplicationDomain }:{
     apiApplicationDomain: APIApplicationDomain
   }): IAPEpApplicationDomainDisplay => {
-    const funcName = 'create_ApEpApplicationDomainDisplay_From_ApiEntities';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApEpApplicationDomainDisplay_From_ApiEntities';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const apEpApplicationDomainDisplay: IAPEpApplicationDomainDisplay = {
       apEntityId: {
@@ -71,8 +75,8 @@ class APEpApplicationDomainsDisplayService {
     organizationId: string;
     applicationDomainId: string;
   }): Promise<IAPEpApplicationDomainDisplay | undefined> {
-    const funcName = 'apiGet_IAPEpApplicationDomainDisplay';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiGet_IAPEpApplicationDomainDisplay';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     // TODO: replace with api call

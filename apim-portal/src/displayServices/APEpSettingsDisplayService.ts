@@ -115,8 +115,8 @@ class APEpSettingsDisplayService {
   private create_ApRawAttributeList = ({ apEpSettings_Mapping }:{
     apEpSettings_Mapping: IApEpSettings_Mapping;
   }): TAPRawAttributeList => {
-    const funcName = 'create_ApRawAttributeList';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApRawAttributeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const apAttributeDisplayList: TAPAttributeDisplayList = [];
     // business group id
@@ -169,8 +169,8 @@ class APEpSettingsDisplayService {
     connectorImporterConfiguration: ImporterConfiguration;
     organizationId: string;
   }): Promise<IAPEpSettingsDisplay> => {
-    const funcName = 'create_ApEpSettingsDisplay_From_ApiEntities';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_ApEpSettingsDisplay_From_ApiEntities';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const apEpSettingsDisplay: IAPEpSettingsDisplay = {
       apEntityId: { id: connectorImporterConfiguration.name, displayName: connectorImporterConfiguration.displayName },
@@ -406,8 +406,8 @@ class APEpSettingsDisplayService {
     organizationId: string;
     id: string;
   }): Promise<SuccessResponse> {
-    const funcName = 'apiRun_ImportJob';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'apiRun_ImportJob';
+    // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const successResponse: SuccessResponse = await ManagementService.runImporterJob({ 

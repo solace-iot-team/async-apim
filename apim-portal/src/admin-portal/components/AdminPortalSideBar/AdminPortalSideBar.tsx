@@ -4,7 +4,6 @@ import { useHistory } from 'react-router-dom';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
@@ -13,7 +12,6 @@ import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../components/APComponents.css';
 
@@ -29,7 +27,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   const [userContext] = React.useContext(UserContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
   const [organizationContext] = React.useContext(OrganizationContext);
-  const [configContext] = React.useContext(ConfigContext);
 
   const navigateTo = (path: string): void => { history.push(path); }
 
@@ -50,19 +47,12 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if( healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ) return true;    
     return false;
   }
-  const isDisabledWithEventPortal_1 = (): boolean => {
-    return configContext.portalAppInfo?.eventPortalVersion !== About.EVENT_PORTAL_VERSION._2;
-  }
   
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts) &&
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
-      
-      // isDisabled(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps) &&       
-      // isDisabled(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis)
-
       ) return [];
 
     let _items: Array<MenuItem> = [
@@ -71,11 +61,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
       },
-      // {
-      //   label: 'DELETEME:APPs',
-      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps),
-      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps); }
-      // },
       {
         label: 'API Products',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
@@ -86,11 +71,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
       },
-      // {
-      //   label: 'APIs',
-      //   disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis),
-      //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis); }
-      // },
     ];
     return _items;
   }
@@ -158,15 +138,15 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationSettings); }
           },
-          // {
-          //   label: 'Event Portal 2.0',
-          //   disabled: isDisabledWithEventPortal_1() || isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationSettings),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationEP2Settings); }
-          // },
           {
             label: 'Status',
             disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationStatus),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationStatus); }
+          },
+          {
+            label: 'Jobs',
+            disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.MonitorOrganizationJobs),
+            command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationJobs); }
           },
           {
             label: 'Integration',
@@ -200,11 +180,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
             disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.ManageSystemOrganizations),
             command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageSystemOrganizations); }
           },
-          // {
-          //   label: 'DELETEME: Organizations',
-          //   disabled: isDisabledWithConnectorUnavailable(isDisabled, EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations),
-          //   command: () => { navigateTo(EUIAdminPortalResourcePaths.deleteme_ManageSystemOrganizations); }
-          // },
           {
             label: 'Setup',
             items: [

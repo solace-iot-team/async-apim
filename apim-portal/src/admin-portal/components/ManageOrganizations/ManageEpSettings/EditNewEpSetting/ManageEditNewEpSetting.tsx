@@ -5,7 +5,6 @@ import { Toolbar } from "primereact/toolbar";
 
 import { APComponentHeader } from "../../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../../../utils/ApiCallState";
-import { ApiCallStatusError } from "../../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId } from "../../../../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS, EAction, DoLogoutAllUsers } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../../displayServices/APEpSettingsDisplayService";
@@ -26,7 +25,6 @@ export interface IManageEditNewEpSettingProps {
   onEditSuccess?: (apiCallState: TApiCallState, apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   onCancel: () => void;
   onLoadingChange: (isLoading: boolean) => void;
-  // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
 export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (props: IManageEditNewEpSettingProps) => {
@@ -154,8 +152,6 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
  
   React.useEffect(() => {
-    const funcName = 'useEffect';
-    const logName = `${ComponentName}.${funcName}([apiCallStatus])`;
     if(apiCallStatus === null) return;
     if(!apiCallStatus.success) props.onError(apiCallStatus);
     else {
@@ -164,10 +160,6 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
       if(apiCallStatus.context.action === E_CALL_STATE_ACTIONS.API_UPDATE) onUpdateSuccess(apiCallStatus, managedObject);
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  const onError_SubComponent = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-  }
 
   const onSubmit_EditNew = async(apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     props.onLoadingChange(true);
@@ -229,8 +221,6 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     <div className="manage-organizations">
 
       <APComponentHeader header={getComponentHeader()} />
-
-      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       {managedObject && apBusinessGroupTreeNodeDisplayList && renderComponent()}
 

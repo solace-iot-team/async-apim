@@ -19,7 +19,7 @@ export interface IApiCallStatusErrorProps {
 }
 
 export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IApiCallStatusErrorProps) => {
-  const ComponentName = 'ApiCallStatusError';
+  // const ComponentName = 'ApiCallStatusError';
 
   const history = useHistory();
   const navigateHome = (): void => { history.push(EUICommonResourcePaths.Home); }

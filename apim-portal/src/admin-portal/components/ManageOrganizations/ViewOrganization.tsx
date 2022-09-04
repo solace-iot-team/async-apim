@@ -11,6 +11,7 @@ import APSystemOrganizationsDisplayService, { IAPSystemOrganizationDisplay } fro
 import APSingleOrganizationDisplayService, { IAPSingleOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { E_CALL_STATE_ACTIONS, E_DISPLAY_ORGANIZATION_SCOPE, E_ManageOrganizations_Scope, TManageOrganizationsScope } from "./ManageOrganizationsCommon";
 import { DisplayOrganization } from "./DisplayOrganization/DisplayOrganization";
+import { IAPOrganizationDisplay } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -23,6 +24,7 @@ export interface IViewOrganizationProps {
   onLoadingChange: (isLoading: boolean) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
   onNavigateHere: (organizationEntityId: TAPEntityId) => void;
+  onLoaded: (apOrganizationDisplay: IAPOrganizationDisplay) => void;
 }
 
 export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewOrganizationProps) => {
@@ -95,6 +97,7 @@ export const ViewOrganization: React.FC<IViewOrganizationProps> = (props: IViewO
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setBreadCrumbItemList(managedObject.apEntityId.displayName);
+    props.onLoaded(managedObject);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {

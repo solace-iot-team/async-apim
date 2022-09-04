@@ -103,10 +103,10 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
-  ManageOrganizationEP2Settings = '/admin-portal/manage/organization/ep2settings',
-  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
+  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
+  MonitorOrganizationJobs = '/admin-portal/monitor/organization/jobs',
 
   ManageOrganizationAssetMaintenance ='/admin-portal/manage/organization/asset_maintenance',
   ManageOrganizationAssetMaintenanceApiProducts = '/admin-portal/manage/organization/asset_maintenance/apiproducts',

@@ -2,7 +2,7 @@ import {
   Job,
   ManagementService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APDisplayUtils from './APDisplayUtils';
 
@@ -18,13 +18,13 @@ class APJobsDisplayService {
   private create_IAPJobsDisplay_From_ApiEntities = ({ connectorJob }:{
     connectorJob: Job;
   }): IAPJobDisplay => {
-    const funcName = 'create_IAPJobsDisplay_From_ApiEntities';
-    const logName = `${this.ComponentName}.${funcName}()`;
+    // const funcName = 'create_IAPJobsDisplay_From_ApiEntities';
+    // const logName = `${this.ComponentName}.${funcName}()`;
 
     const apJobsDisplay: IAPJobDisplay = {
       apEntityId: {
         id: connectorJob.id,
-        displayName: connectorJob.id
+        displayName: connectorJob.name
       },
       connectorJob: connectorJob,
       status: connectorJob.status ? connectorJob.status : Job.status.PENDING,
@@ -37,11 +37,41 @@ class APJobsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
-  public async apiGet_Job({ organizationId, jobId }: {
+  public async apiGetList_TAPJobDisplayList({ organizationId }:{
+    organizationId: string;
+  }): Promise<TAPJobDisplayList> {
+    // const funcName = 'apiGetList_TAPJobDisplayList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+    // throw new Error(`${logName}: test error handling`);
+
+    const connectorJobList: Array<Job> = [];
+    let nextPage: number | null = 1;
+    while(nextPage !== null) {
+      const _jobList: Array<Job> = await ManagementService.listJobs({
+        organizationName: organizationId,
+        pageSize: 100,
+        pageNumber: nextPage,
+        sortDirection: "desc",
+        sortFieldName: APDisplayUtils.nameOf<Job>('lastRunAt')
+      });
+      connectorJobList.push(..._jobList);
+      if(_jobList.length === 0) nextPage = null;
+      else nextPage++;
+    }
+    const list: TAPJobDisplayList = [];
+    for(const connectorJob of connectorJobList) {
+      list.push(this.create_IAPJobsDisplay_From_ApiEntities({
+        connectorJob: connectorJob
+      }));
+    }
+    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
+  }
+
+  public async apiGet_IAPJobDisplay({ organizationId, jobId }: {
     organizationId: string;
     jobId: string;
   }): Promise<IAPJobDisplay> {
-    const funcName = 'apiGet_Job';
+    const funcName = 'apiGet_IAPJobDisplay';
     const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 

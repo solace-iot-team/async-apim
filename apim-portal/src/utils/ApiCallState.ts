@@ -53,8 +53,8 @@ export class ApiCallState {
   }
 
   public static getUserErrorMessageFromApiCallState = (apiCallStatus: TApiCallState): string => {
-    const funcName = 'getUserErrorMessageFromApiCallState';
-    const logName = `${ApiCallState.name}.${funcName}()`;
+    // const funcName = 'getUserErrorMessageFromApiCallState';
+    // const logName = `${ApiCallState.name}.${funcName}()`;
     // console.log(`${logName}: apiCallStatus=${JSON.stringify(apiCallStatus, null, 2)}`);
     if(apiCallStatus.success) return '';
     if(apiCallStatus.isAPSApiError && apiCallStatus.error) {
@@ -110,8 +110,8 @@ export class ApiCallState {
       return userMessage;
     }
     if(apiCallStatus.error) {
-      console.log(`${logName}: typeof apiCallStatus.error = ${typeof apiCallStatus.error}`);
-      console.log(`${logName}: apiCallStatus.error instanceof Error = ${apiCallStatus.error instanceof Error}`);
+      // console.log(`${logName}: typeof apiCallStatus.error = ${typeof apiCallStatus.error}`);
+      // console.log(`${logName}: apiCallStatus.error instanceof Error = ${apiCallStatus.error instanceof Error}`);
       // check if it is a Failed to Fetch error
       if(typeof apiCallStatus.error === 'object') {
         const err: any = apiCallStatus.error;

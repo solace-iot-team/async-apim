@@ -34,6 +34,8 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { ManageSystemOrganizationUsers } from "./ManageSystemOrganizationUsers/ManageSystemOrganizationUsers";
 import { MonitorOrganization } from "./MonitorOrganization";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
+import { MonitorOrganizationJobs } from "../MonitorOrganizationJobs/MonitorOrganizationJobs";
+import APOrganizationsDisplayService, { IAPOrganizationDisplay, TAPOrganizationDisplay_AllowedActions } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
@@ -73,6 +75,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const ToolbarEditManagedObjectButtonLabel = 'Edit';
   const ToolbarDeleteManagedObjectButtonLabel = 'Delete';
   const ToolbarManagedOrganizationUsersButtonLabel = 'Manage Users';
+  const ToolbarManagedOrganizationJobsButtonLabel = 'Jobs';
   const ToolbarImportOrganizationsButtonLabel = 'Import Organizations';
 
   const [componentState, setComponentState] = React.useState<TComponentState>(initialComponentState);
@@ -80,7 +83,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const [managedObjectEntityId, setManagedObjectEntityId] = React.useState<TAPEntityId>();
-
+  const [allowedActions, setAllowedActions] = React.useState<TAPOrganizationDisplay_AllowedActions>(APOrganizationsDisplayService.get_Empty_AllowedActions());
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
@@ -90,6 +93,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showMonitorComponent, setShowMonitorComponent] = React.useState<boolean>(false);
   const [showManageOrganizationUsersComponent, setShowManageOrganizationUsersComponent] = React.useState<boolean>(false);
+  const [showMonitorOrganizationJobsComponent, setShowMonitorOrganizationJobsComponent] = React.useState<boolean>(false);
   const [showManageImportOrganizationsComponent, setShowManageImportOrganizationsComponent] = React.useState<boolean>(false);
   const [showImportEditComponent, setShowImportEditComponent] = React.useState<boolean>(false);
 
@@ -103,7 +107,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   /* eslint-enable @typescript-eslint/no-unused-vars */
   
   const history = useHistory();
-
   const navigateTo = (path: string): void => { history.push(path); }
 
   const doLogoutThisUser = async(organizationId: string) => {
@@ -119,7 +122,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       }
     }
   }
-
+  
   // * useEffect Hooks *
   React.useEffect(() => {
     const funcName = 'useEffect([])';
@@ -166,15 +169,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   //  * View Object *
-  const onViewManagedObject = (organizationEntityId: TAPEntityId): void => {
+  const onViewManagedObject = (apOrganizationDisplayEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
-    setManagedObjectEntityId(organizationEntityId);
-    // setIsManagedObjectDeleteAllowed(APAdminPortalApiProductsDisplayService.get_IsDeleteAllowed({
-    //   apApiProductDisplay: apAdminPortalApiProductDisplay
-    // }));
+    setManagedObjectEntityId(apOrganizationDisplayEntityId);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  
-
+  const onManagedObjectLoaded = (apOrganizationDisplay: IAPOrganizationDisplay): void => {
+    setAllowedActions(APOrganizationsDisplayService.get_AllowedActions({ apOrganizationDisplay: apOrganizationDisplay }));
+  }
   //  * Monitor Object *
   const onMonitorManagedObject = (organizationEntityId: TAPEntityId): void => {
     setApiCallStatus(null);
@@ -201,17 +203,16 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGE_ORGANIZATION_USERS);
   }
+  // * Organization Jobs *
+  const onManageOrganizationJobsFromToolbar = () => {
+    setApiCallStatus(null);
+    setNewComponentState(E_COMPONENT_STATE.MONITOR_ORGANIZATION_JOBS);
+  }
   // * Import Organizations *
   const onImportOrganizationsFromToolbar = () => {
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS);
   }
-  // const onSetManageUsersComponentState = (manageUsersComponentState: E_COMPONENT_STATE, organizationEntityId: TAPEntityId) => {
-  //   setManagedObjectId(organizationEntityId.id);
-  //   setManagedObjectDisplayName(organizationEntityId.displayName);
-  //   setNewComponentState(manageUsersComponentState);
-  //   setRefreshCounter(refreshCounter + 1);
-  // }
 
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
@@ -232,6 +233,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
               <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
               <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
               <Button label={ToolbarManagedOrganizationUsersButtonLabel} onClick={onManageOrganizationUsersFromToolbar} className="p-button-text p-button-plain p-button-outlined"/>        
+              <Button label={ToolbarManagedOrganizationJobsButtonLabel} onClick={onManageOrganizationJobsFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!allowedActions.isJobListingAllowed} />        
             </React.Fragment>
           );    
         case E_ManageOrganizations_Scope.ORG_SETTINGS:
@@ -300,6 +302,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
     props.setBreadCrumbItemList(newItemList);
   }
+
   const onSetManageObjectComponentState_To_View = (organizationEntityId: TAPEntityId) => {
     setApiCallStatus(null);
     setManagedObjectEntityId(organizationEntityId);
@@ -310,12 +313,6 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
     setRefreshCounter(refreshCounter + 1);
     setNewComponentState(E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS);
   }
-  
-  // const onSetManageObjectComponentState_From_Edit = (organizationEntityId: TAPEntityId) => {
-  //   if(componentState.previousState === E_COMPONENT_STATE.MANAGED_OBJECT_VIEW) {
-
-  //   } else if(componentState.previousState === E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS)
-  // }
   const onListManagedObjectsSuccess = (apiCallState: TApiCallState) => {
     // setApiCallStatus(apiCallState);
   }  
@@ -374,6 +371,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -385,6 +383,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -396,6 +395,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -407,6 +407,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -418,6 +419,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(true);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -430,6 +432,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -441,6 +444,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(true);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
     }
@@ -452,8 +456,31 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(true);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(false);
+    }
+    else if( componentState.currentState === E_COMPONENT_STATE.MONITOR_ORGANIZATION_JOBS) {
+      setShowListComponent(false);
+      setShowViewComponent(false);
+      setShowEditComponent(false);
+      setShowDeleteComponent(false);
+      setShowNewComponent(false);
+      setShowMonitorComponent(false);
+      setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(true);
+      setShowManageImportOrganizationsComponent(false);
+      setShowImportEditComponent(false);
+
+      const breadcrumbItems: Array<MenuItem> = [
+        { 
+          label: 'Jobs',
+          // command: () => { navigateTo(EUIAdminPortalResourcePaths.MonitorOrganizationJobs) }
+          command: () => { alert('refresh list jobs again') }
+        }
+      ];
+      onSubComponentAddBreadCrumbItemList(breadcrumbItems)
+  
     }
     else if( componentState.currentState === E_COMPONENT_STATE.MANAGE_IMPORT_ORGANIZATIONS) {
       setShowListComponent(false);
@@ -463,6 +490,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(true);
       setShowImportEditComponent(false);
     }
@@ -474,6 +502,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
       setShowNewComponent(false);
       setShowMonitorComponent(false);
       setShowManageOrganizationUsersComponent(false);
+      setShowMonitorOrganizationJobsComponent(false);
       setShowManageImportOrganizationsComponent(false);
       setShowImportEditComponent(true);
     }
@@ -513,6 +542,7 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onLoadingChange={setIsLoading}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onNavigateHere={onSetManageObjectComponentState_To_View}
+          onLoaded={onManagedObjectLoaded}
         />      
       }
       {showDeleteComponent && managedObjectEntityId &&
@@ -562,7 +592,14 @@ export const ManageOrganizations: React.FC<IManageOrganizationsProps> = (props: 
           onLoadingChange={setIsLoading}
           onSuccess={props.onSuccess}
           setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
-          // onNavigateHere={onSetManageUsersComponentState}
+        />
+      }
+      {showMonitorOrganizationJobsComponent && managedObjectEntityId &&
+        <MonitorOrganizationJobs
+          organizationId={managedObjectEntityId.id}
+          onError={onSubComponentError_Notification} 
+          onSuccess={props.onSuccess}
+          setBreadCrumbItemList={onSubComponentAddBreadCrumbItemList}
         />
       }
       {showManageImportOrganizationsComponent && 

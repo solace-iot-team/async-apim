@@ -75,8 +75,8 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPEpSettingsDisplay_AllowedActions>(APEpSettingsDisplayService.get_Empty_AllowedActions());
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-  const [breadCrumbsRefreshCounter, setBreadCrumbsRefreshCounter] = React.useState<number>(0);
+  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
+  // const [breadCrumbsRefreshCounter, setBreadCrumbsRefreshCounter] = React.useState<number>(0);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -125,16 +125,16 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
         command: () => { setListView() }
       }
     ];
-    breadCrumbItemList.forEach( (item: MenuItem) => {
-      breadcrumbItems.push({
-        ...item,
-        style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
-      });
-    });
+    // breadCrumbItemList.forEach( (item: MenuItem) => {
+    //   breadcrumbItems.push({
+    //     ...item,
+    //     style: (item.command ? GlobalElementStyles.breadcrumbLink() : {})
+    //   });
+    // });
     return (
       <React.Fragment>
         <BreadCrumb 
-          key={`${ComponentName}_Breadcrumbs_${breadCrumbsRefreshCounter}`}
+          // key={`${ComponentName}_Breadcrumbs_${breadCrumbsRefreshCounter}`}
           model={breadcrumbItems} 
         />
       </React.Fragment>

@@ -15,7 +15,7 @@ import APEpSettingsDisplayService, { IApEpSettings_Mapping, TApEpSettings_Mappin
 import APEntityIdsService from "../../../../../utils/APEntityIdsService";
 import APDisplayUtils from "../../../../../displayServices/APDisplayUtils";
 import { ManageSelectAppDomain } from "./ManageSelectAppDomain";
-import { IAPEpApplicationDomainDisplay, TAPEpApplicationDomainDisplayList } from "../../../../../displayServices/APEpApplicationDomainsDisplayService";
+import { IAPEpApplicationDomainDisplay } from "../../../../../displayServices/APEpApplicationDomainsDisplayService";
 import { TApiCallState } from "../../../../../utils/ApiCallState";
 
 import '../../../../../components/APComponents.css';
