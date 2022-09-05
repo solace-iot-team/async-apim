@@ -17,7 +17,11 @@ import {
 import APAdminPortalApiProductsDisplayService from "../../../../displayServices/APAdminPortalApiProductsDisplayService";
 import APEntityIdsService from "../../../../../utils/APEntityIdsService";
 import APDisplayUtils from "../../../../../displayServices/APDisplayUtils";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupTreeNodeDisplayList, TAPBusinessGroupTreeNodeDisplay } from "../../../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { 
+  TAPBusinessGroupTreeNodeDisplayList, 
+  TAPBusinessGroupTreeNodeDisplay, 
+  TAPBusinessGroupDisplayList 
+} from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -25,7 +29,7 @@ import "../../ManageOrganizations.css";
 export interface IEditNewBusinessGroupSharingListFormProps {
   uniqueKeyPrefix: string; /** provide a unique prefix for the formId and button keys so component can be used multiple times on same parent component with different formIds */
   apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
-  apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList; /** complete list to start with */
+  apBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   apExcludeBusinessGroupIdList: Array<string>; /** list of business group ids to exclude from selectable list, used for excluding owning business group id */
   onChange: (apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList) => void; /** called every time the list has changed */
 }
@@ -81,15 +85,21 @@ export const EditNewBusinessGroupSharingListForm: React.FC<IEditNewBusinessGroup
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   const doSetApBusinessGroupTreeNodeDisplayList = (apExcludeBusinessGroupIdList: Array<string>) => {
-
-    // TODO: APBusinessGroupsDisplayService.createTreeTableWithExcludeGroups ...
-
-    // take a copy for now
-    const filteredList = JSON.parse(JSON.stringify(props.apBusinessGroupTreeNodeDisplayList));
-    setApBusinessGroupTreeNodeDisplayList(filteredList);
+    // remove the passed through exclude list from the managed object list
     apExcludeBusinessGroupIdList.forEach( (x) => {
       doRemoveManagedObjectId_From_ManagedObjectList(x);
     });
+    // calculate the full exclude list
+    const inSharingList: Array<string> = props.apManagedAssetDisplay_BusinessGroupSharingList.map( (x) => {
+      return x.apEntityId.id;
+    });
+    const fullExcludeList = props.apExcludeBusinessGroupIdList.concat(inSharingList);
+    // re-generate the selection list for business groups
+    const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList({
+      referenceApBusinessGroupDisplayList: props.apBusinessGroupDisplayList,
+      excludeAccess_To_BusinessGroupIdList: fullExcludeList,
+    });
+    setApBusinessGroupTreeNodeDisplayList(apBusinessGroupTreeNodeDisplayList);        
   }
 
   React.useEffect(() => {
@@ -127,12 +137,13 @@ export const EditNewBusinessGroupSharingListForm: React.FC<IEditNewBusinessGroup
   const doAddManagedObject = (mo: TManagedObject) => {
     const funcName = 'doAddManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
-
+    if(apBusinessGroupTreeNodeDisplayList === undefined) throw new Error(`${logName}: apBusinessGroupTreeNodeDisplayList === undefined`);
+    
     setManagedObject(EmptyManagedObject);
 
     // find the businessGroupDisplay by id to get the displayName
     const apBusinessGroupTreeNodeDisplay: TAPBusinessGroupTreeNodeDisplay | undefined = APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_From_ApBusinessGroupDisplayTreeNodeList({ 
-      apBusinessGroupTreeNodeDisplayList: props.apBusinessGroupTreeNodeDisplayList,
+      apBusinessGroupTreeNodeDisplayList: apBusinessGroupTreeNodeDisplayList,
       businessGroupId: mo.apEntityId.id 
     });
     if(apBusinessGroupTreeNodeDisplay === undefined) throw new Error(`${logName}: apBusinessGroupTreeNodeDisplay === undefined`);
@@ -301,7 +312,7 @@ export const EditNewBusinessGroupSharingListForm: React.FC<IEditNewBusinessGroup
 
   return(
     <React.Fragment>
-      { managedObjectFormDataEnvelope && renderComponent() }
+      { managedObjectFormDataEnvelope && apBusinessGroupTreeNodeDisplayList && renderComponent() }
     </React.Fragment>
   );
 }

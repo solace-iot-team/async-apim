@@ -13,7 +13,7 @@ import { EAction, E_CALL_STATE_ACTIONS } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewApplicationDomainMappingForm } from "./EditNewApplicationDomainMappingForm";
 import { Globals } from "../../../../../utils/Globals";
-import { TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
+import { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -24,9 +24,9 @@ export interface IEditNewEpSettingFormProps {
   apEpSettingsDisplay: IAPEpSettingsDisplay;
   formId: string;
   apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
+  apBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   onSubmit: (apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
   onError: (apiCallState: TApiCallState) => void;
-  // onLoadingChange: (isLoading: boolean) => void;
 }
 
 export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props: IEditNewEpSettingFormProps) => {
@@ -241,6 +241,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
               organizationId={props.organizationId}
               uniqueFormKeyPrefix={uniqueKey_Mappings}
               apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
+              apBusinessGroupDisplayList={props.apBusinessGroupDisplayList}
               apEpSettings_MappingList={managedObjectFormDataEnvelope.extFormData.apEpSettings_MappingList}
               onChange={onChange_ApEpSettings_MappingList}
               onError={props.onError}

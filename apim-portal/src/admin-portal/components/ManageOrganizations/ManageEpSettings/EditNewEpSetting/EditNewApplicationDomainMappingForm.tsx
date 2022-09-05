@@ -9,7 +9,7 @@ import { Column } from "primereact/column";
 import { TreeSelect } from "primereact/treeselect";
 import { InputText } from "primereact/inputtext";
 
-import APBusinessGroupsDisplayService, { TAPBusinessGroupTreeNodeDisplay, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplay, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 import APEpSettingsDisplayService, { IApEpSettings_Mapping, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
 import APEntityIdsService, { TAPEntityIdList } from "../../../../../utils/APEntityIdsService";
 import APDisplayUtils from "../../../../../displayServices/APDisplayUtils";
@@ -27,6 +27,7 @@ export interface IEditNewApplicationDomainMappingFormProps {
   uniqueFormKeyPrefix: string; /** provide a unique prefix for the formId and button keys so component can be used multiple times on same parent component with different formIds */
   apEpSettings_MappingList: TApEpSettings_MappingList;
   apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
+  apBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
   onChange: (apEpSettings_MappingList: TApEpSettings_MappingList) => void; /** called every time the list has changed */
   onError: (apiCallState: TApiCallState) => void;
 }
@@ -139,27 +140,10 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   const managedObjectDataTableRef = React.useRef<any>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
-  // const doSetApMemberOfBusinessGroupTreeTableNodeList = (apExcludeBusinessGroupIdList: Array<string>) => {
-  //   setApMemberOfBusinessGroupTreeTableNodeList(APMemberOfService.create_ApMemberOfBusinessGroupTreeTableNodeList_From_ApMemberOfBusinessGroupDisplayTreeNodeList({
-  //     apMemberOfBusinessGroupDisplayTreeNodeList: props.apMemberOfBusinessGroupDisplayTreeNodeList,
-  //     includeBusinessGroupIsSelectable: true,
-  //     accessOnly_To_BusinessGroupManageAssets: true,
-  //     excludeAccess_To_BusinessGroupIdList: props.apExcludeBusinessGroupIdList
-  //   }));
-  //   apExcludeBusinessGroupIdList.forEach( (x) => {
-  //     doRemoveManagedObjectId_From_ManagedObjectList(x);
-  //   });
-  // }
-
   React.useEffect(() => {
     setManagedObject(EmptyManagedObject);
-    // doSetApMemberOfBusinessGroupTreeTableNodeList(props.apExcludeBusinessGroupIdList);
     managedObjectUseForm.clearErrors();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   doSetApMemberOfBusinessGroupTreeTableNodeList(props.apExcludeBusinessGroupIdList);
-  // }, [props.apExcludeBusinessGroupIdList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
@@ -338,15 +322,6 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     return true;
   }
 
-  // const renderAppDomainToolbar = () => {
-  //   let jsxButtonList: Array<JSX.Element> = [
-  //     <Button style={ { width: '20rem' } } type="button" label={ButtonLabel_SelectAppDomain} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSelectAppDomain()} />,
-  //   ];
-  //   return (
-  //     <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
-  //   );
-  // }
-
   const renderManageAppDomainSelection = () => {
     const funcName = 'renderManageAppDomainSelection';
     const logName = `${ComponentName}.${funcName}()`;
@@ -439,25 +414,19 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
       apManagedAssetDisplay_BusinessGroupSharingList: apManagedAssetDisplay_BusinessGroupSharingList,
     }));
     // exclude the chosen ones from the list
-    alert(`${ComponentName}.onChange_EditNewBusinessGroupSharingList(): exclude chosen sharing & owning from business group select list???`)
-      //   apExcludeBusinessGroupIdList.forEach( (x) => {
-  //     doRemoveManagedObjectId_From_ManagedObjectList(x);
-  //   });
-
+    // alert(`${ComponentName}.onChange_EditNewBusinessGroupSharingList(): exclude chosen sharing & owning from business group select list???`);
   }
 
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
-    // if(apMemberOfBusinessGroupTreeTableNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList === undefined`);
-    // if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     const uniqueKey_EditNewBusinessGroupSharingListForm = ComponentName+'_EditNewBusinessGroupSharingListForm';
 
     const _owningBusinessGroupId: string | undefined = managedObjectUseForm.watch('useFormData.owningBusinessGroupId');
     // catch the first render
     const owningBusinessGroupId: string | undefined = _owningBusinessGroupId === undefined ? managedObjectFormDataEnvelope.useFormData.owningBusinessGroupId : _owningBusinessGroupId;
-  
+    
     return (
       <div className="card p-mt-2">
         {/* DEBUG */}
@@ -479,7 +448,7 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
                 key={uniqueKey_EditNewBusinessGroupSharingListForm}
                 uniqueKeyPrefix={uniqueKey_EditNewBusinessGroupSharingListForm}
                 apManagedAssetDisplay_BusinessGroupSharingList={managedObjectFormDataEnvelope.extFormData.businessGroupSharingList}
-                apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
+                apBusinessGroupDisplayList={props.apBusinessGroupDisplayList}
                 apExcludeBusinessGroupIdList={owningBusinessGroupId === undefined ? [] : [owningBusinessGroupId]}
                 onChange={onChange_EditNewBusinessGroupSharingList}
               />

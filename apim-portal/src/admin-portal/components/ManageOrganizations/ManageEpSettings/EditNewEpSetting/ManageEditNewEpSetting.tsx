@@ -10,7 +10,7 @@ import { E_CALL_STATE_ACTIONS, EAction, DoLogoutAllUsers } from "../ManageEpSett
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewEpSettingForm } from "./EditNewEpSettingForm";
 import { APClientConnectorOpenApi } from "../../../../../utils/APClientConnectorOpenApi";
-import APBusinessGroupsDisplayService, { TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
+import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -38,6 +38,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   const FormId = `ManageOrganizations_EditNewOrganization_${ComponentName}`;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
+  const [apBusinessGroupDisplayList, setApBusinessGroupDisplayList] = React.useState<TAPBusinessGroupDisplayList>();
   const [apBusinessGroupTreeNodeDisplayList, setApBusinessGroupTreeNodeDisplayList] = React.useState<TAPBusinessGroupTreeNodeDisplayList>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
@@ -100,15 +101,15 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     return callState;  
   }
 
-  const apiGetAPBusinessGroupTreeNodeDisplayList = async(): Promise<TApiCallState> => {
-    const funcName = 'apiGetAPBusinessGroupTreeNodeDisplayList';
+  const apiGet_TAPBusinessGroupDisplayList = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGet_TAPBusinessGroupDisplayList';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_BUSINESS_GROUP_TREE_LIST, 'get business group info');
     try {
-      const apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList = await APBusinessGroupsDisplayService.apsGetList_TAPBusinessGroupTreeNodeDisplayList({
+      const apBusinessGroupDisplayList: TAPBusinessGroupDisplayList = await APBusinessGroupsDisplayService.apsGetList_ApBusinessGroupSystemDisplayList({
         organizationId: props.organizationId
       });
-      setApBusinessGroupTreeNodeDisplayList(apBusinessGroupTreeNodeDisplayList);
+      setApBusinessGroupDisplayList(apBusinessGroupDisplayList);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -119,7 +120,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
 
   const doInitialize = async () => {
     props.onLoadingChange(true);
-    await apiGetAPBusinessGroupTreeNodeDisplayList();
+    await apiGet_TAPBusinessGroupDisplayList();
     if(props.action === EAction.EDIT) {
       await apiGetManagedObject();
     } else {
@@ -145,12 +146,17 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   // * useEffect Hooks *
 
   React.useEffect(() => {
-    // props.setBreadCrumbItemList([{
-    //   label: 'New Organization'
-    // }]);
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
- 
+
+  React.useEffect(() => {
+    if(apBusinessGroupDisplayList === undefined) return;
+    setApBusinessGroupTreeNodeDisplayList(APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList({
+      referenceApBusinessGroupDisplayList: apBusinessGroupDisplayList,
+      excludeAccess_To_BusinessGroupIdList: [],
+    }));
+  }, [apBusinessGroupDisplayList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   React.useEffect(() => {
     if(apiCallStatus === null) return;
     if(!apiCallStatus.success) props.onError(apiCallStatus);
@@ -197,6 +203,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
     const funcName = 'renderComponent';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
+    if(apBusinessGroupDisplayList === undefined) throw new Error(`${logName}: apBusinessGroupDisplayList === undefined`);
     if(apBusinessGroupTreeNodeDisplayList === undefined) throw new Error(`${logName}: apBusinessGroupTreeNodeDisplayList === undefined`);
     return (      
         <div className="card p-mt-4">
@@ -205,6 +212,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
             organizationId={props.organizationId}
             apEpSettingsDisplay={managedObject}
             apBusinessGroupTreeNodeDisplayList={apBusinessGroupTreeNodeDisplayList}
+            apBusinessGroupDisplayList={apBusinessGroupDisplayList}
             formId={FormId}
             onSubmit={onSubmit_EditNew}
             onError={props.onError}
@@ -222,7 +230,7 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
 
       <APComponentHeader header={getComponentHeader()} />
 
-      {managedObject && apBusinessGroupTreeNodeDisplayList && renderComponent()}
+      {managedObject && apBusinessGroupDisplayList && apBusinessGroupTreeNodeDisplayList && renderComponent()}
 
     </div>
   );

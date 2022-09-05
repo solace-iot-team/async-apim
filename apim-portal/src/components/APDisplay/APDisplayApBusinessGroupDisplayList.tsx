@@ -21,7 +21,10 @@ export interface IAPDisplayApBusinessGroupDisplayListProps {
 export const APDisplayApBusinessGroupDisplayList: React.FC<IAPDisplayApBusinessGroupDisplayListProps> = (props: IAPDisplayApBusinessGroupDisplayListProps) => {
   // const componentName='APDisplayApBusinessGroupDisplayList';
 
-  const [treeTableNodeList] = React.useState<TAPBusinessGroupTreeNodeDisplayList>(APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(props.apBusinessGroupDisplayList));
+  const [treeTableNodeList] = React.useState<TAPBusinessGroupTreeNodeDisplayList>(APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList({
+    referenceApBusinessGroupDisplayList: props.apBusinessGroupDisplayList,
+    excludeAccess_To_BusinessGroupIdList: [],
+  }));
   const [expandedKeys, setExpandedKeys] = React.useState<TAPTreeTableExpandedKeysType>({});
 
  
