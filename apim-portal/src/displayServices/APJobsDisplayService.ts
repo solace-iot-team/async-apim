@@ -6,6 +6,12 @@ import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsServ
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APDisplayUtils from './APDisplayUtils';
 
+// should be defined in API
+enum E_APJobDisplay_JobNames {
+  EVENT_PORTAL_IMPORTER = "EventPortalImporter",
+  ROTATE_APP_CREDENTIALS = "rotateAppCredentials"
+};
+
 export interface IAPJobDisplay extends IAPEntityIdDisplay, IAPSearchContent {
   connectorJob: Job;
   status: Job.status;
@@ -15,6 +21,9 @@ export type TAPJobDisplayList = Array<IAPJobDisplay>;
 class APJobsDisplayService {
   private readonly ComponentName = "APJobsDisplayService";
 
+  public get_APJobDisplay_JobNames = (): Array<string> => {
+    return Object.values(E_APJobDisplay_JobNames);
+  }
   private create_IAPJobsDisplay_From_ApiEntities = ({ connectorJob }:{
     connectorJob: Job;
   }): IAPJobDisplay => {
@@ -37,8 +46,9 @@ class APJobsDisplayService {
   // API calls
   // ********************************************************************************************************************************
 
-  public async apiGetList_TAPJobDisplayList({ organizationId }:{
+  public async apiGetList_TAPJobDisplayList({ organizationId, jobNameFilterList }:{
     organizationId: string;
+    jobNameFilterList: Array<string>;
   }): Promise<TAPJobDisplayList> {
     // const funcName = 'apiGetList_TAPJobDisplayList';
     // const logName = `${this.ComponentName}.${funcName}()`;
@@ -60,9 +70,20 @@ class APJobsDisplayService {
     }
     const list: TAPJobDisplayList = [];
     for(const connectorJob of connectorJobList) {
-      list.push(this.create_IAPJobsDisplay_From_ApiEntities({
-        connectorJob: connectorJob
-      }));
+      if(jobNameFilterList.length > 0) {
+        const found = jobNameFilterList.find( (x) => {
+          return x === connectorJob.name;
+        });
+        if(found) {
+          list.push(this.create_IAPJobsDisplay_From_ApiEntities({
+            connectorJob: connectorJob
+          }));    
+        }
+      } else {
+        list.push(this.create_IAPJobsDisplay_From_ApiEntities({
+          connectorJob: connectorJob
+        }));  
+      }
     }
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
   }

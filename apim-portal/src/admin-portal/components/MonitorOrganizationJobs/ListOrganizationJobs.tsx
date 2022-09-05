@@ -5,6 +5,7 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { MenuItem, MenuItemCommandParams } from "primereact/api";
+import { MultiSelect } from "primereact/multiselect";
 
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
@@ -36,6 +37,7 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
   type TManagedObjectList = Array<TManagedObject>;
 
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
+  const [jobNameFilterList, setJobNameFilterList] = React.useState<Array<string>>([]);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -48,7 +50,10 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_LIST, 'retrieve list of jobs');
     try { 
-      const list: TManagedObjectList = await APJobsDisplayService.apiGetList_TAPJobDisplayList({ organizationId: props.organizationId });
+      const list: TManagedObjectList = await APJobsDisplayService.apiGetList_TAPJobDisplayList({ 
+        organizationId: props.organizationId,
+        jobNameFilterList: jobNameFilterList
+      });
       setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -76,6 +81,13 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
     props.onLoadingChange(false);
   }
 
+  const reInitialize = async () => {
+    setIsInitialized(false);
+    props.onLoadingChange(true);
+    await apiGetManagedObjectList();
+    props.onLoadingChange(false);
+  }
+
   React.useEffect(() => {
     // props.setBreadCrumbItemList([]);
     setBreadCrumbItemList();
@@ -92,6 +104,11 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
     if(!apiCallStatus.success) props.onError(apiCallStatus);
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    reInitialize();
+  }, [jobNameFilterList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
   }  
@@ -105,11 +122,28 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
     setGlobalFilter(event.currentTarget.value);
   }
  
+  const renderFilter = () => {
+    return(
+      <div>
+        <span>Filter: </span>
+        <MultiSelect
+          display="chip"
+          value={jobNameFilterList ? jobNameFilterList : []} 
+          options={APJobsDisplayService.get_APJobDisplay_JobNames()} 
+          onChange={(e) => setJobNameFilterList(e.value)}
+          // optionLabel={APEntityIdsService.nameOf('displayName')}
+          // optionValue={APEntityIdsService.nameOf('id')}
+          // style={{width: '100px'}} 
+        />
+      </div>
+    );
+  }
+
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
         <div className="table-header-container">
-          {/* {getSelectButton()} */}
+          {renderFilter()}
         </div> 
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
