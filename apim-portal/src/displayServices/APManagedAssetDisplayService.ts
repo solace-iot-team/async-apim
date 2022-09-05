@@ -156,7 +156,7 @@ export abstract class APManagedAssetDisplayService {
     return apManagedAssetDisplay;
   }
 
-  private parse_BusinessGroupSharingListString(attributeValue: string): TAPManagedAssetDisplay_BusinessGroupSharingList {
+  public parse_BusinessGroupSharingListString(attributeValue: string): TAPManagedAssetDisplay_BusinessGroupSharingList {
     const funcName = 'parse_BusinessGroupSharingListString';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
@@ -178,7 +178,7 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  protected create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
+  public create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
     return JSON.stringify(apManagedAssetDisplay_BusinessGroupSharingList);
   }
 

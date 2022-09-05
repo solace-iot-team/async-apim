@@ -13,7 +13,7 @@ import APSearchContentService, { IAPSearchContent } from '../utils/APSearchConte
 import APApisDisplayService from './APApisDisplayService';
 import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 import APEpApplicationDomainsDisplayService, { IAPEpApplicationDomainDisplay } from './APEpApplicationDomainsDisplayService';
-import { EAPManagedAssetAttribute_BusinessGroup_Tag, EAPManagedAssetAttribute_Scope } from './APManagedAssetDisplayService';
+import { EAPManagedAssetAttribute_BusinessGroup_Tag, EAPManagedAssetAttribute_Scope, TAPManagedAssetDisplay_BusinessGroupSharingList } from './APManagedAssetDisplayService';
 import APLoginUsersDisplayService from './APUsersDisplayService/APLoginUsersDisplayService';
 
 enum ConnectorImporterTypes {
@@ -34,8 +34,8 @@ export type TApEpSettings_ConnectorAttributeMapElementList = Array<TApEpSettings
 // entityId = application domain
 export interface IApEpSettings_Mapping extends IAPEpApplicationDomainDisplay {
   isValid: boolean;
-  businessGroupEntityId: TAPEntityId;
-  // TODO: sharingList
+  owningBusinessGroupEntityId: TAPEntityId;
+  apBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
 }
 export type TApEpSettings_MappingList = Array<IApEpSettings_Mapping>;
 export interface IAPEpSettingsDisplay extends IAPEntityIdDisplay, IAPSearchContent {
@@ -73,7 +73,8 @@ class APEpSettingsDisplayService {
     return {
       apEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       apSearchContent: '',
-      businessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      owningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
+      apBusinessGroupSharingList: [],
       isValid: false
     };
   }
@@ -88,7 +89,7 @@ class APEpSettingsDisplayService {
     return APSearchContentService.add_SearchContent<IAPEpSettingsDisplay>(apEpSettingsDisplay);
   }
 
-  private extract_BusinessGroupEntityId_From_ApRawAttributeList = ({ apRawAttributeList }:{
+  private extract_OwningBusinessGroupEntityId_From_ApRawAttributeList = ({ apRawAttributeList }:{
     apRawAttributeList: TAPRawAttributeList;
   }): TAPEntityId => {
 
@@ -112,6 +113,29 @@ class APEpSettingsDisplayService {
     return businessGroupEntityId;
   }
 
+  private extract_BusinessGroupSharingList_From_ApRawAttributeList = ({ apRawAttributeList }:{
+    apRawAttributeList: TAPRawAttributeList;
+  }): TAPManagedAssetDisplay_BusinessGroupSharingList => {
+    // const funcName = 'extract_BusinessGroupSharingList_From_ApRawAttributeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({ apRawAttributeList: apRawAttributeList });
+
+    const businessGroupSharingList_apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }),
+      apAttributeDisplayList: apAttributeDisplayList
+    });
+    // not using validation here
+    // const apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList = APApisDisplayService.getValidatedBusinessGroupSharingList({
+    //   businessGroupSharingList_apAttributeDisplayList: businessGroupSharingList_apAttributeDisplayList,
+    //   complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList
+    // });
+    let apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList = [];
+    if(businessGroupSharingList_apAttributeDisplayList.length > 0) apManagedAssetDisplay_BusinessGroupSharingList = APApisDisplayService.parse_BusinessGroupSharingListString(businessGroupSharingList_apAttributeDisplayList[0].value);
+
+    return apManagedAssetDisplay_BusinessGroupSharingList;
+  }
+
   private create_ApRawAttributeList = ({ apEpSettings_Mapping }:{
     apEpSettings_Mapping: IApEpSettings_Mapping;
   }): TAPRawAttributeList => {
@@ -122,16 +146,19 @@ class APEpSettingsDisplayService {
     // business group id
     apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
       name: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_ID }), 
-      value: apEpSettings_Mapping.businessGroupEntityId.id
+      value: apEpSettings_Mapping.owningBusinessGroupEntityId.id
     }));
     // business group display name
     apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
       name: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.OWNING_DISPLAY_NAME }), 
-      value: apEpSettings_Mapping.businessGroupEntityId.displayName
+      value: apEpSettings_Mapping.owningBusinessGroupEntityId.displayName
     }));
-
+    // business group sharing 
+    apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+      name: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }), 
+      value: APApisDisplayService.create_BusinessGroupSharingListString(apEpSettings_Mapping.apBusinessGroupSharingList)
+    }));
     return APAttributesDisplayService.create_ApRawAttributeList({ apAttributeDisplayList: apAttributeDisplayList });
-
   }
 
   private create_ApEpSettings_MappingList_From_ApiEntities = async({ organizationId, apEpSettings_ConnectorAttributeMapElementList }:{
@@ -156,7 +183,8 @@ class APEpSettingsDisplayService {
           id: apEpSettings_ConnectorAttributeMapElement.name,
           displayName: apEpApplicationDomainDisplay ? apEpApplicationDomainDisplay.apEntityId.displayName : `invalid id (${apEpSettings_ConnectorAttributeMapElement.name})`
         },
-        businessGroupEntityId: this.extract_BusinessGroupEntityId_From_ApRawAttributeList({ apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes }),
+        owningBusinessGroupEntityId: this.extract_OwningBusinessGroupEntityId_From_ApRawAttributeList({ apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes }),
+        apBusinessGroupSharingList: this.extract_BusinessGroupSharingList_From_ApRawAttributeList({ apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes }),
         isValid: apEpApplicationDomainDisplay !== undefined,
         apSearchContent: ''
       };

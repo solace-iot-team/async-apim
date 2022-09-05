@@ -6,6 +6,7 @@ import { Column } from "primereact/column";
 
 import { IApEpSettings_Mapping, TApEpSettings_MappingList } from "../../../../displayServices/APEpSettingsDisplayService";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import APEntityIdsService, { TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
@@ -24,12 +25,24 @@ export const DisplayEpSettingMappings: React.FC<IDisplayEpSettingMappingsProps> 
     if(row.isValid) return (<span>{row.apEntityId.displayName}</span>);
     return <span style={{ color: 'red' }}>{row.apEntityId.displayName}</span>
   }
+  const sharedBodyTemplate = (row: IApEpSettings_Mapping): JSX.Element => {
+    const sharingEntityIdList: TAPEntityIdList = row.apBusinessGroupSharingList.map( (x) => {
+      return {
+        id: x.apEntityId.id,
+        displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
+      }
+    });
+    if(sharingEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
+    );
+  }
 
   const renderComponent = (): JSX.Element => {
     const dataKey = APDisplayUtils.nameOf<IApEpSettings_Mapping>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<IApEpSettings_Mapping>('apEntityId.displayName');
     const applicationDomainNameField = APDisplayUtils.nameOf<IApEpSettings_Mapping>('apEntityId.displayName');
-    const businessGroupNameField = APDisplayUtils.nameOf<IApEpSettings_Mapping>('businessGroupEntityId.displayName');
+    const owningbBusinessGroupNameField = APDisplayUtils.nameOf<IApEpSettings_Mapping>('owningBusinessGroupEntityId.displayName');
 
     return (
       <React.Fragment>
@@ -55,10 +68,15 @@ export const DisplayEpSettingMappings: React.FC<IDisplayEpSettingMappingsProps> 
             sortable    
           />
           <Column 
-            field={businessGroupNameField} 
-            header="Business Group"
+            field={owningbBusinessGroupNameField} 
+            header="Owning Business Group"
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
             sortable
+          />
+          <Column 
+            body={sharedBodyTemplate}
+            header="Shared"
+            bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
           />
         </DataTable>
         {/* DEBUG */}

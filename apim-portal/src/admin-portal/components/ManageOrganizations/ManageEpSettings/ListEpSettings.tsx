@@ -8,7 +8,6 @@ import { Button } from "primereact/button";
 
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import { EManageEpSettingsScope, E_CALL_STATE_ACTIONS } from "./ManageEpSettingsCommon";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { Loading } from "../../../../components/Loading/Loading";
@@ -39,7 +38,6 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   type TManagedObject = IAPEpSettingsDisplay;
   type TManagedObjectList = Array<TManagedObject>;
 
-  const [userContext] = React.useContext(UserContext);
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>();  
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
@@ -79,7 +77,7 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_LIST, 'retrieve list of settings');
-    if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
+    // if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try { 
       const list: TAPEpSettingsDisplayList = await APEpSettingsDisplayService.apiGetList_ApEpSettingsDisplayList({
         organizationId: props.organizationId
@@ -168,18 +166,6 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     if(areAllValid) return (<span style={ {color: 'green'} }>valid</span>);
     return (<span style={ {color: 'red'} }>issues</span>);
   }
-  // const sharedBodyTemplate = (mo: TManagedObject): JSX.Element => {
-  //   const sharingEntityIdList: TAPEntityIdList = mo.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
-  //     return {
-  //       id: x.apEntityId.id,
-  //       displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
-  //     }
-  //   });
-  //   if(sharingEntityIdList.length === 0) return (<div>None.</div>);
-  //   return(
-  //     <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
-  //   );
-  // }
   const applicationDomainsBodyTemplate = (mo: TManagedObject): JSX.Element => {
     // const applicationDomainNameList: Array<string> = APEntityIdsService.create_SortedDisplayNameList(APEntityIdsService.create_EntityIdList_From_ApDisplayObjectList(mo.apEpSettings_MappingList));
     // const x = APEntityIdsService.sor

@@ -8,15 +8,16 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { TreeSelect } from "primereact/treeselect";
 import { InputText } from "primereact/inputtext";
-import { Toolbar } from "primereact/toolbar";
 
 import APBusinessGroupsDisplayService, { TAPBusinessGroupTreeNodeDisplay, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 import APEpSettingsDisplayService, { IApEpSettings_Mapping, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
-import APEntityIdsService from "../../../../../utils/APEntityIdsService";
+import APEntityIdsService, { TAPEntityIdList } from "../../../../../utils/APEntityIdsService";
 import APDisplayUtils from "../../../../../displayServices/APDisplayUtils";
 import { ManageSelectAppDomain } from "./ManageSelectAppDomain";
 import { IAPEpApplicationDomainDisplay } from "../../../../../displayServices/APEpApplicationDomainsDisplayService";
 import { TApiCallState } from "../../../../../utils/ApiCallState";
+import { EditNewBusinessGroupSharingListForm } from "./EditNewBusinessGroupSharingListForm";
+import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../../displayServices/APManagedAssetDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -38,10 +39,11 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
 
   type TManagedObjectUseFormData = {
     applicationDomainName: string;
-    businessGroupId: string;
+    owningBusinessGroupId: string;
   };
   type TManagedObjectExtFormData = {
     selected_apEpApplicationDomainDisplay: IAPEpApplicationDomainDisplay;
+    businessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList; 
   };
   type TManagedObjectFormDataEnvelope = {
     useFormData: TManagedObjectUseFormData;
@@ -50,14 +52,15 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const ufd: TManagedObjectUseFormData = {
-      businessGroupId: mo.businessGroupEntityId.id,
+      owningBusinessGroupId: mo.owningBusinessGroupEntityId.id,
       applicationDomainName: mo.apEntityId.displayName,
     };
     const efd: TManagedObjectExtFormData = {
       selected_apEpApplicationDomainDisplay: {
         apEntityId: mo.apEntityId,
         apSearchContent: ''
-      }
+      },
+      businessGroupSharingList: mo.apBusinessGroupSharingList
     }
     return {
       useFormData: ufd,
@@ -77,7 +80,27 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
       applicationDomainName: selected_apEpApplicationDomainDisplay.apEntityId.displayName
     };
     const efd: TManagedObjectExtFormData = {
-      selected_apEpApplicationDomainDisplay: selected_apEpApplicationDomainDisplay
+      ...managedObjectFormDataEnvelope.extFormData,
+      selected_apEpApplicationDomainDisplay: selected_apEpApplicationDomainDisplay,
+    }
+    return {
+      useFormData: ufd,
+      extFormData: efd
+    };
+  }
+
+  const update_FormDataEnvelope_With_Ext_TAPManagedAssetDisplay_BusinessGroupSharingList = ({ apManagedAssetDisplay_BusinessGroupSharingList }:{
+    apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
+  }): TManagedObjectFormDataEnvelope => {
+    const funcName = 'update_FormDataEnvelope_With_Ext_TAPManagedAssetDisplay_BusinessGroupSharingList';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    if(managedObjectUseForm === undefined) throw new Error(`${logName}: managedObjectUseForm === undefined`);
+
+    const ufd: TManagedObjectUseFormData = managedObjectUseForm.getValues('useFormData');
+    const efd: TManagedObjectExtFormData = {
+      ...managedObjectFormDataEnvelope.extFormData,
+      businessGroupSharingList: apManagedAssetDisplay_BusinessGroupSharingList,
     }
     return {
       useFormData: ufd,
@@ -90,10 +113,11 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   }): TManagedObject => {
     const mo: TManagedObject = {
       apEntityId: formDataEnvelope.extFormData.selected_apEpApplicationDomainDisplay.apEntityId,
-      businessGroupEntityId: {
-        id: formDataEnvelope.useFormData.businessGroupId,
-        displayName: 'set later for ' + formDataEnvelope.useFormData.businessGroupId
+      owningBusinessGroupEntityId: {
+        id: formDataEnvelope.useFormData.owningBusinessGroupId,
+        displayName: 'set later for ' + formDataEnvelope.useFormData.owningBusinessGroupId
       },
+      apBusinessGroupSharingList: formDataEnvelope.extFormData.businessGroupSharingList,
       isValid: true,
       apSearchContent: ''
     }
@@ -104,7 +128,8 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   const UniqueKeyPrefix: string = props.uniqueFormKeyPrefix + '_' + ComponentName;
   const FormId: string = UniqueKeyPrefix + '_Form';
   const EmptyMessage: string = 'No business groups defined.';
-  const ButtonLabel_SelectAppDomain = "Select Application Domain";
+  const ButtonLabel_SelectAppDomain = "Select";
+  const ButtonLabel_AddNewMapping = "Add New Mapping";
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [managedObjectList, setManagedObjectList] = React.useState<TManagedObjectList>(props.apEpSettings_MappingList);
@@ -141,8 +166,8 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
     managedObjectUseForm.clearErrors();
 
-    const businessGroupId: string | undefined = managedObjectUseForm.getValues('useFormData.businessGroupId');
-    if(businessGroupId !== undefined && businessGroupId !== '') managedObjectUseForm.trigger();
+    const owningBusinessGroupId: string | undefined = managedObjectUseForm.getValues('useFormData.owningBusinessGroupId');
+    if(owningBusinessGroupId !== undefined && owningBusinessGroupId !== '') managedObjectUseForm.trigger();
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -168,10 +193,10 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     // find the businessGroupDisplay by id to get the displayName
     const apBusinessGroupTreeNodeDisplay: TAPBusinessGroupTreeNodeDisplay | undefined = APBusinessGroupsDisplayService.find_ApBusinessGroupDisplay_From_ApBusinessGroupDisplayTreeNodeList({ 
       apBusinessGroupTreeNodeDisplayList: props.apBusinessGroupTreeNodeDisplayList,
-      businessGroupId: mo.businessGroupEntityId.id 
+      businessGroupId: mo.owningBusinessGroupEntityId.id 
     });
     if(apBusinessGroupTreeNodeDisplay === undefined) throw new Error(`${logName}: apBusinessGroupTreeNodeDisplay === undefined`);
-    mo.businessGroupEntityId = {
+    mo.owningBusinessGroupEntityId = {
       id: apBusinessGroupTreeNodeDisplay.key,
       displayName: apBusinessGroupTreeNodeDisplay.label
     };
@@ -230,8 +255,19 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     if(mo.isValid) return (<span>{mo.apEntityId.displayName}</span>);
     return <span style={{ color: 'red' }}>{mo.apEntityId.displayName}</span>
   }
-
-  const renderTable = (): JSX.Element => {
+  const sharedBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    const sharingEntityIdList: TAPEntityIdList = mo.apBusinessGroupSharingList.map( (x) => {
+      return {
+        id: x.apEntityId.id,
+        displayName: `${x.apEntityId.displayName} (${x.apSharingAccessType})`,
+      }
+    });
+    if(sharingEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
+    );
+  }
+  const renderMappings = (): JSX.Element => {
     const actionBodyTemplate = (mo: TManagedObject) => {
       return (
         <React.Fragment>
@@ -248,7 +284,7 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     const dataKey = APDisplayUtils.nameOf<TManagedObject>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
     const applicationDomainNameField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
-    const businessGroupNameField = APDisplayUtils.nameOf<TManagedObject>('businessGroupEntityId.displayName');
+    const owningBusinessGroupNameField = APDisplayUtils.nameOf<TManagedObject>('owningBusinessGroupEntityId.displayName');
 
     return (
       <React.Fragment>
@@ -275,11 +311,16 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
             sortable 
           />
           <Column 
-            header="Business Group" 
-            // headerStyle={{ width: "20em"}} 
+            header="Owning Business Group" 
+            headerStyle={{ width: "30em"}} 
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
-            field={businessGroupNameField} 
+            field={owningBusinessGroupNameField} 
             sortable 
+          />
+          <Column 
+            header="Shared" 
+            body={sharedBodyTemplate}
+            bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
           />
           <Column body={actionBodyTemplate} bodyStyle={{ width: '3em', textAlign: 'end' }} />
         </DataTable>
@@ -297,91 +338,14 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     return true;
   }
 
-  const renderAppDomainToolbar = () => {
-    let jsxButtonList: Array<JSX.Element> = [
-      <Button style={ { width: '20rem' } } type="button" label={ButtonLabel_SelectAppDomain} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSelectAppDomain()} />,
-    ];
-    return (
-      <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
-    );
-  }
-
-  const renderComponent = () => {
-    // const funcName = 'renderComponent';
-    // const logName = `${ComponentName}.${funcName}()`;
-
-    return (
-      <div className="card">
-        <div className="p-fluid">
-          <form id={FormId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">           
-            <div className="p-formgroup-inline">
-              {/* Application Domain */}
-              <div className="p-field" style={{ width: '20%' }} >
-                <span className="p-float-label p-input-icon-right">
-                  <i className="pi pi-key" />
-                  <Controller
-                    control={managedObjectUseForm.control}
-                    name="useFormData.applicationDomainName"
-                    rules={{
-                      required: 'Enter an Application Domain Name.',
-                      validate: validateApplicationDomainName,
-                    }}
-                    render={( { field, fieldState }) => {
-                      return(
-                        <InputText
-                          id={field.name}
-                          {...field}
-                          className={classNames({ 'p-invalid': fieldState.invalid })}
-                          disabled={true}                       
-                        />
-                    )}}
-                  />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.applicationDomainName })}>Application Domain*</label>
-                </span>
-                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.applicationDomainName)}
-                { renderAppDomainToolbar() }
-              </div>
-              {/* Business Group */}
-              <div className="p-field" style={{ width: '75%' }} >
-                <span className="p-float-label">
-                  <Controller
-                    control={managedObjectUseForm.control}
-                    name="useFormData.businessGroupId"
-                    rules={{
-                      required: 'Select a business group.',
-                    }}
-                    render={( { field, fieldState }) => {
-                      return(
-                        <TreeSelect
-                          id={field.name}
-                          {...field}
-                          options={props.apBusinessGroupTreeNodeDisplayList}
-                          onChange={(e) => field.onChange(e.value)}
-                          filter={true}
-                          selectionMode="single"
-                          className={classNames({ 'p-invalid': fieldState.invalid })}                       
-                        />
-                    )}}
-                  />
-                <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.businessGroupId })}>Business Group*</label>
-                </span>
-                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.businessGroupId)}
-              </div>
-              <div>          
-                <Button key={UniqueKeyPrefix+'submit'} form={FormId} type="submit" icon="pi pi-plus" className="p-button-text p-button-plain p-button-outlined" />
-              </div>  
-            </div>
-            {renderTable()}
-            {/* DEBUG */}
-            {/* <p>managedAttributeList:</p>
-            <pre style={ { fontSize: '10px' }} >
-              {JSON.stringify(managedAttributeList, null, 2)}
-            </pre> */}
-          </form>  
-        </div>
-      </div>
-    );
-  }
+  // const renderAppDomainToolbar = () => {
+  //   let jsxButtonList: Array<JSX.Element> = [
+  //     <Button style={ { width: '20rem' } } type="button" label={ButtonLabel_SelectAppDomain} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSelectAppDomain()} />,
+  //   ];
+  //   return (
+  //     <Toolbar className="p-mb-4" style={ { 'background': 'none', 'border': 'none' } } left={jsxButtonList} />      
+  //   );
+  // }
 
   const renderManageAppDomainSelection = () => {
     const funcName = 'renderManageAppDomainSelection';
@@ -396,6 +360,150 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
         onCancel={onSelectAppDomainCancel}
         onError={props.onError}
       />
+    );
+  }
+
+  const renderApplicationDomain_FormElements = () => {
+    return(
+      <div className="p-formgroup-inline">
+        <div className="p-field" style={{ width: '90%' }}>
+          <span className="p-float-label p-input-icon-right">
+            <i className="pi pi-key" />
+            <Controller
+              control={managedObjectUseForm.control}
+              name="useFormData.applicationDomainName"
+              rules={{
+                required: 'Enter an Application Domain Name.',
+                validate: validateApplicationDomainName,
+              }}
+              render={( { field, fieldState }) => {
+                // console.log(`${logName}: field=${JSON.stringify(field)}`);
+                return(
+                  <InputText
+                  id={field.name}
+                  {...field}
+                  className={classNames({ 'p-invalid': fieldState.invalid })}
+                  disabled={true}                       
+                />
+              )}}
+            />
+            <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.applicationDomainName })}>Application Domain*</label>
+          </span>
+          {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.applicationDomainName)}
+        </div>
+        {/* <div className="p-field" style={{ width: '10rem' }}> */}
+        <div className="p-field">
+            {/* <Button style={ { width: '20rem' } } type="button" label={ButtonLabel_SelectAppDomain} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSelectAppDomain()} />, */}
+            <Button type="button" label={ButtonLabel_SelectAppDomain} className="p-button-text p-button-plain p-button-outlined" onClick={() => onSelectAppDomain()} />,
+          </div>        
+          {/* { renderAppDomainToolbar() } */}
+      </div>
+    );    
+  }
+
+  const renderChangeOwningBusinessGroup_FormField = () => {
+    // const funcName = 'renderChangeOwningBusinessGroup_FormField';
+    // const logName = `${ComponentName}.${funcName}()`;
+    return(
+      <div className="p-field" style={{ width: '90%' }}>
+        <span className="p-float-label">
+          <Controller
+            control={managedObjectUseForm.control}
+            name="useFormData.owningBusinessGroupId"
+            rules={{
+              required: 'Select a Business Group.',
+            }}
+            render={( { field, fieldState }) => {
+              // console.log(`${logName}: field=${JSON.stringify(field)}`);
+              return(
+                <TreeSelect
+                  id={field.name}
+                  {...field}
+                  options={props.apBusinessGroupTreeNodeDisplayList}
+                  onChange={(e) => field.onChange(e.value)}
+                  filter={true}
+                  selectionMode="single"
+                  className={classNames({ 'p-invalid': fieldState.invalid })}                       
+                />
+            )}}
+          />
+          <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.owningBusinessGroupId })}>Owning Business Group*</label>
+        </span>
+        {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.useFormData?.owningBusinessGroupId)}
+      </div>
+    );
+  }
+
+  const onChange_EditNewBusinessGroupSharingList = (apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList) => {
+    setManagedObjectFormDataEnvelope(update_FormDataEnvelope_With_Ext_TAPManagedAssetDisplay_BusinessGroupSharingList({ 
+      apManagedAssetDisplay_BusinessGroupSharingList: apManagedAssetDisplay_BusinessGroupSharingList,
+    }));
+    // exclude the chosen ones from the list
+    alert(`${ComponentName}.onChange_EditNewBusinessGroupSharingList(): exclude chosen sharing & owning from business group select list???`)
+      //   apExcludeBusinessGroupIdList.forEach( (x) => {
+  //     doRemoveManagedObjectId_From_ManagedObjectList(x);
+  //   });
+
+  }
+
+  const renderManagedObjectForm = () => {
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+    // if(apMemberOfBusinessGroupTreeTableNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupTreeTableNodeList === undefined`);
+    // if(apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
+    const uniqueKey_EditNewBusinessGroupSharingListForm = ComponentName+'_EditNewBusinessGroupSharingListForm';
+
+    const _owningBusinessGroupId: string | undefined = managedObjectUseForm.watch('useFormData.owningBusinessGroupId');
+    // catch the first render
+    const owningBusinessGroupId: string | undefined = _owningBusinessGroupId === undefined ? managedObjectFormDataEnvelope.useFormData.owningBusinessGroupId : _owningBusinessGroupId;
+  
+    return (
+      <div className="card p-mt-2">
+        {/* DEBUG */}
+        {/* <div>managedObjectFormDataEnvelope.businessGroupSharingList = <pre>{JSON.stringify(managedObjectFormDataEnvelope.businessGroupSharingList, null, 2)}</pre></div> */}
+        <div className="p-fluid">
+          <form id={FormId} onSubmit={managedObjectUseForm.handleSubmit(onSubmitManagedObjectForm, onInvalidSubmitManagedObjectForm)} className="p-fluid">    
+            {/* application domain & select */}
+            { renderApplicationDomain_FormElements() }
+            {/* owning business group */}
+            { renderChangeOwningBusinessGroup_FormField() }
+          </form>
+
+          {/* outside the form */}
+          <div className="p-field">
+            {/* business group sharing */}
+            <div className="p-text-bold p-mb-3">Business Group Sharing:</div>
+            <div className="p-ml-2">
+              <EditNewBusinessGroupSharingListForm
+                key={uniqueKey_EditNewBusinessGroupSharingListForm}
+                uniqueKeyPrefix={uniqueKey_EditNewBusinessGroupSharingListForm}
+                apManagedAssetDisplay_BusinessGroupSharingList={managedObjectFormDataEnvelope.extFormData.businessGroupSharingList}
+                apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
+                apExcludeBusinessGroupIdList={owningBusinessGroupId === undefined ? [] : [owningBusinessGroupId]}
+                onChange={onChange_EditNewBusinessGroupSharingList}
+              />
+            </div>
+          </div>
+          {/* submit button */}
+          <div className="p-field" style={{ width: '12rem' }}>
+            <Button key={UniqueKeyPrefix+'submit'} form={FormId} type="submit" icon="pi pi-plus" label={ButtonLabel_AddNewMapping} className="p-button-text p-button-plain p-button-outlined" />
+          </div>  
+        </div>
+      </div>
+    );
+  }
+
+  const renderComponent = () => {
+    return (
+      <div className="p-ml-4">
+        <div className="p-mt-2 ap-display-component-header">New Mapping:</div>
+        <div className="p-ml-6">
+          { renderManagedObjectForm() }
+        </div>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">Mappings:</div>
+        { renderMappings() }
+      </div>
     );
   }
 
