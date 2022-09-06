@@ -234,10 +234,10 @@ class APEpSettingsDisplayService {
     };
   }
 
-  public get_AllowedActions({ userId, userBusinessGroupId, authorizedResourcePathAsString, hasEventPortalConnectivity, apEpSettingsDisplay }:{
-    userId: string;
-    userBusinessGroupId?: string;
-    authorizedResourcePathAsString: string;
+  public get_AllowedActions({ hasEventPortalConnectivity }:{
+    // userId: string;
+    // userBusinessGroupId?: string;
+    // authorizedResourcePathAsString: string;
     hasEventPortalConnectivity: boolean;
     apEpSettingsDisplay: IAPEpSettingsDisplay;
   }): TAPEpSettingsDisplay_AllowedActions {
@@ -247,32 +247,6 @@ class APEpSettingsDisplayService {
       isDeleteAllowed: true,
       isViewAllowed: true,
     };
-    // additional checks: see AdminPortalApiProductDisplayService
-    // if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
-    //   // check if owned by user
-    //   if(apAdminPortalApiProductDisplay.apOwnerInfo.id === userId) {
-    //     allowedActions.isEditAllowed = true;
-    //     allowedActions.isDeleteAllowed = true;
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
-    // if((!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
-    //   // check if api product owned by same business group
-    //   if(userBusinessGroupId === apAdminPortalApiProductDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id) {
-    //     allowedActions.isEditAllowed = true;
-    //     allowedActions.isDeleteAllowed = true;
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
-    // if((!allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
-    //   // check if api product shared with user business group
-    //   const foundSharingBusinessGroup: TAPManagedAssetDisplay_BusinessGroupSharing | undefined = apAdminPortalApiProductDisplay.apBusinessGroupInfo.apBusinessGroupSharingList.find( (x) => {
-    //     return x.apEntityId.id === userBusinessGroupId;
-    //   });
-    //   if(foundSharingBusinessGroup !== undefined) {
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
     return allowedActions;
   }
 

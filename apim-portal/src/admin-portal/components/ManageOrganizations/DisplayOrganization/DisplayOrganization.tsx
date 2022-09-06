@@ -59,6 +59,9 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -336,7 +339,8 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     }
     if(props.scope !== E_DISPLAY_ORGANIZATION_SCOPE.REVIEW_AND_CREATE && configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
       jsxTabPanelList.push(
-        <TabPanel header='Event Portal' key={Globals.getUUID()}>
+        // <TabPanel header='Event Portal' key={Globals.getUUID()}>
+        <TabPanel header='Event Portal' key={ComponentName + 'EventPortal_ManageEpSettings'}>
           <ManageEpSettings
             scope={EManageEpSettingsScope.VIEW}
             organizationId={managedObject.apEntityId.id}

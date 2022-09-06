@@ -146,6 +146,9 @@ export const ManageEditNewEpSetting: React.FC<IManageEditNewEpSettingProps> = (p
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize()
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 

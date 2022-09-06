@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -11,19 +10,15 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 import { Loading } from "../../../../components/Loading/Loading";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
 import { TAPEntityId } from "../../../../utils/APEntityIdsService";
-import { DoLogoutAllUsers, EAction, EManageEpSettingsScope, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageEpSettingsCommon";
+import { EAction, EManageEpSettingsScope, E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TAPEpSettingsDisplay_AllowedActions } from "../../../../displayServices/APEpSettingsDisplayService";
 import APSystemOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { ListEpSettings } from "./ListEpSettings";
 import { ManageEditNewEpSetting } from "./EditNewEpSetting/ManageEditNewEpSetting";
 import { ViewEpSetting } from "./ViewEpSetting";
 import { DeleteEpSetting } from "./DeleteEpSetting";
-import { EUICommonResourcePaths, GlobalElementStyles } from "../../../../utils/Globals";
-import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";
-import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
+import { GlobalElementStyles } from "../../../../utils/Globals";
 import { RunEpImporterJob } from "./RunEpImporterJob";
 
 import '../../../../components/APComponents.css';
@@ -34,8 +29,6 @@ export interface IManageEpSettingsProps {
   organizationId: string;
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
-  // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  // apPageNavigationInfo?: TAPPageNavigationInfo;
 }
 
 export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManageEpSettingsProps) => {
@@ -75,8 +68,6 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const [managedObject_AllowedActions, setManagedObject_AllowedActions] = React.useState<TAPEpSettingsDisplay_AllowedActions>(APEpSettingsDisplayService.get_Empty_AllowedActions());
 
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
-  // const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
-  // const [breadCrumbsRefreshCounter, setBreadCrumbsRefreshCounter] = React.useState<number>(0);
 
   const [showListComponent, setShowListComponent] = React.useState<boolean>(false);
   const [showViewComponent, setShowViewComponent] = React.useState<boolean>(false);
@@ -85,32 +76,8 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showRunComponent, setShowRunComponent] = React.useState<boolean>(false);
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [organizationContext, dispatchOrganizationContextAction] = React.useContext(OrganizationContext);
-  const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
+  const [organizationContext] = React.useContext(OrganizationContext);
   
-  const history = useHistory();
-
-  const navigateTo = (path: string): void => { history.push(path); }
-
-  const doLogoutThisUser = async(organizationId: string) => {
-    if(!DoLogoutAllUsers) return;
-    if(userContext.runtimeSettings.currentOrganizationEntityId !== undefined) {
-      if(userContext.runtimeSettings.currentOrganizationEntityId.id === organizationId) {
-        APContextsDisplayService.clear_LoginContexts({
-          dispatchAuthContextAction: dispatchAuthContextAction,
-          dispatchUserContextAction: dispatchUserContextAction,
-          dispatchOrganizationContextAction: dispatchOrganizationContextAction,
-          dispatchSessionContextAction: dispatchSessionContextAction,
-        });
-        navigateTo(EUICommonResourcePaths.Home);    
-      }
-    }
-  }
-
   const setListView = () => {
     setApiCallStatus(null);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
@@ -143,16 +110,15 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
 
   // * useEffect Hooks *
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     calculateShowStates(componentState);
   }, [componentState]); /* eslint-disable-line react-hooks/exhaustive-deps */
-
-  // React.useEffect(() => {
-  //   props.setBreadCrumbItemList(breadCrumbItemList);
-  // }, [breadCrumbItemList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(apiCallStatus === null) return;
@@ -165,7 +131,7 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
         case E_CALL_STATE_ACTIONS.API_CREATE:
         case E_CALL_STATE_ACTIONS.API_UPDATE:
         case E_CALL_STATE_ACTIONS.API_DELETE:
-          doLogoutThisUser(props.organizationId);
+          // doLogoutThisUser(props.organizationId);
           break;
         default:
           props.onSuccess(apiCallStatus);
@@ -179,9 +145,9 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
   const setAllowedActions = (apEpSettingsDisplay: IAPEpSettingsDisplay) => {
     const apEpSettingsDisplay_AllowedActions: TAPEpSettingsDisplay_AllowedActions = APEpSettingsDisplayService.get_AllowedActions({
       apEpSettingsDisplay: apEpSettingsDisplay,
-      authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
-      userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      // authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
+      // userId: userContext.apLoginUserDisplay.apEntityId.id,
+      // userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
       hasEventPortalConnectivity: APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
         apOrganizationDisplay: organizationContext
       }),
@@ -198,12 +164,6 @@ export const ManageEpSettings: React.FC<IManageEpSettingsProps> = (props: IManag
     setAllowedActions(apEpSettingsDisplay);
     setRefreshCounter(refreshCounter + 1);
   }
-
-  // const onSubComponentAddBreadCrumbItemList = (itemList: Array<MenuItem>) => {
-  //   const newItemList: Array<MenuItem> = breadCrumbItemList.concat(itemList);
-  //   setBreadCrumbItemList(newItemList);
-  //   setBreadCrumbsRefreshCounter(breadCrumbsRefreshCounter + 1)
-  // }
 
   const onRunManagedObject = (apEpSettingsDisplay: IAPEpSettingsDisplay): void => {
     setApiCallStatus(null);

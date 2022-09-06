@@ -208,7 +208,8 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
       );
       if(configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
         tabPanels.push(
-          <TabPanel header='Event Portal' key={Globals.getUUID()}>
+          // <TabPanel header='Event Portal' key={Globals.getUUID()}>
+          <TabPanel header='Event Portal' key={ComponentName + 'EventPortal_ManageEpSettings'}>
             <ManageEpSettings
               scope={EManageEpSettingsScope.EDIT}
               organizationId={managedObject.apEntityId.id}

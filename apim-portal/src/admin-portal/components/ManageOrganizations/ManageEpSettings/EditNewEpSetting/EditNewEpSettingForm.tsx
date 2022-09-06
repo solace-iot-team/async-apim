@@ -12,7 +12,6 @@ import { APConnectorFormValidationRules } from "../../../../../utils/APConnector
 import { EAction, E_CALL_STATE_ACTIONS } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewApplicationDomainMappingForm } from "./EditNewApplicationDomainMappingForm";
-import { Globals } from "../../../../../utils/Globals";
 import { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 
 import '../../../../../components/APComponents.css';
@@ -110,6 +109,9 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   // * useEffect Hooks *
 
   React.useEffect(() => {
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -176,9 +178,11 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
-    const isNewObject: boolean = isNewManagedObject();
-    const uniqueKey_Mappings = ComponentName+'_EditNewApplicationDomainMappingForm_'+Globals.getUUID();
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
+
+    const isNewObject: boolean = isNewManagedObject();
+    // const uniqueKey_Mappings = ComponentName+'_EditNewApplicationDomainMappingForm_'+Globals.getUUID();
+    const uniqueKey_Mappings = ComponentName+'_EditNewApplicationDomainMappingForm_';
 
     return (
       <div className="card p-mt-4">

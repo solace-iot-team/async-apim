@@ -77,7 +77,6 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
     const funcName = 'apiGetManagedObjectList';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_LIST, 'retrieve list of settings');
-    // if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try { 
       const list: TAPEpSettingsDisplayList = await APEpSettingsDisplayService.apiGetList_ApEpSettingsDisplayList({
         organizationId: props.organizationId
@@ -105,7 +104,9 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   }
 
   React.useEffect(() => {
-    // props.setBreadCrumbItemList([]);
+    // const funcName = 'useEffect([])';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // console.log(`${logName}: mounting ...`);
     doInitialize();
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
