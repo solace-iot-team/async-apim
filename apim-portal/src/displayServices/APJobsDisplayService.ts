@@ -2,7 +2,7 @@ import {
   Job,
   ManagementService,
 } from '@solace-iot-team/apim-connector-openapi-browser';
-import APEntityIdsService, { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
+import { IAPEntityIdDisplay } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APDisplayUtils from './APDisplayUtils';
 

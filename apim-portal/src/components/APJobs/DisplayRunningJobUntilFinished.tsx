@@ -9,7 +9,6 @@ import { E_CALL_STATE_ACTIONS } from "./APJobsCommon";
 import { Job } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import "../APComponents.css";
-import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 export interface IDisplayRunningJobUntilFinishedProps {
   className?: string;

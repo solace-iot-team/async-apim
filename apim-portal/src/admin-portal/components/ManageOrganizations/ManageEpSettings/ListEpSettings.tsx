@@ -188,6 +188,8 @@ export const ListEpSettings: React.FC<IListEpSettingsProps> = (props: IListEpSet
   const actionBodyTemplate = (mo: TManagedObject) => {
     if(props.scope !== EManageEpSettingsScope.VIEW) return;
     const isDisabled = !APEpSettingsDisplayService.areAllMappingsValid({ apEpSettingsDisplay: mo });
+    // // DEBUG
+    // const isDisabled = false;
     return (
       <React.Fragment>
         <Button 
