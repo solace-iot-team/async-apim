@@ -23,9 +23,9 @@ export interface UserSecRefreshProps {
 export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefreshProps) => {
   const ComponentName = 'UserSecRefresh';
 
-  // const VerifyUserInterval_ms: number = 300000; // every 5 minutes
+  const VerifyUserInterval_ms: number = 300000; // every 5 minutes
   // const VerifyUserInterval_ms: number = 10000; // every 10 seconds
-  const VerifyUserInterval_ms: number = 5000; // every 5 seconds
+  // const VerifyUserInterval_ms: number = 5000; // every 5 seconds
   // const VerifyUserInterval_ms: number = 1000; // every 1 seconds (test health + refresh at same time)
 
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */

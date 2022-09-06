@@ -9,6 +9,7 @@ import { E_CALL_STATE_ACTIONS } from "./APJobsCommon";
 import { Job } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import "../APComponents.css";
+import APDisplayUtils from "../../displayServices/APDisplayUtils";
 
 export interface IDisplayRunningJobUntilFinishedProps {
   className?: string;
@@ -38,9 +39,8 @@ export const DisplayRunningJobUntilFinished: React.FC<IDisplayRunningJobUntilFin
         organizationId: props.organizationId,
         jobId: props.jobId
       });
-      const list: TAPJobDisplayList = apJobDisplayList;
       if(apJobDisplay.status === Job.status.FINISHED) setIsJobFinished(true);
-      list.push(apJobDisplay);
+      const list: TAPJobDisplayList = [apJobDisplay].concat(apJobDisplayList);
       setApJobDisplayList(list)
     } catch(e) {
       APClientConnectorOpenApi.logError(logName, e);
@@ -75,14 +75,34 @@ export const DisplayRunningJobUntilFinished: React.FC<IDisplayRunningJobUntilFin
 
   React.useEffect(() => {
     if(apJobDisplayList === undefined) return;
-    if(isJobFinished) props.onFinished(apJobDisplayList);
-  }, [apJobDisplayList, isJobFinished]); /* eslint-disable-line react-hooks/exhaustive-deps */
+    if(isJobFinished) {
+      setDelay(null);
+      props.onFinished(apJobDisplayList);
+    }
+  }, [isJobFinished]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const renderComponent = (): JSX.Element => {
+    // const displayKeyList: Array<string> = [
+    //   'connectorJob'
+    // ]
+    // const removeKeyList: Array<string> = [
+    //   // @ts-ignore Type instantiation is excessively deep and possibly infinite.  TS2589
+    //   APDisplayUtils.nameOf<IAPJobDisplay>('apSearchContent'),
+    //   'apEntityId',
+    //   APDisplayUtils.nameOf<IAPJobDisplay>('stat'),
+    //   APDisplayUtils.nameOf<IAPJobDisplay>('apEntityId.displayName')
+    // ];
+    const displayJobList: Array<Job> = apJobDisplayList.map( (x) => {
+      return x.connectorJob;
+    });
     return (
       <React.Fragment>
         <pre>
-          {JSON.stringify(apJobDisplayList, null, 2 )}
+          {JSON.stringify(displayJobList, null, 2)};
+          {/* {JSON.stringify(apJobDisplayList, (key:string, value:any) => {
+            if(displayKeyList.includes(key)) return value;
+            return undefined;
+          }, 2 )} */}
         </pre>
       </React.Fragment>
     );

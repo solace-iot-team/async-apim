@@ -33,7 +33,7 @@ class APJobsDisplayService {
     const apJobsDisplay: IAPJobDisplay = {
       apEntityId: {
         id: connectorJob.id,
-        displayName: connectorJob.name
+        displayName: connectorJob.instanceName ? connectorJob.instanceName : connectorJob.name + '-' + connectorJob.id
       },
       connectorJob: connectorJob,
       status: connectorJob.status ? connectorJob.status : Job.status.PENDING,
@@ -85,7 +85,15 @@ class APJobsDisplayService {
         }));  
       }
     }
-    return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
+    return list;
+    // return list.sort( (e1: IAPJobDisplay, e2: IAPJobDisplay) => {
+    //   if(e1.connectorJob.lastRunAt && e2.connectorJob.lastRunAt) {
+    //     if(e1.connectorJob.lastRunAt < e2.connectorJob.lastRunAt) return 1;
+    //     if(e1.connectorJob.lastRunAt > e2.connectorJob.lastRunAt) return -1;
+    //     return 0;
+    //   }
+    //   return 0;
+    // });
   }
 
   public async apiGet_IAPJobDisplay({ organizationId, jobId }: {

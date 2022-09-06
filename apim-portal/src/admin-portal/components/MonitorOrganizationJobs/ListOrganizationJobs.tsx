@@ -198,7 +198,7 @@ export const ListOrganizationJobs: React.FC<IListOrganizationJobsProps> = (props
           // sorting
           sortMode='single'
           sortField={lastRunAtField}
-          sortOrder={1}
+          sortOrder={-1}
         >
           <Column header="Name" style={{width: '20%'}} body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }}  field={nameField} sortable />
           <Column header="Last Run at" style={{width: '20%'}} body={lastRunAtBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} field={lastRunAtField} sortable />

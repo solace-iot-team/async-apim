@@ -124,7 +124,6 @@ export const RunEpImporterJob: React.FC<IRunEpImporterJobProps> = (props: IRunEp
   }
 
   const onJobFinished = (apJobDisplayList: TAPJobDisplayList) => {
-    alert(`${ComponentName}.onJobFinished(): FINISHED, apJobDisplayList.length=${apJobDisplayList.length}`);
     setIsImportJobFinished(true);
   }
 
@@ -143,7 +142,7 @@ export const RunEpImporterJob: React.FC<IRunEpImporterJobProps> = (props: IRunEp
         <DisplayRunningJobUntilFinished
           organizationId={props.organizationId}
           jobId={runImportJobResult.id}
-          interval_millis={100}
+          interval_millis={2000}
           onError={onCheckJobError}
           onFinished={onJobFinished}
         />
