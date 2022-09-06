@@ -42,7 +42,7 @@
     "url": "https://github.com/solace-iot-team/async-apim/issues"
   },
   "dependencies": {
-    "@solace-iot-team/apim-connector-openapi-node": "^0.11.2",
+    "@solace-iot-team/apim-connector-openapi-node": "^0.11.3",
     "abort-controller": "^3.0.0",
     "async-mutex": "^0.3.2",
     "body-parser": "^1.19.0",
