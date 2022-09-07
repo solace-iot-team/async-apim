@@ -8,6 +8,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { TreeSelect } from "primereact/treeselect";
 import { InputText } from "primereact/inputtext";
+import { MultiSelect } from "primereact/multiselect";
 
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplay, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
 import APEpSettingsDisplayService, { IApEpSettings_Mapping, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
@@ -28,6 +29,7 @@ export interface IEditNewApplicationDomainMappingFormProps {
   apEpSettings_MappingList: TApEpSettings_MappingList;
   apBusinessGroupTreeNodeDisplayList: TAPBusinessGroupTreeNodeDisplayList;
   apBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
+  apAvailablePublishDestinationExternalSystemEntityIdList: TAPEntityIdList;
   onChange: (apEpSettings_MappingList: TApEpSettings_MappingList) => void; /** called every time the list has changed */
   onError: (apiCallState: TApiCallState) => void;
 }
@@ -41,6 +43,7 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   type TManagedObjectUseFormData = {
     applicationDomainName: string;
     owningBusinessGroupId: string;
+    publishDestinationIdList: Array<string>;
   };
   type TManagedObjectExtFormData = {
     selected_apEpApplicationDomainDisplay: IAPEpApplicationDomainDisplay;
@@ -55,6 +58,7 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     const ufd: TManagedObjectUseFormData = {
       owningBusinessGroupId: mo.owningBusinessGroupEntityId.id,
       applicationDomainName: mo.apEntityId.displayName,
+      publishDestinationIdList: APEntityIdsService.create_IdList(mo.apPublishDestinationInfo.apExternalSystemEntityIdList),
     };
     const efd: TManagedObjectExtFormData = {
       selected_apEpApplicationDomainDisplay: {
@@ -112,6 +116,9 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   const create_ManagedObject_From_FormEntities = ({formDataEnvelope}: {
     formDataEnvelope: TManagedObjectFormDataEnvelope;
   }): TManagedObject => {
+    const funcName = 'create_ManagedObject_From_FormEntities';
+    const logName = `${ComponentName}.${funcName}()`;
+
     const mo: TManagedObject = {
       apEntityId: formDataEnvelope.extFormData.selected_apEpApplicationDomainDisplay.apEntityId,
       owningBusinessGroupEntityId: {
@@ -119,9 +126,22 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
         displayName: 'set later for ' + formDataEnvelope.useFormData.owningBusinessGroupId
       },
       apBusinessGroupSharingList: formDataEnvelope.extFormData.businessGroupSharingList,
+      apPublishDestinationInfo: {
+        apExternalSystemEntityIdList: [],
+      },
       isValid: true,
       apSearchContent: ''
     }
+    // publish destinations
+    mo.apPublishDestinationInfo.apExternalSystemEntityIdList = [];
+    formDataEnvelope.useFormData.publishDestinationIdList.forEach( (selectedId: string) => {
+      const foundExternalSystemEntityId = props.apAvailablePublishDestinationExternalSystemEntityIdList.find( (x) => {
+        return x.id === selectedId;
+      });
+      if(foundExternalSystemEntityId === undefined) throw new Error(`${logName}: foundExternalSystemEntityId === undefined`);
+      mo.apPublishDestinationInfo.apExternalSystemEntityIdList.push(foundExternalSystemEntityId);
+    });
+    
     return mo;
   }
 
@@ -165,6 +185,8 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
   React.useEffect(() => {
     if(managedObjectFormDataEnvelope === undefined) return;
     managedObjectUseForm.setValue('useFormData', managedObjectFormDataEnvelope.useFormData);
+    // set arrays explicitely
+    managedObjectUseForm.setValue('useFormData.publishDestinationIdList', managedObjectFormDataEnvelope.useFormData.publishDestinationIdList);
     // setSelectedApis_RefreshCounter(selectedApis_RefreshCounter + 1);
   }, [managedObjectFormDataEnvelope]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
@@ -251,6 +273,12 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
       <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
     );
   }
+  const publishDestinationsBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    if(mo.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(mo.apPublishDestinationInfo.apExternalSystemEntityIdList))}</div>
+    );
+  }
   const renderMappings = (): JSX.Element => {
     const actionBodyTemplate = (mo: TManagedObject) => {
       return (
@@ -296,14 +324,20 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
           />
           <Column 
             header="Owning Business Group" 
-            headerStyle={{ width: "30em"}} 
+            headerStyle={{ width: "20%"}} 
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
             field={owningBusinessGroupNameField} 
             sortable 
           />
           <Column 
             header="Shared" 
+            headerStyle={{ width: "25%"}} 
             body={sharedBodyTemplate}
+            bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
+          />
+          <Column 
+            header="Publish Destination(s)"
+            body={publishDestinationsBodyTemplate}
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
           />
           <Column body={actionBodyTemplate} bodyStyle={{ width: '3em', textAlign: 'end' }} />
@@ -417,6 +451,35 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
     // alert(`${ComponentName}.onChange_EditNewBusinessGroupSharingList(): exclude chosen sharing & owning from business group select list???`);
   }
 
+  const renderPublishDestination_FromField = () => {
+    return (
+      <div className="p-field" style={{ width: '90%' }}>
+        <span className="p-float-label">
+          <Controller
+            control={managedObjectUseForm.control}
+            name="useFormData.publishDestinationIdList"
+            render={( { field, fieldState }) => {
+              return(
+                <MultiSelect
+                  display="chip"
+                  value={field.value ? [...field.value] : []} 
+                  options={props.apAvailablePublishDestinationExternalSystemEntityIdList} 
+                  onChange={(e) => field.onChange(e.value)}
+                  optionLabel={APEntityIdsService.nameOf('displayName')}
+                  optionValue={APEntityIdsService.nameOf('id')}
+                  // style={{width: '500px'}} 
+                  className={classNames({ 'p-invalid': fieldState.invalid })}        
+                  disabled={props.apAvailablePublishDestinationExternalSystemEntityIdList.length === 0}               
+                />
+            )}}
+          />
+          <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.useFormData?.publishDestinationIdList })}>Publish Destination(s)</label>
+        </span>
+        {APDisplayUtils.displayFormFieldErrorMessage4Array(managedObjectUseForm.formState.errors.useFormData?.publishDestinationIdList)}
+      </div>
+    );
+  }
+
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
@@ -437,6 +500,8 @@ export const EditNewApplicationDomainMappingForm: React.FC<IEditNewApplicationDo
             { renderApplicationDomain_FormElements() }
             {/* owning business group */}
             { renderChangeOwningBusinessGroup_FormField() }
+            {/* Publish Destinations */}
+            { renderPublishDestination_FromField() }
           </form>
 
           {/* outside the form */}

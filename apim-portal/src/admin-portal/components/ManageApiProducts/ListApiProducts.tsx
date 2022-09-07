@@ -256,7 +256,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return row.apLifecycleStageInfo.stage;
   }
   const publishedTemplate = (row: TManagedObject): JSX.Element => {
-    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>False</div>);
+    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>Not published</div>);
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
   }
   const getEmptyMessage = (): string => {
@@ -264,13 +264,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return MessageNoManagedObjectsFoundForFilter;
   }
   const renderManagedObjectDataTable = () => {
-    // const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    // const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    // // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
-    // const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
-    // const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    // const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
-
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
     const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
@@ -308,7 +301,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
           <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable />
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Published" headerStyle={{width: '7em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
+          <Column header="Published To" headerStyle={{width: '9em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
 
           {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
           <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />

@@ -18,8 +18,6 @@ export interface IViewEpSettingProps {
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
   onLoadSuccess: (apEpSettingsDisplay: IAPEpSettingsDisplay) => void;
-  // setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
-  // onNavigateHere: (organizationEntityId: TAPEntityId) => void;
 }
 
 export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSettingProps) => {
@@ -49,28 +47,11 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
     return callState;
   }
 
-  // const ViewOrganization_onNavigateHereCommand = (e: MenuItemCommandParams): void => {
-  //   props.onNavigateHere(props.organizationEntityId);
-  // }
-
   const doInitialize = async () => {
     props.onLoadingChange(true);
     await apiGetManagedObject();
     props.onLoadingChange(false);
   }
-
-  // const setBreadCrumbItemList = (moDisplayName: string) => {
-  //   if(props.scope.type === E_ManageOrganizations_Scope.ORG_SETTINGS) {
-  //     props.setBreadCrumbItemList([]);
-  //   } else {
-  //     props.setBreadCrumbItemList([
-  //       {
-  //         label: moDisplayName,
-  //         command: ViewOrganization_onNavigateHereCommand
-  //       }
-  //     ]);
-  //   }
-  // }
 
   // * useEffect Hooks *
 
@@ -81,7 +62,6 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
   React.useEffect(() => {
     if(managedObject === undefined) return;
     props.onLoadSuccess(managedObject);
-    // setBreadCrumbItemList(managedObject.apEntityId.displayName);
   }, [managedObject]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -128,8 +108,6 @@ export const ViewEpSetting: React.FC<IViewEpSettingProps> = (props: IViewEpSetti
     <div className="manage-organizations">
 
       { managedObject && <APComponentHeader header={`Configuration: ${managedObject.apEntityId.displayName}`} /> }
-
-      {/* <ApiCallStatusError apiCallStatus={apiCallStatus} /> */}
 
       { managedObject && renderManagedObject() }
 

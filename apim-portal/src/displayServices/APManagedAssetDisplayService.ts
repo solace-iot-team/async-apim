@@ -214,12 +214,12 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  protected create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
+  public create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
     if(apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return undefined;
     return APEntityIdsService.create_IdList(apPublishDestinationInfo.apExternalSystemEntityIdList).join(',');
   }
 
-  private getValidatedPublishDestinationList({ publishDestinationList_apAttributeDisplayList, complete_ApExternalSystemDisplayList }:{
+  public getValidatedPublishDestinationList({ publishDestinationList_apAttributeDisplayList, complete_ApExternalSystemDisplayList }:{
     publishDestinationList_apAttributeDisplayList: TAPAttributeDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
   }): TAPEntityIdList {

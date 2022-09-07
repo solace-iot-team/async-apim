@@ -13,6 +13,9 @@ import { EAction, E_CALL_STATE_ACTIONS } from "../ManageEpSettingsCommon";
 import APEpSettingsDisplayService, { IAPEpSettingsDisplay, TApEpSettings_MappingList } from "../../../../../displayServices/APEpSettingsDisplayService";
 import { EditNewApplicationDomainMappingForm } from "./EditNewApplicationDomainMappingForm";
 import { TAPBusinessGroupDisplayList, TAPBusinessGroupTreeNodeDisplayList } from "../../../../../displayServices/APBusinessGroupsDisplayService";
+import { TAPEntityIdList } from "../../../../../utils/APEntityIdsService";
+import { APSClientOpenApi } from "../../../../../utils/APSClientOpenApi";
+import APExternalSystemsDisplayService from "../../../../../displayServices/APExternalSystemsDisplayService";
 
 import '../../../../../components/APComponents.css';
 import "../../ManageOrganizations.css";
@@ -80,10 +83,10 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   const [managedObject] = React.useState<TManagedObject>(props.apEpSettingsDisplay);
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [availablePublishDestinationExternalSystemEntityIdList, setAvailablePublishDestinationExternalSystemEntityIdList] = React.useState<TAPEntityIdList>();
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
 
   // * Api Calls *
-
   const apiCheck_ManagedObjectIdExists = async(moId: string): Promise<boolean | undefined> => {
     const funcName = 'apiCheck_ManagedObjectIdExists';
     const logName = `${ComponentName}.${funcName}()`;
@@ -101,8 +104,26 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
     setApiCallStatus(callState);
     return checkResult;
   }
+  const apiGetPublishDestinations = async(): Promise<TApiCallState> => {
+    const funcName = 'apiGetPublishDestinations';
+    const logName = `${ComponentName}.${funcName}()`;
+    let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_PUBLISH_DESTINATIONS, 'get publish destinations');
+    try {
+      const publishDestinationList: TAPEntityIdList = await APExternalSystemsDisplayService.apiGetList_PublishDestinations({
+        organizationId: props.organizationId
+      });
+      setAvailablePublishDestinationExternalSystemEntityIdList(publishDestinationList);
+    } catch(e: any) {
+      APSClientOpenApi.logError(logName, e);
+      callState = ApiCallState.addErrorToApiCallState(e, callState);
+    }
+    setApiCallStatus(callState);
+    return callState;
+  }
+
 
   const doInitialize = async () => {
+    await apiGetPublishDestinations();
     setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
   }
 
@@ -178,6 +199,8 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   const renderManagedObjectForm = () => {
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
+
+    if(availablePublishDestinationExternalSystemEntityIdList === undefined) throw new Error(`${logName}: availablePublishDestinationExternalSystemEntityIdList === undefined`);
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
 
     const isNewObject: boolean = isNewManagedObject();
@@ -247,6 +270,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
               apBusinessGroupTreeNodeDisplayList={props.apBusinessGroupTreeNodeDisplayList}
               apBusinessGroupDisplayList={props.apBusinessGroupDisplayList}
               apEpSettings_MappingList={managedObjectFormDataEnvelope.extFormData.apEpSettings_MappingList}
+              apAvailablePublishDestinationExternalSystemEntityIdList={availablePublishDestinationExternalSystemEntityIdList}
               onChange={onChange_ApEpSettings_MappingList}
               onError={props.onError}
             />
@@ -260,7 +284,7 @@ export const EditNewEpSettingForm: React.FC<IEditNewEpSettingFormProps> = (props
   return (
     <div className="manage-organizations">
 
-      { managedObjectFormDataEnvelope && renderManagedObjectForm() }
+      { availablePublishDestinationExternalSystemEntityIdList && managedObjectFormDataEnvelope && renderManagedObjectForm() }
 
     </div>
   );

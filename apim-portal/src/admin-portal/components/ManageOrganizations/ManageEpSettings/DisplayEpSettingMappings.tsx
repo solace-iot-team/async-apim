@@ -38,6 +38,13 @@ export const DisplayEpSettingMappings: React.FC<IDisplayEpSettingMappingsProps> 
     );
   }
 
+  const publishDestinationsBodyTemplate = (row: IApEpSettings_Mapping): JSX.Element => {
+    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>None.</div>);
+    return(
+      <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList))}</div>
+    );
+  }
+
   const renderComponent = (): JSX.Element => {
     const dataKey = APDisplayUtils.nameOf<IApEpSettings_Mapping>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<IApEpSettings_Mapping>('apEntityId.displayName');
@@ -78,11 +85,12 @@ export const DisplayEpSettingMappings: React.FC<IDisplayEpSettingMappingsProps> 
             header="Shared"
             bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
           />
+          <Column 
+            body={publishDestinationsBodyTemplate}
+            header="Publish Destination(s)"
+            bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }}
+          />
         </DataTable>
-        {/* DEBUG */}
-        {/* <pre style={ { fontSize: '12px' }} >
-          {JSON.stringify(attributeList, null, 2)}
-        </pre> */}
       </React.Fragment>
     );
   }

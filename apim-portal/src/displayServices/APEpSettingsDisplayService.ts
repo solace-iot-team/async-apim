@@ -7,13 +7,20 @@ import {
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
-  IAPEntityIdDisplay, TAPEntityId,
+  IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList,
 } from '../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APApisDisplayService from './APApisDisplayService';
 import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 import APEpApplicationDomainsDisplayService, { IAPEpApplicationDomainDisplay } from './APEpApplicationDomainsDisplayService';
-import { EAPManagedAssetAttribute_BusinessGroup_Tag, EAPManagedAssetAttribute_Scope, TAPManagedAssetDisplay_BusinessGroupSharingList } from './APManagedAssetDisplayService';
+import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
+import { 
+  EAPManagedAssetAttribute_BusinessGroup_Tag, 
+  EAPManagedAssetAttribute_Publish_Tag, 
+  EAPManagedAssetAttribute_Scope, 
+  TAPManagedAssetDisplay_BusinessGroupSharingList, 
+  TAPManagedAssetPublishDestinationInfo 
+} from './APManagedAssetDisplayService';
 import APLoginUsersDisplayService from './APUsersDisplayService/APLoginUsersDisplayService';
 
 enum ConnectorImporterTypes {
@@ -36,6 +43,7 @@ export interface IApEpSettings_Mapping extends IAPEpApplicationDomainDisplay {
   isValid: boolean;
   owningBusinessGroupEntityId: TAPEntityId;
   apBusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList;
+  apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo;
 }
 export type TApEpSettings_MappingList = Array<IApEpSettings_Mapping>;
 export interface IAPEpSettingsDisplay extends IAPEntityIdDisplay, IAPSearchContent {
@@ -75,6 +83,9 @@ class APEpSettingsDisplayService {
       apSearchContent: '',
       owningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
       apBusinessGroupSharingList: [],
+      apPublishDestinationInfo: {
+        apExternalSystemEntityIdList: [],
+      },
       isValid: false
     };
   }
@@ -136,6 +147,27 @@ class APEpSettingsDisplayService {
     return apManagedAssetDisplay_BusinessGroupSharingList;
   }
 
+  private extract_PublishDestinationInfo_From_ApRawAttributeList = ({ apRawAttributeList, complete_ApExternalSystemDisplayList }:{
+    apRawAttributeList: TAPRawAttributeList;
+    complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
+  }): TAPManagedAssetPublishDestinationInfo => {
+    // const funcName = 'extract_PublishDestinationInfo_From_ApRawAttributeList';
+    // const logName = `${this.ComponentName}.${funcName}()`;
+
+    const apAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({ apRawAttributeList: apRawAttributeList });
+    const publishDestinationList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.PUBLISH, tag: EAPManagedAssetAttribute_Publish_Tag.DESTINATION }),
+      apAttributeDisplayList: apAttributeDisplayList
+    });
+    const publishDestinationEntityIdList: TAPEntityIdList = APApisDisplayService.getValidatedPublishDestinationList({
+      publishDestinationList_apAttributeDisplayList: publishDestinationList,
+      complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
+    });
+    return {
+      apExternalSystemEntityIdList: publishDestinationEntityIdList
+    };
+  }
+
   private create_ApRawAttributeList = ({ apEpSettings_Mapping }:{
     apEpSettings_Mapping: IApEpSettings_Mapping;
   }): TAPRawAttributeList => {
@@ -158,12 +190,21 @@ class APEpSettingsDisplayService {
       name: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.BUSINESS_GROUP, tag: EAPManagedAssetAttribute_BusinessGroup_Tag.SHARING_LIST }), 
       value: APApisDisplayService.create_BusinessGroupSharingListString(apEpSettings_Mapping.apBusinessGroupSharingList)
     }));
+    // publish destination
+    const publishDestinationInfoStr: string | undefined = APApisDisplayService.create_PublishDestinationInfoString(apEpSettings_Mapping.apPublishDestinationInfo);
+    if(publishDestinationInfoStr !== undefined) {
+      apAttributeDisplayList.push(APAttributesDisplayService.create_ApAttributeDisplay({ 
+        name: APApisDisplayService.create_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.PUBLISH, tag: EAPManagedAssetAttribute_Publish_Tag.DESTINATION }), 
+        value: publishDestinationInfoStr
+      }));  
+    }
     return APAttributesDisplayService.create_ApRawAttributeList({ apAttributeDisplayList: apAttributeDisplayList });
   }
 
-  private create_ApEpSettings_MappingList_From_ApiEntities = async({ organizationId, apEpSettings_ConnectorAttributeMapElementList }:{
+  private create_ApEpSettings_MappingList_From_ApiEntities = async({ organizationId, apEpSettings_ConnectorAttributeMapElementList, complete_ApExternalSystemDisplayList }:{
     apEpSettings_ConnectorAttributeMapElementList?: TApEpSettings_ConnectorAttributeMapElementList;
     organizationId: string;
+    complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
   }): Promise<TApEpSettings_MappingList> => {
     const funcName = 'create_ApEpSettings_MappingList_From_ApiEntities';
     const logName = `${this.ComponentName}.${funcName}()`;
@@ -185,6 +226,10 @@ class APEpSettingsDisplayService {
         },
         owningBusinessGroupEntityId: this.extract_OwningBusinessGroupEntityId_From_ApRawAttributeList({ apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes }),
         apBusinessGroupSharingList: this.extract_BusinessGroupSharingList_From_ApRawAttributeList({ apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes }),
+        apPublishDestinationInfo: this.extract_PublishDestinationInfo_From_ApRawAttributeList({ 
+          apRawAttributeList: apEpSettings_ConnectorAttributeMapElement.attributes,
+          complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
+        }),
         isValid: apEpApplicationDomainDisplay !== undefined,
         apSearchContent: ''
       };
@@ -193,19 +238,28 @@ class APEpSettingsDisplayService {
     return apEpSettings_MappingList;
   }
 
-  private create_ApEpSettingsDisplay_From_ApiEntities = async({ organizationId, connectorImporterConfiguration }:{
+  private create_ApEpSettingsDisplay_From_ApiEntities = async({ organizationId, connectorImporterConfiguration, complete_ApExternalSystemDisplayList }:{
     connectorImporterConfiguration: ImporterConfiguration;
     organizationId: string;
+    complete_ApExternalSystemDisplayList?: TAPExternalSystemDisplayList;
   }): Promise<IAPEpSettingsDisplay> => {
     // const funcName = 'create_ApEpSettingsDisplay_From_ApiEntities';
     // const logName = `${this.ComponentName}.${funcName}()`;
 
+    // get the complete external system list for reference
+    if(complete_ApExternalSystemDisplayList === undefined) {
+      complete_ApExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+        organizationId: organizationId,
+      });  
+    }
+    
     const apEpSettingsDisplay: IAPEpSettingsDisplay = {
       apEntityId: { id: connectorImporterConfiguration.name, displayName: connectorImporterConfiguration.displayName },
       connectorImporterConfiguration: connectorImporterConfiguration,
       apEpSettings_MappingList: await this.create_ApEpSettings_MappingList_From_ApiEntities({ 
         organizationId: organizationId, 
-        apEpSettings_ConnectorAttributeMapElementList: connectorImporterConfiguration.attributeMap 
+        apEpSettings_ConnectorAttributeMapElementList: connectorImporterConfiguration.attributeMap,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
       }),
       apSearchContent: ''
     };
@@ -293,6 +347,11 @@ class APEpSettingsDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
+    // get the complete external system list for reference
+    const complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList = await APExternalSystemsDisplayService.apiGetList_ApExternalSystemDisplay({ 
+      organizationId: organizationId,
+    });    
+    
     const connectorImporterConfigurationList: Array<ImporterConfiguration> = await ManagementService.getAllImporters({ 
       organizationName: organizationId,
     });
@@ -300,7 +359,8 @@ class APEpSettingsDisplayService {
     for(const connectorImporterConfiguration of connectorImporterConfigurationList) {
       list.push(await this.create_ApEpSettingsDisplay_From_ApiEntities({
         organizationId: organizationId, 
-        connectorImporterConfiguration: connectorImporterConfiguration
+        connectorImporterConfiguration: connectorImporterConfiguration,
+        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
       }));
     }
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
@@ -313,14 +373,14 @@ class APEpSettingsDisplayService {
     // const funcName = 'apiGet_ApEpSettingsDisplay';
     // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
-
+    
     const connectorImporterConfiguration: ImporterConfiguration = await ManagementService.getImporterJob({ 
       organizationName: organizationId,
       importerJobName: id
     });
     return await this.create_ApEpSettingsDisplay_From_ApiEntities({ 
       organizationId: organizationId,
-      connectorImporterConfiguration: connectorImporterConfiguration
+      connectorImporterConfiguration: connectorImporterConfiguration,
     });
   }
 
