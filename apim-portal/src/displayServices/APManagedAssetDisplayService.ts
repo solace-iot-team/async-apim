@@ -16,7 +16,8 @@ import APBusinessGroupsDisplayService, {
 import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
-const CAPManagedAssetAttribute_Prefix = "AP";
+const C_Connector_EP_ManagedAssetAttribute_Prefix = "EP";
+const C_AP_ManagedAssetAttribute_Prefix = "AP";
 export enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
   BUSINESS_GROUP = "BUSINESS_GROUP",
@@ -76,6 +77,7 @@ export type TAPManagedAssetPublishDestinationInfo = {
 export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
   devel_display_complete_ApAttributeList: TAPAttributeDisplayList; /** for devel display purposes only, only set during creation from api, not maintained on update */
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apConnector_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
   apOwnerInfo: TAPManagedAssetOwnerInfo;
@@ -101,15 +103,18 @@ export type TAPManagedAssetDisplay_AccessAndState = {
 export abstract class APManagedAssetDisplayService {
   private readonly BaseComponentName = "APManagedAssetDisplayService";
 
-  protected create_ManagedAssetAttribute_Prefix = (): string => {
-    return `_${CAPManagedAssetAttribute_Prefix}_`;
+  protected create_Connector_EP_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_`;
+  }
+  protected create_AP_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_AP_ManagedAssetAttribute_Prefix}_`;
   }
   public create_ManagedAssetAttribute_Name = ({ scope, tag }: {
     scope: EAPManagedAssetAttribute_Scope;
     tag?: TManagedAssetAttribute_Tag;
   }): string => {
-    if(tag !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
-    return `_${CAPManagedAssetAttribute_Prefix}_${scope}_`;
+    if(tag !== undefined) return `_${C_AP_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_AP_ManagedAssetAttribute_Prefix}_${scope}_`;
   }
 
   protected create_ConnectorFilter_For_Attribute({ attributeName, attributeValue }:{
@@ -144,6 +149,7 @@ export abstract class APManagedAssetDisplayService {
       devel_display_complete_ApAttributeList: [],
       apExternal_ApAttributeDisplayList: [],
       apCustom_ApAttributeDisplayList: [],
+      apConnector_ApAttributeDisplayList: [],
       apBusinessGroupInfo: {
         apOwningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
         apBusinessGroupSharingList: [],
@@ -383,9 +389,14 @@ export abstract class APManagedAssetDisplayService {
     });
     // save complete list for devel purposes
     const devel_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(working_ApAttributeDisplayList));
+    // extract connector controlled attributes
+    const _apConnector_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_ApAttributeDisplayList
+    });
     // extract externally controlled attributes
     const _apExternal_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Not_Prefixed_With({
-      not_prefixed_with: this.create_ManagedAssetAttribute_Prefix(),
+      not_prefixed_with: this.create_AP_ManagedAssetAttribute_Prefix(),
       apAttributeDisplayList: working_ApAttributeDisplayList
     });
     // working_ApAttributeDisplayList now contains only the AP controlled attributes
@@ -419,6 +430,7 @@ export abstract class APManagedAssetDisplayService {
       devel_display_complete_ApAttributeList: devel_complete_ApAttributeDisplayList,
       apExternal_ApAttributeDisplayList: _apExternal_ApAttributeDisplayList,
       apCustom_ApAttributeDisplayList: _apCustom_AttributeDisplayList,
+      apConnector_ApAttributeDisplayList: _apConnector_ApAttributeDisplayList,
       apBusinessGroupInfo: apBusinessGroupInfo,
       apOwnerInfo: apManagedAssetOwnerInfo,
       apPublishDestinationInfo: apManagedAssetPublishDestinationInfo,

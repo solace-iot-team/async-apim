@@ -218,7 +218,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
-      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
       
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 

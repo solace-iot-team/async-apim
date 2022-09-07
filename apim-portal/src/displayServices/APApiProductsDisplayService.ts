@@ -355,7 +355,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -455,7 +455,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
