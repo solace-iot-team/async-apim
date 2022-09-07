@@ -25,6 +25,9 @@ export type TRoleSelectItemList = Array<TRoleSelectItem>;
 
 export class ConfigHelper {
 
+  public static isEventPortal20 = (configContext: TAPConfigContext): boolean => {
+    return configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2;
+  }
   public static createOrganizationRolesSelectItems = (configContext: TAPConfigContext): TRoleSelectItemList => {
     const rbacScopeList: Array<EAPRbacRoleScope> = [EAPRbacRoleScope.ORGANIZATION];
     const rbacRoleList: TAPRbacRoleList = ConfigHelper.getSortedAndScopedRbacRoleList(configContext, rbacScopeList);

@@ -22,6 +22,7 @@ import { ConfigContext } from "../../../../components/ConfigContextProvider/Conf
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IManageEditOrganizationProps {
   organizationEntityId: TAPEntityId;
@@ -206,9 +207,8 @@ export const ManageEditOrganization: React.FC<IManageEditOrganizationProps> = (p
           </React.Fragment>
         </TabPanel>
       );
-      if(configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
+      if(ConfigHelper.isEventPortal20(configContext)) {
         tabPanels.push(
-          // <TabPanel header='Event Portal' key={Globals.getUUID()}>
           <TabPanel header='Event Portal' key={ComponentName + 'EventPortal_ManageEpSettings'}>
             <ManageEpSettings
               scope={EManageEpSettingsScope.EDIT}

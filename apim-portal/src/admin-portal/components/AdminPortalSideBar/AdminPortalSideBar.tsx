@@ -12,6 +12,8 @@ import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
+import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../components/APComponents.css';
 
@@ -23,6 +25,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
   // const componentName = 'AdminPortalSideBar';
 
   const history = useHistory();
+  const [configContext] = React.useContext(ConfigContext);
   const [authContext] = React.useContext(AuthContext);
   const [userContext] = React.useContext(UserContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
@@ -55,23 +58,30 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApis)
       ) return [];
 
-    let _items: Array<MenuItem> = [
+    let _items: Array<MenuItem> = [];
+    _items.push(
       {
         label: 'Manage Apps',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApps),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
       },
+    );
+    _items.push(
       {
         label: 'API Products',
         disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
-      {
-        label: 'APIs',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
-      },
-    ];
+    );
+    if(!ConfigHelper.isEventPortal20(configContext)) {
+      _items.push(
+        {
+          label: 'APIs',
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApis),
+          command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApis); }
+        },
+      );  
+    }
     return _items;
   }
 

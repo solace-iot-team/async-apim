@@ -34,6 +34,7 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
@@ -337,7 +338,7 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
         </TabPanel>
       );  
     }
-    if(props.scope !== E_DISPLAY_ORGANIZATION_SCOPE.REVIEW_AND_CREATE && configContext.portalAppInfo?.eventPortalVersion === About.EVENT_PORTAL_VERSION._2) {
+    if(props.scope !== E_DISPLAY_ORGANIZATION_SCOPE.REVIEW_AND_CREATE && ConfigHelper.isEventPortal20(configContext)) {
       jsxTabPanelList.push(
         // <TabPanel header='Event Portal' key={Globals.getUUID()}>
         <TabPanel header='Event Portal' key={ComponentName + 'EventPortal_ManageEpSettings'}>
