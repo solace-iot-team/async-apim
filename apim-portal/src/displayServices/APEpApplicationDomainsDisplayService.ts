@@ -1,3 +1,4 @@
+import { ApplicationDomain, ApplicationDomainList, EventPortal20Service } from '@solace-iot-team/apim-connector-openapi-browser';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
 } from '../utils/APEntityIdsService';
@@ -7,35 +8,21 @@ export interface IAPEpApplicationDomainDisplay extends IAPEntityIdDisplay, IAPSe
 }
 export type TAPEpApplicationDomainDisplayList = Array<IAPEpApplicationDomainDisplay>;
 
-type APIApplicationDomain = {
-  id: string;
-  displayName: string;
-}
-const HardCoded_APIApplicationDomainList: Array<APIApplicationDomain> = [
-  {
-    id: "cgsh8nobngu",
-    displayName: "integration/acme-retail"
-  },
-  {
-    id: '5aie6fukgys',
-    displayName: 'integration/bricks-and-mortar'
-  }
-];
-
-
 class APEpApplicationDomainsDisplayService {
   private readonly ComponentName = "APEpApplicationDomainsDisplayService";
 
-  private create_ApEpApplicationDomainDisplay_From_ApiEntities = ({ apiApplicationDomain }:{
-    apiApplicationDomain: APIApplicationDomain
+  private create_ApEpApplicationDomainDisplay_From_ApiEntities = ({ applicationDomain }:{
+    applicationDomain: ApplicationDomain
   }): IAPEpApplicationDomainDisplay => {
-    // const funcName = 'create_ApEpApplicationDomainDisplay_From_ApiEntities';
-    // const logName = `${this.ComponentName}.${funcName}()`;
+    const funcName = 'create_ApEpApplicationDomainDisplay_From_ApiEntities';
+    const logName = `${this.ComponentName}.${funcName}()`;
+
+    if(applicationDomain.id === undefined) throw new Error(`${logName}: applicationDomain.id === undefined`);
 
     const apEpApplicationDomainDisplay: IAPEpApplicationDomainDisplay = {
       apEntityId: {
-        id: apiApplicationDomain.id,
-        displayName: apiApplicationDomain.displayName
+        id: applicationDomain.id,
+        displayName: applicationDomain.name
       },
       apSearchContent: ''
     };
@@ -54,17 +41,29 @@ class APEpApplicationDomainsDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
-    // TODO: replace with api call
-    const apiApplicationDomainList: Array<APIApplicationDomain> = HardCoded_APIApplicationDomainList;
+    // get all the pages
 
+    let applicationDomainList: ApplicationDomainList = [];
+    let hasNextPage: boolean = true;
+    let nextPage: number = 1;
+    while (hasNextPage) {
+      const _applicationDomainList: ApplicationDomainList = await EventPortal20Service.listEpApplicationDomains({
+        organizationName: organizationId,
+        pageSize: 100,
+        pageNumber: nextPage,
+      });
+      if(_applicationDomainList.length === 0) hasNextPage = false;
+      else applicationDomainList.push(..._applicationDomainList);
+      nextPage++;
+    }
     const list: TAPEpApplicationDomainDisplayList = [];
-    for(const apiApplicationDomain of apiApplicationDomainList) {
+    for(const applicationDomain of applicationDomainList) {
       const isExcluded = exclude_TAPEpApplicationDomainDisplayList.find( (x) => {
-        return x.apEntityId.id === apiApplicationDomain.id;
+        return x.apEntityId.id === applicationDomain.id;
       });
       if(isExcluded === undefined) {
         list.push(this.create_ApEpApplicationDomainDisplay_From_ApiEntities({
-          apiApplicationDomain: apiApplicationDomain
+          applicationDomain: applicationDomain
         }));  
       }
     }
@@ -79,13 +78,11 @@ class APEpApplicationDomainsDisplayService {
     // const logName = `${this.ComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
-    // TODO: replace with api call
-    const apiApplicationDomainList: Array<APIApplicationDomain> = HardCoded_APIApplicationDomainList;
-    const found: APIApplicationDomain | undefined = apiApplicationDomainList.find( (x) => {
-      return x.id === applicationDomainId;
+    const applicationDomain: ApplicationDomain = await EventPortal20Service.getEpApplicationDomain({
+      organizationName: organizationId,
+      applicationDomainId: applicationDomainId
     });
-    if(found === undefined) return undefined;
-    return this.create_ApEpApplicationDomainDisplay_From_ApiEntities({ apiApplicationDomain: found });
+    return this.create_ApEpApplicationDomainDisplay_From_ApiEntities({ applicationDomain: applicationDomain });
   }
 
 }
