@@ -17,12 +17,11 @@ import { EditConnectivity } from "./EditConnectivity";
 import { EditIntegration } from "./EditIntegration";
 import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
 import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
-import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IManageEditOrganizationProps {
   organizationEntityId: TAPEntityId;

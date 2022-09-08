@@ -39,6 +39,8 @@ import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -337,6 +339,20 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
+  const renderIssues = (apApiProductConfigState: TAPApiProductConfigState): JSX.Element => {
+    const issueStringList: Array<string> = [];
+    for(const apApiProductConfigState_Issue of apApiProductConfigState.issueList) {
+      issueStringList.push(apApiProductConfigState_Issue.issueType);
+    }
+    return (
+      <div style={{ color: 'red' }}>
+        <div className="p-mt-2"><b>Issues:</b></div>
+        <div className="p-ml-2">
+          {APDisplayUtils.create_DivList_From_StringList(issueStringList)}
+        </div>
+      </div>
+    );
+  }
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
@@ -348,6 +364,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
             <div>{renderAccessLevel(mo.apAccessLevel)}</div>
             <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
+            <div>{renderIssues(mo.apApiProductConfigState)}</div>
 
             {/* DEBUG */}
             {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}
@@ -555,12 +572,17 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     ); 
   }
 
+  const getComponentHeaderStyle = (): React.CSSProperties | undefined => {
+    if(managedObject === undefined) return undefined;
+    if(!managedObject.apApiProductConfigState.apIsConfigComplete) return  { color: 'red' };
+    return undefined;
+  }
   return (
     <React.Fragment>
       <div className="manage-api-products">
 
         {props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING && managedObject && 
-          <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} />
+          <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} style={getComponentHeaderStyle()} />
         }
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />

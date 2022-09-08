@@ -27,7 +27,6 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { DisplayIntegration } from "./DisplayIntegration";
 import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
-import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
 import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
 import { TApiCallState } from "../../../../utils/ApiCallState";

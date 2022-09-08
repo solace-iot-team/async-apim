@@ -219,8 +219,14 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       </>
     );
   }
-  const nameBodyTemplate = (row: TManagedObject): string => {
-    return row.apEntityId.displayName;
+  const nameBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    let style: any = {};
+    if(!mo.apApiProductConfigState.apIsConfigComplete) style = { color: "red" };
+    return (
+      <div style={ style }>
+        {mo.apEntityId.displayName}
+      </div>
+    );
   }
   // const approvalTypeTemplate = (row: TManagedObject): string => {
   //   return row.apApprovalType;
@@ -319,7 +325,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
 
           {/* <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/> */}
-          <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+          <Column header="Referenced By" headerStyle={{width: '10em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>
     );

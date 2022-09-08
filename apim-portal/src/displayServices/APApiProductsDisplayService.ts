@@ -96,9 +96,23 @@ export type TAPApiProductDocumentationDisplay = {
   apSupportDocumentation?: string;
   apReferenceDocumentation?: string;
 }
+export enum ETAPApiProductConfigState_IssueType {
+  NO_ENVIRONMENTS_CONFIGURED = "No Environments configured"
+}
+export type TAPApiProductConfigState_Issue = {
+  issueType: ETAPApiProductConfigState_IssueType;
+}
+export type TAPApiProductConfigState_IssueList = Array<TAPApiProductConfigState_Issue>;
+export type TAPApiProductConfigState = {
+  apIsConfigComplete: boolean;
+  issueList: TAPApiProductConfigState_IssueList;
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // keep for devel purposes only
   devel_connectorApiProduct: APIProduct;
+
+  // housekeeping
+  apApiProductConfigState: TAPApiProductConfigState;
 
   // General
   apDescription: string;
@@ -249,6 +263,10 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
       devel_connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
 
+      apApiProductConfigState: {
+        apIsConfigComplete: false,
+        issueList: []
+      },
       apDescription: '',
       apApiProductDocumentationDisplay: {
         apSupportDocumentation: '',
@@ -306,6 +324,21 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apRawAttributeList;
   }
 
+  protected determine_ApApiProductConfigState( connectorApiProduct: APIProduct ): TAPApiProductConfigState {
+    const apApiProductConfigState: TAPApiProductConfigState = {
+      apIsConfigComplete: true,
+      issueList: []
+    };
+    // check if it has environments
+    if(connectorApiProduct.environments.length === 0) {
+      apApiProductConfigState.issueList.push({
+        issueType: ETAPApiProductConfigState_IssueType.NO_ENVIRONMENTS_CONFIGURED,
+      });
+    }
+    if(apApiProductConfigState.issueList.length > 0) apApiProductConfigState.apIsConfigComplete = false;
+    return apApiProductConfigState;
+  }
+
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -341,6 +374,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       ..._base,
 
       devel_connectorApiProduct: connectorApiProduct,
+
+      apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
 
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
 
@@ -439,6 +474,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       ..._base,
 
       devel_connectorApiProduct: connectorApiProduct,
+      apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
