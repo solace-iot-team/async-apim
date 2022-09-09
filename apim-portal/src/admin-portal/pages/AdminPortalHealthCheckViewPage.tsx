@@ -4,11 +4,11 @@ import { useHistory } from 'react-router-dom';
 import { Divider } from 'primereact/divider';
 
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
-import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../../components/APContextProviders/AuthContextProvider';
 import { DisplaySystemHealthInfo } from '../../components/SystemHealth/DisplaySystemHealthInfo';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../../utils/APHealthCheck';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
-import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
+import { ConfigContext } from '../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider';
 
 export const AdminPortalHealthCheckViewPage: React.FC = () => {
   const componentName = 'AdminPortalHealthCheckViewPage';

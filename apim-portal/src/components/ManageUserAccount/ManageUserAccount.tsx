@@ -8,7 +8,7 @@ import { TabPanel, TabView } from "primereact/tabview";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { TAPEntityId } from "../../utils/APEntityIdsService";
 import { E_CALL_STATE_ACTIONS } from "./ManageUserAccountCommon";

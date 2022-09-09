@@ -2,7 +2,7 @@ import { AuthHelper } from '../auth/AuthHelper';
 import { TOrganizationContextAction } from '../components/APContextProviders/APOrganizationContextProvider';
 import { TAPSessionContext, TSessionContextAction } from '../components/APContextProviders/APSessionContextProvider';
 import { UserContextAction } from '../components/APContextProviders/APUserContextProvider';
-import { AuthContextAction } from '../components/AuthContextProvider/AuthContextProvider';
+import { AuthContextAction } from '../components/APContextProviders/AuthContextProvider';
 import { TAPEntityId } from '../utils/APEntityIdsService';
 import { 
   APRbac, 

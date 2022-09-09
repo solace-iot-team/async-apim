@@ -15,7 +15,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { E_CALL_STATE_ACTIONS, ManageConnectorsCommon, TViewManagedObject } from "./ManageConnectorsCommon";
 import { TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
 import { APConnectorHealthCheck, EAPHealthCheckSuccess, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { SystemHealthCommon } from "../../../components/SystemHealth/SystemHealthCommon";
 
 import '../../../components/APComponents.css';

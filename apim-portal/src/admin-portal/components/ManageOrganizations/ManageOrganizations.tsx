@@ -23,7 +23,7 @@ import APContextsDisplayService from "../../../displayServices/APContextsDisplay
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { SessionContext } from "../../../components/APContextProviders/APSessionContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { ListSystemOrganizations } from "./ListSystemOrganizations";
 import { ViewOrganization } from "./ViewOrganization";
 import { ManageEditOrganization } from "./EditNewOrganization/ManageEditOrganization";

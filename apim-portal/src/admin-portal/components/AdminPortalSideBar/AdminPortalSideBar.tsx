@@ -4,7 +4,7 @@ import { useHistory } from 'react-router-dom';
 import { MenuItem } from "primereact/components/menuitem/MenuItem";
 import { PanelMenu } from 'primereact/panelmenu';
 
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSummaryContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
@@ -12,8 +12,8 @@ import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import { ConfigHelper } from "../../../components/ConfigContextProvider/ConfigHelper";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigHelper } from "../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../components/APComponents.css';
 

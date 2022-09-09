@@ -6,11 +6,11 @@ import { Dialog } from "primereact/dialog";
 
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageLoginAndSelectCommon";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { TAPSecLoginUserResponse } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { TAPEntityId, TAPEntityIdList } from "../../utils/APEntityIdsService";
 import APMemberOfService from "../../displayServices/APUsersDisplayService/APMemberOfService";

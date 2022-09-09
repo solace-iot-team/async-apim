@@ -10,7 +10,7 @@ import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./ManageOrganizationUsersCommon";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import APEntityIdsService, { 
   TAPEntityId, 

@@ -2,7 +2,7 @@
 import React from "react";
 import { useInterval } from 'react-use';
 
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
@@ -20,7 +20,7 @@ import {
   Globals, 
 } from "../../utils/Globals";
 import { APLogger } from "../../utils/APLogger";
-import { ConfigHelper } from "../ConfigContextProvider/ConfigHelper";
+import { ConfigHelper } from "../APContextProviders/ConfigContextProvider/ConfigHelper";
 
 import "../APComponents.css";
 import "./SystemHealth.css";

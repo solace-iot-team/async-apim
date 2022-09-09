@@ -9,12 +9,12 @@ import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSSessionRefreshTokenResponse } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EAppState, Globals } from "../../utils/Globals";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { Loading } from "../Loading/Loading";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 
 export interface UserSecRefreshProps {
   children: any;

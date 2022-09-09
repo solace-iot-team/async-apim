@@ -15,7 +15,7 @@ import APAdminPortalApiProductsDisplayService, {
   TAPAdminPortalApiProductDisplay_AllowedActions 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { ListMaintainApiProducts } from "./ListMaintainApiProducts";
 import { ViewApiProduct } from "../ManageApiProducts/ViewApiProduct";
 import { ManageEditNewApiProduct } from "../ManageApiProducts/EditNewApiProduct/ManageEditNewApiProduct";

@@ -36,11 +36,11 @@ import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displaySer
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 // import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
+import { TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export enum E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE {
   REVIEW_AND_CREATE = "REVIEW_AND_CREATE",
@@ -344,6 +344,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     for(const apApiProductConfigState_Issue of apApiProductConfigState.issueList) {
       issueStringList.push(apApiProductConfigState_Issue.issueType);
     }
+    if(issueStringList.length === 0) return (<></>);
     return (
       <div style={{ color: 'red' }}>
         <div className="p-mt-2"><b>Issues:</b></div>

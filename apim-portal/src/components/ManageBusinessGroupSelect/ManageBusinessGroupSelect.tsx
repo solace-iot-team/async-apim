@@ -4,7 +4,7 @@ import React from "react";
 import { Divider } from "primereact/divider";
 
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import APLoginUsersDisplayService, { 
   TAPLoginUserDisplay, 

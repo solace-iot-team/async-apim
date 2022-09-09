@@ -6,7 +6,7 @@ import {
   APSAbout 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
-import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
+import { TAPConfigContext } from "../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
 import { About } from "@solace-iot-team/apim-connector-openapi-browser";
@@ -29,11 +29,6 @@ export type TAPPortalAppAbout = {
   'apim-server-openapi-version': string;
   "apim-connector-openapi-version": string;
 }
-
-// export enum EEventPortalVersion {
-//   VERSION_1 = "1",
-//   VERSION_2 = "2"
-// }
 
 export type TAPPortalAppInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo;

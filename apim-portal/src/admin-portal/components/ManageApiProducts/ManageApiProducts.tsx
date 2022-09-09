@@ -21,7 +21,7 @@ import APAdminPortalApiProductsDisplayService, {
 import { DeleteApiProduct } from "./DeleteApiProduct";
 import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
 import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";

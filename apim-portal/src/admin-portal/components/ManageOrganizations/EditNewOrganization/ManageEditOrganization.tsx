@@ -17,8 +17,8 @@ import { EditConnectivity } from "./EditConnectivity";
 import { EditIntegration } from "./EditIntegration";
 import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
 import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
-import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
-import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
+import { ConfigContext } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
+import { ConfigHelper } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";

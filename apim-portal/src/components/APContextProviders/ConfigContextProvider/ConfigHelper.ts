@@ -1,6 +1,6 @@
 import { ConfigContextAction, TAPConfigContext  } from './ConfigContextProvider';
-import { APRbac, EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from '../../utils/APRbac';
-import { ApiCallState, TApiCallState } from '../../utils/ApiCallState';
+import { APRbac, EAPRbacRoleScope, TAPRbacRole, TAPRbacRoleList } from '../../../utils/APRbac';
+import { ApiCallState, TApiCallState } from '../../../utils/ApiCallState';
 import { 
   ApsConfigService,
   APSConnector, 
@@ -13,11 +13,11 @@ import {
   EAPSOrganizationAuthRole,
   ApsMonitorService,
   APSConnectorStatus,
-} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { APSClientOpenApi } from '../../utils/APSClientOpenApi';
-import { TAPPortalAppInfo } from '../../utils/Globals';
-import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
-import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../utils/APortalApiCalls';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { APSClientOpenApi } from '../../../utils/APSClientOpenApi';
+import { TAPPortalAppInfo } from '../../../utils/Globals';
+import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
+import { APortalAppApiCalls, E_APORTAL_APP_CALL_STATE_ACTIONS } from '../../../utils/APortalApiCalls';
 import { About } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export type TRoleSelectItem = { label: string, value: EAPSOrganizationAuthRole };

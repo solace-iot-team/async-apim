@@ -7,7 +7,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { EUICommonResourcePaths } from "../../utils/Globals";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders//AuthContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { SessionContext } from "../APContextProviders/APSessionContextProvider";

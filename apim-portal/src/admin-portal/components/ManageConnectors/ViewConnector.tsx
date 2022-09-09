@@ -9,7 +9,7 @@ import {
   APSId
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";

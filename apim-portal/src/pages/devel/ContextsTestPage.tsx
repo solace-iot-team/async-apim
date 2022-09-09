@@ -1,8 +1,8 @@
 import React from 'react';
 import { OrganizationContext } from '../../components/APContextProviders/APOrganizationContextProvider';
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
-import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
-import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
+import { AuthContext } from '../../components/APContextProviders/AuthContextProvider';
+import { ConfigContext } from '../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 import { SessionContext } from '../../components/APContextProviders/APSessionContextProvider';
 

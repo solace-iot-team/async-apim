@@ -10,8 +10,8 @@ import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConn
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { E_CALL_STATE_ACTIONS, E_COMPONENT_STATE } from "./MaintainApisCommon";
 import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";

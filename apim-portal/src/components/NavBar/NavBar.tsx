@@ -8,10 +8,10 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { Sidebar } from 'primereact/sidebar';
 import { Divider } from 'primereact/divider';
 
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../APHealthCheckSummaryContextProvider";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";
 import { RenderWithRbac } from "../../auth/RenderWithRbac";

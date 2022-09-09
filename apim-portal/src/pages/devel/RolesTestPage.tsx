@@ -1,5 +1,5 @@
 import React from 'react';
-import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../../components/APContextProviders/AuthContextProvider';
 import { UserContext } from '../../components/APContextProviders/APUserContextProvider';
 
 export const RolesTestPage: React.FC = () => {

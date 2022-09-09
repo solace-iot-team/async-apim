@@ -26,14 +26,14 @@ import { Globals } from "../../../../utils/Globals";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { DisplayIntegration } from "./DisplayIntegration";
 import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { ConfigContext } from "../../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
+import { ConfigHelper } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
 import { ManageEpSettings } from "../ManageEpSettings/ManageEpSettings";
 import { EManageEpSettingsScope } from "../ManageEpSettings/ManageEpSettingsCommon";
 import { TApiCallState } from "../../../../utils/ApiCallState";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { ConfigHelper } from "../../../../components/ConfigContextProvider/ConfigHelper";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;

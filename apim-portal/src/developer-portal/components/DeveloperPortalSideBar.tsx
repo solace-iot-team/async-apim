@@ -6,7 +6,7 @@ import { PanelMenu } from 'primereact/panelmenu';
 
 import { AuthHelper } from "../../auth//AuthHelper";
 import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from "../../utils/Globals";
-import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../../components/APContextProviders/AuthContextProvider';
 import { UserContext } from "../../components/APContextProviders/APUserContextProvider";
 import { APHealthCheckSummaryContext } from "../../components/APHealthCheckSummaryContextProvider";
 import { EAPHealthCheckSuccess } from "../../utils/APHealthCheck";

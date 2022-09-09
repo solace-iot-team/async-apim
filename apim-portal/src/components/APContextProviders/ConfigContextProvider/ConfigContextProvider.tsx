@@ -1,11 +1,11 @@
 import React from "react";
 import { 
   APSConnector 
-} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPRbacRoleList } from '../../utils/APRbac';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { TAPRbacRoleList } from '../../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
-import { TAPConnectorInfo } from "../../utils/APConnectorApiCalls";
-import { TAPPortalAppInfo } from "../../utils/Globals";
+import { TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { TAPPortalAppInfo } from "../../../utils/Globals";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {

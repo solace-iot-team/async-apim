@@ -3,7 +3,7 @@ import React from "react";
 import { Redirect } from 'react-router-dom';
 
 import { EUICommonResourcePaths } from "../utils/Globals";
-import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../components/APContextProviders/AuthContextProvider';
 import { AuthHelper } from "./AuthHelper";
 
 export interface WithAuthRbacOptions {

@@ -8,7 +8,7 @@ import { MenuItem } from "primereact/api";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { Loading } from "../../../components/Loading/Loading";
 import { CheckConnectorHealth } from "../../../components/SystemHealth/CheckConnectorHealth";
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import APSystemOrganizationsDisplayService from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
@@ -17,7 +17,7 @@ import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCa
 import { ListApis } from "./ListApis";
 import APApisDisplayService, { IAPApiDisplay, TAPApiDisplay_AllowedActions } from "../../../displayServices/APApisDisplayService";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { ManageNewApi } from "./EditNewApi/ManageNewApi";
 import { E_Edit_Scope, ManageEditApi } from "./EditNewApi/ManageEditApi";
 import { DeleteApi } from "./DeleteApi";

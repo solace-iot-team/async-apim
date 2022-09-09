@@ -12,7 +12,7 @@ import {
 import { APClientRawError, APClientServerRaw } from './APClientRaw';
 import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { EAppState, Globals, TAPConfigIssueList, TAPPortalAppAbout } from './Globals';
-import { TAPConfigContext } from '../components/ConfigContextProvider/ConfigContextProvider';
+import { TAPConfigContext } from '../components/APContextProviders/ConfigContextProvider/ConfigContextProvider';
 import { TUserContext } from '../components/APContextProviders/APUserContextProvider';
 import { APConnectorApiHelper, TAPConnectorAbout } from './APConnectorApiCalls';
 import { APLogger } from './APLogger';

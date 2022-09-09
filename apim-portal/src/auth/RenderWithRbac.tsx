@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../components/APContextProviders/AuthContextProvider';
 import { AuthHelper } from "./AuthHelper";
 
 export interface IRenderWithRbacProps {
@@ -12,8 +12,7 @@ export interface IRenderWithRbacProps {
 
 export const RenderWithRbac: React.FC<IRenderWithRbacProps> = (props: IRenderWithRbacProps) => {
 
-  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
+  const [authContext] = React.useContext(AuthContext);
 
   const isAuthorized: boolean = AuthHelper.isAuthorizedToAccessResource(authContext.authorizedResourcePathsAsString, props.resourcePath);
 

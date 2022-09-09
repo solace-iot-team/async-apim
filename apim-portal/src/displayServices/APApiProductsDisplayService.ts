@@ -97,7 +97,8 @@ export type TAPApiProductDocumentationDisplay = {
   apReferenceDocumentation?: string;
 }
 export enum ETAPApiProductConfigState_IssueType {
-  NO_ENVIRONMENTS_CONFIGURED = "No Environments configured"
+  NO_ENVIRONMENTS_CONFIGURED = "No Environments configured",
+  NO_PROTOCOLS_CONFIGURED = "No Protocols configured",
 }
 export type TAPApiProductConfigState_Issue = {
   issueType: ETAPApiProductConfigState_IssueType;
@@ -333,6 +334,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     if(connectorApiProduct.environments.length === 0) {
       apApiProductConfigState.issueList.push({
         issueType: ETAPApiProductConfigState_IssueType.NO_ENVIRONMENTS_CONFIGURED,
+      });
+    }
+    // check if it has protocols
+    if(connectorApiProduct.protocols.length === 0) {
+      apApiProductConfigState.issueList.push({
+        issueType: ETAPApiProductConfigState_IssueType.NO_PROTOCOLS_CONFIGURED,
       });
     }
     if(apApiProductConfigState.issueList.length > 0) apApiProductConfigState.apIsConfigComplete = false;

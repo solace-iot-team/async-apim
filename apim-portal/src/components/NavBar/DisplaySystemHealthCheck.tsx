@@ -6,7 +6,7 @@ import { Button } from "primereact/button";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Divider } from "primereact/divider";
 
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { APHealthCheckContext } from "../APHealthCheckContextProvider";
 import { 
   EAPHealthCheckSuccess, 
