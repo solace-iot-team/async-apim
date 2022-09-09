@@ -44,6 +44,7 @@ export type TAPApiDisplay_AllowedActions = {
   isDeleteAllowed: boolean;
   isEditAllowed: boolean;
   isViewAllowed: boolean;
+  // deprecated
   isImportFromEventPortalAllowed: boolean;
 }
 export type TAPApiDisplay_AsyncApiSpec = IAPEntityIdDisplay & {
@@ -307,19 +308,34 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     hasEventPortalConnectivity: boolean;
     apApiDisplay: IAPApiDisplay;
   }): TAPApiDisplay_AllowedActions {
+    const funcName = 'get_AllowedActions';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-// const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-//   apOrganizationDisplay: organizationContext
-// });
-// const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
+    let allowedActions: TAPApiDisplay_AllowedActions = this.get_Empty_AllowedActions();
 
-    const isApiLinked: boolean = apApiDisplay.connectorApiInfo.source === APIInfo.source.EVENT_PORTAL_LINK; 
-    const allowedActions: TAPApiDisplay_AllowedActions = {
-      isEditAllowed: !isApiLinked,
-      isDeleteAllowed: apApiDisplay.apApiProductReferenceEntityIdList.length === 0,
-      isViewAllowed: true,
-      isImportFromEventPortalAllowed: !isEventPortalApisProxyMode && hasEventPortalConnectivity,
-    };
+    switch(apApiDisplay.connectorApiInfo.source) {
+      case APIInfo.source.EVENT_PORTAL_LINK:
+        throw new Error(`${logName}: unsupported source = ${apApiDisplay.connectorApiInfo.source}`);
+      case APIInfo.source.UPLOAD:
+        allowedActions = {
+          isEditAllowed: true,
+          isDeleteAllowed: apApiDisplay.apApiProductReferenceEntityIdList.length === 0,
+          isViewAllowed: true,
+          isImportFromEventPortalAllowed: !isEventPortalApisProxyMode && hasEventPortalConnectivity,
+        };    
+        break;
+      case APIInfo.source.EVENT_APIPRODUCT:
+        allowedActions = {
+          isEditAllowed: false,
+          isDeleteAllowed: false,
+          isViewAllowed: true,
+          isImportFromEventPortalAllowed: false,
+        };    
+        break;
+      default:
+        Globals.assertNever(logName, apApiDisplay.connectorApiInfo.source);
+    }
+
     // additional checks: see AdminPortalApiProductDisplayService
     // if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
     //   // check if owned by user

@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useHistory } from 'react-router-dom';
 
 import { Button } from 'primereact/button';
 import { Toolbar } from 'primereact/toolbar';
@@ -24,6 +25,8 @@ import { DeleteApi } from "./DeleteApi";
 import { TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "./DisplayAdminPortalApi";
 import { ViewApi } from "./ViewApi";
+import { E_AP_OPS_MODE, APOperationMode } from "../../../utils/APOperationMode";
+import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -88,9 +91,12 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
   const [showNewComponent, setShowNewComponent] = React.useState<boolean>(false);
   const [showImportEventPortalComponent, setShowImportEventPortalComponent] = React.useState<boolean>(false);
 
+  const history = useHistory();
+  const navigateHome = (): void => { history.push(EUIAdminPortalResourcePaths.UserHome); }
 
   // * useEffect Hooks *
   React.useEffect(() => {
+    if(APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.EP2_OPS_MODE) navigateHome();
     if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     else {
       setManagedObjectEntityId(props.apPageNavigationInfo.apNavigationTarget.apEntityId);
@@ -207,9 +213,12 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     // });
     // const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
     const showImportEventPortalButton: boolean = false;
+    const showNewButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showListComponent) return (
       <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        {showNewButton &&
+          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        }
         {showImportEventPortalButton && 
           <Button disabled={true} label={ToolbarButtonLabelImportEventPortal} icon="pi pi-cloud-download" onClick={onImportManagedObjectEventPortal} className="p-button-text p-button-plain p-button-outlined"/>
         }
@@ -218,7 +227,9 @@ export const ManageApis: React.FC<IManageApisProps> = (props: IManageApisProps) 
     if(showViewComponent) {          
       return (
         <React.Fragment>
-          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+          {showNewButton &&
+            <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+          }
           <Button label={ToolbarEditManagedObjectButtonLabel} icon="pi pi-pencil" onClick={onEditManagedObjectFromToolbar} className="p-button-text p-button-plain p-button-outlined" disabled={!managedObject_AllowedActions.isEditAllowed} />        
         </React.Fragment>
       );

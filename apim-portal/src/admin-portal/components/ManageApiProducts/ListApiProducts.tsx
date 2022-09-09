@@ -24,6 +24,7 @@ import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 export interface IListApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -89,7 +90,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
-        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -114,7 +116,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
-        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList
+        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -240,6 +243,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apVersionInfo.apLastVersion}</div>);
   }
+  const sourceBodyTemplate = (mo: TManagedObject): string => {
+    return mo.apApiProductSource;
+  }
   const sharedBodyTemplate = (row: TManagedObject): JSX.Element => {
     const sharingEntityIdList: TAPEntityIdList = row.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
       return {
@@ -255,9 +261,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   // const apEntityIdBodyTemplate = (row: TManagedObject) => {
   //   return JSON.stringify(row.apEntityId);
   // }
-  const accessLevelTemplate = (row: TManagedObject): string => {
-    return row.apAccessLevel;
-  }
+  // const accessLevelTemplate = (row: TManagedObject): string => {
+  //   return row.apAccessLevel;
+  // }
   const stateTemplate = (row: TManagedObject): string => {
     return row.apLifecycleStageInfo.stage;
   }
@@ -273,9 +279,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
     const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    const accessLevelSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
+    // const accessLevelSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
     const stateSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apLifecycleStageInfo.stage');
     const businessGroupSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
+    const sourceSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apApiProductSource');
     return (
       <div className="card">
         <DataTable
@@ -305,7 +312,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
           {/* <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
           <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-          <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable />
+
+          <Column header="Source" headerStyle={{width: '11em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable />
+
+          {/* <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable /> */}
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
           <Column header="Published To" headerStyle={{width: '9em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
 

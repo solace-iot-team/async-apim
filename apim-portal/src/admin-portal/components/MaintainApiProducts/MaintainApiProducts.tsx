@@ -21,10 +21,11 @@ import { ViewApiProduct } from "../ManageApiProducts/ViewApiProduct";
 import { ManageEditNewApiProduct } from "../ManageApiProducts/EditNewApiProduct/ManageEditNewApiProduct";
 import { EAction } from "../ManageApiProducts/ManageApiProductsCommon";
 import { DeleteApiProduct } from "../ManageApiProducts/DeleteApiProduct";
+import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../ManageApiProducts/DisplayApiProduct";
 
 import '../../../components/APComponents.css';
 import "./MaintainApiProducts.css";
-import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "../ManageApiProducts/DisplayApiProduct";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 export interface IMaintainApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -104,7 +105,8 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
     }));
   }
   //  * View Object *
@@ -115,7 +117,8 @@ export const MaintainApiProducts: React.FC<IMaintainApiProductsProps> = (props: 
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
     }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  

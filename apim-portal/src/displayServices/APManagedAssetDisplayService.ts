@@ -17,6 +17,7 @@ import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService'
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
 const C_Connector_EP_ManagedAssetAttribute_Prefix = "EP";
+const C_Connector_AC_ManagedAssetAttribute_Prefix = "IMP";
 const C_AP_ManagedAssetAttribute_Prefix = "AP";
 export enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
@@ -24,6 +25,7 @@ export enum EAPManagedAssetAttribute_Scope {
   CLASSIFICATION = "CLASSIFICATION",
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
+  SOURCE = "SOURCE",
 }
 export enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_ID = "OWNING_ID",
@@ -105,6 +107,16 @@ export abstract class APManagedAssetDisplayService {
 
   protected create_Connector_EP_ManagedAssetAttribute_Prefix = (): string => {
     return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_`;
+  }
+  protected create_Connector_AC_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_`;
+  }
+  public create_Connector_AC_ManagedAssetAttribute_Name = ({ scope, tag }: {
+    scope: EAPManagedAssetAttribute_Scope;
+    tag?: TManagedAssetAttribute_Tag;
+  }): string => {
+    if(tag !== undefined) return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_${scope}_`;
   }
   protected create_AP_ManagedAssetAttribute_Prefix = (): string => {
     return `_${C_AP_ManagedAssetAttribute_Prefix}_`;
@@ -390,10 +402,17 @@ export abstract class APManagedAssetDisplayService {
     // save complete list for devel purposes
     const devel_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(working_ApAttributeDisplayList));
     // extract connector controlled attributes
-    const _apConnector_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+    
+    const _apConnector_EP_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Prefix(),
       apAttributeDisplayList: working_ApAttributeDisplayList
     });
+    const _apConnector_AC_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_ApAttributeDisplayList
+    });
+    const _apConnector_ApAttributeDisplayList: TAPAttributeDisplayList = _apConnector_AC_ApAttributeDisplayList.concat(_apConnector_EP_ApAttributeDisplayList);
+
     // extract externally controlled attributes
     const _apExternal_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Not_Prefixed_With({
       not_prefixed_with: this.create_AP_ManagedAssetAttribute_Prefix(),

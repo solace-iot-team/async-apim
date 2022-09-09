@@ -25,7 +25,7 @@ import { Config } from "../../../Config";
 import { EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
-import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
+import { MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
@@ -36,7 +36,7 @@ import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displaySer
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 // import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
-import { TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
+import { E_ApApiProductSource, TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
@@ -316,19 +316,23 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     }
     return (<></>);
   }
-
   const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     return(
       <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
     );
   }
-
-  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
-    return(
-      <span><b>Access: </b>{accessLevel}</span>
-    );
+  const renderSource = (apApiProductSource: E_ApApiProductSource): JSX.Element => {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      return (
+        <div><b>Source</b>: {apApiProductSource}</div>
+      );
+    } else return (<></>);
   }
-
+  // const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
+  //   return(
+  //     <span><b>Access: </b>{accessLevel}</span>
+  //   );
+  // }
   const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
     const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
       if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
@@ -363,7 +367,8 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
-            <div>{renderAccessLevel(mo.apAccessLevel)}</div>
+            <div>{renderSource(mo.apApiProductSource)}</div>
+            {/* <div>{renderAccessLevel(mo.apAccessLevel)}</div> */}
             <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
             <div>{renderIssues(mo.apApiProductConfigState)}</div>
 

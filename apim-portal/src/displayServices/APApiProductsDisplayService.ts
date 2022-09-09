@@ -34,6 +34,7 @@ import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService'
 import APLifecycleStageInfoDisplayService, { IAPLifecycleStageInfo } from './APLifecycleStageInfoDisplayService';
 import { 
   APManagedAssetDisplayService, 
+  EAPManagedAssetAttribute_Scope, 
   IAPManagedAssetDisplay,
   TAPManagedAssetDisplay_AccessAndState,
   TAPManagedAssetPublishDestinationInfo,
@@ -108,12 +109,18 @@ export type TAPApiProductConfigState = {
   apIsConfigComplete: boolean;
   issueList: TAPApiProductConfigState_IssueList;
 }
+export enum E_ApApiProductSource {
+  UNKNOWN ="unknown source",
+  MANUAL = "manually created",
+  EP2 = "Solace Event Portal"
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // keep for devel purposes only
   devel_connectorApiProduct: APIProduct;
 
   // housekeeping
   apApiProductConfigState: TAPApiProductConfigState;
+  apApiProductSource: E_ApApiProductSource;
 
   // General
   apDescription: string;
@@ -268,6 +275,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         apIsConfigComplete: false,
         issueList: []
       },
+      apApiProductSource: E_ApApiProductSource.UNKNOWN,
       apDescription: '',
       apApiProductDocumentationDisplay: {
         apSupportDocumentation: '',
@@ -346,6 +354,21 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apApiProductConfigState;
   }
 
+  protected determine_ApApiProductSource(apConnector_ApAttributeDisplayList: TAPAttributeDisplayList): E_ApApiProductSource {
+    // const funcName = 'determine_ApApiProductSource';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // console.log(`${logName}: apConnector_ApAttributeDisplayList=${JSON.stringify(apConnector_ApAttributeDisplayList, null, 2)}`);
+    const apApiProductSourceAttributeList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.SOURCE }),
+      apAttributeDisplayList: apConnector_ApAttributeDisplayList
+    });
+    if(apApiProductSourceAttributeList.length === 0) return E_ApApiProductSource.MANUAL;
+    const value = apApiProductSourceAttributeList[0].value;
+    // alert(`${logName}: value = ${value}`);
+    if(value.includes(E_ApApiProductSource.EP2)) return E_ApApiProductSource.EP2;
+    return E_ApApiProductSource.MANUAL;
+  }
+
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -383,6 +406,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       devel_connectorApiProduct: connectorApiProduct,
 
       apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
+
+      apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
 
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
 
@@ -482,6 +507,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
       devel_connectorApiProduct: connectorApiProduct,
       apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
+      apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),

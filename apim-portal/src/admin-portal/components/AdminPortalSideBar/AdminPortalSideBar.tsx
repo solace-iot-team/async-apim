@@ -10,10 +10,11 @@ import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSu
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths, Globals } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 import { ConfigHelper } from "../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
 import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
+import { E_AP_OPS_MODE, APOperationMode } from "../../../utils/APOperationMode";
 
 import '../../../components/APComponents.css';
 
@@ -22,7 +23,7 @@ export interface IAdminPortalSideBarProps {
 }
 
 export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IAdminPortalSideBarProps) => {
-  // const componentName = 'AdminPortalSideBar';
+  const ComponentName = 'AdminPortalSideBar';
 
   const history = useHistory();
   const [configContext] = React.useContext(ConfigContext);
@@ -51,6 +52,22 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     return false;
   }
   
+  const showApisMenuItem = (): boolean => {
+    const funcName = 'showApisMenuItem';
+    const logName = `${ComponentName}.${funcName}()`;
+
+    switch(APOperationMode.AP_OPERATIONS_MODE) {
+      case E_AP_OPS_MODE.FULL_OPS_MODE:
+        return true;
+      case E_AP_OPS_MODE.EP2_OPS_MODE:
+        if(ConfigHelper.isEventPortal20(configContext)) return false;
+        return true;
+      default:
+        Globals.assertNever(logName, APOperationMode.AP_OPERATIONS_MODE);
+    }
+    return false;
+  }
+
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
       isDisabled(EUIAdminPortalResourcePaths.ManageOrganizationApps) && 
@@ -73,7 +90,7 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
       },
     );
-    if(!ConfigHelper.isEventPortal20(configContext)) {
+    if(showApisMenuItem()) {
       _items.push(
         {
           label: 'APIs',

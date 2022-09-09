@@ -15,7 +15,7 @@ export type TAPConnectorAbout = {
 }
 
 export type TAPConnectorInfo = {
-  connectorAbout: TAPConnectorAbout
+  connectorAbout: TAPConnectorAbout;
 }
 
 export type TTransformApiAboutToAPConnectorAboutResult = {

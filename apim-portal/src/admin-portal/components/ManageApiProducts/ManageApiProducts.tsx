@@ -31,6 +31,7 @@ import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
+import { APOperationMode, E_AP_OPS_MODE } from "../../../utils/APOperationMode";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -129,7 +130,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
   }
   // * Changed object *
@@ -138,7 +140,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
     setRefreshCounter(refreshCounter + 1);
   }
@@ -230,9 +233,13 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    const showNewButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
+    const showCloneButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showListComponent) return (
       <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        {showNewButton &&
+          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        }
       </React.Fragment>
     );
     if(showViewComponent) {
@@ -245,13 +252,18 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       } else {
         return (
           <React.Fragment>
-            <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-            <Button 
-              label={ToolbarCloneManagedObjectButtonLabel} 
-              icon="pi pi-plus" 
-              onClick={onCloneManagedObjectFromToolbar} 
-              className="p-button-text p-button-plain p-button-outlined"
-            />   
+            {showNewButton &&
+              <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+            }
+            {showCloneButton &&
+              <Button 
+                label={ToolbarCloneManagedObjectButtonLabel} 
+                icon="pi pi-plus" 
+                onClick={onCloneManagedObjectFromToolbar} 
+                className="p-button-text p-button-plain p-button-outlined"
+                disabled={!managedObject_AllowedActions.isCloneAllowed}
+              />   
+            }
             <Button 
               label={ToolbarEditManagedObjectButtonLabel} 
               icon="pi pi-pencil" 
@@ -276,18 +288,21 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    const showDeleteButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showViewComponent) {
       if(props.apPageNavigationInfo === undefined) {
         return (
           <React.Fragment>
-            <Button 
-              label={ToolbarDeleteManagedObjectButtonLabel} 
-              icon="pi pi-trash" 
-              onClick={onDeleteManagedObjectFromToolbar} 
-              className="p-button-text p-button-plain p-button-outlined" 
-              disabled={!managedObject_AllowedActions.isDeleteAllowed} 
-              style={{ color: "red", borderColor: 'red'}} 
-            />        
+            {showDeleteButton &&
+              <Button 
+                label={ToolbarDeleteManagedObjectButtonLabel} 
+                icon="pi pi-trash" 
+                onClick={onDeleteManagedObjectFromToolbar} 
+                className="p-button-text p-button-plain p-button-outlined" 
+                disabled={!managedObject_AllowedActions.isDeleteAllowed} 
+                style={{ color: "red", borderColor: 'red'}} 
+              />        
+            }
           </React.Fragment>
         );
       }
