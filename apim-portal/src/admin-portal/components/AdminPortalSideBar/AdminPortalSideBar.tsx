@@ -10,11 +10,9 @@ import { APHealthCheckSummaryContext } from "../../../components/APHealthCheckSu
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 import { EAPHealthCheckSuccess } from "../../../utils/APHealthCheck";
 import { AuthHelper } from "../../../auth/AuthHelper";
-import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths, Globals } from '../../../utils/Globals';
+import { EUIAdminPortalResourcePaths, EUICombinedResourcePaths, EUIDeveloperPortalResourcePaths } from '../../../utils/Globals';
 import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import { ConfigHelper } from "../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
-import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
-import { E_AP_OPS_MODE, APOperationMode } from "../../../utils/APOperationMode";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 import '../../../components/APComponents.css';
 
@@ -23,10 +21,10 @@ export interface IAdminPortalSideBarProps {
 }
 
 export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IAdminPortalSideBarProps) => {
-  const ComponentName = 'AdminPortalSideBar';
+  // const ComponentName = 'AdminPortalSideBar';
 
   const history = useHistory();
-  const [configContext] = React.useContext(ConfigContext);
+  // const [configContext] = React.useContext(ConfigContext);
   const [authContext] = React.useContext(AuthContext);
   const [userContext] = React.useContext(UserContext);
   const [healthCheckSummaryContext] = React.useContext(APHealthCheckSummaryContext);
@@ -51,22 +49,6 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
     if( healthCheckSummaryContext.connectorHealthCheckSuccess === EAPHealthCheckSuccess.FAIL ) return true;    
     return false;
   }
-  
-  const showApisMenuItem = (): boolean => {
-    const funcName = 'showApisMenuItem';
-    const logName = `${ComponentName}.${funcName}()`;
-
-    switch(APOperationMode.AP_OPERATIONS_MODE) {
-      case E_AP_OPS_MODE.FULL_OPS_MODE:
-        return true;
-      case E_AP_OPS_MODE.EP2_OPS_MODE:
-        if(ConfigHelper.isEventPortal20(configContext)) return false;
-        return true;
-      default:
-        Globals.assertNever(logName, APOperationMode.AP_OPERATIONS_MODE);
-    }
-    return false;
-  }
 
   const getApimMenuItems = (): Array<MenuItem> => {
     if(
@@ -83,14 +65,16 @@ export const AdminPortalSideBar: React.FC<IAdminPortalSideBarProps> = (props: IA
         command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApps); }
       },
     );
-    _items.push(
-      {
-        label: 'API Products',
-        disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
-        command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
-      },
-    );
-    if(showApisMenuItem()) {
+    if(APOperationMode.showApiProductsMenuItem()) {
+      _items.push(
+        {
+          label: 'API Products',
+          disabled: isDisabledWithConnectorUnavailable(isDisabledWithoutOrg, EUIAdminPortalResourcePaths.ManageOrganizationApiProducts),
+          command: () => { navigateTo(EUIAdminPortalResourcePaths.ManageOrganizationApiProducts); }
+        },
+      );
+    }
+    if(APOperationMode.showApisMenuItem()) {
       _items.push(
         {
           label: 'APIs',

@@ -21,10 +21,10 @@ import APAdminPortalApiProductsDisplayService, {
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading"; 
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { APOperationMode } from "../../../utils/APOperationMode";
 
 export interface IListApiProductsProps {
   organizationEntityId: TAPEntityId;

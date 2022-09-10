@@ -28,10 +28,11 @@ import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
+import { APOperationMode, E_AP_OPS_MODE } from "../../../utils/APOperationMode";
+import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
-import { APOperationMode, E_AP_OPS_MODE } from "../../../utils/APOperationMode";
 
 export interface IManageApiProductsProps {
   organizationEntityId: TAPEntityId;
@@ -92,8 +93,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
+  const history = useHistory();
+  const navigateHome = (): void => { history.push(EUIAdminPortalResourcePaths.UserHome); }
+
   // * useEffect Hooks *
   React.useEffect(() => {
+    if(!APOperationMode.showApiProductsMenuItem()) navigateHome();
     if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     else {
       // alert(`${ComponentName}: view ${JSON.stringify(props.apiProductEntityId)}`);
@@ -235,6 +240,7 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
     const showNewButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     const showCloneButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
+    const showEditButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showListComponent) return (
       <React.Fragment>
         {showNewButton &&
@@ -264,13 +270,15 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
                 disabled={!managedObject_AllowedActions.isCloneAllowed}
               />   
             }
-            <Button 
+            { showEditButton &&
+              <Button 
               label={ToolbarEditManagedObjectButtonLabel} 
               icon="pi pi-pencil" 
               onClick={onEditManagedObjectFromToolbar} 
               className="p-button-text p-button-plain p-button-outlined"
               disabled={!managedObject_AllowedActions.isEditAllowed}
             />   
+            }
             {/* <Button 
               label={ToolbarPublishManagedObjectButtonLabel} 
               icon="pi pi-pencil" 

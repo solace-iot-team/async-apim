@@ -73,24 +73,25 @@ export enum EUICommonResourcePaths {
 export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
-  // deleteme_LoginAs = '/admin-portal/loginas',
   
-  // DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
-
+  // apps
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
   ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
+  // api products
   ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
   ManageOrganizationApiProducts_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apiproducts/edit_owningBusinessGroup',
   ManageOrganizationApiProducts_Edit = '/admin-portal/manage/apim/organization/apiproducts/edit',
   ManageOrganizationApiProducts_View = '/admin-portal/manage/apim/organization/apiproducts/view',
   ManageOrganizationApiProducts_Delete = '/admin-portal/manage/apim/organization/apiproducts/delete',
   ManageOrganizationApiProducts_Recover = '/admin-portal/manage/apim/organization/apiproducts/recover',
-
+  // apis
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
   ManageOrganizationApis_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apis/edit_owningBusinessGroup',
-  
-  // deleteme_ManageOrganizationApis = '/admin-portal/manage/apim/organization/deleteme_apis',
-
+  ManageOrganizationApis_Edit = '/admin-portal/manage/apim/organization/apis/edit',
+  ManageOrganizationApis_View = '/admin-portal/manage/apim/organization/apis/view',
+  ManageOrganizationApis_Delete = '/admin-portal/manage/apim/organization/apis/delete',
+  ManageOrganizationApis_Recover = '/admin-portal/manage/apim/organization/apis/recover',
+  // business group
   ManageBusinessGroup = '/admin-porta/manage/business-group',
 
   ManageOrganization = '/admin-portal/manage/organization',

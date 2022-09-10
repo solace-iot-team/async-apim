@@ -96,15 +96,23 @@ const rbacRoleList: TAPRbacRoleList = [
       EUIAdminPortalResourcePaths.MonitorOrganizationJobs,      
       EUIAdminPortalResourcePaths.ManageOrganizationIntegration,
       EUIAdminPortalResourcePaths.ManageOrganizationIntegrationExternalSystems,
+      // asset maintenance
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenance,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApiProducts,
       EUIAdminPortalResourcePaths.ManageOrganizationAssetMaintenanceApis,
-      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit_OwningBusinessGroup,
+      // api products
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover,
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
+      // apis
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_View,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Delete,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Recover,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit_OwningBusinessGroup,
+      // apps
       EUIAdminPortalResourcePaths.ManageOrganizationApps_AllOrganizationApps,
     ]
   },
@@ -126,13 +134,22 @@ const rbacRoleList: TAPRbacRoleList = [
       EUICommonResourcePaths.ManageUserAccount,
       EUIAdminPortalResourcePaths.Home,
       EUIAdminPortalResourcePaths.UserHome,
-      EUIAdminPortalResourcePaths.ManageOrganizationApis,
+      // api products
       EUIAdminPortalResourcePaths.ManageOrganizationApiProducts,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_View,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Delete,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Recover,
+      EUIAdminPortalResourcePaths.ManageOrganizationApiProducts_Edit_OwningBusinessGroup,
+      // apis
+      EUIAdminPortalResourcePaths.ManageOrganizationApis,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_View,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Delete,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Recover,
+      EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit_OwningBusinessGroup,
+      // apps
       EUIAdminPortalResourcePaths.ManageOrganizationApps,
-      // DELETEME
-      // EUIAdminPortalResourcePaths.deleteme_ManageOrganizationApis,
-      // EUIAdminPortalResourcePaths.DELETEME_ManageOrganizationApps,
-
     ]
   },
   {

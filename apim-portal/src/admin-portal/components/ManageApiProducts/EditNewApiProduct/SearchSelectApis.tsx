@@ -17,6 +17,7 @@ import APOrganizationsDisplayService from "../../../../displayServices/APOrganiz
 import APApisDisplayService, { IAPApiDisplay, TAPApiDisplayList } from "../../../../displayServices/APApisDisplayService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
+import { APOperationMode } from "../../../../utils/APOperationMode";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
@@ -67,6 +68,7 @@ export const SearchSelectApis: React.FC<ISearchSelectApisProps> = (props: ISearc
         organizationId: props.organizationId,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
       setManagedObjectList(apApiDisplayList);
     } catch(e: any) {

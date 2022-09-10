@@ -139,7 +139,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     }
     if(allowedActions.isDeleteAllowed) {
       // check if api product has references  
-      allowedActions.isDeleteAllowed = this.get_IsDeleteAllowed({ apApiProductDisplay: apAdminPortalApiProductDisplay })
+      allowedActions.isDeleteAllowed = this.get_IsDeleteAllowed({ apApiProductDisplay: apAdminPortalApiProductDisplay });
     }
     // now check the source
     switch(apAdminPortalApiProductDisplay.apApiProductSource) {

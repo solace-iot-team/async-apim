@@ -21,6 +21,7 @@ import { ViewApi } from "../ManageApis/ViewApi";
 import { E_Edit_Scope, ManageEditApi } from "../ManageApis/EditNewApi/ManageEditApi";
 import { DeleteApi } from "../ManageApis/DeleteApi";
 import { E_DISPLAY_ADMIN_PORTAL_API_SCOPE } from "../ManageApis/DisplayAdminPortalApi";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 import '../../../components/APComponents.css';
 import "./MaintainApis.css";
@@ -110,6 +111,7 @@ export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisP
         apOrganizationDisplay: organizationContext
       }),
       isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     });
     setManagedObject_AllowedActions(apApiDisplay_AllowedActions);
     setRefreshCounter(refreshCounter + 1);
@@ -126,6 +128,7 @@ export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisP
         apOrganizationDisplay: organizationContext
       }),
       isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
   }
   //  * View Object *
@@ -141,6 +144,7 @@ export const MaintainApis: React.FC<IMaintainApisProps> = (props: IMaintainApisP
         apOrganizationDisplay: organizationContext
       }),
       isEventPortalApisProxyMode: configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode !== undefined && configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
     setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  

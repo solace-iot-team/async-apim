@@ -23,6 +23,7 @@ import { Loading } from "../../../components/Loading/Loading";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 export interface IListApisProps {
   organizationEntityId: TAPEntityId;
@@ -88,6 +89,7 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         organizationId: props.organizationEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
       setManagedObjectList(list);
     } catch(e: any) {
@@ -112,7 +114,8 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
         organizationId: props.organizationEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
-        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList
+        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
       setManagedObjectList(list);
     } catch(e: any) {
