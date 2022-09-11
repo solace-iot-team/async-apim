@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Solace Async API Management Server
   description: 'Async API Management Server.'
-  version: 0.3.2
+  version: 0.4.0
 servers:
 - url: /apim-server/v1
 tags:
@@ -924,6 +924,45 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+
+  /apsApiProducts/{organization_id}:
+    parameters:
+    - $ref: '#/components/parameters/organization_id'
+    get:
+      security:
+      - InternalAuthBearerToken: []
+      operationId: listApsApiProducts
+      description: Get a list of APSApiProductResponse objects in the organization.
+      tags:
+      - APSApiProducts
+      parameters:
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/page_number'
+      - $ref: '#/components/parameters/sort_field_name'
+      - $ref: '#/components/parameters/sort_direction'
+      - $ref: '#/components/parameters/search_word_list'
+      - $ref: '#/components/parameters/business_group_id_list'
+      - $ref: '#/components/parameters/access_level_list'
+      - $ref: '#/components/parameters/exclude_api_product_id_list'
+      - $ref: '#/components/parameters/api_product_id_list'
+      responses:
+        '200':
+          description: Array of APSApiProductResponse objects and total count of the objects. Returns empty array if none found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAPSApiProductsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /apsBusinessGroups/{organization_id}:
     parameters:
     - $ref: '#/components/parameters/organization_id'
@@ -1738,6 +1777,42 @@ components:
       required: false
       schema:
         type: string
+    business_group_id_list:
+      name: businessGroupIdList
+      in: query
+      description: A list of business group Ids to include.
+      required: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/APSId'
+    access_level_list:
+      name: accessLevelList
+      in: query
+      description: "A list of access levels to include. Definition in Connector API: APIProductAccessLevel."
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+    api_product_id_list:
+      name: apiProductIdList
+      in: query
+      description: "A list of Api Product Ids to filter on. Should not be used with exclude_api_product_id_list."
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+    exclude_api_product_id_list:
+      name: excludeApiProductIdList
+      in: query
+      description: "A list of Api Product Ids to exclude. Should not be used with api_product_id_list."
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
     search_organization_id:
       name: searchOrganizationId
       in: query
@@ -2651,6 +2726,37 @@ components:
           $ref: '#/components/schemas/APSOrganizationSessionInfoList'
         lastOrganizationId:
           $ref: "#/components/schemas/APSId"
+
+
+    #
+    # API Products
+    #
+
+    APSApiProductResponse:
+      description: The APSApiProductResponse object.
+      type: object
+      additionalProperties: false
+      properties:
+        connectorApiProduct:
+          description: Maps to APIProduct in Connector API.
+          type: object
+      required:
+      - connectorApiProduct
+    APSApiProductResponseList:
+      description: Array of APSApiProductResponse objects.
+      type: array
+      items:
+        $ref: '#/components/schemas/APSApiProductResponse'
+    ListAPSApiProductsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/APSListResponseMeta'
+      properties:
+        list:
+          $ref: '#/components/schemas/APSApiProductResponseList'
+      required:
+      - list
+
     #
     # Business Groups
     #

@@ -14,6 +14,7 @@ import { ValidateResponseOpts } from 'express-openapi-validator/dist/framework/t
 import { ApsCatchAllController } from '../api/controllers/apsMisc/ApsCatchAllController';
 import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
 import cors from 'cors';
+import cleanup from '../api/middlewares/cleanup';
 
 const app: Application = express();
 
@@ -101,6 +102,7 @@ export class ExpressServer {
       config: ServerConfig.getExpressServerConfig()
     });  
 
+    app.use(cleanup);
     routes(app, this.config.apiBase);
  
     // catch all:

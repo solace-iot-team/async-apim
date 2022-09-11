@@ -1,0 +1,54 @@
+[
+  {
+    "userId": "master.user@async-apim-devel.com",
+    "password": "master.user@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "Master",
+      "last": "User",
+      "email": "master.user@async-apim-devel.com"
+    },
+    "systemRoles": ["systemAdmin"]
+  },
+  {
+    "userId": "api.consumer@async-apim-devel.com",
+    "password": "api.consumer@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "Api",
+      "last": "Consumer",
+      "email": "api.consumer@async-apim-devel.com"
+    }
+  },
+  {
+    "userId": "api.team@async-apim-devel.com",
+    "password": "api.team@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "Api",
+      "last": "Team",
+      "email": "api.team@async-apim-devel.com"
+    }
+  },
+  {
+    "userId": "org.admin@async-apim-devel.com",
+    "password": "org.admin@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "Org",
+      "last": "Admin",
+      "email": "org.admin@async-apim-devel.com"
+    }
+  },
+  {
+    "userId": "system.admin@async-apim-devel.com",
+    "password": "system.admin@async-apim-devel.com",
+    "isActivated": true,
+    "profile": {
+      "first": "System",
+      "last": "Admin",
+      "email": "system.admin@async-apim-devel.com"
+    },
+    "systemRoles": ["systemAdmin"]
+  }
+]

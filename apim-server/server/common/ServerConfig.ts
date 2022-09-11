@@ -1,5 +1,6 @@
 import path from 'path';
 import { APSConnector, APSLocationConfigExternal, APSLocationConfigInternalProxy, OpenAPI } from '../../src/@solace-iot-team/apim-server-openapi-node';
+import { ConnectorClient } from './ConnectorClient';
 import { ConfigEnvVarNotANumberServerError, ConfigEnvVarValueServerError, ConfigInvalidEnvVarValueFromListServerError, ConfigMissingEnvVarServerError, ServerError } from './ServerError';
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
 import { ServerUtils } from './ServerUtils';

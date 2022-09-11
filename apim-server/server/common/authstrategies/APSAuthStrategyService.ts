@@ -9,7 +9,8 @@ import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
 import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 import { APSSessionUser } from "../../api/services/APSSessionService";
-import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
+import { APSOrganization, APSOrganizationList, APSServiceAccount, ListAPSApiProductsResponse, ListAPSOrganizationResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node";
+import APSOrganizationsService from "../../api/services/apsAdministration/APSOrganizationsService";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",
@@ -32,7 +33,7 @@ enum EConnectorRoles {
 export type TConnectorTokenPayload = {
   userId: string;
   iat: number;
-  organization: Array<string>;
+  organization?: Array<string>;
   roles: Array<EConnectorRoles>;
 }
 type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
@@ -269,6 +270,8 @@ class APSAuthStrategyService {
       userId: userId,
       iat: Date.now(),
       organization: organizationIdList ? organizationIdList : [],
+      // gives me a socket hangup
+      // organization: organizationIdList,
       roles: [EConnectorRoles.PLATFORM_ADMIN, EConnectorRoles.ORG_ADMIN]
     };
     const signOptions: jwt.SignOptions = {
@@ -302,7 +305,7 @@ class APSAuthStrategyService {
     });
   }
 
-  private generateBearerToken_For_Connector_For_ServiceAccount = ({ apsServiceAccount }:{
+  public generateBearerToken_For_Connector_For_ServiceAccount = ({ apsServiceAccount }:{
     apsServiceAccount: APSServiceAccount;
   }): string => {
     const funcName = 'generateBearerToken_For_Connector_For_ServiceAccount';
@@ -312,7 +315,8 @@ class APSAuthStrategyService {
     return this.generateBearerToken_For_Connector({ 
       userId: apsServiceAccount.serviceAccountId,
       authConfig: authConfig,
-    });
+      // organizationIdList: apsServiceAccount.organizationIdList
+    });  
   }
 
   public generateConnectorProxyAuthHeader = ({ apsSessionUser, accountType }:{

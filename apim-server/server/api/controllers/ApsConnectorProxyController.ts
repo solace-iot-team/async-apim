@@ -111,9 +111,10 @@ export class ApsConnectorProxyController {
       accountType: accountType
     });
     const timeout_ms = 5000;
+    const target: string = ServerConfig.getActiveConnectorTarget();
     ConnectorProxy.web(req, res, {
       // target: "http://18.184.18.52:3000/v1",
-      target: ServerConfig.getActiveConnectorTarget(),
+      target: target,
       proxyTimeout: timeout_ms,
       timeout: timeout_ms,
     }, function (err) {
@@ -121,9 +122,11 @@ export class ApsConnectorProxyController {
       const funcName = 'ConnectorProxy.web.errorCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
+        target: target,
         error: err 
       } } ));
       const connectorError = new ConnectorProxyError(logName, undefined, {
+        target: target,
         connectorError: err
       });
       next(connectorError);

@@ -17,15 +17,16 @@ import request from 'supertest';
 import Server from '../server/index';
 import { expect } from 'chai';
 import { 
-  ApsAdministrationService,
+  APSConnectorStatus,
   ApsMonitorService, 
-  APSServiceAccountCreate, 
-  APSServiceAccountCreateResponse, 
-  APSSessionLoginResponse, 
-  ApsSessionService, 
   APSStatus,
 } from '../src/@solace-iot-team/apim-server-openapi-node';
 import ServerConfig, { EAuthConfigType } from "../server/common/ServerConfig";
+import { TestApsOrganizationUtils } from "./lib/TestApsOrganizationsUtils";
+import {
+  OpenAPI as ConnectorOpenAPI,
+  ApiError
+} from '@solace-iot-team/apim-connector-openapi-node';
 
 // ensure any unhandled exception cause exit = 1
 function onUncaught(err: any){
@@ -44,7 +45,7 @@ const setTestEnv = (scriptDir: string): TTestEnv => {
   let testRootDir = scriptDir;
   if(!scriptDir.includes('test')) testRootDir = path.join(scriptDir, 'test');
   const projectRootDir = path.join(testRootDir, '../..');
-  const bootstrapDataDir = path.join(testRootDir, '../data/bootstrap');
+  const bootstrapDataDir = path.join(testRootDir, './data/bootstrap');
   const testEnv: TTestEnv = {
     projectRootDir: projectRootDir,
     protocol: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_PROTOCOL'),
@@ -55,10 +56,10 @@ const setTestEnv = (scriptDir: string): TTestEnv => {
     rootUsername: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER'),
     rootUserPassword: getMandatoryEnvVarValue(scriptName, 'APIM_TEST_SERVER_ROOT_USER_PWD'),
     testRootDir: testRootDir,
-    standupMongoScript: path.join(testRootDir, 'mongodb/standup.mongo.sh'), 
-    teardownMongoScript: path.join(testRootDir, 'mongodb/teardown.mongo.sh'), 
-    startMongoScript: path.join(testRootDir, 'mongodb/start.mongo.sh'),
-    stopMongoScript: path.join(testRootDir, 'mongodb/stop.mongo.sh'),
+    startServicesScript: path.join(testRootDir, 'services/start.sh'),  
+    stopServicesScript: path.join(testRootDir, 'services/stop.sh'),  
+    startMongoScript: path.join(testRootDir, 'services/start.mongo.sh'),
+    stopMongoScript: path.join(testRootDir, 'services/stop.mongo.sh'),
     bootstrapFiles: {
       // apsUserListFile: path.join(bootstrapDataDir, 'apsUsers/apsUserList.json'),
       apsConnectorListFile: path.join(bootstrapDataDir, 'apsConfig/apsConnectors/apsConnectorList.json'),
@@ -80,8 +81,8 @@ before(async() => {
   TestContext.newItId();
   // test environment
   expect(fs.existsSync(TestEnv.testRootDir), TestLogger.createTestFailMessage(`testRootDir does not exist = ${TestEnv.testRootDir}`)).to.be.true;
-  expect(fs.existsSync(TestEnv.standupMongoScript), TestLogger.createTestFailMessage(`standupMongoScript does not exist = ${TestEnv.standupMongoScript}`)).to.be.true;
-  expect(fs.existsSync(TestEnv.teardownMongoScript), TestLogger.createTestFailMessage(`teardownMongoScript does not exist = ${TestEnv.teardownMongoScript}`)).to.be.true;
+  expect(fs.existsSync(TestEnv.startServicesScript), TestLogger.createTestFailMessage(`startServicesScript does not exist = ${TestEnv.startServicesScript}`)).to.be.true;
+  expect(fs.existsSync(TestEnv.stopServicesScript), TestLogger.createTestFailMessage(`stopServicesScript does not exist = ${TestEnv.stopServicesScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.startMongoScript), TestLogger.createTestFailMessage(`startMongoScript does not exist = ${TestEnv.startMongoScript}`)).to.be.true;
   expect(fs.existsSync(TestEnv.stopMongoScript), TestLogger.createTestFailMessage(`stopMongoScript does not exist = ${TestEnv.stopMongoScript}`)).to.be.true;
   // expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
@@ -89,21 +90,29 @@ before(async() => {
   expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile
   }`)).to.be.true;
   
-  // start mongo
-  const code = s.exec(TestEnv.standupMongoScript).code;
-  // const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;
-  expect(code, TestLogger.createTestFailMessage(`standup mongo, script=${TestEnv.standupMongoScript}`)).equal(0);
-    // init OpenAPI
+  // start services
+  const code = s.exec(TestEnv.startServicesScript).code;
+  expect(code, TestLogger.createTestFailMessage(`start services, script=${TestEnv.startServicesScript}`)).equal(0);
+  // // start mongo
+  // const code = s.exec(TestEnv.standupMongoScript).code;
+  // // const code = s.exec(`${scriptDir}/mongodb/standup.mongo.sh `).code;
+  // expect(code, TestLogger.createTestFailMessage(`standup mongo, script=${TestEnv.standupMongoScript}`)).equal(0);
+
+  // init OpenAPI
   const base: string = getBaseUrl(TestEnv.protocol, TestEnv.host, TestEnv.port, TestEnv.apiBase);
   ApimServerAPIClient.initialize(base);
 });
 
 after(async() => {
   TestContext.newItId();
-  // stop mongo
-  const code = s.exec(TestEnv.teardownMongoScript).code;
+  // stop services
+  const code = s.exec(TestEnv.stopServicesScript).code;
   // const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
-  expect(code, TestLogger.createTestFailMessage(`teardown mongo, script=${TestEnv.teardownMongoScript}`)).equal(0);
+  expect(code, TestLogger.createTestFailMessage(`stop services, script=${TestEnv.stopServicesScript}`)).equal(0);
+  // // stop mongo
+  // const code = s.exec(TestEnv.teardownMongoScript).code;
+  // // const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
+  // expect(code, TestLogger.createTestFailMessage(`teardown mongo, script=${TestEnv.teardownMongoScript}`)).equal(0);
 });
 
 describe(`${scriptName}`, () => {
@@ -165,6 +174,17 @@ describe(`${scriptName}`, () => {
       await ApimServerAPIClient.setServiceAccountCredentials();
     });
   
+    it(`${scriptName}: should set active connector and ensure it is ready`, async() => {
+
+      TestLogger.logMessageWithId(`ConnectorOpenAPI = ${JSON.stringify(ConnectorOpenAPI, null, 2)}`);
+      // expect(false, 'continue here').to.be.true;
+      const xvoid: void = await TestApsOrganizationUtils.configureActiveTestConnector();
+      expect(false, 'continue here').to.be.true;
+      const apsConnectorStatus: APSConnectorStatus = await ApsMonitorService.getApsConnectorStatus({});
+      TestLogger.logMessageWithId(`apsConnectorStatus = ${JSON.stringify(apsConnectorStatus, null, 2)}`);
+      expect(false, 'continue here').to.be.true;
+    });
+
   });
 });
 

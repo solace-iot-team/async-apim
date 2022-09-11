@@ -1,5 +1,6 @@
 import { Application } from 'express';
 import Router from 'express';
+import apsApiProductsRouter from './api/controllers/apsApiProducts/ApsApiProductsRouter';
 import apsUsersRouter from './api/controllers/apsUsers/ApsUsersRouter';
 import apsConnectorRouter from './api/controllers/apsConfig/apsConnectors/ApsConnectorsRouter';
 import apsAboutRouter from './api/controllers/apsConfig/apsAbout/ApsAboutRouter';
@@ -55,6 +56,7 @@ export default function routes(app: Application, apiBase: string): void {
     router.use('/apsConfig/apsConnectors', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsConnectorRouter);
     router.use('/apsExternalSystems', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsExternalSystemsRouter);
     router.use('/apsUsers', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsUsersRouter);
+    router.use('/apsApiProducts', [APSAuthStrategyService.verify_Internal, APSAuthorizationService.withAuthorization], apsApiProductsRouter);
   }
   // router.use('/apsAdministration/apsOrganizations', apsOrganiztionsRouter);
   // router.use('/apsBusinessGroups', apsBusinessGroupRouter);

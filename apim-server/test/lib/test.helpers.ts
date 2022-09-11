@@ -250,8 +250,8 @@ export type TTestEnv = {
   rootUsername: string,
   rootUserPassword: string;
   testRootDir: string;
-  standupMongoScript: string;
-  teardownMongoScript: string;
+  startServicesScript: string;
+  stopServicesScript: string;
   startMongoScript: string;
   stopMongoScript: string;
   bootstrapFiles: {

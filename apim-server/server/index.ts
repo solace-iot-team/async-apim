@@ -18,6 +18,7 @@ import APSExternalSystemsService from './api/services/apsOrganization/apsExterna
 import APSServiceAccountsService from './api/services/apsAdministration/APSServiceAccountsService';
 import { ConnectorClient } from './common/ConnectorClient';
 import ConnectorMonitor from './common/ConnectorMonitor';
+import APSApiProductsService from './api/services/APSApiProductsService';
 
 const componentName = 'index';
 
@@ -69,7 +70,13 @@ const testConfig = async(): Promise<void> => {
   const funcName = 'testConfig';
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTING }));
-  await ConnectorMonitor.testActiveConnector();
+  if(ServerConfig.getConnectorConfig() === undefined) {
+    ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TEST_ERROR, details: {
+      message: 'no active connector defined'
+    }}));
+  } else {
+    await ConnectorMonitor.testActiveConnector();
+  }
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONFIG_TESTED }));
 }
 export const initializeComponents = async(): Promise<void> => {
@@ -88,6 +95,7 @@ export const initializeComponents = async(): Promise<void> => {
     await APSOrganizationsService.initialize();
     await APSBusinessGroupsService.initialize();
     await APSExternalSystemsService.initialize();
+    await APSApiProductsService.initialize();
     // must be the last one
     await ServerMonitor.initialize(ServerConfig.getMonitorConfig());
     // finally: set the server to initialized & ready
@@ -113,7 +121,7 @@ ServerConfig.initialize();
 ServerLogger.initialize(ServerConfig.getServerLoggerConfig());
 ServerConfig.logConfig();
 ServerClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
-ConnectorClient.initialize(ServerConfig.getExpressServerConfig(), ServerConfig.getRootUserConfig());
+ConnectorClient.initialize(ServerConfig.getExpressServerConfig());
 const server = new ExpressServer(ServerConfig.getExpressServerConfig()).router(routes).start(initializeComponents);
 
 export default server;
