@@ -13,6 +13,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
+import { APSApiProductResponseList, ApsApiProductsService, EAPSSortDirection, ListAPSApiProductsResponse } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -796,7 +797,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // API calls
   // ********************************************************************************************************************************
 
-  private filter_ConnectorApiProduct = ({ connectorApiProduct }:{
+  protected clean_ConnectorApiProduct = ({ connectorApiProduct }:{
     connectorApiProduct: APIProduct;
   }): APIProduct => {
     const filteredAttributes: attributes = connectorApiProduct.attributes.filter( (x) => {
@@ -827,7 +828,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // meta and object
     for(const connectorApiProduct of connectorApiProductList) {
 
-      this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+      this.clean_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
 
     }
     return connectorApiProductList;
@@ -844,7 +845,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apiProductName: apiProductId
     });
 
-    return this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+    return this.clean_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
   }
 
   public async apiCheck_ApApiProductDisplay_Exists({ organizationId, apiProductId }: {
@@ -879,7 +880,45 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     return connectorApiProductList;
   }
-  
+
+  // /**
+  //  * Use APS Api instead of connector API.
+  //  * @param param0 
+  //  * @returns 
+  //  */
+  // protected apsGetList_ListAPSApiProductsResponse = async({ organizationId, businessGroupIdList, accessLevelList, exclude_ApiProductIdList, apiProductIdList }: {
+  //   organizationId: string;
+  //   businessGroupIdList: Array<string>;
+  //   accessLevelList?: Array<APIProductAccessLevel>;
+  //   exclude_ApiProductIdList?: Array<string>;
+  //   apiProductIdList?: Array<string>;
+
+  // }): Promise<ListAPSApiProductsResponse> => {
+  //   const funcName = 'apsGetFilteredList_ConnectorApiProduct';
+  //   const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+  //   const listAPSApiProductsResponse: ListAPSApiProductsResponse = await ApsApiProductsService.listApsApiProducts({
+  //     organizationId: organizationId,
+  //     businessGroupIdList: businessGroupIdList,
+  //     accessLevelList: accessLevelList,
+  //     excludeApiProductIdList: exclude_ApiProductIdList,
+  //     apiProductIdList: apiProductIdList,
+  //     pageNumber: 1,
+  //     pageSize: 100,
+  //     searchWordList: 'one two three',
+  //     sortDirection: EAPSSortDirection.ASC,
+  //     sortFieldName: 'sortFieldName',
+  //   });
+  //   // console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);
+  //   // const list: APSApiProductResponseList = listAPSApiProductsResponse.list;
+  //   // const cleanConnectorApiProductList: Array<APIProduct> = [];
+  //   // for(const apsApiProductResponse of list) {
+  //   //   const connectorApiProduct: APIProduct = this.filter_ConnectorApiProduct( { connectorApiProduct: apsApiProductResponse.connectorApiProduct });
+  //   //   connectorApiProductList.push(connectorApiProduct);
+  //   // }
+  //   return listAPSApiProductsResponse;
+  // }
+
   protected apiGetFilteredList_ConnectorApiProduct = async({ organizationId, businessGroupIdList, includeAccessLevelList, exclude_ApiProductIdList }: {
     organizationId: string;
     businessGroupIdList: Array<string>;
