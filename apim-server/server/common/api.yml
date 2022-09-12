@@ -945,6 +945,7 @@ paths:
       - $ref: '#/components/parameters/access_level_list'
       - $ref: '#/components/parameters/exclude_api_product_id_list'
       - $ref: '#/components/parameters/api_product_id_list'
+      - $ref: '#/components/parameters/source'
       responses:
         '200':
           description: Array of APSApiProductResponse objects and total count of the objects. Returns empty array if none found.
@@ -1813,6 +1814,13 @@ components:
         type: array
         items:
           type: string
+    source:
+      name: source
+      in: query
+      description: "The source of the API Product to include. If empty, includes all."
+      required: false
+      schema:
+        $ref: '#/components/schemas/APSApiProductSource'
     search_organization_id:
       name: searchOrganizationId
       in: query
@@ -1884,6 +1892,10 @@ components:
       schema:
         $ref: "#/components/schemas/APSId"
   schemas:
+    APSApiProductSource:
+      type: string
+      enum:
+      - EventPortal_2
     APSId:
       description: Unique object id.
       type: string

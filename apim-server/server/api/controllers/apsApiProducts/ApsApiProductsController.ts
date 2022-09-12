@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
-import { ListAPSApiProductsResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSApiProductSource, ListAPSApiProductsResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSApiProductsService from '../../services/APSApiProductsService';
 import { ControllerUtils } from '../ControllerUtils';
 import { APSSessionUser } from '../../services/APSSessionService';
@@ -12,6 +12,7 @@ export type Extra_Query_Params = {
   accessLevelList: Components.Parameters.AccessLevelList;
   excludeApiProductIdList: Components.Parameters.ExcludeApiProductIdList;
   apiProductIdList: Components.Parameters.ApiProductIdList;
+  source: APSApiProductSource;
 }
 
 export class ApsApiProductsController {
@@ -40,6 +41,7 @@ export class ApsApiProductsController {
       accessLevelList: req.query.accessLevelList ? req.query.accessLevelList as Array<APIProductAccessLevel> : undefined,
       excludeApiProductIdList: req.query.excludeApiProductIdList,
       apiProductIdList: req.query.apiProductIdList,
+      source: req.query.source,
       pagingInfo: ApiQueryHelper.getPagingInfoFromQuery(req.query),
       searchInfo: ApiQueryHelper.getSearchInfoFromQuery(req.query),
       sortInfo: ApiQueryHelper.getSortInfoFromQuery(req.query),

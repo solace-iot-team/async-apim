@@ -20,6 +20,7 @@ import {
   APSUserCreate,
   EAPSSystemAuthRole,
   ListAPSApiProductsResponse,
+  APSApiProductSource,
  } from '../../../src/@solace-iot-team/apim-server-openapi-node';
 import { 
   ApiBadQueryParameterCombinationServerError, 
@@ -28,14 +29,22 @@ import {
   ServerErrorFromError, 
   TApiInvalidObjectReferenceError
 } from '../../common/ServerError';
-import { APIProduct, APIProductAccessLevel, ApiProductsService } from '@solace-iot-team/apim-connector-openapi-node';
+import { APIProduct, APIProductAccessLevel, ApiProductsService, attributes } from '@solace-iot-team/apim-connector-openapi-node';
 import { APSSessionUser } from './APSSessionService';
+
+type TApiProductAttribute = {
+  name: string;
+  value: string;
+}
 
 export class APSApiProductsService {
   // private static collectionName = "apsUsers";
   private static apiObjectName = "APSApiProduct";
   // private static collectionSchemaVersion = 4;
   // private persistenceService: MongoPersistenceService;
+
+  private readonly ApiProductAttribute_Source_Name: string = "_IMP_SOURCE_";
+  private readonly ApiProductAttribute_Source_Value_EventPortal_2 = "Solace Event Portal";
 
   constructor() {
   }
@@ -47,6 +56,54 @@ export class APSApiProductsService {
     // placeholder
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED }));
   }
+  /**
+   * Create combined, non-duplicate attribute list.
+   * - get rid of null values 
+   * - meta attributes override version attributes
+   */
+  private create_combinedApiProductAttributes({ versionAttributes, metaAttributes }:{
+    versionAttributes: Array<TApiProductAttribute>;
+    metaAttributes?: Array<TApiProductAttribute>;
+  }): Array<TApiProductAttribute> {
+
+    const _metaAttributes: Array<TApiProductAttribute> = metaAttributes !== undefined ? metaAttributes : [];
+    const _combinedAttributes: Array<TApiProductAttribute> = _metaAttributes.filter( (x) => {
+      return x !== null;
+    });
+    for(const nameValuePair of versionAttributes) {
+      if(nameValuePair !== null) {
+        const exists: TApiProductAttribute | undefined = _combinedAttributes.find( (x) => {
+          return x.name === nameValuePair.name;
+        });
+        if(exists === undefined) _combinedAttributes.push(nameValuePair);
+
+      }
+    }
+    return _combinedAttributes;
+  }
+  /**
+   * Determines the source of the api product based on attribute.
+   */
+  private doInclude_ApApiProductSource({ source, combined_ApiProductAttributes }:{
+    source?: APSApiProductSource;
+    combined_ApiProductAttributes: Array<TApiProductAttribute>;
+  }): boolean {
+    const funcName = 'doInclude_ApApiProductSource';
+    const logName = `${APSApiProductsService.name}.${funcName}()`;
+
+    if(source === undefined) return true;
+    const sourceAttribute: TApiProductAttribute | undefined = combined_ApiProductAttributes.find( (x) => {
+      return  x.name === this.ApiProductAttribute_Source_Name;
+    });
+    if(sourceAttribute === undefined) return false;
+    switch(source) {
+      case APSApiProductSource.EVENT_PORTAL_2:
+        return sourceAttribute.value.includes(this.ApiProductAttribute_Source_Value_EventPortal_2);
+      default:
+        ServerUtils.assertNever(logName, source);
+    }
+    return false;
+  }
 
   public all = async({ 
     apsSessionUser, 
@@ -55,6 +112,7 @@ export class APSApiProductsService {
     accessLevelList,
     excludeApiProductIdList,
     apiProductIdList,
+    source,
     pagingInfo, 
     sortInfo, 
     searchInfo 
@@ -65,6 +123,7 @@ export class APSApiProductsService {
     accessLevelList?: Array<APIProductAccessLevel>;
     excludeApiProductIdList?: Array<string>;
     apiProductIdList?: Array<string>;
+    source?: APSApiProductSource;
     pagingInfo: TApiPagingInfo;
     sortInfo: TApiSortInfo;
     searchInfo: TApiSearchInfo;
@@ -86,68 +145,63 @@ export class APSApiProductsService {
       organizationName: organizationId,
     });
 
-    // TODO: guard against old versions of API Products which may have null values in attributes
-    // const filteredAttributes: attributes = connectorApiProduct.attributes.filter( (x) => {
-    //   return x !== null;
-    // });
-    // connectorApiProduct.attributes = filteredAttributes;
-    // if(connectorApiProduct.meta !== undefined && connectorApiProduct.meta.attributes !== undefined) {
-    //   const filteredMetaAttributes: attributes = connectorApiProduct.meta.attributes.filter( (x) => {
-    //     return x !== null;
-    //   });
-    //   connectorApiProduct.meta.attributes = filteredMetaAttributes;
-    // }
-    // return connectorApiProduct;
-
-    // TODO
-    // let includeBasedOnSourceAndMode: boolean = true;
-    // switch(apOperationsMode) {
-    //   case E_AP_OPS_MODE.FULL_OPS_MODE:
-    //     includeBasedOnSourceAndMode = true;
-    //     break;
-    //   case E_AP_OPS_MODE.EP2_OPS_MODE:
-    //     if(apAdminPortalApiProductDisplay4List.apApiProductSource === E_ApApiProductSource.EP2) includeBasedOnSourceAndMode = true;
-    //     else includeBasedOnSourceAndMode = false;
-    //     break;
-    //   default:
-    //     Globals.assertNever(logName, apOperationsMode);
-    // } 
-
-
-    // TODO: 
-    excludeApiProductIdList;
-    apiProductIdList;
-
-
     const filteredConnectorApiProductList: Array<APIProduct> = _connectorApiProductList.filter( (apiProduct: APIProduct) => {
-      let doInclude = false;
+      let doInclude = true;
+      // exclude api products
+      if(excludeApiProductIdList !== undefined) {
+        doInclude = !excludeApiProductIdList.includes(apiProduct.name);
+      }
+      if(!doInclude) return false;
+      // include api products
+      if(apiProductIdList !== undefined) {
+        doInclude = apiProductIdList.includes(apiProduct.name);
+      }
+      if(!doInclude) return false;
+      // create clean & combined attributes from version & meta
+      const combined_ApiProductAttributes: Array<TApiProductAttribute> = this.create_combinedApiProductAttributes({
+        versionAttributes: apiProduct.attributes,
+        metaAttributes: apiProduct.meta?.attributes
+      });
+      // source
+      doInclude = this.doInclude_ApApiProductSource({ source: source, combined_ApiProductAttributes: combined_ApiProductAttributes });
+      // // DEBUG
+      // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'after source filtering', details: {
+      //   doInclude: doInclude,
+      //   source: source ? source : 'undefined',
+      //   apiProduct: apiProduct,
+      // }}));
+      if(!doInclude) return false;
+      // exclude if not correct access level, include if not set
+      if(accessLevelList && apiProduct.accessLevel) {
+        doInclude = accessLevelList.includes(apiProduct.accessLevel);
+      } 
+      if(!doInclude) return false;
+      // business groups
       if(businessGroupIdList && businessGroupIdList.length > 0) {
+        let _doInclude = false;
         // lazy, should really look at the specific attribute
-        const attributesString: string = JSON.stringify(apiProduct.attributes);
+        const attributesString: string = JSON.stringify(combined_ApiProductAttributes);
         // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'attributesString', details: {
         //   attributesString: attributesString,
         //   businessGroupIdList: businessGroupIdList
         // }}));
         let idx = 0;
-        while (!doInclude && idx < businessGroupIdList.length) {
-          if(attributesString.includes(businessGroupIdList[idx])) doInclude = true;
+        while (!_doInclude && idx < businessGroupIdList.length) {
+          if(attributesString.includes(businessGroupIdList[idx])) _doInclude = true;
           idx++;
         }
+        doInclude = _doInclude;
       }
-      // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'doInclude', details: {
+      // // DEBUG
+      // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'after business group filtering', details: {
       //   doInclude: doInclude,
-      //   accessLevel: apiProduct.accessLevel ? apiProduct.accessLevel : 'undefined',
-      //   accessLevelList: accessLevelList
+      //   businessGroupIdList: businessGroupIdList,
+      //   apiProduct: apiProduct,
       // }}));
-
-      // exclude if not correct access level, include if not set
-      if(doInclude && accessLevelList && apiProduct.accessLevel) {
-        doInclude = accessLevelList.includes(apiProduct.accessLevel);
-      } 
-      return doInclude;
+      if(!doInclude) return false;
+      return true;
     });
   
-
     // const apsUserSortFieldNameValidationSchema: Partial<APSUserInternal> = {
     //   isActivated: false,
     //   userId: 'string',
@@ -161,7 +215,6 @@ export class APSApiProductsService {
     //   memberOfOrganizationGroups: []
     // };
 
-    // const mongoPagingInfo: TMongoPagingInfo = { pageNumber: pagingInfo.pageNumber, pageSize: pagingInfo.pageSize };
     // const mongoSortInfo: TMongoSortInfo = { sortFieldName: sortInfo.sortFieldName, sortDirection: sortInfo.sortDirection, apsObjectSortFieldNameValidationSchema: apsUserSortFieldNameValidationSchema, apsObjectName: APSUsersService.apiObjectName };
     // const mongoSearchInfo: TMongoSearchInfo = { 
     //   searchWordList: searchInfo.searchWordList
@@ -210,6 +263,7 @@ export class APSApiProductsService {
     const filteredTotalCount = filteredConnectorApiProductList.length;
     const apsApiProductResponseList: APSApiProductResponseList = await this.createAPSApiProductResponseList({
       connectorApiProductList: filteredConnectorApiProductList,
+      pagingInfo: pagingInfo,
     });
     ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSApiProductResponseList', details: apsApiProductResponseList }));
     // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVED, message: 'APSApiProductResponseList', details: apsApiProductResponseList }));
@@ -264,15 +318,25 @@ export class APSApiProductsService {
     return apsApiProductResponse;  
   }
 
-  private createAPSApiProductResponseList = async({ connectorApiProductList }:{
+  private createAPSApiProductResponseList = async({ connectorApiProductList, pagingInfo }:{
     connectorApiProductList: Array<APIProduct>;
+    pagingInfo: TApiPagingInfo;
   }): Promise<APSApiProductResponseList> => {
-    // // retrieve all orgs and add org displayName to membersOfOrganizations for each user
-    // const mongoOrgResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
-    // const apsOrganizationList: APSOrganizationList = mongoOrgResponse.list;
+    // const funcName = 'createAPSApiProductResponseList';
+    // const logName = `${APSApiProductsService.name}.${funcName}()`;
 
+    const startIdx = (pagingInfo.pageSize * (pagingInfo.pageNumber-1));
+    const endIdx = (startIdx + pagingInfo.pageSize);
+    const page_connectorApiProductList: Array<APIProduct> = connectorApiProductList.slice(startIdx, endIdx);
+    // // DEBUG
+    // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.RETRIEVING, message: 'after paging', details: {
+    //   pagingInfo: pagingInfo,
+    //   startIdx: startIdx,
+    //   endIdx: endIdx,
+    //   page_connectorApiProductListLength: page_connectorApiProductList.length
+    // }}));
     const apsApiProductResponseList: APSApiProductResponseList = [];
-    for(const connectorApiProduct of connectorApiProductList) {
+    for(const connectorApiProduct of page_connectorApiProductList) {
       const apsApiProductResponse: APSApiProductResponse = this.createAPSApiProductResponse({ connectorApiProduct: connectorApiProduct });
       apsApiProductResponseList.push(apsApiProductResponse);
     }
