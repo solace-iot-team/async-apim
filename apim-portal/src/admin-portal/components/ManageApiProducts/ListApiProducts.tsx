@@ -119,13 +119,21 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     if(userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+
+      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
         apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       });
+      // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+      //   organizationId: props.organizationEntityId.id,
+      //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+      //   default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+      //   apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+      //   apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
+      // });
       setManagedObjectList(list);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);

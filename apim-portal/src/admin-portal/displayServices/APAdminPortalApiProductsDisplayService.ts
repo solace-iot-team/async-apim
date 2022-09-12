@@ -30,6 +30,7 @@ import { E_AP_OPS_MODE } from '../../utils/APOperationMode';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
 import { APSApiProductResponseList, ApsApiProductsService, EAPSOrganizationAuthRole, EAPSSortDirection, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { APSApiProductSource } from '../../_generated/@solace-iot-team/apim-server-openapi-browser/models/APSApiProductSource';
 
 export type TAPAdminPortalApiProductDisplay_CloningInfo = {
   apOriginalEntityId: TAPEntityId;
@@ -417,7 +418,18 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
     } else {
       businessGroupIdList.push(businessGroupId);
     }
-    
+    let apsApiProductSource: APSApiProductSource | undefined = undefined;
+    switch(apOperationsMode) {
+      case E_AP_OPS_MODE.FULL_OPS_MODE:
+        apsApiProductSource = undefined;
+        break;
+      case E_AP_OPS_MODE.EP2_OPS_MODE:
+        apsApiProductSource = APSApiProductSource.EVENT_PORTAL_2;
+        break;
+      default:
+        Globals.assertNever(logName, apOperationsMode);
+    } 
+
     const listAPSApiProductsResponse: ListAPSApiProductsResponse = await ApsApiProductsService.listApsApiProducts({
       organizationId: organizationId,
       businessGroupIdList: businessGroupIdList,
@@ -428,8 +440,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       ],
       excludeApiProductIdList: undefined,
       apiProductIdList: undefined,
-      pageNumber: 1,
-      pageSize: 100,
+      source: apsApiProductSource,
+      pageNumber: 2,
+      pageSize: 2,
       searchWordList: 'one two three',
       sortDirection: EAPSSortDirection.ASC,
       sortFieldName: 'sortFieldName',
