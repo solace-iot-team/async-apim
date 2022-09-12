@@ -8,12 +8,12 @@ import {
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { DataTableSortOrderType } from 'primereact/datatable';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
-import { APSApiProductResponseList, ApsApiProductsService, EAPSSortDirection, ListAPSApiProductsResponse } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -46,6 +46,22 @@ import APProtocolsDisplayService, {
 } from './APProtocolsDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
 
+export type TAPApiProductDisplay_LazyLoadingTableParameters = {
+  isInitialSetting: boolean; // differentiate between first time and subsequent times
+  first: number; // index of the first row to be displayed
+  rows: number; // number of rows to display per page
+  page: number;
+  // sortField: (keyof APSUser | keyof APSUserProfile);
+  sortField: string;
+  sortOrder: DataTableSortOrderType;
+}
+export type TAPApiProductDisplay_ListOptions = {
+  pageNumber: number;
+  pageSize: number;
+  sortFieldName: string;
+  sortDirection: DataTableSortOrderType;
+  searchWordList: string | undefined;
+}
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 export enum EAPApprovalType {

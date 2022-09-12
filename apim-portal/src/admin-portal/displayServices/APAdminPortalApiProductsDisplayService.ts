@@ -14,10 +14,12 @@ import {
   E_ApApiProductSource, 
   IAPApiProductDisplay,
   IAPApiProductDisplay4List,
-  TAPApiProductDisplay_AccessAndState, 
+  TAPApiProductDisplay_AccessAndState,
+  TAPApiProductDisplay_ListOptions, 
 } from '../../displayServices/APApiProductsDisplayService';
 import APAttributesDisplayService, { TAPAttributeDisplayList, TAPRawAttribute, TAPRawAttributeList } from '../../displayServices/APAttributesDisplayService/APAttributesDisplayService';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from '../../displayServices/APBusinessGroupsDisplayService';
+import APDisplayUtils from '../../displayServices/APDisplayUtils';
 import APEnvironmentsDisplayService, { TAPEnvironmentDisplayList } from '../../displayServices/APEnvironmentsDisplayService';
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from '../../displayServices/APExternalSystemsDisplayService';
 import { TAPManagedAssetDisplay_BusinessGroupSharing } from '../../displayServices/APManagedAssetDisplayService';
@@ -29,7 +31,7 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/AP
 import { E_AP_OPS_MODE } from '../../utils/APOperationMode';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
-import { APSApiProductResponseList, ApsApiProductsService, EAPSOrganizationAuthRole, EAPSSortDirection, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { APSApiProductResponseList, ApsApiProductsService, APSListResponseMeta, EAPSOrganizationAuthRole, EAPSSortDirection, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { APSApiProductSource } from '../../_generated/@solace-iot-team/apim-server-openapi-browser/models/APSApiProductSource';
 
 export type TAPAdminPortalApiProductDisplay_CloningInfo = {
@@ -55,6 +57,10 @@ export type TAPAdminPortalApiProductDisplay4List = IAPApiProductDisplay4List & I
   apAppReferenceEntityIdList: TAPEntityIdList;
 };
 export type TAPAdminPortalApiProductDisplay4ListList = Array<TAPAdminPortalApiProductDisplay4List>;
+export type TAPAdminPortalApiProductDisplay4ListListResponse = APSListResponseMeta & {
+  apAdminPortalApiProductDisplay4ListList: Array<TAPAdminPortalApiProductDisplay4List>;
+};
+
 
 class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService {
   private readonly ComponentName = "APAdminPortalApiProductsDisplayService";
@@ -396,13 +402,21 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
    * @param param0 
    * @returns 
    */
-  public apsGetList_ApAdminPortalApiProductDisplay4ListList = async({ organizationId, businessGroupId, default_ownerId, apMemberOfBusinessGroupDisplayTreeNodeList=[], apOperationsMode }:{
+  public apsGetList_ApAdminPortalApiProductDisplay4ListList = async({ 
+    organizationId, 
+    businessGroupId, 
+    default_ownerId, 
+    apMemberOfBusinessGroupDisplayTreeNodeList=[], 
+    apOperationsMode,
+    apApiProductDisplay_ListOptions,
+   }:{
     organizationId: string;
     businessGroupId: string;
     default_ownerId: string;
     apMemberOfBusinessGroupDisplayTreeNodeList?: TAPMemberOfBusinessGroupDisplayTreeNodeList;
     apOperationsMode: E_AP_OPS_MODE;
-  }): Promise<TAPAdminPortalApiProductDisplay4ListList> => {
+    apApiProductDisplay_ListOptions: TAPApiProductDisplay_ListOptions;
+  }): Promise<TAPAdminPortalApiProductDisplay4ListListResponse> => {
     const funcName = 'apsGetList_ApAdminPortalApiProductDisplay4ListList';
     const logName = `${this.ComponentName}.${funcName}()`;
     // alert(`${logName}: apMemberOfBusinessGroupDisplayTreeNodeList = ${JSON.stringify(apMemberOfBusinessGroupDisplayTreeNodeList)}`);
@@ -441,11 +455,11 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       excludeApiProductIdList: undefined,
       apiProductIdList: undefined,
       source: apsApiProductSource,
-      pageNumber: 2,
-      pageSize: 2,
-      searchWordList: 'one two three',
-      sortDirection: EAPSSortDirection.ASC,
-      sortFieldName: 'sortFieldName',
+      pageNumber: apApiProductDisplay_ListOptions.pageNumber,
+      pageSize: apApiProductDisplay_ListOptions.pageSize,
+      searchWordList: apApiProductDisplay_ListOptions.searchWordList,
+      sortDirection: APDisplayUtils.transformTableSortDirectionToApiSortDirection(apApiProductDisplay_ListOptions.sortDirection),
+      sortFieldName: apApiProductDisplay_ListOptions.sortFieldName,
     });
 
     console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);
@@ -507,7 +521,12 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         // throw(e);
       }
     }
-    return apAdminPortalApiProductDisplay4ListList;
+
+    const apAdminPortalApiProductDisplay4ListListResponse: TAPAdminPortalApiProductDisplay4ListListResponse = {
+      apAdminPortalApiProductDisplay4ListList: apAdminPortalApiProductDisplay4ListList,
+      meta: listAPSApiProductsResponse.meta
+    }
+    return apAdminPortalApiProductDisplay4ListListResponse;
   }
 
 

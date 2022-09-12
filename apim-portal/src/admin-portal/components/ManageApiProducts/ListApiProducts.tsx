@@ -1,7 +1,7 @@
 
 import React from "react";
 
-import { DataTable } from 'primereact/datatable';
+import { DataTable, DataTableSortOrderType } from 'primereact/datatable';
 import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { MenuItem } from "primereact/api";
@@ -16,12 +16,14 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
   TAPAdminPortalApiProductDisplay4List, 
-  TAPAdminPortalApiProductDisplay4ListList, 
+  TAPAdminPortalApiProductDisplay4ListList,
+  TAPAdminPortalApiProductDisplay4ListListResponse, 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading"; 
 import { APOperationMode } from "../../../utils/APOperationMode";
+import { TAPApiProductDisplay_LazyLoadingTableParameters } from "../../../displayServices/APApiProductsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -51,6 +53,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
+  // * Lazy Loading * 
+  const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
+  const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPApiProductDisplay_LazyLoadingTableParameters>({
+    isInitialSetting: true,
+    first: 0, // index of the first row to be displayed
+    rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
+    page: 0,
+    sortField: APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName'),
+    sortOrder: 1
+  });
+  const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
+  const [lazyLoadingTableIsLoading, setLazyLoadingTableIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
@@ -87,20 +102,27 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
+      const listResponse: TAPAdminPortalApiProductDisplay4ListListResponse = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
-        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
+        apApiProductDisplay_ListOptions: {
+          pageNumber: lazyLoadingTableParams.page + 1,
+          pageSize: lazyLoadingTableParams.rows,
+          sortFieldName: lazyLoadingTableParams.sortField,
+          sortDirection: lazyLoadingTableParams.sortOrder,
+          searchWordList: globalFilter,
+        }
       });
-  
       // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
       //   organizationId: props.organizationEntityId.id,
       //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
       //   default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
       //   apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       // });
-      setManagedObjectList(list);
+      setManagedObjectList(listResponse.apAdminPortalApiProductDisplay4ListList);
+      setLazyLoadingTableTotalRecords(listResponse.meta.totalCount);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -120,12 +142,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     if(userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     try {
 
-      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
+      const listResponse: TAPAdminPortalApiProductDisplay4ListListResponse = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
         apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
-        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
+        apApiProductDisplay_ListOptions: {
+          pageNumber: lazyLoadingTableParams.page + 1,
+          pageSize: lazyLoadingTableParams.rows,
+          sortFieldName: lazyLoadingTableParams.sortField,
+          sortDirection: lazyLoadingTableParams.sortOrder,
+          searchWordList: globalFilter,
+        }
       });
       // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
       //   organizationId: props.organizationEntityId.id,
@@ -134,7 +163,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       //   apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
       //   apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
       // });
-      setManagedObjectList(list);
+      setManagedObjectList(listResponse.apAdminPortalApiProductDisplay4ListList);
+      setLazyLoadingTableTotalRecords(listResponse.meta.totalCount);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -151,13 +181,17 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const reInitialize = async () => {
     setIsInitialized(false);
     setIsLoading(true);
+    setLazyLoadingTableIsLoading(true);
     await apiGetManagedObjectList();
+    setLazyLoadingTableIsLoading(false);
     setIsLoading(false);
   }
 
   const doInitialize = async () => {
     setIsLoading(true);
+    setLazyLoadingTableIsLoading(true);
     await apiGetManagedObjectList();
+    setLazyLoadingTableIsLoading(false);
     setIsLoading(false);
   }
 
@@ -181,7 +215,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   React.useEffect(() => {
     if(!isInitialized) return;
     reInitialize();
-  }, [selectedFilterOptionId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [selectedFilterOptionId, lazyLoadingTableParams, globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
@@ -290,6 +324,15 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
     return MessageNoManagedObjectsFoundForFilter;
   }
+  const onPageSelect = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
+
+  const onSort = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
   const renderManagedObjectDataTable = () => {
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
@@ -318,10 +361,27 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           scrollable 
           // scrollHeight="800px" 
           dataKey={dataKey}
+          // // sorting
+          // sortMode='single'
+          // sortField={sortField}
+          // sortOrder={1}
+
+          // lazyLoading & pagination & sorting
+          lazy={true}
+          paginator={true}
+          paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+          rowsPerPageOptions={lazyLoadingTableRowsPerPageOptions}
+          first={lazyLoadingTableParams.first}
+          rows={lazyLoadingTableParams.rows}
+          totalRecords={lazyLoadingTableTotalRecords}
+          onPage={onPageSelect}
+          loading={lazyLoadingTableIsLoading}
           // sorting
           sortMode='single'
-          sortField={sortField}
-          sortOrder={1}
+          onSort={onSort} 
+          sortField={lazyLoadingTableParams.sortField} 
+          sortOrder={lazyLoadingTableParams.sortOrder}
         >
           {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
           <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
