@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiQueryHelper } from '../../utils/ApiQueryHelper';
-import { APSApiProductSource, ListAPSApiProductsResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
+import { APSApiProductSource, EAPSApiProductSortFieldName, EAPSSortDirection, ListAPSApiProductsResponse } from '../../../../src/@solace-iot-team/apim-server-openapi-node';
 import APSApiProductsService from '../../services/APSApiProductsService';
 import { ControllerUtils } from '../ControllerUtils';
 import { APSSessionUser } from '../../services/APSSessionService';
@@ -13,6 +13,8 @@ export type Extra_Query_Params = {
   excludeApiProductIdList: Components.Parameters.ExcludeApiProductIdList;
   apiProductIdList: Components.Parameters.ApiProductIdList;
   source: APSApiProductSource;
+  sortDirection: EAPSSortDirection;
+  apiProductSortFieldName: EAPSApiProductSortFieldName;
 }
 
 export class ApsApiProductsController {
@@ -23,16 +25,11 @@ export class ApsApiProductsController {
 
     const anyReq: any = req as any;
     const apsSessionUser: APSSessionUser = anyReq.user;
-    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'apsSessionUser', details: {
-    //   apsSessionUser: apsSessionUser,
-    //   accountType: accountType
-    // } }));
 
-
-    // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'request', details: {
+    // // DEBUG
+    // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, message: 'query', details: {
     //   query: req.query,
     // } }));
-    // throw new Error(`${logName}: check the query`);
 
     APSApiProductsService.all({
       apsSessionUser: apsSessionUser,
@@ -44,7 +41,8 @@ export class ApsApiProductsController {
       source: req.query.source,
       pagingInfo: ApiQueryHelper.getPagingInfoFromQuery(req.query),
       searchInfo: ApiQueryHelper.getSearchInfoFromQuery(req.query),
-      sortInfo: ApiQueryHelper.getSortInfoFromQuery(req.query),
+      sortDirection: req.query.sortDirection,
+      sortFieldName: req.query.apiProductSortFieldName,
     })
     .then( (r: ListAPSApiProductsResponse) => {
       // res.status(200).type('application/json').json(r);

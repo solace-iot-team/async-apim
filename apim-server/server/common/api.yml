@@ -938,7 +938,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/page_size'
       - $ref: '#/components/parameters/page_number'
-      - $ref: '#/components/parameters/sort_field_name'
+      - $ref: '#/components/parameters/api_product_sort_field_name'
       - $ref: '#/components/parameters/sort_direction'
       - $ref: '#/components/parameters/search_word_list'
       - $ref: '#/components/parameters/business_group_id_list'
@@ -1763,6 +1763,13 @@ components:
       required: false
       schema:
         type: string
+    api_product_sort_field_name:
+      name: apiProductSortFieldName
+      in: query
+      description: The field name of the APSApiProduct to sort by.
+      required: false
+      schema:
+        $ref: '#/components/schemas/EAPSApiProductSortFieldName'
     sort_direction:
       name: sortDirection
       in: query
@@ -1896,6 +1903,7 @@ components:
       type: string
       enum:
       - EventPortal_2
+      - Unknown
     APSId:
       description: Unique object id.
       type: string
@@ -2229,6 +2237,14 @@ components:
       - repository
       - issues_url
       - build_date
+
+    EAPSApiProductSortFieldName:
+      type: string
+      enum:
+      - displayName
+      - source
+      - stage
+      - owningBusinessGroupDisplayName
 
     EAPSBusinessGroupAuthRole:
       type: string
