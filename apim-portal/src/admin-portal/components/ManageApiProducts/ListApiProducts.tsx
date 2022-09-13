@@ -2,7 +2,7 @@
 import React from "react";
 
 import { DataTable } from 'primereact/datatable';
-import { Column, ColumnSortParams } from "primereact/column";
+import { Column } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { MenuItem } from "primereact/api";
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
@@ -189,7 +189,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     setIsInitialized(false);
     setIsLoading(true);
     setLazyLoadingTableIsLoading(true);
-    await apiGetManagedObjectList();
+    await apiGetManagedObjectList(searchWordList);
     setLazyLoadingTableIsLoading(false);
     setIsLoading(false);
   }
@@ -336,9 +336,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>Not published</div>);
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
   }
-  const sortFunction = (e: ColumnSortParams) => {
-    alert(`e = ${JSON.stringify(e)}`)
-  }
   const renderManagedObjectDataTable = () => {
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
     const nameSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
@@ -347,7 +344,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     const sourceSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apApiProductSource');
     return (
       <div className="card">
-        <p>searchWordList='{searchWordList}'</p>
         <DataTable
           ref={dt}
           className="p-datatable-sm"
