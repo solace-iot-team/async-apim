@@ -158,7 +158,6 @@ export const ListSystemUsers: React.FC<IListSystemUsersProps> = (props: IListSys
     const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
     setGlobalFilter(_globalFilter);
   }
-
   const onPageSelect = (event: any) => {
     const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
     setLazyLoadingTableParams(_lazyParams);

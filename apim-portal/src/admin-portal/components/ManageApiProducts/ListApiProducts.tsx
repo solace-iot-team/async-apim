@@ -1,8 +1,8 @@
 
 import React from "react";
 
-import { DataTable, DataTableSortOrderType } from 'primereact/datatable';
-import { Column } from "primereact/column";
+import { DataTable } from 'primereact/datatable';
+import { Column, ColumnSortParams } from "primereact/column";
 import { InputText } from 'primereact/inputtext';
 import { MenuItem } from "primereact/api";
 import { SelectButton, SelectButtonChangeParams } from "primereact/selectbutton";
@@ -16,7 +16,6 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
   TAPAdminPortalApiProductDisplay4List, 
-  TAPAdminPortalApiProductDisplay4ListList,
   TAPAdminPortalApiProductDisplay4ListListResponse, 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
@@ -40,9 +39,8 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const ComponentName = 'ListApiProducts';
 
   const MessageNoManagedObjectsFound = 'No API Products defined.';
-  const MessageNoManagedObjectsFoundForFilter = 'No API Products found for filter.';
-  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
-  const GlobalSearchPlaceholder = 'search...';
+  const MessageNoManagedObjectsFoundForFilter = 'No API Products found for filter';
+  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> and press <Enter> ...';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay4List;
   type TManagedObjectList = Array<TManagedObject>;
@@ -55,11 +53,11 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   // * Lazy Loading * 
-  const lazyLoadingTableRowsPerPageOptions: Array<number> = [10,20,50,100];
+  const lazyLoadingTableRowsPerPageOptions: Array<number> = [5,10,20,50,100];
   const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPApiProductDisplay_LazyLoadingTableParameters>({
     isInitialSetting: true,
     first: 0, // index of the first row to be displayed
-    rows: lazyLoadingTableRowsPerPageOptions[0], // number of rows to display per page
+    rows: lazyLoadingTableRowsPerPageOptions[1], // number of rows to display per page
     page: 0,
     sortField: APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName'),
     sortOrder: 1
@@ -67,6 +65,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
   const [lazyLoadingTableIsLoading, setLazyLoadingTableIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
+  const [searchWordList, setSearchWordList] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
   const SelectAllId = "SelectAllId";
@@ -96,7 +95,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   // * Api Calls *
-  const apiGetManagedObjectList_For_BusinessGroup = async(): Promise<TApiCallState> => {
+  const apiGetManagedObjectList_For_BusinessGroup = async(searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList_For_BusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
@@ -112,7 +111,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           pageSize: lazyLoadingTableParams.rows,
           sortFieldName: lazyLoadingTableParams.sortField,
           sortDirection: lazyLoadingTableParams.sortOrder,
-          searchWordList: globalFilter,
+          searchWordList: searchWordList,
         }
       });
       // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
@@ -134,7 +133,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   /**
    * Current Business Group and all it's children
    */
-  const apiGetManagedObjectList_For_All = async(): Promise<TApiCallState> => {
+  const apiGetManagedObjectList_For_All = async(searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList_For_All';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
@@ -153,7 +152,7 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           pageSize: lazyLoadingTableParams.rows,
           sortFieldName: lazyLoadingTableParams.sortField,
           sortDirection: lazyLoadingTableParams.sortOrder,
-          searchWordList: globalFilter,
+          searchWordList: searchWordList,
         }
       });
       // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
@@ -173,9 +172,17 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return callState;
   }
 
-  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
-    if(selectedFilterOptionId === SelectBusinessGroupId) return await apiGetManagedObjectList_For_BusinessGroup();
-    else return await apiGetManagedObjectList_For_All();
+  const apiGetManagedObjectList = async(searchWordList?: string): Promise<TApiCallState> => {
+    if(selectedFilterOptionId === SelectBusinessGroupId) return await apiGetManagedObjectList_For_BusinessGroup(searchWordList);
+    else return await apiGetManagedObjectList_For_All(searchWordList);
+  }
+
+  const doLoadPage = async (searchWordList?: string) => {
+    setIsLoading(true);
+    setLazyLoadingTableIsLoading(true);
+    await apiGetManagedObjectList(searchWordList);
+    setLazyLoadingTableIsLoading(false);
+    setIsLoading(false);
   }
 
   const reInitialize = async () => {
@@ -215,22 +222,51 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   React.useEffect(() => {
     if(!isInitialized) return;
     reInitialize();
-  }, [selectedFilterOptionId, lazyLoadingTableParams, globalFilter]); /* eslint-disable-line react-hooks/exhaustive-deps */
+  }, [selectedFilterOptionId]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    doLoadPage(searchWordList);
+  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    if(searchWordList === undefined) doLoadPage();
+    else if(searchWordList.length > 2 && !isLoading) {
+      doLoadPage(searchWordList);
+    }
+  }, [searchWordList]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
   }  
-
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
     props.onManagedObjectView(mo);
   }
-
-  const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
-    setGlobalFilter(event.currentTarget.value);
+  const onChangeGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
+    const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
+    if(_globalFilter === undefined) setSearchWordList(undefined);
+    setGlobalFilter(_globalFilter);
   }
- 
+  const onKeyupGlobalFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if(event.key === "Enter") {
+      setSearchWordList(event.currentTarget.value);
+    }
+  }
+  const onPageSelect = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
+  const onSort = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
+  const renderManagedObjectTableEmptyMessage = () => {
+    if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundForFilter}: ${globalFilter}`;
+    else return MessageNoManagedObjectsFound;
+  }
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
@@ -239,27 +275,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         </div> 
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
-          <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
+          <InputText 
+            type="search" 
+            placeholder={GlobalSearchPlaceholder} 
+            value={globalFilter} 
+            onChange={onChangeGlobalFilter}
+            onKeyUp={onKeyupGlobalFilter}
+            style={{width: '600px'}} 
+          />
         </span>
       </div>
     );
   }
 
-  // const controlledChannelParametersBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apControlledChannelParameterList));
-  // }
-  // const originalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.original_ApAttributeDisplayList));
-  // }
-  // const customAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apCustomAttributeDisplayList));
-  // }
-  // const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
-  // }
-  // const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
-  // }
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apApiEntityIdList));
   }
@@ -280,15 +308,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       </div>
     );
   }
-  // const approvalTypeTemplate = (row: TManagedObject): string => {
-  //   return row.apApprovalType;
-  // }
   const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
   }
-  // const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return (<div>{row.apVersionInfo.apLastVersion}</div>);
-  // }  
   const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apVersionInfo.apLastVersion}</div>);
   }
@@ -307,12 +329,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
     );
   }
-  // const apEntityIdBodyTemplate = (row: TManagedObject) => {
-  //   return JSON.stringify(row.apEntityId);
-  // }
-  // const accessLevelTemplate = (row: TManagedObject): string => {
-  //   return row.apAccessLevel;
-  // }
   const stateTemplate = (row: TManagedObject): string => {
     return row.apLifecycleStageInfo.stage;
   }
@@ -320,40 +336,29 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>Not published</div>);
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
   }
-  const getEmptyMessage = (): string => {
-    if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
-    return MessageNoManagedObjectsFoundForFilter;
-  }
-  const onPageSelect = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
-  }
-
-  const onSort = (event: any) => {
-    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
-    setLazyLoadingTableParams(_lazyParams);
+  const sortFunction = (e: ColumnSortParams) => {
+    alert(`e = ${JSON.stringify(e)}`)
   }
   const renderManagedObjectDataTable = () => {
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
-    const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
-    const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    // const accessLevelSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
+    const nameSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
     const stateSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apLifecycleStageInfo.stage');
     const businessGroupSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
     const sourceSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apApiProductSource');
     return (
       <div className="card">
+        <p>searchWordList='{searchWordList}'</p>
         <DataTable
           ref={dt}
           className="p-datatable-sm"
           // autoLayout={true}
-          emptyMessage={getEmptyMessage()}
+          emptyMessage={renderManagedObjectTableEmptyMessage()}
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
           header={renderDataTableHeader()}
           value={managedObjectList}
-          globalFilter={globalFilter}
+          // globalFilter={globalFilter}
           selectionMode="single"
           selection={selectedManagedObject}
           onRowClick={onManagedObjectSelect}
@@ -361,11 +366,6 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           scrollable 
           // scrollHeight="800px" 
           dataKey={dataKey}
-          // // sorting
-          // sortMode='single'
-          // sortField={sortField}
-          // sortOrder={1}
-
           // lazyLoading & pagination & sorting
           lazy={true}
           paginator={true}
@@ -377,39 +377,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           totalRecords={lazyLoadingTableTotalRecords}
           onPage={onPageSelect}
           loading={lazyLoadingTableIsLoading}
-          // sorting
           sortMode='single'
           onSort={onSort} 
           sortField={lazyLoadingTableParams.sortField} 
           sortOrder={lazyLoadingTableParams.sortOrder}
         >
-          {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          {/* <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={nameSortField} sortable />
           <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-
           <Column header="Source" headerStyle={{width: '11em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable />
-
-          {/* <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable /> */}
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
           <Column header="Published To" headerStyle={{width: '9em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
-
-          {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
           <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-
           <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
-
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
-
-
-          {/* <Column header="Orginal Attributes" body={originalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="Controlled Channel Parameters" body={controlledChannelParametersBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
-          <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/> */}
           <Column header="Referenced By" headerStyle={{width: '10em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>
@@ -461,7 +441,10 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
       <div className="p-mt-2">
-        {isInitialized && renderContent()}
+        { isInitialized && managedObjectList &&
+          (managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== ''))
+          &&
+          renderContent()}
       </div>
       
     </div>

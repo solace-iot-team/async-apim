@@ -31,7 +31,7 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/AP
 import { E_AP_OPS_MODE } from '../../utils/APOperationMode';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
-import { APSApiProductResponseList, ApsApiProductsService, APSListResponseMeta, EAPSOrganizationAuthRole, EAPSSortDirection, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { APSApiProductResponseList, ApsApiProductsService, APSListResponseMeta, EAPSOrganizationAuthRole, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { APSApiProductSource } from '../../_generated/@solace-iot-team/apim-server-openapi-browser/models/APSApiProductSource';
 
 export type TAPAdminPortalApiProductDisplay_CloningInfo = {
@@ -459,7 +459,9 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       pageSize: apApiProductDisplay_ListOptions.pageSize,
       searchWordList: apApiProductDisplay_ListOptions.searchWordList,
       sortDirection: APDisplayUtils.transformTableSortDirectionToApiSortDirection(apApiProductDisplay_ListOptions.sortDirection),
-      sortFieldName: apApiProductDisplay_ListOptions.sortFieldName,
+      apiProductSortFieldName: this.map_APApiProductDisplaySortFieldName_To_APSApiProductSortFieldName({
+        apApiProductDisplay_SortFieldName: apApiProductDisplay_ListOptions.sortFieldName
+      }),
     });
 
     console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);

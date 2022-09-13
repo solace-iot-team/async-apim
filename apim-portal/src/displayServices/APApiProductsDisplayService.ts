@@ -14,6 +14,7 @@ import APEntityIdsService, {
   IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
+import { EAPSApiProductSortFieldName } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -27,6 +28,7 @@ import APAttributesDisplayService, {
   TAPRawAttributeList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
+import APDisplayUtils from './APDisplayUtils';
 import { 
   TAPEnvironmentDisplay, 
   TAPEnvironmentDisplayList 
@@ -349,6 +351,25 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       }
     }
     return apRawAttributeList;
+  }
+
+  protected map_APApiProductDisplaySortFieldName_To_APSApiProductSortFieldName({ apApiProductDisplay_SortFieldName }:{
+    apApiProductDisplay_SortFieldName: string;
+  }): EAPSApiProductSortFieldName {
+    const funcName = 'map_APApiProductDisplaySortFieldName_To_APSApiProductSortFieldName';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    switch(apApiProductDisplay_SortFieldName) {
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apEntityId.displayName'):
+        return EAPSApiProductSortFieldName.DISPLAY_NAME;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apLifecycleStageInfo.stage'):
+        return EAPSApiProductSortFieldName.STAGE;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName'):
+        return EAPSApiProductSortFieldName.OWNING_BUSINESS_GROUP_DISPLAY_NAME;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apApiProductSource'):
+        return EAPSApiProductSortFieldName.SOURCE;
+      default:
+        throw new Error(`${logName}: cannot map apApiProductDisplay_SortFieldName=${apApiProductDisplay_SortFieldName} to EAPSApiProductSortFieldName=${JSON.stringify(Object.values(EAPSApiProductSortFieldName))}`);
+    }
   }
 
   protected determine_ApApiProductConfigState( connectorApiProduct: APIProduct ): TAPApiProductConfigState {
