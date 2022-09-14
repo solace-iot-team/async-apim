@@ -464,7 +464,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       }),
     });
 
-    console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);
+    // console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);
 
     const list: APSApiProductResponseList = listAPSApiProductsResponse.list;
     const connectorApiProductList: Array<APIProduct> = list.map( (x) => {

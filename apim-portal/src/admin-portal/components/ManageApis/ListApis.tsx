@@ -229,12 +229,6 @@ export const ListApis: React.FC<IListApisProps> = (props: IListApisProps) => {
     return MessageNoManagedObjectsFoundForFilter;
   }
   const renderManagedObjectDataTable = () => {
-    // const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    // const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    // const filterField = APApisDisplayService.nameOf<IAPApiDisplay>('apSearchContent');
-    // const stateSortField = APApisDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    // const sourceSortField = APApisDisplayService.nameOf_ConnectorApiInfo('source');
-    // const businessGroupSortField = APApisDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
     const dataKey = APDisplayUtils.nameOf<IAPApiDisplay>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<IAPApiDisplay>('apEntityId.displayName');
     const filterField = APDisplayUtils.nameOf<IAPApiDisplay>('apSearchContent');

@@ -181,10 +181,6 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
   }
 
   const renderApiProductsTable = (): JSX.Element => {
-    // const dataKey = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('id');
-    // const nameField = APDeveloperPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    // const statusField = APDeveloperPortalApiProductsDisplayService.nameOf<TManagedObjectElement>('apApp_ApiProduct_Status');
-
     const dataKey = APDisplayUtils.nameOf<TManagedObjectElement>('apEntityId.id');
     const nameField = APDisplayUtils.nameOf<TManagedObjectElement>('apEntityId.displayName');
     const statusField = APDisplayUtils.nameOf<TManagedObjectElement>('apApp_ApiProduct_Status');
@@ -203,10 +199,6 @@ export const EditApiProductsForm: React.FC<IEditApiProductsFormProps> = (props: 
           scrollable 
           autoLayout={true}
           emptyMessage="No API Products defined."
-          // scrollHeight="200px" 
-          // expandedRows={expandedViewProductsDataTableRows}
-          // onRowToggle={(e) => setExpandedViewProductsDataTableRows(e.data)}
-          // rowExpansionTemplate={rowExpansionTemplate}
         >
           <Column header="API Product" body={nameBodyTemplate} field={nameField} sortable />
           <Column header="Version (State)" body={versionBodyTemplate} style={{width: '15%'}} />

@@ -24,7 +24,8 @@ import APAppWebhooksDisplayService, {
   TAPDecomposedUri, 
   TAPWebhookAuthMethodSelectId, 
   TAPWebhookBasicAuth, 
-  TAPWebhookHeaderAuth 
+  TAPWebhookHeaderAuth, 
+  TAPWebhookRequestHeaderList
 } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { 
   WebHook, 
@@ -37,6 +38,7 @@ import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import APEntityIdsService from "../../../../utils/APEntityIdsService";
 import { TAPAppEnvironmentDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
 import { EditNewWebhookAuthFormFields } from "./EditNewWebhookAuthFormFields";
+import { EditNewApWebhookRequestHeaderListForm } from "./EditNewApWebhookRequestHeaderListForm";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -58,16 +60,14 @@ export type TManagedObjectFormData = {
   webhookBasicAuth: TAPWebhookBasicAuth;
   webhookHeaderAuth: TAPWebhookHeaderAuth;
 
-  // environmentSelectEntityIdList: TAPEntityIdList;
   selectedEnvironmentIdList: Array<string>;
 
 //   apTrustedCNList: TAPTrustedCNList;
 };
 export type TManagedObjectFormDataEnvelope = {
   formData: TManagedObjectFormData;
+  customRequestHeaderList: TAPWebhookRequestHeaderList;
 }
-
-
 
 export interface IEditNewAppWebhookFormProps {
   organizationId: string;
@@ -109,7 +109,8 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
       selectedEnvironmentIdList: APEntityIdsService.create_IdList_From_ApDisplayObjectList(mo.apAppEnvironmentDisplayList),
     };
     return {
-      formData: fd 
+      formData: fd,
+      customRequestHeaderList: mo.apWebhookRequestHeaderList,
     };
   }
 
@@ -152,11 +153,13 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
       apDisplayObjectList: props.available_ApAppEnvironmentDisplayList,
       filterByIdList: fd.selectedEnvironmentIdList
     });
+    mo.apWebhookRequestHeaderList = formDataEnvelope.customRequestHeaderList;
     return mo;
   }
 
   const [managedObject] = React.useState<TManagedObject>(props.apAppWebhookDisplay);  
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
+  const [customWebhookRequestHeaderList, setCustomWebhookRequestHeaderList] = React.useState<TAPWebhookRequestHeaderList>([]);
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
 
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
@@ -209,8 +212,13 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   const onSubmitManagedObjectForm = (newMofde: TManagedObjectFormDataEnvelope) => {
+    // add externally controlled customRequestHeaderList back in
+    const mofde: TManagedObjectFormDataEnvelope = {
+      ...newMofde,
+      customRequestHeaderList: customWebhookRequestHeaderList
+    };
     props.onSubmit(create_ManagedObject_From_FormEntities({
-      formDataEnvelope: newMofde,
+      formDataEnvelope: mofde,
     }));
   }
 
@@ -307,6 +315,9 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
   }
 
   const renderManagedObjectForm = () => {
+    const funcName = 'renderManagedObjectForm';
+    const logName = `${ComponentName}.${funcName}()`;
+    if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
     const selectedWebhookAuthMethodId: TAPWebhookAuthMethodSelectId = managedObjectUseForm.watch('formData.selectedWebhookAuthMethodId');
     return (
       <div className="card p-mt-4">
@@ -535,7 +546,19 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
             {/* auth details */}
             { renderManagedObjectForm_WebhookAuthMethodDetails(selectedWebhookAuthMethodId) }
           </form>  
-            
+
+          <div className="p-field">
+            {/* custom headers */}
+            <div className="p-text-bold p-mb-3">Custom Headers:</div>
+            <div className="p-ml-2">
+              <EditNewApWebhookRequestHeaderListForm
+                key={ComponentName+'_EditNewApWebhookRequestHeaderListForm'}
+                apWebhookRequestHeaderList={managedObjectFormDataEnvelope.customRequestHeaderList}
+                onChange={setCustomWebhookRequestHeaderList}
+              />
+            </div>
+          </div>
+
           {/* trusted CNs Form */}
           {/* <div className="p-field">
             { renderManageTrustedCNs() }
@@ -549,7 +572,7 @@ export const EditNewAppWebhookForm: React.FC<IEditNewAppWebhookFormProps> = (pro
   return (
     <div className="apd-manage-user-apps">
 
-      { renderManagedObjectForm() }
+      { managedObjectFormDataEnvelope && renderManagedObjectForm() }
 
     </div>
   );

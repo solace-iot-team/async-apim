@@ -22,6 +22,7 @@ import { ViewAppWebhook } from "./ViewAppWebhook";
 import { DeleteAppWebhook } from "./DeleteAppWebhook";
 import { EditNewAppWebhook } from "./EditNewAppWebhook";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -394,6 +395,8 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
 
       <Loading show={isLoading} header={isLoadingHeader}/>
       
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
       { managedApAppDisplay && renderToolbar() }
 
       {showListComponent && managedApAppDisplay &&

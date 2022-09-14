@@ -27,7 +27,7 @@ import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/A
 import { Config } from "../../../Config";
 import APAttributesDisplayService, { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { DisplayAppHeaderInfo } from "./DisplayAppHeaderInfo";
-import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
+import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayWebhooks/APDisplayAppWebhookList";
 import { OrganizationContext } from "../../../components/APContextProviders/APOrganizationContextProvider";
 
 import '../../../components/APComponents.css';
@@ -48,8 +48,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
   const ComponentName = 'ViewApp';
 
   type TManagedObject = TAPAdminPortalAppDisplay;
-
-  const MessageNoWebhooksFound = 'No Webhooks configured.';
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -221,7 +219,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
               apDeveloperPortalUserAppDisplay={managedObject}
               onError={props.onError}
               onLoadingChange={props.onLoadingChange}
-              emptyMessage={MessageNoWebhooksFound}
             />
           </TabPanel>
           <TabPanel header="General Attributes">
@@ -259,17 +256,6 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
         {managedObject && renderManagedObject() }
       
       </div>
-
-      {/* DEBUG */}
-      {/* {managedObjectDisplay && 
-        <div>
-          <hr/>
-          <div>managedObjectDisplay:</div>
-          <pre style={ { fontSize: '10px' }} >
-            {JSON.stringify(managedObjectDisplay, null, 2)}
-          </pre>
-        </div>
-      } */}
     </React.Fragment>
   );
 }

@@ -13,7 +13,8 @@ import {
   $BasicAuthentication,
   $APIKeyAuthentication,
   $BearerTokenAuthentication,
-  $Secret
+  $Secret,
+  $WebHookHeader
 } from '@solace-iot-team/apim-connector-openapi-browser';
 
 export class APConnectorFormValidationRules {
@@ -253,7 +254,24 @@ export class APConnectorFormValidationRules {
     rules['pattern'] = APConnectorFormValidationRules.getPatternRule(schema, 'Invalid trusted CN');
     return rules;
   }
-
+  public static WebhookRequestHeaderName = (): any => {
+    const schema = $WebHookHeader.properties.headerName;
+    const rules: any = {};
+    rules['required'] = schema.isRequired ? `Enter header name.` : false;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid header name`);
+    return rules;
+  }
+  public static WebhookRequestHeaderValue = (): any => {
+    const schema = $WebHookHeader.properties.headerValue;
+    const rules: any = {};
+    rules['required'] = schema.isRequired ? `Enter a value.` : false;
+    rules['maxLength'] = APConnectorFormValidationRules.getMaxLengthRule(schema);
+    rules['minLength'] = APConnectorFormValidationRules.getMinLengthRule(schema);
+    rules['pattern'] = APConnectorFormValidationRules.getFormPatternRule(schema, `Invalid value`);
+    return rules;
+  }
   public static AttributeName = (): any => {
     const schema = $attributes.contains.properties.name;
     const rules: any = {};
