@@ -19,7 +19,6 @@ import 'primeflex/primeflex.css';
 
 export interface IEditNewApWebhookRequestHeaderListFormProps {
   apWebhookRequestHeaderList: TAPWebhookRequestHeaderList;
-  // presetApWebhookRequestHeader: TAPWebhookRequestHeader;
   onChange: (apWebhookRequestHeaderList: TAPWebhookRequestHeaderList) => void; /** called every time the list has changed */
 }
 
@@ -68,24 +67,12 @@ export const EditNewApWebhookRequestHeaderListForm: React.FC<IEditNewApWebhookRe
 
 
   React.useEffect(() => {
-    // if(props.presetApWebhookRequestHeader === undefined) {
-    //   setManagedObject(EmptyManagedObject);
-    // } else {
-    //   setManagedObject(props.presetApWebhookRequestHeader);
-    // }
-    // managedObjectUseForm.clearErrors();
     setManagedObject(EmptyManagedObject);
   }, []); /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
-    // if(!APAttributesDisplayService.is_Empty_ApAttributeDisplay(managedObject)) {
-    //   setManagedObjectFormDataEnvelope(transform_ManagedObject_To_FormDataEnvelope(managedObject));
-    // } 
-    // managedObjectUseForm.clearErrors();
-    // const attributeName: string | undefined = managedObjectUseForm.getValues('formData.attribute.name');
-    // if(attributeName !== undefined && attributeName !== '') managedObjectUseForm.trigger();
   }, [managedObject]) /* eslint-disable-line react-hooks/exhaustive-deps */
 
   React.useEffect(() => {
@@ -177,13 +164,6 @@ export const EditNewApWebhookRequestHeaderListForm: React.FC<IEditNewApWebhookRe
     })) {
       return `${TableHeader_HeaderName} already exists. Choose a different name or delete it first to change it's value.`;
     }
-    // // check that name is in the available list
-    // if(props.availableApAttributeEntityIdList !== undefined) {
-    //   const found: TAPEntityId | undefined = props.availableApAttributeEntityIdList.find( (x) => {
-    //     return x.id === name;
-    //   });
-    //   if(found === undefined) return `Unknown ${props.attributeName_Name}.`;
-    // }
     return true;
   }
 
