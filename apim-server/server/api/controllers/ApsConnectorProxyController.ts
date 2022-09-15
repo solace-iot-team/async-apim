@@ -112,7 +112,8 @@ export class ApsConnectorProxyController {
       accountType: accountType
     });
     // Note: if a timeout occurs, connection to client is closed, no error handling available. Results in TypeError: failed to fetch in Browser.
-    const timeout_ms = (req.method === "GET" ? 5000 : 120000);
+    // const timeout_ms = (req.method === "GET" ? 5000 : 1000);
+    const timeout_ms = (req.method === "GET" ? 5000 : 180000);
     const target: string = ServerConfig.getActiveConnectorTarget();
     ConnectorProxy.web(req, res, {
       // target: "http://18.184.18.52:3000/v1",
