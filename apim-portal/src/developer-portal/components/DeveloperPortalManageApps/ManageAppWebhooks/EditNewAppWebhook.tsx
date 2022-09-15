@@ -234,8 +234,8 @@ export const EditNewAppWebhook: React.FC<IEditNewAppWebhookProps> = (props: IEdi
     doSubmit(mo);
   }
 
-  const onError = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
+  const onErrorNotification = (apiCallState: TApiCallState) => {
+    props.onError(apiCallState);
   }
 
   const renderManagedObjectFormFooter = (): JSX.Element => {
@@ -269,7 +269,7 @@ export const EditNewAppWebhook: React.FC<IEditNewAppWebhookProps> = (props: IEdi
             available_ApAppEnvironmentDisplayList={available_ApAppEnvironmentDisplayList}
             formId={FormId}
             apAppWebhookDisplay={mo}
-            onError={onError}
+            onError={onErrorNotification}
             // onLoadingChange={props.onLoadingChange}
             onSubmit={onSubmit}
           />

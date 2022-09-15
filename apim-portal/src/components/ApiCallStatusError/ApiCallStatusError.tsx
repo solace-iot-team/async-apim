@@ -46,7 +46,7 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
     if(props.apiCallStatus === null) return;
     if(props.apiCallStatus.success) return;
     // console.log(`${ComponentName}: props.apiCallStatus=${JSON.stringify(props.apiCallStatus, null, 2)}`);
-    if(props.apiCallStatus.isUnauthorizedError && props.apiCallStatus.isAPSApiError) {
+    if(props.apiCallStatus.isUnauthorizedError) {
       doLogoutThisUser();
     }
   }, [props.apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
