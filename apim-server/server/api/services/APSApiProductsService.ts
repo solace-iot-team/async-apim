@@ -71,7 +71,7 @@ export class APSApiProductsService {
   private readonly ApiProductAttribute_OwningBusinessGroup_DisplayName = "_AP_BUSINESS_GROUP_OWNING_DISPLAY_NAME_";
   private readonly ApiProductAttribute_BusinessGroupSharingList = "_AP_BUSINESS_GROUP_SHARING_LIST_";
   private readonly ApiProductAttribute_PublishDestination = "_AP_PUBLISH_DESTINATION_";
-  private readonly ApiProductAttribute_Source_Name: string = "_IMP_SOURCE_";
+  private readonly ApiProductAttribute_Source_Name: string = "_AC_IMP_SOURCE_";
   private readonly ApiProductAttribute_Source_Value_EventPortal_2 = "Solace Event Portal";
 
   constructor() {
@@ -307,31 +307,31 @@ export class APSApiProductsService {
     });
   }
 
-  /**
-   * Determines the source of the api product based on attribute.
-   */
-  private doInclude_ApApiProductSource({ source, combined_ApiProductAttributes }:{
-    source?: APSApiProductSource;
-    combined_ApiProductAttributes: Array<TApiProductAttribute>;
-  }): boolean {
-    const funcName = 'doInclude_ApApiProductSource';
-    const logName = `${APSApiProductsService.name}.${funcName}()`;
+  // /**
+  //  * Determines the source of the api product based on attribute.
+  //  */
+  // private doInclude_ApApiProductSource({ source, combined_ApiProductAttributes }:{
+  //   source?: APSApiProductSource;
+  //   combined_ApiProductAttributes: Array<TApiProductAttribute>;
+  // }): boolean {
+  //   const funcName = 'doInclude_ApApiProductSource';
+  //   const logName = `${APSApiProductsService.name}.${funcName}()`;
 
-    if(source === undefined) return true;
-    const sourceAttribute: TApiProductAttribute | undefined = combined_ApiProductAttributes.find( (x) => {
-      return  x.name === this.ApiProductAttribute_Source_Name;
-    });
-    if(sourceAttribute === undefined) return false;
-    switch(source) {
-      case APSApiProductSource.EVENT_PORTAL_2:
-        return sourceAttribute.value.includes(this.ApiProductAttribute_Source_Value_EventPortal_2);
-      case APSApiProductSource.UNKNOWN:
-        return true;
-      default:
-        ServerUtils.assertNever(logName, source);
-    }
-    return false;
-  }
+  //   if(source === undefined) return true;
+  //   const sourceAttribute: TApiProductAttribute | undefined = combined_ApiProductAttributes.find( (x) => {
+  //     return  x.name === this.ApiProductAttribute_Source_Name;
+  //   });
+  //   if(sourceAttribute === undefined) return false;
+  //   switch(source) {
+  //     case APSApiProductSource.EVENT_PORTAL_2:
+  //       return sourceAttribute.value.includes(this.ApiProductAttribute_Source_Value_EventPortal_2);
+  //     case APSApiProductSource.UNKNOWN:
+  //       return true;
+  //     default:
+  //       ServerUtils.assertNever(logName, source);
+  //   }
+  //   return false;
+  // }
 
   private create_Source({ combined_ApiProductAttributes }:{
     combined_ApiProductAttributes: Array<TApiProductAttribute>;

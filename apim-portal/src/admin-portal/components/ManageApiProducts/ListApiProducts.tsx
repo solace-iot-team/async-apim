@@ -38,7 +38,7 @@ export interface IListApiProductsProps {
 export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
   const ComponentName = 'ListApiProducts';
 
-  const MessageNoManagedObjectsFound = 'No API Products defined.';
+  const MessageNoManagedObjectsFound = 'No API Products found.';
   const MessageNoManagedObjectsFoundForFilter = 'No API Products found for filter';
   const GlobalSearchPlaceholder = 'Enter search word list separated by <space> and press <Enter> ...';
 
@@ -393,22 +393,9 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   const renderContent = () => {
-    const funcName = 'renderContent';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
-
-    // if(managedObjectList.length === 0) {
-    //   return (
-    //     <React.Fragment>
-    //       <Divider />
-    //       {MessageNoManagedObjectsFound}
-    //       <Divider />
-    //     </React.Fragment>
-    //   );
-    // }
-    // if(managedObjectList.length > 0) {
-    //   return renderManagedObjectDataTable();
-    // } 
+    // const funcName = 'renderContent';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
     return renderManagedObjectDataTable();
   }
 
@@ -436,13 +423,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
-      <div className="p-mt-2">
+      {/* <div className="p-mt-2">
         { isInitialized && managedObjectList &&
           (managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== ''))
           &&
           renderContent()}
+      </div> */}
+
+      <div className="p-mt-2">
+        { isInitialized && managedObjectList &&
+          renderContent()
+        }
       </div>
-      
+
     </div>
   );
 }

@@ -17,7 +17,7 @@ import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService'
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
 const C_Connector_EP_ManagedAssetAttribute_Prefix = "EP";
-const C_Connector_AC_ManagedAssetAttribute_Prefix = "IMP";
+const C_Connector_AC_ManagedAssetAttribute_Prefix = "AC";
 const C_AP_ManagedAssetAttribute_Prefix = "AP";
 export enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
@@ -25,7 +25,7 @@ export enum EAPManagedAssetAttribute_Scope {
   CLASSIFICATION = "CLASSIFICATION",
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
-  SOURCE = "SOURCE",
+  SOURCE = "IMP_SOURCE",
 }
 export enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_ID = "OWNING_ID",
