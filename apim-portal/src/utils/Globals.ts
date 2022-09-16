@@ -160,8 +160,9 @@ export class Globals {
 
   public static openUrlInTab = (url: string, target: string) => {
     // const newWindow = window.open(url, target ? target : '_blank', 'noopener,noreferrer');
-    const newWindow = window.open(url, target ? target : '_blank');
+    // const newWindow = window.open(url, target ? target : '_blank');
     // if(newWindow) newWindow.opener = null;
+    window.open(url, target ? target : '_blank');
   }
 
   public static assertNever = (extLogName: string, x: never): never => {

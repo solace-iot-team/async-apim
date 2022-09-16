@@ -43,7 +43,6 @@ import {
   TAPManagedAssetPublishDestinationInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
-import { EAPCloudConnectivityConfigType, EAPEventPortalConnectivityConfigType } from './APOrganizationsDisplayService/APOrganizationsDisplayService';
 import { IAPSystemOrganizationDisplay } from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APProtocolsDisplayService, { 
   TAPProtocolDisplayList 
@@ -459,8 +458,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     apApiProductDisplay: IAPApiProductDisplay;
     apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;
   }): string | undefined {
-    const funcName = 'get_DeepLink';
-    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // const funcName = 'get_DeepLink';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
     if(apApiProductDisplay.apEpEventApiProductObject === undefined) return undefined;
     let eventPortalApiBaseUrl: string = apSystemOrganizationDisplay.apEventPortalConnectivityConfig.baseUrl;
     // create the console url from it
