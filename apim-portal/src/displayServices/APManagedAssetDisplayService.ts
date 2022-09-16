@@ -26,6 +26,7 @@ export enum EAPManagedAssetAttribute_Scope {
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
   SOURCE = "IMP_SOURCE",
+  EAP_OBJECT = "EAP_OBJECT"
 }
 export enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_ID = "OWNING_ID",
@@ -107,6 +108,13 @@ export abstract class APManagedAssetDisplayService {
 
   protected create_Connector_EP_ManagedAssetAttribute_Prefix = (): string => {
     return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_`;
+  }
+  public create_Connector_EP_ManagedAssetAttribute_Name = ({ scope, tag }: {
+    scope: EAPManagedAssetAttribute_Scope;
+    tag?: TManagedAssetAttribute_Tag;
+  }): string => {
+    if(tag !== undefined) return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_${scope}_`;
   }
   protected create_Connector_AC_ManagedAssetAttribute_Prefix = (): string => {
     return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_`;

@@ -43,6 +43,8 @@ import {
   TAPManagedAssetPublishDestinationInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
+import { EAPCloudConnectivityConfigType, EAPEventPortalConnectivityConfigType } from './APOrganizationsDisplayService/APOrganizationsDisplayService';
+import { IAPSystemOrganizationDisplay } from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APProtocolsDisplayService, { 
   TAPProtocolDisplayList 
 } from './APProtocolsDisplayService';
@@ -134,6 +136,17 @@ export enum E_ApApiProductSource {
   MANUAL = "manually created",
   EP2 = "Solace Event Portal"
 }
+export interface IEpEventApiProductVersionObject {
+  id: string;
+  eventApiProductId: string;
+  parent: {
+    applicationDomainId: string;
+  },
+}
+export interface IEpEventApiProductObject {
+  // product: any;
+  version: IEpEventApiProductVersionObject;
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // keep for devel purposes only
   devel_connectorApiProduct: APIProduct;
@@ -141,6 +154,9 @@ export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // housekeeping
   apApiProductConfigState: TAPApiProductConfigState;
   apApiProductSource: E_ApApiProductSource;
+
+  // optional source info
+  apEpEventApiProductObject?: IEpEventApiProductObject;
 
   // General
   apDescription: string;
@@ -413,7 +429,51 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     if(value.includes(E_ApApiProductSource.EP2)) return E_ApApiProductSource.EP2;
     return E_ApApiProductSource.MANUAL;
   }
-
+  private create_EpEventApiProductObject(apConnector_ApAttributeDisplayList: TAPAttributeDisplayList): IEpEventApiProductObject | undefined {
+    const funcName = 'create_EpEventApiProductObject';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // console.log(`${logName}: apConnector_ApAttributeDisplayList=${JSON.stringify(apConnector_ApAttributeDisplayList, null, 2)}`);
+    const apEpEventApiProductObjectAttributeList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.EAP_OBJECT }),
+      apAttributeDisplayList: apConnector_ApAttributeDisplayList
+    });
+    if(apEpEventApiProductObjectAttributeList.length === 0) return undefined;
+    const value = apEpEventApiProductObjectAttributeList[0].value;
+    try {
+      const epEventApiProductObject: IEpEventApiProductObject = JSON.parse(value);
+      if(epEventApiProductObject.version === undefined) throw new Error(`${logName}: epEventApiProductObject.version === undefined`);
+      else {
+        if(epEventApiProductObject.version.id === undefined) throw new Error(`${logName}: epEventApiProductObject.version.id === undefined`);
+        if(epEventApiProductObject.version.eventApiProductId === undefined) throw new Error(`${logName}: epEventApiProductObject.version.eventApiProductId === undefined`);
+        if(epEventApiProductObject.version.parent === undefined) throw new Error(`${logName}: epEventApiProductObject.version.parent === undefined`);
+        if(epEventApiProductObject.version.parent.applicationDomainId === undefined) throw new Error(`${logName}: epEventApiProductObject.version.applicationDomainId === undefined`);
+      }
+      // console.log(`${logName}: epEventApiProductObject=${JSON.stringify(epEventApiProductObject, null, 2)}`);
+      return epEventApiProductObject;
+    } catch(e) {
+      console.log(`${logName}: error parsing attribute value, error=${e}, \napEpEventApiProductObjectAttributeList=\n${JSON.stringify(apEpEventApiProductObjectAttributeList, null, 2)}`);
+      return undefined;
+    }
+  }
+  public get_DeepLink({apApiProductDisplay, apSystemOrganizationDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;
+  }): string | undefined {
+    const funcName = 'get_DeepLink';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    if(apApiProductDisplay.apEpEventApiProductObject === undefined) return undefined;
+    let eventPortalApiBaseUrl: string = apSystemOrganizationDisplay.apEventPortalConnectivityConfig.baseUrl;
+    // create the console url from it
+    // "baseUrl": "https://api.solace.cloud/api/v0/eventPortal" ==> https://console.solace.cloud
+    let consoleBaseUrlString: string = "https://console.solace.cloud";
+    // total hack: "baseUrl": "https://ian-dev-api.mymaas.net" ==> "https://ian-dev-console.mymaas.net" 
+    if(eventPortalApiBaseUrl.includes('ian-dev-api.mymaas.net')) consoleBaseUrlString = "https://ian-dev-console.mymaas.net";
+    // ep/designer/domains/nr3628na5ta/eventApiProducts/f7czd8hj4wk?domainName=Bricks+and+Mortar&selectedVersionId=higb683u5rz
+    const search = `selectedVersionId=${apApiProductDisplay.apEpEventApiProductObject?.version?.id}`;
+    const deepLink: URL = new URL(`ep/designer/domains/${apApiProductDisplay.apEpEventApiProductObject?.version?.parent?.applicationDomainId}/eventApiProducts/${apApiProductDisplay.apEpEventApiProductObject?.version?.eventApiProductId}?${search}`, consoleBaseUrlString);
+    // console.log(`${logName}: deepLink=${deepLink.toString()}`);
+    return deepLink.toString();
+  }
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -453,6 +513,8 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
 
       apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
+
+      apEpEventApiProductObject: this.create_EpEventApiProductObject(_base.apConnector_ApAttributeDisplayList),
 
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
 
@@ -553,6 +615,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       devel_connectorApiProduct: connectorApiProduct,
       apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
       apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
+      apEpEventApiProductObject: this.create_EpEventApiProductObject(_base.apConnector_ApAttributeDisplayList),
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),

@@ -41,6 +41,7 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
   const UndefinedPortalLogoUrl = process.env.PUBLIC_URL + '/images/logo.png';
   const AdminPortalLogoUrl = process.env.PUBLIC_URL + '/admin-portal/images/logo.png';
   const DeveloperPortalLogoUrl = process.env.PUBLIC_URL + '/developer-portal/images/logo.png';
+  const DocumentationTargetName = ComponentName+"DocumentationTabName";
 
   const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
   const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
@@ -230,14 +231,14 @@ export const NavBar: React.FC<INavBarProps> = (props: INavBarProps) => {
             label: 'Documentation',
             icon: 'pi pi-fw pi-file',
             url: 'https://solace-iot-team.github.io/async-apim',
-            target: '_blank'
+            target: DocumentationTargetName
           },
-          {
-            label: 'Reference Designs',
-            icon: 'pi pi-fw pi-github',
-            url: 'https://github.com/solace-iot-team/solace-apim-reference-designs',
-            target: '_blank'
-          }
+          // {
+          //   label: 'Reference Designs',
+          //   icon: 'pi pi-fw pi-github',
+          //   url: 'https://github.com/solace-iot-team/solace-apim-reference-designs',
+          //   target: '_blank'
+          // }
         ]
       },
       // { 

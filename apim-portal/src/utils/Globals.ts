@@ -158,9 +158,10 @@ export class Globals {
     window.location.href = Globals.AppUrl;
   }
 
-  public static openUrlInNewTab = (url: string) => {
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    if(newWindow) newWindow.opener = null;
+  public static openUrlInTab = (url: string, target: string) => {
+    // const newWindow = window.open(url, target ? target : '_blank', 'noopener,noreferrer');
+    const newWindow = window.open(url, target ? target : '_blank');
+    // if(newWindow) newWindow.opener = null;
   }
 
   public static assertNever = (extLogName: string, x: never): never => {

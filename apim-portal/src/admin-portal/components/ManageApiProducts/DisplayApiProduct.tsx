@@ -65,6 +65,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [managedObjectDeepLink, setManagedObjectDeepLink] = React.useState<string>();
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -191,6 +192,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
+    setManagedObjectDeepLink(APAdminPortalApiProductsDisplayService.get_DeepLink({
+      apApiProductDisplay: managedObject,
+      apSystemOrganizationDisplay: organizationContext,
+    }));
     if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN) {
       // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
       if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
@@ -363,7 +368,6 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       <div className="p-col-12">
         <div className="api-product-view">
           <div className="api-product-view-detail-left">
-
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
@@ -588,7 +592,12 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
       <div className="manage-api-products">
 
         {props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING && managedObject && 
-          <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} style={getComponentHeaderStyle()} />
+          <APComponentHeader 
+            header={`API Product: ${managedObject.apEntityId.displayName}`} 
+            style={getComponentHeaderStyle()} 
+            deepLink={managedObjectDeepLink}
+            targetName="APComponentHeader_DeepLink_Target"
+          />
         }
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />

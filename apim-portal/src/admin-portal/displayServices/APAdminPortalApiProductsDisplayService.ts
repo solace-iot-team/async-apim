@@ -254,7 +254,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
     });
-
+    // console.log(`${logName}: base.apEpEventApiProductObject = ${JSON.stringify(base.apEpEventApiProductObject, null, 2)}`);
     // console.log(`${logName}: base=${JSON.stringify(base.apVersionInfo, null, 2)}`);
 
     const apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay = {
