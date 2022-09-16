@@ -14,11 +14,20 @@ import APSServiceAccountsService from '../api/services/apsAdministration/APSServ
  * Always goes through the proxy, so we have transaction logging
  */
 export class ConnectorClient {
-  private static protocol = 'http';
-  private static host = 'localhost';
+  private static readonly protocol = 'http';
+  private static readonly host = 'localhost';
+  // private static isInitialized = false;
   private static apsSessionUserId: string | undefined = undefined;
 
   private static getToken = async(): Promise<string> => {
+    // // DEBUG
+    // const funcName = 'getToken';
+    // const logName = `${ConnectorClient.name}.${funcName}()`;
+    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_CLIENT, message: 'check status', details: { 
+    //   isInitialized: ConnectorClient.isInitialized,
+    //   apsSessionUserId: ConnectorClient.apsSessionUserId ? ConnectorClient.apsSessionUserId : 'undefined'
+    // }}));  
+
     if(ConnectorClient.apsSessionUserId) {
       return APSAuthStrategyService.generateUserAccountBearerToken_For_InternalAuth({ userId: ConnectorClient.apsSessionUserId });
     }

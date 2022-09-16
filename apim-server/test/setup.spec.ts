@@ -17,6 +17,8 @@ import request from 'supertest';
 import Server from '../server/index';
 import { expect } from 'chai';
 import { 
+  ApsConfigService,
+  APSConnector,
   APSConnectorStatus,
   ApsMonitorService, 
   APSStatus,
@@ -87,8 +89,7 @@ before(async() => {
   expect(fs.existsSync(TestEnv.stopMongoScript), TestLogger.createTestFailMessage(`stopMongoScript does not exist = ${TestEnv.stopMongoScript}`)).to.be.true;
   // expect(fs.existsSync(TestEnv.bootstrapFiles.apsUserListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsUserListFile}`)).to.be.true;
   expect(fs.existsSync(TestEnv.bootstrapFiles.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.apsConnectorListFile}`)).to.be.true;
-  expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile
-  }`)).to.be.true;
+  expect(fs.existsSync(TestEnv.bootstrapFiles.quickstart.apsConnectorListFile), TestLogger.createTestFailMessage(`bootstrap file does not exist = ${TestEnv.bootstrapFiles.quickstart.apsConnectorListFile}`)).to.be.true;
   
   // start services
   const code = s.exec(TestEnv.startServicesScript).code;
@@ -106,9 +107,13 @@ before(async() => {
 after(async() => {
   TestContext.newItId();
   // stop services
+
   const code = s.exec(TestEnv.stopServicesScript).code;
-  // const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
   expect(code, TestLogger.createTestFailMessage(`stop services, script=${TestEnv.stopServicesScript}`)).equal(0);
+
+  // previous
+  // const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
+  // expect(code, TestLogger.createTestFailMessage(`stop services, script=${TestEnv.stopServicesScript}`)).equal(0);
   // // stop mongo
   // const code = s.exec(TestEnv.teardownMongoScript).code;
   // // const code = s.exec(`${scriptDir}/mongodb/teardown.mongo.sh `).code;
@@ -130,17 +135,6 @@ describe(`${scriptName}`, () => {
       expect(res.status, TestLogger.createTestFailMessage('status code')).equal(200);
     });
 
-    it(`${scriptName}: should initialize open api`, async() => {
-      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
-      if(isInternalIdp) {
-        ApimServerAPIClient.initializeAuthConfigInternal({ 
-          host: TestEnv.host, 
-          port: TestEnv.port,
-          protocol: TestEnv.protocol
-        });
-      }
-    });
-
     it(`${scriptName}: should wait until server ready`, async() => {
       let apsStatus: APSStatus;
       let i = 0;
@@ -148,7 +142,7 @@ describe(`${scriptName}`, () => {
         i = i + 1;
         apsStatus = await ApsMonitorService.getApsStatus();
         TestLogger.logMessageWithId(`i=${i}, apsStatus = ${JSON.stringify(apsStatus, null, 2)}`);
-        await testHelperSleep(500);
+        await testHelperSleep(1000);
       } while (!apsStatus.isReady && i <= 5);
       expect(apsStatus.isReady, TestLogger.createTestFailMessage(`server not ready after i=${i} tries`)).to.be.true;
     });
@@ -169,20 +163,37 @@ describe(`${scriptName}`, () => {
     //     ApimServerAPIClient.setCredentials({ bearerToken: apsSessionLoginResponse.token });
     //   }
     // });
+    
+    // it(`${scriptName}: should create service account and set credentials`, async() => {
+    //   await ApimServerAPIClient.setServiceAccountCredentials();
+    // });
 
-    it(`${scriptName}: should create service account and set credentials`, async() => {
-      await ApimServerAPIClient.setServiceAccountCredentials();
+    it(`${scriptName}: should test active connector exists in cache`, async() => {
+      const active_in_DB_APSConnector: APSConnector = await ApsConfigService.getActiveApsConnector();
+      TestLogger.logMessageWithId(`active_in_DB_APSConnector = ${JSON.stringify(active_in_DB_APSConnector, null, 2)}`);
+      const cached_active_APSConnector = ServerConfig.getConnectorConfig();
+      TestLogger.logMessageWithId(`cached_active_APSConnector = ${JSON.stringify(cached_active_APSConnector, null, 2)}`);
+      expect(cached_active_APSConnector, TestLogger.createTestFailMessage('cached connector not equal to DB connector')).to.deep.equal(active_in_DB_APSConnector);
     });
-  
-    it(`${scriptName}: should set active connector and ensure it is ready`, async() => {
 
+    it(`${scriptName}: should test connector is ready`, async() => {
       TestLogger.logMessageWithId(`ConnectorOpenAPI = ${JSON.stringify(ConnectorOpenAPI, null, 2)}`);
-      // expect(false, 'continue here').to.be.true;
-      const xvoid: void = await TestApsOrganizationUtils.configureActiveTestConnector();
-      expect(false, 'continue here').to.be.true;
       const apsConnectorStatus: APSConnectorStatus = await ApsMonitorService.getApsConnectorStatus({});
       TestLogger.logMessageWithId(`apsConnectorStatus = ${JSON.stringify(apsConnectorStatus, null, 2)}`);
-      expect(false, 'continue here').to.be.true;
+      expect(apsConnectorStatus.connectorHealthCheckStatus, 'failed').to.eq('ok');
+    });
+
+    it(`${scriptName}: should initialize aps server open api`, async() => {
+      const isInternalIdp: boolean = ServerConfig.getAuthConfig().type === EAuthConfigType.INTERNAL;
+      if(isInternalIdp) {
+        ApimServerAPIClient.initializeAuthConfigInternal({ 
+          host: TestEnv.host, 
+          port: TestEnv.port,
+          protocol: TestEnv.protocol
+        });
+      } else {
+        expect(false, `unsupported ServerConfig.getAuthConfig().type=${ServerConfig.getAuthConfig().type}`);
+      }
     });
 
   });

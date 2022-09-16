@@ -308,7 +308,7 @@ export const customRequest = <T>(config: OpenAPIConfig, options: ApiRequestOptio
 
                 const cookies = parseCookies(response);
 
-                // console.log(`customRequest(): cookies=${cookies}`);
+                console.log(`customRequest(): cookies=${cookies}`);
 
                 ApimServerAPIClient.setRefreshToken( { value: cookies });
 

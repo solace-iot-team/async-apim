@@ -46,16 +46,17 @@ export class TestApsOrganizationUtils {
     expect(externalSystemsDBList.length, TestLogger.createTestFailMessage('externalSystemsDBList length does not equal 0')).to.equal(0);
   }
 
-  public static configureActiveTestConnector = async(): Promise<void> => {
-    const bootstrapConnectorList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.apsConnectorListFile);
-    expect(bootstrapConnectorList.length, TestLogger.createTestFailMessage('bootstrapConnectorList length does not equal 1')).to.equal(1);
-    for(const connector of bootstrapConnectorList) {
-      await ApsConfigService.createApsConnector({
-        requestBody: { ...connector }
-      });
-    }
+  // NOTE: this doesn't work ==> active connector is cached
+  // public static configureActiveTestConnector = async(): Promise<void> => {
+  //   const bootstrapConnectorList = ServerUtils.readFileContentsAsJson(TestEnv.bootstrapFiles.apsConnectorListFile);
+  //   expect(bootstrapConnectorList.length, TestLogger.createTestFailMessage('bootstrapConnectorList length does not equal 1')).to.equal(1);
+  //   for(const connector of bootstrapConnectorList) {
+  //     await ApsConfigService.createApsConnector({
+  //       requestBody: { ...connector }
+  //     });
+  //   }
 
-  }
+  // }
 
 
 

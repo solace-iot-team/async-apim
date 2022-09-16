@@ -49,16 +49,21 @@ const bootstrapComponents = async(): Promise<void> => {
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAPPING }));
   try {
-    await APSConnectorsService.bootstrap();
     await APSUsersService.bootstrap();
     await APSServiceAccountsService.bootstrap();
+    await APSConnectorsService.bootstrap();
     await APSOrganizationsService.bootstrap();
     await APSBusinessGroupsService.bootstrap();
     await APSExternalSystemsService.bootstrap();
     ServerStatus.setIsBootstrapped();
   } catch(e: any) {
-    if (e instanceof BootstrapErrorFromApiError || e instanceof BootstrapErrorFromError) {
+    if (e instanceof BootstrapErrorFromError) {
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAP_ERROR, details: { error: e } } ));
+    }
+    else if (e instanceof BootstrapErrorFromApiError) {
+      ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAP_ERROR, details: { error: e } } ));
+      // crash the server
+      throw e;
     } else {
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.BOOTSTRAP_ERROR, details: { error: e.toString() } } ));
     }
@@ -84,14 +89,16 @@ export const initializeComponents = async(): Promise<void> => {
   const logName = `${componentName}.${funcName}()`;
   ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING }));
   try {
-    if(ServerStatus.getStatus().isInitialized) await MongoDatabaseAccess.initializeWithRetry(-1, 30000);
-    else await MongoDatabaseAccess.initialize();
+    if(ServerStatus.getStatus().isInitialized) await MongoDatabaseAccess.initializeWithRetry(-1, 10000);
+    else await MongoDatabaseAccess.initializeWithRetry(5, 500);
+    // else await MongoDatabaseAccess.initialize();
     // must be first, loads the root user
     await APSUsersService.initialize(ServerConfig.getRootUserConfig());
+    // must be second, initialize internal service account
+    await APSServiceAccountsService.initialize();
     await APSMonitorService.initialize();
     await APSConnectorsService.initialize();
     await APSAboutService.initialize(ServerConfig.getExpressServerConfig().rootDir);
-    await APSServiceAccountsService.initialize();
     await APSOrganizationsService.initialize();
     await APSBusinessGroupsService.initialize();
     await APSExternalSystemsService.initialize();
