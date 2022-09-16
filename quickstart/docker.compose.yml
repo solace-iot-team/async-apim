@@ -14,6 +14,11 @@ services:
     volumes:
       - ./docker-volumes/apim-www/nginx.conf:/etc/nginx/nginx.conf
       - ./docker-volumes/apim-www-logs:/etc/nginx/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
     image : "solaceiotteam/async-apim-admin-portal:latest"
@@ -23,15 +28,21 @@ services:
       - 5080:8080
     restart: unless-stopped
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-mongodb:
     container_name: qs-async-apim-mongodb
     image : mongo:5.0.2
     volumes:
       - ./docker-volumes/apim-mongodb-data:/data/db
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-server:
     container_name: qs-async-apim-server
     links:
@@ -77,8 +88,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-connector:
     container_name: qs-async-apim-connector
     links:
@@ -104,12 +115,12 @@ services:
       - AUTH_VERIFICATION_AUD=platform-api-server
       # unused for internal idp
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
-      # - APIS_PROXY_MODE=false
+      - EP_VERSION=2
     logging:
       driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
 
 ##
 # The End.

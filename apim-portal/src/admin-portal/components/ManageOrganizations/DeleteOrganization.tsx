@@ -32,21 +32,6 @@ export const DeleteOrganization: React.FC<IDeleteOrganizationProps> = (props: ID
 
   // * Api Calls *
   
-  // const apiGetManagedObjectAssets = async(): Promise<TApiCallState> => {
-  //   const funcName = 'apiGetManagedObjectAssets';
-  //   const logName = `${componentName}.${funcName}()`;
-  //   let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_ORGANIZATION_ASSETS, `get assets for organization: ${props.organizationDisplayName}`);
-  //   try { 
-  //     const apOrganizationAssets: TAPOrganizationAssets = await APOrganizationsService.getOrganizationAssets({
-  //       organizationId: props.organizationId
-  //     });
-  //   } catch(e) {
-  //     APClientConnectorOpenApi.logError(logName, e);
-  //     callState = ApiCallState.addErrorToApiCallState(e, callState);
-  //   }
-  //   setApiCallStatus(callState);
-  //   return callState;
-  // }
   const apiDeleteManagedObject = async(): Promise<TApiCallState> => {
     const funcName = 'apiDeleteManagedObject';
     const logName = `${componentName}.${funcName}()`;

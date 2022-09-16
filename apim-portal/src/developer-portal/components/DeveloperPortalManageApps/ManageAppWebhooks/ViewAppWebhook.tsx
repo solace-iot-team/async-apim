@@ -5,17 +5,16 @@ import { MenuItem, MenuItemCommandParams } from "primereact/api";
 
 import { TAPDeveloperPortalUserAppDisplay } from "../../../displayServices/APDeveloperPortalUserAppsDisplayService";
 import { TAPDeveloperPortalTeamAppDisplay } from "../../../displayServices/APDeveloperPortalTeamAppsDisplayService";
-import APEntityIdsService, { TAPEntityId } from "../../../../utils/APEntityIdsService";
+import { TAPEntityId } from "../../../../utils/APEntityIdsService";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppWebhooksCommon";
 import APAppWebhooksDisplayService, { 
-  EAPWebhookAuthMethodSelectIdNone, 
   IAPAppWebhookDisplay 
 } from "../../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
-import { TAPAppEnvironmentDisplayList } from "../../../../displayServices/APAppsDisplayService/APAppEnvironmentsDisplayService";
+import { APDisplayAppWebhook } from "../../../../components/APDisplay/APDisplayWebhooks/APDisplayAppWebhook";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -95,32 +94,6 @@ export const ViewAppWebhook: React.FC<IViewAppWebhookProps> = (props: IViewAppWe
     }
   }, [apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
-  // const renderHeader = (mo: TManagedObject): JSX.Element => {
-  //   return (
-  //     <div className="p-col-12">
-  //       <div className="apd-app-view">
-  //         <div className="apd-app-view-detail-left">
-  //           <div><b>Status: </b>{mo.apAppStatus}</div>
-  //           <div>TEST: connector status:{mo.devel_connectorAppResponses.smf.status}</div>
-  //           {/* <div><b>Internal Name</b>: {managedObjectDisplay.apiAppResponse_smf.internalName}</div> */}
-  //         </div>
-  //         <div className="apd-app-view-detail-right">
-  //           <div>Id: {mo.apEntityId.id}</div>
-  //         </div>            
-  //       </div>
-  //     </div>  
-  //   );
-  // }
-
-  const renderEnvironments = (apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList): string => {
-    return APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(apAppEnvironmentDisplayList).join(', ');
-  }
-  const renderAuth = (mo: TManagedObject): string | undefined => {
-    if(mo.apWebhookBasicAuth) return mo.apWebhookBasicAuth.authMethod;
-    if(mo.apWebhookHeaderAuth) return mo.apWebhookHeaderAuth.authMethod;
-    return EAPWebhookAuthMethodSelectIdNone.NONE;
-  }
-
   const renderManagedObject = () => {
     const funcName = 'renderManagedObject';
     const logName = `${ComponentName}.${funcName}()`;
@@ -129,14 +102,9 @@ export const ViewAppWebhook: React.FC<IViewAppWebhookProps> = (props: IViewAppWe
 
     return (
       <div className="p-mt-4 p-ml-2">
-        
-        <div><b>Name: </b>{managedObject.apEntityId.displayName}</div>
-        <div><b>Environment(s): </b>{renderEnvironments(managedObject.apAppEnvironmentDisplayList)}</div>
-        <div><b>Method: </b>{managedObject.apWebhookMethod}</div>
-        <div><b>URI: </b>{managedObject.apWebhookUri}</div>
-        <div><b>Mode: </b>{managedObject.apWebhookMode}</div>
-        <div><b>Auth: </b>{renderAuth(managedObject)}</div>
-
+        <APDisplayAppWebhook
+          apAppWebhookDisplay={managedObject}
+        />
       </div>
     ); 
   }

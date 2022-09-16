@@ -15,7 +15,7 @@ import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, TAPEntityId, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
-import { Globals } from '../utils/Globals';
+import { EUIAdminPortalResourcePaths, Globals } from '../utils/Globals';
 import APBusinessGroupsDisplayService, { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
 import APExternalSystemsDisplayService, { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
 import APLifecycleStageInfoDisplayService, { IAPLifecycleStageInfo } from './APLifecycleStageInfoDisplayService';
@@ -24,6 +24,7 @@ import {
   IAPManagedAssetDisplay,
   TAPManagedAssetDisplay_AccessAndState,
   TAPManagedAssetDisplay_Attributes,
+  TAPManagedAssetDisplay_BusinessGroupSharing,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './APVersioningDisplayService';
@@ -33,6 +34,8 @@ import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDi
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
 import { EAPSOrganizationAuthRole } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APRbacDisplayService from './APRbacDisplayService';
+import { E_AP_OPS_MODE } from '../utils/APOperationMode';
+import { AuthHelper } from '../auth/AuthHelper';
 
 /** apEntityId.id & displayName are the same and represent the parameter name */
 export type TAPApiChannelParameter = IAPEntityIdDisplay & {
@@ -44,6 +47,7 @@ export type TAPApiDisplay_AllowedActions = {
   isDeleteAllowed: boolean;
   isEditAllowed: boolean;
   isViewAllowed: boolean;
+  // deprecated
   isImportFromEventPortalAllowed: boolean;
 }
 export type TAPApiDisplay_AsyncApiSpec = IAPEntityIdDisplay & {
@@ -90,19 +94,6 @@ export type TAPApiVersionDisplayList = Array<IAPApiVersionDisplay>
 
 class APApisDisplayService extends APManagedAssetDisplayService {
   private readonly MiddleComponentName = "APApisDisplayService";
-
-  // public nameOf<IAPApiDisplay>(name: keyof IAPApiDisplay) {
-  //   return name;
-  // }
-  // public nameOf_ConnectorApiInfo(name: keyof APIInfo) {
-  //   return `${this.nameOf('connectorApiInfo')}.${name}`;
-  // }
-  // public nameOf_ApiChannelParameter(name: keyof TAPApiChannelParameter) {
-  //   return name;
-  // }
-  // public nameOf_ApLifecycleStageInfo(name: keyof IAPLifecycleStageInfo) {
-  //   return `${this.nameOf<IAPApiDisplay>('apLifecycleStageInfo')}.${name}`;
-  // }
 
   private create_Empty_ConnectorApiInfo(): APIInfo {
     return {
@@ -231,7 +222,7 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
-      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
       
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 
@@ -312,53 +303,74 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     };
   }
 
-  public get_AllowedActions({ userId, userBusinessGroupId, apApiDisplay, authorizedResourcePathAsString, isEventPortalApisProxyMode, hasEventPortalConnectivity }:{
+  public get_IsDeleteAllowed({ apApiDisplay }:{
+    apApiDisplay: IAPApiDisplay;
+  }): boolean {
+    if(apApiDisplay.apApiProductReferenceEntityIdList.length > 0) return false;
+    return true;
+  }
+
+  public get_AllowedActions({ userId, userBusinessGroupId, apApiDisplay, authorizedResourcePathAsString, isEventPortalApisProxyMode, hasEventPortalConnectivity, apOperationsMode }:{
     userId: string;
     userBusinessGroupId?: string;
     authorizedResourcePathAsString: string;
     isEventPortalApisProxyMode: boolean;
     hasEventPortalConnectivity: boolean;
     apApiDisplay: IAPApiDisplay;
+    apOperationsMode: E_AP_OPS_MODE;
   }): TAPApiDisplay_AllowedActions {
+    const funcName = 'get_AllowedActions';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-// const eventPortalConnectivity: boolean  = APSystemOrganizationsDisplayService.has_EventPortalConnectivity({ 
-//   apOrganizationDisplay: organizationContext
-// });
-// const showImportEventPortalButton: boolean = (!configContext.connectorInfo?.connectorAbout.portalAbout.isEventPortalApisProxyMode) && (eventPortalConnectivity);
-
-    const isApiLinked: boolean = apApiDisplay.connectorApiInfo.source === APIInfo.source.EVENT_PORTAL_LINK; 
     const allowedActions: TAPApiDisplay_AllowedActions = {
-      isEditAllowed: !isApiLinked,
-      isDeleteAllowed: apApiDisplay.apApiProductReferenceEntityIdList.length === 0,
-      isViewAllowed: true,
+      isEditAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApis_Edit),
+      isDeleteAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApis_Delete),
+      isViewAllowed: AuthHelper.isAuthorizedToAccessResource(authorizedResourcePathAsString, EUIAdminPortalResourcePaths.ManageOrganizationApis_View),
       isImportFromEventPortalAllowed: !isEventPortalApisProxyMode && hasEventPortalConnectivity,
     };
-    // additional checks: see AdminPortalApiProductDisplayService
-    // if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
-    //   // check if owned by user
-    //   if(apAdminPortalApiProductDisplay.apOwnerInfo.id === userId) {
-    //     allowedActions.isEditAllowed = true;
-    //     allowedActions.isDeleteAllowed = true;
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
-    // if((!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
-    //   // check if api product owned by same business group
-    //   if(userBusinessGroupId === apAdminPortalApiProductDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id) {
-    //     allowedActions.isEditAllowed = true;
-    //     allowedActions.isDeleteAllowed = true;
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
-    // if((!allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
-    //   // check if api product shared with user business group
-    //   const foundSharingBusinessGroup: TAPManagedAssetDisplay_BusinessGroupSharing | undefined = apAdminPortalApiProductDisplay.apBusinessGroupInfo.apBusinessGroupSharingList.find( (x) => {
-    //     return x.apEntityId.id === userBusinessGroupId;
-    //   });
-    //   if(foundSharingBusinessGroup !== undefined) {
-    //     allowedActions.isViewAllowed = true;
-    //   }
-    // }
+    if(!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) {
+      // check if owned by user
+      if(apApiDisplay.apOwnerInfo.id === userId) {
+        allowedActions.isEditAllowed = true;
+        allowedActions.isDeleteAllowed = true;
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if((!allowedActions.isEditAllowed || !allowedActions.isDeleteAllowed || !allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
+      // check if api product owned by same business group
+      if(userBusinessGroupId === apApiDisplay.apBusinessGroupInfo.apOwningBusinessGroupEntityId.id) {
+        allowedActions.isEditAllowed = true;
+        allowedActions.isDeleteAllowed = true;
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if((!allowedActions.isViewAllowed) && userBusinessGroupId !== undefined) {
+      // check if api shared with user business group
+      const foundSharingBusinessGroup: TAPManagedAssetDisplay_BusinessGroupSharing | undefined = apApiDisplay.apBusinessGroupInfo.apBusinessGroupSharingList.find( (x) => {
+        return x.apEntityId.id === userBusinessGroupId;
+      });
+      if(foundSharingBusinessGroup !== undefined) {
+        allowedActions.isViewAllowed = true;
+      }
+    }
+    if(allowedActions.isDeleteAllowed) {
+      // check if api has references  
+      allowedActions.isDeleteAllowed = this.get_IsDeleteAllowed({ apApiDisplay: apApiDisplay });
+    }
+    // check the source
+    switch(apApiDisplay.connectorApiInfo.source) {
+      case APIInfo.source.EVENT_PORTAL_LINK:
+        throw new Error(`${logName}: unsupported source = ${apApiDisplay.connectorApiInfo.source}`);
+      case APIInfo.source.UPLOAD:
+        // good as is
+        break;
+      case APIInfo.source.EVENT_APIPRODUCT:
+        allowedActions.isEditAllowed = false;
+        allowedActions.isDeleteAllowed = false;
+        break;
+      default:
+        Globals.assertNever(logName, apApiDisplay.connectorApiInfo.source);
+    }
     return allowedActions;
   }
 
@@ -735,14 +747,15 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return apApiVersionDisplayList;
   }
 
-  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId, apMemberOfBusinessGroupDisplayTreeNodeList=[] }:{
+  public async apiGetList_ApApiDisplayList({ organizationId, default_ownerId, businessGroupId, apMemberOfBusinessGroupDisplayTreeNodeList=[], apOperationsMode }:{
     organizationId: string;
     default_ownerId: string;
     businessGroupId: string;
     apMemberOfBusinessGroupDisplayTreeNodeList?: TAPMemberOfBusinessGroupDisplayTreeNodeList;
+    apOperationsMode: E_AP_OPS_MODE;
   }): Promise<TAPApiDisplayList> {
-    // const funcName = 'apiGetList_ApApiDisplayList';
-    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    const funcName = 'apiGetList_ApApiDisplayList';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
     // throw new Error(`${logName}: test error handling`);
 
     const businessGroupIdList: Array<string> = [];
@@ -780,15 +793,29 @@ class APApisDisplayService extends APManagedAssetDisplayService {
         organizationId: organizationId, 
         apiId: apiInfo.name
       });
-      list.push(this.create_ApApiDisplay_From_ApiEntities({
-        connectorApiInfo: apiInfo,
-        apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
-        // apApiProductReferenceEntityIdList: [],
-        default_ownerId: default_ownerId,
-        complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
-        complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
-        apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
-      }));
+      let doInclude: boolean = true;
+      switch(apOperationsMode) {
+        case E_AP_OPS_MODE.FULL_OPS_MODE:
+          doInclude = true;
+          break;
+        case E_AP_OPS_MODE.EP2_OPS_MODE:
+          if(apiInfo.source === APIInfo.source.EVENT_APIPRODUCT) doInclude = true;
+          else doInclude = false;
+          break;
+        default:
+          Globals.assertNever(logName, apOperationsMode);
+      } 
+      if(doInclude) {
+        list.push(this.create_ApApiDisplay_From_ApiEntities({
+          connectorApiInfo: apiInfo,
+          apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
+          // apApiProductReferenceEntityIdList: [],
+          default_ownerId: default_ownerId,
+          complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
+          complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList,
+          apApiSpecDisplay: APApiSpecsDisplayService.create_Empty_ApApiSpecDisplay(),
+        }));  
+      }
     }
     return APEntityIdsService.sort_ApDisplayObjectList_By_DisplayName(list);
   }

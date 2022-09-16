@@ -94,12 +94,12 @@ export class ApsConnectorProxyController {
   public static all = (req: Request, res: Response, next: NextFunction): void => {
     // const funcName = 'all';
     // const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
-
-    const anyReq: any = req as any;
-    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'request', details: {
-    //   user: anyReq.user,
+    // // DEBUG
+    // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'request', details: {
+    //   req_method: req.method,
     // } }));
-    // throw new ServerError(logName, `continue with ${logName}`);
+    
+    const anyReq: any = req as any;
     const apsSessionUser: APSSessionUser = anyReq.user;
     const accountType: TTokenPayload_AccountType = anyReq.authInfo;
     // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'apsSessionUser', details: {
@@ -110,20 +110,30 @@ export class ApsConnectorProxyController {
       apsSessionUser: apsSessionUser,
       accountType: accountType
     });
-    const timeout_ms = 5000;
+    // Note: if a timeout occurs, connection to client is closed, no error handling available. Results in TypeError: failed to fetch in Browser.
+    // const timeout_ms = (req.method === "GET" ? 5000 : 1000);
+    const timeout_ms = (req.method === "GET" ? 15000 : 180000);
+    const target: string = ServerConfig.getActiveConnectorTarget();
     ConnectorProxy.web(req, res, {
       // target: "http://18.184.18.52:3000/v1",
-      target: ServerConfig.getActiveConnectorTarget(),
+      target: target,
+      // outgoing proxy requests
       proxyTimeout: timeout_ms,
-      timeout: timeout_ms,
-    }, function (err) {
+      // incoming requests
+      timeout: timeout_ms,  
+    }, function (err, req, res) {
+      // does NOT catch timeout errors
       // called when network errors occur 
       const funcName = 'ConnectorProxy.web.errorCallback';
       const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
       ServerLogger.warn(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, details: { 
-        error: err 
+        target: target,
+        error: err,
+        request: req,
+        response: res
       } } ));
       const connectorError = new ConnectorProxyError(logName, undefined, {
+        target: target,
         connectorError: err
       });
       next(connectorError);
@@ -138,4 +148,3 @@ const ConnectorProxy = httpProxy.createProxyServer({
   // selfHandleResponse : true
 });
 ConnectorProxy.on('proxyReq', ApsConnectorProxyController.connectorRequestCallback);
-// connectorProxy.on('proxyRes', connectorResponseCallback);

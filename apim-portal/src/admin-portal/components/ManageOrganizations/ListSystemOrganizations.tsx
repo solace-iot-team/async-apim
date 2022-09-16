@@ -16,18 +16,18 @@ import APSystemOrganizationsDisplayService, {
   TAPSystemOrganizationDisplayList 
 } from "../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageOrganizationsCommon";
+import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
 import '../../../components/APComponents.css';
 import "./ManageOrganizations.css";
-import { EAPOrganizationConfigStatus } from "../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
-import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 export interface IListSystemOrganizationsProps {
   onError: (apiCallState: TApiCallState) => void;
   onSuccess: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onManagedObjectView: (organizationEntityId: TAPEntityId) => void;
+  onManagedObjectView: (apOrganizationDisplayEntityId: TAPEntityId) => void;
   setBreadCrumbItemList: (itemList: Array<MenuItem>) => void;
 }
 
@@ -120,6 +120,7 @@ export const ListSystemOrganizations: React.FC<IListSystemOrganizationsProps> = 
     const configStatusStyle: React.CSSProperties = row.apOrganizationConfigStatus === EAPOrganizationConfigStatus.NOT_OPERATIONAL ? {color: 'red'} : {};
     return (<span style={configStatusStyle}>{row.apOrganizationConfigStatus}</span>);
   }
+
   const renderManagedObjectDataTable = () => {
     const idField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.id');
     const nameField = APDisplayUtils.nameOf<IAPSystemOrganizationDisplay>('apEntityId.displayName');;

@@ -11,7 +11,7 @@ import { EditOrganizationUserOrganizationRoles, EEditOrganzationUserOrganization
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { TAPSystemUserDisplay } from "../../../../../displayServices/APUsersDisplayService/APSystemUsersDisplayService";
 import { UserContext } from "../../../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../../../components/APContextProviders/AuthContextProvider";
 import { OrganizationContext } from "../../../../../components/APContextProviders/APOrganizationContextProvider";
 import { APSClientOpenApi } from "../../../../../utils/APSClientOpenApi";
 import APMemberOfService, { TAPMemberOfOrganizationDisplay } from "../../../../../displayServices/APUsersDisplayService/APMemberOfService";

@@ -9,12 +9,12 @@ import { APSClientOpenApi } from "../../utils/APSClientOpenApi";
 import APLoginUsersDisplayService, { TAPLoginUserDisplay } from "../../displayServices/APUsersDisplayService/APLoginUsersDisplayService";
 import { APSSessionRefreshTokenResponse } from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { EAppState, Globals } from "../../utils/Globals";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders/AuthContextProvider";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { Loading } from "../Loading/Loading";
-import { ConfigContext } from "../ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../APContextProviders/ConfigContextProvider/ConfigContextProvider";
 
 export interface UserSecRefreshProps {
   children: any;
@@ -24,6 +24,7 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
   const ComponentName = 'UserSecRefresh';
 
   const VerifyUserInterval_ms: number = 300000; // every 5 minutes
+  // const VerifyUserInterval_ms: number = 10000; // every 10 seconds
   // const VerifyUserInterval_ms: number = 5000; // every 5 seconds
   // const VerifyUserInterval_ms: number = 1000; // every 1 seconds (test health + refresh at same time)
 
@@ -81,7 +82,7 @@ export const UserSecRefresh: React.FC<UserSecRefreshProps> = (props: UserSecRefr
   const apiVerifyUser = async(): Promise<void> => {
     const funcName = 'apiVerifyUser';
     const logName = `${ComponentName}.${funcName}()`;
-    console.log(`${logName}: starting ...`);
+    // console.log(`${logName}: starting ...`);
     try {
       await APSClientOpenApi.lockToken4Refresh();
       const apsSessionRefreshTokenResponse: APSSessionRefreshTokenResponse = await APLoginUsersDisplayService.apsSecRefreshToken();

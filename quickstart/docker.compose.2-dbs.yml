@@ -14,6 +14,11 @@ services:
     volumes:
       - ./docker-volumes/apim-www/nginx.conf:/etc/nginx/nginx.conf
       - ./docker-volumes/apim-www-logs:/etc/nginx/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-admin-portal:
     container_name: qs-async-apim-admin-portal
     image : "solaceiotteam/async-apim-admin-portal:latest"
@@ -23,9 +28,10 @@ services:
       - 5080:8080
     restart: unless-stopped
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"    
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-server-mongodb:
     container_name: qs-async-apim-server-mongodb
     image : mongo:5.0.2
@@ -33,9 +39,10 @@ services:
       - ./docker-volumes/apim-server-mongodb-data:/data/db
     restart: unless-stopped
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-server:
     container_name: qs-async-apim-server
     links:
@@ -79,9 +86,10 @@ services:
       - APIM_SERVER_CONNECTOR_AUTH_AUDIENCE=platform-api-server
       - APIM_SERVER_CONNECTOR_AUTH_SECRET=myConnectorAuthJwtSecret
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
   # apim connector
   qs-async-apim-connector-mongodb:
     container_name: qs-async-apim-connector-mongodb
@@ -90,9 +98,10 @@ services:
       - ./docker-volumes/apim-connector-mongodb-data:/data/db
     restart: unless-stopped
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
   qs-async-apim-connector:
     container_name: qs-async-apim-connector
     links:
@@ -117,11 +126,12 @@ services:
       - AUTH_VERIFICATION_ISSUER=apim-server
       - AUTH_VERIFICATION_AUD=platform-api-server
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
-      # - APIS_PROXY_MODE=false
+      - EP_VERSION=2
     logging:
+      driver: "json-file"
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
 
 ##
 # The End.

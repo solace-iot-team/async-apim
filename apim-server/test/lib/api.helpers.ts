@@ -18,7 +18,7 @@ export class ApimServerAPIClient {
       if(ApimServerAPIClient.refreshToken !== undefined) {
         headers['Cookie'] = ApimServerAPIClient.refreshToken;
       }
-      // console.log(`\n\n\n${ApimServerAPIClient.name}.getHeaders(): headers = ${JSON.stringify(headers, null, 2)}\n\n\n`);
+      console.log(`\n\n\n${ApimServerAPIClient.name}.getHeaders(): headers = ${JSON.stringify(headers, null, 2)}\n\n\n`);
       return headers;
     }
 
@@ -45,7 +45,7 @@ export class ApimServerAPIClient {
       OpenAPI.CREDENTIALS = 'include';
       // only called once
       // OpenAPI.HEADERS = ApimServerAPIClient.getHeaders();
-      OpenAPI.HEADERS = async() => { return ApimServerAPIClient.getHeaders(); } 
+      OpenAPI.HEADERS = async() => { return await ApimServerAPIClient.getHeaders(); } 
       OpenAPI.TOKEN = async() => { return ApimServerAPIClient.getApsBearerToken(); }
     }
 

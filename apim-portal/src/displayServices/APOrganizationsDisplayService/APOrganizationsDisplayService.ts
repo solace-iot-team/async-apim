@@ -134,6 +134,9 @@ export enum EAPOrganizationConfigStatus {
   OPERATIONAL = "operational",
   NOT_OPERATIONAL = "not operational"
 }
+export type TAPOrganizationDisplay_AllowedActions = {
+  isJobListingAllowed: boolean;
+}
 
 export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   connectorOrganizationResponse: OrganizationResponse;
@@ -217,6 +220,21 @@ export class APOrganizationsDisplayService {
       if (Array.isArray(value) || isObject(value)) this.maskOrganizationSecrets({ organizationObject: value });
     });
     return organizationObject;
+  }
+
+  public get_Empty_AllowedActions(): TAPOrganizationDisplay_AllowedActions {
+    return {
+      isJobListingAllowed: false,
+    };
+  }
+  public get_AllowedActions({ apOrganizationDisplay }:{
+    apOrganizationDisplay: IAPOrganizationDisplay
+  }): TAPOrganizationDisplay_AllowedActions {
+    if(apOrganizationDisplay.apOrganizationConfigStatus === EAPOrganizationConfigStatus.NOT_OPERATIONAL) return this.get_Empty_AllowedActions();
+    const allowedActions: TAPOrganizationDisplay_AllowedActions = {
+      isJobListingAllowed: true
+    };
+    return allowedActions;
   }
 
   private create_Empty_ConnectorOrganizationResponse(): OrganizationResponse {
@@ -595,7 +613,6 @@ export class APOrganizationsDisplayService {
   }): boolean {
     return (apOrganizationDisplay.apOrganizationOperationalStatus.eventPortalConnectivity === EAPOrganizationOperationalStatus.UP);
   }
-
 
   public get_ApOrganizationDisplay_Integration<T extends IAPOrganizationDisplay>({ apOrganizationDisplay }: {
     apOrganizationDisplay: T;

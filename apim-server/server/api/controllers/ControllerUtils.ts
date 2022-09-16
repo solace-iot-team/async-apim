@@ -15,6 +15,9 @@ export class ControllerUtils {
     return (value ? String(value) : 'not_found');
   }
   
+  public static getOptionalParamValue<T>(params: T, name: keyof T): any {
+    return params[name];
+  }
   public static getParamName<T>(name: keyof T): string {
     return String(name);
   }

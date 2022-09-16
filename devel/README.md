@@ -13,7 +13,7 @@ Stop:
 ./stop.sh
 ````
 
-## Standup Standalone MongoDB
+## Standup Standalone MongoDB
 
 ````bash
 ./mongodb/start.sh
@@ -22,6 +22,21 @@ Stop:
 Stop:
 ````bash
 ./mongodb/stop.sh
+````
+
+## Standup NGINX
+
+Browser: http://localhost:3002
+
+Loads portal from http://localhost:3001
+
+````bash
+./nginx/start.sh
+````
+
+Stop:
+````bash
+./nginx/stop.sh
 ````
 
 ---

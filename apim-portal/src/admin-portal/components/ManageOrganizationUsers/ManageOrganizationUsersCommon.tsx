@@ -6,8 +6,8 @@ import {
   APSUserResponse,
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 import { Globals } from '../../../utils/Globals';
-import { ConfigHelper } from '../../../components/ConfigContextProvider/ConfigHelper';
-import { TAPConfigContext } from '../../../components/ConfigContextProvider/ConfigContextProvider';
+import { ConfigHelper } from '../../../components/APContextProviders/ConfigContextProvider/ConfigHelper';
+import { TAPConfigContext } from '../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider';
 import { EAPAssetType, TAPAssetInfoWithOrgList } from "../../../utils/APTypes";
 import { 
   ApiError, 

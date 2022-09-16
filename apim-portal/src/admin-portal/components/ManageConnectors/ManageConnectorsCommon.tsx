@@ -8,6 +8,7 @@ import { TAPConnectorInfo } from '../../../utils/APConnectorApiCalls';
 import { APClientConnectorOpenApi } from '../../../utils/APClientConnectorOpenApi';
 import { EAPConnectorHealthCheckLogEntryType, EAPHealthCheckSuccess, TAPConnectorHealthCheckLogEntry_About, TAPConnectorHealthCheckResult } from '../../../utils/APHealthCheck';
 import { SystemHealthCommon } from '../../../components/SystemHealth/SystemHealthCommon';
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export type TViewManagedObject = {
   id: APSId;
@@ -60,6 +61,7 @@ export class ManageConnectorsCommon {
               apiAbout: apConnectorHealthCheckLogEntry_About.about,
               portalAbout: {
                 isEventPortalApisProxyMode: apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE ? apConnectorHealthCheckLogEntry_About.about.APIS_PROXY_MODE : false,
+                eventPortalVersion: apConnectorHealthCheckLogEntry_About.about.EVENT_PORTAL_VERSION === undefined ? About.EVENT_PORTAL_VERSION._1 : apConnectorHealthCheckLogEntry_About.about.EVENT_PORTAL_VERSION,
                 connectorOpenApiVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-openapi"],
                 connectorServerVersionStr: apConnectorHealthCheckLogEntry_About.about.version.version["platform-api-server"],
               }

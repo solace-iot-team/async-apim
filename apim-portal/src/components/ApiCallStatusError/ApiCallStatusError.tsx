@@ -7,7 +7,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
 import { EUICommonResourcePaths } from "../../utils/Globals";
 import APContextsDisplayService from "../../displayServices/APContextsDisplayService";
-import { AuthContext } from "../AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../APContextProviders//AuthContextProvider";
 import { UserContext } from "../APContextProviders/APUserContextProvider";
 import { OrganizationContext } from "../APContextProviders/APOrganizationContextProvider";
 import { SessionContext } from "../APContextProviders/APSessionContextProvider";
@@ -32,8 +32,8 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   const [sessionContext, dispatchSessionContextAction] = React.useContext(SessionContext);
 
-  const doSecLogout = () => {
-    navigateHome()
+  const doLogoutThisUser = () => {
+    navigateHome();
     APContextsDisplayService.clear_LoginContexts({
       dispatchAuthContextAction: dispatchAuthContextAction,
       dispatchUserContextAction: dispatchUserContextAction,
@@ -43,9 +43,11 @@ export const ApiCallStatusError: React.FC<IApiCallStatusErrorProps> = (props: IA
   }
 
   React.useEffect(() => {
+    if(props.apiCallStatus === null) return;
+    if(props.apiCallStatus.success) return;
     // console.log(`${ComponentName}: props.apiCallStatus=${JSON.stringify(props.apiCallStatus, null, 2)}`);
-    if(props.apiCallStatus !== null && !props.apiCallStatus.success && props.apiCallStatus.isUnauthorizedError) {
-      doSecLogout();
+    if(props.apiCallStatus.isUnauthorizedError) {
+      doLogoutThisUser();
     }
   }, [props.apiCallStatus]); /* eslint-disable-line react-hooks/exhaustive-deps */
 

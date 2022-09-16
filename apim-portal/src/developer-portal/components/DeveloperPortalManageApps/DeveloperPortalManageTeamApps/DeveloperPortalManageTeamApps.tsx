@@ -122,6 +122,7 @@ export const DeveloperPortalManageTeamApps: React.FC<IDeveloperPortalManageTeamA
   //  * View Object *
   const onViewManagedObject = (apDeveloperPortalAppListDisplay: IAPDeveloperPortalAppListDisplay): void => {
     setApiCallStatus(null);
+    setIsLoading(true);
     setManagedObjectEntityId(apDeveloperPortalAppListDisplay.apEntityId);
     setNewComponentState(E_MANAGE_APP_COMPONENT_STATE.MANAGED_OBJECT_VIEW);
   }  

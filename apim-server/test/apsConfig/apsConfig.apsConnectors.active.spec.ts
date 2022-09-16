@@ -50,6 +50,9 @@ const apsConnectorTemplate: APSConnector = {
   }
 }
 
+// save active connector to restore after
+let Active_APSConnector: APSConnector | undefined = undefined;
+
 describe(`${scriptName}`, () => {
   context(`${scriptName}`, () => {
 
@@ -57,25 +60,30 @@ describe(`${scriptName}`, () => {
       TestContext.newItId();
     });
 
-    // after(async() => {
-    //   TestContext.newItId();      
-    //   try {
-    //     const result: ListApsConnectorsResponse = await ApsConfigService.listApsConnectors();
-    //     const apsConnectorList: Array<APSConnector> = result.list;
-    //     for (const apsConnector of apsConnectorList) {
-    //       await ApsConfigService.deleteApsConnector({
-    //         connectorId: apsConnector.connectorId
-    //       });
-    //     }
-    //   } catch (e) {
-    //     expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;
-    //     expect(false, `${TestLogger.createTestFailMessage('failed')}`).to.be.true;
-    //   }
-    // });
+    after(async() => {
+      TestContext.newItId();      
+      // restore previous active connector if it was defined
+      if(Active_APSConnector !== undefined) {
+        // ensure it exists
+        try {
+          const x: APSConnector = await ApsConfigService.createApsConnector({ requestBody: Active_APSConnector });
+        } catch(e) {
+          // nothing
+        }
+        ApsConfigService.setApsConnectorActive({ connectorId: Active_APSConnector.connectorId });
+      }
+    });
 
-    // ****************************************************************************************************************
-    // * OpenApi API Tests *
-    // ****************************************************************************************************************
+    it(`${scriptName}: should save & delete active connector`, async () => {
+      try {
+        Active_APSConnector = await ApsConfigService.getActiveApsConnector();
+        await ApsConfigService.deleteApsConnector({ 
+          connectorId: Active_APSConnector.connectorId
+        });
+      } catch(e) {
+        Active_APSConnector = undefined;
+      }
+    });
 
     it(`${scriptName}: should create two connectors`, async () => {
       const { isActive, ...apsConnectorCreateTemplate } = apsConnectorTemplate;
@@ -112,7 +120,8 @@ describe(`${scriptName}`, () => {
         });
         // const activeConnectorTarget: string = ServerConfig.getActiveConnectorTarget();
         // expect(false, TestLogger.createLogMessage(`activeConnectorTarget='${activeConnectorTarget}'`)).to.be.true;
-        const connectorConfig: APSConnector = ServerConfig.getConnectorConfig()
+        // connector config is the bootstrapped connector
+        const connectorConfig: APSConnector = ServerConfig.getConnectorConfig();
         expect(connectorConfig, TestLogger.createLogMessage(`connectorConfig='${JSON.stringify(connectorConfig, null, 2)}'`)).to.be.undefined;
       } catch (e) {
         expect(e instanceof ApiError, `${TestLogger.createNotApiErrorMesssage(e.message)}`).to.be.true;

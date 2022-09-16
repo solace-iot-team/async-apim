@@ -4,7 +4,7 @@ import React from "react";
 import { TabView, TabPanel } from 'primereact/tabview';
 
 import { APHealthCheckContext } from '../../../components/APHealthCheckContextProvider';
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { APComponentHeader } from "../../../components/APComponentHeader/APComponentHeader";
 import { TApiCallState } from "../../../utils/ApiCallState";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";

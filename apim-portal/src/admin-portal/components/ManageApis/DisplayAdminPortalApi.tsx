@@ -29,6 +29,7 @@ import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displaySe
 import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 import { APDisplayApiChannelParameterList } from "../../../components/APDisplay/APDisplayApiChannelParameterList";
 import APApiSpecsDisplayService from "../../../displayServices/APApiSpecsDisplayService";
+import { APIInfo } from "@solace-iot-team/apim-connector-openapi-browser";
 
 import '../../../components/APComponents.css';
 import "./ManageApis.css";
@@ -206,6 +207,40 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
       );
     } else return (<></>);
   }
+  const renderSource = (connectorApiInfo: APIInfo): JSX.Element => {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING) {
+      return (
+        <div><b>Source</b>: {connectorApiInfo.source}</div>
+      );
+    } else return (<></>);
+  }
+
+  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
+    const funcName = 'renderState';
+    const logName = `${ComponentName}.${funcName}()`;
+    switch(props.scope) {
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
+        return (
+          <React.Fragment>
+            <div><b>State: </b>{apLifecycleStageInfo.stage}</div>
+            {apLifecycleStageInfo.notes !== undefined &&
+              <React.Fragment>
+                <div><b>Notes: </b></div>
+                <div className="p-ml-2">{apLifecycleStageInfo.notes}</div>
+              </React.Fragment>
+            } 
+          </React.Fragment>
+        );
+      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
+        return (
+          <></>
+        );
+      default:
+        Globals.assertNever(logName, props.scope);
+    }
+    return (<></>);
+  }
 
   const renderVersionSelect = (): JSX.Element => {
     const funcName = 'renderVersionSelect';
@@ -253,32 +288,6 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
     }
     return (<></>);
   }
-  const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
-    const funcName = 'renderState';
-    const logName = `${ComponentName}.${funcName}()`;
-    switch(props.scope) {
-      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING:
-      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.VIEW_EXISTING_MAINTAIN:
-        return (
-          <React.Fragment>
-            <div><b>State: </b>{apLifecycleStageInfo.stage}</div>
-            {apLifecycleStageInfo.notes !== undefined &&
-              <React.Fragment>
-                <div><b>Notes: </b></div>
-                <div className="p-ml-2">{apLifecycleStageInfo.notes}</div>
-              </React.Fragment>
-            } 
-          </React.Fragment>
-        );
-      case E_DISPLAY_ADMIN_PORTAL_API_SCOPE.REVIEW_AND_CREATE:
-        return (
-          <></>
-        );
-      default:
-        Globals.assertNever(logName, props.scope);
-    }
-    return (<></>);
-  }
 
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
@@ -288,6 +297,7 @@ export const DisplayAdminPortalApi: React.FC<IDisplayAdminPortalApiProps> = (pro
 
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
+            <div>{renderSource(mo.connectorApiInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
 
             {/* DEBUG */}

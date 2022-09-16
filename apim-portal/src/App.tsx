@@ -3,7 +3,7 @@ import { useHistory, Route, Switch } from 'react-router-dom';
 
 import { Config } from "./Config";
 import { UserContext } from './components/APContextProviders/APUserContextProvider';
-import { AuthContext } from "./components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "./components/APContextProviders/AuthContextProvider";
 
 // * Admin Portal *
 import { AdminPortalHomePage } from "./admin-portal/pages/AdminPortalHomePage";

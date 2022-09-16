@@ -11,7 +11,7 @@ import { APSClientOpenApi } from "../../../../utils/APSClientOpenApi";
 import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 import { TAPEntityId, TAPEntityIdList } from "../../../../utils/APEntityIdsService";
 import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../../components/APContextProviders/AuthContextProvider";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 import { SessionContext } from "../../../../components/APContextProviders/APSessionContextProvider";
 import APContextsDisplayService from "../../../../displayServices/APContextsDisplayService";

@@ -1,0 +1,17 @@
+[
+  {
+    "connectorId": "localTestApimConnectorDocker",
+    "displayName": "Local Test Connector Docker",
+    "description": "uses docker/release",
+    "isActive": true,
+    "connectorClientConfig": {
+      "locationConfig": {
+        "configType": "External",
+        "protocol": "http",
+        "host": "localhost",
+        "port": 9020
+      },
+      "apiVersion": "v1"
+    }
+  }
+]

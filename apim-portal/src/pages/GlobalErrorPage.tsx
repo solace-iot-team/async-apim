@@ -11,7 +11,7 @@ export interface IGlobalErrorPageProps {
 }
 
 export const GlobalErrorPage: React.FC<IGlobalErrorPageProps> = (props: IGlobalErrorPageProps) => {
-  // const componentName = 'GlobalErrorPage';
+  const ComponentName = 'GlobalErrorPage';
 
   const Title="Something went wrong!";
   const ToolbarBack2AppButtonLabel = "Get me out of here!";
@@ -23,7 +23,7 @@ export const GlobalErrorPage: React.FC<IGlobalErrorPageProps> = (props: IGlobalE
   }
 
   const onReportIssue = () => {
-    Globals.openUrlInNewTab(Globals.IssuesUrl);
+    Globals.openUrlInTab(Globals.IssuesUrl, ComponentName);
   }
 
   const renderRightToolbarContent = (): JSX.Element => {

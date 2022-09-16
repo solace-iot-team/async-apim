@@ -20,7 +20,7 @@ export type TRefreshTokenInternalResponse = {
   lastOrganizationId?: string;
 }
 
-export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password" | "lastOrganizationId"> & {
+export type APSSessionUser = Pick<APSUserInternal, "isActivated" | "userId" | "sessionInfo" | "password" | "lastOrganizationId" | "memberOfOrganizations"> & {
   // TODO: needs to be a list by organzationId & businessGroupId
   authorizedResourcePathList: Array<string>;
 };
@@ -189,6 +189,7 @@ export class APSSessionService {
       sessionInfo: apsUserInternal.sessionInfo,
       password: apsUserInternal.password,
       lastOrganizationId: apsUserInternal.lastOrganizationId,
+      memberOfOrganizations: apsUserInternal.memberOfOrganizations
     };
   }
 

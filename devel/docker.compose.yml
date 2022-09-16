@@ -32,6 +32,7 @@ services:
       - AUTH_VERIFICATION_AUD=platform-api-server
       - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
       # - APIS_PROXY_MODE=false
+      - EP_VERSION=2
 
 ##
 # The End.

@@ -2,6 +2,27 @@
 
 Solace Async API Management.
 
+## Version 0.4.0
+
+* [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.0
+* [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.4.0
+* [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.4.0
+* [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.13.1
+
+**New Features:**
+- **Organization Settings**
+  - added Event Portal Import configurations
+- **Organization Jobs**
+  - added Job lists & viewer
+
+**Enhancements:**
+- **API Products: Management**
+  - added paging to list of api products
+
+**Quickstart:**
+- **Event Portal**
+  - added Event Portal 2 configuration as default
+
 ## Version 0.3.6
   * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.3.6
   * [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.3.2

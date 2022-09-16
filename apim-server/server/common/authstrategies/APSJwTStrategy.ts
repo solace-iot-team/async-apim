@@ -11,6 +11,7 @@ import APSSessionService, { APSSessionUser } from "../../api/services/APSSession
 import { ServerUtils } from "../ServerUtils";
 import APSServiceAccountsService from "../../api/services/apsAdministration/APSServiceAccountsService";
 import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
+import { ConnectorClient } from "../ConnectorClient";
 
 
 interface IVerifiedCallback {
@@ -57,6 +58,8 @@ class APSJwtStrategy {
             // check if user was logged out: no refreshToken, then not logged in
             const apsSessionUser: APSSessionUser = await APSSessionService.byId({ userId: jwt_payload._id }); 
             if(apsSessionUser.sessionInfo.refreshToken.length === 0) throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
+            // set the userId in ConnectorClient for later possible use
+            ConnectorClient.setApsSessionUserId(apsSessionUser.userId);
             return done(undefined, apsSessionUser, TTokenPayload_AccountType.USER_ACCOUNT);
           } catch(e) {
             throw new ApiNotAuthorizedServerError(logName, undefined, { userId: jwt_payload._id });
@@ -64,6 +67,13 @@ class APSJwtStrategy {
         case TTokenPayload_AccountType.SERVICE_ACCOUNT:
           try {
             const apsServiceAccount: APSServiceAccount = await APSServiceAccountsService.byId({ serviceAccountId: jwt_payload._id });
+            ConnectorClient.setApsSessionUserId(undefined);
+            // DONT ADD ORGS to the SERVICE ACCOUNT
+            // // get all the orgs and add to service account
+            // const listAPSOrganizationResponse: ListAPSOrganizationResponse = await APSOrganizationsService.all();
+            // apsServiceAccount.organizationIdList = listAPSOrganizationResponse.list.map( (apsOrganization: APSOrganization) => {
+            //   return apsOrganization.organizationId;
+            // });
             return done(undefined, apsServiceAccount, TTokenPayload_AccountType.SERVICE_ACCOUNT);
           } catch(e) {
             throw new ApiNotAuthorizedServerError(logName, undefined, { serviceAccountId: jwt_payload._id });

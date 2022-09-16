@@ -25,7 +25,7 @@ import { Config } from "../../../Config";
 import { EUIAdminPortalResourcePaths, Globals } from "../../../utils/Globals";
 import APVersioningDisplayService from "../../../displayServices/APVersioningDisplayService";
 import APMetaInfoDisplayService from "../../../displayServices/APMetaInfoDisplayService";
-import { APIProductAccessLevel, MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
+import { MetaEntityReference } from "@solace-iot-team/apim-connector-openapi-browser";
 import { TAPAttributeDisplayList } from "../../../displayServices/APAttributesDisplayService/APAttributesDisplayService";
 import { APDisplayBusinessGroupInfo } from "../../../components/APDisplay/APDisplayBusinessGroupInfo";
 import { IAPLifecycleStageInfo } from "../../../displayServices/APLifecycleStageInfoDisplayService";
@@ -36,6 +36,8 @@ import APApiSpecsDisplayService, { TAPApiSpecDisplay } from "../../../displaySer
 import { APDisplayApiProductApis } from "../../../components/APDisplay/APDisplayApiProductApis";
 import { IAPApiDisplay } from "../../../displayServices/APApisDisplayService";
 // import { APDisplayApiProductDocumentation } from "../../../components/APDisplay/APDisplayApiProductDocumentation";
+import { E_ApApiProductSource, TAPApiProductConfigState } from "../../../displayServices/APApiProductsDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -63,6 +65,7 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   type TManagedObject = TAPAdminPortalApiProductDisplay;
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();  
+  const [managedObjectDeepLink, setManagedObjectDeepLink] = React.useState<string>();
   const [showApiId, setShowApiId] = React.useState<string>();
   const [apiSpec, setApiSpec] = React.useState<TAPApiSpecDisplay>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
@@ -189,6 +192,10 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
   React.useEffect(() => {
     if(managedObject === undefined) return;
     setSelectedRevision(managedObject.apVersionInfo.apCurrentVersion);
+    setManagedObjectDeepLink(APAdminPortalApiProductsDisplayService.get_DeepLink({
+      apApiProductDisplay: managedObject,
+      apSystemOrganizationDisplay: organizationContext,
+    }));
     if(props.apPageNavigationInfo !== undefined && props.apPageNavigationInfo.apNavigationTarget.scope === E_AP_Navigation_Scope.ORIGIN) {
       // alert(`${ComponentName}: props.apPageNavigationInfo=${JSON.stringify(props.apPageNavigationInfo, null, 2)}`);
       if(props.apPageNavigationInfo.apNavigationTarget.tabIndex !== undefined) setTabActiveIndex(props.apPageNavigationInfo.apNavigationTarget.tabIndex);
@@ -314,19 +321,23 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     }
     return (<></>);
   }
-
   const renderState = (apLifecycleStageInfo: IAPLifecycleStageInfo): JSX.Element => {
     return(
       <span><b>State: </b>{apLifecycleStageInfo.stage}</span>
     );
   }
-
-  const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
-    return(
-      <span><b>Access: </b>{accessLevel}</span>
-    );
+  const renderSource = (apApiProductSource: E_ApApiProductSource): JSX.Element => {
+    if(props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING) {
+      return (
+        <div><b>Source</b>: {apApiProductSource}</div>
+      );
+    } else return (<></>);
   }
-
+  // const renderAccessLevel = (accessLevel: APIProductAccessLevel): JSX.Element => {
+  //   return(
+  //     <span><b>Access: </b>{accessLevel}</span>
+  //   );
+  // }
   const renderPublishDestinationInfo = (apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): JSX.Element => {
     const renderValue = (apExternalSystemEntityIdList: TAPEntityIdList): string => {
       if(apExternalSystemEntityIdList.length === 0) return 'Not Published.';
@@ -337,17 +348,33 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     );
   }
 
+  const renderIssues = (apApiProductConfigState: TAPApiProductConfigState): JSX.Element => {
+    const issueStringList: Array<string> = [];
+    for(const apApiProductConfigState_Issue of apApiProductConfigState.issueList) {
+      issueStringList.push(apApiProductConfigState_Issue.issueType);
+    }
+    if(issueStringList.length === 0) return (<></>);
+    return (
+      <div style={{ color: 'red' }}>
+        <div className="p-mt-2"><b>Issues:</b></div>
+        <div className="p-ml-2">
+          {APDisplayUtils.create_DivList_From_StringList(issueStringList)}
+        </div>
+      </div>
+    );
+  }
   const renderHeader = (mo: TManagedObject): JSX.Element => {
     return (
       <div className="p-col-12">
         <div className="api-product-view">
           <div className="api-product-view-detail-left">
-
             <div>{renderBusinessGroupInfo(mo.apBusinessGroupInfo)}</div>
             <div>{renderOwner(mo.apOwnerInfo)}</div>
             <div>{renderState(mo.apLifecycleStageInfo)}</div>
-            <div>{renderAccessLevel(mo.apAccessLevel)}</div>
+            <div>{renderSource(mo.apApiProductSource)}</div>
+            {/* <div>{renderAccessLevel(mo.apAccessLevel)}</div> */}
             <div>{renderPublishDestinationInfo(mo.apPublishDestinationInfo)}</div>
+            <div>{renderIssues(mo.apApiProductConfigState)}</div>
 
             {/* DEBUG */}
             {/* <div><b>DEVEL: Current Version</b>: {mo.apVersionInfo.apCurrentVersion}, Last Version: {mo.apVersionInfo.apLastVersion}</div> */}
@@ -555,12 +582,22 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     ); 
   }
 
+  const getComponentHeaderStyle = (): React.CSSProperties | undefined => {
+    if(managedObject === undefined) return undefined;
+    if(!managedObject.apApiProductConfigState.apIsConfigComplete) return  { color: 'red' };
+    return undefined;
+  }
   return (
     <React.Fragment>
       <div className="manage-api-products">
 
         {props.scope === E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE.VIEW_EXISTING && managedObject && 
-          <APComponentHeader header={`API Product: ${managedObject.apEntityId.displayName}`} />
+          <APComponentHeader 
+            header={`API Product: ${managedObject.apEntityId.displayName}`} 
+            style={getComponentHeaderStyle()} 
+            deepLink={managedObjectDeepLink}
+            targetName="APComponentHeader_DeepLink_Target"
+          />
         }
 
         <ApiCallStatusError apiCallStatus={apiCallStatus} />

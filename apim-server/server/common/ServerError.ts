@@ -126,6 +126,14 @@ export class ConfigEnvVarNotANumberServerError extends ServerError {
     this.envVarValue = envVarValue;
   }
 }
+
+export class ConfigNoActiveConnectorServerError extends ServerError {
+  public static DefaultMessage = "No active connector defined";
+  constructor(internalLogName: string) {
+    super(internalLogName, ConfigNoActiveConnectorServerError.DefaultMessage);
+  }
+}
+
 export class MigrateServerError extends ServerError {
   private collectionName: string;
   private fromVersion: number;
@@ -505,6 +513,7 @@ export class ApiPathNotFoundServerError extends ApiServerError {
 }
 
 export type TConnectorProxyErrorErrorMeta = {
+  target?: string;
   connectorError: any;
 }
 export class ConnectorProxyError extends ApiServerError {

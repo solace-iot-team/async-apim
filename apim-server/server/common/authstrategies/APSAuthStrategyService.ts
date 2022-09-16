@@ -32,7 +32,7 @@ enum EConnectorRoles {
 export type TConnectorTokenPayload = {
   userId: string;
   iat: number;
-  organization: Array<string>;
+  organization?: Array<string>;
   roles: Array<EConnectorRoles>;
 }
 type StaticOrigin = boolean | string | RegExp | (boolean | string | RegExp)[];
@@ -260,15 +260,17 @@ class APSAuthStrategyService {
     };
   }
 
-  private generateBearerToken_For_Connector = ({ userId, organizationId, authConfig }:{
+  private generateBearerToken_For_Connector = ({ userId, organizationIdList, authConfig }:{
     userId: string;
-    organizationId?: string;
+    organizationIdList?: Array<string>;
     authConfig: TAuthConfigInternal;
   }): string => {
     const payload: TConnectorTokenPayload = {
       userId: userId,
       iat: Date.now(),
-      organization: organizationId ? [organizationId] : [],
+      organization: organizationIdList ? organizationIdList : [],
+      // gives me a socket hangup
+      // organization: organizationIdList,
       roles: [EConnectorRoles.PLATFORM_ADMIN, EConnectorRoles.ORG_ADMIN]
     };
     const signOptions: jwt.SignOptions = {
@@ -289,14 +291,20 @@ class APSAuthStrategyService {
     const logName = `${APSAuthStrategyService.name}.${funcName}()`;    
     const authConfig: TAuthConfig = ServerConfig.getAuthConfig();
     if(authConfig.type !== EAuthConfigType.INTERNAL) throw new ServerFatalError(new Error('authConfig.type !== EAuthConfigType.INTERNAL'), logName);
+    let organizationIdList: Array<string> = [];
+    if(apsSessionUser.memberOfOrganizations !== undefined) {
+      organizationIdList = apsSessionUser.memberOfOrganizations.map( (x) => {
+        return x.organizationId;
+      });
+    }
     return this.generateBearerToken_For_Connector({ 
       userId: apsSessionUser.userId,
       authConfig: authConfig,
-      organizationId: apsSessionUser.lastOrganizationId
+      organizationIdList: organizationIdList
     });
   }
 
-  private generateBearerToken_For_Connector_For_ServiceAccount = ({ apsServiceAccount }:{
+  public generateBearerToken_For_Connector_For_ServiceAccount = ({ apsServiceAccount }:{
     apsServiceAccount: APSServiceAccount;
   }): string => {
     const funcName = 'generateBearerToken_For_Connector_For_ServiceAccount';
@@ -306,7 +314,8 @@ class APSAuthStrategyService {
     return this.generateBearerToken_For_Connector({ 
       userId: apsServiceAccount.serviceAccountId,
       authConfig: authConfig,
-    });
+      // organizationIdList: apsServiceAccount.organizationIdList
+    });  
   }
 
   public generateConnectorProxyAuthHeader = ({ apsSessionUser, accountType }:{

@@ -1,4 +1,4 @@
-import { TExpressServerConfig, TRootUserConfig } from './ServerConfig';
+import { TExpressServerConfig } from './ServerConfig';
 import { EServerStatusCodes, ServerLogger } from './ServerLogger';
 import {
   OpenAPI as ConnectorOpenAPI,
@@ -10,29 +10,48 @@ import {
 import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
 import APSServiceAccountsService from '../api/services/apsAdministration/APSServiceAccountsService';
 
+/**
+ * Always goes through the proxy, so we have transaction logging
+ */
 export class ConnectorClient {
-  private static protocol = 'http';
-  private static host = 'localhost';
-  private static expressServerConfig: TExpressServerConfig;
-  private static rootUserConfig: TRootUserConfig;
+  private static readonly protocol = 'http';
+  private static readonly host = 'localhost';
+  // private static isInitialized = false;
+  private static apsSessionUserId: string | undefined = undefined;
 
-  public static initialize = (expressServerConfig: TExpressServerConfig, rootUserConfig: TRootUserConfig) => {
+  private static getToken = async(): Promise<string> => {
+    // // DEBUG
+    // const funcName = 'getToken';
+    // const logName = `${ConnectorClient.name}.${funcName}()`;
+    // ServerLogger.debug(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_CLIENT, message: 'check status', details: { 
+    //   isInitialized: ConnectorClient.isInitialized,
+    //   apsSessionUserId: ConnectorClient.apsSessionUserId ? ConnectorClient.apsSessionUserId : 'undefined'
+    // }}));  
+
+    if(ConnectorClient.apsSessionUserId) {
+      return APSAuthStrategyService.generateUserAccountBearerToken_For_InternalAuth({ userId: ConnectorClient.apsSessionUserId });
+    }
+    // if no user session use the internal service account
+    return APSAuthStrategyService.generateServiceAccountBearerToken_For_InternalAuth({ serviceAccountId: APSServiceAccountsService.getInternalApsServiceAccountId() });
+  }
+
+  public static setApsSessionUserId = (apsSessionUserId: string | undefined) => {
+    ConnectorClient.apsSessionUserId = apsSessionUserId;
+  }
+
+  public static initialize = (expressServerConfig: TExpressServerConfig) => {
     const funcName = 'initialize';
     const logName = `${ConnectorClient.name}.${funcName}()`;
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZING } ));
 
-    ConnectorClient.expressServerConfig = expressServerConfig;
-    ConnectorClient.rootUserConfig = rootUserConfig;
-    
-    const base: URL = new URL(APSOpenAPI.BASE + "/connectorProxy" +  ConnectorOpenAPI.BASE, `${ConnectorClient.protocol}://${ConnectorClient.host}:${ConnectorClient.expressServerConfig.port}`);
+    const base: URL = new URL(APSOpenAPI.BASE + "/connectorProxy" +  ConnectorOpenAPI.BASE, `${ConnectorClient.protocol}://${ConnectorClient.host}:${expressServerConfig.port}`);
     // ServerLogger.trace(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INFO, details: { base: base.toString() } } ));
     ConnectorOpenAPI.BASE = base.toString();
     ConnectorOpenAPI.WITH_CREDENTIALS = true;
-    ConnectorOpenAPI.TOKEN = APSAuthStrategyService.generateServiceAccountBearerToken_For_InternalAuth({ serviceAccountId: APSServiceAccountsService.getInternalApsServiceAccountId() });
+    ConnectorOpenAPI.TOKEN = async() => { return await ConnectorClient.getToken(); }
 
     ServerLogger.info(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.INITIALIZED, details: { ConnectorOpenAPI: ConnectorOpenAPI } } ));
 
-    // throw Error(`${logName}: continue here`)
   }
 
   public static isInstanceOfApiError(error: Error): boolean {

@@ -4,8 +4,8 @@ import { useHistory } from 'react-router-dom';
 import { Divider } from 'primereact/divider';
 
 import { APHealthCheckContext } from '../../components/APHealthCheckContextProvider';
-import { AuthContext } from '../../components/AuthContextProvider/AuthContextProvider';
-import { ConfigContext } from '../../components/ConfigContextProvider/ConfigContextProvider';
+import { AuthContext } from '../../components/APContextProviders/AuthContextProvider';
+import { ConfigContext } from '../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider';
 import { DisplaySystemHealthInfo } from '../../components/SystemHealth/DisplaySystemHealthInfo';
 import { EAPHealthCheckSuccess, TAPHealthCheckSummary } from '../../utils/APHealthCheck';
 import { EUIDeveloperPortalResourcePaths, Globals } from '../../utils/Globals';

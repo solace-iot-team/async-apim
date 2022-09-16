@@ -23,7 +23,7 @@ import { APDisplayDeveloperPortalAppApiProductsClientInformationPanel } from "..
 import APDeveloperPortalAppApiProductsDisplayService from "../../displayServices/APDeveloperPortalAppApiProductsDisplayService";
 import { APDisplayDeveloperPortalAppAsyncApiSpecs } from "../../../components/APDisplayDeveloperPortalApp/APDisplayDeveloperPortalAppAsyncApiSpecs";
 import { APDisplayApAttributeDisplayList } from "../../../components/APDisplay/APDisplayApAttributeDisplayList";
-import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayAppWebhookList";
+import { APDisplayAppWebhookList } from "../../../components/APDisplay/APDisplayWebhooks/APDisplayAppWebhookList";
 import { DeveloperPortalDisplayAppHeaderInfo } from "./DeveloperPortalDisplayAppHeaderInfo";
 import { EAppType } from "./DeveloperPortalManageAppsCommon";
 import { TAPDeveloperPortalAppDisplay_AllowedActions } from "../../displayServices/APDeveloperPortalAppsDisplayService";
@@ -48,8 +48,6 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
   const ComponentName = 'DeveloperPortalViewApp';
 
   type TManagedObject = TAPDeveloperPortalUserAppDisplay | TAPDeveloperPortalTeamAppDisplay;
-
-  const MessageNoWebhooksFound = 'No Webhooks configured.';
 
   const [userContext] = React.useContext(UserContext);
   const [organizationContext] = React.useContext(OrganizationContext);
@@ -235,7 +233,6 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
               apDeveloperPortalUserAppDisplay={managedObject}
               onError={props.onError}
               onLoadingChange={props.onLoadingChange}
-              emptyMessage={MessageNoWebhooksFound}
             />
           </TabPanel>
         </TabView>

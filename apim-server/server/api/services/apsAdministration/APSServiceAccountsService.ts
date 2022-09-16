@@ -31,6 +31,7 @@ export class APSServiceAccountsService {
   public getCollectionName = (): string => { return APSServiceAccountsService.collectionName; }
   public getDBObjectSchemaVersion = (): number => { return APSServiceAccountsService.collectionSchemaVersion; }
   public getInternalApsServiceAccountId = (): string => { return APSServiceAccountsService.internalApsServiceAccountId; }
+  
   public initialize = async() => {
     const funcName = 'initialize';
     const logName = `${APSServiceAccountsService.name}.${funcName}()`;

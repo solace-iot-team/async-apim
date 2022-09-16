@@ -16,11 +16,13 @@ import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from "../../../utils
 import APAdminPortalApiProductsDisplayService, { 
   TAPAdminPortalApiProductDisplay, 
   TAPAdminPortalApiProductDisplay4List, 
-  TAPAdminPortalApiProductDisplay4ListList, 
+  TAPAdminPortalApiProductDisplay4ListListResponse, 
 } from "../../displayServices/APAdminPortalApiProductsDisplayService";
 import APDisplayUtils from "../../../displayServices/APDisplayUtils";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
 import { Loading } from "../../../components/Loading/Loading"; 
+import { APOperationMode } from "../../../utils/APOperationMode";
+import { TAPApiProductDisplay_LazyLoadingTableParameters } from "../../../displayServices/APApiProductsDisplayService";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -36,10 +38,9 @@ export interface IListApiProductsProps {
 export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApiProductsProps) => {
   const ComponentName = 'ListApiProducts';
 
-  const MessageNoManagedObjectsFound = 'No API Products defined.';
-  const MessageNoManagedObjectsFoundForFilter = 'No API Products found for filter.';
-  // const GlobalSearchPlaceholder = 'Enter search word list separated by <space> ...';
-  const GlobalSearchPlaceholder = 'search...';
+  const MessageNoManagedObjectsFound = 'No API Products found.';
+  const MessageNoManagedObjectsFoundForFilter = 'No API Products found for filter';
+  const GlobalSearchPlaceholder = 'Enter search word list separated by <space> and press <Enter> ...';
 
   type TManagedObject = TAPAdminPortalApiProductDisplay4List;
   type TManagedObjectList = Array<TManagedObject>;
@@ -50,7 +51,21 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+
+  // * Lazy Loading * 
+  const lazyLoadingTableRowsPerPageOptions: Array<number> = [5,10,20,50,100];
+  const [lazyLoadingTableParams, setLazyLoadingTableParams] = React.useState<TAPApiProductDisplay_LazyLoadingTableParameters>({
+    isInitialSetting: true,
+    first: 0, // index of the first row to be displayed
+    rows: lazyLoadingTableRowsPerPageOptions[1], // number of rows to display per page
+    page: 0,
+    sortField: APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName'),
+    sortOrder: 1
+  });
+  const [lazyLoadingTableTotalRecords, setLazyLoadingTableTotalRecords] = React.useState<number>(0);
+  const [lazyLoadingTableIsLoading, setLazyLoadingTableIsLoading] = React.useState<boolean>(false);
   const [globalFilter, setGlobalFilter] = React.useState<string>();
+  const [searchWordList, setSearchWordList] = React.useState<string>();
   const dt = React.useRef<any>(null);
 
   const SelectAllId = "SelectAllId";
@@ -80,18 +95,33 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   }
 
   // * Api Calls *
-  const apiGetManagedObjectList_For_BusinessGroup = async(): Promise<TApiCallState> => {
+  const apiGetManagedObjectList_For_BusinessGroup = async(searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList_For_BusinessGroup';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+      const listResponse: TAPAdminPortalApiProductDisplay4ListListResponse = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
-        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id
+        default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
+        apApiProductDisplay_ListOptions: {
+          pageNumber: lazyLoadingTableParams.page + 1,
+          pageSize: lazyLoadingTableParams.rows,
+          sortFieldName: lazyLoadingTableParams.sortField,
+          sortDirection: lazyLoadingTableParams.sortOrder,
+          searchWordList: searchWordList,
+        }
       });
-      setManagedObjectList(list);
+      // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+      //   organizationId: props.organizationEntityId.id,
+      //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+      //   default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+      //   apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
+      // });
+      setManagedObjectList(listResponse.apAdminPortalApiProductDisplay4ListList);
+      setLazyLoadingTableTotalRecords(listResponse.meta.totalCount);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -103,20 +133,37 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
   /**
    * Current Business Group and all it's children
    */
-  const apiGetManagedObjectList_For_All = async(): Promise<TApiCallState> => {
+  const apiGetManagedObjectList_For_All = async(searchWordList?: string): Promise<TApiCallState> => {
     const funcName = 'apiGetManagedObjectList_For_All';
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_GET_API_PRODUCT_LIST, 'retrieve list of api products');
     if(userContext.runtimeSettings.currentBusinessGroupEntityId === undefined) throw new Error(`${logName}: userContext.runtimeSettings.currentBusinessGroupEntityId === undefined`);
     if(userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined) throw new Error(`${logName}: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList === undefined`);
     try {
-      const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+
+      const listResponse: TAPAdminPortalApiProductDisplay4ListListResponse = await APAdminPortalApiProductsDisplayService.apsGetList_ApAdminPortalApiProductDisplay4ListList({
         organizationId: props.organizationEntityId.id,
         businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
         default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
-        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList
+        apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+        apOperationsMode: APOperationMode.AP_OPERATIONS_MODE,
+        apApiProductDisplay_ListOptions: {
+          pageNumber: lazyLoadingTableParams.page + 1,
+          pageSize: lazyLoadingTableParams.rows,
+          sortFieldName: lazyLoadingTableParams.sortField,
+          sortDirection: lazyLoadingTableParams.sortOrder,
+          searchWordList: searchWordList,
+        }
       });
-      setManagedObjectList(list);
+      // const list: TAPAdminPortalApiProductDisplay4ListList = await APAdminPortalApiProductsDisplayService.apiGetList_ApAdminPortalApiProductDisplay4ListList({
+      //   organizationId: props.organizationEntityId.id,
+      //   businessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId.id,
+      //   default_ownerId: userContext.apLoginUserDisplay.apEntityId.id,
+      //   apMemberOfBusinessGroupDisplayTreeNodeList: userContext.runtimeSettings.apMemberOfBusinessGroupDisplayTreeNodeList,
+      //   apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
+      // });
+      setManagedObjectList(listResponse.apAdminPortalApiProductDisplay4ListList);
+      setLazyLoadingTableTotalRecords(listResponse.meta.totalCount);
     } catch(e: any) {
       APClientConnectorOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -125,21 +172,33 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     return callState;
   }
 
-  const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
-    if(selectedFilterOptionId === SelectBusinessGroupId) return await apiGetManagedObjectList_For_BusinessGroup();
-    else return await apiGetManagedObjectList_For_All();
+  const apiGetManagedObjectList = async(searchWordList?: string): Promise<TApiCallState> => {
+    if(selectedFilterOptionId === SelectBusinessGroupId) return await apiGetManagedObjectList_For_BusinessGroup(searchWordList);
+    else return await apiGetManagedObjectList_For_All(searchWordList);
+  }
+
+  const doLoadPage = async (searchWordList?: string) => {
+    setIsLoading(true);
+    setLazyLoadingTableIsLoading(true);
+    await apiGetManagedObjectList(searchWordList);
+    setLazyLoadingTableIsLoading(false);
+    setIsLoading(false);
   }
 
   const reInitialize = async () => {
     setIsInitialized(false);
     setIsLoading(true);
-    await apiGetManagedObjectList();
+    setLazyLoadingTableIsLoading(true);
+    await apiGetManagedObjectList(searchWordList);
+    setLazyLoadingTableIsLoading(false);
     setIsLoading(false);
   }
 
   const doInitialize = async () => {
     setIsLoading(true);
+    setLazyLoadingTableIsLoading(true);
     await apiGetManagedObjectList();
+    setLazyLoadingTableIsLoading(false);
     setIsLoading(false);
   }
 
@@ -165,20 +224,49 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
     reInitialize();
   }, [selectedFilterOptionId]); /* eslint-disable-line react-hooks/exhaustive-deps */
 
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    doLoadPage(searchWordList);
+  }, [lazyLoadingTableParams]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
+  React.useEffect(() => {
+    if(!isInitialized) return;
+    if(searchWordList === undefined) doLoadPage();
+    else if(searchWordList.length > 2 && !isLoading) {
+      doLoadPage(searchWordList);
+    }
+  }, [searchWordList]); /* eslint-disable-line react-hooks/exhaustive-deps */
+
   // * Data Table *
   const onManagedObjectSelect = (event: any): void => {
     setSelectedManagedObject(event.data);
   }  
-
   const onManagedObjectOpen = (event: any): void => {
     const mo: TManagedObject = event.data as TManagedObject;
     props.onManagedObjectView(mo);
   }
-
-  const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
-    setGlobalFilter(event.currentTarget.value);
+  const onChangeGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
+    const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
+    if(_globalFilter === undefined) setSearchWordList(undefined);
+    setGlobalFilter(_globalFilter);
   }
- 
+  const onKeyupGlobalFilter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if(event.key === "Enter") {
+      setSearchWordList(event.currentTarget.value);
+    }
+  }
+  const onPageSelect = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
+  const onSort = (event: any) => {
+    const _lazyParams = { ...lazyLoadingTableParams, isInitialSetting: false, ...event };
+    setLazyLoadingTableParams(_lazyParams);
+  }
+  const renderManagedObjectTableEmptyMessage = () => {
+    if(globalFilter && globalFilter !== '') return `${MessageNoManagedObjectsFoundForFilter}: ${globalFilter}`;
+    else return MessageNoManagedObjectsFound;
+  }
   const renderDataTableHeader = (): JSX.Element => {
     return (
       <div className="table-header">
@@ -187,27 +275,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
         </div> 
         <span className="p-input-icon-left">
           <i className="pi pi-search" />
-          <InputText type="search" placeholder={GlobalSearchPlaceholder} onInput={onInputGlobalFilter} style={{width: '500px'}}/>
+          <InputText 
+            type="search" 
+            placeholder={GlobalSearchPlaceholder} 
+            value={globalFilter} 
+            onChange={onChangeGlobalFilter}
+            onKeyUp={onKeyupGlobalFilter}
+            style={{width: '600px'}} 
+          />
         </span>
       </div>
     );
   }
 
-  // const controlledChannelParametersBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apControlledChannelParameterList));
-  // }
-  // const originalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.original_ApAttributeDisplayList));
-  // }
-  // const customAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apCustomAttributeDisplayList));
-  // }
-  // const externalAttributesBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.external_ApAttributeDisplayList));
-  // }
-  // const environmentsBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList_From_ApDisplayObjectList(row.apEnvironmentDisplayList));
-  // }
   const apisBodyTemplate = (row: TManagedObject): JSX.Element => {
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apApiEntityIdList));
   }
@@ -219,20 +299,23 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       </>
     );
   }
-  const nameBodyTemplate = (row: TManagedObject): string => {
-    return row.apEntityId.displayName;
+  const nameBodyTemplate = (mo: TManagedObject): JSX.Element => {
+    let style: any = {};
+    if(!mo.apApiProductConfigState.apIsConfigComplete) style = { color: "red" };
+    return (
+      <div style={ style }>
+        {mo.apEntityId.displayName}
+      </div>
+    );
   }
-  // const approvalTypeTemplate = (row: TManagedObject): string => {
-  //   return row.apApprovalType;
-  // }
   const businessGroupBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName}</div>);
   }
-  // const versionBodyTemplate = (row: TManagedObject): JSX.Element => {
-  //   return (<div>{row.apVersionInfo.apLastVersion}</div>);
-  // }  
   const revisionBodyTemplate = (row: TManagedObject): JSX.Element => {
     return (<div>{row.apVersionInfo.apLastVersion}</div>);
+  }
+  const sourceBodyTemplate = (mo: TManagedObject): string => {
+    return mo.apApiProductSource;
   }
   const sharedBodyTemplate = (row: TManagedObject): JSX.Element => {
     const sharingEntityIdList: TAPEntityIdList = row.apBusinessGroupInfo.apBusinessGroupSharingList.map( (x) => {
@@ -246,50 +329,32 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       <div>{APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.getSortedDisplayNameList(sharingEntityIdList))}</div>
     );
   }
-  // const apEntityIdBodyTemplate = (row: TManagedObject) => {
-  //   return JSON.stringify(row.apEntityId);
-  // }
-  const accessLevelTemplate = (row: TManagedObject): string => {
-    return row.apAccessLevel;
-  }
   const stateTemplate = (row: TManagedObject): string => {
     return row.apLifecycleStageInfo.stage;
   }
   const publishedTemplate = (row: TManagedObject): JSX.Element => {
-    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>False</div>);
+    if(row.apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return (<div>Not published</div>);
     return APDisplayUtils.create_DivList_From_StringList(APEntityIdsService.create_SortedDisplayNameList(row.apPublishDestinationInfo.apExternalSystemEntityIdList));
   }
-  const getEmptyMessage = (): string => {
-    if(globalFilter === undefined || globalFilter === '') return MessageNoManagedObjectsFound;
-    return MessageNoManagedObjectsFoundForFilter;
-  }
   const renderManagedObjectDataTable = () => {
-    // const sortField = APAdminPortalApiProductsDisplayService.nameOf_ApEntityId('displayName');
-    // const filterField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    // // const approvalTypeSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apApprovalType');
-    // const accessLevelSortField = APAdminPortalApiProductsDisplayService.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
-    // const stateSortField = APAdminPortalApiProductsDisplayService.nameOf_ApLifecycleStageInfo('stage');
-    // const businessGroupSortField = APAdminPortalApiProductsDisplayService.nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId('displayName');
-
     const dataKey = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.id');
-    const sortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
-    const filterField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apSearchContent');
-    const accessLevelSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apAccessLevel');
+    const nameSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apEntityId.displayName');
     const stateSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apLifecycleStageInfo.stage');
     const businessGroupSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName');
+    const sourceSortField = APDisplayUtils.nameOf<TAPAdminPortalApiProductDisplay>('apApiProductSource');
     return (
       <div className="card">
         <DataTable
           ref={dt}
           className="p-datatable-sm"
           // autoLayout={true}
-          emptyMessage={getEmptyMessage()}
+          emptyMessage={renderManagedObjectTableEmptyMessage()}
           resizableColumns 
           columnResizeMode="fit"
           showGridlines={false}
           header={renderDataTableHeader()}
           value={managedObjectList}
-          globalFilter={globalFilter}
+          // globalFilter={globalFilter}
           selectionMode="single"
           selection={selectedManagedObject}
           onRowClick={onManagedObjectSelect}
@@ -297,58 +362,40 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
           scrollable 
           // scrollHeight="800px" 
           dataKey={dataKey}
-          // sorting
+          // lazyLoading & pagination & sorting
+          lazy={true}
+          paginator={true}
+          paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+          rowsPerPageOptions={lazyLoadingTableRowsPerPageOptions}
+          first={lazyLoadingTableParams.first}
+          rows={lazyLoadingTableParams.rows}
+          totalRecords={lazyLoadingTableTotalRecords}
+          onPage={onPageSelect}
+          loading={lazyLoadingTableIsLoading}
           sortMode='single'
-          sortField={sortField}
-          sortOrder={1}
+          onSort={onSort} 
+          sortField={lazyLoadingTableParams.sortField} 
+          sortOrder={lazyLoadingTableParams.sortOrder}
         >
-          {/* <Column header="DEBUG:apEntityId" body={apEntityIdBodyTemplate}  /> */}
-          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} filterField={filterField} sortField={sortField} sortable />
-          {/* <Column header="Version" headerStyle={{width: '7em' }} body={versionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} /> */}
+          <Column header="Name" body={nameBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={nameSortField} sortable />
           <Column header="Revision" headerStyle={{width: '7em' }} body={revisionBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
-          <Column header="Access" headerStyle={{width: '7em'}} body={accessLevelTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={accessLevelSortField} sortable />
+          <Column header="Source" headerStyle={{width: '11em'}} body={sourceBodyTemplate} bodyStyle={{verticalAlign: 'top'}} sortField={sourceSortField} sortable />
           <Column header="State" headerStyle={{width: '7em'}} body={stateTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={stateSortField} sortable />
-          <Column header="Published" headerStyle={{width: '7em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
-
-          {/* <Column header="Approval" headerStyle={{width: '8em'}} body={approvalTypeTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={approvalTypeSortField} sortable /> */}
+          <Column header="Published To" headerStyle={{width: '9em'}} body={publishedTemplate} bodyStyle={{ verticalAlign: 'top' }} />
           <Column header="Business Group" headerStyle={{width: '12em'}} body={businessGroupBodyTemplate} bodyStyle={{ verticalAlign: 'top' }} sortField={businessGroupSortField} sortable />
-
           <Column header="Shared" body={sharedBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }} />
-
           <Column header="APIs" body={apisBodyTemplate} bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}/>
-
-
-          {/* <Column header="Orginal Attributes" body={originalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="Controlled Channel Parameters" body={controlledChannelParametersBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="External Attributes" body={externalAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} />
-          <Column header="Custom Attributes" body={customAttributesBodyTemplate}  bodyStyle={{ verticalAlign: 'top' }} /> */}
-
-          {/* <Column header="Environments" body={environmentsBodyTemplate} bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}/> */}
-          <Column header="Used By" headerStyle={{width: '7em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
+          <Column header="Referenced By" headerStyle={{width: '10em' }} body={usedByBodyTemplate} bodyStyle={{verticalAlign: 'top'}} />
         </DataTable>
      </div>
     );
   }
 
   const renderContent = () => {
-    const funcName = 'renderContent';
-    const logName = `${ComponentName}.${funcName}()`;
-    if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
-
-    // if(managedObjectList.length === 0) {
-    //   return (
-    //     <React.Fragment>
-    //       <Divider />
-    //       {MessageNoManagedObjectsFound}
-    //       <Divider />
-    //     </React.Fragment>
-    //   );
-    // }
-    // if(managedObjectList.length > 0) {
-    //   return renderManagedObjectDataTable();
-    // } 
+    // const funcName = 'renderContent';
+    // const logName = `${ComponentName}.${funcName}()`;
+    // if(managedObjectList === undefined) throw new Error(`${logName}: managedObjectList === undefined`);
     return renderManagedObjectDataTable();
   }
 
@@ -376,10 +423,19 @@ export const ListApiProducts: React.FC<IListApiProductsProps> = (props: IListApi
       
       <ApiCallStatusError apiCallStatus={apiCallStatus} />
 
+      {/* <div className="p-mt-2">
+        { isInitialized && managedObjectList &&
+          (managedObjectList.length > 0 || (managedObjectList.length === 0 && globalFilter && globalFilter !== ''))
+          &&
+          renderContent()}
+      </div> */}
+
       <div className="p-mt-2">
-        {isInitialized && renderContent()}
+        { isInitialized && managedObjectList &&
+          renderContent()
+        }
       </div>
-      
+
     </div>
   );
 }

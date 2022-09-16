@@ -8,7 +8,7 @@ import { BreadCrumb } from 'primereact/breadcrumb';
 import { GlobalElementStyles, Globals } from '../utils/Globals';
 import { TApiCallState } from "../utils/ApiCallState";
 import { UserContext } from '../components/APContextProviders/APUserContextProvider';
-import { AuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { AuthContext } from '../components/APContextProviders/AuthContextProvider';
 import { ManageUserAccount } from '../components/ManageUserAccount/ManageUserAccount';
 
 import "./Pages.css";
@@ -20,10 +20,8 @@ export const ManageUserAccountPage: React.FC = (props: any) => {
   const toastLifeSuccess: number = 3000;
   const toastLifeError: number = 10000;
 
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [userContext, dispatchUserContextAction] = React.useContext(UserContext);
-  const [authContext, dispatchAuthContextAction] = React.useContext(AuthContext);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
+  const [userContext] = React.useContext(UserContext);
+  const [authContext] = React.useContext(AuthContext);
 
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
   const history = useHistory();

@@ -13,7 +13,7 @@ import APMemberOfService, {
   TAPMemberOfBusinessGroupDisplay, 
   TAPMemberOfBusinessGroupTreeTableNodeList 
 } from "../../../../displayServices/APUsersDisplayService/APMemberOfService";
-import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../../components/APContextProviders/AuthContextProvider";
 import { AuthHelper } from "../../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
 import { TAPManagedAssetDisplay_BusinessGroupSharingList } from "../../../../displayServices/APManagedAssetDisplayService";

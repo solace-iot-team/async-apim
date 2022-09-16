@@ -1,19 +1,20 @@
 import React from "react";
 import { 
   APSConnector 
-} from "../../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { TAPRbacRoleList } from '../../utils/APRbac';
+} from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { TAPRbacRoleList } from '../../../utils/APRbac';
 import { ConfigHelper } from "./ConfigHelper";
-import { TAPConnectorInfo } from "../../utils/APConnectorApiCalls";
-import { TAPPortalAppInfo } from "../../utils/Globals";
+import { TAPConnectorInfo } from "../../../utils/APConnectorApiCalls";
+import { TAPPortalAppInfo } from "../../../utils/Globals";
+import { APOperationMode } from "../../../utils/APOperationMode";
 
 export type TAPSConnectorList = Array<APSConnector>;
 export type TAPConfigContext = {
   isInitialized: boolean;
-  rbacRoleList: TAPRbacRoleList,
-  connector?: APSConnector,
-  connectorInfo?: TAPConnectorInfo,
-  portalAppInfo?: TAPPortalAppInfo
+  rbacRoleList: TAPRbacRoleList;
+  connector?: APSConnector;
+  connectorInfo?: TAPConnectorInfo;
+  portalAppInfo?: TAPPortalAppInfo;
 }
 
 export interface IConfigContextProviderProps {
@@ -38,7 +39,10 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
         newState.connector = action.configContext.connector;
       }
       if(action.configContext.connectorInfo) newState.connectorInfo = action.configContext.connectorInfo;
-      if(action.configContext.portalAppInfo) newState.portalAppInfo = action.configContext.portalAppInfo;
+      if(action.configContext.portalAppInfo) {
+        newState.portalAppInfo = action.configContext.portalAppInfo;
+        APOperationMode.initialize(action.configContext.portalAppInfo.eventPortalVersion);
+      }
       return newState;
     case 'SET_CONFIG_RBAC_ROLE_LIST':
       return {
@@ -56,6 +60,7 @@ const configContextReducer = (state: TAPConfigContext, action: ConfigContextActi
           connector: action.connector
         }
       case 'SET_PORTAL_APP_INFO':
+        if(action.portalAppInfo) APOperationMode.initialize(action.portalAppInfo.eventPortalVersion);
         return { 
           ...state,
           portalAppInfo: action.portalAppInfo

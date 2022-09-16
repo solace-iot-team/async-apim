@@ -22,6 +22,7 @@ import { ViewAppWebhook } from "./ViewAppWebhook";
 import { DeleteAppWebhook } from "./DeleteAppWebhook";
 import { EditNewAppWebhook } from "./EditNewAppWebhook";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
+import { ApiCallStatusError } from "../../../../components/ApiCallStatusError/ApiCallStatusError";
 
 import '../../../../components/APComponents.css';
 import "../DeveloperPortalManageApps.css";
@@ -331,9 +332,6 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
     setNewComponentState(E_COMPONENT_STATE.LIST_VIEW);
     setRefreshCounter(refreshCounter + 1);
   }
-  const onSubComponentError = (apiCallState: TApiCallState) => {
-    setApiCallStatus(apiCallState);
-  }
   const onSubComponentCancel = () => {
     setPreviousComponentState();
   }
@@ -394,6 +392,8 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
 
       <Loading show={isLoading} header={isLoadingHeader}/>
       
+      <ApiCallStatusError apiCallStatus={apiCallStatus} />
+
       { managedApAppDisplay && renderToolbar() }
 
       {showListComponent && managedApAppDisplay &&
@@ -425,7 +425,7 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
           organizationId={props.organizationId}
           apDeveloperPortalAppDisplay={managedApAppDisplay}
           apAppWebhookDisplayEntityId={managedObjectEntityId}
-          onError={onSubComponentError}
+          onError={props.onError}
           onLoadingChange={onLoadingChange}
           onCancel={onSubComponentCancel}
           onDeleteSuccess={onDeleteSuccess}
@@ -437,7 +437,7 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
           organizationId={props.organizationId}
           apDeveloperPortalAppDisplay={managedApAppDisplay}
           onCancel={onSubComponentCancel}
-          onError={onSubComponentError}
+          onError={props.onError}
           onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onEditNewSuccess={onNewSuccess}
@@ -449,7 +449,7 @@ export const ManageAppWebhooks: React.FC<IManageAppWebhooksProps> = (props: IMan
           organizationId={props.organizationId}
           apDeveloperPortalAppDisplay={managedApAppDisplay}
           onCancel={onSubComponentCancel}
-          onError={onSubComponentError}
+          onError={props.onError}
           onLoadingChange={onLoadingChange}
           setBreadCrumbItemList={onSubComponentSetBreadCrumbItemList}
           onEditNewSuccess={onEditSuccess}

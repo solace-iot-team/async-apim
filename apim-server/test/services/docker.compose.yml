@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+  apim-test-mongodb:
+    container_name: ${APIM_TEST_MONGO_DB_CONTAINER_NAME}
+    image: mongo:5.0.2
+    volumes:
+      - mongodbdata:/data/db
+    ports:
+      - ${APIM_TEST_SERVER_MONGO_PORT}:27017
+    restart: unless-stopped
+  apim-test-connector:
+    container_name: ${APIM_TEST_CONNECTOR_CONTAINER_NAME}
+    links:
+      - apim-test-mongodb
+    image: 'solaceiotteam/apim-connector-server:latest'
+    ports:
+      - ${APIM_TEST_SERVER_CONNECTOR_PORT}:3000
+    volumes:
+      - ./docker-volumes/apim-connector:/data
+    restart: unless-stopped
+    environment:
+      - DB_URL="mongodb://apim-test-mongodb:27017/platform?retryWrites=true&w=majority"
+      - LOG_LEVEL=trace
+      - APP_ID="apim-test-connector"
+      - FILE_USER_REGISTRY=/data/organization_users.json
+      - PLATFORM_PORT=3000
+      - AUTH_EXTRACTION_USER_PRINCIPAL=$$.userId
+      - AUTH_EXTRACTION_ORGS=$$.organization
+      - AUTH_EXTRACTION_ROLES=$$.roles
+      - AUTH_VERIFICATION_KEY=/data/secret.txt
+      - AUTH_VERIFICATION_ISSUER=apim-server
+      - AUTH_VERIFICATION_AUD=platform-api-server
+      - AUTH_DISCOVERY_OIDC_URL=https://dev-1.okta.com/x/oauth2/default/.well-known/openid-configuration
+      - EP_VERSION=2
+volumes:
+  mongodbdata:
+##
+# The End.

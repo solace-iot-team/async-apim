@@ -1,6 +1,6 @@
 import { CAPSAuthRoleNone } from '../utils/APRbac';
 import { EUIAdminPortalResourcePaths, EUIDeveloperPortalResourcePaths } from '../utils/Globals';
-import { TAPAuthContext } from '../components/AuthContextProvider/AuthContextProvider';
+import { TAPAuthContext } from '../components/APContextProviders/AuthContextProvider';
 
 export class AuthHelper {
 

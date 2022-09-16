@@ -3,6 +3,7 @@ import React from "react";
 import { FieldError } from "react-hook-form";
 import { EAPSSortDirection } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
+// use with // @ts-ignore if getting Type instantiation is excessively deep and possibly infinite.  TS2589
 type DotPrefix<T extends string> = T extends "" ? "" : `.${T}`;
 type DotNestedKeys<T> = (T extends object ?
     { [K in Exclude<keyof T, symbol>]: `${K}${DotPrefix<DotNestedKeys<T[K]>>}` }[Exclude<keyof T, symbol>]

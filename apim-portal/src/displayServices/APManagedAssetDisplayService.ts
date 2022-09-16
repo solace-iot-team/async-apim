@@ -16,13 +16,17 @@ import APBusinessGroupsDisplayService, {
 import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService';
 import APManagedAssetDisplay_BusinessGroupSharing_Schema from './schemas/APManagedAssetDisplay_BusinessGroupSharing_Schema.json';
 
-const CAPManagedAssetAttribute_Prefix = "AP";
+const C_Connector_EP_ManagedAssetAttribute_Prefix = "EP";
+const C_Connector_AC_ManagedAssetAttribute_Prefix = "AC";
+const C_AP_ManagedAssetAttribute_Prefix = "AP";
 export enum EAPManagedAssetAttribute_Scope {
   ASSET_OWNER = "ASSET_OWNER",
   BUSINESS_GROUP = "BUSINESS_GROUP",
   CLASSIFICATION = "CLASSIFICATION",
   PUBLISH = "PUBLISH",
   CUSTOM = "CUSTOM",
+  SOURCE = "IMP_SOURCE",
+  EAP_OBJECT = "EAP_OBJECT"
 }
 export enum EAPManagedAssetAttribute_BusinessGroup_Tag {
   OWNING_ID = "OWNING_ID",
@@ -76,6 +80,7 @@ export type TAPManagedAssetPublishDestinationInfo = {
 export interface IAPManagedAssetDisplay extends IAPEntityIdDisplay {
   devel_display_complete_ApAttributeList: TAPAttributeDisplayList; /** for devel display purposes only, only set during creation from api, not maintained on update */
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apConnector_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
   apBusinessGroupInfo: TAPManagedAssetBusinessGroupInfo;
   apOwnerInfo: TAPManagedAssetOwnerInfo;
@@ -101,41 +106,35 @@ export type TAPManagedAssetDisplay_AccessAndState = {
 export abstract class APManagedAssetDisplayService {
   private readonly BaseComponentName = "APManagedAssetDisplayService";
 
-  // public nameOf<T extends IAPManagedAssetDisplay>(name: keyof T) {
-  //   return name;
-  // }
-  // public nameOf_ApEntityId(name: keyof TAPEntityId) {
-  //   return `${this.nameOf('apEntityId')}.${name}`;
-  // }
-  // private _nameOf_ApBusinessGroupInfo(name: keyof TAPManagedAssetBusinessGroupInfo) {
-  //   return `${this.nameOf('apBusinessGroupInfo')}.${name}`;
-  // }
-  // public nameOf_ApBusinessGroupInfo_ApOwningBusinessGroupEntityId(name: keyof TAPEntityId) {
-  //   return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
-  // }
-  
-  // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference(name: keyof TAPBusinessGroupDisplayReference) {
-  //   return `${this._nameOf_ApBusinessGroupInfo('apOwningBusinessGroupEntityId')}.${name}`;
-  // }
-  // public nameOf_ApBusinessGroupInfo_ApBusinessGroupDisplayReference_ApEntityId(name: keyof TAPEntityId) {
-  //   return `${this._nameOf_ApBusinessGroupInfo('apEntityId')}.${name}`;
-  // }
-  // public nameOf_BusinessGroupSharing(name: keyof TAPManagedAssetDisplay_BusinessGroupSharing) {
-  //   return name;
-  // }
-  // public nameOf_BusinessGroupSharing_ApEntityId(name: keyof TAPEntityId) {
-  //   return `${this.nameOf_BusinessGroupSharing('apEntityId')}.${name}`;
-  // }
-
-  protected create_ManagedAssetAttribute_Prefix = (): string => {
-    return `_${CAPManagedAssetAttribute_Prefix}_`;
+  protected create_Connector_EP_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_`;
   }
-  protected create_ManagedAssetAttribute_Name = ({ scope, tag }: {
+  public create_Connector_EP_ManagedAssetAttribute_Name = ({ scope, tag }: {
     scope: EAPManagedAssetAttribute_Scope;
     tag?: TManagedAssetAttribute_Tag;
   }): string => {
-    if(tag !== undefined) return `_${CAPManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
-    return `_${CAPManagedAssetAttribute_Prefix}_${scope}_`;
+    if(tag !== undefined) return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_Connector_EP_ManagedAssetAttribute_Prefix}_${scope}_`;
+  }
+  protected create_Connector_AC_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_`;
+  }
+  public create_Connector_AC_ManagedAssetAttribute_Name = ({ scope, tag }: {
+    scope: EAPManagedAssetAttribute_Scope;
+    tag?: TManagedAssetAttribute_Tag;
+  }): string => {
+    if(tag !== undefined) return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_Connector_AC_ManagedAssetAttribute_Prefix}_${scope}_`;
+  }
+  protected create_AP_ManagedAssetAttribute_Prefix = (): string => {
+    return `_${C_AP_ManagedAssetAttribute_Prefix}_`;
+  }
+  public create_ManagedAssetAttribute_Name = ({ scope, tag }: {
+    scope: EAPManagedAssetAttribute_Scope;
+    tag?: TManagedAssetAttribute_Tag;
+  }): string => {
+    if(tag !== undefined) return `_${C_AP_ManagedAssetAttribute_Prefix}_${scope}_${tag}_`;
+    return `_${C_AP_ManagedAssetAttribute_Prefix}_${scope}_`;
   }
 
   protected create_ConnectorFilter_For_Attribute({ attributeName, attributeValue }:{
@@ -170,6 +169,7 @@ export abstract class APManagedAssetDisplayService {
       devel_display_complete_ApAttributeList: [],
       apExternal_ApAttributeDisplayList: [],
       apCustom_ApAttributeDisplayList: [],
+      apConnector_ApAttributeDisplayList: [],
       apBusinessGroupInfo: {
         apOwningBusinessGroupEntityId: APEntityIdsService.create_EmptyObject_NoId(),
         apBusinessGroupSharingList: [],
@@ -182,7 +182,7 @@ export abstract class APManagedAssetDisplayService {
     return apManagedAssetDisplay;
   }
 
-  private parse_BusinessGroupSharingListString(attributeValue: string): TAPManagedAssetDisplay_BusinessGroupSharingList {
+  public parse_BusinessGroupSharingListString(attributeValue: string): TAPManagedAssetDisplay_BusinessGroupSharingList {
     const funcName = 'parse_BusinessGroupSharingListString';
     const logName = `${this.BaseComponentName}.${funcName}()`;
 
@@ -204,7 +204,7 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  protected create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
+  public create_BusinessGroupSharingListString(apManagedAssetDisplay_BusinessGroupSharingList: TAPManagedAssetDisplay_BusinessGroupSharingList): string {
     return JSON.stringify(apManagedAssetDisplay_BusinessGroupSharingList);
   }
 
@@ -234,12 +234,12 @@ export abstract class APManagedAssetDisplayService {
     }
   }
 
-  protected create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
+  public create_PublishDestinationInfoString(apPublishDestinationInfo: TAPManagedAssetPublishDestinationInfo): string | undefined {
     if(apPublishDestinationInfo.apExternalSystemEntityIdList.length === 0) return undefined;
     return APEntityIdsService.create_IdList(apPublishDestinationInfo.apExternalSystemEntityIdList).join(',');
   }
 
-  private getValidatedPublishDestinationList({ publishDestinationList_apAttributeDisplayList, complete_ApExternalSystemDisplayList }:{
+  public getValidatedPublishDestinationList({ publishDestinationList_apAttributeDisplayList, complete_ApExternalSystemDisplayList }:{
     publishDestinationList_apAttributeDisplayList: TAPAttributeDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
   }): TAPEntityIdList {
@@ -409,9 +409,21 @@ export abstract class APManagedAssetDisplayService {
     });
     // save complete list for devel purposes
     const devel_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(working_ApAttributeDisplayList));
+    // extract connector controlled attributes
+    
+    const _apConnector_EP_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_ApAttributeDisplayList
+    });
+    const _apConnector_AC_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_ApAttributeDisplayList
+    });
+    const _apConnector_ApAttributeDisplayList: TAPAttributeDisplayList = _apConnector_AC_ApAttributeDisplayList.concat(_apConnector_EP_ApAttributeDisplayList);
+
     // extract externally controlled attributes
     const _apExternal_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Not_Prefixed_With({
-      not_prefixed_with: this.create_ManagedAssetAttribute_Prefix(),
+      not_prefixed_with: this.create_AP_ManagedAssetAttribute_Prefix(),
       apAttributeDisplayList: working_ApAttributeDisplayList
     });
     // working_ApAttributeDisplayList now contains only the AP controlled attributes
@@ -445,6 +457,7 @@ export abstract class APManagedAssetDisplayService {
       devel_display_complete_ApAttributeList: devel_complete_ApAttributeDisplayList,
       apExternal_ApAttributeDisplayList: _apExternal_ApAttributeDisplayList,
       apCustom_ApAttributeDisplayList: _apCustom_AttributeDisplayList,
+      apConnector_ApAttributeDisplayList: _apConnector_ApAttributeDisplayList,
       apBusinessGroupInfo: apBusinessGroupInfo,
       apOwnerInfo: apManagedAssetOwnerInfo,
       apPublishDestinationInfo: apManagedAssetPublishDestinationInfo,

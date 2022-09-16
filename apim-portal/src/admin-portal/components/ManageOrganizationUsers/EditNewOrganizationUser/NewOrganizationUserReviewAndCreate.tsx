@@ -13,7 +13,7 @@ import APEntityIdsService, {
 } from "../../../../utils/APEntityIdsService";
 import { AuthHelper } from "../../../../auth/AuthHelper";
 import { EUIAdminPortalResourcePaths } from "../../../../utils/Globals";
-import { AuthContext } from "../../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../../components/APContextProviders/AuthContextProvider";
 import APOrganizationUsersDisplayService, { TAPOrganizationUserDisplay } from "../../../../displayServices/APUsersDisplayService/APOrganizationUsersDisplayService";
 import { APDisplayUserProfile } from "../../../../components/APDisplay/APDisplayUserProfile";
 import { TAPUserAuthenticationDisplay } from "../../../../displayServices/APUsersDisplayService/APUsersDisplayService";

@@ -97,13 +97,8 @@ export const SelectApiChannelParameter: React.FC<ISelectApiChannelParameterProps
   }
 
   const renderManagedObjectDataTable = (): JSX.Element => {
-    // const dataKey = APApisDisplayService.nameOf_ApEntityId('id');
-    // const sortField = APApisDisplayService.nameOf_ApEntityId('displayName');
-    // const valueField = APApisDisplayService.nameOf_ApiChannelParameter('valueList');
-
     const dataKey = APDisplayUtils.nameOf<TAPApiChannelParameter>('apEntityId.id');
     const sortField = APDisplayUtils.nameOf<TAPApiChannelParameter>('apEntityId.displayName');
-    // const valueField = APDisplayUtils.nameOf<TAPApiChannelParameter>('valueList');
 
     return (
       <div className="card">

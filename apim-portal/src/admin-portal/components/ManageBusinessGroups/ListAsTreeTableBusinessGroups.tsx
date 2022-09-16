@@ -94,7 +94,10 @@ export const ListAsTreeTableBusinessGroups: React.FC<IListAsTreeTableBusinessGro
 
   React.useEffect(() => {
     if(managedObjectList !== undefined) {
-      const managedObjectTreeTableNodeList: TManagedObjectTreeTableNodeList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList(managedObjectList);
+      const managedObjectTreeTableNodeList: TManagedObjectTreeTableNodeList = APBusinessGroupsDisplayService.generate_ApBusinessGroupTreeNodeDisplayList_From_ApBusinessGroupDisplayList({ 
+        referenceApBusinessGroupDisplayList: managedObjectList,
+        excludeAccess_To_BusinessGroupIdList: [], 
+      });
       setManagedObjectTreeTableNodeList(managedObjectTreeTableNodeList);
       initializeExpandedKeys(managedObjectTreeTableNodeList);
     }

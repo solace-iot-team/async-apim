@@ -8,16 +8,18 @@ import { Divider } from "primereact/divider";
 import APAppWebhooksDisplayService, { 
   EAPWebhookAuthMethodSelectIdNone, 
   IAPAppWebhookDisplay, 
-  TAPAppWebhookDisplayList 
-} from "../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
-import APDisplayUtils from "../../displayServices/APDisplayUtils";
-import APEntityIdsService from "../../utils/APEntityIdsService";
-import { ApiCallState, TApiCallState } from "../../utils/ApiCallState";
-import { TAPDeveloperPortalUserAppDisplay } from "../../developer-portal/displayServices/APDeveloperPortalUserAppsDisplayService";
-import { APClientConnectorOpenApi } from "../../utils/APClientConnectorOpenApi";
+  TAPAppWebhookDisplayList, 
+  TAPWebhookRequestHeader
+} from "../../../displayServices/APAppsDisplayService/APAppWebhooksDisplayService";
+import APDisplayUtils from "../../../displayServices/APDisplayUtils";
+import APEntityIdsService from "../../../utils/APEntityIdsService";
+import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
+import { TAPDeveloperPortalUserAppDisplay } from "../../../developer-portal/displayServices/APDeveloperPortalUserAppsDisplayService";
+import { APClientConnectorOpenApi } from "../../../utils/APClientConnectorOpenApi";
+import { ApiCallStatusError } from "../../ApiCallStatusError/ApiCallStatusError";
+import { APDisplayWebhooksCommon } from "./APDisplayWebhooksCommon";
 
-import "../APComponents.css";
-import { ApiCallStatusError } from "../ApiCallStatusError/ApiCallStatusError";
+import "../../APComponents.css";
 
 export enum E_AP_DISPLAY_APP_WEBHOOK_LIST_CALL_STATE_ACTIONS {
   API_GET_APP_WEBHOOK_LIST = "API_GET_APP_WEBHOOK_LIST",
@@ -28,13 +30,13 @@ export interface IAPDisplayAppWebhookListProps {
   apDeveloperPortalUserAppDisplay: TAPDeveloperPortalUserAppDisplay;
   onError: (apiCallState: TApiCallState) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  emptyMessage: string;
+  onOpen?: (apAppWebhookDisplay: IAPAppWebhookDisplay) => void;
   className?: string;
 }
 
 export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = (props: IAPDisplayAppWebhookListProps) => {
   const ComponentName='APDisplayAppWebhookList';
-    
+
   type TManagedObject = IAPAppWebhookDisplay;
   type TManagedObjectList = Array<TManagedObject>;
   
@@ -42,9 +44,10 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false); 
   const [selectedManagedObject, setSelectedManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
+  const [expandedManagedObjectDataTableRows, setExpandedManagedObjectDataTableRows] = React.useState<any>(null);
 
   const componentDataTableRef = React.useRef<any>(null);
-  
+
   // * Api Calls *
 
   const apiGetManagedObjectList = async(): Promise<TApiCallState> => {
@@ -94,9 +97,10 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
     setSelectedManagedObject(event.data);
   }  
   const onManagedObjectOpen = (event: any): void => {
-    // placeholder
-    // const mo: TManagedObject = event.data as TManagedObject;
-    // alert(`${ComponentName}.onManagedObjectOpen(): show the status of the webhook now?`);
+    if(props.onOpen !== undefined) {
+      const mo: TManagedObject = event.data as TManagedObject;
+      props.onOpen(mo);
+    }
   }
 
   const nameBodyTemplate = (row: TManagedObject): string => {
@@ -111,27 +115,65 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
     return EAPWebhookAuthMethodSelectIdNone.NONE;
   }
 
-  // const statusBodyTemplate = (rowData: TAPDisplayAppWebhooksDataTableRow) => {
-  //   if(!rowData.webhookWithoutEnvs) return emptyBodyTemplate();
-  //   if(rowData.webhookStatus) {
-  //     return (
-  //       <APDisplayAppWebhookStatus
-  //         apWebhookStatus={rowData.webhookStatus}
-  //         displayContent={EAPDisplayAppWebhookStatus_Content.STATUS_ONLY}
-  //       />
-  //     );
-  //   } else {
-  //     return (<span className="pi pi-question" style={{ color: 'gray'}}/>);
-  //   }
+  // if we need to search ...
+  // const onInputGlobalFilter = (event: React.FormEvent<HTMLInputElement>) => {
+  //   // const _globalFilter: string | undefined = event.currentTarget.value !== '' ? event.currentTarget.value : undefined;
+  //   // setGlobalFilter(_globalFilter);
+  //   setGlobalFilter(event.currentTarget.value);
+  // }
+ 
+  // const renderDataTableHeader = (): JSX.Element => {
+  //   return (
+  //     <div className="table-header">
+  //       <div className="table-header-container">
+  //       </div>        
+  //       <span className="p-input-icon-left">
+  //         <i className="pi pi-search" />
+  //         <InputText 
+  //           type="search" 
+  //           placeholder={GlobalSearchPlaceholder} 
+  //           onInput={onInputGlobalFilter} 
+  //           style={{width: '500px'}}
+  //           value={globalFilter}
+  //         />
+  //       </span>
+  //     </div>
+  //   );
   // }
 
+
   const renderManagedObjectDataTable = () => {
-    const dataKey = APAppWebhooksDisplayService.nameOf_ApEntityId('id');
-    const sortField = APAppWebhooksDisplayService.nameOf_ApEntityId('displayName');
-    const filterField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apSearchContent');
-    // const statusField = APDeveloperPortalUserAppsDisplayService.nameOf<TManagedObject>('apAppStatus');
-    const methodField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apWebhookMethod');
-    const uriField = APAppWebhooksDisplayService.nameOf<TManagedObject>('apWebhookUri');
+    const rowExpansionTemplate = (mo: TManagedObject) => {
+      const dataTableList = mo.apWebhookRequestHeaderList;
+      const dataKey = APDisplayUtils.nameOf<TAPWebhookRequestHeader>('headerName');
+      const sortField = dataKey;
+      const valueField = APDisplayUtils.nameOf<TAPWebhookRequestHeader>('headerValue');
+      return (
+        <div className="sub-table">
+          <DataTable 
+            className="p-datatable-sm"
+            value={dataTableList}
+            autoLayout={true}
+            header={APDisplayWebhooksCommon.CustomHeaders.TableHeader}
+            emptyMessage={APDisplayWebhooksCommon.CustomHeaders.EmptyMessage}
+            scrollable 
+            dataKey={dataKey}  
+            sortMode='single'
+            sortField={sortField}
+            sortOrder={1}  
+          >
+            <Column header={APDisplayWebhooksCommon.CustomHeaders.ColumnHeader_HeaderName} headerStyle={{ width: "31%"}} field={dataKey} sortable />
+            <Column header={APDisplayWebhooksCommon.CustomHeaders.ColumnHeader_HeaderValue} field={valueField} bodyStyle={{ overflowWrap: 'break-word', wordWrap: 'break-word' }} />
+          </DataTable>
+        </div>
+      );
+    }
+    // @ts-ignore Type instantiation is excessively deep and possibly infinite.  TS2589
+    const dataKey = APDisplayUtils.nameOf<TManagedObject>('apEntityId.id');
+    const sortField = APDisplayUtils.nameOf<TManagedObject>('apEntityId.displayName');
+    const filterField = APDisplayUtils.nameOf<TManagedObject>('apSearchContent');
+    const methodField = APDisplayUtils.nameOf<TManagedObject>('apWebhookMethod');
+    const uriField = APDisplayUtils.nameOf<TManagedObject>('apWebhookUri');
     return (
       <div className="card">
         <DataTable
@@ -143,7 +185,11 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
           columnResizeMode="fit"
           showGridlines={false}
 
-          // header="Double-click to see the Status"
+          // if search required
+          //header={renderDataTableHeader()}
+          //         globalFilter={globalFilter}
+
+
           value={managedObjectList}
 
           selectionMode="single"
@@ -156,7 +202,12 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
           sortMode='single'
           sortField={sortField}
           sortOrder={1}
+
+          expandedRows={expandedManagedObjectDataTableRows}
+          onRowToggle={(e) => setExpandedManagedObjectDataTableRows(e.data)}
+          rowExpansionTemplate={rowExpansionTemplate}
         >
+          <Column expander style={{ width: '3em' }} />  
           <Column header="Name" body={nameBodyTemplate} filterField={filterField} sortField={sortField} sortable />
           <Column header="Environment(s)" body={environmentsBodyTemplate} />
           <Column header="Method" field={methodField} style={{ width: "6em"}} />
@@ -167,46 +218,6 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
       </div>
     );
   }
-  // const renderComponent = (): JSX.Element => {
-  //   return (
-  //     <DataTable
-  //       className="p-datatable-sm"
-  //       ref={componentDataTableRef}
-  //       dataKey="webhookEnvironmentReference.entityRef.name"
-  //       value={dataTableList}
-  //       sortMode="single" 
-  //       sortField="webhookEnvironmentReference.entityRef.displayName" 
-  //       sortOrder={1}
-  //     >
-  //       <Column 
-  //         header="Environment" 
-  //         headerStyle={{ width: '18em' }}
-  //         body={environmentsBodyTemplate} 
-  //         bodyStyle={{textAlign: 'left', overflow: 'visible', verticalAlign: 'top' }}  
-  //         sortable 
-  //         sortField="webhookEnvironmentReference.entityRef.displayName" 
-  //       />
-  //       <Column 
-  //         header="Method"
-  //         headerStyle={{ width: '7em' }}
-  //         body={methodBodyTemplate} 
-  //         bodyStyle={{verticalAlign: 'top'}} 
-  //       />
-  //       <Column 
-  //         header="URI" 
-  //         body={uriBodyTemplate} 
-  //         bodyStyle={{ verticalAlign: 'top' }} 
-  //       />
-  //       <Column 
-  //         header="Authentication" 
-  //         headerStyle={{ width: '8em' }} 
-  //         body={authenticationBodyTemplate} 
-  //         bodyStyle={{textAlign: 'left', verticalAlign: 'top' }}
-  //       />
-  //       <Column header="Status" headerStyle={{ width: '5em', textAlign: 'center' }} body={statusBodyTemplate}  bodyStyle={{textAlign: 'center' }}/>
-  //     </DataTable>
-  //   );
-  // }
 
   const renderComponent = () => {
     const funcName = 'renderComponent';
@@ -217,7 +228,7 @@ export const APDisplayAppWebhookList: React.FC<IAPDisplayAppWebhookListProps> = 
       return (
         <React.Fragment>
           <Divider />
-          {props.emptyMessage}
+          {APDisplayWebhooksCommon.WebHookList.MessageNoWebhooksFound}
           <Divider />
         </React.Fragment>
       );

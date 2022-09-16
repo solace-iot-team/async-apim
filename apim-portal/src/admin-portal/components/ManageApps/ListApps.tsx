@@ -18,7 +18,7 @@ import APAdminPortalAppsDisplayService, {
 } from "../../displayServices/APAdminPortalAppsDisplayService";
 import { E_CALL_STATE_ACTIONS } from "./ManageAppsCommon";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import APMemberOfService, { 
   TAPMemberOfBusinessGroupDisplay 
 } from "../../../displayServices/APUsersDisplayService/APMemberOfService";

@@ -4,6 +4,7 @@ import {
   WebHook,
   WebHookAuth,
   WebHookBasicAuth,
+  WebHookHeader,
   WebHookHeaderAuth,
   WebHookNameList,
   WebHookStatus
@@ -11,7 +12,6 @@ import {
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, 
-  TAPEntityId,
   TAPEntityIdList,
 } from '../../utils/APEntityIdsService';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
@@ -46,6 +46,9 @@ export type TAPDecomposedUri = {
 export type TAPWebhookStatus = WebHookStatus;
 export type TAPWebhookBasicAuth = WebHookBasicAuth;
 export type TAPWebhookHeaderAuth = WebHookHeaderAuth;
+export type TAPWebhookRequestHeader = WebHookHeader;
+export type TAPWebhookRequestHeaderList = Array<TAPWebhookRequestHeader>;
+
 /**
  * apEntityId.id = name
  * apEntityId.displayName = name
@@ -60,19 +63,13 @@ export interface IAPAppWebhookDisplay extends IAPEntityIdDisplay, IAPSearchConte
   apWebhookMode: WebHook.mode;
   apWebhookBasicAuth?: TAPWebhookBasicAuth;
   apWebhookHeaderAuth?: TAPWebhookHeaderAuth;
+  apWebhookRequestHeaderList: TAPWebhookRequestHeaderList;
 }
 export type TAPAppWebhookDisplayList = Array<IAPAppWebhookDisplay>;
 
 
 export class APAppWebhooksDisplayService {
   private readonly BaseComponentName = "APAppWebhooksDisplayService";
-
-  public nameOf<T extends IAPAppWebhookDisplay>(name: keyof T) {
-    return name;
-  }
-  public nameOf_ApEntityId(name: keyof TAPEntityId) {
-    return `${this.nameOf('apEntityId')}.${name}`;
-  }
 
   private create_ApiWebhookId = (webhookId: string): string => {
     try {
@@ -90,6 +87,33 @@ export class APAppWebhooksDisplayService {
       method: WebHook.method.POST,
       mode: WebHook.mode.SERIAL,
     }
+  }
+
+  public add_TAPWebhookRequestHeader_To_TAPWebhookRequestHeaderList({ apWebhookRequestHeader, apWebhookRequestHeaderList }: {
+    apWebhookRequestHeader: TAPWebhookRequestHeader;
+    apWebhookRequestHeaderList: TAPWebhookRequestHeaderList;
+  }): TAPWebhookRequestHeaderList {
+    apWebhookRequestHeaderList.push(apWebhookRequestHeader);
+    return apWebhookRequestHeaderList;
+  }
+  public remove_TAPWebhookRequestHeader_From_TAPWebhookRequestHeaderList({ apWebhookRequestHeader, apWebhookRequestHeaderList }: {
+    apWebhookRequestHeader: TAPWebhookRequestHeader;
+    apWebhookRequestHeaderList: TAPWebhookRequestHeaderList;
+  }): TAPWebhookRequestHeaderList {
+    const idx = apWebhookRequestHeaderList.findIndex( (x) => {
+      return x.headerName === apWebhookRequestHeader.headerName;
+    });
+    if(idx > -1) apWebhookRequestHeaderList.splice(idx, 1);
+    return apWebhookRequestHeaderList;;
+  }
+  public exists_TAPWebhookRequestHeader_In_TAPWebhookRequestHeaderList({ headerName, apWebhookRequestHeaderList }:{
+    headerName: string;
+    apWebhookRequestHeaderList: TAPWebhookRequestHeaderList;
+  }): boolean {
+    const found: TAPWebhookRequestHeader | undefined = apWebhookRequestHeaderList.find( (x) => {
+      return x.headerName === headerName;
+    });
+    return (found !== undefined);
   }
 
   public create_Empty_ApWebhookBasicAuth(): TAPWebhookBasicAuth {
@@ -119,6 +143,7 @@ export class APAppWebhooksDisplayService {
       apWebhookMethod: WebHook.method.POST,
       apWebhookMode: WebHook.mode.SERIAL,
       devel_connectorWebhook: this.create_Empty_ConnectorWebHook(),
+      apWebhookRequestHeaderList: [],
       apSearchContent: '',
     };
     return apAppWebhookDisplay;
@@ -172,6 +197,7 @@ export class APAppWebhooksDisplayService {
       apWebhookMethod: connector_WebHook.method,
       apWebhookMode: connector_WebHook.mode,
       devel_connectorWebhook: connector_WebHook,
+      apWebhookRequestHeaderList: connector_WebHook.requestHeaders ? connector_WebHook.requestHeaders : [],
       apSearchContent: '',
     };
     return APSearchContentService.add_SearchContent<IAPAppWebhookDisplay>(apAppWebhookDisplay);
@@ -204,6 +230,7 @@ export class APAppWebhooksDisplayService {
       method: apAppWebhookDisplay.apWebhookMethod,
       mode: apAppWebhookDisplay.apWebhookMode,
       authentication: auth,
+      requestHeaders: apAppWebhookDisplay.apWebhookRequestHeaderList.length > 0 ? apAppWebhookDisplay.apWebhookRequestHeaderList : undefined,
       // add if still required
       tlsOptions: undefined
     };
@@ -398,7 +425,7 @@ export class APAppWebhooksDisplayService {
       apAppWebhookDisplayList.push(apAppWebhookDisplay);
     }
 
-    // TEST downstream error handling
+    // // TEST downstream error handling
     // throw new Error(`${logName}: test error handling`);
 
     return apAppWebhookDisplayList;

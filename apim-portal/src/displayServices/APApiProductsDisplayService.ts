@@ -8,11 +8,13 @@ import {
   ClientOptions,
   ClientOptionsGuaranteedMessaging,
 } from '@solace-iot-team/apim-connector-openapi-browser';
+import { DataTableSortOrderType } from 'primereact/datatable';
 import { APClientConnectorOpenApi } from '../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { 
   IAPEntityIdDisplay, TAPEntityIdList, 
 } from '../utils/APEntityIdsService';
 import { Globals } from '../utils/Globals';
+import { EAPSApiProductSortFieldName } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APAccessLevelDisplayService from './APAccessLevelDisplayService';
 import APApisDisplayService, { 
   TAPApiChannelParameter, 
@@ -26,6 +28,7 @@ import APAttributesDisplayService, {
   TAPRawAttributeList, 
 } from './APAttributesDisplayService/APAttributesDisplayService';
 import { TAPBusinessGroupDisplayList } from './APBusinessGroupsDisplayService';
+import APDisplayUtils from './APDisplayUtils';
 import { 
   TAPEnvironmentDisplay, 
   TAPEnvironmentDisplayList 
@@ -34,16 +37,34 @@ import { TAPExternalSystemDisplayList } from './APExternalSystemsDisplayService'
 import APLifecycleStageInfoDisplayService, { IAPLifecycleStageInfo } from './APLifecycleStageInfoDisplayService';
 import { 
   APManagedAssetDisplayService, 
+  EAPManagedAssetAttribute_Scope, 
   IAPManagedAssetDisplay,
   TAPManagedAssetDisplay_AccessAndState,
   TAPManagedAssetPublishDestinationInfo,
 } from './APManagedAssetDisplayService';
 import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayService';
+import { IAPSystemOrganizationDisplay } from './APOrganizationsDisplayService/APSystemOrganizationsDisplayService';
 import APProtocolsDisplayService, { 
   TAPProtocolDisplayList 
 } from './APProtocolsDisplayService';
 import APVersioningDisplayService, { IAPVersionInfo } from './APVersioningDisplayService';
 
+export type TAPApiProductDisplay_LazyLoadingTableParameters = {
+  isInitialSetting: boolean; // differentiate between first time and subsequent times
+  first: number; // index of the first row to be displayed
+  rows: number; // number of rows to display per page
+  page: number;
+  // sortField: (keyof APSUser | keyof APSUserProfile);
+  sortField: string;
+  sortOrder: DataTableSortOrderType;
+}
+export type TAPApiProductDisplay_ListOptions = {
+  pageNumber: number;
+  pageSize: number;
+  sortFieldName: string;
+  sortDirection: DataTableSortOrderType;
+  searchWordList: string | undefined;
+}
 export type TAPControlledChannelParameter = IAPAttributeDisplay;
 export type TAPControlledChannelParameterList = Array<TAPControlledChannelParameter>;
 export enum EAPApprovalType {
@@ -96,9 +117,45 @@ export type TAPApiProductDocumentationDisplay = {
   apSupportDocumentation?: string;
   apReferenceDocumentation?: string;
 }
+export enum ETAPApiProductConfigState_IssueType {
+  NO_ENVIRONMENTS_CONFIGURED = "No Environments configured",
+  NO_PROTOCOLS_CONFIGURED = "No Protocols configured",
+  NO_APIS_CONFIGURED = "No Apis configured",
+}
+export type TAPApiProductConfigState_Issue = {
+  issueType: ETAPApiProductConfigState_IssueType;
+}
+export type TAPApiProductConfigState_IssueList = Array<TAPApiProductConfigState_Issue>;
+export type TAPApiProductConfigState = {
+  apIsConfigComplete: boolean;
+  issueList: TAPApiProductConfigState_IssueList;
+}
+export enum E_ApApiProductSource {
+  UNKNOWN ="unknown source",
+  MANUAL = "manually created",
+  EP2 = "Solace Event Portal"
+}
+export interface IEpEventApiProductVersionObject {
+  id: string;
+  eventApiProductId: string;
+  parent: {
+    applicationDomainId: string;
+  },
+}
+export interface IEpEventApiProductObject {
+  // product: any;
+  version: IEpEventApiProductVersionObject;
+}
 export interface IAPApiProductDisplay extends IAPManagedAssetDisplay {
   // keep for devel purposes only
   devel_connectorApiProduct: APIProduct;
+
+  // housekeeping
+  apApiProductConfigState: TAPApiProductConfigState;
+  apApiProductSource: E_ApApiProductSource;
+
+  // optional source info
+  apEpEventApiProductObject?: IEpEventApiProductObject;
 
   // General
   apDescription: string;
@@ -249,6 +306,11 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
       devel_connectorApiProduct: this.create_Empty_ConnectorApiProduct(),
 
+      apApiProductConfigState: {
+        apIsConfigComplete: false,
+        issueList: []
+      },
+      apApiProductSource: E_ApApiProductSource.UNKNOWN,
       apDescription: '',
       apApiProductDocumentationDisplay: {
         apSupportDocumentation: '',
@@ -306,6 +368,111 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     return apRawAttributeList;
   }
 
+  protected map_APApiProductDisplaySortFieldName_To_APSApiProductSortFieldName({ apApiProductDisplay_SortFieldName }:{
+    apApiProductDisplay_SortFieldName: string;
+  }): EAPSApiProductSortFieldName {
+    const funcName = 'map_APApiProductDisplaySortFieldName_To_APSApiProductSortFieldName';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    switch(apApiProductDisplay_SortFieldName) {
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apEntityId.displayName'):
+        return EAPSApiProductSortFieldName.DISPLAY_NAME;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apLifecycleStageInfo.stage'):
+        return EAPSApiProductSortFieldName.STAGE;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apBusinessGroupInfo.apOwningBusinessGroupEntityId.displayName'):
+        return EAPSApiProductSortFieldName.OWNING_BUSINESS_GROUP_DISPLAY_NAME;
+      case APDisplayUtils.nameOf<IAPApiProductDisplay>('apApiProductSource'):
+        return EAPSApiProductSortFieldName.SOURCE;
+      default:
+        throw new Error(`${logName}: cannot map apApiProductDisplay_SortFieldName=${apApiProductDisplay_SortFieldName} to EAPSApiProductSortFieldName=${JSON.stringify(Object.values(EAPSApiProductSortFieldName))}`);
+    }
+  }
+
+  protected determine_ApApiProductConfigState( connectorApiProduct: APIProduct ): TAPApiProductConfigState {
+    const apApiProductConfigState: TAPApiProductConfigState = {
+      apIsConfigComplete: true,
+      issueList: []
+    };
+    // check if it has environments
+    if(connectorApiProduct.environments.length === 0) {
+      apApiProductConfigState.issueList.push({
+        issueType: ETAPApiProductConfigState_IssueType.NO_ENVIRONMENTS_CONFIGURED,
+      });
+    }
+    // check if it has protocols
+    if(connectorApiProduct.protocols.length === 0) {
+      apApiProductConfigState.issueList.push({
+        issueType: ETAPApiProductConfigState_IssueType.NO_PROTOCOLS_CONFIGURED,
+      });
+    }
+    // check if it has apis
+    if(connectorApiProduct.apis.length === 0) {
+      apApiProductConfigState.issueList.push({
+        issueType: ETAPApiProductConfigState_IssueType.NO_APIS_CONFIGURED,
+      });
+    }
+    if(apApiProductConfigState.issueList.length > 0) apApiProductConfigState.apIsConfigComplete = false;
+    return apApiProductConfigState;
+  }
+
+  protected determine_ApApiProductSource(apConnector_ApAttributeDisplayList: TAPAttributeDisplayList): E_ApApiProductSource {
+    // const funcName = 'determine_ApApiProductSource';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // console.log(`${logName}: apConnector_ApAttributeDisplayList=${JSON.stringify(apConnector_ApAttributeDisplayList, null, 2)}`);
+    const apApiProductSourceAttributeList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.SOURCE }),
+      apAttributeDisplayList: apConnector_ApAttributeDisplayList
+    });
+    if(apApiProductSourceAttributeList.length === 0) return E_ApApiProductSource.MANUAL;
+    const value = apApiProductSourceAttributeList[0].value;
+    // alert(`${logName}: value = ${value}`);
+    if(value.includes(E_ApApiProductSource.EP2)) return E_ApApiProductSource.EP2;
+    return E_ApApiProductSource.MANUAL;
+  }
+  private create_EpEventApiProductObject(apConnector_ApAttributeDisplayList: TAPAttributeDisplayList): IEpEventApiProductObject | undefined {
+    const funcName = 'create_EpEventApiProductObject';
+    const logName = `${this.MiddleComponentName}.${funcName}()`;
+    // console.log(`${logName}: apConnector_ApAttributeDisplayList=${JSON.stringify(apConnector_ApAttributeDisplayList, null, 2)}`);
+    const apEpEventApiProductObjectAttributeList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Name({ scope: EAPManagedAssetAttribute_Scope.EAP_OBJECT }),
+      apAttributeDisplayList: apConnector_ApAttributeDisplayList
+    });
+    if(apEpEventApiProductObjectAttributeList.length === 0) return undefined;
+    const value = apEpEventApiProductObjectAttributeList[0].value;
+    try {
+      const epEventApiProductObject: IEpEventApiProductObject = JSON.parse(value);
+      if(epEventApiProductObject.version === undefined) throw new Error(`${logName}: epEventApiProductObject.version === undefined`);
+      else {
+        if(epEventApiProductObject.version.id === undefined) throw new Error(`${logName}: epEventApiProductObject.version.id === undefined`);
+        if(epEventApiProductObject.version.eventApiProductId === undefined) throw new Error(`${logName}: epEventApiProductObject.version.eventApiProductId === undefined`);
+        if(epEventApiProductObject.version.parent === undefined) throw new Error(`${logName}: epEventApiProductObject.version.parent === undefined`);
+        if(epEventApiProductObject.version.parent.applicationDomainId === undefined) throw new Error(`${logName}: epEventApiProductObject.version.applicationDomainId === undefined`);
+      }
+      // console.log(`${logName}: epEventApiProductObject=${JSON.stringify(epEventApiProductObject, null, 2)}`);
+      return epEventApiProductObject;
+    } catch(e) {
+      console.log(`${logName}: error parsing attribute value, error=${e}, \napEpEventApiProductObjectAttributeList=\n${JSON.stringify(apEpEventApiProductObjectAttributeList, null, 2)}`);
+      return undefined;
+    }
+  }
+  public get_DeepLink({apApiProductDisplay, apSystemOrganizationDisplay }:{
+    apApiProductDisplay: IAPApiProductDisplay;
+    apSystemOrganizationDisplay: IAPSystemOrganizationDisplay;
+  }): string | undefined {
+    // const funcName = 'get_DeepLink';
+    // const logName = `${this.MiddleComponentName}.${funcName}()`;
+    if(apApiProductDisplay.apEpEventApiProductObject === undefined) return undefined;
+    let eventPortalApiBaseUrl: string = apSystemOrganizationDisplay.apEventPortalConnectivityConfig.baseUrl;
+    // create the console url from it
+    // "baseUrl": "https://api.solace.cloud/api/v0/eventPortal" ==> https://console.solace.cloud
+    let consoleBaseUrlString: string = "https://console.solace.cloud";
+    // total hack: "baseUrl": "https://ian-dev-api.mymaas.net" ==> "https://ian-dev-console.mymaas.net" 
+    if(eventPortalApiBaseUrl.includes('ian-dev-api.mymaas.net')) consoleBaseUrlString = "https://ian-dev-console.mymaas.net";
+    // ep/designer/domains/nr3628na5ta/eventApiProducts/f7czd8hj4wk?domainName=Bricks+and+Mortar&selectedVersionId=higb683u5rz
+    const search = `selectedVersionId=${apApiProductDisplay.apEpEventApiProductObject?.version?.id}`;
+    const deepLink: URL = new URL(`ep/designer/domains/${apApiProductDisplay.apEpEventApiProductObject?.version?.parent?.applicationDomainId}/eventApiProducts/${apApiProductDisplay.apEpEventApiProductObject?.version?.eventApiProductId}?${search}`, consoleBaseUrlString);
+    // console.log(`${logName}: deepLink=${deepLink.toString()}`);
+    return deepLink.toString();
+  }
   protected async create_ApApiProductDisplay4List_From_ApiEntities({ 
     connectorApiProduct, 
     connectorRevisions,
@@ -342,6 +509,12 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
       devel_connectorApiProduct: connectorApiProduct,
 
+      apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
+
+      apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
+
+      apEpEventApiProductObject: this.create_EpEventApiProductObject(_base.apConnector_ApAttributeDisplayList),
+
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
 
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
@@ -355,7 +528,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -439,6 +612,9 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       ..._base,
 
       devel_connectorApiProduct: connectorApiProduct,
+      apApiProductConfigState: this.determine_ApApiProductConfigState(connectorApiProduct),
+      apApiProductSource: this.determine_ApApiProductSource(_base.apConnector_ApAttributeDisplayList),
+      apEpEventApiProductObject: this.create_EpEventApiProductObject(_base.apConnector_ApAttributeDisplayList),
       apApiProductDocumentationDisplay: this.create_ApApiProductDocumentation(connectorApiProduct),
       apApprovalType: this.create_ApApprovalType(connectorApiProduct.approvalType),
       apClientOptionsDisplay: this.create_ApClientOptionsDisplay(connectorApiProduct.clientOptions),
@@ -455,7 +631,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
         connectorRevisionList: connectorRevisions,
         currentVersion: currentVersion,
        }),
-       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_ManagedAssetAttribute_Prefix() }),
+       apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
        apAccessLevel: (connectorApiProduct.accessLevel ? connectorApiProduct.accessLevel : APAccessLevelDisplayService.get_Default_AccessLevel()),
        apLifecycleStageInfo: APLifecycleStageInfoDisplayService.create_ApLifecycleStageInfo_From_ApiEntities({ connectorMeta: connectorApiProduct.meta }),
     };
@@ -727,7 +903,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
   // API calls
   // ********************************************************************************************************************************
 
-  private filter_ConnectorApiProduct = ({ connectorApiProduct }:{
+  protected clean_ConnectorApiProduct = ({ connectorApiProduct }:{
     connectorApiProduct: APIProduct;
   }): APIProduct => {
     const filteredAttributes: attributes = connectorApiProduct.attributes.filter( (x) => {
@@ -758,7 +934,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
     // meta and object
     for(const connectorApiProduct of connectorApiProductList) {
 
-      this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+      this.clean_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
 
     }
     return connectorApiProductList;
@@ -775,7 +951,7 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
       apiProductName: apiProductId
     });
 
-    return this.filter_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
+    return this.clean_ConnectorApiProduct({ connectorApiProduct: connectorApiProduct });
   }
 
   public async apiCheck_ApApiProductDisplay_Exists({ organizationId, apiProductId }: {
@@ -810,7 +986,45 @@ export abstract class APApiProductsDisplayService extends APManagedAssetDisplayS
 
     return connectorApiProductList;
   }
-  
+
+  // /**
+  //  * Use APS Api instead of connector API.
+  //  * @param param0 
+  //  * @returns 
+  //  */
+  // protected apsGetList_ListAPSApiProductsResponse = async({ organizationId, businessGroupIdList, accessLevelList, exclude_ApiProductIdList, apiProductIdList }: {
+  //   organizationId: string;
+  //   businessGroupIdList: Array<string>;
+  //   accessLevelList?: Array<APIProductAccessLevel>;
+  //   exclude_ApiProductIdList?: Array<string>;
+  //   apiProductIdList?: Array<string>;
+
+  // }): Promise<ListAPSApiProductsResponse> => {
+  //   const funcName = 'apsGetFilteredList_ConnectorApiProduct';
+  //   const logName = `${this.MiddleComponentName}.${funcName}()`;
+
+  //   const listAPSApiProductsResponse: ListAPSApiProductsResponse = await ApsApiProductsService.listApsApiProducts({
+  //     organizationId: organizationId,
+  //     businessGroupIdList: businessGroupIdList,
+  //     accessLevelList: accessLevelList,
+  //     excludeApiProductIdList: exclude_ApiProductIdList,
+  //     apiProductIdList: apiProductIdList,
+  //     pageNumber: 1,
+  //     pageSize: 100,
+  //     searchWordList: 'one two three',
+  //     sortDirection: EAPSSortDirection.ASC,
+  //     sortFieldName: 'sortFieldName',
+  //   });
+  //   // console.log(`${logName}: listAPSApiProductsResponse=${JSON.stringify(listAPSApiProductsResponse, null, 2)}`);
+  //   // const list: APSApiProductResponseList = listAPSApiProductsResponse.list;
+  //   // const cleanConnectorApiProductList: Array<APIProduct> = [];
+  //   // for(const apsApiProductResponse of list) {
+  //   //   const connectorApiProduct: APIProduct = this.filter_ConnectorApiProduct( { connectorApiProduct: apsApiProductResponse.connectorApiProduct });
+  //   //   connectorApiProductList.push(connectorApiProduct);
+  //   // }
+  //   return listAPSApiProductsResponse;
+  // }
+
   protected apiGetFilteredList_ConnectorApiProduct = async({ organizationId, businessGroupIdList, includeAccessLevelList, exclude_ApiProductIdList }: {
     organizationId: string;
     businessGroupIdList: Array<string>;

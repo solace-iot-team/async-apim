@@ -13,7 +13,7 @@ import {
   ListApsConnectorsResponse 
 } from "../../../_generated/@solace-iot-team/apim-server-openapi-browser";
 
-import { ConfigContext } from "../../../components/ConfigContextProvider/ConfigContextProvider";
+import { ConfigContext } from "../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { ApiCallState, TApiCallState } from "../../../utils/ApiCallState";
 import { APSClientOpenApi } from "../../../utils/APSClientOpenApi";
 import { APConnectorHealthCheck, TAPConnectorHealthCheckResult } from "../../../utils/APHealthCheck";
@@ -144,34 +144,22 @@ export const ListConnectors: React.FC<IListConnectorsProps> = (props: IListConne
       </div>
     );
   }
-  // const actionBodyTemplate = (managedObject: TManagedObject) => {
-  //   return (
-  //       <React.Fragment>
-  //         <Button tooltip="edit" icon="pi pi-pencil" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectEdit(managedObject.id, managedObject.displayName)}  />
-  //         {/* {!managedObject.apsConnector.isActive &&  */}
-  //           <Button tooltip="delete" icon="pi pi-trash" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onManagedObjectDelete(managedObject.id, managedObject.displayName)} />
-  //         {/* } */}
-  //         <Button tooltip="test" icon="pi pi-fast-forward" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onTestConnector(managedObject.id, managedObject.displayName)} />
-  //         {!managedObject.apsConnector.isActive && 
-  //           <Button tooltip="set to active" icon="pi pi-check" className="p-button-rounded p-button-outlined p-button-secondary p-mr-2" onClick={() => props.onSetConnectorActive(managedObject.id, managedObject.displayName)} />
-  //         }
-  //       </React.Fragment>
-  //   );
-  // }
-
   const infoBodyTemplate = (managedObject: TManagedObject) => {
-    let EventPortalIsProxyMode: string = '?';
+    // let EventPortalIsProxyMode: string = '?';
+    let EventPortalVersion: string = '?';
     let ConnectorVersion: string = '?';
     let ConnectorOpenApiVersion: string = '?';
     if(managedObject.apConnectorInfo) {
       const portalAbout = managedObject.apConnectorInfo.connectorAbout.portalAbout;
-      EventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      // EventPortalIsProxyMode = portalAbout.isEventPortalApisProxyMode ? 'ON' : 'OFF';
+      EventPortalVersion = portalAbout.eventPortalVersion === '1' ? 'EP 1.0' : 'EP 2.0';
       if(portalAbout.connectorServerVersionStr) ConnectorVersion = portalAbout.connectorServerVersionStr; 
       if(portalAbout.connectorOpenApiVersionStr) ConnectorOpenApiVersion = portalAbout.connectorOpenApiVersionStr; 
     }
     return (
       <div>
-        <div>EventPortal:Event API Products proxy: {EventPortalIsProxyMode}</div>
+        {/* <div>EventPortal:Event API Products proxy: {EventPortalIsProxyMode}</div> */}
+        <div>Event Portal Vesion: {EventPortalVersion}</div>
         <div>Connector Version: {ConnectorVersion}</div>
         <div>API Version: {ConnectorOpenApiVersion}</div>
       </div>

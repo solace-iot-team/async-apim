@@ -21,13 +21,15 @@ import APAdminPortalApiProductsDisplayService, {
 import { DeleteApiProduct } from "./DeleteApiProduct";
 import { ManageEditNewApiProduct } from "./EditNewApiProduct/ManageEditNewApiProduct";
 import { UserContext } from "../../../components/APContextProviders/APUserContextProvider";
-import { AuthContext } from "../../../components/AuthContextProvider/AuthContextProvider";
+import { AuthContext } from "../../../components/APContextProviders/AuthContextProvider";
 import { ManageEditApiProduct } from "./EditNewApiProduct/ManageEditApiProduct";
 import { ManagePublishApiProduct } from "./ManagePublish/ManagePublishApiProduct";
 import { ManageCloneApiProduct } from "./ManageClone/ManageCloneApiProduct";
 import { ApiCallStatusError } from "../../../components/ApiCallStatusError/ApiCallStatusError";
 import { E_AP_Navigation_Scope, TAPPageNavigationInfo } from "../../../displayServices/APPageNavigationDisplayUtils";
 import { E_DISPLAY_ADMIN_PORTAL_API_PRODUCT_SCOPE } from "./DisplayApiProduct";
+import { APOperationMode, E_AP_OPS_MODE } from "../../../utils/APOperationMode";
+import { EUIAdminPortalResourcePaths } from "../../../utils/Globals";
 
 import '../../../components/APComponents.css';
 import "./ManageApiProducts.css";
@@ -91,8 +93,12 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   const [refreshCounter, setRefreshCounter] = React.useState<number>(0);
   const [breadCrumbItemList, setBreadCrumbItemList] = React.useState<Array<MenuItem>>([]);
 
+  const history = useHistory();
+  const navigateHome = (): void => { history.push(EUIAdminPortalResourcePaths.UserHome); }
+
   // * useEffect Hooks *
   React.useEffect(() => {
+    if(!APOperationMode.showApiProductsMenuItem()) navigateHome();
     if(props.apPageNavigationInfo === undefined) setNewComponentState(E_COMPONENT_STATE.MANAGED_OBJECT_LIST_VIEW);
     else {
       // alert(`${ComponentName}: view ${JSON.stringify(props.apiProductEntityId)}`);
@@ -129,7 +135,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
   }
   // * Changed object *
@@ -138,7 +145,8 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       apAdminPortalApiProductDisplay: apAdminPortalApiProductDisplay,
       authorizedResourcePathAsString: authContext.authorizedResourcePathsAsString,
       userId: userContext.apLoginUserDisplay.apEntityId.id,
-      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id
+      userBusinessGroupId: userContext.runtimeSettings.currentBusinessGroupEntityId?.id,
+      apOperationsMode: APOperationMode.AP_OPERATIONS_MODE
     }));
     setRefreshCounter(refreshCounter + 1);
   }
@@ -230,9 +238,14 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   // * Toolbar *
   const renderLeftToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    const showNewButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
+    const showCloneButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
+    const showEditButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showListComponent) return (
       <React.Fragment>
-        <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        {showNewButton &&
+          <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+        }
       </React.Fragment>
     );
     if(showViewComponent) {
@@ -245,20 +258,27 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
       } else {
         return (
           <React.Fragment>
-            <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
-            <Button 
-              label={ToolbarCloneManagedObjectButtonLabel} 
-              icon="pi pi-plus" 
-              onClick={onCloneManagedObjectFromToolbar} 
-              className="p-button-text p-button-plain p-button-outlined"
-            />   
-            <Button 
+            {showNewButton &&
+              <Button label={ToolbarNewManagedObjectButtonLabel} icon="pi pi-plus" onClick={onNewManagedObject} className="p-button-text p-button-plain p-button-outlined"/>
+            }
+            {showCloneButton &&
+              <Button 
+                label={ToolbarCloneManagedObjectButtonLabel} 
+                icon="pi pi-plus" 
+                onClick={onCloneManagedObjectFromToolbar} 
+                className="p-button-text p-button-plain p-button-outlined"
+                disabled={!managedObject_AllowedActions.isCloneAllowed}
+              />   
+            }
+            { showEditButton &&
+              <Button 
               label={ToolbarEditManagedObjectButtonLabel} 
               icon="pi pi-pencil" 
               onClick={onEditManagedObjectFromToolbar} 
               className="p-button-text p-button-plain p-button-outlined"
               disabled={!managedObject_AllowedActions.isEditAllowed}
             />   
+            }
             {/* <Button 
               label={ToolbarPublishManagedObjectButtonLabel} 
               icon="pi pi-pencil" 
@@ -276,18 +296,21 @@ export const ManageApiProducts: React.FC<IManageApiProductsProps> = (props: IMan
   }
   const renderRightToolbarContent = (): JSX.Element | undefined => {
     if(componentState.currentState === E_COMPONENT_STATE.UNDEFINED) return undefined;
+    const showDeleteButton: boolean = (APOperationMode.AP_OPERATIONS_MODE === E_AP_OPS_MODE.FULL_OPS_MODE);
     if(showViewComponent) {
       if(props.apPageNavigationInfo === undefined) {
         return (
           <React.Fragment>
-            <Button 
-              label={ToolbarDeleteManagedObjectButtonLabel} 
-              icon="pi pi-trash" 
-              onClick={onDeleteManagedObjectFromToolbar} 
-              className="p-button-text p-button-plain p-button-outlined" 
-              disabled={!managedObject_AllowedActions.isDeleteAllowed} 
-              style={{ color: "red", borderColor: 'red'}} 
-            />        
+            {showDeleteButton &&
+              <Button 
+                label={ToolbarDeleteManagedObjectButtonLabel} 
+                icon="pi pi-trash" 
+                onClick={onDeleteManagedObjectFromToolbar} 
+                className="p-button-text p-button-plain p-button-outlined" 
+                disabled={!managedObject_AllowedActions.isDeleteAllowed} 
+                style={{ color: "red", borderColor: 'red'}} 
+              />        
+            }
           </React.Fragment>
         );
       }

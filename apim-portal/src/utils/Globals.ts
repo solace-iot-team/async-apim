@@ -6,9 +6,10 @@ import {
   APSAbout 
 } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
 
-import { TAPConfigContext } from "../components/ConfigContextProvider/ConfigContextProvider";
+import { TAPConfigContext } from "../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 import { APConnectorClientOpenApiInfo } from "./APClientConnectorOpenApi";
 import { APSClientOpenApiInfo } from "./APSClientOpenApi";
+import { About } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export type TAPPortalAppAbout = {
   name: string;
@@ -33,6 +34,7 @@ export type TAPPortalAppInfo = {
   connectorClientOpenApiInfo: APConnectorClientOpenApiInfo;
   portalAppServerClientOpenApiInfo: APSClientOpenApiInfo;
   adminPortalAppAbout?: TAPPortalAppAbout;
+  eventPortalVersion: About.EVENT_PORTAL_VERSION;
 }
 export enum EAPConfigIssueNames {
   CONNECTOR_OPENAPI_VERSION_MISMATCH = 'CONNECTOR_OPENAPI_VERSION_MISMATCH',
@@ -71,24 +73,25 @@ export enum EUICommonResourcePaths {
 export enum EUIAdminPortalResourcePaths {
   Home = '/admin-portal',
   UserHome = '/admin-portal/user/home',
-  // deleteme_LoginAs = '/admin-portal/loginas',
   
-  // DELETEME_ManageOrganizationApps = '/admin-portal/manage/apim/organization/deleteme-apps',
-
+  // apps
   ManageOrganizationApps = '/admin-portal/manage/apim/organization/apps',
   ManageOrganizationApps_AllOrganizationApps = '/admin-portal/manage/apim/organization/apps/all_organization_apps',
+  // api products
   ManageOrganizationApiProducts = '/admin-portal/manage/apim/organization/apiproducts',
   ManageOrganizationApiProducts_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apiproducts/edit_owningBusinessGroup',
   ManageOrganizationApiProducts_Edit = '/admin-portal/manage/apim/organization/apiproducts/edit',
   ManageOrganizationApiProducts_View = '/admin-portal/manage/apim/organization/apiproducts/view',
   ManageOrganizationApiProducts_Delete = '/admin-portal/manage/apim/organization/apiproducts/delete',
   ManageOrganizationApiProducts_Recover = '/admin-portal/manage/apim/organization/apiproducts/recover',
-
+  // apis
   ManageOrganizationApis = '/admin-portal/manage/apim/organization/apis',
   ManageOrganizationApis_Edit_OwningBusinessGroup = '/admin-portal/manage/apim/organization/apis/edit_owningBusinessGroup',
-  
-  // deleteme_ManageOrganizationApis = '/admin-portal/manage/apim/organization/deleteme_apis',
-
+  ManageOrganizationApis_Edit = '/admin-portal/manage/apim/organization/apis/edit',
+  ManageOrganizationApis_View = '/admin-portal/manage/apim/organization/apis/view',
+  ManageOrganizationApis_Delete = '/admin-portal/manage/apim/organization/apis/delete',
+  ManageOrganizationApis_Recover = '/admin-portal/manage/apim/organization/apis/recover',
+  // business group
   ManageBusinessGroup = '/admin-porta/manage/business-group',
 
   ManageOrganization = '/admin-portal/manage/organization',
@@ -96,9 +99,10 @@ export enum EUIAdminPortalResourcePaths {
   ManageOrganizationBusinessGroups = '/admin-portal/manage/organization/businessgroups',
   ManageOrganizationEnvironments = '/admin-portal/manage/organization/environments',
   ManageOrganizationSettings = '/admin-portal/manage/organization/settings',
-  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
   ManageOrganizationIntegration ='/admin-portal/manage/organization/integration',
   ManageOrganizationIntegrationExternalSystems = '/admin-portal/manage/organization/integration/externalsystems',
+  MonitorOrganizationStatus = '/admin-portal/monitor/organization/status',
+  MonitorOrganizationJobs = '/admin-portal/monitor/organization/jobs',
 
   ManageOrganizationAssetMaintenance ='/admin-portal/manage/organization/asset_maintenance',
   ManageOrganizationAssetMaintenanceApiProducts = '/admin-portal/manage/organization/asset_maintenance/apiproducts',
@@ -154,9 +158,11 @@ export class Globals {
     window.location.href = Globals.AppUrl;
   }
 
-  public static openUrlInNewTab = (url: string) => {
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    if(newWindow) newWindow.opener = null;
+  public static openUrlInTab = (url: string, target: string) => {
+    // const newWindow = window.open(url, target ? target : '_blank', 'noopener,noreferrer');
+    // const newWindow = window.open(url, target ? target : '_blank');
+    // if(newWindow) newWindow.opener = null;
+    window.open(url, target ? target : '_blank');
   }
 
   public static assertNever = (extLogName: string, x: never): never => {
