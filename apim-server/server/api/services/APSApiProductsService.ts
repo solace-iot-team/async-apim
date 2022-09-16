@@ -30,10 +30,10 @@ type TApiProductSearchableInfo = {
 
 // *******************************************************************************************
 // TODO: into the API
-enum EAPSBusinessGroupSharing_AccessType {
-  READONLY = "readonly",
-  FULL_ACCESS = "full-access",
-}
+// enum EAPSBusinessGroupSharing_AccessType {
+//   READONLY = "readonly",
+//   FULL_ACCESS = "full-access",
+// }
 
 interface IAPSEntityId {
   id: string;
@@ -74,8 +74,8 @@ export class APSApiProductsService {
   private readonly ApiProductAttribute_Source_Name: string = "_AC_IMP_SOURCE_";
   private readonly ApiProductAttribute_Source_Value_EventPortal_2 = "Solace Event Portal";
 
-  constructor() {
-  }
+  // constructor() {
+  // }
 
   public initialize = async() => {
     const funcName = 'initialize';
@@ -91,9 +91,9 @@ export class APSApiProductsService {
    * @param result 
    * @returns result
    */
-  private generateSearchContentString = (source: any, result: string = ''): string => {
-    const funcName = 'generateSearchContentString';
-    const logName = `${APSApiProductsService.name}.${funcName}()`;
+  private generateSearchContentString = (source: any, result = ''): string => {
+    // const funcName = 'generateSearchContentString';
+    // const logName = `${APSApiProductsService.name}.${funcName}()`;
     const isObject = (obj:any ) => obj && typeof obj === 'object' && !Array.isArray(obj);
     const isArray = (obj:any) => obj && Array.isArray(obj) && typeof obj !== 'string';
     const isString = (obj:any) => obj && typeof obj === 'string';
@@ -268,8 +268,8 @@ export class APSApiProductsService {
     sortFieldName?: EAPSApiProductSortFieldName;
     sortDirection?: EAPSSortDirection;
   }): Array<IAPSApiProduct> {
-    const funcName = 'sort_ApsApiProductListList';
-    const logName = `${APSApiProductsService.name}.${funcName}()`;  
+    // const funcName = 'sort_ApsApiProductListList';
+    // const logName = `${APSApiProductsService.name}.${funcName}()`;  
     const getValueByFieldName = (apsApiProduct: IAPSApiProduct, sortFieldName: EAPSApiProductSortFieldName): string => {
       const funcName = 'sort_ApsApiProductListList().getValueByFieldName';
       const logName = `${APSApiProductsService.name}.${funcName}()`;  

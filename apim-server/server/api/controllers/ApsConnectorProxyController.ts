@@ -7,7 +7,6 @@ import { APSSessionUser } from '../services/APSSessionService';
 import APSAuthStrategyService, { TTokenPayload_AccountType } from '../../common/authstrategies/APSAuthStrategyService';
 import ServerConfig from '../../common/ServerConfig';
 import { ConnectorProxyError } from '../../common/ServerError';
-import { Socket } from 'net';
 
 // const connectorResponseCallback: ProxyResCallback = (
 //   proxyRes: http.IncomingMessage,
@@ -93,8 +92,8 @@ export class ApsConnectorProxyController {
   };
 
   public static all = (req: Request, res: Response, next: NextFunction): void => {
-    const funcName = 'all';
-    const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
+    // const funcName = 'all';
+    // const logName = `${ApsConnectorProxyController.name}.${funcName}()`;
     // // DEBUG
     // ServerLogger.error(ServerLogger.createLogEntry(logName, { code: EServerStatusCodes.CONNECTOR_PROXY, message: 'request', details: {
     //   req_method: req.method,

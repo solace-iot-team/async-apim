@@ -9,7 +9,6 @@ import {
 } from '../../src/@solace-iot-team/apim-server-openapi-node';
 import APSAuthStrategyService from './authstrategies/APSAuthStrategyService';
 import APSServiceAccountsService from '../api/services/apsAdministration/APSServiceAccountsService';
-import { APSSessionUser } from '../api/services/APSSessionService';
 
 /**
  * Always goes through the proxy, so we have transaction logging

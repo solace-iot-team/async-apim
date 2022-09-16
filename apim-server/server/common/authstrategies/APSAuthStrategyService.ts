@@ -9,8 +9,7 @@ import APSPassportFactory from "./APSPassportFactory";
 import passport, { AuthenticateOptions } from "passport";
 import { EServerStatusCodes, ServerLogger } from "../ServerLogger";
 import { APSSessionUser } from "../../api/services/APSSessionService";
-import { APSOrganization, APSOrganizationList, APSServiceAccount, ListAPSApiProductsResponse, ListAPSOrganizationResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node";
-import APSOrganizationsService from "../../api/services/apsAdministration/APSOrganizationsService";
+import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
 
 export enum ERegisteredStrategyName {
   INTERNAL_LOCAL = "internal_local",

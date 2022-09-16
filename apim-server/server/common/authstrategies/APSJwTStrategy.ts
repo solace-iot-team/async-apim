@@ -10,8 +10,7 @@ import { ApiNotAuthorizedServerError, ServerError } from "../ServerError";
 import APSSessionService, { APSSessionUser } from "../../api/services/APSSessionService";
 import { ServerUtils } from "../ServerUtils";
 import APSServiceAccountsService from "../../api/services/apsAdministration/APSServiceAccountsService";
-import { APSOrganization, APSServiceAccount, ListAPSOrganizationResponse } from "../../../src/@solace-iot-team/apim-server-openapi-node";
-import APSOrganizationsService from "../../api/services/apsAdministration/APSOrganizationsService";
+import { APSServiceAccount } from "../../../src/@solace-iot-team/apim-server-openapi-node";
 import { ConnectorClient } from "../ConnectorClient";
 
 

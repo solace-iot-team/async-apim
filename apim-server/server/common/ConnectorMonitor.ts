@@ -1,5 +1,5 @@
 import { EServerStatusCodes, ServerLogger } from "./ServerLogger";
-import { ConfigNoActiveConnectorServerError, ConnectorProxyError } from "./ServerError";
+import { ConnectorProxyError } from "./ServerError";
 import { APSConnectorStatus } from "../../src/@solace-iot-team/apim-server-openapi-node";
 import APSConnectorsService from "../api/services/apsConfig/APSConnectorsService";
 import ServerConfig from "./ServerConfig";
