@@ -28,7 +28,7 @@ import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from '
 import APVersioningDisplayService, { IAPVersionInfo } from '../../displayServices/APVersioningDisplayService';
 import { APClientConnectorOpenApi } from '../../utils/APClientConnectorOpenApi';
 import APEntityIdsService, { TAPEntityId, TAPEntityIdList } from '../../utils/APEntityIdsService';
-import { E_AP_OPS_MODE } from '../../utils/APOperationMode';
+import { APOperationMode, E_AP_OPS_MODE } from '../../utils/APOperationMode';
 import APSearchContentService, { IAPSearchContent } from '../../utils/APSearchContentService';
 import { EUIAdminPortalResourcePaths, Globals } from '../../utils/Globals';
 import { APSApiProductResponseList, ApsApiProductsService, APSListResponseMeta, EAPSOrganizationAuthRole, ListAPSApiProductsResponse } from '../../_generated/@solace-iot-team/apim-server-openapi-browser';
@@ -155,7 +155,7 @@ class APAdminPortalApiProductsDisplayService extends APApiProductsDisplayService
         break;
       case E_ApApiProductSource.EP2:
         allowedActions.isDeleteAllowed = false;
-        allowedActions.isEditAllowed = false;
+        allowedActions.isEditAllowed = APOperationMode.isEditAllowed_For_EpApiProduct();
         allowedActions.isCloneAllowed = false;
         allowedActions.isManagePublishAllowed = false;
         break;
