@@ -57,6 +57,7 @@ EAPManagedAssetAttribute_BusinessGroup_Tag
 export type TAPManagedAssetDisplay_Attributes = IAPEntityIdDisplay & {
   apExternal_ApAttributeDisplayList: TAPAttributeDisplayList;
   apCustom_ApAttributeDisplayList: TAPAttributeDisplayList;
+  apMeta_ApAttributeDisplayList: TAPAttributeDisplayList;
 }
 export enum E_ManagedAssetDisplay_BusinessGroupSharing_AccessType {
   READONLY = "readonly",
@@ -392,10 +393,11 @@ export abstract class APManagedAssetDisplayService {
   /**
    * Create a managed asset display object.
    */
-  protected create_ApManagedAssetDisplay_From_ApiEntities({ id, displayName, apRawAttributeList, default_ownerId, complete_ApBusinessGroupDisplayList, complete_ApExternalSystemDisplayList }: {
+  protected create_ApManagedAssetDisplay_From_ApiEntities({ id, displayName, apVersionRawAttributeList, apMetaRawAttributeList, default_ownerId, complete_ApBusinessGroupDisplayList, complete_ApExternalSystemDisplayList }: {
     id: string;
     displayName: string;
-    apRawAttributeList: TAPRawAttributeList;
+    apVersionRawAttributeList: TAPRawAttributeList;
+    apMetaRawAttributeList: TAPRawAttributeList;
     default_ownerId: string;
     complete_ApBusinessGroupDisplayList: TAPBusinessGroupDisplayList;
     complete_ApExternalSystemDisplayList: TAPExternalSystemDisplayList;
@@ -404,27 +406,40 @@ export abstract class APManagedAssetDisplayService {
     // const logName = `${this.BaseComponentName}.${funcName}()`;
 
     // create the working list
-    const working_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({
-      apRawAttributeList: apRawAttributeList
+    const working_VersionApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({
+      apRawAttributeList: apVersionRawAttributeList
     });
+    const working_MetaApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.create_ApAttributeDisplayList({
+      apRawAttributeList: apMetaRawAttributeList
+    });
+    const working_ApAttributeDisplayList: TAPAttributeDisplayList = working_VersionApAttributeDisplayList.concat(working_MetaApAttributeDisplayList);
+
     // save complete list for devel purposes
     const devel_complete_ApAttributeDisplayList: TAPAttributeDisplayList = JSON.parse(JSON.stringify(working_ApAttributeDisplayList));
-    // extract connector controlled attributes
     
+    // extract connector controlled attributes
     const _apConnector_EP_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Prefix(),
       apAttributeDisplayList: working_ApAttributeDisplayList
     });
+    APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_EP_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_VersionApAttributeDisplayList
+    });
     const _apConnector_AC_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Prefixed_With({
       prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Prefix(),
       apAttributeDisplayList: working_ApAttributeDisplayList
+    });
+    APAttributesDisplayService.extract_Prefixed_With({
+      prefixed_with: this.create_Connector_AC_ManagedAssetAttribute_Prefix(),
+      apAttributeDisplayList: working_VersionApAttributeDisplayList
     });
     const _apConnector_ApAttributeDisplayList: TAPAttributeDisplayList = _apConnector_AC_ApAttributeDisplayList.concat(_apConnector_EP_ApAttributeDisplayList);
 
     // extract externally controlled attributes
     const _apExternal_ApAttributeDisplayList: TAPAttributeDisplayList = APAttributesDisplayService.extract_Not_Prefixed_With({
       not_prefixed_with: this.create_AP_ManagedAssetAttribute_Prefix(),
-      apAttributeDisplayList: working_ApAttributeDisplayList
+      apAttributeDisplayList: working_VersionApAttributeDisplayList
     });
     // working_ApAttributeDisplayList now contains only the AP controlled attributes
     // alert(`${logName}: after external attributes, working_ApAttributeDisplayList=${JSON.stringify(working_ApAttributeDisplayList, null, 2)}`);
@@ -499,6 +514,15 @@ export abstract class APManagedAssetDisplayService {
     return apManagedAssetDisplay;
   }
 
+  public abstract get_ApMetaAttributeList({ apManagedAssetDisplay }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+  }): TAPAttributeDisplayList;
+  
+  public abstract set_ApMetaAttributeList({ apManagedAssetDisplay, apMeta_ApAttributeDisplayList }:{
+    apManagedAssetDisplay: IAPManagedAssetDisplay;
+    apMeta_ApAttributeDisplayList: TAPAttributeDisplayList;
+  }): IAPManagedAssetDisplay;
+
   public get_ApOwnerInfo({ apManagedAssetDisplay }:{
     apManagedAssetDisplay: IAPManagedAssetDisplay;
   }): TAPManagedAssetOwnerInfo {
@@ -566,6 +590,7 @@ export abstract class APManagedAssetDisplayService {
       apEntityId: apManagedAssetDisplay.apEntityId,
       apExternal_ApAttributeDisplayList: this.get_ApExternalAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay }),
       apCustom_ApAttributeDisplayList: this.get_ApCustomAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay }),
+      apMeta_ApAttributeDisplayList: this.get_ApMetaAttributeList({ apManagedAssetDisplay: apManagedAssetDisplay })
     };
     return apManagedAssetDisplay_Attributes;
   }
@@ -588,6 +613,10 @@ export abstract class APManagedAssetDisplayService {
     this.set_ApCustomAttributeList({
       apManagedAssetDisplay: apManagedAssetDisplay,
       apCustom_ApAttributeDisplayList: apManagedAssetDisplay_Attributes.apCustom_ApAttributeDisplayList,
+    });
+    this.set_ApMetaAttributeList({
+      apManagedAssetDisplay: apManagedAssetDisplay,
+      apMeta_ApAttributeDisplayList: apManagedAssetDisplay_Attributes.apMeta_ApAttributeDisplayList,
     });
     return apManagedAssetDisplay;
   }

@@ -10,13 +10,12 @@ import APAdminPortalApiProductsDisplayService, { TAPAdminPortalApiProductDisplay
 import { ButtonLabel_Cancel, ButtonLabel_Save, EAction, E_CALL_STATE_ACTIONS } from "../ManageApiProductsCommon";
 import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
 import { IAPApiProductDisplay } from "../../../../displayServices/APApiProductsDisplayService";
-import { EditNewAttributesForm } from "./EditNewAttributesForm";
-import { UserContext } from "../../../../components/APContextProviders/APUserContextProvider";
+import { EditNewMetaAttributesForm } from "./EditNewMetaAttributesForm";
 
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface IEditAttributesProps {
+export interface IEditMetaAttributesProps {
   organizationId: string;
   apAdminPortalApiProductDisplay: TAPAdminPortalApiProductDisplay;
   onError: (apiCallState: TApiCallState) => void;
@@ -25,8 +24,8 @@ export interface IEditAttributesProps {
   onLoadingChange: (isLoading: boolean) => void;
 }
 
-export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttributesProps) => {
-  const ComponentName = 'EditAttributes';
+export const EditMetaAttributes: React.FC<IEditMetaAttributesProps> = (props: IEditMetaAttributesProps) => {
+  const ComponentName = 'EditMetaAttributes';
 
   type TManagedObject = TAPManagedAssetDisplay_Attributes;
 
@@ -34,7 +33,6 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
 
   const [managedObject, setManagedObject] = React.useState<TManagedObject>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
-  const [userContext] = React.useContext(UserContext);
 
   // * Api Calls *
 
@@ -43,14 +41,13 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
     const logName = `${ComponentName}.${funcName}()`;
     let callState: TApiCallState = ApiCallState.getInitialCallState(E_CALL_STATE_ACTIONS.API_UPDATE_API_PRODUCT, `update api product: ${mo.apEntityId.displayName}`);
     try {
-      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay({
+      await APAdminPortalApiProductsDisplayService.apiUpdate_ApApiProductDisplay_Meta_Attributes({
         organizationId: props.organizationId,
         apApiProductDisplay: APAdminPortalApiProductsDisplayService.set_ApManagedAssetDisplay_Attributes({
           apManagedAssetDisplay: props.apAdminPortalApiProductDisplay,
           apManagedAssetDisplay_Attributes: mo
         }) as IAPApiProductDisplay,
-        userId: userContext.apLoginUserDisplay.apEntityId.id,
-      });  
+      });
     } catch(e: any) {
       APSClientOpenApi.logError(logName, e);
       callState = ApiCallState.addErrorToApiCallState(e, callState);
@@ -111,7 +108,7 @@ export const EditAttributes: React.FC<IEditAttributesProps> = (props: IEditAttri
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewAttributesForm
+          <EditNewMetaAttributesForm
             formId={FormId}
             action={EAction.EDIT}
             apManagedAssetDisplay_Attributes={mo}

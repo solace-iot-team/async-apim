@@ -20,7 +20,8 @@ import { EditGeneral } from "./EditGeneral";
 import { EditApis } from "./EditApis";
 import { EditPolicies } from "./EditPolicies";
 import { EditEnvironments } from "./EditEnvironments";
-import { EditAttributes } from "./EditAttributes";
+import { EditVersionAttributes } from "./EditVersionAttributes";
+import { EditMetaAttributes } from "./EditMetaAttributes";
 import { EditAccessAndState } from "./EditAccessAndState";
 import { OrganizationContext } from "../../../../components/APContextProviders/APOrganizationContextProvider";
 // import { EditDocumentation } from "./EditDocumentation";
@@ -262,8 +263,17 @@ export const ManageEditApiProduct: React.FC<IManageEditApiProductProps> = (props
     tabPanels.push(
       <TabPanel header='Attributes'>
         <React.Fragment>
-          <EditAttributes
-            key={`${ComponentName}_EditAttributes_${refreshCounter}`}
+          <EditVersionAttributes
+            key={`${ComponentName}_EditVersionAttributes_${refreshCounter}`}
+            organizationId={props.organizationId}
+            apAdminPortalApiProductDisplay={managedObject}
+            onError={onError_SubComponent}
+            onCancel={props.onCancel}
+            onLoadingChange={props.onLoadingChange}
+            onSaveSuccess={onEdit_SaveSuccess}
+          />
+          <EditMetaAttributes
+            key={`${ComponentName}_EditMetaAttributes_${refreshCounter}`}
             organizationId={props.organizationId}
             apAdminPortalApiProductDisplay={managedObject}
             onError={onError_SubComponent}

@@ -30,7 +30,7 @@ import APMetaInfoDisplayService, { TAPMetaInfo } from './APMetaInfoDisplayServic
 import APVersioningDisplayService, { IAPVersionInfo, TAPVersionList } from './APVersioningDisplayService';
 import APSearchContentService, { IAPSearchContent } from '../utils/APSearchContentService';
 import APApiSpecsDisplayService, { TAPApiSpecDisplay } from './APApiSpecsDisplayService';
-import { TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
+import { TAPAttributeDisplayList, TAPRawAttributeList } from './APAttributesDisplayService/APAttributesDisplayService';
 import APMemberOfService, { TAPMemberOfBusinessGroupDisplayTreeNodeList } from './APUsersDisplayService/APMemberOfService';
 import { EAPSOrganizationAuthRole } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import APRbacDisplayService from './APRbacDisplayService';
@@ -201,12 +201,13 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     // const funcName = 'create_ApApiDisplay_From_ApiEntities';
     // const logName = `${this.MiddleComponentName}.${funcName}()`;
 
-    const apRawAttributeList: TAPRawAttributeList = connectorApiInfo.attributes ? connectorApiInfo.attributes : [];
+    const apVersionRawAttributeList: TAPRawAttributeList = connectorApiInfo.attributes ? connectorApiInfo.attributes : [];
 
     const _base = this.create_ApManagedAssetDisplay_From_ApiEntities({
       id: connectorApiInfo.name,
       displayName: connectorApiInfo.name,
-      apRawAttributeList: apRawAttributeList,
+      apVersionRawAttributeList: apVersionRawAttributeList,
+      apMetaRawAttributeList: [],
       default_ownerId: default_ownerId,
       complete_ApBusinessGroupDisplayList: complete_ApBusinessGroupDisplayList,
       complete_ApExternalSystemDisplayList: complete_ApExternalSystemDisplayList
@@ -222,8 +223,10 @@ class APApisDisplayService extends APManagedAssetDisplayService {
       summary: connectorApiInfo.summary,
       apApiProductReferenceEntityIdList: apApiProductReferenceEntityIdList,
       apApiChannelParameterList: this.create_ApApiChannelParameterList({ connectorParameters: connectorApiInfo.apiParameters }),
-      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ connectorMeta: connectorMeta, apRawAttributeList: apRawAttributeList, apManagedAssetAttributePrefix: this.create_AP_ManagedAssetAttribute_Prefix() }),
-      
+      apMetaInfo: APMetaInfoDisplayService.create_ApMetaInfo_From_ApiEntities({ 
+        connectorMeta: connectorMeta, 
+        removeApManagedAssetAttributePrefixList: []
+      }),
       apVersionInfo: APVersioningDisplayService.create_ApVersionInfo_From_ApiEntities({ 
         connectorMeta: connectorMeta, 
         apVersionList: apVersionList,
@@ -293,6 +296,19 @@ class APApisDisplayService extends APManagedAssetDisplayService {
     return title.replaceAll(/[^0-9a-zA-Z]+/g, '-');
   } 
 
+  public get_ApMetaAttributeList({ apManagedAssetDisplay }:{
+    apManagedAssetDisplay: IAPApiDisplay;
+  }): TAPAttributeDisplayList {
+    return apManagedAssetDisplay.apMetaInfo.apAttributeDisplayList;
+  }
+
+  public set_ApMetaAttributeList({ apManagedAssetDisplay, apMeta_ApAttributeDisplayList }:{
+    apManagedAssetDisplay: IAPApiDisplay;
+    apMeta_ApAttributeDisplayList: TAPAttributeDisplayList;
+  }): IAPApiDisplay {
+    apManagedAssetDisplay.apMetaInfo.apAttributeDisplayList = apMeta_ApAttributeDisplayList;
+    return apManagedAssetDisplay;
+  }
 
   public get_Empty_AllowedActions(): TAPApiDisplay_AllowedActions {
     return {

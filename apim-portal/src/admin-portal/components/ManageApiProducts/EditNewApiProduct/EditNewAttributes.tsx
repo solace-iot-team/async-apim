@@ -10,7 +10,7 @@ import APAdminPortalApiProductsDisplayService, {
   TAPAdminPortalApiProductDisplay 
 } from "../../../displayServices/APAdminPortalApiProductsDisplayService";
 import { TAPManagedAssetDisplay_Attributes } from "../../../../displayServices/APManagedAssetDisplayService";
-import { EditNewAttributesForm } from "./EditNewAttributesForm";
+import { EditNewVersionAttributesForm } from "./EditNewVersionAttributesForm";
 import { ButtonLabel_Back, ButtonLabel_Cancel, ButtonLabel_Next, EAction } from "../ManageApiProductsCommon";
 
 import '../../../../components/APComponents.css';
@@ -89,7 +89,7 @@ export const EditNewAttributes: React.FC<IEditNewAttributesProps> = (props: IEdi
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
-          <EditNewAttributesForm
+          <EditNewVersionAttributesForm
             formId={formId}
             action={props.action}
             apManagedAssetDisplay_Attributes={mo}

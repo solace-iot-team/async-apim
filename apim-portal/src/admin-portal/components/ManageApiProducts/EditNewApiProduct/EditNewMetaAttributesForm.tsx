@@ -10,20 +10,19 @@ import { EditNewApAttributeListForm } from "../../../../components/APManageAttri
 import '../../../../components/APComponents.css';
 import "../ManageApiProducts.css";
 
-export interface IEditNewAttributesFormProps {
+export interface IEditNewMetaAttributesFormProps {
   action: EAction;
   formId: string;
   apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes;
   onSubmit: (apManagedAssetDisplay_Attributes: TAPManagedAssetDisplay_Attributes) => void;
 }
 
-export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (props: IEditNewAttributesFormProps) => {
-  const ComponentName = 'EditNewAttributes';
+export const EditNewMetaAttributesForm: React.FC<IEditNewMetaAttributesFormProps> = (props: IEditNewMetaAttributesFormProps) => {
+  const ComponentName = 'EditNewMetaAttributesForm';
 
   type TManagedObject = TAPManagedAssetDisplay_Attributes;
   type TManagedObjectFormData = {
-    external_attribute_list: TAPAttributeDisplayList;
-    custom_attribute_list: TAPAttributeDisplayList;
+    meta_attribute_list: TAPAttributeDisplayList;
   };
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
@@ -31,8 +30,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
   
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
     const fd: TManagedObjectFormData = {
-      external_attribute_list: mo.apExternal_ApAttributeDisplayList,
-      custom_attribute_list: mo.apCustom_ApAttributeDisplayList,
+      meta_attribute_list: mo.apMeta_ApAttributeDisplayList,
     };
     return {
       formData: fd
@@ -44,8 +42,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
   }): TManagedObject => {
     const mo: TManagedObject = props.apManagedAssetDisplay_Attributes;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.apExternal_ApAttributeDisplayList = fd.external_attribute_list;
-    mo.apCustom_ApAttributeDisplayList = fd.custom_attribute_list;
+    mo.apMeta_ApAttributeDisplayList = fd.meta_attribute_list;
     return mo;
   }
   
@@ -81,14 +78,14 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     // placeholder
   }
 
-  const onChange_ExternalAttributes = (apAttributeDisplayList: TAPAttributeDisplayList) => {
-    const funcName = 'onChange_ExternalAttributes';
+  const onChange_MetaAttributes = (apAttributeDisplayList: TAPAttributeDisplayList) => {
+    const funcName = 'onChange_MetaAttributes';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
     const newMofde: TManagedObjectFormDataEnvelope = {
       formData: {
         ...managedObjectFormDataEnvelope.formData,
-        external_attribute_list: apAttributeDisplayList  
+        meta_attribute_list: apAttributeDisplayList  
       }
     };
     setManagedObjectFormDataEnvelope(newMofde);
@@ -98,7 +95,7 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
     const funcName = 'renderManagedObjectForm';
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObjectFormDataEnvelope === undefined) throw new Error(`${logName}: managedObjectFormDataEnvelope === undefined`);
-    const uniqueKey_ExternalAttributes = ComponentName+'_EditNewApAttributeListForm_mo.apExternal_ApAttributeDisplayList';
+    const uniqueKey_MetaAttributes = ComponentName+'_EditNewApAttributeListForm_mo.apMeta_ApAttributeDisplayList';
     return (
       <div className="card p-mt-4">
         <div className="p-fluid">
@@ -107,18 +104,17 @@ export const EditNewAttributesForm: React.FC<IEditNewAttributesFormProps> = (pro
           </form>  
           
           <div className="p-field">
-            {/* external attributes */}
-            <div className="p-text-bold p-mb-3">Custom Attributes:</div>
+            {/* version attributes */}
+            <div className="p-text-bold p-mb-3">General Attributes:</div>
             <EditNewApAttributeListForm
-              key={uniqueKey_ExternalAttributes}
-              uniqueKeyPrefix={uniqueKey_ExternalAttributes}
-              apAttributeDisplayList={managedObjectFormDataEnvelope.formData.external_attribute_list}
+              key={uniqueKey_MetaAttributes}
+              uniqueKeyPrefix={uniqueKey_MetaAttributes}
+              apAttributeDisplayList={managedObjectFormDataEnvelope.formData.meta_attribute_list}
               attributeName_Name="Attribute Name"
               attributeValue_Name="Value"
-              onChange={onChange_ExternalAttributes}
+              onChange={onChange_MetaAttributes}
             />
           </div>
-
         </div>
       </div>
     );
