@@ -526,14 +526,22 @@ export const DisplayAdminPortalApiProduct: React.FC<IDisplayAdminPortalApiProduc
     tabPanels.push(
       <TabPanel header='Attributes'>
         <React.Fragment>
-          <div className="p-text-bold">General Attributes:</div>
-          <APDisplayApAttributeDisplayList
-            apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
-            tableRowHeader_AttributeName="Attribute"
-            tableRowHeader_AttributeValue="Value"  
-            emptyMessage="No attributes defined"
-            className="p-ml-4"
-          />
+          <div className="p-text-bold">Version Attributes:</div>
+            <APDisplayApAttributeDisplayList
+              apAttributeDisplayList={managedObject.apExternal_ApAttributeDisplayList}
+              tableRowHeader_AttributeName="Attribute"
+              tableRowHeader_AttributeValue="Value"
+              emptyMessage="No attributes defined"
+              className="p-ml-4 p-mt-2"
+            />
+          <div className="p-text-bold p-mt-4">General Attributes:</div>
+            <APDisplayApAttributeDisplayList
+              apAttributeDisplayList={managedObject.apMetaInfo.apAttributeDisplayList}
+              tableRowHeader_AttributeName="Attribute"
+              tableRowHeader_AttributeValue="Value"  
+              emptyMessage="No attributes defined"
+              className="p-ml-4 p-mt-2"
+            />
           {Config.getUseDevelTools() &&
             <React.Fragment>
               <Divider />
