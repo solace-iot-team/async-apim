@@ -2,6 +2,19 @@
 
 Solace Async API Management.
 
+## Version 0.4.2
+
+* [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.2
+* [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.4.0
+* [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.4.0
+* [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.13.1
+
+**Enhancements:**
+- **Attributes for Api Products**
+  - separate editing of version & general attributes
+  - version attributes change triggers creation of a new version
+  - general attributes change happen on same version
+
 ## Version 0.4.1
 
 * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.1
@@ -9,7 +22,7 @@ Solace Async API Management.
 * [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.4.0
 * [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.13.1
 
-**Chnages:**
+**Changes:**
 - **Edit: Event Portal Event Api Products**
   - enabled editing for imported Event Api Products to facilitate testing
   - will be disabled again soon
