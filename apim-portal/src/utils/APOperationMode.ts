@@ -40,6 +40,9 @@ export class APOperationMode {
     }   
   }
 
+  public static isEditAllowed_For_EpApiProduct = (): boolean => {
+    return true;
+  }
   public static showApiProductsMenuItem = (): boolean => {
     const funcName = 'showApiProductsMenuItem';
     const logName = `${APOperationMode.ComponentName}.${funcName}()`;
