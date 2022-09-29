@@ -170,7 +170,7 @@ export const DeveloperPortalViewApp: React.FC<IDeveloperPortalViewAppProps> = (p
           <TabPanel header='General'>
 
             <APDisplayDeveloperPortalAppCredentialsPanel
-              appCredentials={managedObject.apAppCredentials}
+              apAppCredentialsDisplayEnvelope={managedObject.apAppCredentialsDisplayEnvelope}
               componentTitle="Credentials"
               collapsed={true}
             />

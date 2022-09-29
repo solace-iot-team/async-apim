@@ -7,6 +7,7 @@ import {
   AppsService, 
   CommonTimestampInteger, 
   Credentials, 
+  CredentialsArray, 
   Secret
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import APDeveloperPortalAppApiProductsDisplayService, { 
@@ -55,13 +56,17 @@ export type TAPOrganizationAppSettings = {
   apAppCredentialsExpiryDuration_millis: number;
 }
 export type TAPAppCredentialsDisplay = {
-  apOrganizationAppSettings: TAPOrganizationAppSettings; /** contains the configured app credentials expiration millis at org level */
   apConsumerKeyExiresIn: number; /** duration in millseconds  */
   expiresAt: number; /** millis since epoch */
   issuedAt: CommonTimestampInteger; /** millis since epoch */
   secret: Secret;
   devel_calculated_expiresAt: number; /** devel: cross check correct expiresAt calculation */
+}
+export type TAPAppCredentialsDisplayList = Array<TAPAppCredentialsDisplay>;
+export type TAPAppCredentialsDisplayEnvelope = {
+  apOrganizationAppSettings: TAPOrganizationAppSettings; /** contains the configured app credentials expiration millis at org level */
   devel_connector_app_expires_in: number; /** devel: duration in millseconds */
+  apAppCredentialsDisplayList: TAPAppCredentialsDisplayList;
 }
 
 export type TAPAppMeta = {
@@ -83,7 +88,7 @@ export interface IAPAppDisplay extends IAPEntityIdDisplay {
   apAppInternalName: string;
   apAppMeta: TAPAppMeta;
   apAppStatus: EAPApp_Status;
-  apAppCredentials: TAPAppCredentialsDisplay;
+  apAppCredentialsDisplayEnvelope: TAPAppCredentialsDisplayEnvelope;
   apAppEnvironmentDisplayList: TAPAppEnvironmentDisplayList;
   apAppApiProductDisplayList: TAPDeveloperPortalAppApiProductDisplayList;
   apAppApiDisplayList: TAPAppApiDisplayList;
@@ -101,7 +106,7 @@ export type TAPAppDisplay_General = IAPEntityIdDisplay & {
 
 export type TAPAppDisplay_Credentials = IAPEntityIdDisplay & {
   apAppMeta: TAPAppMeta;
-  apAppCredentials: TAPAppCredentialsDisplay;
+  apAppCredentialsDisplayEnvelope: TAPAppCredentialsDisplayEnvelope;
 }
 
 export type TAPAppDisplay_ChannelParameters = IAPEntityIdDisplay & {
@@ -198,8 +203,16 @@ export class APAppsDisplayService {
       },
       apConsumerKeyExiresIn: apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       devel_calculated_expiresAt: -1,
-      devel_connector_app_expires_in: -1,
+    }
+  }
+  private create_Empty_TAPAppCredentialsDisplayEnvelope({ apOrganizationAppSettings }:{
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
+  }): TAPAppCredentialsDisplayEnvelope {
+    return {
       apOrganizationAppSettings: apOrganizationAppSettings,
+      // ensure at least one element 
+      apAppCredentialsDisplayList: [this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings })],
+      devel_connector_app_expires_in: -1
     }
   }
   protected create_Empty_ApAppDisplay({ apAppMeta, apOrganizationAppSettings }:{
@@ -216,7 +229,7 @@ export class APAppsDisplayService {
         appConnectionStatus: this.create_Empty_ConnectorAppConnectionStatus()
       },
       apAppStatus: EAPApp_Status.UNKNOWN,
-      apAppCredentials: this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings}),
+      apAppCredentialsDisplayEnvelope: this.create_Empty_TAPAppCredentialsDisplayEnvelope({ apOrganizationAppSettings: apOrganizationAppSettings }),
       apAppEnvironmentDisplayList: [],
       apAppApiProductDisplayList: [],
       apAppApiDisplayList: [],
@@ -293,27 +306,62 @@ export class APAppsDisplayService {
     return apAppChannelParameterList;
   }
 
-  private create_ApAppCredentials_From_ApiEntities({ connectorAppResponse, apOrganizationAppSettings }:{
-    connectorAppResponse: AppResponse;
+  private create_ApAppCredentialsDisplay_From_ApiEntities({ connectorCredentials, apOrganizationAppSettings, connectorAppResponse_expiresIn }:{
+    connectorCredentials: Credentials;
+    connectorAppResponse_expiresIn?: number;
     apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPAppCredentialsDisplay {
+    const apAppCredentialsDisplay: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings });
+    if(connectorCredentials.expiresAt) apAppCredentialsDisplay.expiresAt = connectorCredentials.expiresAt;
+    if(connectorCredentials.issuedAt) apAppCredentialsDisplay.issuedAt = connectorCredentials.issuedAt;
+    if(connectorCredentials.secret) {
+      apAppCredentialsDisplay.secret.consumerKey = connectorCredentials.secret.consumerKey;
+      apAppCredentialsDisplay.secret.consumerSecret = connectorCredentials.secret.consumerSecret;
+    }
+    if(connectorAppResponse_expiresIn) apAppCredentialsDisplay.apConsumerKeyExiresIn = connectorAppResponse_expiresIn;
+    // devel:
+    apAppCredentialsDisplay.devel_calculated_expiresAt = apAppCredentialsDisplay.issuedAt + apAppCredentialsDisplay.apConsumerKeyExiresIn;
+    return apAppCredentialsDisplay;
+  }
+
+  private create_ApAppCredentialDisplayList_From_ApiEntities({ connectorAppResponse, apOrganizationAppSettings }:{
+    connectorAppResponse: AppResponse;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
+  }): TAPAppCredentialsDisplayList {
     // const funcName = 'create_ApAppCredentials_From_ApiEntities';
     // const logName = `${this.BaseComponentName}.${funcName}()`;
     // console.log(`${logName}: connectorAppResponse.credentials=${JSON.stringify(connectorAppResponse.credentials, null, 2)}, \nconnectorAppResponse.expiresIn=${connectorAppResponse.expiresIn}`);
 
-    const appCredentials: TAPAppCredentialsDisplay = this.create_Empty_ApCredentialsDisplay({ apOrganizationAppSettings: apOrganizationAppSettings });
-    if(connectorAppResponse.credentials.expiresAt) appCredentials.expiresAt = connectorAppResponse.credentials.expiresAt;
-    if(connectorAppResponse.credentials.issuedAt) appCredentials.issuedAt = connectorAppResponse.credentials.issuedAt;
-    if(connectorAppResponse.credentials.secret) {
-      appCredentials.secret.consumerKey = connectorAppResponse.credentials.secret.consumerKey;
-      appCredentials.secret.consumerSecret = connectorAppResponse.credentials.secret.consumerSecret;
+    const apAppCredentialsDisplayList: TAPAppCredentialsDisplayList = [];
+    if(Array.isArray(connectorAppResponse.credentials)) {
+      const connectorCredentialsArray: CredentialsArray = connectorAppResponse.credentials;
+      for(const connectorCredentials of connectorCredentialsArray) {
+        apAppCredentialsDisplayList.push(this.create_ApAppCredentialsDisplay_From_ApiEntities({
+          apOrganizationAppSettings: apOrganizationAppSettings,
+          connectorCredentials: connectorCredentials
+        }));  
+      }
+    } else {
+      apAppCredentialsDisplayList.push(this.create_ApAppCredentialsDisplay_From_ApiEntities({
+        apOrganizationAppSettings: apOrganizationAppSettings,
+        connectorCredentials: connectorAppResponse.credentials
+      }));
     }
-    if(connectorAppResponse.expiresIn) appCredentials.apConsumerKeyExiresIn = connectorAppResponse.expiresIn;
-    appCredentials.apOrganizationAppSettings = apOrganizationAppSettings;
-    // devel:
-    appCredentials.devel_calculated_expiresAt = appCredentials.issuedAt + appCredentials.apConsumerKeyExiresIn;
-    appCredentials.devel_connector_app_expires_in = connectorAppResponse.expiresIn ? connectorAppResponse.expiresIn : -1;
-    return appCredentials;
+    return apAppCredentialsDisplayList;
+  }
+
+  private create_TAPAppCredentialsDisplayEnvelope_From_ApiEntities({ connectorAppResponse, apOrganizationAppSettings }:{
+    connectorAppResponse: AppResponse;
+    apOrganizationAppSettings: TAPOrganizationAppSettings;
+  }): TAPAppCredentialsDisplayEnvelope {
+    return {
+      apAppCredentialsDisplayList: this.create_ApAppCredentialDisplayList_From_ApiEntities({ 
+        apOrganizationAppSettings: apOrganizationAppSettings,
+        connectorAppResponse: connectorAppResponse
+      }),
+      apOrganizationAppSettings: apOrganizationAppSettings,
+      devel_connector_app_expires_in: connectorAppResponse.expiresIn ? connectorAppResponse.expiresIn : -1,
+    }
   }
 
   protected create_ApAppDisplay_From_ApiEntities({ 
@@ -335,8 +383,6 @@ export class APAppsDisplayService {
     apOrganizationAppSettings: TAPOrganizationAppSettings;
     complete_ApEnvironmentDisplayList: TAPEnvironmentDisplayList;
   }): IAPAppDisplay {
-
-    const appCredentials: TAPAppCredentialsDisplay = this.create_ApAppCredentials_From_ApiEntities({ connectorAppResponse: connectorAppResponse_smf, apOrganizationAppSettings: apOrganizationAppSettings });
 
     // map raw attributes to ApAppDisplay entities
     // create the working list
@@ -367,7 +413,10 @@ export class APAppsDisplayService {
         appConnectionStatus: connectorAppConnectionStatus
       },
       apAppStatus: this.create_ApAppStatus({ apAppApiProductDisplayList: apAppApiProductDisplayList }),
-      apAppCredentials: appCredentials,
+      apAppCredentialsDisplayEnvelope: this.create_TAPAppCredentialsDisplayEnvelope_From_ApiEntities({ 
+        connectorAppResponse: connectorAppResponse_smf, 
+        apOrganizationAppSettings: apOrganizationAppSettings 
+      }),
       apAppEnvironmentDisplayList: APAppEnvironmentsDisplayService.create_ApAppEnvironmentDisplayList_From_ApiEntities({
         connectorAppEnvironments_smf: connectorAppResponse_smf.environments,
         connectorAppEnvironments_mqtt: connectorAppResponse_mqtt?.environments,
@@ -424,14 +473,14 @@ export class APAppsDisplayService {
     return {
       apEntityId: apAppDisplay.apEntityId,
       apAppMeta: apAppDisplay.apAppMeta,
-      apAppCredentials: apAppDisplay.apAppCredentials,
+      apAppCredentialsDisplayEnvelope: apAppDisplay.apAppCredentialsDisplayEnvelope
     };
   }
   public set_ApAppDisplay_Credentials({ apAppDisplay, apAppDisplay_Credentials }:{
     apAppDisplay: IAPAppDisplay;
     apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): IAPAppDisplay {
-    apAppDisplay.apAppCredentials = apAppDisplay_Credentials.apAppCredentials;
+    apAppDisplay.apAppCredentialsDisplayEnvelope = apAppDisplay_Credentials.apAppCredentialsDisplayEnvelope;
     return apAppDisplay;
   }
 
@@ -701,6 +750,21 @@ export class APAppsDisplayService {
 
   }
 
+  private create_ConnectorUpdate_Credentials_SecretsArray({ apAppCredentialsDisplayList, isConsumerSecretUndefined }:{
+    apAppCredentialsDisplayList: TAPAppCredentialsDisplayList;
+    isConsumerSecretUndefined: boolean;
+  }): CredentialsArray {
+    const connectorCredentialsArray: CredentialsArray = [];
+    for(const apAppCredentialsDisplay of apAppCredentialsDisplayList) {
+      connectorCredentialsArray.push({
+        secret: {
+          consumerKey: apAppCredentialsDisplay.secret.consumerKey,
+          consumerSecret: isConsumerSecretUndefined ? undefined : apAppCredentialsDisplay.secret.consumerSecret    
+        }
+      });
+    }
+    return connectorCredentialsArray;
+  }
   /**
    * external app credentials
    */
@@ -708,15 +772,13 @@ export class APAppsDisplayService {
     organizationId: string;
     apAppDisplay_Credentials: TAPAppDisplay_Credentials;
   }): Promise<void> {
-
+    const connectorCredentialsArray: CredentialsArray = this.create_ConnectorUpdate_Credentials_SecretsArray({ 
+      apAppCredentialsDisplayList: apAppDisplay_Credentials.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList,
+      isConsumerSecretUndefined: false
+     });
     const update: AppPatch = {
       // expiresIn: apAppDisplay_Credentials.apAppCredentials.apConsumerKeyExiresIn,
-      credentials: {
-        secret: {
-          consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
-          consumerSecret: apAppDisplay_Credentials.apAppCredentials.secret.consumerSecret    
-        }
-      }
+      credentials: connectorCredentialsArray,
     };
 
     await this.apiUpdate({
@@ -739,16 +801,15 @@ export class APAppsDisplayService {
     // test error handling
     // throw new Error(`${logName} test upstream error handling`)
 
+    const connectorCredentialsArray: CredentialsArray = this.create_ConnectorUpdate_Credentials_SecretsArray({ 
+      apAppCredentialsDisplayList: apAppDisplay_Credentials.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList,
+      isConsumerSecretUndefined: true //ensures it is re-generated          
+     });
     // update expiresIn in case it is not set
     // use the configured expiry at org level
     const update: AppPatch = {
-      expiresIn: apAppDisplay_Credentials.apAppCredentials.apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
-      credentials: {
-        secret: {
-          consumerKey: apAppDisplay_Credentials.apAppCredentials.secret.consumerKey,
-          consumerSecret: undefined, // ensures it is re-generated          
-        }
-      }
+      expiresIn: apAppDisplay_Credentials.apAppCredentialsDisplayEnvelope.apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
+      credentials: connectorCredentialsArray
     };
 
     await this.apiUpdate({

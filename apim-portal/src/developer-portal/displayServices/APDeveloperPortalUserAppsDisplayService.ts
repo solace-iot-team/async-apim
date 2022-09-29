@@ -255,7 +255,7 @@ class APDeveloperPortalUserAppsDisplayService extends APDeveloperPortalAppsDispl
       name: apDeveloperPortalUserAppDisplay.apEntityId.id,
       displayName: apDeveloperPortalUserAppDisplay.apEntityId.displayName,
       apiProducts: [],
-      expiresIn: apDeveloperPortalUserAppDisplay.apAppCredentials.apConsumerKeyExiresIn,
+      expiresIn: apDeveloperPortalUserAppDisplay.apAppCredentialsDisplayEnvelope.apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       credentials: {}
     };
 

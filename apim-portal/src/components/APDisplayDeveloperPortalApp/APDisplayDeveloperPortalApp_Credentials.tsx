@@ -4,12 +4,15 @@ import React from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 
-import APAppsDisplayService, { TAPAppCredentialsDisplay } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import APAppsDisplayService, { 
+  TAPAppCredentialsDisplay, 
+  TAPAppCredentialsDisplayEnvelope 
+} from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
 
 import "../APComponents.css";
 
 export interface IAPDisplayDeveloperPortalApp_CredentialsProps {
-  appCredentials: TAPAppCredentialsDisplay;
+  apAppCredentialsDisplayEnvelope: TAPAppCredentialsDisplayEnvelope;
   className?: string;
 }
 
@@ -60,7 +63,7 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
         <DataTable
           className="p-datatable-sm"
           ref={componentDataTableRef}
-          value={[props.appCredentials]}
+          value={props.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList}
           autoLayout={true}
           resizableColumns={true}
           columnResizeMode="fit"
