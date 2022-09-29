@@ -107,7 +107,7 @@ export const EditNewCredentialsForm: React.FC<IEditNewCredentialsFormProps> = (p
           <div className="p-mb-4"><b>Current Credentials</b></div>
           <div className="p-mb-6">
             <APDisplayDeveloperPortalAppCredentials
-              appCredentials={mo.apAppCredentials}
+              apAppCredentialsDisplayEnvelope={mo.apAppCredentialsDisplayEnvelope}
               // className={props.contentClassName}
             />
           </div>  

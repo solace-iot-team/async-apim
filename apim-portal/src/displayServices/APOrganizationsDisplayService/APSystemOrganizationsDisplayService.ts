@@ -84,6 +84,7 @@ class APSystemOrganizationsDisplayService extends APOrganizationsDisplayService 
       sempV2Authentication: this.create_ConnectorSempv2Authentication({
         apOrganizationSempv2AuthConfig: apSystemOrganizationDisplay.apOrganizationSempv2AuthConfig
       }),
+      serviceRegistry: apSystemOrganizationDisplay.apServiceRegistry
     };
 
     return connectorOrganizationCreate;

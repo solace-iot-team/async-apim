@@ -322,7 +322,7 @@ class APDeveloperPortalTeamAppsDisplayService extends APDeveloperPortalAppsDispl
       name: apDeveloperPortalTeamAppDisplay.apEntityId.id,
       displayName: apDeveloperPortalTeamAppDisplay.apEntityId.displayName,
       apiProducts: [],
-      expiresIn: apDeveloperPortalTeamAppDisplay.apAppCredentials.apConsumerKeyExiresIn,
+      expiresIn: apDeveloperPortalTeamAppDisplay.apAppCredentialsDisplayEnvelope.apOrganizationAppSettings.apAppCredentialsExpiryDuration_millis,
       credentials: {}
     };
 

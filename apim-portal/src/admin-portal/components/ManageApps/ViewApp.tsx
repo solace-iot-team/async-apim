@@ -157,7 +157,7 @@ export const ViewApp: React.FC<IViewAppProps> = (props: IViewAppProps) => {
           <TabPanel header='General'>
 
             <APDisplayDeveloperPortalAppCredentialsPanel
-              appCredentials={managedObject.apAppCredentials}
+              apAppCredentialsDisplayEnvelope={managedObject.apAppCredentialsDisplayEnvelope}
               componentTitle="Credentials"
               collapsed={true}
             />

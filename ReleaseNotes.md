@@ -2,6 +2,21 @@
 
 Solace Async API Management.
 
+## Version 0.4.3
+
+* [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.3
+* [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.4.0
+* [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.4.1
+* [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.15.0
+
+**New Features:**
+- **App Credentials**
+  - display of array of credentials
+  - Note: management of array of credentials not supported. will always use the first entry in the array instead.
+- **Organization Settings**
+  - added service registry type to general settings
+
+
 ## Version 0.4.2
 
 * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.2

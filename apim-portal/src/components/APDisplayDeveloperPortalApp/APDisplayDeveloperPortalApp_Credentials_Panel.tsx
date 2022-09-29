@@ -2,13 +2,13 @@
 import React from "react";
 
 import { Panel, PanelHeaderTemplateOptions } from "primereact/panel";
-import { TAPAppCredentialsDisplay } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
+import { TAPAppCredentialsDisplayEnvelope } from "../../displayServices/APAppsDisplayService/APAppsDisplayService";
 import { APDisplayDeveloperPortalAppCredentials } from "./APDisplayDeveloperPortalApp_Credentials";
 
 import "../APComponents.css";
 
 export interface IAPDisplayDeveloperPortalApp_Credentials_PanelProps {
-  appCredentials: TAPAppCredentialsDisplay;
+  apAppCredentialsDisplayEnvelope: TAPAppCredentialsDisplayEnvelope;
   componentClassName?: string;
   contentClassName?: string;
   componentTitle?: string;
@@ -43,7 +43,7 @@ export const APDisplayDeveloperPortalAppCredentialsPanel: React.FC<IAPDisplayDev
         className="p-pt-2"
       >
         <APDisplayDeveloperPortalAppCredentials
-          appCredentials={props.appCredentials}
+          apAppCredentialsDisplayEnvelope={props.apAppCredentialsDisplayEnvelope}
           className={props.contentClassName}
         />
       </Panel>

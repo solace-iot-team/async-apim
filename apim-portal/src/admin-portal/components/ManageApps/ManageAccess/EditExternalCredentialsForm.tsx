@@ -23,21 +23,27 @@ export interface IEditExternalCredentialsFormProps {
 }
 
 export const EditExternalCredentialsForm: React.FC<IEditExternalCredentialsFormProps> = (props: IEditExternalCredentialsFormProps) => {
-  // const ComponentName = 'EditExternalCredentialsForm';
+  const ComponentName = 'EditExternalCredentialsForm';
 
   type TManagedObject = TAPAppDisplay_Credentials;
   type TManagedObjectFormData = {
     consumerKey: string;
     consumerSecret: string;
-  };
+  }; 
   type TManagedObjectFormDataEnvelope = {
     formData: TManagedObjectFormData;
   }
 
   const transform_ManagedObject_To_FormDataEnvelope = (mo: TManagedObject): TManagedObjectFormDataEnvelope => {
+    const funcName = 'transform_ManagedObject_To_FormDataEnvelope';
+    const logName = `${ComponentName}.${funcName}()`;
+    // TODO deal with array
+    if(mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList.length === 0) throw new Error(`${logName}: mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList.length === 0`);
+    const consumerKey = mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList[0].secret.consumerKey;
+    const consumerSecret = mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList[0].secret.consumerSecret;
     const fd: TManagedObjectFormData = {
-      consumerKey: mo.apAppCredentials.secret.consumerKey,
-      consumerSecret: mo.apAppCredentials.secret.consumerSecret ? mo.apAppCredentials.secret.consumerSecret : '',
+      consumerKey: consumerKey,
+      consumerSecret: consumerSecret ? consumerSecret : '',
     };
     return {
       formData: fd
@@ -49,8 +55,9 @@ export const EditExternalCredentialsForm: React.FC<IEditExternalCredentialsFormP
   }): TManagedObject => {
     const mo: TManagedObject = props.apAppDisplay_Credentials;
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
-    mo.apAppCredentials.secret.consumerKey = fd.consumerKey;
-    mo.apAppCredentials.secret.consumerSecret = fd.consumerSecret;
+    // TODO deal with array
+    mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList[0].secret.consumerKey = fd.consumerKey;
+    mo.apAppCredentialsDisplayEnvelope.apAppCredentialsDisplayList[0].secret.consumerSecret = fd.consumerSecret;
     return mo;
   }
   
