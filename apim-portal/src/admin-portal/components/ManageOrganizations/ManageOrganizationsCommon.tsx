@@ -1,5 +1,6 @@
 import { TAPEntityId } from "../../../utils/APEntityIdsService";
 
+export const DisplaySectionHeader_ServiceRegistry = "Service Registry";
 export const DisplaySectionHeader_AssetManagement = "Asset Management";
 export const DisplaySectionHeader_ApiProducts = "API Products";
 export const DisplaySectionHeader_Apps = "Apps";

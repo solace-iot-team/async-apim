@@ -9,7 +9,8 @@ import {
   Organization,
   OrganizationResponse,
   OrganizationStatus,
-  SempV2Authentication
+  SempV2Authentication,
+  ServiceRegistryType
 } from '@solace-iot-team/apim-connector-openapi-browser';
 import {
   ApsAdministrationService,
@@ -147,6 +148,8 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
   apMaxNumEnvs_Per_ApiProduct: number; /** -1 = infinity, min = 1 (0 not allowed) */
   apAppCredentialsExpiryDuration_millis: number;
 
+  apServiceRegistry: ServiceRegistryType;
+
   apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType;
   apCloudConnectivityConfig: TAPCloudConnectivityConfig;
   apEventPortalConnectivityConfig: TAPEventPortalConnectivityConfig;
@@ -158,6 +161,7 @@ export interface IAPOrganizationDisplay extends IAPEntityIdDisplay {
 }
 
 export interface IAPOrganizationDisplay_General extends IAPEntityIdDisplay {
+  apServiceRegistry: ServiceRegistryType;
   apAssetIncVersionStrategy: APSAssetIncVersionStrategy;
   apMaxNumEnvs_Per_ApiProduct: number;
   apMaxNumApis_Per_ApiProduct: number;
@@ -291,7 +295,7 @@ export class APOrganizationsDisplayService {
       apMaxNumEnvs_Per_ApiProduct: this.get_DefaultMaxNumEnvs_Per_ApiProduct(),
       apMaxNumApis_Per_ApiProduct: this.get_DefaultMaxNumApis_Per_ApiProduct(),
       apAppCredentialsExpiryDuration_millis: this.DefaultAppCredentialsExpiryDuration_Millis,
-
+      apServiceRegistry: ServiceRegistryType.PLATFORM,
       apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
       apCloudConnectivityConfig: this.create_Emtpy_ApCloudConnectivityConfig(),
       apEventPortalConnectivityConfig: this.create_Emtpy_ApEventPortalConnectivityConfig(),
@@ -514,6 +518,7 @@ export class APOrganizationsDisplayService {
       apMaxNumEnvs_Per_ApiProduct: apsOrganization.maxNumEnvsPerApiProduct,
       apMaxNumApis_Per_ApiProduct: apsOrganization.maxNumApisPerApiProduct,
       apAppCredentialsExpiryDuration_millis: apsOrganization.appCredentialsExpiryDuration,
+      apServiceRegistry: connectorOrganizationResponse.serviceRegistry ? connectorOrganizationResponse.serviceRegistry : ServiceRegistryType.PLATFORM,
 
       apOrganizationConnectivityConfigType: EAPOrganizationConnectivityConfigType.SIMPLE,
       apCloudConnectivityConfig: this.create_ApCloudConnectivityConfig_From_ApiEntities({ connectorCloudToken: connectorOrganizationResponse['cloud-token'] }),
@@ -560,6 +565,7 @@ export class APOrganizationsDisplayService {
   }): IAPOrganizationDisplay_General {
     return {
       apEntityId: apOrganizationDisplay.apEntityId,
+      apServiceRegistry: apOrganizationDisplay.apServiceRegistry,
       apAppCredentialsExpiryDuration_millis: apOrganizationDisplay.apAppCredentialsExpiryDuration_millis,
       apAssetIncVersionStrategy: apOrganizationDisplay.apAssetIncVersionStrategy,
       apMaxNumApis_Per_ApiProduct: apOrganizationDisplay.apMaxNumApis_Per_ApiProduct,
@@ -575,6 +581,7 @@ export class APOrganizationsDisplayService {
     apOrganizationDisplay_General: K;
   }): T {
     apOrganizationDisplay.apEntityId = apOrganizationDisplay_General.apEntityId;
+    apOrganizationDisplay.apServiceRegistry = apOrganizationDisplay_General.apServiceRegistry;
     apOrganizationDisplay.apAppCredentialsExpiryDuration_millis = apOrganizationDisplay_General.apAppCredentialsExpiryDuration_millis;
     apOrganizationDisplay.apAssetIncVersionStrategy = apOrganizationDisplay_General.apAssetIncVersionStrategy;
     apOrganizationDisplay.apMaxNumApis_Per_ApiProduct = apOrganizationDisplay_General.apMaxNumApis_Per_ApiProduct;
@@ -740,9 +747,16 @@ export class APOrganizationsDisplayService {
       maxNumEnvsPerApiProduct: apOrganizationDisplay_General.apMaxNumEnvs_Per_ApiProduct,
       assetIncVersionStrategy: apOrganizationDisplay_General.apAssetIncVersionStrategy,
     };
+
+    const connectorOrganization: Organization = {
+      name: apOrganizationDisplay_General.apEntityId.id,
+      serviceRegistry: apOrganizationDisplay_General.apServiceRegistry,
+    };
+
     await this.apiUpdate({
       organizationId: apOrganizationDisplay_General.apEntityId.id,
-      apsUpdate: apsUpdate
+      apsUpdate: apsUpdate,
+      connectorOrganization: connectorOrganization,
     });
   }
 

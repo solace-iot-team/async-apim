@@ -11,16 +11,19 @@ import { Dropdown } from "primereact/dropdown";
 import { ApiCallState, TApiCallState } from "../../../../utils/ApiCallState";
 import APDisplayUtils from "../../../../displayServices/APDisplayUtils";
 import { APClientConnectorOpenApi } from "../../../../utils/APClientConnectorOpenApi";
-import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, EAction, E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
+import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, DisplaySectionHeader_ServiceRegistry, EAction, E_CALL_STATE_ACTIONS } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay_General } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APOrganizationsDisplayService from "../../../../displayServices/APOrganizationsDisplayService/APOrganizationsDisplayService";
 import { APSOpenApiFormValidationRules } from "../../../../utils/APSOpenApiFormValidationRules";
 import { APSAssetIncVersionStrategy } from "../../../../_generated/@solace-iot-team/apim-server-openapi-browser";
+import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
+import { ServiceRegistryType } from "@solace-iot-team/apim-connector-openapi-browser";
+import { ConfigHelper } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigHelper";
+import { ConfigContext } from "../../../../components/APContextProviders/ConfigContextProvider/ConfigContextProvider";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
-import { APConnectorFormValidationRules } from "../../../../utils/APConnectorOpenApiFormValidationRules";
 
 export interface IEditNewGeneralFormProps {
   action: EAction;
@@ -38,6 +41,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   type TManagedObjectFormData = {
     id: string;
     displayName: string;
+
+    serviceRegistryType: ServiceRegistryType;
 
     assetIncVersionStrategy: APSAssetIncVersionStrategy;
 
@@ -62,6 +67,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = {
       id: mo.apEntityId.id,
       displayName: mo.apEntityId.displayName,
+
+      serviceRegistryType: mo.apServiceRegistry,
 
       assetIncVersionStrategy: mo.apAssetIncVersionStrategy,
 
@@ -89,6 +96,7 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
     const fd: TManagedObjectFormData = formDataEnvelope.formData;
     if(isNewManagedObject()) mo.apEntityId.id = fd.id;
     mo.apEntityId.displayName = fd.displayName;
+    mo.apServiceRegistry = fd.serviceRegistryType;
     mo.apAssetIncVersionStrategy = fd.assetIncVersionStrategy;
     mo.apMaxNumEnvs_Per_ApiProduct = fd.is_Configured_MaxNumEnvs_Per_ApiProduct ? fd.maxNumEnvs_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumEnvs_Per_ApiProduct();
     mo.apMaxNumApis_Per_ApiProduct = fd.is_Configured_MaxNumApis_Per_ApiProduct ? fd.maxNumApis_Per_ApiProduct : APOrganizationsDisplayService.get_DefaultMaxNumApis_Per_ApiProduct();
@@ -103,6 +111,8 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
   const [managedObjectFormDataEnvelope, setManagedObjectFormDataEnvelope] = React.useState<TManagedObjectFormDataEnvelope>();
   const [apiCallStatus, setApiCallStatus] = React.useState<TApiCallState | null>(null);
   const managedObjectUseForm = useForm<TManagedObjectFormDataEnvelope>();
+  const [configContext] = React.useContext(ConfigContext);
+
 
   // * Api Calls *
 
@@ -356,6 +366,38 @@ export const EditNewGeneralForm: React.FC<IEditNewGeneralFormProps> = (props: IE
                 <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.displayName })}>Display Name*</label>
               </span>
               {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.displayName)}
+            </div>
+
+            <div className="p-mb-4 p-mt-4 ap-display-component-header">{DisplaySectionHeader_ServiceRegistry}:</div>
+            <div className="p-ml-4">
+              {/* service registry */}
+              <div className="p-field">
+                <span className="p-float-label">
+                  <Controller
+                    control={managedObjectUseForm.control}
+                    name="formData.serviceRegistryType"
+                    rules={APConnectorFormValidationRules.isRequired('Select Service Registry Type.', true)}
+                    render={( { field, fieldState }) => {
+                      return(
+                        <Dropdown
+                          id={field.name}
+                          {...field}
+                          options={Object.values(ServiceRegistryType)} 
+                          onChange={(e) => {                           
+                            field.onChange(e.value);
+                            managedObjectUseForm.clearErrors();
+                          }}
+                          className={classNames({ 'p-invalid': fieldState.invalid })}      
+                          // leave it fixed at patch
+                          disabled={!ConfigHelper.isEventPortal20(configContext)}
+                        />                        
+                      );
+                    }}
+                  />
+                  <label className={classNames({ 'p-error': managedObjectUseForm.formState.errors.formData?.assetIncVersionStrategy })}>Service Registry Type*</label>
+                </span>
+                {APDisplayUtils.displayFormFieldErrorMessage(managedObjectUseForm.formState.errors.formData?.assetIncVersionStrategy)}
+              </div>
             </div>
 
             <div className="p-mb-4 p-mt-4 ap-display-component-header">{DisplaySectionHeader_AssetManagement}:</div>

@@ -4,7 +4,7 @@ import React from "react";
 import { TabPanel, TabView } from "primereact/tabview";
 
 import { APComponentHeader } from "../../../../components/APComponentHeader/APComponentHeader";
-import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, DisplaySectionHeader_EventPortalServices, DisplaySectionHeader_SempV2Auth, DisplaySectionHeader_SolaceCloudServices, E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
+import { DisplaySectionHeader_ApiProducts, DisplaySectionHeader_Apps, DisplaySectionHeader_AssetManagement, DisplaySectionHeader_EventPortalServices, DisplaySectionHeader_SempV2Auth, DisplaySectionHeader_ServiceRegistry, DisplaySectionHeader_SolaceCloudServices, E_DISPLAY_ORGANIZATION_SCOPE } from "../ManageOrganizationsCommon";
 import { IAPSingleOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSingleOrganizationDisplayService";
 import { IAPSystemOrganizationDisplay } from "../../../../displayServices/APOrganizationsDisplayService/APSystemOrganizationsDisplayService";
 import APOrganizationsDisplayService, { 
@@ -34,6 +34,7 @@ import { TApiCallState } from "../../../../utils/ApiCallState";
 
 import '../../../../components/APComponents.css';
 import "../ManageOrganizations.css";
+import { ServiceRegistryType } from "@solace-iot-team/apim-connector-openapi-browser";
 
 export interface IDisplayOrganizationProps {
   apOrganizationDisplay: IAPSystemOrganizationDisplay | IAPSingleOrganizationDisplay;
@@ -266,6 +267,11 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     const logName = `${ComponentName}.${funcName}()`;
     if(managedObject === undefined) throw new Error(`${logName}: managedObject === undefined`);
 
+    const renderServiceRegistryType = (serviceRegistryType: ServiceRegistryType): string => {
+      // TODO: switch and translate e-num values to displayValues
+      return serviceRegistryType;
+    }
+
     const renderAssetIncVersionStrategy = (apsAssetIncVersionStrategy: APSAssetIncVersionStrategy): string => {
       // TODO: switch and translate e-num values to displayValues
       return apsAssetIncVersionStrategy;
@@ -289,6 +295,10 @@ export const DisplayOrganization: React.FC<IDisplayOrganizationProps> = (props: 
     const jsxTabPanelList: Array<JSX.Element> = [];
     jsxTabPanelList.push(
       <TabPanel header='General' key={Globals.getUUID()}>
+        <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_ServiceRegistry}:</div>
+        <div className="p-ml-4">
+          <p><b>Service Registry Type: </b>{renderServiceRegistryType(managedObject.apServiceRegistry)}</p>
+        </div>
         <div className="p-mb-2 p-mt-4 ap-display-component-header">{DisplaySectionHeader_AssetManagement}:</div>
         <div className="p-ml-4">
           <p><b>Version Increment Strategy: </b>{renderAssetIncVersionStrategy(managedObject.apAssetIncVersionStrategy)}</p>
