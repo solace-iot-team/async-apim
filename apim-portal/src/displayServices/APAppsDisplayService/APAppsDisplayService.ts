@@ -55,7 +55,9 @@ export enum EAPApp_OwnerType {
 export type TAPOrganizationAppSettings = {
   apAppCredentialsExpiryDuration_millis: number;
 }
+export const CAP_Credentials_Id_Empty = "-"; 
 export type TAPAppCredentialsDisplay = {
+  apCredentialsId: string; /** id of credentials  */
   apConsumerKeyExiresIn: number; /** duration in millseconds  */
   expiresAt: number; /** millis since epoch */
   issuedAt: CommonTimestampInteger; /** millis since epoch */
@@ -195,6 +197,7 @@ export class APAppsDisplayService {
     apOrganizationAppSettings: TAPOrganizationAppSettings;
   }): TAPAppCredentialsDisplay {
     return {
+      apCredentialsId: CAP_Credentials_Id_Empty,
       expiresAt: -1,
       issuedAt: -1,
       secret: {
@@ -319,6 +322,7 @@ export class APAppsDisplayService {
       apAppCredentialsDisplay.secret.consumerSecret = connectorCredentials.secret.consumerSecret;
     }
     if(connectorAppResponse_expiresIn) apAppCredentialsDisplay.apConsumerKeyExiresIn = connectorAppResponse_expiresIn;
+    if(connectorCredentials.name) apAppCredentialsDisplay.apCredentialsId = connectorCredentials.name;
     // devel:
     apAppCredentialsDisplay.devel_calculated_expiresAt = apAppCredentialsDisplay.issuedAt + apAppCredentialsDisplay.apConsumerKeyExiresIn;
     return apAppCredentialsDisplay;

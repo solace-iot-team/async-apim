@@ -1,6 +1,9 @@
 
 import base64 from 'base-64';
-import { ApiError } from '../_generated/@solace-iot-team/apim-server-openapi-browser';
+import { 
+  ApiError,
+  OpenAPIConfig as APSOpenAPIConfig,
+} from '../_generated/@solace-iot-team/apim-server-openapi-browser';
 import { APSClientOpenApi } from './APSClientOpenApi';
 
 export enum EAPFetchResultBodyType {
@@ -92,12 +95,27 @@ export class APFetch {
     const logName = `${APFetch.name}.${funcName}()`;
 
     const connectorOpenApiConfig: any = await APSClientOpenApi.getConnectorClientOpenApiConfig();
+    console.log(`${logName}: connectorOpenApiConfig=${JSON.stringify(connectorOpenApiConfig, null, 2)}`);
     // console.warn(`${logName}: connectorOpenApiConfig = ${JSON.stringify(connectorOpenApiConfig)}`);
     // throw new Error(`${logName}: check the connectorOpenApiConfig`);
     // {"BASE":"http://localhost:3003/apim-server/v1/connectorProxy/v1","VERSION":"0.11.0","WITH_CREDENTIALS":true,"TOKEN":"xxx"
 
+    // "BASE": "/apim-server/v1/connectorProxy/v1",
+
+    const apsOpenAPIConfig: APSOpenAPIConfig = await APSClientOpenApi.getApsClientOpenApiConfig();
+    console.log(`${logName}: apsOpenAPIConfig=${JSON.stringify(apsOpenAPIConfig, null, 2)}`);
+
     const base = connectorOpenApiConfig.BASE + '/';
-    const url: URL = new URL(connectorUrlPath, base);
+    console.log(`${logName}: connectorUrlPath=${connectorUrlPath}, base=${base}`);
+
+    // distinguish between using browser bar host/port and specific host/port
+    let url: URL;
+    if(base.includes('http')) {
+      url = new URL(connectorUrlPath, base);
+    } else {
+      url = new URL(base + connectorUrlPath);
+    }
+
     const headers = new Headers({
       "Authorization": `Bearer ${connectorOpenApiConfig.TOKEN}`,
       "Content-Type": 'application/json',

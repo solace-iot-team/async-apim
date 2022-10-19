@@ -39,6 +39,10 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
     }
   }
 
+  const idBodyTemplate = (row: TAPAppCredentialsDisplay): string => {
+    return row.apCredentialsId;
+  }
+
   // const devel_connectorExpiresInBodyTemplate = (row: TAPAppCredentialsDisplay): JSX.Element => {
   //   return (<div>{APDisplayUtils.convertMilliseconds(row.devel_connector_app_expires_in)}</div>);
   // }
@@ -53,6 +57,7 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
   // }
 
   const renderComponentContent = (): JSX.Element => {
+    const credentialsIdField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('apCredentialsId');
     const consumerKeyField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay_Secret('consumerKey');
     const consumerSecretField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay_Secret('consumerSecret');
     const expiresAtField = APAppsDisplayService.nameOf_ApAppCredentialsDisplay('expiresAt');
@@ -68,6 +73,7 @@ export const APDisplayDeveloperPortalAppCredentials: React.FC<IAPDisplayDevelope
           resizableColumns={true}
           columnResizeMode="fit"
         >
+          <Column header="Id" body={idBodyTemplate} field={credentialsIdField} />
           <Column header="Consumer Key" field={consumerKeyField} />
           <Column header="Consumer Secret" field={consumerSecretField} />
           <Column header="Issued At" body={issuedAtBodyTemplate} field={issuedAtField} style={{ textAlign: 'center'}}/>
