@@ -2,6 +2,17 @@
 
 Solace Async API Management.
 
+## Version 0.4.5
+
+* [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.5
+* [API-M Server OpenAPI](https://github.com/solace-iot-team/async-apim/blob/main/apim-server/server/common/api.yml): 0.4.0
+* [API-M Server](https://github.com/solace-iot-team/async-apim/tree/main/apim-server): 0.4.1
+* [API-M Connector OpenAPI](https://github.com/solace-iot-team/platform-api): 0.15.2
+
+**Fixes:**
+- **Download zip file for Async Api**
+  - fixed bug 'invalid url' when downloading the zip file
+
 ## Version 0.4.4
 
 * [API-M Admin & Developer Portal](https://github.com/solace-iot-team/async-apim/tree/main/apim-portal): 0.4.4
@@ -12,10 +23,6 @@ Solace Async API Management.
 **Enhancements:**
 - **App:Credentials**
   - display credentials Id if provided
-
-**Fixes:**
-- **Download zip file for Async Api**
-  - fixed bug 'invalid url' when downloading the zip file
 
 ## Version 0.4.3
 
