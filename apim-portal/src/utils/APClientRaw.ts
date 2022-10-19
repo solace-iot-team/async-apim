@@ -1,8 +1,8 @@
-import { 
-  APSConnectorClientConfig 
-} from "../_generated/@solace-iot-team/apim-server-openapi-browser";
-import { Mutex, MutexInterface } from 'async-mutex';
-import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
+// import { 
+//   APSConnectorClientConfig 
+// } from "../_generated/@solace-iot-team/apim-server-openapi-browser";
+// import { Mutex, MutexInterface } from 'async-mutex';
+// import { APClientConnectorOpenApi } from './APClientConnectorOpenApi';
 import { APTimeoutError } from './APError';
 import { APFetch, APFetchResult } from './APFetch';
 import { APSClientOpenApi } from './APSClientOpenApi';
@@ -79,49 +79,49 @@ export class APClientServerRaw {
   }
 }
 
-export class APClientConnectorRaw {
-  private static componentName = 'APClientConnectorRaw';
-  private static baseUrl: string;
-  private static basePath: string;
-  private static mutex = new Mutex();
-  private static mutexReleaser: MutexInterface.Releaser;
+// class APClientConnectorRaw {
+//   private static componentName = 'APClientConnectorRaw';
+//   private static baseUrl: string;
+//   private static basePath: string;
+//   private static mutex = new Mutex();
+//   private static mutexReleaser: MutexInterface.Releaser;
 
-  public static initialize = async (connectorClientConfig: APSConnectorClientConfig) => {
-    // const funcName = 'initialize';
-    // const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
-    APClientConnectorRaw.mutexReleaser = await APClientConnectorRaw.mutex.acquire();
-    APClientConnectorRaw.baseUrl = APClientConnectorOpenApi.constructBaseUrl(connectorClientConfig);
-    // console.log(`${logName}: APClientConnectorRaw.baseUrl = ${APClientConnectorRaw.baseUrl}`);
-    APClientConnectorRaw.basePath = APClientConnectorOpenApi.constructOpenApiBase(connectorClientConfig);
-    // console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
-  }
+//   public static initialize = async (connectorClientConfig: APSConnectorClientConfig) => {
+//     const funcName = 'initialize';
+//     const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
+//     APClientConnectorRaw.mutexReleaser = await APClientConnectorRaw.mutex.acquire();
+//     APClientConnectorRaw.baseUrl = APClientConnectorOpenApi.constructBaseUrl(connectorClientConfig);
+//     console.log(`${logName}: APClientConnectorRaw.baseUrl = ${APClientConnectorRaw.baseUrl}`);
+//     APClientConnectorRaw.basePath = APClientConnectorOpenApi.constructOpenApiBase(connectorClientConfig);
+//     console.log(`${logName}: APClientConnectorRaw.basePath = ${APClientConnectorRaw.basePath}`);
+//   }
 
-  public static unInitialize = async (): Promise<void> => {
-    APClientConnectorRaw.mutexReleaser();
-  }
+//   public static unInitialize = async (): Promise<void> => {
+//     APClientConnectorRaw.mutexReleaser();
+//   }
 
-  public static getBasePath = (): string => {
-    return APClientConnectorRaw.basePath;
-  }
-  public static httpGET_BasePath = async (): Promise<any> => {    
-    const funcName = 'httpGET_BasePath';
-    const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
-    let response: Response;
-    let responseBody: any;
-    try {
-      try {
-        response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, FetchTimeout_ms);
-      } catch (e: any) {
-        if(e.name === 'AbortError') {
-          throw new APTimeoutError(logName, "fetch timeout", { url: APClientConnectorRaw.basePath, timeout_ms: FetchTimeout_ms});
-        } else throw e;
-      }
-      const result: APFetchResult = await APFetch.getFetchResult(response);
-      responseBody = result.body;
-      if(!response.ok) APClientRaw.handleError(logName, response, responseBody);
-      return responseBody;
-    } catch (e) {
-      throw e;
-    }
-  }
-}
+//   public static getBasePath = (): string => {
+//     return APClientConnectorRaw.basePath;
+//   }
+//   public static httpGET_BasePath = async (): Promise<any> => {    
+//     const funcName = 'httpGET_BasePath';
+//     const logName= `${APClientConnectorRaw.componentName}.${funcName}()`;
+//     let response: Response;
+//     let responseBody: any;
+//     try {
+//       try {
+//         response = await APFetch.fetchWithTimeoutAndRandomBasicAuth(APClientConnectorRaw.basePath, FetchTimeout_ms);
+//       } catch (e: any) {
+//         if(e.name === 'AbortError') {
+//           throw new APTimeoutError(logName, "fetch timeout", { url: APClientConnectorRaw.basePath, timeout_ms: FetchTimeout_ms});
+//         } else throw e;
+//       }
+//       const result: APFetchResult = await APFetch.getFetchResult(response);
+//       responseBody = result.body;
+//       if(!response.ok) APClientRaw.handleError(logName, response, responseBody);
+//       return responseBody;
+//     } catch (e) {
+//       throw e;
+//     }
+//   }
+// }
